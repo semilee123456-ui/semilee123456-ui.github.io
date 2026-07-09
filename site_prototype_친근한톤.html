@@ -1,0 +1,2536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미국 복권 세금 계산기 | 로또택스 - 미국 파워볼·메가밀리언즈 실수령액</title>
+<meta name="description" content="미국 복권(파워볼·메가밀리언즈) 당첨 시 세금과 실수령액을 계산해보세요. 한국 거주자 이중과세, 미국 비거주자 원천징수까지 한 번에 확인할 수 있어요.">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --navy:#111111;
+    --teal:#028090;
+    --seafoam:#028090;
+    --mint:#028090;
+    --bg:#F7F7F7;
+    --card:#FFFFFF;
+    --text-dark:#1A1A1A;
+    --text-muted:#6B6B6B;
+    --border:#E2E2E2;
+
+    --fs-hero:40px;    /* 결과 숫자 */
+    --fs-h1:26px;      /* 메인 제목 */
+    --fs-h2:20px;      /* 큰 섹션 */
+    --fs-h3:18px;      /* 카드 제목 */
+    --fs-body:16px;    /* 본문 */
+    --fs-note:14px;    /* 설명 */
+    --fs-small:13px;   /* 최소 */
+    --fs-emphasis:24px; /* 카드 강조 숫자 (잭팟 실시간가, 최종 강조값) */
+
+    --grad-soft: linear-gradient(150deg, #E4F5F3 0%, #FBFDFC 55%, #FFFFFF 100%);
+    --grad-amber: linear-gradient(150deg, #FDF3E7 0%, #FFFDF9 100%);
+    --shadow-card: 0 20px 44px rgba(0,0,0,0.1);
+    --shadow-btn: 0 10px 20px rgba(0,0,0,0.25);
+    --status-red:#C0392B;
+    --status-amber:#D9A441;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:#EDEFF0;
+    padding:36px 16px 80px;
+    display:flex;
+    flex-direction:column;
+    -webkit-text-size-adjust:100%; text-size-adjust:100%;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    word-break:keep-all; overflow-wrap:break-word;
+    overscroll-behavior-y:none;
+    align-items:center;
+    gap:28px;
+    line-height:1.65;
+  }
+
+  .page{
+    background:var(--bg); padding:28px 28px 36px; min-height:200px;
+    width:100%; max-width:760px; margin:0 auto; border-radius:14px; overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+  }
+
+  .nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+  .logo{
+    font-size:var(--fs-body); font-weight:700; color:var(--navy); letter-spacing:-0.02em; cursor:pointer;
+    background:none; border:none; font-family:inherit; padding:0;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .mascot-mark{ flex-shrink:0; }
+  .logo span{ color:var(--teal); }
+  .menu{ display:flex; gap:20px; }
+  .menu button{
+    font-size:var(--fs-small); color:var(--text-muted); font-weight:500; background:none; border:none;
+    cursor:pointer; font-family:inherit; padding:0; position:relative;
+  }
+  .menu button::after{ content:''; position:absolute; top:-12px; left:-8px; right:-8px; bottom:-12px; }
+  .menu button.active{ color:var(--text-dark); font-weight:700; text-decoration:underline; }
+
+  .view{ display:none; }
+  .view.on{ display:block; }
+
+  .hero{ text-align:center; padding:16px 0 24px; }
+  .hero-category-tag{
+    display:inline-block; font-size:var(--fs-small); font-weight:800; color:var(--teal);
+    background:rgba(2,128,144,0.08); border-radius:20px; padding:5px 14px; margin:0 0 10px;
+  }
+  .hero-label{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 8px; font-weight:500; }
+  .tax-impact-box{ background:rgba(192,57,43,0.06); border-radius:10px; padding:10px 14px; margin-top:10px; }
+  .tax-impact-row{ display:flex; justify-content:space-between; font-size:var(--fs-small); color:var(--text-dark); padding:3px 0; }
+  .tax-impact-row.highlight{ font-weight:800; color:var(--status-red); border-top:1px dashed rgba(192,57,43,0.25); margin-top:3px; padding-top:6px; }
+  .hero-amount{ font-size:var(--fs-hero); font-weight:800; color:var(--navy); margin:0; letter-spacing:-0.02em; }
+  .hero-sub{ font-size:15px; color:var(--text-muted); margin:8px 0 0; }
+
+  .cards-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:8px; }
+  .feature-card{
+    background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px;
+    cursor:pointer; text-align:left; font-family:inherit;
+    transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  
+  .cta-btn{ transition:transform 0.1s ease, background 0.15s ease; }
+  .cta-btn:active{ transform:scale(0.98); }
+  .panel{ transition:box-shadow 0.15s ease; }
+  .hero-amount{ display:inline-block; }
+  .feature-icon{ width:34px;height:34px;border-radius:9px;background:rgba(0,0,0,0.1); display:flex;align-items:center;justify-content:center;margin-bottom:10px; font-size:16px; }
+  @media (hover: hover) {
+  .feature-card:hover{ border-color:var(--teal); transform:translateY(-3px); box-shadow:0 6px 16px rgba(0,0,0,0.12); }
+  .rate-live-badge:hover{ border-color:var(--teal); background:rgba(0,0,0,0.16); }
+  .flow-tag:hover{ background:rgba(0,0,0,0.2); text-decoration:underline; }
+  .official-links a:hover{ border-color:var(--teal); background:rgba(0,0,0,0.06); }
+  .jp-official-link:hover{ text-decoration:underline; }
+  .source-links a:hover{ text-decoration:underline; }
+  .back-btn:hover{ background:var(--bg); border-color:var(--teal); }
+  .cta-btn:hover{ background:#026e7a; }
+  .share-btn:hover{ background:rgba(0,0,0,0.08); }
+  .refund-link-btn:hover{ background:rgba(0,0,0,0.08); }
+  .footer-links button:hover{ color:var(--teal); }
+}
+  .feature-title{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 2px; }
+  .feature-sub{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 10px; }
+  .feature-link{ font-size:var(--fs-small); color:var(--teal); font-weight:600; margin:0; }
+
+  .panel{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:18px; }
+  .panel-title{ font-size:var(--fs-h2); font-weight:700; color:var(--text-dark); margin:0 0 4px; }
+  .panel-desc{ font-size:var(--fs-note); color:var(--text-muted); margin:0 0 16px; }
+
+  .input-row{ display:flex; gap:8px; margin-bottom:14px; }
+  .input-row select{
+    height:38px; border:1px solid var(--border); border-radius:8px; padding:0 28px 0 12px;
+    font-size:var(--fs-body); font-family:inherit; color:var(--text-dark); background:#FBFDFD; flex:1;
+    -webkit-appearance:none; -moz-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6B6B' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 10px center; background-size:11px 7px;
+  }
+  .dollar-input{
+    height:42px; border:1.5px solid var(--border); border-radius:8px; padding:0 12px;
+    font-size:var(--fs-body); font-weight:700; font-family:inherit; color:var(--navy); background:#fff;
+    flex:1.5; width:100%; font-variant-numeric:tabular-nums;
+  }
+  .dollar-input:focus{ outline:none; border-color:var(--teal); }
+  .million-input-wrap{
+    display:flex; align-items:center; gap:8px; flex:1.5; border:1.5px solid var(--border);
+    border-radius:8px; padding:0 4px 0 12px; height:42px; background:#fff;
+    min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden;
+  }
+  .million-input-wrap:focus-within{ border-color:var(--teal); }
+  .million-input-wrap .dollar-input{ border:none; padding:0; height:auto; flex:1; min-width:0; width:auto; }
+  .million-unit{ font-size:var(--fs-note); color:var(--text-muted); font-weight:600; white-space:nowrap; padding-right:8px; flex-shrink:0; }
+  .unit-short{ display:none; }
+  .rate-input{
+    width:60px; border:none; border-bottom:1.5px dashed var(--teal); background:transparent;
+    font-family:inherit; font-size:var(--fs-body); font-weight:700; color:var(--teal); text-align:center; padding:0 2px;
+  }
+  .rate-input:focus{ outline:none; border-bottom-style:solid; }
+  .rate-live-badge{
+    display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
+    margin-left:4px; cursor:pointer; background:rgba(0,0,0,0.05); border:1px solid var(--border);
+    border-radius:50%; padding:0; font-size:12px; line-height:1; font-family:inherit; flex-shrink:0;
+  }
+  
+  .rate-live-badge.is-live{ background:rgba(0,0,0,0.14); border-color:rgba(0,0,0,0.4); }
+  .rate-live-badge.is-fail{ background:rgba(192,57,43,0.1); border-color:rgba(192,57,43,0.35); }
+  .rate-live-badge:disabled{ cursor:default; opacity:0.6; }
+  .rate-live-badge .spin{ display:inline-block; animation:rateSpin 0.8s linear infinite; }
+  @keyframes rateSpin{ from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
+  .amount-display{ font-size:var(--fs-h2); font-weight:800; color:var(--navy); margin:0 0 10px; font-variant-numeric:tabular-nums; }
+
+  .slider{ width:100%; height:4px; border-radius:2px; background:var(--border); -webkit-appearance:none; appearance:none; margin-bottom:18px; }
+  .slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:16px; height:16px; border-radius:50%; background:var(--teal); cursor:pointer; }
+
+  .result-grid{ display:grid; grid-template-columns:0.85fr 0.85fr 1.3fr; gap:10px; align-items:stretch; }
+  .result-cell{ background:var(--bg); border-radius:8px; padding:12px; }
+  .result-cell.final{ background:rgba(0,0,0,0.14); border:1.5px solid rgba(0,0,0,0.35); padding:14px 12px; }
+  .result-cell.final .result-value{ font-size:var(--fs-emphasis); }
+  .result-label{ font-size:var(--fs-note); color:var(--text-muted); margin:0 0 4px; font-weight:500; }
+  .result-value{ font-size:var(--fs-body); font-weight:700; color:var(--text-dark); margin:0; font-variant-numeric:tabular-nums; }
+  .result-cell.final .result-value{ color:var(--seafoam); }
+  .result-cell.final .result-label{ color:var(--seafoam); }
+
+  .compare-table{ width:100%; border-collapse:collapse; font-size:var(--fs-small); }
+  .compare-table th{ text-align:left; color:var(--text-muted); font-weight:600; padding:8px 6px; border-bottom:1px solid var(--border); }
+  .compare-table td{ padding:10px 6px; border-bottom:1px solid var(--border); color:var(--text-dark); }
+  .compare-table tr:last-child td{ border-bottom:none; }
+  .compare-table .best{ color:var(--seafoam); font-weight:700; }
+
+  .bar-row{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .bar-row:last-child{ margin-bottom:0; }
+  .bar-label{ font-size:var(--fs-small); color:var(--text-dark); width:100px; flex-shrink:0; font-weight:500; }
+  .bar-track{ flex:1; height:10px; background:var(--bg); border-radius:5px; overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:5px; }
+  .bar-fill.accent{ background:var(--teal); }
+  .bar-fill.muted{ background:#C9D2D2; }
+  .bar-value{ font-size:var(--fs-note); color:var(--text-muted); width:80px; text-align:right; flex-shrink:0; }
+
+  .callout{ background:rgba(0,0,0,0.08); border-radius:10px; padding:14px 16px; margin-top:16px; font-size:var(--fs-small); color:var(--text-dark); line-height:1.6; }
+  .callout b{ color:var(--text-dark); }
+
+  .disclaimer{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; line-height:1.7; margin-top:4px; }
+  .breadcrumb{ font-size:var(--fs-small); color:var(--text-muted); margin-bottom:16px; }
+  .breadcrumb button{ background:none;border:none;font-family:inherit;font-size:var(--fs-small);color:var(--text-muted);cursor:pointer;padding:0; }
+  .breadcrumb .cur{ color:var(--text-dark); font-weight:600; }
+
+  .hint{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); margin-top:12px; }
+  .hint b{ color:var(--text-dark); }
+
+  .gate-box{
+    background:#FBEEEC; border:2px solid #C0392B; border-radius:12px;
+    padding:16px 18px; margin-bottom:16px; text-align:center;
+  }
+  .gate-label{ font-size:var(--fs-small); font-weight:800; color:#C0392B; letter-spacing:0.05em; margin:0 0 6px; }
+  .gate-text{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); margin:0; line-height:1.5; }
+  .gate-sub{ font-size:var(--fs-small); color:var(--text-muted); margin:6px 0 0; }
+
+  .flow-step{ display:flex; gap:12px; margin-bottom:12px; }
+  .flow-step:last-child{ margin-bottom:0; }
+  .flow-num{
+    width:28px; height:28px; border-radius:50%; background:var(--teal); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:var(--fs-small); flex-shrink:0;
+  }
+  .flow-body{ flex:1; background:var(--bg); border-radius:10px; padding:12px 14px; }
+  .flow-title{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 3px; }
+  .flow-detail{ font-size:var(--fs-body); color:var(--text-muted); margin:0; line-height:1.6; }
+  .flow-detail b{ color:var(--text-dark); }
+  .flow-tag{
+    display:inline-block; background:rgba(0,0,0,0.1); color:var(--text-dark); font-size:var(--fs-small); font-weight:700;
+    padding:2px 7px; border-radius:6px; margin-top:6px; margin-right:4px;
+    text-decoration:none; cursor:pointer;
+  }
+  
+  .flow-tag.no{ background:rgba(192,57,43,0.1); color:#C0392B; }
+  .official-links{ display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .official-links a{
+    display:block; background:var(--card); border:1px solid var(--border); border-radius:8px;
+    padding:9px 12px; font-size:var(--fs-small); font-weight:700; color:var(--teal); text-decoration:none;
+  }
+  
+  .link-note{ font-size:var(--fs-small); color:var(--text-muted); margin:4px 0 0; }
+  .jp-official-link{
+    display:block; font-size:var(--fs-small); color:var(--teal); font-weight:700; text-decoration:none;
+    margin-top:5px; padding-top:5px; border-top:1px dashed var(--border);
+  }
+  
+  .source-links{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); margin:6px 0 0; }
+  .source-links a{ color:var(--teal); font-weight:700; text-decoration:none; }
+  
+
+  .phrase-box{ background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-top:10px; }
+  .phrase-title{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 8px; }
+  .phrase-row{ display:flex; flex-direction:column; gap:1px; margin-bottom:8px; }
+  .phrase-row:last-of-type{ margin-bottom:6px; }
+  .phrase-en{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); }
+  .phrase-ko{ font-size:var(--fs-body); color:var(--text-muted); }
+  .phrase-tip{ font-size:var(--fs-note); color:var(--text-muted); margin:6px 0 0; line-height:1.5; border-top:1px dashed var(--border); padding-top:8px; }
+
+  .qty-box{ background:var(--bg); border-radius:10px; padding:12px 14px; margin-bottom:10px; }
+  .qty-box:last-of-type{ margin-bottom:0; }
+  .qty-q{ font-size:var(--fs-small); font-weight:800; color:var(--text-dark); margin:0 0 5px; }
+  .qty-a{ font-size:var(--fs-small); color:var(--text-muted); margin:0; line-height:1.6; }
+  .qty-a b{ color:var(--text-dark); }
+
+  .mini-preview{ margin-top:12px; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  .mini-row{ display:flex; align-items:center; gap:8px; padding:8px 12px; font-size:var(--fs-small); background:var(--bg); }
+  .mini-row:nth-child(2){ background:var(--card); }
+  .mini-flag{ width:78px; flex-shrink:0; }
+  .mini-bar-track{ flex:1; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .mini-bar-fill{ height:100%; background:linear-gradient(90deg, var(--teal), var(--seafoam)); border-radius:2px; }
+  .mini-pct{ width:42px; text-align:right; flex-shrink:0; font-weight:700; }
+  .mini-flag{ color:var(--text-dark); font-weight:600; }
+  .mini-pct{ color:var(--text-dark); font-weight:800; }
+
+  .live-badge{
+    display:inline-flex; align-items:center; gap:4px; background:rgba(0,0,0,0.12); color:var(--seafoam);
+    font-size:var(--fs-small); font-weight:800; padding:2px 8px; border-radius:10px; margin-left:6px; vertical-align:middle;
+  }
+  .live-dot{ width:5px; height:5px; border-radius:50%; background:var(--seafoam); }
+  .live-badge.manual{ background:rgba(0,0,0,0.06); color:var(--text-muted); }
+  .live-badge.manual .live-dot{ background:var(--text-muted); }
+  .jp-krw{ font-size:var(--fs-small); color:var(--text-dark); font-weight:600; margin:1px 0 0; }
+  .foot-note{ font-size:var(--fs-note); color:var(--text-muted); margin:0; line-height:1.5; }
+
+  .result-hero{
+    position:relative;
+    background:#FFFFFF; border:1px solid var(--border); border-radius:20px;
+    padding:14px 14px 20px; text-align:center; box-shadow:0 16px 36px rgba(0,0,0,0.1);
+  }
+  .result-hero-core{
+    position:relative; overflow:hidden; border-radius:16px; padding:34px 20px 30px;
+    background:linear-gradient(135deg, #EAF7F5 0%, #F7FCFB 55%, #FFFFFF 100%);
+    border:1px solid rgba(2,128,144,0.14);
+    box-shadow:0 14px 32px rgba(2,128,144,0.1);
+  }
+  .result-hero-core::before{
+    content:''; position:absolute; top:-70px; right:-60px; width:220px; height:220px; border-radius:50%;
+    background:radial-gradient(circle, rgba(2,128,144,0.1) 0%, rgba(2,128,144,0) 70%);
+    pointer-events:none;
+  }
+  .result-hero-core::after{
+    content:''; position:absolute; bottom:-90px; left:-60px; width:200px; height:200px; border-radius:50%;
+    background:radial-gradient(circle, rgba(2,128,144,0.06) 0%, rgba(2,128,144,0) 70%);
+    pointer-events:none;
+  }
+  .result-hero-label{ position:relative; font-size:var(--fs-h3); color:var(--text-muted); font-weight:600; margin:0 0 8px; }
+  .result-hero-amt{
+    position:relative; font-size:clamp(30px, 11vw, 54px); font-weight:800; margin:0;
+    font-variant-numeric:tabular-nums; white-space:nowrap;
+    color:var(--teal); text-shadow:none; line-height:1.25;
+  }
+  .result-hero-basis{ font-size:var(--fs-note); color:var(--text-muted); margin:4px 0 0; }
+  .calc-basis-box{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:4px 10px; margin-top:8px;
+    font-size:var(--fs-small); color:var(--text-muted);
+  }
+  .sim-note{ font-size:var(--fs-small); color:var(--text-muted); text-align:center; margin:6px 0 0; line-height:1.5; }
+  .usd-actual-note{
+    font-size:var(--fs-small); color:var(--navy); font-weight:700; text-align:center; margin:4px 0 0;
+    background:rgba(11,37,69,0.06); border-radius:8px; padding:8px 10px; line-height:1.5;
+  }
+  .usd-actual-note span{ font-weight:400; color:var(--text-muted); }
+  .result-hero-core .usd-actual-note{
+    color:var(--teal); background:rgba(2,128,144,0.08); position:relative;
+  }
+  .result-hero-core .usd-actual-note span{ color:var(--text-muted); }
+  .krw-hint{ font-size:var(--fs-small); color:var(--text-muted); font-weight:500; margin:0 0 10px 2px; }
+  .slider-range-label{ display:flex; justify-content:space-between; font-size:var(--fs-small); color:var(--text-muted); margin-top:2px; }
+  .live-result-mini{
+    display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding:12px 14px;
+    background:#fff; border:1.5px solid rgba(2,128,144,0.25); border-radius:10px;
+  }
+  .live-result-mini span:first-child{ font-size:var(--fs-note); color:var(--text-muted); font-weight:600; }
+  .live-result-mini-amt{ font-size:var(--fs-h3); font-weight:800; color:var(--teal); font-variant-numeric:tabular-nums; }
+  .dday-badge{
+    display:inline-block; background:rgba(0,0,0,0.12); color:var(--text-dark); font-size:var(--fs-small); font-weight:800;
+    padding:1px 6px; border-radius:8px; margin-left:5px; vertical-align:middle;
+  }
+  .dday-badge.urgent{ background:#C0392B; color:#fff; animation:pulse 1.2s infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.6; } }
+  .faq-search{
+    width:100%; height:40px; border:1.5px solid var(--border); border-radius:10px; padding:0 14px;
+    font-size:16px; font-family:inherit; color:var(--text-dark); background:var(--bg); margin:12px 0 6px;
+  }
+  .faq-search:focus{ outline:none; border-color:var(--teal); }
+  .faq-chip-row{ display:flex; gap:6px; overflow-x:auto; padding:2px 0 10px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .faq-chip-row::-webkit-scrollbar{ display:none; }
+  .faq-chip{
+    flex-shrink:0; font-family:inherit; font-size:var(--fs-small); font-weight:700; white-space:nowrap;
+    padding:7px 13px; border-radius:20px; border:none; background:#F1F3F3; color:var(--text-muted); cursor:pointer;
+  }
+  .faq-chip.active{ background:var(--teal); color:#fff; }
+  .faq-no-result{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); padding:16px 0; }
+  .audience-note{ text-align:center; font-size:var(--fs-note); color:var(--text-muted); margin:0 0 6px; }
+  .calc-divider{
+    text-align:center; font-size:var(--fs-small); color:var(--text-muted); margin:16px 0 12px;
+    padding-top:14px; border-top:1px dashed var(--border);
+  }
+
+  .prize-card{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--bg); border-radius:10px; padding:10px 16px; margin-bottom:6px;
+  }
+  .prize-card:last-child{ margin-bottom:0; }
+  .prize-card.jackpot{ background:rgba(0,0,0,0.1); border:1.5px solid rgba(0,0,0,0.35); padding:14px 16px; }
+  .prize-tag{ font-size:var(--fs-small); font-weight:800; color:var(--text-dark); margin:0 0 2px; }
+  .prize-match{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0; }
+  .prize-right{ text-align:right; }
+  .prize-amt{ font-size:var(--fs-body); font-weight:800; color:var(--text-dark); margin:0; }
+  .prize-amt-note{ font-size:var(--fs-small); font-weight:500; color:var(--text-muted); margin:2px 0 0; }
+  .prize-card.jackpot .prize-amt{ color:var(--teal); font-size:var(--fs-emphasis); }
+  .prize-odds{ font-size:var(--fs-small); color:var(--text-muted); margin:2px 0 0; }
+
+  .howto-box{ background:var(--bg); border-radius:10px; padding:12px 16px; margin-bottom:14px; }
+  .howto-title{ font-size:var(--fs-h3); font-weight:800; color:var(--text-dark); margin:0 0 6px; }
+  .howto-text{ font-size:var(--fs-small); color:var(--text-muted); margin:0; line-height:1.6; }
+  .howto-text b{ color:var(--text-dark); }
+  .prize-explain{ font-size:var(--fs-small); color:var(--text-muted); margin:1px 0 0; }
+  .prize-pct{ color:var(--text-muted); font-weight:400; font-size:var(--fs-small); opacity:0.75; }
+  .prize-usd{ font-size:var(--fs-small); color:var(--text-muted); font-weight:400; }
+
+  .jc-tap-cta{
+    text-align:center; font-size:var(--fs-note); color:var(--teal); font-weight:700; margin:-2px 0 10px; cursor:pointer;
+  }
+  .flow-explain{ font-size:var(--fs-small); color:var(--text-muted); text-align:center; margin:0 0 4px; }
+  .select-hint{ font-size:var(--fs-small); color:var(--text-muted); margin:-4px 0 10px 2px; }
+  .filing-note{
+    font-size:var(--fs-note); color:var(--text-dark); background:rgba(0,0,0,0.08); border-radius:8px;
+    padding:10px 12px; margin:-4px 0 10px; line-height:1.6;
+  }
+  .filing-note b{ color:var(--text-dark); }
+  .filing-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0 0 6px; }
+  .filing-label span{ font-weight:400; color:var(--text-muted); }
+  .filing-note-small{ font-size:var(--fs-small); color:var(--text-muted); margin:-4px 0 10px; line-height:1.5; }
+  .input-card{ background:#F8F9F9; border:1px solid #EEF1F1; border-radius:12px; padding:14px 14px 16px; margin-top:14px; }
+  .field-labels{ display:flex; gap:14px; margin-bottom:4px; }
+  .field-labels span{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; flex:none; }
+  .field-label-single{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; margin:0 0 4px; }
+  .section-divider{
+    text-align:center; font-size:var(--fs-small); font-weight:700; color:var(--text-muted);
+    margin:20px 0 12px; padding-top:16px; border-top:1px dashed var(--border);
+  }
+  .more-details-toggle{ margin-top:20px; padding-top:16px; border-top:1px dashed var(--border); }
+  .section-divider-toggle{
+    display:flex; justify-content:space-between; align-items:center;
+    text-align:left; font-size:var(--fs-h2); font-weight:700; color:var(--text-dark); cursor:pointer;
+    list-style:none; padding:10px 14px; background:rgba(0,0,0,0.06); border-radius:10px;
+  }
+  .section-divider-toggle::-webkit-details-marker{ display:none; }
+  .section-divider-toggle::after{ content:' ▾'; color:var(--text-dark); }
+  .more-details-toggle[open] > .section-divider-toggle::after{ content:' ▴'; }
+  .more-details-toggle > .panel:first-of-type{ margin-top:14px; }
+  .panel-accordion{
+    background:#fff; border-radius:16px; padding:20px; margin-top:14px; box-shadow:0 1px 3px rgba(11,37,69,0.06);
+  }
+  .panel-accordion-title{
+    font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); cursor:pointer; list-style:none;
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
+  .panel-accordion-title::-webkit-details-marker{ display:none; }
+  .panel-accordion-title::after{ content:'+'; font-size:20px; font-weight:400; color:var(--text-dark); flex-shrink:0; }
+  .panel-accordion[open] > .panel-accordion-title::after{ content:'−'; }
+  .panel-accordion[open] > .panel-accordion-title{ margin-bottom:4px; }
+  .calc-detail-toggle{ margin-top:10px; }
+  .calc-detail-summary{
+    font-size:var(--fs-h2); font-weight:700; color:var(--text-dark); cursor:pointer; list-style:none;
+    text-align:center; padding:8px; background:var(--bg); border-radius:8px;
+  }
+  .calc-detail-summary::-webkit-details-marker{ display:none; }
+  .flex-box{
+    margin-top:14px; background:linear-gradient(135deg, rgba(0,0,0,0.08), rgba(0,0,0,0.08));
+    border-radius:12px; padding:14px 16px;
+  }
+  .flex-title{ font-size:var(--fs-h3); font-weight:800; color:var(--text-dark); margin:0 0 10px; }
+  .flex-row{ display:flex; align-items:center; gap:8px; padding:5px 0; font-size:var(--fs-small); }
+  .flex-icon{ font-size:15px; }
+  .flex-label{ flex:1; color:var(--text-muted); }
+  .flex-val{ font-weight:800; color:var(--text-dark); }
+  .flex-note{ font-size:var(--fs-small); color:var(--text-muted); margin:8px 0 0; text-align:right; }
+  .flex-capture{
+    font-size:var(--fs-note); font-weight:700; color:var(--navy); text-align:center; margin:10px 0 0;
+    padding-top:10px; border-top:1px dashed rgba(11,37,69,0.15);
+  }
+  .grounding-note{
+    font-size:var(--fs-small); color:var(--text-muted); text-align:center; margin:8px 0 0; font-style:italic;
+  }
+  .milestone-badge{
+    font-size:var(--fs-note); font-weight:800; color:var(--teal); text-align:center; margin:6px 0 0;
+    animation:milestonePop 0.4s ease; position:relative;
+  }
+  @keyframes milestonePop{ 0%{ transform:scale(0.7); opacity:0; } 60%{ transform:scale(1.08); } 100%{ transform:scale(1); opacity:1; } }
+  .winner-story{ display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--border); }
+  .winner-story:last-child{ border-bottom:none; }
+  .ws-amt{ font-size:var(--fs-body); font-weight:800; color:var(--text-dark); flex-shrink:0; min-width:88px; }
+  .ws-desc{ font-size:var(--fs-note); color:var(--text-muted); line-height:1.6; }
+  .filing-static-note{
+    background:var(--bg); border-radius:8px; padding:10px 12px; font-size:var(--fs-note);
+    color:var(--text-muted); margin-bottom:4px; text-align:center;
+  }
+  .ticket-mock{ margin-top:10px; }
+  .ticket-mock-title{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 6px; }
+  .ticket-mock-card{
+    background:#fff; border:1.5px dashed var(--teal); border-radius:8px; padding:12px;
+    font-family:'Courier New', monospace;
+  }
+  .ticket-mock-row{ text-align:center; margin-bottom:6px; }
+  .tm-ball{
+    display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
+    border-radius:50%; background:var(--navy); color:#fff; font-size:var(--fs-note); font-weight:800; margin:0 2px;
+  }
+  .tm-ball.pb{ background:#C0392B; }
+  .ticket-mock-meta{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); margin:6px 0; }
+  .ticket-mock-barcode{ text-align:center; font-size:var(--fs-body); letter-spacing:1px; color:var(--text-dark); margin-top:4px; }
+  .check-methods{ margin-top:6px; }
+  .check-method{ display:flex; gap:8px; align-items:flex-start; margin-bottom:6px; font-size:var(--fs-body); color:var(--text-muted); line-height:1.5; }
+  .check-method:last-child{ margin-bottom:0; }
+  .cm-num{
+    flex-shrink:0; width:18px; height:18px; border-radius:50%; background:rgba(0,0,0,0.12); color:var(--text-dark);
+    font-size:var(--fs-small); font-weight:800; display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .check-method b{ color:var(--text-dark); }
+  .payout-compare{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+  .payout-col{ background:var(--bg); border-radius:8px; padding:10px 12px; }
+  .payout-col-title{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 4px; }
+  .payout-col-detail{ font-size:var(--fs-small); color:var(--text-muted); line-height:1.5; margin:0; }
+  .payout-col-detail b{ color:var(--text-dark); }
+  .playslip-box{ background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-top:10px; }
+  .playslip-mock{ background:#fff; border:1.5px dashed var(--border); border-radius:8px; padding:10px 12px; margin:8px 0; }
+  .ps-board-label{ font-size:var(--fs-small); font-weight:800; color:var(--text-muted); letter-spacing:1px; margin:0 0 6px; }
+  .ps-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
+  .ps-row:last-child{ margin-bottom:0; }
+  .ps-hint{ font-size:var(--fs-small); color:var(--text-muted); flex-shrink:0; }
+  .ps-bubbles{ display:flex; gap:3px; }
+  .ps-b{
+    display:inline-block; width:14px; height:14px; border-radius:50%; border:1.5px solid var(--border);
+    font-style:normal;
+  }
+  .ps-b.filled{ border-color:var(--navy); background:radial-gradient(circle, var(--navy) 40%, transparent 41%); }
+  .ps-b.filled.pb{ border-color:#C0392B; background:radial-gradient(circle, #C0392B 40%, transparent 41%); }
+  .ps-b.qp{
+    width:auto; height:14px; border-radius:4px; font-size:9px; font-weight:800; color:var(--text-muted);
+    border-color:var(--border); display:inline-flex; align-items:center; justify-content:center; padding:0 3px;
+  }
+  .ps-steps{ margin-top:6px; }
+  .legal-section{ margin-bottom:16px; }
+  .legal-h{ font-size:var(--fs-h2); font-weight:800; color:var(--text-dark); margin:0 0 6px; }
+  .legal-body{ font-size:var(--fs-body); color:var(--text-muted); line-height:1.7; margin:0; }
+  .legal-body b{ color:var(--text-dark); }
+  .lightning-result{ display:flex; justify-content:center; gap:8px; margin:16px 0; flex-wrap:nowrap; }
+  .lightning-ball{
+    width:42px; height:42px; border-radius:50%; background:var(--bg); border:2px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:var(--fs-body); color:var(--navy);
+    transition:all 0.3s; flex-shrink:1;
+  }
+  .lightning-ball.pb{ background:rgba(0,0,0,0.12); border-color:var(--text-dark); color:var(--text-dark); }
+  .lightning-ball.drawn{ animation:pop 0.3s ease; }
+  @keyframes pop{ 0%{ transform:scale(0.5); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
+
+  .jackpot-calc{
+    display:none; background:rgba(0,0,0,0.08); border:1.5px dashed var(--teal); border-radius:10px;
+    padding:14px 16px; margin:-2px 0 10px; text-align:center;
+  }
+  .jackpot-calc.show{ display:block; }
+  .jc-tap-hint{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 10px; }
+  .jc-row{ display:flex; justify-content:space-between; font-size:var(--fs-small); color:var(--text-dark); padding:4px 0; }
+  .jc-val{ font-weight:800; }
+  .jc-arrow{ font-size:var(--fs-note); color:var(--text-muted); margin:4px 0; }
+  .jc-row.jc-final{ font-size:var(--fs-body); }
+  .jc-row.jc-final .jc-val{ color:var(--teal); font-size:var(--fs-h3); }
+  .jc-note{ font-size:var(--fs-small); color:var(--text-muted); margin:8px 0 0; }
+  .jc-annuity-box{ margin-top:14px; padding-top:14px; border-top:1px dashed var(--border); }
+
+  .jc-stepper{ margin-top:8px; }
+  .jc-step{ display:flex; gap:12px; position:relative; padding-bottom:20px; }
+  .jc-step:last-child{ padding-bottom:0; }
+  .jc-step-num{
+    flex-shrink:0; width:24px; height:24px; border-radius:50%; background:var(--border); color:var(--text-muted);
+    font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; position:relative; z-index:1;
+  }
+  .jc-step:not(:last-child) .jc-step-num::after{
+    content:''; position:absolute; top:24px; left:50%; transform:translateX(-50%);
+    width:2px; bottom:-20px; background:var(--border);
+  }
+  .jc-step-body{ flex:1; min-width:0; padding-top:1px; }
+  .jc-step-label{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 3px; }
+  .jc-step-val{ font-size:var(--fs-body); font-weight:700; color:var(--text-dark); margin:0; }
+  .jc-step-highlight .jc-step-num{ background:var(--teal); color:#fff; }
+  .jc-step-highlight .jc-step-body{ background:var(--grad-soft); border-radius:14px; padding:14px; box-shadow:var(--shadow-card); }
+  .jc-step-highlight .jc-step-label{ color:var(--text-dark); font-weight:600; }
+  .jc-step-val-big{ font-size:var(--fs-hero); font-weight:800; color:var(--teal); margin:2px 0 6px; font-variant-numeric:tabular-nums; }
+
+  .back-btn{
+    display:inline-flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--border);
+    border-radius:8px; padding:8px 14px; font-family:inherit; font-size:var(--fs-small); font-weight:700; color:var(--text-dark);
+    cursor:pointer; margin-bottom:14px;
+  }
+  
+
+  .game-compare{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .game-card{ border-radius:12px; padding:16px; border:2px solid var(--border); }
+  .game-card.powerball{ background:#FDF0EF; border-color:#E8B4AF; }
+  .game-card.megamillions{ background:#FDF8E8; border-color:#E8D9A8; }
+  .game-name{ font-size:var(--fs-note); font-weight:800; color:var(--text-dark); margin:0 0 12px; text-align:center; }
+  .game-row{ display:flex; flex-direction:column; gap:2px; padding:8px 0; border-top:1px solid rgba(0,0,0,0.06); }
+  .game-row:first-of-type{ border-top:none; }
+  .game-label{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; }
+  .game-val{ font-size:var(--fs-small); color:var(--text-dark); font-weight:700; line-height:1.4; }
+  .same-place-box{
+    background:rgba(0,0,0,0.1); border:1.5px dashed var(--seafoam); border-radius:10px;
+    padding:12px 16px; text-align:center; font-size:var(--fs-small); color:var(--text-dark); margin-top:12px;
+  }
+  .same-place-box b{ color:var(--seafoam); }
+
+  .cta-btn{
+    display:block; width:100%; text-align:center;
+    background:linear-gradient(135deg, #04A69B 0%, #028090 100%); color:#fff;
+    font-family:inherit; font-size:var(--fs-note); font-weight:700; padding:13px; border:none; border-radius:10px;
+    cursor:pointer; margin-top:14px; box-shadow:0 8px 18px rgba(2,128,144,0.22);
+  }
+  
+  .share-btn{
+    display:flex; align-items:center; justify-content:center; gap:6px; width:100%; text-align:center;
+    background:transparent; color:var(--text-dark); border:1.5px solid var(--text-dark);
+    font-family:inherit; font-size:var(--fs-note); font-weight:700; padding:11px; border-radius:10px;
+    cursor:pointer; margin-top:8px; transition:background 0.15s ease;
+  }
+  
+  .share-btn.copied{ background:var(--teal); color:#fff; border-color:var(--teal); }
+
+  .reassure{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); margin-top:10px; }
+  .reassure b{ color:var(--text-dark); }
+
+  .trust-panel{ text-align:center; }
+  .trust-title{ font-size:var(--fs-h2); font-weight:700; color:var(--text-dark); margin:0 0 18px; }
+  .trust-title span{ color:var(--text-dark); }
+  .trust-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .trust-item{ display:flex; flex-direction:column; align-items:center; }
+  .trust-icon{
+    width:44px; height:44px; border-radius:50%; background:rgba(2,128,144,0.1);
+    display:flex; align-items:center; justify-content:center; color:var(--teal); margin-bottom:8px;
+  }
+  .trust-name{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0 0 4px; }
+  .trust-desc{ font-size:var(--fs-small); color:var(--text-muted); margin:0; line-height:1.5; }
+
+  .faq-item{ border-bottom:1px solid var(--border); padding:14px 0; margin-bottom:4px; }
+  .faq-item:last-child{ border-bottom:none; }
+  .faq-q{
+    font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0; cursor:pointer;
+    list-style:none; display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
+  .faq-q::-webkit-details-marker{ display:none; }
+  .faq-q::after{
+    content:'+'; font-size:18px; font-weight:400; color:var(--text-dark); flex-shrink:0;
+    transition:transform 0.2s;
+  }
+  details[open] > .faq-q::after{ content:'−'; }
+  details[open] > .faq-q{ margin-bottom:8px; }
+  .faq-a{ font-size:var(--fs-body); color:var(--text-muted); margin:0; line-height:1.6; }
+  .faq-deadline-badge{
+    display:inline-block; font-size:11px; font-weight:800; color:#fff; background:var(--status-red);
+    border-radius:6px; padding:2px 7px; margin-left:8px; vertical-align:middle;
+  }
+
+  .refund-step-card{ background:#F7FAF9; border:1px solid var(--border); border-radius:14px; padding:14px 16px; margin:8px 0; }
+  .refund-step-tag{
+    display:inline-block; font-size:11px; font-weight:800; letter-spacing:0.04em; color:var(--text-dark);
+    background:rgba(0,0,0,0.1); border-radius:6px; padding:2px 8px; margin:0 0 8px;
+  }
+  .refund-step-title{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); margin:0 0 10px; }
+  .refund-step-card select{
+    width:100%; padding:9px 28px 9px 10px; border:1px solid var(--border); border-radius:8px;
+    font-family:inherit; font-size:16px; color:var(--text-dark); background-color:#fff;
+    -webkit-appearance:none; -moz-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6B6B' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 10px center; background-size:11px 7px;
+  }
+  .refund-wizard-result{ font-size:var(--fs-note); color:var(--text-muted); margin:10px 0 0; line-height:1.55; padding-left:4px; border-left:3px solid var(--border); }
+  .refund-wizard-result.tag-none{ border-left-color:#C0392B; }
+  .refund-wizard-result.tag-maybe{ border-left-color:#D9A441; }
+  .refund-wizard-result.tag-check{ border-left-color:var(--teal); }
+
+  .refund-check-row{
+    display:flex; align-items:center; gap:8px; font-size:var(--fs-note); color:var(--text-dark);
+    background:#fff; border-radius:8px; padding:9px 12px; margin-bottom:6px; cursor:pointer;
+  }
+  .refund-check-row:last-of-type{ margin-bottom:0; }
+  .refund-check-row input{ width:16px; height:16px; accent-color:var(--teal); flex-shrink:0; cursor:pointer; }
+  .refund-wizard-result.tag-hit{ border-left-color:var(--teal); color:var(--text-dark); font-weight:700; }
+
+  .refund-link-buttons{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .refund-link-btn{
+    display:flex; flex-direction:column; align-items:center; text-align:center; gap:4px; padding:12px 6px; border-radius:10px;
+    background:#fff; border:1px solid rgba(0,0,0,0.25); text-decoration:none;
+  }
+  
+  .refund-link-btn-icon{ font-size:18px; }
+  .refund-link-btn-title{ font-size:var(--fs-small); font-weight:800; color:var(--text-dark); line-height:1.3; }
+  .refund-link-btn-sub{ font-size:11px; color:var(--text-muted); }
+  .refund-link-btn{ position:relative; }
+  .refund-link-btn-badge{
+    display:none; position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+    font-size:10px; font-weight:800; color:#fff; background:var(--teal); border-radius:8px; padding:2px 7px; white-space:nowrap;
+  }
+  .refund-link-btn.recommended{ border-color:var(--teal); border-width:2px; background:rgba(2,128,144,0.06); order:-1; }
+  .refund-link-btn.recommended .refund-link-btn-badge{ display:inline-block; }
+  .refund-link-btn.dimmed{ opacity:0.5; }
+  .faq-q-static{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 6px; }
+
+  .ad-slot{
+    background:repeating-linear-gradient(45deg, #F1F3F3, #F1F3F3 8px, #E9EDED 8px, #E9EDED 16px);
+    border:1px dashed var(--border); border-radius:10px; padding:16px; text-align:center;
+    font-size:var(--fs-note); color:var(--text-muted); margin:20px 0;
+  }
+
+  .site-footer{ border-top:1px solid var(--border); margin-top:24px; padding-top:18px; }
+  .footer-links{ display:flex; justify-content:center; gap:18px; margin-bottom:10px; flex-wrap:wrap; }
+  .footer-links button{ background:none; border:none; font-family:inherit; font-size:var(--fs-small); color:var(--text-muted); cursor:pointer; padding:0; }
+  
+  .footer-copy{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; margin:0; }
+
+  @media (max-width: 480px) {
+    .game-compare{ grid-template-columns:1fr; }
+    .cards-row{ grid-template-columns:1fr !important; }
+    .trust-grid{ grid-template-columns:1fr 1fr; row-gap:16px; }
+    .slider::-webkit-slider-thumb{ width:24px; height:24px; }
+    .slider{ height:6px; }
+    .prize-card.jackpot{ padding:16px; }
+    .prize-card{ padding:12px 14px; }
+    .back-btn{ padding:10px 16px; }
+    .cta-btn{ padding:15px; }
+    .million-unit{ font-size:var(--fs-small); padding-right:4px; }
+    .million-input-wrap{ padding:0 2px 0 8px; gap:4px; }
+    .million-input-wrap .dollar-input{ font-size:16px; }
+    .unit-full{ display:none; }
+    .unit-short{ display:inline; }
+    .lightning-ball{ width:38px; height:38px; font-size:15px; }
+    .lightning-result{ gap:5px; }
+    .prize-card.jackpot{ flex-direction:column; align-items:flex-start; gap:10px; }
+    .prize-card.jackpot .prize-right{ text-align:left; width:100%; }
+    .prize-card.jackpot .prize-amt{ font-size:20px; white-space:nowrap; }
+    .input-row{ flex-wrap:wrap; }
+    .input-row .million-input-wrap{ flex:1 1 100%; }
+    .input-row select{ flex:1 1 100%; }
+    .flow{ padding:16px 12px; }
+    .flow-cols{ flex-direction:column; align-items:center; gap:12px; }
+    .flow-box{ min-width:0; width:100%; max-width:280px; }
+    body{ overflow-x:hidden; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+      <div class="nav">
+        <button class="logo" onclick="go('home')">
+          <svg class="mascot-mark" width="34" height="34" viewBox="0 0 26 26" aria-hidden="true">
+            <ellipse cx="5.5" cy="8" rx="3.2" ry="4.6" fill="none" stroke="var(--teal)" stroke-width="1.8" transform="rotate(-25 5.5 8)"/>
+            <ellipse cx="20.5" cy="8" rx="3.2" ry="4.6" fill="none" stroke="var(--teal)" stroke-width="1.8" transform="rotate(25 20.5 8)"/>
+            <circle cx="13" cy="14.5" r="8.3" fill="none" stroke="var(--teal)" stroke-width="1.8"/>
+            <circle cx="9.7" cy="13" r="1.15" fill="var(--teal)"/>
+            <circle cx="16.3" cy="13" r="1.15" fill="var(--teal)"/>
+            <ellipse cx="13" cy="16.8" rx="1.5" ry="1.1" fill="var(--teal)"/>
+            <path d="M13 17.9v0.8M8.8 18.4c1 2.3 6.4 2.3 7.4 0" fill="none" stroke="var(--teal)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          로또<span>택스</span>
+        </button>
+        <div class="menu">
+          <button id="nav-compare" onclick="go('compare')">국가비교</button>
+          <button id="nav-odds" onclick="go('odds')">확률체감</button>
+          <button id="nav-faq" onclick="go('faq')">FAQ</button>
+        </div>
+      </div>
+
+      <!-- HOME VIEW -->
+      <div class="view on" id="view-home">
+        <div class="hero" style="padding-bottom:8px;">
+          <p class="hero-category-tag">🇺🇸 미국 복권 세금 계산기</p>
+          <p class="hero-label" style="display:flex; align-items:center; justify-content:center; gap:6px;">
+            <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+              <ellipse cx="5.5" cy="8" rx="3.2" ry="4.6" fill="none" stroke="var(--teal)" stroke-width="1.8" transform="rotate(-25 5.5 8)"/>
+              <ellipse cx="20.5" cy="8" rx="3.2" ry="4.6" fill="none" stroke="var(--teal)" stroke-width="1.8" transform="rotate(25 20.5 8)"/>
+              <circle cx="13" cy="14.5" r="8.3" fill="none" stroke="var(--teal)" stroke-width="1.8"/>
+              <circle cx="9.7" cy="13" r="1.15" fill="var(--teal)"/>
+              <circle cx="16.3" cy="13" r="1.15" fill="var(--teal)"/>
+              <ellipse cx="13" cy="16.8" rx="1.5" ry="1.1" fill="var(--teal)"/>
+              <path d="M13 17.9v0.8M8.8 18.4c1 2.3 6.4 2.3 7.4 0" fill="none" stroke="var(--teal)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            미국 복권에 당첨된다면
+          </p>
+          <p class="hero-amount" style="font-size:var(--fs-h1); line-height:1.4;">내 통장에는<br>실제로 얼마 들어올까?</p>
+          <p class="hero-sub">미국 잭팟 숫자가 내 통장에 들어오는 현실 금액으로 바뀌는 곳 👇</p>
+          <p class="reassure" style="margin-top:8px;">✔ 정보만 제공해요 · 구매·중개 안 해요 · 입력값 저장 안 해요</p>
+        </div>
+
+        <div class="panel" style="margin:16px 0; margin-top:0;">
+          <div class="result-hero" style="padding-bottom:10px;">
+            <div class="result-hero-core">
+              <p class="result-hero-label">💰 예상 실수령액</p>
+              <p class="result-hero-amt" id="home-final-amt">717.6억원</p>
+              <p class="milestone-badge" id="home-milestone" style="display:none;"></p>
+              <p class="usd-actual-note" id="home-usd-note" style="display:none; margin-top:4px;"></p>
+            </div>
+            <p class="reassure" id="home-tax-impact" style="margin-top:8px;">💸 세금 때문에 당첨금 중 일부가 세금으로 빠져나가요</p>
+            <div class="tax-impact-box">
+              <div class="tax-impact-row"><span>발표 금액</span><span id="tax-impact-before">-</span></div>
+              <div class="tax-impact-row"><span>실제 수령</span><span id="tax-impact-after">-</span></div>
+              <div class="tax-impact-row highlight"><span>세금으로 감소</span><span id="tax-impact-diff">-</span></div>
+            </div>
+            <p class="foot-note" style="margin-top:6px;">계산 기준: 미국 원천징수 및 선택한 국가 기준을 단순화한 예상치</p>
+            <p class="foot-note" id="home-trust-line" style="margin-top:2px;">2026년 세율 기준 · 환율 -</p>
+          </div>
+
+          <div class="input-card">
+            <div class="field-labels">
+              <span>당첨금 (일시불 실수령 기준)</span><span>세금 계산 기준</span>
+            </div>
+            <p class="krw-hint" style="margin-bottom:6px;">💡 뉴스 속 발표 잭팟과 실제 수령액은 달라요 — <a href="#" onclick="event.preventDefault(); document.querySelector('#view-home .calc-detail-toggle').open=true; document.querySelector('#view-home .calc-detail-toggle').scrollIntoView({behavior:'smooth'});" style="color:var(--teal); font-weight:600;">자세히 보기</a></p>
+            <div class="input-row" style="margin-bottom:4px;">
+              <div class="million-input-wrap">
+                <input type="text" id="homeAmountInput" class="dollar-input" inputmode="numeric" value="100" oninput="onHomeAmountTyped()">
+                <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
+              </div>
+              <select id="homeCountrySelect" onchange="updateHomeCalc()">
+                <option value="kr">🇰🇷 한국 기준</option>
+                <option value="us">🇺🇸 미국 기준</option>
+              </select>
+            </div>
+            <p class="krw-hint">≈ <span id="home-krw-amt">1,522억원</span> · 환율 <input type="text" class="rate-input" id="home-rate-input" value="1,522" inputmode="numeric" oninput="onHomeRateChanged()">원 <button type="button" class="rate-live-badge" onclick="retryLiveExchangeRate(this)" title="기본값 사용 중 · 탭하면 실시간 환율로 갱신"><span aria-hidden="true">🔄</span></button></p>
+            <p class="filing-label" id="home-state-label" style="display:none;">🇺🇸 거주 주(State) <span>(주세율이 0%~10.9%로 크게 달라요)</span></p>
+            <div class="input-row" style="margin-bottom:4px;" id="home-state-row">
+              <select style="flex:1;" id="homeStateSelect" onchange="updateHomeCalc()">
+                <option value="AVG">평균 주세 (예시, 8%)</option>
+                <option value="TX">텍사스 (0%)</option>
+                <option value="FL">플로리다 (0%)</option>
+                <option value="CA">캘리포니아 (복권 당첨금 면제, 0%)</option>
+                <option value="WA">워싱턴 (0%)</option>
+                <option value="NV">네바다 (0%)</option>
+                <option value="NY">뉴욕 (10.9%)</option>
+                <option value="NJ">뉴저지 (10.75%)</option>
+                <option value="OR">오리건 (9.9%)</option>
+                <option value="MN">미네소타 (9.85%)</option>
+                <option value="MD">메릴랜드 (8.95%, 확인중)</option>
+              </select>
+            </div>
+            <p class="filing-label" id="home-filing-label" style="display:none;">🇺🇸 미국 거주자 신고 상태</p>
+            <p class="filing-note-small" id="home-filing-small" style="display:none;">💬 복권 당첨금처럼 큰 금액에서는 싱글/기혼 여부와 상관없이 결과가 거의 동일해요 (구간 차이가 전체 금액의 0.1% 미만이라서요)</p>
+            <div class="filing-static-note" id="home-filing-row">싱글 · 기혼 공동 모두 결과가 거의 동일해서, 별도 선택 없이 자동으로 반영돼요</div>
+            <input type="range" class="slider" id="homeAmountSlider" min="10" max="2000" step="10" value="100" oninput="onHomeSliderMoved()">
+            <div class="slider-range-label"><span>$10M</span><span>$2B</span></div>
+            <div class="live-result-mini">
+              <span>👉 실수령액</span>
+              <span class="live-result-mini-amt" id="live-result-mini-amt">717.6억원</span>
+            </div>
+          </div>
+
+          <details class="calc-detail-toggle">
+            <summary class="calc-detail-summary">🔍 결과 더 자세히 보기</summary>
+            <p class="flow-explain" style="margin-top:8px;">💡 뉴스에 나온 <b>발표 잭팟(연금 기준) 금액</b>은 실제로 받는 돈이 아니에요. 일시불로 받으면 그 약 45~60% 수준의 <b>현재가치(세전)</b>를 받고, 이 계산기는 그 실수령 세전 금액을 기준으로 계산해요.</p>
+            <p class="result-hero-basis" id="home-final-basis" style="margin-top:8px;">1,522억원 당첨 기준 · 한국 거주자</p>
+            <p class="flow-explain" style="margin-top:8px;">🇺🇸 미국에서 먼저 세금을 떼고, 🇰🇷 한국에서 추가로 과세돼요 (일부 공제 가능)</p>
+            <div class="result-grid" style="margin-top:8px; grid-template-columns:1fr 1fr;">
+              <div class="result-cell">
+                <p class="result-label" id="home-tax1-label">미국 연방세 (비거주자)</p>
+                <p class="result-value" id="home-tax1-val">-30%</p>
+              </div>
+              <div class="result-cell">
+                <p class="result-label" id="home-tax2-label">한국 기타소득세</p>
+                <p class="result-value" id="home-tax2-val">-33%</p>
+              </div>
+            </div>
+            <div class="calc-basis-box" id="calc-basis-box" style="margin-top:8px; justify-content:center;">
+              <span>• 일시불 기준 (분할 수령 시 달라짐)</span>
+            </div>
+            <p class="sim-note">💡 본 계산기는 미국 원천징수와 한국 세금을 순서대로 단순 적용한 참고용 시뮬레이션이에요. 특히 <b>한국 세금(33%)은 국내 복권 기준을 단순 적용한 예시</b>라, 해외 복권은 종합소득세(최고 45%)로 합산될 가능성이 있고, 그 경우 <b>외국납부세액공제(FTC)</b>의 적용 여부·한도에 따라 실제 납부세액이 이 결과와 달라질 수 있어요 — 실제로는 세무 전문가 상담이 꼭 필요해요</p>
+            <p class="select-hint" style="margin-top:6px;">💬 사는 나라에 따라 실제 받는 돈이 달라져요</p>
+            <p class="filing-note" id="home-filing-note" style="display:none;">💡 한국 거주자는 <b>일반적으로 미국 비거주자 규정에 따라 원천징수 대상</b>이 되므로, 미국 거주자처럼 신고 상태(Single / Married Filing Jointly)를 선택할 필요가 없는 경우가 많아요. (당첨 형태·조세조약 등에 따라 달라질 수 있어요)</p>
+
+            <div class="flex-box" style="margin-top:16px;">
+              <p class="flex-title">🤑 이 돈이면 얼마나 살 수 있을까요?</p>
+              <div class="flex-row"><span class="flex-icon">🏙️</span><span class="flex-label">강남 아파트 (25억 기준)</span><span class="flex-val" id="flex-apt">-</span></div>
+              <div class="flex-row"><span class="flex-icon">🏎️</span><span class="flex-label">페라리 로마 (3.5억 기준)</span><span class="flex-val" id="flex-car">-</span></div>
+              <div class="flex-row"><span class="flex-icon">☕</span><span class="flex-label">스타벅스 아메리카노 (5천원)</span><span class="flex-val" id="flex-coffee">-</span></div>
+              <p class="flex-note">* 예시 가격 기준으로 재미로 계산해본 거예요</p>
+              <p class="flex-capture" id="flex-capture">🏙️ 이 결과로 당첨되면 강남 아파트 25채 계약서 쓰러 갑니다. 미리 캡처해두세요 😉</p>
+              <p class="grounding-note">🌱 근데 사실, 지금 이미 가진 것들만으로도 충분히 괜찮은 하루일 수 있어요</p>
+            </div>
+
+            <div class="mini-preview" style="margin-top:16px;">
+              <div class="mini-row">
+                <span class="mini-flag">🇺🇸 미국</span>
+                <div class="mini-bar-track"><div class="mini-bar-fill" style="width:58.0%;"></div></div>
+                <span class="mini-pct">58.0%</span>
+              </div>
+              <div class="mini-row">
+                <span class="mini-flag">🇰🇷 대한민국</span>
+                <div class="mini-bar-track"><div class="mini-bar-fill" style="width:46.9%;"></div></div>
+                <span class="mini-pct">46.9%</span>
+              </div>
+            </div>
+            <p class="foot-note" style="margin-top:4px;">(예시 계산 기준)</p>
+          </details>
+
+          <button class="cta-btn" id="home-compare-cta" style="margin-top:16px;" onclick="goToCompareWithOppositeCountry()">🇰🇷 한국이면 얼마나 다를까? →</button>
+          <button class="share-btn" id="home-share-btn" onclick="shareResult()">📤 결과 공유하기</button>
+        </div>
+
+        <div class="panel" id="home-jackpot-panel" style="padding:18px 20px; margin-top:16px; background:var(--grad-soft); border-color:rgba(0,0,0,0.12); box-shadow:var(--shadow-card);">
+          <p class="panel-title" style="margin-bottom:10px; font-size:var(--fs-h3); color:var(--text-muted);">🎟️ 오늘 잭팟<span class="live-badge manual"><span class="live-dot"></span>수동 확인</span></p>
+          <div class="cards-row" style="grid-template-columns:1fr 1fr; margin-bottom:0; gap:8px;">
+            <div class="feature-card" style="cursor:default; padding:14px;">
+              <p class="feature-sub" style="margin-bottom:2px; font-size:var(--fs-note);">파워볼<span class="dday-badge" id="dday-powerball">-</span></p>
+              <p class="feature-title countup" id="jp-powerball" style="font-size:var(--fs-emphasis);" data-target="1200000000">$0</p>
+              <p class="jp-krw" id="jp-powerball-krw">-</p>
+              <p class="foot-note" id="jp-powerball-lastnum" style="margin-top:4px; font-size:var(--fs-small);">지난 당첨번호: 10·14·41·53·59 + PB 3</p>
+              <a class="jp-official-link" href="https://www.powerball.com" target="_blank" rel="noopener noreferrer">🔗 공식 사이트에서 최신 번호 확인</a>
+            </div>
+            <div class="feature-card" style="cursor:default; padding:14px;">
+              <p class="feature-sub" style="margin-bottom:2px; font-size:var(--fs-note);">메가밀리언즈<span class="dday-badge" id="dday-mega">-</span></p>
+              <p class="feature-title countup" id="jp-mega" style="font-size:var(--fs-emphasis);" data-target="450000000">$0</p>
+              <p class="jp-krw" id="jp-mega-krw">-</p>
+              <p class="foot-note" id="jp-mega-lastnum" style="margin-top:4px; font-size:var(--fs-small);">지난 당첨번호: 26·41·50·53·62 + MB 12</p>
+              <a class="jp-official-link" href="https://www.megamillions.com" target="_blank" rel="noopener noreferrer">🔗 공식 사이트에서 최신 번호 확인</a>
+            </div>
+          </div>
+          <p class="foot-note" style="margin-top:8px; text-align:center; font-size:var(--fs-small);" id="jp-update-time">최종 업데이트: -</p>
+        </div>
+
+
+        <div class="ad-slot" style="margin-top:48px;">광고 영역 (Google AdSense)</div>
+
+        <div class="cards-row" style="grid-template-columns:1fr;">
+          <button class="feature-card" onclick="go('odds')">
+            <div class="feature-icon">📊</div>
+            <p class="feature-title">1등 확률, 감이 안 오시죠?</p>
+            <p class="feature-sub">번개 맞을 확률이랑 비교해보면 딱 감이 와요</p>
+            <p class="feature-link">확률 구경하기 →</p>
+          </button>
+        </div>
+
+        <div class="panel">
+          <p class="panel-title">❓ 이거 다들 궁금해하시더라고요</p>
+          <p class="panel-desc">눌러보면 답이 바로 나와요</p>
+          <div class="faq-item" onclick="goToFaqItem('세금 대체 얼마나')" style="cursor:pointer;">
+            <p class="faq-q-static" style="margin:0;">세금 대체 얼마나 떼가는 거예요? 😮</p>
+          </div>
+          <div class="faq-item" onclick="goToFaqItem('원래 내 돈')" style="cursor:pointer;">
+            <p class="faq-q-static" style="margin:0;">복권 말고, 원래 내 돈인데 못 찾은 것도 있을까요? 🇰🇷</p>
+          </div>
+          <p class="feature-link" style="display:block; text-align:center; margin-top:10px;" onclick="go('faq')">궁금증 풀러 가기 →</p>
+        </div>
+
+        <div class="panel trust-panel">
+          <p class="trust-title"><span>공식 자료</span>를 바탕으로 계산합니다</p>
+          <div class="trust-grid">
+            <div class="trust-item">
+              <div class="trust-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <p class="trust-name">신뢰할 수 있는 정보</p>
+              <p class="trust-desc">IRS·국세청 등<br>공식 자료 기반</p>
+            </div>
+            <div class="trust-item">
+              <div class="trust-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M9 4v16" stroke="currentColor" stroke-width="2"/><circle cx="14" cy="14" r="1.3" fill="currentColor"/><circle cx="18" cy="14" r="1.3" fill="currentColor"/><circle cx="14" cy="18" r="1.3" fill="currentColor"/><circle cx="18" cy="18" r="1.3" fill="currentColor"/></svg>
+              </div>
+              <p class="trust-name">정확한 계산</p>
+              <p class="trust-desc">최신 세율 반영한<br>자동 계산기</p>
+            </div>
+            <div class="trust-item">
+              <div class="trust-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <p class="trust-name">개인정보 NO</p>
+              <p class="trust-desc">입력 정보 저장 없이<br>바로 계산만 진행</p>
+            </div>
+            <div class="trust-item">
+              <div class="trust-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 11v6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor"/></svg>
+              </div>
+              <p class="trust-name">구매·중개 NO</p>
+              <p class="trust-desc">복권 구매 대행이나<br>연결을 하지 않음</p>
+            </div>
+          </div>
+          <p class="foot-note" style="text-align:center; margin-top:14px;">※ IRS 및 각 주 복권 공식 자료를 참고해 단순화한 시뮬레이션이에요</p>
+          <p class="source-links">
+            출처:
+            <a href="https://www.irs.gov" target="_blank" rel="noopener noreferrer">IRS</a> ·
+            <a href="https://www.powerball.com" target="_blank" rel="noopener noreferrer">Powerball</a> ·
+            <a href="https://www.megamillions.com" target="_blank" rel="noopener noreferrer">Mega Millions</a> ·
+            <a href="https://www.hometax.go.kr" target="_blank" rel="noopener noreferrer">국세청 홈택스</a>
+          </p>
+        </div>
+
+        <p class="audience-note">🇰🇷 한국 거주자는 물론, 미국에 계신 유학생·주재원·교포분들의 세법 기준까지 계산할 수 있어요</p>
+        <p class="disclaimer">저희는 정보만 알려드려요 — 복권 구매 대행이나 중개는 하지 않습니다 🙅</p>
+      </div>
+
+      <!-- COMPARE VIEW -->
+      <div class="view" id="view-compare">
+        <button class="back-btn" onclick="go('home')">← 홈으로</button>
+        <p class="breadcrumb"><button onclick="go('home')">홈</button> &nbsp;/&nbsp; <span class="cur">국가별 실수령 비교</span></p>
+
+        <div class="panel">
+          <p class="panel-title">내 손에 들어오는 진짜 돈, 계산해볼까요?</p>
+          <p class="panel-desc">당첨금(달러)을 직접 입력하거나 슬라이더로 조절해보세요 👇</p>
+
+          <p class="field-label-single">당첨금 (일시불 실수령 기준)</p>
+          <p class="krw-hint" style="margin-bottom:6px;">💡 발표 잭팟(연금 기준) 금액이 아니라, 일시불로 받을 때 실제 세전 금액을 입력하는 계산기예요.</p>
+          <div class="million-input-wrap">
+            <input type="text" id="amountInput" class="dollar-input" inputmode="numeric" value="100" oninput="onCompareAmountTyped()">
+            <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
+          </div>
+          <p class="krw-hint">≈ <span id="compare-krw-amt">1,522억원</span> · 환율 <input type="text" class="rate-input" id="compare-rate-input" value="1,522" inputmode="numeric" oninput="onCompareRateChanged()">원 <button type="button" class="rate-live-badge" onclick="retryLiveExchangeRate(this)" title="기본값 사용 중 · 탭하면 실시간 환율로 갱신"><span aria-hidden="true">🔄</span></button></p>
+          <input type="range" class="slider" id="amountSlider" min="10" max="2000" step="10" value="100" style="margin-top:12px;" oninput="onCompareSliderMoved()">
+          <div class="slider-range-label"><span>$10M</span><span>$2B</span></div>
+
+          <p class="field-label-single" style="margin-top:14px;">세금 계산 기준</p>
+          <div class="input-row" style="margin-bottom:10px;">
+            <select id="compareCountrySelect" onchange="updateCalc()">
+              <option value="kr">🇰🇷 한국 기준</option>
+              <option value="us">🇺🇸 미국 기준</option>
+            </select>
+          </div>
+          <p class="select-hint">💬 사는 나라에 따라 실제 받는 돈이 달라져요</p>
+          <p class="filing-label" id="compare-state-label" style="display:none;">🇺🇸 거주 주(State) <span>(주세율이 0%~10.9%로 크게 달라요)</span></p>
+          <div class="input-row" style="margin-bottom:4px;" id="compare-state-row">
+            <select style="flex:1;" id="compareStateSelect" onchange="updateCalc()">
+              <option value="AVG">평균 주세 (예시, 8%)</option>
+              <option value="TX">텍사스 (0%)</option>
+              <option value="FL">플로리다 (0%)</option>
+              <option value="CA">캘리포니아 (복권 당첨금 면제, 0%)</option>
+              <option value="WA">워싱턴 (0%)</option>
+              <option value="NV">네바다 (0%)</option>
+              <option value="NY">뉴욕 (10.9%)</option>
+              <option value="NJ">뉴저지 (10.75%)</option>
+              <option value="OR">오리건 (9.9%)</option>
+              <option value="MN">미네소타 (9.85%)</option>
+              <option value="MD">메릴랜드 (8.95%, 확인중)</option>
+            </select>
+          </div>
+          <p class="filing-label" id="compare-filing-label" style="display:none;">🇺🇸 미국 거주자 신고 상태</p>
+          <p class="filing-note-small" id="compare-filing-small" style="display:none;">💬 복권 당첨금처럼 큰 금액에서는 싱글/기혼 여부와 상관없이 결과가 거의 동일해요 (구간 차이가 전체 금액의 0.1% 미만이라서요)</p>
+          <div class="filing-static-note" id="compare-filing-row">싱글 · 기혼 공동 모두 결과가 거의 동일해서, 별도 선택 없이 자동으로 반영돼요</div>
+          <p class="filing-note" id="compare-filing-note" style="display:none;">💡 한국 거주자는 <b>일반적으로 미국 비거주자 규정에 따라 원천징수 대상</b>이 되므로, 미국 거주자처럼 신고 상태(Single / Married Filing Jointly)를 선택할 필요가 없는 경우가 많아요. (당첨 형태·조세조약 등에 따라 달라질 수 있어요)</p>
+
+          <p class="flow-explain" style="margin-top:14px;">🇺🇸 미국에서 먼저 세금을 떼고, 🇰🇷 한국에서 추가로 과세돼요 (일부 공제 가능)</p>
+          <div class="result-grid">
+            <div class="result-cell">
+              <p class="result-label" id="compare-tax1-label">미국 연방세 (비거주자, -30%)</p>
+              <p class="result-value" id="afterUS">1,071억원</p>
+            </div>
+            <div class="result-cell">
+              <p class="result-label" id="compare-tax2-label">한국 기타소득세 (-33%)</p>
+              <p class="result-value" id="afterKR">-353.4억원</p>
+            </div>
+            <div class="result-cell final">
+              <p class="result-label">최종 실수령액</p>
+              <p class="result-value" id="finalAmt">717.6억원</p>
+            </div>
+          </div>
+          <p class="usd-actual-note" id="compare-usd-note" style="display:none;"></p>
+          <p class="sim-note">💡 본 계산기는 미국 원천징수와 한국 세금을 순서대로 단순 적용한 참고용 시뮬레이션이에요. 특히 <b>한국 세금(33%)은 국내 복권 기준을 단순 적용한 예시</b>라, 해외 복권은 종합소득세(최고 45%)로 합산될 가능성이 있고, 그 경우 <b>외국납부세액공제(FTC)</b>의 적용 여부·한도에 따라 실제 납부세액이 이 결과와 달라질 수 있어요 — 실제로는 세무 전문가 상담이 꼭 필요해요</p>
+        </div>
+
+        <div class="panel">
+          <p class="panel-title">어느 나라에 살면 더 유리할까?</p>
+          <p class="panel-desc">미국 거주자·한국 거주자·베트남 거주자(예정)까지, 실수령률을 나란히 비교해봤어요</p>
+          <table class="compare-table">
+            <tr><th>국가</th><th>세율 구조</th><th>실수령액</th></tr>
+            <tr><td>🇺🇸 미국 거주자</td><td>연방세 37% + 주세(주별 상이)</td><td>약 58.0%</td></tr>
+            <tr><td>🇰🇷 대한민국 거주자</td><td>연방세 30% + 한국 기타소득세 33%</td><td class="best">약 46.9%</td></tr>
+            <tr><td>🇻🇳 베트남 거주자 (예정)</td><td>조사 중</td><td>—</td></tr>
+          </table>
+          <p class="foot-note" style="margin-top:6px;">(예시 계산 기준 — 실제 세율은 소득 구간·주(state)·조세조약 등에 따라 달라질 수 있어요)</p>
+          <div class="callout">💡 같은 당첨금이라도 <b>어디 사느냐에 따라 실수령 비율이 꽤 크게 달라져요.</b> 신기하죠?</div>
+        </div>
+
+        <div class="ad-slot">광고 영역 (Google AdSense)</div>
+
+        <p class="hint">궁금하면 <b>확률체감</b> 메뉴도 눌러보세요 → 이것도 꽤 재밌어요</p>
+        <p class="disclaimer">IRS·국세청 가이드를 참고해서 만들었지만, 실제 당첨되시면 꼭 세무 전문가랑 상담하세요 (그럴 일이 있으시길!) </p>
+      </div>
+
+      <!-- ODDS VIEW -->
+      <div class="view" id="view-odds">
+        <button class="back-btn" onclick="go('home')">← 홈으로</button>
+        <p class="breadcrumb"><button onclick="go('home')">홈</button> &nbsp;/&nbsp; <span class="cur">확률 체감 도구</span></p>
+
+        <div class="panel">
+          <p class="panel-title">이 확률, 솔직히 감이 안 오시죠?</p>
+          <p class="panel-desc">1/2억 9,200만이라는 숫자, 사실 와닿지 않잖아요. 그래서 비교해봤어요.</p>
+
+          <div class="bar-row">
+            <span class="bar-label">파워볼 1등</span>
+            <div class="bar-track"><div class="bar-fill accent" style="width:2%;"></div></div>
+            <span class="bar-value">1 / 2억 9,200만</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">번개 맞을 확률</span>
+            <div class="bar-track"><div class="bar-fill muted" style="width:35%;"></div></div>
+            <span class="bar-value">1 / 1만 5,000</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">비행기 사고</span>
+            <div class="bar-track"><div class="bar-fill muted" style="width:60%;"></div></div>
+            <span class="bar-value">1 / 1,100만</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">상어에 물릴 확률</span>
+            <div class="bar-track"><div class="bar-fill muted" style="width:78%;"></div></div>
+            <span class="bar-value">1 / 375만</span>
+          </div>
+
+          <div class="callout">💡 파워볼 1등 확률, <b>번개를 19,000번 연속으로 맞는 것</b>과 비슷해요. 그래도 매년 여러 명은 당첨되고 있어요 🍀</div>
+        </div>
+
+        <div class="panel">
+          <p class="panel-title">🏆 실제로 이만큼 당첨된 사람들도 있어요</p>
+          <p class="panel-desc">그래도 정말 당첨되긴 해요 — 실제 있었던 역대급 사례들이에요</p>
+          <div class="winner-story">
+            <span class="ws-amt">$20억 4천만</span>
+            <span class="ws-desc">2022년 11월, 캘리포니아 — 역대 최고액 파워볼 잭팟. 당첨자는 일시불(약 $9억 9,760만)을 선택했어요.</span>
+          </div>
+          <div class="winner-story">
+            <span class="ws-amt">$7억 5,870만</span>
+            <span class="ws-desc">2017년 8월, 매사추세츠 — 당첨자는 당첨 발표 직후 "회사에 다시 안 돌아간다"고 밝혀 화제가 됐어요.</span>
+          </div>
+          <div class="winner-story">
+            <span class="ws-amt">익명 다수</span>
+            <span class="ws-desc">주(state)에 따라 당첨자가 신원을 공개 안 해도 되는 곳도 있어요 (플로리다·텍사스·델라웨어 등). 실제로 많은 고액 당첨자들이 이 방법을 택해요.</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <p class="panel-title">⚡ 오늘의 번개 번호 뽑기</p>
+          <p class="panel-desc">오늘 당신이 번개에 맞을 그 기운으로, 재미 삼아 번호 6개를 뽑아드려요</p>
+          <div class="lightning-result" id="lightning-result">
+            <span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball pb">?</span>
+          </div>
+          <button class="cta-btn" onclick="drawLightningNumbers()">⚡⚡⚡ 번호 뽑아보기</button>
+          <p class="foot-note" style="margin-top:10px; text-align:center;">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉 (실제 구매 안내 아님)</p>
+        </div>
+
+        <div class="panel">
+          <p class="panel-title">몇 개 맞추면 얼마 받을까요?</p>
+          <p class="panel-desc">파워볼 기준, 맞춘 개수별 당첨금이에요</p>
+
+          <div class="howto-box">
+            <p class="howto-title">🎱 먼저, 게임 방식부터</p>
+            <p class="howto-text">파워볼은 <b>일반번호 5개</b> (1~69 중에서) + <b>파워볼 번호 1개</b> (1~26 중에서), 총 6개 숫자를 맞히는 게임이에요. 일반번호를 몇 개 맞혔는지 + 파워볼까지 맞혔는지에 따라 상금이 달라져요.</p>
+          </div>
+
+          <div class="prize-card jackpot" onclick="toggleJackpotCalc()" style="cursor:pointer;">
+            <div class="prize-left">
+              <p class="prize-tag">🏆 잭팟</p>
+              <p class="prize-match">🎯 숫자 6개 전부 맞춤</p>
+              <p class="prize-explain">당첨자 없으면 계속 커져요</p>
+            </div>
+            <div class="prize-right">
+              <p class="prize-amt" id="jackpot-card-amt">-</p>
+              <p class="prize-amt-note" id="jackpot-card-amt-note"></p>
+              <p class="prize-odds">1 / 2억 9,200만 <span class="prize-pct">(0.00000034%)</span></p>
+            </div>
+          </div>
+          <p class="jc-tap-cta" onclick="toggleJackpotCalc()">👇 눌러서 세후 실수령액 보기</p>
+          <div class="jackpot-calc" id="jackpot-calc-box">
+            <p class="jc-tap-hint">👆 카드를 다시 누르면 접혀요</p>
+
+            <div class="jc-stepper">
+              <div class="jc-step">
+                <span class="jc-step-num">1</span>
+                <div class="jc-step-body">
+                  <p class="jc-step-label">📢 발표된 잭팟 (연금 기준)</p>
+                  <p class="jc-step-val" id="jc-jackpot">-</p>
+                </div>
+              </div>
+              <div class="jc-step">
+                <span class="jc-step-num">2</span>
+                <div class="jc-step-body">
+                  <p class="jc-step-label">💰 일시불 선택 시 (현재가치, 세전, 약 58%)</p>
+                  <p class="jc-step-val" id="jc-cash">-</p>
+                </div>
+              </div>
+              <div class="jc-step jc-step-highlight">
+                <span class="jc-step-num">3</span>
+                <div class="jc-step-body">
+                  <p class="jc-step-label">세금 떼고 실제로 손에 들어오는 돈</p>
+                  <p class="jc-step-val-big" id="jc-final">-</p>
+                  <p class="jc-note" id="jc-note-basis">한국 거주자 기준 (미국 비거주자 원천징수 30% + 한국세 33% 가정, 환율 약 1,522원 적용)</p>
+                </div>
+              </div>
+              <div class="jc-step">
+                <span class="jc-step-num">4</span>
+                <div class="jc-step-body">
+                  <p class="jc-step-label">💡 일시불 대신 연금(annuity)으로 받으면?</p>
+                  <div class="jc-annuity-box">
+                    <div class="jc-row"><span>📅 30회 분할, 연평균 세전</span><span class="jc-val" id="jc-annuity-year">-</span></div>
+                    <div class="jc-row jc-final"><span>매년 손에 들어오는 돈</span><span class="jc-val" id="jc-annuity-year-net">-</span></div>
+                    <div class="jc-row"><span>🗓️ 한 달로 치면</span><span class="jc-val" id="jc-annuity-month-net">-</span></div>
+                    <p class="jc-note">일시불(할인된 현재가치)과 달리 연금은 <b>발표된 잭팟 총액을 그대로</b> 29년에 걸쳐 30번 나눠 받아요 (첫 회 이후 매년 5%씩 증액). 한 해에 몰리지 않아 세금 부담도 분산돼요 — 위 금액은 단순 평균이라 실제 첫 회는 이보다 적어요</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="prize-card">
+            <div class="prize-left">
+              <p class="prize-match">숫자 5개 맞춤</p>
+              <p class="prize-explain">파워볼은 틀림</p>
+            </div>
+            <div class="prize-right">
+              <p class="prize-amt">약 13.8억원 <span class="prize-usd">($1,000,000)</span></p>
+              <p class="prize-odds">1 / 1,169만 <span class="prize-pct">(0.0000086%)</span></p>
+            </div>
+          </div>
+          <div class="prize-card">
+            <div class="prize-left">
+              <p class="prize-match">숫자 4개 + 파워볼 맞춤</p>
+            </div>
+            <div class="prize-right">
+              <p class="prize-amt">약 690만원 <span class="prize-usd">($50,000)</span></p>
+              <p class="prize-odds">1 / 91만 <span class="prize-pct">(0.00011%)</span></p>
+            </div>
+          </div>
+          <div class="prize-card">
+            <div class="prize-left">
+              <p class="prize-match">숫자 4개 맞춤</p>
+              <p class="prize-explain">파워볼은 틀림</p>
+            </div>
+            <div class="prize-right">
+              <p class="prize-amt">약 1.4만원 <span class="prize-usd">($100)</span></p>
+              <p class="prize-odds">1 / 3만 6,525 <span class="prize-pct">(0.27%)</span></p>
+            </div>
+          </div>
+          <div class="prize-card">
+            <div class="prize-left">
+              <p class="prize-match">숫자 3개 + 파워볼 맞춤</p>
+            </div>
+            <div class="prize-right">
+              <p class="prize-amt">약 1.4만원 <span class="prize-usd">($100)</span></p>
+              <p class="prize-odds">1 / 1만 4,494 <span class="prize-pct">(0.69%)</span></p>
+            </div>
+          </div>
+          <div class="prize-card">
+            <div class="prize-left">
+              <p class="prize-match">파워볼 번호만 맞춤</p>
+            </div>
+            <div class="prize-right">
+              <p class="prize-amt">약 550원 <span class="prize-usd">($4)</span></p>
+              <p class="prize-odds">1 / 38 <span class="prize-pct">(2.63%)</span></p>
+            </div>
+          </div>
+        </div>
+
+        <p class="hint">로고 누르면 <b>홈</b>으로 다시 돌아가요</p>
+        <p class="disclaimer">확률 수치는 공식 발표 자료 기준이에요. 원화 환산은 참고용 환율 적용이라 실제와 다를 수 있어요.</p>
+      </div>
+
+      <!-- FAQ VIEW -->
+      <div class="view" id="view-faq">
+        <button class="back-btn" onclick="go('home')">← 홈으로</button>
+        <p class="breadcrumb"><button onclick="go('home')">홈</button> &nbsp;/&nbsp; <span class="cur">자주 묻는 질문</span></p>
+
+        <div class="panel">
+          <p class="panel-title">다들 이런 거 궁금해하시더라고요</p>
+          <p class="panel-desc">검색하다 오신 분들이 자주 물어보는 질문 모았어요</p>
+          <input type="text" class="faq-search" id="faqSearch" placeholder="🔍 궁금한 거 검색해보세요 (예: 세금, 시민권, 파워볼)" oninput="filterFaq()">
+          <div class="faq-chip-row">
+            <button class="faq-chip active" onclick="setFaqCategory('all', this)">전체</button>
+            <button class="faq-chip" onclick="setFaqCategory('tax', this)">세금·이중과세</button>
+            <button class="faq-chip" onclick="setFaqCategory('refund', this)">환급·청구기한</button>
+            <button class="faq-chip" onclick="setFaqCategory('purchase', this)">구매·절차</button>
+            <button class="faq-chip" onclick="setFaqCategory('game', this)">게임 정보</button>
+          </div>
+          <p class="faq-no-result" id="faqNoResult" style="display:none;">검색 결과가 없어요. 다른 단어로 찾아보세요!</p>
+
+          <details class="faq-item" data-cat="tax">
+            <summary class="faq-q">세금 대체 얼마나 떼가는 거예요? 😮</summary>
+            <p class="faq-a">👉 <b>미국 거주자</b>는 당첨 시 24%가 먼저 원천징수되고, 나중에 소득 신고할 때 최대 37%까지 정산돼요.<br>👉 <b>한국 거주자를 포함한 미국 비거주자</b>는 이 구간과 별개로, 일반적으로 <b>30% 원천징수 규정</b>이 적용돼요 (조세조약 등에 따라 달라질 수 있어요).</p>
+          </details>
+          <details class="faq-item" data-cat="tax">
+            <summary class="faq-q">헐, 한국에서 세금 또 내요? 이중과세 아니에요?</summary>
+            <p class="faq-a">맞아요, 한국에서도 세금을 내야 해요. 다만 정확한 방식은 <b>아직 완전히 정리되지 않은 부분</b>이에요 — 한국 로또처럼 22~33% 딱 떼고 끝나는 '분리과세'는 사실 한국 정부가 발행하는 국내 복권에만 적용되는 규정이라서, 해외 복권 당첨금은 원칙적으로 <b>종합소득세(누진세율, 최고 45%)</b>에 합산해야 할 가능성이 있어요. 대신 미국에서 낸 세금은 외국납부세액공제로 상계할 수 있는데, 국세청도 "해외 복권 당첨금의 외국납부세액공제 적용 여부는 관련 유권해석 사례가 없다"고 밝힌 적이 있을 정도로 아직 회색지대예요. 그래서 이 부분은 <b>꼭 세무 전문가와 상담하시길 권해요.</b></p>
+          </details>
+          <details class="faq-item" data-cat="refund">
+            <summary class="faq-q">혹시 나도 세금 돌려받을 수 있어요? 💸</summary>
+            <p class="faq-a">"환급 가능하다"고 무작정 말씀드리진 않을게요. 실제로 되는 것과 안 되는 것은 이래요.<br><br>👉 <b>미국 연방세(30%) — 사실상 어려워요.</b> 한국은 미국과 도박·복권소득 조약 면제국이 아니고(Park v. Commissioner 판례로 확인), 비거주 외국인은 도박 손실공제도 못 받아서 연방 원천징수 30%는 대부분 그대로 최종 세금이 돼요.<br><br>👉 <b>주세(State Tax) — 당첨된 주를 골라서 직접 확인해보세요:</b></p>
+            <div class="refund-step-card">
+              <p class="refund-step-tag">STEP</p>
+              <p class="refund-step-title">당첨된 주를 선택하세요</p>
+              <select id="refundStateSelect" onchange="checkRefundPossibility()">
+                <option value="">당첨된 주를 선택하세요 👇</option>
+                <option value="TX">텍사스</option>
+                <option value="FL">플로리다</option>
+                <option value="CA">캘리포니아</option>
+                <option value="WA">워싱턴</option>
+                <option value="NV">네바다</option>
+                <option value="NY">뉴욕</option>
+                <option value="NJ">뉴저지</option>
+                <option value="OR">오리건</option>
+                <option value="MN">미네소타</option>
+                <option value="MD">메릴랜드</option>
+              </select>
+              <p class="refund-wizard-result" id="refundWizardResult">주를 선택하면 환급 가능성을 바로 알려드려요</p>
+            </div>
+            <p class="faq-a" style="margin-top:10px;">👉 <b>한국 외국납부세액공제(FTC) — 이중과세는 일부 상쇄돼요.</b> 미국에서 이미 낸 세금만큼 한국 세금에서 공제받을 수 있어요(공제 한도 있음). "환급"이라기보다 "이중으로 안 내게 해주는" 개념에 가까워요.<br><br>※ 위 내용은 일반적인 안내이며, 실제 세무 처리는 전문가 상담이 필요해요</p>
+          </details>
+          <details class="faq-item" data-cat="refund">
+            <summary class="faq-q"><span>당첨금, 언제까지 찾아가야 해요? ⏰<span class="faq-deadline-badge">기한 있음</span></span></summary>
+            <p class="faq-a">이거 진짜 중요해요 — <b>당첨금은 기한 안에 안 찾아가면 그냥 사라져요.</b> 주(state)로 귀속되고 영영 못 받아요.<br><br>👉 <b>보통 90일~1년 사이</b>예요, 근데 주마다 달라요. 예를 들어 플로리다는 180일, 캘리포니아는 일반 당첨금 180일인데 잭팟은 1년까지 줘요.<br>👉 <b>잭팟이라면 별도 시한이 하나 더 있어요</b> — 일시불로 받을지 연금으로 받을지 정하는 기한이 보통 60일이에요 (자세한 건 위 "한 번에 받는 게 나아요" 항목 참고). 이걸 놓치면 자동으로 연금으로 넘어가버려요.<br>👉 <b>실제로 이렇게 날린 사람이 있어요.</b> 오하이오에서 한 당첨자가 청구기한(180일)을 놓쳐서 <b>1억 3,800만 달러(약 1,900억원)</b>를 그냥 날린 사례가 있어요. 실화예요.<br><br>※ 정확한 기한은 주마다 다르니, 당첨된 주의 복권 공식 사이트에서 반드시 확인하세요</p>
+          </details>
+          <details class="faq-item" data-cat="refund">
+            <summary class="faq-q">복권 말고, 원래 내 돈인데 못 찾은 것도 있을까요? 🇰🇷</summary>
+            <p class="faq-a">복권은 확률이 낮지만, 이건 <b>이미 내 이름으로 확정된 돈</b>이라 얘기가 달라요. 국세청에 따르면 <b>미수령 국세환급금이 매년 수천억 원대</b>로 쌓여있어요 — 종합소득세 신고를 안 해서 생긴 미환급금만 5년간 2,744억원이었던 적도 있어요. 최초 지급요구일로부터 <b>5년이 지나면 국고로 귀속</b>돼서 영영 못 받아요.</p>
+            <div class="refund-step-card">
+              <p class="refund-step-tag">STEP 1</p>
+              <p class="refund-step-title">아래 중 하나라도 해당되면 체크해보세요</p>
+              <label class="refund-check-row"><input type="checkbox" data-site="hometax" onchange="checkHiddenMoney()"> 최근 5년 안에 이직·퇴사한 적 있다</label>
+              <label class="refund-check-row"><input type="checkbox" data-site="hometax" onchange="checkHiddenMoney()"> 아르바이트·프리랜서로 일했는데 세금 신고 안 한 해가 있다</label>
+              <label class="refund-check-row"><input type="checkbox" data-site="hometax" onchange="checkHiddenMoney()"> 중도 퇴사로 그 해 연말정산을 못 받았다</label>
+              <label class="refund-check-row"><input type="checkbox" data-site="hometax" onchange="checkHiddenMoney()"> 의료비·카드·기부금 등 공제를 놓친 것 같은 해가 있다</label>
+              <label class="refund-check-row"><input type="checkbox" data-site="gov24" onchange="checkHiddenMoney()"> 자동차세·재산세 등 지방세를 냈는데 다시 확인해본 적 없다</label>
+              <label class="refund-check-row"><input type="checkbox" data-site="fine" onchange="checkHiddenMoney()"> 예전에 쓰던 은행 계좌·보험을 몇 년째 확인 안 했다</label>
+              <label class="refund-check-row"><input type="checkbox" data-site="health" onchange="checkHiddenMoney()"> 건강보험·국민연금 자격이 바뀐 적 있는데(이직·퇴사 등) 확인 안 해봤다</label>
+              <label class="refund-check-row"><input type="checkbox" data-site="cardpoint" onchange="checkHiddenMoney()"> 카드 포인트를 몇 년째 안 쓰고 그냥 두고 있다</label>
+              <p class="refund-wizard-result" id="hiddenMoneyResult">하나라도 해당되면, 아래에서 실제로 확인해보세요 👇</p>
+            </div>
+            <div class="refund-step-card" style="margin-top:10px;">
+              <p class="refund-step-tag">STEP 2</p>
+              <p class="refund-step-title" id="refundStep2Title">실제 신청 창구로 바로 이동하세요</p>
+              <div class="refund-link-buttons">
+                <a class="refund-link-btn" id="refund-site-hometax" href="https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&amp;tmIdx=42&amp;tm2lIdx=4203000000&amp;tm3lIdx=4203010000" target="_blank" rel="noopener noreferrer">
+                  <span class="refund-link-btn-badge">⭐ 추천</span>
+                  <span class="refund-link-btn-icon">🏛️</span>
+                  <span class="refund-link-btn-title">국세환급금<br>찾기</span>
+                  <span class="refund-link-btn-sub">홈택스</span>
+                </a>
+                <a class="refund-link-btn" id="refund-site-gov24" href="https://www.gov.kr/portal/service/serviceInfo/174100000054" target="_blank" rel="noopener noreferrer">
+                  <span class="refund-link-btn-badge">⭐ 추천</span>
+                  <span class="refund-link-btn-icon">🏢</span>
+                  <span class="refund-link-btn-title">미환급금<br>조회</span>
+                  <span class="refund-link-btn-sub">정부24</span>
+                </a>
+                <a class="refund-link-btn" id="refund-site-fine" href="https://fine.fss.or.kr/fine/main/contents.do?menuNo=900032" target="_blank" rel="noopener noreferrer">
+                  <span class="refund-link-btn-badge">⭐ 추천</span>
+                  <span class="refund-link-btn-icon">💰</span>
+                  <span class="refund-link-btn-title">잠자는 내 돈<br>찾기</span>
+                  <span class="refund-link-btn-sub">금감원 파인</span>
+                </a>
+                <a class="refund-link-btn" id="refund-site-health" href="https://www.nhis.or.kr/nhis/minwon/retrieveHwangub.do" target="_blank" rel="noopener noreferrer">
+                  <span class="refund-link-btn-badge">⭐ 추천</span>
+                  <span class="refund-link-btn-icon">🏥</span>
+                  <span class="refund-link-btn-title">건강보험·연금<br>환급금</span>
+                  <span class="refund-link-btn-sub">국민건강보험공단</span>
+                </a>
+                <a class="refund-link-btn" id="refund-site-cardpoint" href="https://www.cardpoint.or.kr" target="_blank" rel="noopener noreferrer">
+                  <span class="refund-link-btn-badge">⭐ 추천</span>
+                  <span class="refund-link-btn-icon">💳</span>
+                  <span class="refund-link-btn-title">카드포인트<br>통합조회</span>
+                  <span class="refund-link-btn-sub">여신금융협회</span>
+                </a>
+              </div>
+            </div>
+            <p class="faq-a" style="margin-top:10px;">저희가 직접 조회는 못 해드려요(주민등록번호 인증이 필요한 정부 시스템이라) — 대신 진짜 공식 채널로 바로 연결해드렸어요. 10분이면 확인 끝나요.</p>
+            <button class="share-btn" id="refund-share-btn" style="margin-top:10px;" onclick="shareRefundChecklist()">📤 이거 친구한테 공유하기</button>
+          </details>
+          <details class="faq-item" data-cat="tax">
+            <summary class="faq-q">한 번에 받는 게 나아요, 나눠 받는 게 나아요?</summary>
+            <p class="faq-a">발표된 잭팟은 사실 <b>연금(annuity) 기준 금액</b>이에요 — 일시불로 받으면 그 금액의 <b>약 45~60%</b>밖에 안 돼요 (나머지는 29년에 걸쳐 나눠 받는 걸 '한 번에' 받는 대가로 할인되는 셈). 대신 세금 관점에서는 <b>일시불이 그 해에 세율이 확 올라가고, 연금은 매년 나눠 받아서 부담이 분산</b>돼요. 실제로는 대부분의 당첨자가 일시불을 선택해요. 청구 후 보통 <b>60일 안에 결정</b>해야 하고, 한 번 고르면 되돌릴 수 없어서 이건 꼭 재정 전문가와 상의 후 정하는 게 좋아요.</p>
+          </details>
+          <details class="faq-item" data-cat="purchase">
+            <summary class="faq-q">미국 복권은 어디서 살 수 있어요?</summary>
+            <p class="faq-a">미국 현지의 편의점·주유소 등에서 판매돼요. 한국에서 온라인 구매를 대행해준다는 업체들이 종종 보이는데, 이런 서비스는 국내법상 불법 소지가 있어서(복표발매중개죄) 저희는 소개하거나 연결해드리지 않아요. 이용한 소비자도 처벌 대상이 될 수 있다고 하니 참고하세요. 저희는 세금·확률 계산만 도와드려요 🙏</p>
+          </details>
+          <details class="faq-item" data-cat="purchase">
+            <summary class="faq-q">지인이 대신 사주거나, 대신 당첨금을 수령해주면 어떻게 돼요?</summary>
+            <p class="faq-a">위에서 말씀드린 <b>상업적 구매대행 서비스는 불법 소지</b>가 있지만, 미국에 있는 지인이 개인적으로 사주는 경우를 물으신 거라면 — 이것도 몇 가지 진짜 복잡한 문제가 생겨요.<br><br>
+            <b>① 소유권 문제</b>: 미국 복권 티켓은 대부분 '누가 서명해서 청구하느냐'로 소유권이 정해져요. 사전에 서면 합의가 없으면, 그 지인이 마음을 바꿔 안 나눠줘도 법적으로 항의하기 어려워요.<br><br>
+            <b>② 세금이 오히려 더 복잡해질 수 있어요</b>: 지인이 미국 거주자 신분으로 청구하면 그 사람 기준 세율(24~37%)이 적용돼요. 그 다음 그 돈을 유저님한테 보내주는 건 미국 세법상 '증여'로 취급되어 <b>별도의 증여세</b>가 발생할 수 있고, 한국에서 그 돈을 받을 때도 <b>또 한국 증여세</b> 대상이 될 수 있어요. 즉 본인이 직접 비거주자로 청구하는 것보다 세금이 <b>더 늘어날 가능성</b>이 있어요.<br><br>
+            결론적으로, 큰 금액일수록 이런 대리 구조는 위험 부담이 커요. 실제 상황이 생기면 반드시 사전에 (당첨 전에!) 세무사·변호사와 상의하세요.</p>
+          </details>
+          <details class="faq-item" data-cat="game">
+            <summary class="faq-q">지난 당첨번호는 어디서 확인해요?</summary>
+            <p class="faq-a">저희 홈 화면에도 최근 당첨번호를 띄워드리지만, 가장 정확한 건 역시 공식 사이트예요.</p>
+            <div class="official-links" style="margin-top:8px;">
+              <a href="https://www.powerball.com" target="_blank" rel="noopener noreferrer">🔗 Powerball 공식 홈페이지 →</a>
+              <a href="https://www.megamillions.com" target="_blank" rel="noopener noreferrer">🔗 Mega Millions 공식 홈페이지 →</a>
+            </div>
+          </details>
+          <details class="faq-item" data-cat="purchase">
+            <summary class="faq-q">미국 시민권이 없어도 당첨금을 받을 수 있어요?</summary>
+            <p class="faq-a">네, 시민권이나 영주권이 없어도 외국인이 합법적으로 구매한 복권에 당첨되면 수령할 수 있어요. 다만 세금·신고 절차는 미국 거주자랑 달라요 — 한국 거주자 등 비거주 외국인은 일반적으로 30% 원천징수 규정이 적용돼요 (조세조약 등에 따라 달라질 수 있어요).</p>
+          </details>
+          <details class="faq-item" data-cat="tax">
+            <summary class="faq-q">저는 미국에 사는 한국인인데, 어떤 옵션을 골라야 하나요? (유학생·주재원·영주권자·시민권자)</summary>
+            <p class="faq-a">"미국에 산다"와 "미국 세법상 거주자"는 다를 수 있어요! <b>영주권자·시민권자</b>, 그리고 오래 거주하신 <b>주재원</b>분들은 대체로 <b>'미국'</b>을 선택하시면 돼요. 반면 <b>유학생</b>(F-1 비자 등)처럼 미국 체류 기간이 짧거나, 주재원이라도 파견 초기인 경우엔 세법상으로 여전히 <b>'비거주 외국인'</b>으로 분류될 수 있어서 오히려 '한국(비거주자)' 쪽 계산이 더 맞을 수 있어요. 이 판정(Substantial Presence Test)은 최근 3년 체류일수를 따지는 꽤 복잡한 기준이라, 애매하면 미국 세무 전문가와 상담하시는 걸 추천해요.</p>
+          </details>
+          <details class="faq-item" data-cat="tax">
+            <summary class="faq-q">계산기에 나오는 '신고 상태(싱글/기혼)'가 뭐예요?</summary>
+            <p class="faq-a">미국에서 세금 신고할 때 '어떤 자격으로 신고하는지'에 따라 세율 구간이 달라져요. 싱글은 혼자 신고, 기혼 공동은 배우자랑 합쳐서 신고하는 거예요. 다만 <b>복권 당첨금처럼 큰 금액에서는 사실 이 차이가 거의 안 나요</b> — 2026년 기준 최고세율(37%) 구간이 싱글은 약 64만 달러부터, 기혼 공동은 약 77만 달러부터 시작하는데, 그 차이(약 13만 달러)는 수백만~수억 달러 당첨금 앞에서는 반올림 오차 수준이거든요. 그래서 저희 계산기에서도 싱글/기혼 결과가 거의 동일하게 나와요. 참고로 한국 거주자는 이 구분과 무관하게 30% 원천징수 규정이 적용되는 경우가 많아요.</p>
+          </details>
+          <details class="faq-item" data-cat="purchase">
+            <summary class="faq-q">당첨되면 실제로 어떤 절차를 거쳐요?</summary>
+            <p class="faq-a">미국 현지에서 구매 → 당첨 확인 → 해당 주(state) 복권 사무소에 신분증·티켓·청구서 제출 → 청구 기한(보통 180일~1년 이내) 안에 청구 → 청구 시점에 연방세가 자동 원천징수되고, 나머지는 다음 해 세금 신고 때 정산돼요. (한국에서의 구매 대행은 안내해드리지 않아요, 아래 자세히 보기 참고!)</p>
+          </details>
+          <details class="faq-item" data-cat="tax">
+            <summary class="faq-q">세금 신고는 진짜 어떻게 해야 돼요?</summary>
+            <p class="faq-a">미국에서 먼저 원천징수되고, 실제 세율과 차이 나면 비거주자용 신고서(1040-NR)로 정산해요. 한국에서도 전 세계 소득 신고 의무가 있는데, <b>해외 복권 당첨금을 22~33% 분리과세로 신고할지, 종합소득세(누진세율)로 합산 신고할지가 아직 명확하지 않은 영역</b>이에요 — 국세청도 이 부분에 대한 공식 유권해석이 없다고 밝힌 적이 있어요. 미국에서 낸 세금은 외국납부세액공제로 상계 가능하지만 적용 범위도 사례에 따라 다를 수 있어요. 금액이 크면 신고 방식 차이가 세금 차이로 크게 이어질 수 있으니, 이런 상황이 실제로 생기면 꼭 한미 조세 둘 다 다루는 세무사와 상담하세요!</p>
+          </details>
+          <details class="faq-item" data-cat="game">
+            <summary class="faq-q">파워볼·메가밀리언즈 말고 다른 복권도 있어요?</summary>
+            <p class="faq-a">네! 2026년 2월 22일부터 <b>"밀리어네어 포 라이프(Millionaire for Life)"</b>라는 새 복권이 생겼어요. 기존에 있던 "럭키 포 라이프"와 "캐시4라이프"라는 두 게임이 통합되어 새로 출시된 거예요. 1등에 당첨되면 <b>매년 $100만(약 13.8억원)을 평생</b> 받을 수 있고(일시불로는 약 $1,800만), 2등도 매년 $10만(약 1.4억원)씩 평생 받아요. 한 장에 $5이고, 매일 밤 추첨해요. 다만 이 사이트의 세금 계산기는 아직 파워볼·메가밀리언즈 기준으로만 맞춰져 있어요.</p>
+          </details>
+        </div>
+
+        <div class="ad-slot">광고 영역 (Google AdSense)</div>
+
+        <details class="more-details-toggle">
+        <summary class="section-divider-toggle">📚 더 자세히 알아보기 (용어·구매절차·지급방식 등)</summary>
+
+        <details class="panel-accordion">
+          <summary class="panel-accordion-title">기본 용어부터 알아볼까요?</summary>
+          <p class="panel-desc">가장 많이 헷갈려하시는 부분이에요 — 두 게임을 나란히 비교해봤어요</p>
+
+          <div class="game-compare">
+            <div class="game-card powerball">
+              <p class="game-name">🔴 파워볼</p>
+              <div class="game-row"><span class="game-label">가격</span><span class="game-val">$2</span></div>
+              <div class="game-row"><span class="game-label">추첨 요일</span><span class="game-val">월·수·토</span></div>
+              <div class="game-row"><span class="game-label">번호 방식</span><span class="game-val">1~69 중 5개<br>+ 1~26 중 1개</span></div>
+              <div class="game-row"><span class="game-label">1등 확률</span><span class="game-val">1 / 2억 9,200만</span></div>
+            </div>
+            <div class="game-card megamillions">
+              <p class="game-name">🟡 메가밀리언즈</p>
+              <div class="game-row"><span class="game-label">가격</span><span class="game-val">$5<br><span style="font-size:var(--fs-small); font-weight:400;">(배수 옵션 포함)</span></span></div>
+              <div class="game-row"><span class="game-label">추첨 요일</span><span class="game-val">화·금</span></div>
+              <div class="game-row"><span class="game-label">번호 방식</span><span class="game-val">1~70 중 5개<br>+ 1~24 중 1개</span></div>
+              <div class="game-row"><span class="game-label">1등 확률</span><span class="game-val">1 / 2억 9,047만</span></div>
+            </div>
+          </div>
+
+          <div class="same-place-box">📍 파는 곳: <b>동일!</b> 같은 편의점·주유소에서 둘 다 팔아요</div>
+
+          <div class="callout" style="margin-top:14px;">💡 <b>"어디서 사면 파워볼이고 어디서 사면 메가밀리언즈예요?"</b>라고 헷갈려하시는 분들 많은데, 사실 같은 가게에서 두 게임 다 팔아요. 그냥 계산대에서 "파워볼이요" 또는 "메가밀리언즈요"라고 말하고 사면 돼요.</div>
+          <p class="foot-note" style="margin-top:12px;">참고: 이 둘 말고도 <b>밀리어네어 포 라이프</b>(2026년 2월 신규 출시, 당첨되면 평생 매년 1억 원 이상), <b>로또 아메리카</b>(15개 주) 같은 멀티스테이트 게임도 있고, 각 주마다 자체 로또·즉석복권도 따로 있어서 다 합치면 수백 개예요. 근데 한국에서도 뉴스에 나올 만큼 화제가 되는 건 파워볼·메가밀리언즈 이 두 게임뿐이라, 저희 사이트는 이 둘만 다뤄요.</p>
+          <p class="foot-note" style="margin-top:6px; font-size:var(--fs-small);">이번 달 몰라도 되는 잡학상식: 밀리어네어 포 라이프는 원래 있던 '럭키 포 라이프'·'캐시4라이프'가 2026년 2월 21일에 종료되고 통합되어 생긴 게임이에요.</p>
+        </details>
+
+        <details class="panel-accordion">
+          <summary class="panel-accordion-title">세금 가이드, 요것만 알면 돼요</summary>
+          <div class="cards-row" style="grid-template-columns:1fr 1fr 1fr; margin-bottom:0;">
+            <div class="feature-card" style="cursor:default;">
+              <p class="feature-title" style="font-size:var(--fs-h3);">미국 세금은 어떻게 계산돼요?</p>
+              <p class="feature-sub">연방세 24~37% + 비거주 외국인 30% 원천징수</p>
+            </div>
+            <div class="feature-card" style="cursor:default;">
+              <p class="feature-title" style="font-size:var(--fs-h3);">한국에서도 또 내요?</p>
+              <p class="feature-sub">기타소득세 22~33%, 대신 외국납부세액공제로 일부 상쇄</p>
+            </div>
+            <div class="feature-card" style="cursor:default;">
+              <p class="feature-title" style="font-size:var(--fs-h3);">일시불 vs 연금, 뭐가 달라요?</p>
+              <p class="feature-sub">세율 구간이 달라져서 총 세금이 달라질 수 있어요</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="panel-accordion">
+          <summary class="panel-accordion-title">구매 절차, 자세히 알아볼까요?</summary>
+          <p class="panel-desc">완전 처음이신 분들을 위한 절차예요</p>
+
+          <div class="gate-box">
+            <p class="gate-label">⚠️ 전제 조건</p>
+            <p class="gate-text">미국에 실제로 있어야 해요<br>(여행, 출장, 유학 등)</p>
+            <p class="gate-sub">한국에서 원격으로 살 수 있는 합법적인 방법은 없어요</p>
+          </div>
+
+          <div class="flow-step">
+            <div class="flow-num">1</div>
+            <div class="flow-body">
+              <p class="flow-title">파는 곳 찾기</p>
+              <p class="flow-detail">편의점, 주유소, 슈퍼마켓 등 'Lottery' 표시가 있는 곳이면 어디든 OK</p>
+
+              <div class="ticket-mock">
+                <p class="ticket-mock-title">🎫 티켓은 이렇게 생겼어요</p>
+                <div class="ticket-mock-card">
+                  <div class="ticket-mock-row"><span class="ticket-mock-numbers"><span class="tm-ball">12</span><span class="tm-ball">24</span><span class="tm-ball">33</span><span class="tm-ball">45</span><span class="tm-ball">58</span><span class="tm-ball pb">07</span></span></div>
+                  <p class="ticket-mock-meta">추첨일: MON JUL 06 2026 &nbsp;|&nbsp; QP(퀵픽) &nbsp;|&nbsp; $2.00</p>
+                  <div class="ticket-mock-barcode">▌│▌▌│▌│▌▌│▌▌│▌│▌▌▌│▌│▌▌│▌▌│▌</div>
+                </div>
+                <p class="flow-detail" style="margin-top:8px;">앞면에 <b>내가 고른 숫자(또는 퀵픽 랜덤 숫자), 추첨 날짜, 가격, 그리고 스캔용 바코드</b>가 인쇄돼요. 이 바코드가 나중에 당첨 확인할 때 핵심이에요 — 꼭 잘 보관하세요!</p>
+              </div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div class="flow-body">
+              <p class="flow-title">결제하기</p>
+              <p class="flow-detail">한 장에 보통 $2~$5 수준이에요. 그 자리에서 바로 결제해요.</p>
+              <span class="flow-tag">✓ 현금 가능</span>
+              <span class="flow-tag">✓ 카드 가능</span>
+              <span class="flow-tag no">✗ 할부 안 됨</span>
+
+              <div class="phrase-box">
+                <p class="phrase-title">🗣️ 영어를 못해도 이 말만 알면 돼요</p>
+                <div class="phrase-row"><span class="phrase-en">"One Powerball, quick pick, please."</span><span class="phrase-ko">파워볼 한 장, 번호는 컴퓨터가 골라주세요</span></div>
+                <div class="phrase-row"><span class="phrase-en">"One Mega Millions, please."</span><span class="phrase-ko">메가밀리언즈 한 장 주세요</span></div>
+                <div class="phrase-row"><span class="phrase-en">"Cash." / "Card, please."</span><span class="phrase-ko">현금으로요 / 카드로 할게요</span></div>
+                <p class="phrase-tip">💡 번호를 직접 안 골라도 돼요. "Quick pick"이라고만 하면 컴퓨터가 랜덤으로 골라줘요 — 대부분 이렇게 사요!</p>
+              </div>
+
+              <div class="playslip-box">
+                <p class="phrase-title">✏️ 그래도 내 번호로 직접 골라보고 싶다면 (플레이 슬립 작성법)</p>
+                <div class="playslip-mock">
+                  <p class="ps-board-label">PLAY A</p>
+                  <div class="ps-row">
+                    <span class="ps-hint">일반번호 5개 (1~69)</span>
+                    <span class="ps-bubbles"><i class="ps-b filled"></i><i class="ps-b filled"></i><i class="ps-b filled"></i><i class="ps-b filled"></i><i class="ps-b filled"></i><i class="ps-b qp">QP</i></span>
+                  </div>
+                  <div class="ps-row">
+                    <span class="ps-hint">파워볼 1개 (1~26)</span>
+                    <span class="ps-bubbles"><i class="ps-b filled pb"></i><i class="ps-b qp">QP</i></span>
+                  </div>
+                </div>
+                <div class="ps-steps">
+                  <div class="check-method"><span class="cm-num">1</span><span>편의점에 비치된 <b>무료 플레이 슬립 종이</b>를 집어서, 검정·파란 펜(또는 연필)으로 원하는 숫자 <b>동그라미를 굵게</b> 칠해요 (빨간펜은 인식 안 돼요)</span></div>
+                  <div class="check-method"><span class="cm-num">2</span><span>일부만 직접 고르고 나머지는 <b>QP(Quick Pick) 칸에 표시</b>하면 그 부분만 랜덤으로 채워져요</span></div>
+                  <div class="check-method"><span class="cm-num">3</span><span>잘못 표시했으면 지우지 말고 <b>VOID(취소) 칸</b>에 표시하고 다음 줄에 다시 적어요</span></div>
+                  <div class="check-method"><span class="cm-num">4</span><span>작성한 슬립을 <b>계산대 점원에게 제출</b>하면, 그 자리에서 스캔해서 진짜 티켓으로 바꿔줘요 (슬립 자체는 티켓이 아니에요!)</span></div>
+                </div>
+                <p class="foot-note" style="margin-top:6px;">💡 당첨되면 <b>티켓 뒷면에 바로 서명</b>해두세요 — 분실 시 소유권을 증명하는 중요한 절차예요</p>
+              </div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">3</div>
+            <div class="flow-body">
+              <p class="flow-title">나이 확인</p>
+              <p class="flow-detail">대부분 주에서 <b>18세 이상</b> (일부 주는 21세). 국적과 상관없이 구매 가능해요.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">4</div>
+            <div class="flow-body">
+              <p class="flow-title">📢 지난 당첨번호가 궁금하세요?</p>
+              <p class="flow-detail">공식 사이트에서 당첨번호를 바로 확인할 수 있어요.</p>
+              <div class="official-links">
+                <a href="https://www.powerball.com" target="_blank" rel="noopener noreferrer">🔗 Powerball 공식 홈페이지 →</a>
+                <a href="https://www.megamillions.com" target="_blank" rel="noopener noreferrer">🔗 Mega Millions 공식 홈페이지 →</a>
+              </div>
+              <p class="link-note">(새 탭에서 열립니다)</p>
+
+              <p class="flow-detail" style="margin-top:10px; font-weight:700; color:var(--text-dark);">💡 내 티켓이 당첨됐는지는 이렇게 확인해요</p>
+              <div class="check-methods">
+                <div class="check-method"><span class="cm-num">1</span><span>번호를 <b>직접 눈으로 비교</b> — 가장 확실한 방법</span></div>
+                <div class="check-method"><span class="cm-num">2</span><span>산 <b>주(state)의 복권 공식 앱</b>으로 티켓 <b>바코드를 카메라로 스캔</b> — 자동으로 당첨 여부가 떠요</span></div>
+                <div class="check-method"><span class="cm-num">3</span><span>편의점 계산대의 <b>셀프서비스 스캐너</b>에 티켓을 대거나, 직원에게 스캔 요청</span></div>
+              </div>
+              <p class="foot-note" style="margin-top:6px;">※ 티켓을 버리기 전엔 꼭 공식 경로로 한 번 더 확인하세요 — 스캐너 앱은 참고용이에요</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">5</div>
+            <div class="flow-body">
+              <p class="flow-title">당첨됐다면 청구하기</p>
+              <p class="flow-detail">해당 <b>주(state)의 복권 사무소</b>에 신분증 + 티켓 들고 직접 방문. 기한은 보통 <b>180일~1년</b></p>
+              <p class="flow-detail" style="margin-top:6px;">💡 사무소는 하나로 정해진 게 아니에요 — <b>티켓을 산 주의 공식 복권 사이트</b>에 들어가면 "Claim Center" 주소가 나와요 (예: 캘리포니아는 새크라멘토 등 여러 지역 사무소, 텍사스·뉴욕도 각자 있음)</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">6</div>
+            <div class="flow-body">
+              <p class="flow-title">일시불? 연금? 청구 시 선택해야 해요</p>
+              <p class="flow-detail">청구 완료 후 <b>보통 60일 이내</b>에 둘 중 하나를 골라야 해요. 기한 내 선택 안 하면 자동으로 연금으로 지급돼요.</p>
+              <div class="payout-compare">
+                <div class="payout-col">
+                  <p class="payout-col-title">💵 일시불 (Lump Sum)</p>
+                  <p class="payout-col-detail">발표 금액의 약 <b>45~60%</b>를 한 번에 받음. 대부분의 당첨자가 선택하는 옵션</p>
+                </div>
+                <div class="payout-col">
+                  <p class="payout-col-title">📅 연금 (Annuity)</p>
+                  <p class="payout-col-detail">발표 금액 <b>전액</b>을 29년간 30회 분할 지급 (첫 회는 즉시, 이후 매년 <b>5%씩 증가</b>). 미국 국채로 보장되고, 사망 시 남은 회차는 상속돼요</p>
+                </div>
+              </div>
+              <p class="foot-note" style="margin-top:8px;">한 번 선택하면 되돌릴 수 없어요 (연금 선택 후 일시불로 변경 불가) — 그래서 이 결정은 반드시 세무사·재정 전문가와 상의 후 내리길 권해요</p>
+            </div>
+          </div>
+
+          <p class="foot-note" style="margin-top:12px; text-align:center;">이 6단계가 전부예요. 다만 1번 전제 조건이 충족 안 되면, 이 뒤 단계 자체가 성립하지 않는다는 게 핵심이에요.</p>
+        </details>
+
+        <details class="panel-accordion">
+          <summary class="panel-accordion-title">당첨금, 현금으로 줘요? 통장으로 줘요?</summary>
+          <p class="panel-desc">금액에 따라 완전히 달라요</p>
+
+          <div class="qty-box">
+            <p class="qty-q">💵 $600 이하 소액</p>
+            <p class="qty-a">산 편의점에서 그 자리에서 바로 <b>현금</b>으로 받을 수 있어요.</p>
+          </div>
+          <div class="qty-box">
+            <p class="qty-q">🏦 큰 금액 (수백~수천만 달러)</p>
+            <p class="qty-a">현금으로 안 줘요. <b>수표(check)나 은행 계좌 이체</b>로 지급되고, 처리에 보통 <b>6~8주</b> 정도 걸려요. 받으려면 은행 계좌가 필요해요.</p>
+          </div>
+          <div class="qty-box" style="background:#FBEEEC;">
+            <p class="qty-q">🇰🇷 한국 거주자라면?</p>
+            <p class="qty-a">솔직히 말씀드리면, 이 부분은 <b>공식적으로 명확한 절차가 공개되어 있지 않아요</b>. 미국 은행 계좌가 있으면 편하지만, 없다면 국제 송금을 각 주 복권 사무소와 개별 협의해야 할 가능성이 높아요. 이런 상황이 실제로 생기면 혼자 진행하지 마시고, <b>해당 주 복권 사무소 + 국제송금 가능한 은행 + 세무/법률 전문가</b>와 함께 진행하시길 권해요.</p>
+          </div>
+        </details>
+
+        <details class="panel-accordion">
+          <summary class="panel-accordion-title">한 번에 몇 장까지 살 수 있어요?</summary>
+          <p class="panel-desc">사실 두 가지 다른 질문이 섞여있어요 — 나눠서 답해드릴게요</p>
+
+          <div class="qty-box">
+            <p class="qty-q">Q. 한 번에 여러 장 살 수 있어요?</p>
+            <p class="qty-a">네, 법적으로 정해진 한도는 없어요. 플레이 슬립(신청서) 한 장에 보통 5게임까지 적을 수 있고, 슬립을 여러 장 내면 그만큼 더 살 수 있어요. "천 장 주세요"도 이론적으로 가능해요 (편의점 재고가 허락하는 한).</p>
+          </div>
+          <div class="qty-box">
+            <p class="qty-q">Q. 같은 번호로 여러 번 추첨에 걸어둘 수 있어요?</p>
+            <p class="qty-a">네, 이건 '멀티 드로우(Multi-draw)'라는 기능이에요. 같은 번호를 <b>주(state)마다 다르지만 보통 10~26회 추첨</b>까지 한 번에 걸어둘 수 있어요. 매번 다시 살 필요 없이 몇 주치를 한 번에 사는 방식이에요.</p>
+          </div>
+          <p class="foot-note" style="margin-top:6px;">참고: 한 번 산 티켓은 환불·취소가 안 돼요 (all sales are final)</p>
+        </details>
+
+        </details>
+
+        <p class="disclaimer">더 궁금한 거 있으면 문의하기로 편하게 남겨주세요!</p>
+      </div>
+
+      <!-- PRIVACY VIEW -->
+      <div class="view" id="view-privacy">
+        <button class="back-btn" onclick="go('home')">← 홈으로</button>
+        <p class="breadcrumb"><button onclick="go('home')">홈</button> &nbsp;/&nbsp; <span class="cur">개인정보처리방침</span></p>
+        <div class="panel">
+          <p class="panel-title">개인정보처리방침</p>
+          <p class="panel-desc">시행일자: 2026년 7월 9일</p>
+
+          <div class="legal-section">
+            <p class="legal-h">1. 수집하는 개인정보 항목</p>
+            <p class="legal-body">로또택스(이하 '본 사이트')는 <b>계산기 입력값(당첨금, 거주국, 환율 등)을 서버에 저장하지 않습니다.</b> 모든 계산은 방문자의 브라우저 안에서만 처리되고, 페이지를 벗어나면 사라져요.<br>다만 '문의하기'를 통해 연락하시는 경우, 입력하신 <b>이메일 주소와 문의 내용</b>만 수집합니다.</p>
+          </div>
+
+          <div class="legal-section">
+            <p class="legal-h">2. 수집 목적</p>
+            <p class="legal-body">문의 사항 확인 및 답변을 위한 목적으로만 사용하며, 마케팅이나 다른 용도로 사용하지 않습니다.</p>
+          </div>
+
+          <div class="legal-section">
+            <p class="legal-h">3. 보유 및 이용 기간</p>
+            <p class="legal-body">문의 처리가 완료된 후 최대 1년간 보관하며, 이후 지체 없이 파기합니다.</p>
+          </div>
+
+          <div class="legal-section">
+            <p class="legal-h">4. 제3자 제공</p>
+            <p class="legal-body">수집한 개인정보를 제3자에게 제공하지 않습니다. 단, 사이트에 게재되는 광고(Google AdSense)는 Google이 자체적으로 쿠키를 통해 방문 정보를 수집할 수 있으며, 이는 본 사이트가 아닌 Google의 개인정보처리방침에 따라 처리됩니다.</p>
+          </div>
+
+          <div class="legal-section">
+            <p class="legal-h">5. 쿠키(Cookie) 사용</p>
+            <p class="legal-body">광고 게재를 위해 Google 등 제3자 광고 서비스의 쿠키가 사용될 수 있습니다. 브라우저 설정에서 쿠키 저장을 거부하거나 삭제할 수 있으며, 이 경우 광고 개인화 기능이 제한될 수 있습니다.</p>
+          </div>
+
+          <div class="legal-section">
+            <p class="legal-h">6. 이용자의 권리</p>
+            <p class="legal-body">문의를 통해 제공하신 개인정보에 대해 열람, 정정, 삭제를 언제든 요청하실 수 있습니다. 아래 문의하기를 통해 연락해주세요.</p>
+          </div>
+
+          <div class="legal-section">
+            <p class="legal-h">7. 개인정보 보호책임자</p>
+            <p class="legal-body">문의: happy_gal@naver.com</p>
+          </div>
+
+          
+        </div>
+      </div>
+
+      <!-- DISCLAIMER VIEW -->
+      <div class="view" id="view-disclaimer">
+        <button class="back-btn" onclick="go('home')">← 홈으로</button>
+        <p class="breadcrumb"><button onclick="go('home')">홈</button> &nbsp;/&nbsp; <span class="cur">면책조항</span></p>
+        <div class="panel">
+          <p class="panel-title">면책조항</p>
+          <p class="panel-desc">시행일자: 2026년 7월 9일</p>
+
+          <div class="legal-section">
+            <p class="legal-h">1. 정보 제공 목적</p>
+            <p class="legal-body">본 사이트에서 제공하는 모든 계산 결과와 정보는 <b>참고용 시뮬레이션</b>이며, 세무·법률·재정 자문(Advice)이 아닙니다.</p>
+          </div>
+
+          <div class="legal-section">
+            <p class="legal-h">2. 계산 결과의 정확성</p>
+            <p class="legal-body">계산기에 사용된 세율·환율 등은 세법을 단순화한 예시 기준이며, 실제 세액과 다를 수 있습니다. 최신 세법 개정이 반영에 지연될 수 있으며, 특히 한국 세법상 해외 복권 당첨금의 과세 방식(분리과세 vs 종합과세)은 아직 명확한 유권해석이 없는 영역입니다 (자세한 내용은 FAQ 참고).</p>
+          </div>
+
+          <div class="legal-section">
+            <p class="legal-h">3. 전문가 상담 권고</p>
+            <p class="legal-body">실제로 복권에 당첨되어 세금 신고 등 의사결정이 필요한 경우, 반드시 한미 조세를 모두 다루는 세무사 등 전문가와 상담하시기 바랍니다. 본 사이트의 정보만으로 내린 결정에 대해 본 사이트는 책임을 지지 않습니다.</p>
+          </div>
+
+          <div class="legal-section">
+            <p class="legal-h">4. 구매 대행·중개 금지</p>
+            <p class="legal-body">본 사이트는 복권 구매를 대행하거나 중개하지 않으며, 어떠한 구매 경로도 안내하지 않습니다. 국내에서 해외 복권 구매를 대행하는 행위는 관련 법령(형법 제248조 등)에 따라 처벌 대상이 될 수 있습니다.</p>
+          </div>
+
+          <div class="legal-section">
+            <p class="legal-h">5. 상표 및 제3자 서비스</p>
+            <p class="legal-body">Powerball®, Mega Millions® 등은 각 운영 기관(MUSL 등)의 등록상표이며, 본 사이트는 해당 기관과 어떠한 제휴·협력 관계도 없는 독립적인 정보 제공 사이트입니다.</p>
+          </div>
+
+          <div class="legal-section">
+            <p class="legal-h">6. 책임의 한계</p>
+            <p class="legal-body">본 사이트의 이용, 계산 결과에 대한 신뢰, 또는 정보의 오류로 인해 발생하는 직접적·간접적 손해에 대해 본 사이트 운영자는 법이 허용하는 한도 내에서 책임을 지지 않습니다.</p>
+          </div>
+
+          <div class="legal-section">
+            <p class="legal-h">7. 내용 변경</p>
+            <p class="legal-body">본 사이트의 내용, 세율 정보, 정책은 사전 고지 없이 변경될 수 있습니다.</p>
+          </div>
+
+          <p class="foot-note" style="margin-top:12px;">문의: happy_gal@naver.com</p>
+        </div>
+      </div>
+
+      <!-- CONTACT VIEW -->
+      <div class="view" id="view-contact">
+        <button class="back-btn" onclick="go('home')">← 홈으로</button>
+        <p class="breadcrumb"><button onclick="go('home')">홈</button> &nbsp;/&nbsp; <span class="cur">문의하기</span></p>
+        <div class="panel">
+          <p class="panel-title">궁금한 거나 이상한 거 있으면 알려주세요</p>
+          <p class="panel-desc">계산이 이상하거나 궁금한 게 있으면 편하게 남겨주세요 :)</p>
+          <form name="contact" id="contactForm" data-netlify="true" onsubmit="return submitContactForm(event)">
+            <input type="hidden" name="form-name" value="contact">
+            <div class="input-row" style="margin-bottom:10px;">
+              <input type="email" name="email" id="contactEmail" placeholder="이메일 주소 (답장받을 곳)" required style="flex:1; height:38px; border:1px solid var(--border); border-radius:8px; padding:0 12px; font-size:16px; font-family:inherit;">
+            </div>
+            <textarea name="message" id="contactMessage" placeholder="문의 내용을 입력해주세요" required style="width:100%; height:80px; border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:16px; font-family:inherit; resize:none; margin-bottom:10px;"></textarea>
+            <button type="submit" class="cta-btn" style="margin-top:0;">보내기</button>
+            <p id="contactSuccessMsg" style="display:none; margin-top:10px; padding:10px 12px; background:rgba(2,128,144,0.08); border-radius:8px; color:var(--teal); font-weight:700; font-size:var(--fs-note); text-align:center;">✓ 문의가 잘 전달됐어요, 감사합니다!</p>
+            <p id="contactErrorMsg" style="display:none; margin-top:10px; padding:10px 12px; background:rgba(192,57,43,0.08); border-radius:8px; color:var(--status-red); font-weight:700; font-size:var(--fs-note); text-align:center;">전송에 실패했어요, 잠시 후 다시 시도해주세요.</p>
+          </form>
+        </div>
+      </div>
+
+      <div class="ad-slot">광고 영역 (Google AdSense)</div>
+
+      <div class="site-footer">
+        <div class="footer-links">
+          <button onclick="go('contact')">문의하기</button>
+          <button onclick="go('privacy')">개인정보처리방침</button>
+          <button onclick="go('disclaimer')">면책조항</button>
+          <button onclick="go('faq')">FAQ</button>
+        </div>
+        <p class="footer-copy">본 사이트는 정보 제공 목적의 시뮬레이터이며, 복권 구매를 대행·중개하지 않습니다.</p>
+      </div>
+
+    </div>
+
+<script>
+// ============================================================
+// 세금 모델 정의 (단일 기준 — 여기만 고치면 전체 계산기에 반영됨)
+// 출처: IRS Instructions for Forms W-2G (2026), Park v. Commissioner 136 T.C. 569 (2011),
+//       IRS-Korea Tax Treaty (irs.gov/pub/irs-trty/korea.pdf)
+// ============================================================
+// 환율 (전역 단일 기준 — 실제 서비스에서는 매일 자동 갱신 필요)
+let EXCHANGE_RATE = 1522; // 기본값(fallback, 2026-07-08 기준 근사치 — 실제 변동 범위 1,510~1,528원). 페이지 로드 시 실시간 환율로 자동 갱신을 시도함 — 이 기본값은 주기적으로 수동 업데이트 필요
+let exchangeRateIsLive = false; // 실시간 fetch 성공 여부 표시용
+let isRateManuallyEdited = false; // 유저가 환율을 직접 수정했는지 여부 — true면 비동기 fetch가 뒤늦게 와도 덮어쓰지 않음
+
+async function fetchLiveExchangeRate(force){
+  // force=true: 유저가 배지를 직접 클릭해서 재시도하는 경우 — 수동 편집 상태였어도 우선권을 줌
+  if (isRateManuallyEdited && !force) return;
+  try {
+    const res = await fetch('https://open.er-api.com/v6/latest/USD');
+    const data = await res.json();
+    if (data && data.rates && data.rates.KRW) {
+      EXCHANGE_RATE = Math.round(data.rates.KRW);
+      exchangeRateIsLive = true;
+      isRateManuallyEdited = false; // 실시간 값으로 갱신됐으니 수동 편집 플래그 해제
+
+      // 현재 화면에 켜져있는(active) 뷰의 입력값을 원본(source of truth)으로 삼아 동기화.
+      // 잘못하면 방문한 적 없는 다른 탭의 기본값(100M)이 공유 상태를 덮어써버리는 레이스 컨디션이 생김.
+      const homeIsOn = document.getElementById('view-home').classList.contains('on');
+      const compareIsOn = document.getElementById('view-compare').classList.contains('on');
+      if (homeIsOn) {
+        syncHomeFromShared();
+      } else if (compareIsOn) {
+        syncCompareFromShared();
+      } else {
+        // 홈/비교 화면 둘 다 안 보고 있을 때는 화면 갱신 없이 계산 로직만 공유 데이터 기준으로 조용히 갱신
+        updateHomeCalc(sharedAmountUsd);
+        updateCalc(sharedAmountUsd);
+      }
+      initJackpotCardAmt();
+      refreshJackpotDrawerIfOpen();
+      updateExchangeRateBadges();
+      return true;
+    }
+    updateExchangeRateBadges(false);
+    return false;
+  } catch (e) {
+    // 네트워크 오류/오프라인 시 기본값 그대로 사용 — 계산 자체는 문제없이 계속 작동함
+    console.log('실시간 환율 가져오기 실패, 기본값 사용:', e);
+    updateExchangeRateBadges(false);
+    return false;
+  }
+}
+
+// 유저가 환율 배지(아이콘 버튼)를 직접 눌렀을 때 — 그 자리에서 바로 재시도
+async function retryLiveExchangeRate(btn){
+  const buttons = document.querySelectorAll('.rate-live-badge');
+  buttons.forEach(b => {
+    b.disabled = true; b.classList.remove('is-live','is-fail');
+    b.innerHTML = '<span class="spin" aria-hidden="true">🔄</span>';
+    b.title = '환율 확인 중...';
+  });
+  const ok = await fetchLiveExchangeRate(true);
+  if (!ok) updateExchangeRateBadges(true);
+  // 성공 시에는 fetchLiveExchangeRate 안에서 updateExchangeRateBadges()가 이미 갱신함
+}
+
+function updateExchangeRateBadges(failed){
+  document.querySelectorAll('.rate-live-badge').forEach(el => {
+    el.disabled = false;
+    el.classList.remove('is-live','is-fail');
+    el.innerHTML = '<span aria-hidden="true">🔄</span>';
+    if (failed) {
+      el.classList.add('is-fail');
+      el.title = '환율 조회 실패 · 탭해서 재시도';
+    } else if (exchangeRateIsLive) {
+      el.classList.add('is-live');
+      el.title = '실시간 환율 적용 중 · 탭하면 새로고침';
+    } else {
+      el.title = '기본값 사용 중 · 탭하면 실시간 환율로 갱신';
+    }
+  });
+}
+
+// 홈/국가비교 페이지가 각자 독립된 입력 상태를 갖고 있으면 페이지 이동 시 데이터가 끊기는 문제가 있어
+// 실제 "원본 데이터"는 여기 하나만 두고, 두 페이지는 화면에 들어올 때마다 여기서 값을 읽어와 표시한다.
+let sharedAmountUsd = 100000000; // 기본 $100M
+let sharedCountry = 'kr';
+let sharedState = 'AVG';
+
+function syncHomeFromShared(){
+  const millions = sharedAmountUsd / 1000000;
+  document.getElementById('homeAmountInput').value = millions;
+  const slider = document.getElementById('homeAmountSlider');
+  slider.max = Math.max(2000, millions);
+  slider.step = (millions % 10 === 0) ? 10 : 1; // 10의 배수가 아니면 step을 풀어줘야 value가 반올림 없이 정확히 반영됨
+  slider.min = Math.min(10, Math.round(millions)); // $10M 미만 입력 시 슬라이더 하한도 같이 낮춰 불일치 방지
+  slider.value = Math.round(millions);
+  document.getElementById('homeCountrySelect').value = sharedCountry;
+  document.getElementById('homeStateSelect').value = sharedState;
+  document.getElementById('home-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR');
+  updateHomeCalc(sharedAmountUsd);
+}
+
+function goToCompareWithOppositeCountry(){
+  sharedCountry = (sharedCountry === 'us') ? 'kr' : 'us';
+  go('compare');
+}
+
+function syncCompareFromShared(){
+  const millions = sharedAmountUsd / 1000000;
+  document.getElementById('amountInput').value = millions;
+  const slider = document.getElementById('amountSlider');
+  slider.max = Math.max(2000, millions);
+  slider.step = (millions % 10 === 0) ? 10 : 1;
+  slider.min = Math.min(10, Math.round(millions)); // $10M 미만 입력 시 슬라이더 하한도 같이 낮춰 불일치 방지
+  slider.value = Math.round(millions);
+  document.getElementById('compareCountrySelect').value = sharedCountry;
+  document.getElementById('compareStateSelect').value = sharedState;
+  document.getElementById('compare-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR');
+  updateCalc(sharedAmountUsd);
+}
+
+function formatWon(n){
+  // 소수점이 사실상 0이면 정수로, 아니면 소수 1자리로 표시 (100.0억원 같은 어색한 표기 방지) + 천단위 콤마
+  const rounded = Math.round(n * 10) / 10;
+  const isWhole = rounded % 1 === 0;
+  const numStr = isWhole
+    ? Math.round(rounded).toLocaleString('ko-KR')
+    : rounded.toLocaleString('ko-KR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return numStr + '억원';
+}
+
+const TAX_MODEL = {
+  us_resident: {
+    federal: 0.37,      // 연방세 최고구간 (실제: 24% 원천징수 후 최대 37% 정산 — 데모는 단순화해 37% 일괄 적용)
+    state_avg: 0.08      // 평균 주세 (예시치 — 실제 주 선택 시 STATE_TAX_RATES 값으로 대체됨)
+  },
+  nonresident: {
+    // 한국 거주자 등 미국 비거주 외국인. 한미 조세조약이 도박·복권 소득을 커버하지 않아
+    // IRC 871(a)에 따라 일괄 30% 원천징수가 적용되며, 대부분 이것이 최종세율(추가 정산 없음)
+    us_withholding: 0.30,
+    korea_other_income_tax: 0.33  // 한국 기타소득세 (3억 이하 22%, 초과 33% — 데모는 고액 기준 33% 일괄 적용)
+  }
+};
+
+// 실제 리서치 결과 (3~6주차) 기반 주별 복권 세율. 출처: 각 주 복권 공식 사이트, IRS Pub 515/519
+const STATE_TAX_RATES = {
+  AVG:   { label: '평균 (예시)', rate: 0.08 },
+  TX:    { label: '텍사스', rate: 0 },
+  FL:    { label: '플로리다', rate: 0 },
+  CA:    { label: '캘리포니아 (복권 당첨금 면제)', rate: 0 },
+  WA:    { label: '워싱턴', rate: 0 },
+  NV:    { label: '네바다', rate: 0 },
+  NY:    { label: '뉴욕', rate: 0.109 },
+  NJ:    { label: '뉴저지', rate: 0.1075 },
+  OR:    { label: '오리건', rate: 0.099 },
+  MN:    { label: '미네소타', rate: 0.0985 },
+  MD:    { label: '메릴랜드 (확인중)', rate: 0.0895 }, // 공식 출처마다 8.75~9.5%로 상이 — 최신 수치 재확인 필요
+};
+
+function calcTakeHome(amount, country, stateCode){
+  if (country === 'us') {
+    const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
+    const afterUS = amount * (1 - TAX_MODEL.us_resident.federal);
+    const final = afterUS * (1 - stateInfo.rate);
+    return {
+      afterUS, final,
+      label1: '미국 연방세', val1: '-' + (TAX_MODEL.us_resident.federal * 100) + '%',
+      label2: stateInfo.rate === 0 ? `${stateInfo.label} 주세` : `${stateInfo.label} 주세`,
+      val2: '-' + (stateInfo.rate * 100).toFixed(stateInfo.rate * 100 % 1 === 0 ? 0 : 2) + '%',
+      basisSuffix: `미국 거주자`
+    };
+  } else {
+    const afterUS = amount * (1 - TAX_MODEL.nonresident.us_withholding);
+    const final = afterUS * (1 - TAX_MODEL.nonresident.korea_other_income_tax);
+    return {
+      afterUS, final,
+      label1: '미국 연방세 (비거주자)', val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: '한국 기타소득세', val2: '-' + (TAX_MODEL.nonresident.korea_other_income_tax * 100) + '%',
+      basisSuffix: '한국 거주자'
+    };
+  }
+}
+
+async function submitContactForm(e){
+  e.preventDefault();
+  const form = document.getElementById('contactForm');
+  const successMsg = document.getElementById('contactSuccessMsg');
+  const errorMsg = document.getElementById('contactErrorMsg');
+  successMsg.style.display = 'none';
+  errorMsg.style.display = 'none';
+
+  const formData = new FormData(form);
+  try {
+    await fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(formData).toString(),
+    });
+    successMsg.style.display = 'block';
+    form.reset();
+  } catch (err) {
+    errorMsg.style.display = 'block';
+  }
+  return false;
+}
+
+function goToFaqItem(query){
+  go('faq');
+  const searchBox = document.getElementById('faqSearch');
+  searchBox.value = query;
+  filterFaq();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function go(view){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  document.getElementById('view-' + view).classList.add('on');
+  document.getElementById('nav-compare').classList.toggle('active', view === 'compare');
+  document.getElementById('nav-odds').classList.toggle('active', view === 'odds');
+  document.getElementById('nav-faq').classList.toggle('active', view === 'faq');
+  const titles = {
+    home: '미국 복권 세금 계산기 | 로또택스 - 미국 파워볼·메가밀리언즈 실수령액',
+    compare: '미국 복권 이중과세·국가별 실수령액 비교 | 로또택스',
+    odds: '미국 파워볼 당첨 확률 체감 | 로또택스',
+    faq: '미국 복권 세금 FAQ - 이중과세·원천징수 | 로또택스',
+    privacy: '개인정보처리방침 | 로또택스',
+    disclaimer: '면책조항 | 로또택스',
+    contact: '문의하기 | 로또택스'
+  };
+  document.title = titles[view];
+
+  // 홈 ↔ 국가비교 이동 시, 어느 쪽에서 왔든 상관없이 항상 공용 상태(sharedAmountUsd/sharedCountry/EXCHANGE_RATE)를
+  // 기준으로 화면을 다시 그려서 입력값·환율이 끊기지 않게 함
+  if (view === 'home') {
+    syncHomeFromShared();
+  } else if (view === 'compare') {
+    syncCompareFromShared();
+  }
+
+  document.querySelector('.page').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function animateCount(el, target, opts) {
+  opts = opts || {};
+  const duration = 900;
+  const start = performance.now();
+  const prefix = opts.prefix || '';
+  const suffix = opts.suffix || '';
+  const decimals = opts.decimals || 0;
+  function frame(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3); // ease-out
+    const value = target * eased;
+    const formatted = decimals > 0
+      ? value.toFixed(decimals)
+      : Math.round(value).toLocaleString('en-US');
+    el.textContent = prefix + formatted + suffix;
+    if (progress < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+function runCountUps() {
+  document.querySelectorAll('.countup').forEach(el => {
+    const target = Number(el.getAttribute('data-target'));
+    animateCount(el, target, { prefix: '$' });
+  });
+  document.querySelectorAll('.countup-dec').forEach(el => {
+    const target = Number(el.getAttribute('data-target'));
+    const suffix = el.getAttribute('data-suffix') || '';
+    animateCount(el, target, { suffix, decimals: 1 });
+  });
+}
+
+function usdToKrwLabel(usd){
+  const krw = usd * EXCHANGE_RATE;
+  // 억 단위로 먼저 반올림한 뒤 조/억을 나누면, "999.6억이 반올림되며 조 단위를 못 넘어가는" 이월 누락 문제가 안 생김
+  const totalEok = Math.round(krw / 100000000);
+  const 조 = Math.floor(totalEok / 10000);
+  const 억 = totalEok % 10000;
+  if (조 > 0 && 억 === 0) return `(약 ${조}조원)`;
+  if (조 > 0) return `(약 ${조}조 ${억.toLocaleString('ko-KR')}억원)`;
+  return `(약 ${억.toLocaleString('ko-KR')}억원)`;
+}
+
+function getJackpotKRW(){
+  const usd = Number(document.getElementById('jp-powerball').getAttribute('data-target'));
+  return usd * EXCHANGE_RATE;
+}
+
+function checkHiddenMoney(){
+  const checks = document.querySelectorAll('.refund-check-row input[type="checkbox"]');
+  const checkedBoxes = Array.from(checks).filter(c => c.checked);
+  const checkedCount = checkedBoxes.length;
+  const resultEl = document.getElementById('hiddenMoneyResult');
+
+  if (checkedCount === 0) {
+    resultEl.textContent = '하나라도 해당되면, 아래에서 실제로 확인해보세요 👇';
+    resultEl.className = 'refund-wizard-result';
+  } else if (checkedCount === 1) {
+    resultEl.textContent = '✅ 해당하시는 게 있네요 — 못 받은 돈이 있을 가능성이 있어요. 아래에서 회원님한테 맞는 곳을 추천해드렸어요';
+    resultEl.className = 'refund-wizard-result tag-hit';
+  } else {
+    resultEl.textContent = `✅ ${checkedCount}개나 해당되시네요 — 실제로 못 받은 돈이 있을 가능성이 꽤 높아요. 아래에서 회원님한테 맞는 곳을 추천해드렸어요`;
+    resultEl.className = 'refund-wizard-result tag-hit';
+  }
+
+  // 체크한 항목에 연결된 사이트만 추천(강조)하고, 나머지는 흐리게
+  const recommendedSites = new Set(checkedBoxes.map(c => c.dataset.site));
+  const allSites = ['hometax', 'gov24', 'fine', 'health', 'cardpoint'];
+  const titleEl = document.getElementById('refundStep2Title');
+  allSites.forEach(site => {
+    const btn = document.getElementById('refund-site-' + site);
+    if (!btn) return;
+    if (checkedCount === 0) {
+      btn.classList.remove('recommended', 'dimmed');
+    } else if (recommendedSites.has(site)) {
+      btn.classList.add('recommended');
+      btn.classList.remove('dimmed');
+    } else {
+      btn.classList.remove('recommended');
+      btn.classList.add('dimmed');
+    }
+  });
+  titleEl.textContent = checkedCount === 0
+    ? '실제 신청 창구로 바로 이동하세요'
+    : '체크하신 내용 기준으로 이 곳부터 확인해보세요';
+}
+
+function checkRefundPossibility(){
+  const stateCode = document.getElementById('refundStateSelect').value;
+  const resultEl = document.getElementById('refundWizardResult');
+  if (!stateCode) {
+    resultEl.textContent = '주를 선택하면 환급 가능성을 바로 알려드려요';
+    resultEl.className = 'refund-wizard-result';
+    return;
+  }
+
+  const STATE_DISPLAY_NAMES = {
+    TX: '텍사스', FL: '플로리다', CA: '캘리포니아', WA: '워싱턴', NV: '네바다',
+    NY: '뉴욕', NJ: '뉴저지', OR: '오리건', MN: '미네소타', MD: '메릴랜드',
+  };
+  const NO_TAX_STATES = ['TX', 'FL', 'WA', 'NV'];
+  const EXEMPT_STATES = ['CA'];
+  const UNCERTAIN_STATES = ['MD'];
+  const stateInfo = STATE_TAX_RATES[stateCode];
+  const stateName = STATE_DISPLAY_NAMES[stateCode];
+
+  let msg, cls;
+  if (NO_TAX_STATES.includes(stateCode)) {
+    msg = `✕ 이 주(${stateName})는 주 소득세 자체가 없는 무과세 주예요. 애초에 원천징수된 게 없어서 돌려받을 것도 없어요.`;
+    cls = 'tag-none';
+  } else if (EXEMPT_STATES.includes(stateCode)) {
+    msg = `✕ 이 주(${stateName})는 주 소득세는 있지만 복권 당첨금은 별도로 면제해줘요. 이것도 돌려받을 게 없는 경우예요.`;
+    cls = 'tag-none';
+  } else if (UNCERTAIN_STATES.includes(stateCode)) {
+    msg = `? 이 주(${stateName})는 원천징수율 정보가 공식 자료마다 조금씩 달라서(8.75~9.5%) 정확한 확인이 더 필요해요. 당첨 시 주 복권 공식 사이트에서 실제 원천징수율을 꼭 확인하세요.`;
+    cls = 'tag-maybe';
+  } else {
+    msg = `? 이 주(${stateName})는 원천징수율이 약 ${(stateInfo.rate*100).toFixed(2)}%예요. 비거주자는 대체로 이 원천징수율 자체가 최종 세금으로 확정되는 경우가 많지만, 실제로 더 냈는지는 미국 비거주자 세금신고(1040-NR)로 정산해봐야 정확히 알 수 있어요 — 무조건 환급된다는 뜻은 아니에요.`;
+    cls = 'tag-check';
+  }
+  resultEl.textContent = msg;
+  resultEl.className = 'refund-wizard-result ' + cls;
+}
+
+let activeFaqCategory = 'all';
+
+function setFaqCategory(cat, btnEl){
+  activeFaqCategory = cat;
+  document.querySelectorAll('.faq-chip').forEach(c => c.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  filterFaq();
+}
+
+function filterFaq(){
+  const query = document.getElementById('faqSearch').value.trim().toLowerCase();
+  const items = document.querySelectorAll('#view-faq .faq-item');
+  let visibleCount = 0;
+  items.forEach(item => {
+    const text = item.textContent.toLowerCase();
+    const searchMatch = query === '' || text.includes(query);
+    const catMatch = activeFaqCategory === 'all' || item.dataset.cat === activeFaqCategory;
+    const match = searchMatch && catMatch;
+    item.style.display = match ? '' : 'none';
+    if (match) visibleCount++;
+    if (query !== '' && match && item.tagName === 'DETAILS') item.open = true;
+    if (query === '' && item.tagName === 'DETAILS') item.open = false;
+  });
+
+  // 심화 콘텐츠(더 자세히 알아보기 — 플레이슬립, 티켓 생김새 등)도 검색 대상에 포함
+  // 단, 카테고리 칩이 '전체'가 아니면 심화 콘텐츠는 어느 카테고리에도 속하지 않으므로 숨김
+  const moreToggle = document.querySelector('#view-faq .more-details-toggle');
+  let moreMatch = false;
+  if (moreToggle && activeFaqCategory !== 'all') {
+    moreToggle.style.display = 'none';
+    moreToggle.open = false;
+  } else if (moreToggle) {
+    const moreText = moreToggle.textContent.toLowerCase();
+    moreMatch = query !== '' && moreText.includes(query);
+    if (moreMatch) {
+      moreToggle.open = true;
+      moreToggle.style.display = '';
+      if (visibleCount === 0) visibleCount++; // 심화 콘텐츠에서만 매칭되어도 '결과 없음' 문구는 숨김
+    } else if (query !== '') {
+      moreToggle.style.display = visibleCount === 0 ? '' : 'none'; // 위 FAQ에 매칭이 있으면 심화 콘텐츠는 숨겨서 화면 정리
+    } else {
+      moreToggle.style.display = '';
+      moreToggle.open = false;
+    }
+  }
+
+  document.getElementById('faqNoResult').style.display = (visibleCount === 0) ? 'block' : 'none';
+}
+
+function drawLightningNumbers(){
+  const nums = new Set();
+  while (nums.size < 5) nums.add(Math.floor(Math.random() * 69) + 1);
+  const sorted = [...nums].sort((a,b) => a-b);
+  const pb = Math.floor(Math.random() * 26) + 1;
+  const balls = document.querySelectorAll('#lightning-result .lightning-ball');
+  sorted.forEach((n, i) => {
+    balls[i].textContent = n;
+    balls[i].classList.remove('drawn');
+    void balls[i].offsetWidth;
+    balls[i].classList.add('drawn');
+  });
+  balls[5].textContent = pb;
+  balls[5].classList.remove('drawn');
+  void balls[5].offsetWidth;
+  balls[5].classList.add('drawn');
+}
+
+function updateDrawCountdown(){
+  // 파워볼: 월(1)/수(3)/토(6), 메가밀리언즈: 화(2)/금(5)
+  function nextDrawInfo(drawDays){
+    const now = new Date();
+    const todayDow = now.getDay();
+    if (drawDays.includes(todayDow)) return { label: '🚨 오늘 밤 추첨!', urgent: true };
+    let diff = 1;
+    while (!drawDays.includes((todayDow + diff) % 7)) diff++;
+    return { label: `다음 추첨 D-${diff}`, urgent: false };
+  }
+  const pb = nextDrawInfo([1,3,6]);
+  const mg = nextDrawInfo([2,5]);
+  const pbEl = document.getElementById('dday-powerball');
+  const mgEl = document.getElementById('dday-mega');
+  pbEl.textContent = pb.label;
+  pbEl.classList.toggle('urgent', pb.urgent);
+  mgEl.textContent = mg.label;
+  mgEl.classList.toggle('urgent', mg.urgent);
+}
+
+// ============================================================================
+// 🎟️ 오늘 잭팟 수동 업데이트 존 — 추첨(파워볼 월/수/토, 메가밀리언즈 화/금) 다음날
+// 아래 값 4개(amountUsd, lastNumbers)만 공식 사이트 보고 고치면 30초로 끝납니다.
+// checkedOn은 오늘 날짜(YYYY-MM-DD)로 바꿔주세요 — 화면의 "최근 확인" 문구에 그대로 씁니다.
+// ============================================================================
+const JACKPOT_DATA = {
+  powerball:    { amountUsd: 1200000000, lastNumbers: '10·14·41·53·59 + PB 3',  checkedOn: '2026-07-04' },
+  megamillions: { amountUsd: 450000000,  lastNumbers: '26·41·50·53·62 + MB 12', checkedOn: '2026-07-01' },
+};
+
+function applyJackpotData(){
+  document.getElementById('jp-powerball').setAttribute('data-target', JACKPOT_DATA.powerball.amountUsd);
+  document.getElementById('jp-mega').setAttribute('data-target', JACKPOT_DATA.megamillions.amountUsd);
+  document.getElementById('jp-powerball-lastnum').textContent = '지난 당첨번호: ' + JACKPOT_DATA.powerball.lastNumbers;
+  document.getElementById('jp-mega-lastnum').textContent = '지난 당첨번호: ' + JACKPOT_DATA.megamillions.lastNumbers;
+
+  const checkedDates = [JACKPOT_DATA.powerball.checkedOn, JACKPOT_DATA.megamillions.checkedOn].sort();
+  const latest = checkedDates[checkedDates.length - 1];
+  const [yyyy, mm, dd] = latest.split('-');
+  document.getElementById('jp-update-time').textContent = `🙋 최근 확인: ${yyyy}.${mm}.${dd} (수동 업데이트) · 파워볼 월·수·토 / 메가밀리언즈 화·금 추첨`;
+}
+
+const CASH_VALUE_RATIO = 0.58; // 일시불(lump sum)은 발표된 연금 기준 잭팟의 약 45~60% (현재가치 할인) — 중간값 사용, 화면 표시 문구와 일치
+
+function initJackpotCardAmt(){
+  const krw = getJackpotKRW();
+  const 억 = (n) => (n / 100000000).toLocaleString('ko-KR') + '억원';
+  document.getElementById('jackpot-card-amt').textContent = '약 ' + 억(krw * CASH_VALUE_RATIO);
+  document.getElementById('jackpot-card-amt-note').textContent = '(일시불 세전)';
+
+  const pbUsd = Number(document.getElementById('jp-powerball').getAttribute('data-target'));
+  const mgUsd = Number(document.getElementById('jp-mega').getAttribute('data-target'));
+  document.getElementById('jp-powerball-krw').textContent = usdToKrwLabel(pbUsd);
+  document.getElementById('jp-mega-krw').textContent = usdToKrwLabel(mgUsd);
+}
+
+function refreshJackpotDrawerIfOpen(){
+  const box = document.getElementById('jackpot-calc-box');
+  if (box && box.classList.contains('show')) {
+    const announcedKrw = getJackpotKRW();
+    const cashKrw = announcedKrw * CASH_VALUE_RATIO;
+    const r = calcTakeHome(cashKrw / 100000000, 'kr');
+    const 억 = (n) => (n / 100000000).toLocaleString('ko-KR') + '억원';
+    document.getElementById('jc-jackpot').textContent = '약 ' + 억(announcedKrw);
+    document.getElementById('jc-cash').textContent = '약 ' + 억(cashKrw);
+    document.getElementById('jc-final').textContent = '약 ' + formatWon(r.final);
+    document.getElementById('jc-note-basis').textContent = `한국 거주자 기준 (${r.label1} ${r.val1} + ${r.label2} ${r.val2} 가정, 환율 약 ${EXCHANGE_RATE.toLocaleString('ko-KR')}원, 현금가치 ${(CASH_VALUE_RATIO*100).toFixed(0)}% 적용)`;
+
+    // 연금(annuity) 선택 시 — 발표 잭팟 총액을 30회로 단순 평균해 희망적인 그림도 함께 보여줌
+    const ANNUITY_PAYMENTS = 30;
+    const perYearKrw = announcedKrw / ANNUITY_PAYMENTS;
+    const rYear = calcTakeHome(perYearKrw / 100000000, 'kr');
+    document.getElementById('jc-annuity-year').textContent = '약 ' + 억(perYearKrw);
+    document.getElementById('jc-annuity-year-net').textContent = '약 ' + formatWon(rYear.final);
+    document.getElementById('jc-annuity-month-net').textContent = '약 ' + formatWon(rYear.final / 12);
+  }
+}
+
+function toggleJackpotCalc(){
+  const box = document.getElementById('jackpot-calc-box');
+  const isShowing = box.classList.toggle('show');
+  if (isShowing) refreshJackpotDrawerIfOpen();
+}
+
+document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); fetchLiveExchangeRate(); });
+window.addEventListener('resize', () => {
+  requestAnimationFrame(() => { fitAmountFontSize(document.getElementById('home-final-amt')); });
+});
+
+function fitAmountFontSize(el){
+  if (!el) return;
+  const container = el.parentElement;
+  if (!container) return;
+  el.style.fontSize = ''; // CSS clamp 기본값으로 리셋
+  let fontSize = parseFloat(getComputedStyle(el).fontSize);
+  const minFontSize = 20; // 아무리 길어도 이 밑으로는 안 줄임 (그 이하는 가독성 문제)
+  let guard = 0;
+  while (el.scrollWidth > container.clientWidth && fontSize > minFontSize && guard < 30) {
+    fontSize -= 1;
+    el.style.fontSize = fontSize + 'px';
+    guard++;
+  }
+}
+
+const _activeAnimations = new WeakMap(); // 엘리먼트별 진행 중인 애니메이션 프레임 추적 (빠른 연속 입력 시 중첩 실행 방지)
+
+function animateValueChange(el, fromVal, toVal, suffix, decimals, duration){
+  duration = duration || 250;
+  // 이 엘리먼트에서 이미 돌고 있는 애니메이션이 있으면 취소하고 새로 시작
+  const prevFrameId = _activeAnimations.get(el);
+  if (prevFrameId) cancelAnimationFrame(prevFrameId);
+
+  const start = performance.now();
+  function frame(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 2);
+    const value = fromVal + (toVal - fromVal) * eased;
+    if (progress >= 1) {
+      const isWhole = Math.round(value * 10) / 10 % 1 === 0;
+      const numStr = isWhole
+        ? Math.round(value).toLocaleString('ko-KR')
+        : value.toLocaleString('ko-KR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+      el.textContent = numStr + suffix;
+      _activeAnimations.delete(el);
+    } else {
+      el.textContent = value.toLocaleString('ko-KR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + suffix;
+      const id = requestAnimationFrame(frame);
+      _activeAnimations.set(el, id);
+    }
+  }
+  const id = requestAnimationFrame(frame);
+  _activeAnimations.set(el, id);
+}
+
+function parseMillionsInput(str){
+  // 소수점이 두 개 이상(예: "100.5.5") 들어와도 NaN->0으로 튀지 않게, 첫 소수점 뒤의 나머지 점은 전부 제거
+  const parts = str.replace(/[^0-9.]/g, '').split('.');
+  const sanitized = parts.length > 1 ? parts[0] + '.' + parts.slice(1).join('') : parts[0];
+  const n = Number(sanitized);
+  return isNaN(n) ? 0 : n;
+}
+
+function parseRateInput(str){
+  const n = Number(str.replace(/[^0-9]/g, ''));
+  return isNaN(n) || n <= 0 ? EXCHANGE_RATE : n;
+}
+
+function onHomeAmountTyped(){
+  const millions = parseMillionsInput(document.getElementById('homeAmountInput').value);
+  const slider = document.getElementById('homeAmountSlider');
+  slider.max = Math.max(2000, millions); // 기본 상한(2000=$2B)을 넘는 값을 입력하면 슬라이더 상한도 같이 늘려서 롤백 방지
+  slider.step = 1; // 타이핑한 정밀값(예: 153)이 슬라이더를 살짝 건드릴 때 10단위로 스냅되지 않도록 임시로 완화
+  slider.min = Math.min(10, Math.round(millions)); // $10M 미만 입력 시 슬라이더 하한도 같이 낮춰 불일치 방지
+  slider.value = Math.round(millions);
+  updateHomeCalc(millions * 1000000);
+}
+
+function onHomeSliderMoved(){
+  const slider = document.getElementById('homeAmountSlider');
+  slider.step = 10; // 유저가 슬라이더를 직접 조작하면 원래대로 10단위 스냅 복원
+  const usdMillions = Number(slider.value);
+  document.getElementById('homeAmountInput').value = usdMillions;
+  updateHomeCalc(usdMillions * 1000000);
+}
+
+function onHomeRateChanged(){
+  isRateManuallyEdited = true;
+  EXCHANGE_RATE = parseRateInput(document.getElementById('home-rate-input').value);
+  updateHomeCalc();
+  initJackpotCardAmt();
+  refreshJackpotDrawerIfOpen();
+}
+
+function updateFlexBox(finalEok){
+  const wonAmount = finalEok * 100000000;
+  const apt = Math.floor(wonAmount / 2500000000);
+  const car = Math.floor(wonAmount / 350000000);
+  const coffeeCups = Math.floor(wonAmount / 5000);
+  const coffeeYears = Math.floor(coffeeCups / 3 / 365);
+  document.getElementById('flex-apt').textContent = apt.toLocaleString('ko-KR') + '채';
+  document.getElementById('flex-car').textContent = car.toLocaleString('ko-KR') + '대';
+  document.getElementById('flex-coffee').textContent = coffeeYears > 0
+    ? `하루 3잔씩 ${coffeeYears.toLocaleString('ko-KR')}년`
+    : coffeeCups.toLocaleString('ko-KR') + '잔';
+  document.getElementById('flex-capture').textContent = apt > 0
+    ? `🏙️ 이 결과로 당첨되면 강남 아파트 ${apt.toLocaleString('ko-KR')}채 계약서 쓰러 갑니다. 미리 캡처해두세요 😉`
+    : `🏙️ 당첨금 규모를 키워보면 강남 아파트도 몇 채 살 수 있는지 보여드려요`;
+}
+
+async function shareResult(){
+  const amountText = document.getElementById('homeAmountInput').value || '100';
+  const finalAmt = document.getElementById('home-final-amt').textContent;
+  const country = document.getElementById('homeCountrySelect').value === 'us' ? '미국 거주자' : '한국 거주자';
+  const shareText = `미국 복권(${amountText} Million USD) 당첨되면 ${country} 기준 실수령액이 약 ${finalAmt}이래요. 세금 떼고 나면 실제로 얼마 남는지 로또택스에서 계산해보세요! (참고용 시뮬레이션 결과예요)`;
+  const shareUrl = location.href;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: '미국 복권 세금 계산기 - 로또택스', text: shareText, url: shareUrl });
+      return;
+    } catch (e) {
+      // 사용자가 공유 취소한 경우 등 — 조용히 무시
+      if (e && e.name === 'AbortError') return;
+    }
+  }
+
+  // Web Share API 미지원 브라우저 — 클립보드 복사로 대체
+  const btn = document.getElementById('home-share-btn');
+  try {
+    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = '✅ 링크가 복사됐어요';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
+    }
+  } catch (e) {
+    // 클립보드 API까지 막힌 환경(카카오톡 등 인앱 브라우저 등) — 사용자가 직접 보고 복사할 수 있게 표시
+    window.prompt('아래 내용을 길게 눌러 복사해서 공유해주세요', `${shareText} ${shareUrl}`);
+  }
+}
+
+async function shareRefundChecklist(){
+  const shareText = '나도 모르게 못 받은 돈이 있는지 체크리스트로 확인해봤어요. 국세환급금만 매년 수천억 원대가 안 찾아가서 사라진대요 (5년 지나면 국고로 귀속). 로또택스 FAQ에서 10분이면 확인 끝나요!';
+  const shareUrl = location.href;
+  const btn = document.getElementById('refund-share-btn');
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: '나도 모르는 잠자는 내 돈 찾기 체크리스트', text: shareText, url: shareUrl });
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = '✅ 링크가 복사됐어요';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
+    }
+  } catch (e) {
+    window.prompt('아래 내용을 길게 눌러 복사해서 공유해주세요', `${shareText} ${shareUrl}`);
+  }
+}
+
+function updateHomeCalc(usdOverride){
+  const usd = usdOverride !== undefined ? usdOverride : parseMillionsInput(document.getElementById('homeAmountInput').value) * 1000000;
+  const country = document.getElementById('homeCountrySelect').value;
+  const stateCode = document.getElementById('homeStateSelect').value;
+  sharedAmountUsd = usd;
+  sharedCountry = country;
+  sharedState = stateCode;
+  const 억 = (usd * EXCHANGE_RATE) / 100000000;
+  const r = calcTakeHome(억, country, stateCode);
+  const { final, label1, val1, label2, val2, basisSuffix } = r;
+
+  document.getElementById('home-krw-amt').textContent = formatWon(억);
+
+  const trustLine = document.getElementById('home-trust-line');
+  if (trustLine) {
+    trustLine.textContent = exchangeRateIsLive
+      ? '2026년 세율 기준 · 환율 실시간 반영'
+      : '2026년 세율 기준 · 환율 기본값(최근 확인 2026-07-08)';
+  }
+
+  const compareCta = document.getElementById('home-compare-cta');
+  if (compareCta) {
+    compareCta.textContent = country === 'us' ? '🇰🇷 한국이면 얼마나 다를까? →' : '🇺🇸 미국이면 얼마나 다를까? →';
+  }
+
+  const milestoneEl = document.getElementById('home-milestone');
+  if (final >= 10000) {
+    milestoneEl.textContent = '🎉 실수령액만 1조원이 넘어요!';
+    milestoneEl.style.display = 'block';
+  } else if (final >= 1000) {
+    milestoneEl.textContent = '💎 실수령액이 1,000억원을 넘었어요';
+    milestoneEl.style.display = 'block';
+  } else {
+    milestoneEl.style.display = 'none';
+  }
+  const finalEl = document.getElementById('home-final-amt');
+  const prevVal = parseFloat(finalEl.textContent.replace(/[^0-9.-]+/g, '')) || 0;
+  animateValueChange(finalEl, prevVal, final, '억원', 1, 250);
+  setTimeout(() => fitAmountFontSize(finalEl), 260);
+  const miniEl = document.getElementById('live-result-mini-amt');
+  if (miniEl) miniEl.textContent = formatWon(final);
+  document.getElementById('home-final-basis').textContent = formatWon(억) + ' 당첨 기준 · ' + basisSuffix;
+  document.getElementById('home-tax1-label').textContent = label1;
+  document.getElementById('home-tax1-val').textContent = val1;
+  document.getElementById('home-tax2-label').textContent = label2;
+  document.getElementById('home-tax2-val').textContent = val2;
+
+  const taxImpactPct = 억 > 0 ? Math.round(100 - (final / 억 * 100)) : 0;
+  document.getElementById('home-tax-impact').textContent = `💸 세금 때문에 당첨금의 약 ${taxImpactPct}%가 세금으로 빠져나가요`;
+  document.getElementById('tax-impact-before').textContent = formatWon(억);
+  document.getElementById('tax-impact-after').textContent = formatWon(final);
+  document.getElementById('tax-impact-diff').textContent = '-' + formatWon(억 - final);
+
+  const usdNote = document.getElementById('home-usd-note');
+  if (country === 'us') {
+    const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
+    const finalUsd = Math.round(usd * (1 - TAX_MODEL.us_resident.federal) * (1 - stateInfo.rate));
+    usdNote.textContent = `💵 실제로는 달러($${finalUsd.toLocaleString('en-US')})로 그대로 받아요 — 원화는 한국 기준과 비교하기 위한 참고용이에요`;
+    usdNote.style.display = 'block';
+  } else {
+    usdNote.style.display = 'none';
+  }
+
+  const showFiling = (country === 'us');
+  document.getElementById('home-filing-row').style.display = showFiling ? 'block' : 'none';
+  document.getElementById('home-state-row').style.display = showFiling ? 'flex' : 'none';
+  document.getElementById('home-state-label').style.display = showFiling ? 'block' : 'none';
+  updateFlexBox(final);
+  document.getElementById('home-filing-label').style.display = showFiling ? 'block' : 'none';
+  document.getElementById('home-filing-small').style.display = showFiling ? 'block' : 'none';
+  document.getElementById('home-filing-note').style.display = showFiling ? 'none' : 'block';
+}
+
+function onCompareAmountTyped(){
+  const millions = parseMillionsInput(document.getElementById('amountInput').value);
+  const slider = document.getElementById('amountSlider');
+  slider.max = Math.max(2000, millions);
+  slider.step = 1;
+  slider.min = Math.min(10, Math.round(millions)); // $10M 미만 입력 시 슬라이더 하한도 같이 낮춰 불일치 방지
+  slider.value = Math.round(millions);
+  updateCalc(millions * 1000000);
+}
+
+function onCompareSliderMoved(){
+  const slider = document.getElementById('amountSlider');
+  slider.step = 10;
+  const usdMillions = Number(slider.value);
+  document.getElementById('amountInput').value = usdMillions;
+  updateCalc(usdMillions * 1000000);
+}
+
+function onCompareRateChanged(){
+  isRateManuallyEdited = true;
+  EXCHANGE_RATE = parseRateInput(document.getElementById('compare-rate-input').value);
+  updateCalc();
+  initJackpotCardAmt();
+  refreshJackpotDrawerIfOpen();
+}
+
+function updateCalc(usdOverride){
+  const usd = usdOverride !== undefined ? usdOverride : parseMillionsInput(document.getElementById('amountInput').value) * 1000000;
+  const country = document.getElementById('compareCountrySelect').value;
+  const stateCode = document.getElementById('compareStateSelect').value;
+  sharedAmountUsd = usd;
+  sharedCountry = country;
+  sharedState = stateCode;
+  const 억 = (usd * EXCHANGE_RATE) / 100000000;
+  const r = calcTakeHome(억, country, stateCode);
+  const { final, afterUS } = r;
+  const cleanLabel1 = r.label1.replace(' (비거주자)', '');
+  const cleanLabel2 = r.label2.replace(' (예시)', '');
+  const label1 = country === 'us' ? `${cleanLabel1} (${r.val1})` : `${cleanLabel1} (비거주자, ${r.val1})`;
+  const label2 = `${cleanLabel2} (${r.val2})`;
+
+  document.getElementById('compare-krw-amt').textContent = formatWon(억);
+  document.getElementById('compare-tax1-label').textContent = label1;
+  document.getElementById('compare-tax2-label').textContent = label2;
+  document.getElementById('afterUS').textContent = formatWon(afterUS);
+  document.getElementById('afterKR').textContent = '-' + formatWon(afterUS - final);
+  const compareFinalEl = document.getElementById('finalAmt');
+  const comparePrevVal = parseFloat(compareFinalEl.textContent.replace(/[^0-9.-]+/g, '')) || 0;
+  animateValueChange(compareFinalEl, comparePrevVal, final, '억원', 1, 250);
+
+  const compareUsdNote = document.getElementById('compare-usd-note');
+  if (country === 'us') {
+    const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
+    const finalUsd = Math.round(usd * (1 - TAX_MODEL.us_resident.federal) * (1 - stateInfo.rate));
+    compareUsdNote.textContent = `💵 실제로는 달러($${finalUsd.toLocaleString('en-US')})로 그대로 받아요 — 원화는 한국 기준과 비교하기 위한 참고용이에요`;
+    compareUsdNote.style.display = 'block';
+  } else {
+    compareUsdNote.style.display = 'none';
+  }
+
+  const showFiling = (country === 'us');
+  document.getElementById('compare-filing-row').style.display = showFiling ? 'block' : 'none';
+  document.getElementById('compare-state-row').style.display = showFiling ? 'flex' : 'none';
+  document.getElementById('compare-state-label').style.display = showFiling ? 'block' : 'none';
+  document.getElementById('compare-filing-label').style.display = showFiling ? 'block' : 'none';
+  document.getElementById('compare-filing-small').style.display = showFiling ? 'block' : 'none';
+  document.getElementById('compare-filing-note').style.display = showFiling ? 'none' : 'block';
+}
+</script>
+
+</body>
+</html>
