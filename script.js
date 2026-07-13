@@ -229,7 +229,7 @@ const I18N = {
   'faq.q11': { en: 'Is it better to take it all at once, or in installments?' },
   'faq.a11': { en: 'The announced jackpot is actually the <b>annuity-based amount</b> \u2014 taking it as a lump sum only gets you <b>about 45\u201360%</b> of that (the rest is the discount for getting 29 years of payments all at once). From a tax standpoint, though, <b>a lump sum pushes you into a much higher bracket that year, while an annuity spreads the burden over many years</b>. In practice, most winners choose the lump sum. You usually have to decide within <b>60 days</b> of claiming, and it\u2019s irreversible once chosen \u2014 definitely consult a financial advisor before deciding.' },
   'faq.q12': { en: 'Where can I buy a US lottery ticket?' },
-  'faq.a12': { en: 'Tickets are sold at convenience stores, gas stations, etc. in the US. You may see services in Korea claiming to buy tickets on your behalf online, but such services may be illegal under Korean law (unauthorized lottery brokerage), so we don\u2019t recommend or link to them. Note that using such a service could also expose the consumer to penalties. We only help with tax and odds calculations 🙏' },
+  'faq.a12': { en: 'Tickets are sold at convenience stores, gas stations, etc. in the US. You may see services in Korea claiming to buy tickets on your behalf online, but such services may be illegal under Korean law (unauthorized lottery brokerage, Article 248(2) of the Criminal Act), so we don\u2019t recommend or link to them. Note that using such a service could also expose the consumer to penalties (Article 248(3)). A 2023 Korean Supreme Court ruling (2023Do2950, decided Oct 26, 2023) confirmed that even a lottery ticket legally issued in the US can be subject to penalty without a domestic legal basis. We only help with tax and odds calculations 🙏' },
   'faq.q13': { en: 'What if a friend buys a ticket for me, or claims the prize on my behalf?' },
   'faq.a13': { en: 'The commercial purchase-agent services mentioned above may be illegal, but if you\u2019re asking about a friend in the US personally buying a ticket for you \u2014 that also creates some genuinely complicated issues.<br><br>\n            <b>① Ownership</b>: US lottery ticket ownership is mostly determined by who signs to claim it. Without a prior written agreement, if that friend changes their mind and doesn\u2019t share the winnings, you\u2019d have little legal recourse.<br><br>\n            <b>② Taxes can actually get more complicated</b>: If your friend claims as a US resident, their tax rate (24\u201337%) applies. Then, sending that money to you would be treated as a "gift" under US tax law, potentially triggering <b>a separate US gift tax</b>, and receiving that money in Korea could also trigger <b>Korean gift tax</b> again. In other words, the total tax could end up <b>higher</b> than if you had claimed it yourself as a nonresident.<br><br>\n            In short, the larger the amount, the riskier this kind of proxy arrangement becomes. If this situation actually arises, be sure to consult a tax professional and lawyer beforehand (before winning!).' },
   'faq.q14': { en: 'Where can I check past winning numbers?' },
@@ -343,6 +343,7 @@ const I18N = {
   'privacy.breadcrumb':    { en: 'Privacy Policy' },
   'privacy.title':         { en: 'Privacy Policy' },
   'privacy.effectiveDate': { en: 'Effective date: July 9, 2026' },
+  'legal.draftNotice':     { en: '⚠️ This document is a draft. It has not yet undergone formal legal review (by an attorney) — please treat it as reference only until that review is complete.' },
   'privacy.h1': { en: '1. Personal information collected' },
   'privacy.b1': { en: 'ChamTax (the "Site") does <b>not store calculator input values (prize amount, country of residence, exchange rate, etc.) on any server.</b> All calculations happen only within the visitor\u2019s browser and disappear when you leave the page.<br>However, if you contact us via "Contact," we collect only the <b>email address and message content</b> you provide.' },
   'privacy.h2': { en: '2. Purpose of collection' },
@@ -1336,6 +1337,17 @@ function onHomeAmountTyped(){
   updateHomeCalc(rawValue.trim() === '' ? undefined : millions * 1000000);
 }
 
+// -webkit-appearance:none으로 네이티브 트랙을 지운 뒤라 Chrome/Safari는 진행 정도를 색으로
+// 보여줄 pseudo-element(::-webkit-slider-progress)가 없음 — 그래서 값이 바뀔 때마다 여기서
+// 직접 "지나온 구간만 --teal, 남은 구간은 --border"인 그라데이션을 계산해 발라줌
+// (Firefox는 ::-moz-range-progress로 CSS만으로 처리되니 이 함수와 무관)
+function updateSliderFill(slider){
+  const min = Number(slider.min) || 0;
+  const max = Number(slider.max) || 100;
+  const pct = max > min ? ((Number(slider.value) - min) / (max - min)) * 100 : 0;
+  slider.style.background = `linear-gradient(to right, var(--teal) ${pct}%, var(--border) ${pct}%)`;
+}
+
 function onHomeSliderMoved(){
   const slider = document.getElementById('homeAmountSlider');
   slider.step = 10; // 유저가 슬라이더를 직접 조작하면 원래대로 10단위 스냅 복원
@@ -1585,6 +1597,7 @@ function updateHomeCalc(usdOverride){
   sharedAmountUsd = usd;
   sharedCountry = country;
   sharedState = stateCode;
+  updateSliderFill(document.getElementById('homeAmountSlider'));
   const 억 = (usd * EXCHANGE_RATE) / 100000000;
   const r = calcTakeHome(억, country, stateCode);
   const { final, label1, val1, label2, val2, basisSuffix } = r;
