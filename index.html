@@ -58,11 +58,11 @@
       <!-- HOME VIEW -->
       <div class="view on" id="view-home">
         <div class="hero" style="padding-bottom:8px;">
-          <p class="hero-category-tag" data-i18n="hero.tag">🇺🇸 미국 복권 세금 계산기</p>
+          <p class="hero-category-tag" data-i18n="hero.tag">🧮 미국 복권 세금 계산기</p>
           <p class="hero-label" style="text-align:center;">
             <span data-i18n="hero.label">미국 복권에 당첨된다면</span>
           </p>
-          <h1 class="hero-amount" style="font-size:var(--fs-h1); line-height:1.4; font-family:inherit;" data-i18n-html="hero.title">내 통장에는<br>실제로 얼마 들어올까?</h1>
+          <h1 class="hero-amount" data-i18n-html="hero.title">내 통장에는<br>실제로 얼마 들어올까?</h1>
           <p class="reassure" style="margin-top:8px;" data-i18n="hero.reassure">✔ 정보만 제공해요 · 구매·중개 안 해요 · 입력값 저장 안 해요</p>
         </div>
 
@@ -107,12 +107,12 @@
                 <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
               </div>
               <select id="homeCountrySelect" onchange="updateHomeCalc()">
-                <option value="kr" data-i18n="input.optKorea">🇰🇷 한국 기준</option>
-                <option value="us" data-i18n="input.optUS">🇺🇸 미국 기준</option>
+                <option value="kr" data-i18n="input.optKorea">한국 기준</option>
+                <option value="us" data-i18n="input.optUS">미국 기준</option>
               </select>
             </div>
             <p class="krw-hint">≈ <span id="home-krw-amt">1,503.4억원</span> · <span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="home-rate-input" value="1,503.4" inputmode="decimal" oninput="onHomeRateChanged()"><span data-i18n="common.won">원</span> <button type="button" class="rate-live-badge" onclick="retryLiveExchangeRate(this)" title="기본값 사용 중 · 탭하면 실시간 환율로 갱신"><span aria-hidden="true">🔄</span></button></p>
-            <p class="filing-label" id="home-state-label" style="display:none;" data-i18n-html="compare.stateLabel">🇺🇸 거주 주(State) <span>(주세율이 0%~10.9%로 크게 달라요)</span></p>
+            <p class="filing-label" id="home-state-label" style="display:none;" data-i18n-html="compare.stateLabel">거주 주(State) <span>(주세율이 0%~10.9%로 크게 달라요)</span></p>
             <div class="input-row" style="margin-bottom:4px;" id="home-state-row">
               <select style="flex:1;" id="homeStateSelect" onchange="updateHomeCalc()">
                 <option value="AVG" data-i18n="state.AVG">평균 주세 (예시, 8%)</option>
@@ -128,7 +128,7 @@
                 <option value="MD" data-i18n="state.MD">메릴랜드 (8.95%, 확인중)</option>
               </select>
             </div>
-            <p class="filing-label" id="home-filing-label" style="display:none;" data-i18n="compare.filingLabel">🇺🇸 미국 거주자 신고 상태</p>
+            <p class="filing-label" id="home-filing-label" style="display:none;" data-i18n="compare.filingLabel">미국 거주자 신고 상태</p>
             <p class="filing-note-small" id="home-filing-small" style="display:none;" data-i18n="compare.filingSmall">💬 복권 당첨금처럼 큰 금액에서는 싱글/기혼 여부와 상관없이 결과가 거의 동일해요 (구간 차이가 전체 금액의 0.1% 미만이라서요)</p>
             <p class="filing-note" id="home-filing-note" style="display:none;" data-i18n-html="compare.filingNote">💡 한국 거주자는 <b>일반적으로 미국 비거주자 규정에 따라 원천징수 대상</b>이 되므로, 미국 거주자처럼 신고 상태(Single / Married Filing Jointly)를 선택할 필요가 없는 경우가 많아요. (당첨 형태·조세조약 등에 따라 달라질 수 있어요)</p>
             <input type="range" class="slider" id="homeAmountSlider" min="10" max="2000" step="10" value="100" oninput="onHomeSliderMoved()">
@@ -155,7 +155,7 @@
             <summary class="calc-detail-summary" data-i18n="home.detailSummary">🔍 결과 더 자세히 보기</summary>
             <p class="flow-explain" style="margin-top:8px;" data-i18n-html="home.flowExplain1">💡 뉴스에 나온 <b>발표 잭팟(연금 기준) 금액</b>은 실제로 받는 돈이 아니에요. 일시불로 받으면 그 약 45~60% 수준의 <b>현재가치(세전)</b>를 받고, 이 계산기는 그 실수령 세전 금액을 기준으로 계산해요.</p>
             <p class="result-hero-basis" id="home-final-basis" style="margin-top:8px;">1,522억원 당첨 기준 · 한국 거주자</p>
-            <p class="flow-explain" style="margin-top:8px;" data-i18n="compare.flowExplain">🇺🇸 미국에서 먼저 세금을 떼고, 🇰🇷 한국에서 추가로 과세돼요 (일부 공제 가능)</p>
+            <p class="flow-explain" style="margin-top:8px;" data-i18n="compare.flowExplain">미국에서 먼저 세금을 떼고, 한국에서 추가로 과세돼요 (일부 공제 가능)</p>
             <div class="result-grid" style="margin-top:8px; grid-template-columns:1fr 1fr;">
               <div class="result-cell">
                 <p class="result-label" id="home-tax1-label">미국 연방세 (비거주자)</p>
@@ -225,7 +225,7 @@
         </div>
 
         <details class="more-details-toggle">
-        <summary class="section-divider-toggle"><span data-i18n="home.jackpotToggle">🎟️ 오늘 잭팟 확인하기</span><span class="jp-summary-hint" id="jp-summary-hint" style="font-weight:400; font-size:var(--fs-small); color:var(--text-muted);"></span></summary>
+        <summary class="section-divider-toggle"><span class="jp-summary-title" data-i18n="home.jackpotToggle">🎟️ 오늘 잭팟 확인하기</span><span class="jp-summary-hint" id="jp-summary-hint" style="font-weight:400; font-size:var(--fs-small); color:var(--text-muted);"></span></summary>
         <div class="panel" id="home-jackpot-panel" style="padding:18px 20px; margin-top:16px; background:var(--grad-soft); border-color:rgba(38,36,32,0.12); box-shadow:var(--shadow-card);">
           <p class="panel-title" style="margin-bottom:10px; font-size:var(--fs-h3); color:var(--text-muted);"><span class="live-badge manual"><span class="live-dot"></span><span data-i18n="home.manualCheck">수동 확인</span></span></p>
           <div class="cards-row" style="grid-template-columns:1fr 1fr; margin-bottom:0; gap:8px;">
@@ -311,9 +311,9 @@
           </div>
           <p class="krw-hint">≈ <span id="compare-krw-amt">1,503.4억원</span> · <span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="compare-rate-input" value="1,503.4" inputmode="decimal" oninput="onCompareRateChanged()"><span data-i18n="common.won">원</span> <button type="button" class="rate-live-badge" onclick="retryLiveExchangeRate(this)" title="기본값 사용 중 · 탭하면 실시간 환율로 갱신"><span aria-hidden="true">🔄</span></button></p>
 
-          <p class="filing-label" id="compare-state-label" data-i18n-html="compare.stateLabel">🇺🇸 거주 주(State) <span>(주세율이 0%~10.9%로 크게 달라요)</span></p>
+          <p class="filing-label" id="compare-state-label" data-i18n-html="compare.stateLabel">거주 주(State) <span>(주세율이 0%~10.9%로 크게 달라요)</span></p>
           <div class="input-row" style="margin-bottom:4px;" id="compare-state-row">
-            <select style="flex:1; min-width:0;" id="compareStateSelect" onchange="updateCalc()">
+            <select id="compareStateSelect" onchange="updateCalc()">
               <option value="AVG" data-i18n="state.AVG">평균 주세 (예시, 8%)</option>
               <option value="TX" data-i18n="state.TX">텍사스 (0%)</option>
               <option value="FL" data-i18n="state.FL">플로리다 (0%)</option>
@@ -594,7 +594,7 @@
             <p class="faq-a" data-i18n-html="faq.a9">이거 진짜 중요해요 — <b>당첨금은 기한 안에 안 찾아가면 그냥 사라져요.</b> 주(state)로 귀속되고 영영 못 받아요.<br><br>👉 <b>보통 90일~1년 사이</b>예요, 주마다 달라요. 예를 들어 플로리다는 180일, 캘리포니아는 일반 당첨금 180일인데 잭팟은 1년까지 줘요.<br>👉 <b>잭팟이라면 별도 시한이 하나 더 있어요</b> — 일시불로 받을지 연금으로 받을지 정하는 기한이 보통 60일이에요(자세한 건 위 "한 번에 받는 게 나아요" 항목 참고). 놓치면 자동으로 연금으로 넘어가요.<br>👉 <b>실제로 이렇게 날린 사람이 있어요.</b> 오하이오에서 한 당첨자가 청구기한(180일)을 놓쳐서 <b>1억 3,800만 달러(약 1,900억원)</b>를 날린 사례가 있어요. 실화예요.<br><br>※ 정확한 기한은 주마다 다르니, 당첨된 주의 복권 공식 사이트에서 반드시 확인하세요</p>
           </details>
           <details class="faq-item" data-cat="refund">
-            <summary class="faq-q" data-i18n="faq.q10">복권 말고, 원래 내 돈인데 못 찾은 것도 있을까요? 🇰🇷</summary>
+            <summary class="faq-q" data-i18n="faq.q10">복권 말고, 원래 내 돈인데 못 찾은 것도 있을까요?</summary>
             <p class="faq-a" data-i18n-html="faq.a10">복권은 확률이 낮지만, 이건 <b>이미 내 이름으로 확정된 돈</b>이라 얘기가 달라요. 국세청에 따르면 <b>미수령 국세환급금이 매년 수천억 원대</b>로 쌓여있어요 — 종합소득세 신고를 안 해서 생긴 미환급금만 5년간 2,744억원이었던 적도 있어요. 최초 지급요구일로부터 <b>5년이 지나면 국고로 귀속</b>돼서 영영 못 받아요.</p>
             <div class="refund-step-card">
               <p class="refund-step-tag">STEP 1</p>
@@ -880,7 +880,7 @@
             <p class="qty-a" data-i18n-html="faq.largeAmtDetail">현금으로 안 줘요. <b>수표(check)나 은행 계좌 이체</b>로 지급되고, 처리에 보통 <b>6~8주</b> 정도 걸려요. 받으려면 은행 계좌가 필요해요.</p>
           </div>
           <div class="qty-box" style="background:#FBEEEC;">
-            <p class="qty-q" data-i18n="faq.krResident">🇰🇷 한국 거주자라면?</p>
+            <p class="qty-q" data-i18n="faq.krResident">한국 거주자라면?</p>
             <p class="qty-a" data-i18n-html="faq.krResidentDetail">솔직히 말씀드리면, 이 부분은 <b>공식적으로 명확한 절차가 공개되어 있지 않아요</b>. 미국 은행 계좌가 있으면 편하지만, 없다면 국제 송금을 각 주 복권 사무소와 개별 협의해야 할 가능성이 높아요. 이런 상황이 실제로 생기면 혼자 진행하지 마시고, <b>해당 주 복권 사무소 + 국제송금 가능한 은행 + 세무/법률 전문가</b>와 함께 진행하시길 권해요.</p>
           </div>
         </details>

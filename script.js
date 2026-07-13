@@ -22,7 +22,7 @@ const I18N = {
   'nav.compare':   { en: 'Compare' },
   'nav.odds':      { en: 'Odds' },
   'nav.faq':       { en: 'FAQ' },
-  'hero.tag':      { en: '🇺🇸 US Lottery Tax Calculator' },
+  'hero.tag':      { en: '🧮 US Lottery Tax Calculator' },
   'hero.label':    { en: 'If you won a US lottery,' },
   'hero.title':    { en: 'how much would<br>actually land in your bank account?' },
   'hero.reassure': { en: '✔ Information only · No purchase/brokerage · No data stored' },
@@ -36,8 +36,8 @@ const I18N = {
   'input.basisLabel':  { en: 'Tax basis' },
   'input.krwHint':     { en: '💡 The advertised jackpot isn\u2019t what you actually receive —' },
   'input.krwHintFull': { en: '💡 The advertised jackpot isn\u2019t what you actually receive — this calculates the pre-tax lump-sum value (about 45–60%)' },
-  'input.optKorea':    { en: '🇰🇷 Korea resident' },
-  'input.optUS':       { en: '🇺🇸 US resident' },
+  'input.optKorea':    { en: 'Korea resident' },
+  'input.optUS':       { en: 'US resident' },
   'common.seeMore':    { en: 'See more' },
   'explore.title':      { en: '🧭 Curious about more?' },
   'explore.compareLabel': { en: 'Country Compare' },
@@ -57,12 +57,12 @@ const I18N = {
   'compare.panelDesc':   { en: 'Type the prize amount or use the slider 👇' },
   'compare.krwHint':     { en: '💡 Not the advertised annuity jackpot — enter the pre-tax lump-sum cash value.' },
   'compare.selectHint':  { en: '💬 Your take-home amount depends on where you live' },
-  'compare.stateLabel':  { en: '🇺🇸 State of residence <span>(state tax ranges 0%~10.9%)</span>' },
-  'compare.filingLabel': { en: '🇺🇸 US resident filing status' },
+  'compare.stateLabel':  { en: 'State of residence <span>(state tax ranges 0%~10.9%)</span>' },
+  'compare.filingLabel': { en: 'US resident filing status' },
   'compare.filingSmall': { en: '💬 For prizes this large, filing status (single/married) barely changes the result (bracket difference is under 0.1% of the total)' },
   'compare.filingRow':   { en: 'Single and Married Filing Jointly give nearly identical results, so no selection is needed' },
   'compare.filingNote':  { en: '💡 Korea residents are <b>generally subject to US nonresident withholding rules</b>, so choosing a filing status like US residents (Single / Married Filing Jointly) usually isn\u2019t necessary. (May vary depending on payout type, tax treaty, etc.)' },
-  'compare.flowExplain': { en: '🇺🇸 The US withholds tax first, then 🇰🇷 Korea taxes the rest (with some credit available)' },
+  'compare.flowExplain': { en: 'The US withholds tax first, then Korea taxes the rest (with some credit available)' },
   'compare.sideTitle': { en: 'Korea vs. US, side by side' },
   'compare.sideKRFlag': { en: '🇰🇷 Korea resident' },
   'compare.sideUSFlag': { en: '🇺🇸 US resident (average state tax)' },
@@ -205,7 +205,7 @@ const I18N = {
   'state.name.OR': { en: 'Oregon' },
   'state.name.MN': { en: 'Minnesota' },
   'state.name.MD': { en: 'Maryland' },
-  'faq.q10': { en: 'Aside from the lottery, might I have unclaimed money that\u2019s already mine? 🇰🇷' },
+  'faq.q10': { en: 'Aside from the lottery, might I have unclaimed money that\u2019s already mine?' },
   'faq.a10': { en: 'Unlike the lottery, this is money <b>already confirmed under your name</b>, so it\u2019s a different story. According to the National Tax Service, <b>unclaimed tax refunds pile up to hundreds of billions of won every year</b> \u2014 unclaimed refunds from unfiled comprehensive income tax alone reached ₩274.4B over 5 years. <b>After 5 years from the first claim date, it reverts to the national treasury</b> and is gone for good.' },
   'faq.checklistTitle': { en: 'Check if any of these apply to you' },
   'faq.check1': { en: 'Changed jobs or left a job within the last 5 years' },
@@ -330,7 +330,7 @@ const I18N = {
   'faq.small600Detail': { en: 'You can get <b>cash</b> right on the spot at the store where you bought the ticket.' },
   'faq.largeAmt':       { en: '🏦 Large amounts (hundreds of thousands to millions of dollars)' },
   'faq.largeAmtDetail': { en: 'You won\u2019t get cash. Payment comes via <b>check or bank transfer</b>, and processing usually takes <b>6\u20138 weeks</b>. You\u2019ll need a bank account to receive it.' },
-  'faq.krResident':       { en: '🇰🇷 If you\u2019re a Korea resident?' },
+  'faq.krResident':       { en: 'If you\u2019re a Korea resident?' },
   'faq.krResidentDetail': { en: 'Honestly, there\u2019s <b>no clearly published official procedure</b> for this. Having a US bank account helps, but without one, you\u2019ll likely need to arrange international wire transfer individually with the state lottery office. If this situation actually comes up, don\u2019t handle it alone \u2014 work with <b>the state lottery office, a bank capable of international transfers, and a tax/legal professional</b> together.' },
   'faq.howManyTitle': { en: 'How many tickets can I buy at once?' },
   'faq.howManyDesc':  { en: 'This is actually two different questions mixed together \u2014 let\u2019s answer them separately' },
@@ -1138,8 +1138,8 @@ function applyJackpotData(){
   const summaryHint = document.getElementById('jp-summary-hint');
   if (summaryHint) {
     summaryHint.textContent = isEnJp
-      ? ` · manually checked ${mm}.${dd}`
-      : ` · ${mm}.${dd} 수동 확인`;
+      ? `manually checked ${mm}.${dd}`
+      : `${mm}.${dd} 수동 확인`;
   }
 }
 
@@ -1739,7 +1739,7 @@ function updateSideBySide(eok, stateCode){
   breakdownContainer.innerHTML = '';
 
   COUNTRY_TAX_PROFILES.forEach(profile => {
-    const baseLabel = profile.flag + ' ' + (isEn ? profile.labelEn : profile.label);
+    const baseLabel = isEn ? profile.labelEn : profile.label;
 
     if (!profile.implemented) {
       // 데이터가 아직 준비 안 된 나라 — 카드만 "준비 중"으로 보여주고 breakdown은 생략
