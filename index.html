@@ -51,7 +51,7 @@
           <button id="nav-compare" onclick="go('compare')" data-i18n="nav.compare">국가비교</button>
           <button id="nav-odds" onclick="go('odds')" data-i18n="nav.odds">확률체감</button>
           <button id="nav-faq" onclick="go('faq')" data-i18n="nav.faq">FAQ</button>
-          <button id="lang-toggle" onclick="toggleLanguage()" style="border:1px solid var(--border); border-radius:14px; padding:3px 8px; font-size:12px; font-weight:700; color:var(--text-dark); background:var(--card); cursor:pointer; margin-left:0;">EN</button>
+          <button id="lang-toggle" class="lang-toggle" onclick="toggleLanguage()">EN</button>
         </div>
       </div>
 
@@ -361,17 +361,17 @@
           </div>
           <div class="bar-row">
             <span class="bar-label" data-i18n="odds.barLightning">번개 맞을 확률</span>
-            <div class="bar-track"><div class="bar-fill muted" style="width:35%;"></div></div>
+            <div class="bar-track"><div class="bar-fill accent" style="width:35%;"></div></div>
             <span class="bar-value" data-i18n="odds.oddsLightning">1 / 1만 5,000</span>
           </div>
           <div class="bar-row">
             <span class="bar-label" data-i18n="odds.barPlane">비행기 사고</span>
-            <div class="bar-track"><div class="bar-fill muted" style="width:60%;"></div></div>
+            <div class="bar-track"><div class="bar-fill accent" style="width:60%;"></div></div>
             <span class="bar-value" data-i18n="odds.oddsPlane">1 / 1,100만</span>
           </div>
           <div class="bar-row">
             <span class="bar-label" data-i18n="odds.barShark">상어에 물릴 확률</span>
-            <div class="bar-track"><div class="bar-fill muted" style="width:78%;"></div></div>
+            <div class="bar-track"><div class="bar-fill accent" style="width:78%;"></div></div>
             <span class="bar-value" data-i18n="odds.oddsShark">1 / 375만</span>
           </div>
 
@@ -654,7 +654,7 @@
           </details>
           <details class="faq-item" data-cat="purchase">
             <summary class="faq-q" data-i18n="faq.q12">미국 복권은 어디서 살 수 있어요?</summary>
-            <p class="faq-a" data-i18n="faq.a12">미국 현지의 편의점·주유소 등에서 판매돼요. 한국에서 온라인 구매를 대행해준다는 업체들이 종종 보이는데, 이런 서비스는 국내법상 불법 소지가 있어서(복표발매중개죄) 저희는 소개하거나 연결해드리지 않아요. 이용한 소비자도 처벌 대상이 될 수 있다고 하니 참고하세요. 저희는 세금·확률 계산만 도와드려요 🙏</p>
+            <p class="faq-a" data-i18n="faq.a12">미국 현지의 편의점·주유소 등에서 판매돼요. 한국에서 온라인 구매를 대행해준다는 업체들이 종종 보이는데, 이런 서비스는 국내법상 불법 소지가 있어서(복표발매중개죄, 형법 제248조 제2항) 저희는 소개하거나 연결해드리지 않아요. 이용한 소비자도 처벌 대상이 될 수 있다고 하니 참고하세요(같은 조 제3항). 2023년 대법원 판결(2023도2950, 2023.10.26. 선고)로 미국에서 합법적으로 발행된 복권이라도 국내법 근거가 없으면 처벌 대상이 될 수 있다는 점이 확정됐어요. 저희는 세금·확률 계산만 도와드려요 🙏</p>
           </details>
           <details class="faq-item" data-cat="purchase">
             <summary class="faq-q" data-i18n="faq.q13">지인이 대신 사주거나, 대신 당첨금을 수령해주면 어떻게 돼요?</summary>
@@ -911,6 +911,7 @@
         <div class="panel">
           <p class="panel-title" data-i18n="privacy.title">개인정보처리방침</p>
           <p class="panel-desc" data-i18n="privacy.effectiveDate">시행일자: 2026년 7월 9일</p>
+          <p class="draft-notice" data-i18n="legal.draftNotice">⚠️ 이 문서는 초안입니다. 정식 법률 검토(변호사 검수)를 거치지 않았으며, 검토 완료 전까지는 참고용으로만 봐주세요.</p>
 
           <div class="legal-section">
             <p class="legal-h" data-i18n="privacy.h1">1. 수집하는 개인정보 항목</p>
@@ -957,6 +958,7 @@
         <div class="panel">
           <p class="panel-title" data-i18n="disclaimer.title">면책조항</p>
           <p class="panel-desc" data-i18n="privacy.effectiveDate">시행일자: 2026년 7월 9일</p>
+          <p class="draft-notice" data-i18n="legal.draftNotice">⚠️ 이 문서는 초안입니다. 정식 법률 검토(변호사 검수)를 거치지 않았으며, 검토 완료 전까지는 참고용으로만 봐주세요.</p>
 
           <div class="legal-section">
             <p class="legal-h" data-i18n="disclaimer.h1">1. 정보 제공 목적</p>
