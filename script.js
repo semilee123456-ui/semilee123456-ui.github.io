@@ -398,7 +398,8 @@ const I18N = {
   'home.flowExplain1':    { en: '💡 The <b>advertised jackpot (annuity basis)</b> shown in the news isn\u2019t what you actually receive. Taking the lump sum gets you roughly 45\u201360% of that as the <b>pre-tax cash value</b>, and this calculator is based on that pre-tax cash amount.' },
   'home.calcBasisBox':    { en: '• Lump-sum basis (differs for installment payouts)' },
   'home.funMoneySummary': { en: '🤑 How much could you actually buy with this? (just for fun)' },
-  'home.funSummaryMerged': { en: '🎉 Imagine winning (just for fun)' },
+  'home.funSummaryMerged': { en: '🤑 What could this buy? (just for fun)' },
+  'home.compareCta': { en: '🌍 How different would another country be? →' },
   'home.flexApt':      { en: 'Gangnam apartment (based on ₩2.5B)' },
   'home.flexCar':      { en: 'Ferrari Roma (based on ₩350M)' },
   'home.flexCoffee':   { en: 'Starbucks Americano (₩5,000)' },
@@ -1652,14 +1653,9 @@ function updateHomeCalc(usdOverride){
   document.getElementById('home-tax2-val').textContent = val2;
 
   const taxImpactPct = 억 > 0 ? Math.round(100 - (final / 억 * 100)) : 0;
+  document.getElementById('tax-impact-before').textContent = formatWon(억);
   document.getElementById('tax-impact-after').textContent = formatWon(final);
   document.getElementById('tax-impact-diff').textContent = '-' + formatWon(억 - final) + ` (${taxImpactPct}%)`;
-  // 메인 숫자 바로 위에 취소선 그은 발표금액을 작게 병기 — "발표금액→실수령액" 낙차가
-  // 결과 카드를 열어보지 않아도 첫눈에 느껴지도록 함(이 사이트의 핵심 임팩트 포인트)
-  const announcedStrikeEl = document.getElementById('home-announced-strike');
-  if (announcedStrikeEl) {
-    announcedStrikeEl.textContent = (currentLang === 'en' ? 'Announced ' : '발표 ') + formatWon(억);
-  }
 
   const usdNote = document.getElementById('home-usd-note');
   if (country === 'us') {

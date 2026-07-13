@@ -83,13 +83,13 @@
             <div class="result-hero-core">
               <div class="result-seal-row"><span class="result-seal" aria-hidden="true">참</span></div>
               <p class="result-hero-label" data-i18n="result.label">💰 예상 실수령액</p>
-              <p class="result-announced-strike" id="home-announced-strike"></p>
               <p class="result-hero-amt" id="home-final-amt">815억원</p>
               <p class="milestone-badge" id="home-milestone" style="display:none;"></p>
               <span class="milestone-burst" id="milestone-burst"></span>
               <p class="usd-actual-note" id="home-usd-note" style="display:none; margin-top:4px;"></p>
             </div>
             <div class="tax-impact-box">
+              <div class="tax-impact-row"><span data-i18n="home.taxBefore">발표 금액</span><span id="tax-impact-before">-</span></div>
               <div class="tax-impact-row"><span data-i18n="home.taxAfter">실제 수령</span><span id="tax-impact-after">-</span></div>
               <div class="tax-impact-row highlight"><span data-i18n="home.taxDiff">세금으로 감소</span><span id="tax-impact-diff">-</span></div>
             </div>
@@ -173,7 +173,7 @@
           </details>
 
           <details class="fun-toggle">
-            <summary class="calc-detail-summary" data-i18n="home.funSummaryMerged">🎉 당첨 후 상상해보기 (재미로 보기)</summary>
+            <summary class="calc-detail-summary" data-i18n="home.funSummaryMerged">🤑 이 돈이면 얼마나 살 수 있을까요? (재미로 보기)</summary>
             <div class="flex-box" style="margin-top:8px;">
               <div class="flex-row"><span class="flex-icon">🏙️</span><span class="flex-label" data-i18n="home.flexApt">강남 아파트 (25억 기준)</span><span class="flex-val" id="flex-apt">-</span></div>
               <div class="flex-row"><span class="flex-icon">🏎️</span><span class="flex-label" data-i18n="home.flexCar">페라리 로마 (3.5억 기준)</span><span class="flex-val" id="flex-car">-</span></div>
@@ -199,7 +199,7 @@
             </div>
           </details>
 
-          <button class="cta-btn" id="home-compare-cta" style="margin-top:16px;" onclick="goToCompareWithOppositeCountry()">🧭 다른 나라면 얼마나 다를까? →</button>
+          <button class="cta-btn" id="home-compare-cta" style="margin-top:16px;" onclick="goToCompareWithOppositeCountry()" data-i18n="home.compareCta">🌍 다른 나라면 얼마나 다를까? →</button>
           <button class="share-btn" id="home-share-btn" onclick="shareResult()" data-i18n="result.share">📤 결과 공유하기</button>
         </div>
 

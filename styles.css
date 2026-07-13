@@ -325,16 +325,9 @@
     background:rgba(156,111,30,0.05); flex-shrink:0;
   }
   .result-hero-label{ position:relative; font-size:var(--fs-h3); color:var(--text-muted); font-weight:600; margin:0 0 8px; }
-  .result-announced-strike{
-    font-size:var(--fs-note); color:var(--text-muted); text-decoration:line-through; text-decoration-color:rgba(192,57,43,0.5);
-    margin:0 0 2px; font-variant-numeric:tabular-nums;
-  }
   .result-trust-badge{
     font-size:var(--fs-note); color:var(--teal); font-weight:600; text-align:center; margin:8px 0 0;
   }
-  /* 영어 라벨("Estimated take-home amount")은 한국어보다 길어서 도장(도장 마크)이 있는 우측까지
-     침범할 수 있어, 영어일 때만 살짝 여백을 줘서 도장과 안 겹치게 함. 한국어는 원래 짧아서 불필요 */
-  html[lang="en"] .result-hero-label{ }
   /* 영어는 단어 단위로 줄바꿈되면서 한국어보다 여러 줄이 되는 경우가 많아서, 버튼·제목·설명문류에
      넉넉한 줄 간격을 별도로 적용함 (한국어는 word-break:keep-all이라 상대적으로 덜 꺾임) */
   html[lang="en"] .cta-btn,
