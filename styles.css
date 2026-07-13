@@ -72,7 +72,7 @@
   }
   .mascot-mark{ flex-shrink:0; }
   .logo span{ color:var(--teal); }
-  .menu{ display:flex; gap:8px; align-items:center; margin-left:auto; }
+  .menu{ display:flex; gap:14px; align-items:center; margin-left:auto; }
   .menu button{
     font-size:15px; color:var(--text-muted); font-weight:500; background:none; border:none;
     cursor:pointer; font-family:inherit; padding:0; position:relative;
@@ -851,7 +851,7 @@
   /* nav(로고+메뉴)는 훨씬 넓은 범위(480px 이하)에서 미리 축소 — 390px·393px·412px 같은
      실제로 흔히 쓰이는 폰 폭에서도 로고+메뉴가 한 줄에 안 들어가 줄바꿈되는 걸 방지 */
   @media (max-width: 480px) {
-    .menu{ gap:8px; }
+    .menu{ gap:11px; }
     .menu button{ font-size:13px; }
     .logo{ font-size:15px; gap:4px; }
     .logo .mascot-mark{ width:26px; height:26px; }
