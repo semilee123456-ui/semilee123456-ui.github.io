@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cellipse cx='5.5' cy='8' rx='3.2' ry='4.6' fill='none' stroke='%23155445' stroke-width='2.2' transform='rotate(-25 5.5 8)'/%3E%3Cellipse cx='20.5' cy='8' rx='3.2' ry='4.6' fill='none' stroke='%23155445' stroke-width='2.2' transform='rotate(25 20.5 8)'/%3E%3Ccircle cx='13' cy='14.5' r='8.3' fill='none' stroke='%23155445' stroke-width='2.2'/%3E%3Ccircle cx='9.7' cy='13' r='1.4' fill='%23155445'/%3E%3Ccircle cx='16.3' cy='13' r='1.4' fill='%23155445'/%3E%3C/svg%3E">
+<title>미국 복권 당첨금 실수령액 계산기 | 참택스</title>
+<meta name="description" content="발표된 잭팟 금액과 실제 받는 돈은 달라요. 일시불·연금 방식별 실수령액을 바로 계산해보세요.">
+<link rel="canonical" href="https://semilee123456-ui.github.io/us-lottery-take-home.html">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --teal:#155445; --bg:#FAF6EC; --card:#FFFEF9; --text-dark:#262420; --text-muted:#544E42; --border:#E8E2D3;
+    --fs-hero:36px; --fs-h1:26px; --fs-h2:20px; --fs-h3:18px; --fs-body:16px; --fs-note:14px; --fs-small:13px;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg); color:var(--text-dark); line-height:1.6; }
+  .wrap{ max-width:640px; margin:0 auto; padding:20px 20px 60px; }
+  .nav{ display:flex; justify-content:space-between; align-items:center; padding:16px 0; }
+  .logo{ font-size:20px; font-weight:800; color:var(--text-dark); text-decoration:none; }
+  .logo span{ color:var(--teal); }
+  .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
+  h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
+  .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .steps{ margin:20px 0; }
+  .step-row{ display:flex; gap:12px; padding-bottom:18px; position:relative; }
+  .step-num{ flex-shrink:0; width:26px; height:26px; border-radius:50%; background:var(--teal); color:var(--card); font-size:13px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .step-body p.t{ font-size:var(--fs-note); color:var(--text-muted); margin:0 0 2px; }
+  .step-body p.v{ font-size:var(--fs-h3); font-weight:800; color:var(--text-dark); margin:0; }
+  h2{ font-size:var(--fs-h2); margin:32px 0 12px; }
+  p{ font-size:var(--fs-body); margin:0 0 14px; }
+  table{ width:100%; border-collapse:collapse; margin:16px 0; font-size:var(--fs-note); }
+  th,td{ text-align:left; padding:8px; border-bottom:1px solid var(--border); }
+  th{ color:var(--text-muted); font-weight:700; }
+  .cta-box{ background:var(--teal); border-radius:16px; padding:28px 24px; text-align:center; margin:32px 0; }
+  .cta-box p{ color:var(--card); font-size:var(--fs-h3); font-weight:700; margin:0 0 14px; }
+  .cta-box a{ display:inline-block; background:var(--card); color:var(--teal); font-weight:800; font-size:var(--fs-body); padding:13px 28px; border-radius:10px; text-decoration:none; }
+  .faq-item{ border-bottom:1px solid var(--border); padding:16px 0; }
+  .faq-item summary{ font-size:var(--fs-h3); font-weight:700; cursor:pointer; }
+  .faq-item p{ margin-top:8px; color:var(--text-muted); }
+  .disclaimer{ font-size:var(--fs-small); color:var(--text-muted); margin-top:32px; padding-top:16px; border-top:1px solid var(--border); }
+  .related-links{ display:flex; flex-direction:column; gap:8px; margin:16px 0 32px; }
+  .related-links a{ font-size:var(--fs-note); color:var(--teal); text-decoration:none; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav">
+    <a class="logo" href="index.html">참<span>택스</span></a>
+    <a class="back" href="index.html">← 계산기로 바로가기</a>
+  </div>
+
+  <h1>미국 복권 당첨금, 실제로 내 손에 들어오는 돈은?</h1>
+  <p class="lead">뉴스에서 본 "$1.2B 잭팟"이 그대로 내 통장에 들어오는 게 아니에요. 왜 그런지, 실제로 얼마가 남는지 단계별로 정리했어요.</p>
+
+  <div class="steps">
+    <div class="step-row">
+      <span class="step-num">1</span>
+      <div class="step-body"><p class="t">발표된 잭팟 (연금 기준)</p><p class="v">예: $1,200,000,000</p></div>
+    </div>
+    <div class="step-row">
+      <span class="step-num">2</span>
+      <div class="step-body"><p class="t">일시불 선택 시 (현재가치, 세전, 약 45~60%)</p><p class="v">약 $696,000,000</p></div>
+    </div>
+    <div class="step-row">
+      <span class="step-num">3</span>
+      <div class="step-body"><p class="t">미국 원천징수 후 (30%)</p><p class="v">약 $487,200,000</p></div>
+    </div>
+    <div class="step-row">
+      <span class="step-num">3</span>
+      <div class="step-body"><p class="t">한국 세금까지 반영하면 (약 33%)</p><p class="v">최종적으로 발표 금액의 약 40~47% 수준</p></div>
+    </div>
+  </div>
+
+  <h2>왜 발표 금액이랑 이렇게 차이 나요?</h2>
+  <p>두 가지 이유가 있어요. 첫째, 발표된 잭팟은 <b>연금(annuity) 기준 총액</b>이에요. 대부분의 당첨자가 선택하는 일시불(Lump Sum)은 이 금액을 현재가치로 할인한 <b>약 45~60%</b>만 받아요. 둘째, 여기에 <b>미국 원천징수(30%)</b>와 <b>한국 세금</b>이 순서대로 적용돼요.</p>
+
+  <h2>일시불 vs 연금, 표로 비교</h2>
+  <table>
+    <tr><th></th><th>일시불 (Lump Sum)</th><th>연금 (Annuity)</th></tr>
+    <tr><td>받는 방식</td><td>한 번에</td><td>29년간 30회 분할</td></tr>
+    <tr><td>총액</td><td>발표 금액의 약 45~60%</td><td>발표 금액 전액</td></tr>
+    <tr><td>세금 부담</td><td>그 해에 집중</td><td>매년 분산</td></tr>
+    <tr><td>선택 인원</td><td>대부분 (선호)</td><td>소수</td></tr>
+    <tr><td>변경 가능 여부</td><td colspan="2">청구 후 60일 이내 선택, 이후 변경 불가</td></tr>
+  </table>
+
+  <div class="cta-box">
+    <p>내 당첨금이면 정확히 얼마 남을까?</p>
+    <a href="index.html">지금 바로 계산해보기 →</a>
+  </div>
+
+  <h2>자주 묻는 질문</h2>
+  <details class="faq-item">
+    <summary>왜 일시불이 발표 금액의 절반밖에 안 돼요?</summary>
+    <p>연금은 미국 국채로 29년에 걸쳐 지급되는데, 일시불은 그 미래 현금흐름을 지금 시점의 가치로 할인해서 계산하기 때문이에요. 금리 수준에 따라 비율이 45~60% 사이에서 움직여요.</p>
+  </details>
+  <details class="faq-item">
+    <summary>세금은 일시불 금액에 붙어요, 발표 금액에 붙어요?</summary>
+    <p>실제로 받는 일시불(또는 연금 회차별) 금액을 기준으로 세금이 계산돼요. 발표된 연금 총액 자체에 세금이 붙는 게 아니에요.</p>
+  </details>
+  <details class="faq-item">
+    <summary>연금으로 받으면 세금이 더 유리해요?</summary>
+    <p>총액 자체는 연금이 더 크지만(현재가치 할인이 없으니까), 세금 계산 방식이 단순화된 시뮬레이션이라 정확한 유불리는 개인 상황에 따라 달라요. 큰 금액일수록 재정 전문가와 상의가 필요해요.</p>
+  </details>
+
+  <div class="related-links">
+    <a href="powerball-tax.html">→ 파워볼 세금 계산</a>
+    <a href="megamillions-tax.html">→ 메가밀리언즈 세금 계산</a>
+    <a href="korea-resident-us-lottery-tax.html">→ 한국 거주자 미국 복권 세금 완벽 정리</a>
+  </div>
+
+  <p class="disclaimer">이 페이지는 정보 제공 목적의 시뮬레이터이며, 복권 구매를 대행·중개하지 않습니다. 실제 세무 처리는 세무 전문가와 상담하세요.</p>
+</div>
+</body>
+</html>
