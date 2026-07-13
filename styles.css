@@ -522,15 +522,18 @@
   .panel-accordion-title::after{ content:'+'; font-size:20px; font-weight:400; color:var(--text-dark); flex-shrink:0; }
   .panel-accordion[open] > .panel-accordion-title::after{ content:'−'; }
   .panel-accordion[open] > .panel-accordion-title{ margin-bottom:4px; }
-  .calc-detail-toggle{ margin-top:10px; }
-  .fun-toggle{ margin-top:10px; }
+  .calc-detail-toggle{ margin-top:14px; }
+  .fun-toggle{ margin-top:2px; }
   .calc-detail-summary{
-    font-size:var(--fs-body); font-weight:700; color:var(--text-dark); cursor:pointer; list-style:none;
-    text-align:center; padding:8px; background:var(--bg); border-radius:8px;
+    font-size:var(--fs-note); font-weight:700; color:var(--teal); cursor:pointer; list-style:none;
+    text-align:center; padding:10px 0;
   }
+  .calc-detail-summary::after{ content:' ▾'; font-weight:400; }
+  .calc-detail-toggle[open] > .calc-detail-summary::after,
+  .fun-toggle[open] > .calc-detail-summary::after{ content:' ▴'; }
   /* "재미로 보기" 콘텐츠는 우선순위상 가장 낮은 티어라, "결과 더 자세히 보기"(설명·근거)보다
      한 단계 낮은 무게로 — 살짝 작고 연하게 */
-  .fun-toggle .calc-detail-summary{ font-size:var(--fs-note); font-weight:600; color:var(--text-muted); }
+  .fun-toggle .calc-detail-summary{ font-size:var(--fs-small); font-weight:600; color:var(--text-muted); }
   .calc-detail-summary::-webkit-details-marker{ display:none; }
   .flex-box{
     margin-top:14px; background:linear-gradient(135deg, rgba(38,36,32,0.08), rgba(38,36,32,0.08));

@@ -392,6 +392,8 @@ const I18N = {
   'home.reversePlaceholder': { en: 'e.g. 100' },
   'home.reverseBtn':      { en: 'Calculate' },
   'home.reverseUnit':     { en: '(×₩100M)' },
+  'home.sliderMin': { en: '$10M' },
+  'home.sliderMax': { en: '$2B' },
   'home.detailSummary':   { en: '🔍 See the full breakdown' },
   'home.flowExplain1':    { en: '💡 The <b>advertised jackpot (annuity basis)</b> shown in the news isn\u2019t what you actually receive. Taking the lump sum gets you roughly 45\u201360% of that as the <b>pre-tax cash value</b>, and this calculator is based on that pre-tax cash amount.' },
   'home.calcBasisBox':    { en: '• Lump-sum basis (differs for installment payouts)' },
@@ -1607,11 +1609,9 @@ function updateHomeCalc(usdOverride){
 
   const compareCta = document.getElementById('home-compare-cta');
   if (compareCta) {
-    if (currentLang === 'en') {
-      compareCta.textContent = country === 'us' ? "🇰🇷 What if I lived in Korea? →" : "🇺🇸 What if I lived in the US? →";
-    } else {
-      compareCta.textContent = country === 'us' ? '🇰🇷 한국이면 얼마나 다를까? →' : '🇺🇸 미국이면 얼마나 다를까? →';
-    }
+    // 국기 이모지(🇺🇸/🇰🇷)는 Windows 등 일부 환경에서 렌더링이 안 되고 "US"/"KR" 텍스트로
+    // 깨져 보이는 문제가 있어서, 특정 국기에 의존하지 않는 나침반 이모지 + 범용 문구로 변경함
+    compareCta.textContent = currentLang === 'en' ? '🧭 What about another country? →' : '🧭 다른 나라면 얼마나 다를까? →';
   }
 
   const milestoneEl = document.getElementById('home-milestone');

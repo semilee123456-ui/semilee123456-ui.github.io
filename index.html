@@ -130,8 +130,9 @@
             </div>
             <p class="filing-label" id="home-filing-label" style="display:none;" data-i18n="compare.filingLabel">🇺🇸 미국 거주자 신고 상태</p>
             <p class="filing-note-small" id="home-filing-small" style="display:none;" data-i18n="compare.filingSmall">💬 복권 당첨금처럼 큰 금액에서는 싱글/기혼 여부와 상관없이 결과가 거의 동일해요 (구간 차이가 전체 금액의 0.1% 미만이라서요)</p>
+            <p class="filing-note" id="home-filing-note" style="display:none;" data-i18n-html="compare.filingNote">💡 한국 거주자는 <b>일반적으로 미국 비거주자 규정에 따라 원천징수 대상</b>이 되므로, 미국 거주자처럼 신고 상태(Single / Married Filing Jointly)를 선택할 필요가 없는 경우가 많아요. (당첨 형태·조세조약 등에 따라 달라질 수 있어요)</p>
             <input type="range" class="slider" id="homeAmountSlider" min="10" max="2000" step="10" value="100" oninput="onHomeSliderMoved()">
-            <div class="slider-range-label"><span>$10M</span><span>$2B</span></div>
+            <div class="slider-range-label"><span data-i18n="home.sliderMin">1천만 달러</span><span data-i18n="home.sliderMax">20억 달러</span></div>
             <div class="live-result-mini">
               <span data-i18n="home.miniResultLabel">👉 실수령액</span>
               <span class="live-result-mini-amt" id="live-result-mini-amt">815억원</span>
@@ -169,8 +170,6 @@
               <span data-i18n="home.calcBasisBox">• 일시불 기준 (분할 수령 시 달라짐)</span>
             </div>
             <p class="sim-note" data-i18n="compare.simNote">💡 종합소득세 누진세율과 외국납부세액공제(FTC)를 반영한 참고용 계산이에요 — 실제 세액은 개인 상황에 따라 달라질 수 있어 세무 전문가 상담을 권해요</p>
-            <p class="select-hint" style="margin-top:6px;" data-i18n="compare.selectHint">💬 사는 나라에 따라 실제 받는 돈이 달라져요</p>
-            <p class="filing-note" id="home-filing-note" style="display:none;" data-i18n-html="compare.filingNote">💡 한국 거주자는 <b>일반적으로 미국 비거주자 규정에 따라 원천징수 대상</b>이 되므로, 미국 거주자처럼 신고 상태(Single / Married Filing Jointly)를 선택할 필요가 없는 경우가 많아요. (당첨 형태·조세조약 등에 따라 달라질 수 있어요)</p>
           </details>
 
           <details class="fun-toggle">
@@ -200,7 +199,7 @@
             </div>
           </details>
 
-          <button class="cta-btn" id="home-compare-cta" style="margin-top:16px;" onclick="goToCompareWithOppositeCountry()">🇰🇷 한국이면 얼마나 다를까? →</button>
+          <button class="cta-btn" id="home-compare-cta" style="margin-top:16px;" onclick="goToCompareWithOppositeCountry()">🧭 다른 나라면 얼마나 다를까? →</button>
           <button class="share-btn" id="home-share-btn" onclick="shareResult()" data-i18n="result.share">📤 결과 공유하기</button>
         </div>
 
