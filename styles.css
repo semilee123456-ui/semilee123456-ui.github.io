@@ -1,6 +1,11 @@
   :root{
     /* ===== 참택스 리디자인 (2026-07) — 40~60대 색채 선호도 연구 + 2026 컬러 트렌드 +
        한국 전통 재물운 색채 상징을 근거로 재구성. 상세 근거는 가이드북 Part 5-10 참고 ===== */
+    /* ⚠️ 주의: 이 색상 팔레트는 아래 5개 서브페이지에도 각자 :root로 중복 정의되어 있음
+       (korea-resident-us-lottery-tax.html, megamillions-tax.html, powerball-tax.html,
+        us-lottery-take-home.html, us-lottery-tax-rate.html) — 여기서 색상을 바꾸면
+       반드시 저 5개 파일도 같이 고쳐야 함. 한 곳만 고치면 이번처럼 --status-amber 같은
+       변수가 일부 페이지에만 빠지는 문제가 재발함. 공유 CSS 파일로 합치는 걸 권장함 */
     --navy:#262420;      /* 먹빛(warm ink) — 순검정 대신 온기 있는 다크톤 */
     --teal:#155445;      /* 깊은 청록-초록 — 40~60대 선호도 데이터 + 오방색 "정화·시작" 의미 반영 */
     --seafoam:#155445;
@@ -753,6 +758,7 @@
   .refund-wizard-result.tag-none{ border-left-color:#C0392B; }
   .refund-wizard-result.tag-maybe{ border-left-color:var(--status-amber); }
   .refund-wizard-result.tag-check{ border-left-color:var(--teal); }
+  .refund-wizard-result.tag-hit{ border-left-color:var(--teal); }
 
   .refund-check-row{
     display:flex; align-items:center; gap:8px; font-size:var(--fs-note); color:var(--text-dark);
