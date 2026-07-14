@@ -195,7 +195,7 @@
   .side-by-side-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(105px, 1fr)); gap:10px; margin-top:14px; }
   .side-card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; min-width:0; }
   .side-card-flag{ font-size:var(--fs-small); color:var(--text-muted); font-weight:700; margin:0 0 8px; }
-  .side-card-amt{ font-size:clamp(17px, 6vw, 22px); font-weight:800; color:var(--teal); margin:0 0 6px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .side-card-amt{ font-size:clamp(17px, 6vw, 22px); font-weight:800; color:var(--teal); margin:0 0 6px; font-variant-numeric:tabular-nums; overflow-wrap:break-word; }
   .side-card-rate{ font-size:var(--fs-small); color:var(--text-muted); margin:0; }
   .side-breakdown-title{ font-size:19px; font-weight:800; color:var(--text-dark); margin:22px 0 4px; }
   .side-flow-explain{ font-size:var(--fs-note); color:var(--text-muted); margin:0 0 14px; line-height:1.6; }
