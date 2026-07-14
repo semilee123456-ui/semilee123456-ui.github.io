@@ -36,6 +36,7 @@ const I18N = {
   'input.basisLabel':  { en: 'Tax basis' },
   'input.krwHint':     { en: '💡 The advertised jackpot isn\u2019t what you actually receive —' },
   'input.krwHintFull': { en: '💡 The advertised jackpot isn\u2019t your take-home amount — enter the pre-tax lump-sum value (about 45–60%)' },
+  'home.inputHint': { en: '👇 Try replacing the example amount below with your own prize' },
   'input.optKorea':    { en: 'Korea resident' },
   'input.optUS':       { en: 'US resident' },
   'common.seeMore':    { en: 'See more' },
@@ -146,7 +147,7 @@ const I18N = {
   'odds.jcAnnuityNote': { en: 'Unlike the discounted lump sum, an annuity pays out <b>the full announced jackpot</b> over 30 payments across 29 years (each payment grows 5% after the first). Spreading it out over years also spreads the tax burden \u2014 the amount above is a simple average, so the actual first payment is lower.' },
   'odds.match5':      { en: 'Match 5 numbers' },
   'odds.missedPB':    { en: 'Missed the Powerball' },
-  'odds.amt5':        { en: 'About \u20a91.38B' },
+  'odds.amt5':        { en: 'About \u20a91.4B' },
   'odds.odds5':       { en: '1 / 11.69M' },
   'odds.match4pb':    { en: 'Match 4 + Powerball' },
   'odds.amt4pb':      { en: 'About \u20a96.9M' },
@@ -249,7 +250,7 @@ const I18N = {
   'faq.q19': { en: 'How do I file these taxes?' },
   'faq.a19': { en: '30% is withheld in the US first, and in Korea, <b>you must combine it as other income and file with your comprehensive income tax return the following May</b> (based on an NTS online consultation response from July 2026). Tax paid in the US can be offset via Foreign Tax Credit (FTC). Since this is a consultation answer rather than an official ruling, please consult a tax professional who handles both US and Korean tax when you actually file.' },
   'faq.q20': { en: 'Are there lotteries other than Powerball and Mega Millions?' },
-  'faq.a20': { en: 'Yes! Starting February 22, 2026, a new lottery called <b>"Millionaire for Life"</b> launched, merging the two previous games "Lucky for Life" and "Cash4Life." The top prize pays <b>$1M per year for life</b> (about ₩1.38B/year, or roughly $18M as a lump sum), and the second prize pays $100K per year for life (about ₩140M/year). Tickets are $5, with drawings every night. Note that this site\u2019s tax calculator is currently set up for Powerball and Mega Millions only.' },
+  'faq.a20': { en: 'Yes! Starting February 22, 2026, a new lottery called <b>"Millionaire for Life"</b> launched, merging the two previous games "Lucky for Life" and "Cash4Life." The top prize pays <b>$1M per year for life</b> (about ₩1.4B/year, or roughly $18M as a lump sum), and the second prize pays $100K per year for life (about ₩140M/year). Tickets are $5, with drawings every night. Note that this site\u2019s tax calculator is currently set up for Powerball and Mega Millions only.' },
   'faq.moreTitle':  { en: '📚 Learn more (terms, purchase process, payout methods, etc.)' },
   'faq.termsTitle': { en: 'Let\u2019s start with the basic terms' },
   'faq.termsDesc':  { en: 'The part people mix up the most \u2014 here\u2019s a side-by-side comparison of the two games' },
@@ -672,12 +673,8 @@ function syncCompareFromShared(){
 // 코드 곳곳에 "억원"이 리터럴 문자열로도 흩어져 있어(2026년 7월 기준 약 25곳) 같이 찾아 바꿔야 함.
 function formatWon(n){
   if (typeof currentLang !== 'undefined' && currentLang === 'en') return formatWonEn(n);
-  // 소수점이 사실상 0이면 정수로, 아니면 소수 1자리로 표시 (100.0억원 같은 어색한 표기 방지) + 천단위 콤마
-  const rounded = Math.round(n * 10) / 10;
-  const isWhole = rounded % 1 === 0;
-  const numStr = isWhole
-    ? Math.round(rounded).toLocaleString('ko-KR')
-    : rounded.toLocaleString('ko-KR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  // 소수점 없이 정수(억원 단위)로 반올림해서 표시 — 읽기 쉽게 + 천단위 콤마
+  const numStr = Math.round(n).toLocaleString('ko-KR');
   return numStr + '억원';
 }
 
@@ -689,10 +686,10 @@ function formatWonEn(n){
   const abs = Math.abs(krw);
   let numStr, unit;
   if (abs >= 1e12) {
-    numStr = (krw / 1e12).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    numStr = (krw / 1e12).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
     unit = 'trillion';
   } else if (abs >= 1e9) {
-    numStr = (krw / 1e9).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    numStr = (krw / 1e9).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
     unit = 'billion';
   } else {
     numStr = (krw / 1e6).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
@@ -1151,7 +1148,7 @@ function initJackpotCardAmt(){
   const isEnCard = (typeof currentLang !== 'undefined' && currentLang === 'en');
   const 억 = isEnCard
     ? (n) => formatWonEn(n / 100000000)
-    : (n) => (n / 100000000).toLocaleString('ko-KR') + '억원';
+    : (n) => Math.round(n / 100000000).toLocaleString('ko-KR') + '억원';
   document.getElementById('jackpot-card-amt').textContent = (isEnCard ? 'About ' : '약 ') + 억(krw * CASH_VALUE_RATIO);
   document.getElementById('jackpot-card-amt-note').textContent = isEnCard ? '(lump-sum, pre-tax)' : '(일시불 세전)';
 
@@ -1170,7 +1167,7 @@ function refreshJackpotDrawerIfOpen(){
     const isEnJc = (typeof currentLang !== 'undefined' && currentLang === 'en');
     const 억 = isEnJc
       ? (n) => formatWonEn(n / 100000000)
-      : (n) => (n / 100000000).toLocaleString('ko-KR') + '억원';
+      : (n) => Math.round(n / 100000000).toLocaleString('ko-KR') + '억원';
     const about = isEnJc ? 'About ' : '약 ';
     document.getElementById('jc-jackpot').textContent = about + 억(announcedKrw);
     document.getElementById('jc-cash').textContent = about + 억(cashKrw);
