@@ -791,8 +791,8 @@ function calcTakeHome(amount, country, stateCode){
     return {
       afterUS, final,
       label1: isEn ? 'US Federal Tax (nonresident)' : '미국 연방세 (비거주자)', val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
-      label2: isEn ? 'Korea additional tax (income + local, with FTC)' : '한국 추가 납부 (종합소득세+지방세, FTC 적용)',
-      val2: koreaAdditionalNationalTaxWon > 0 ? '-' + koreaEffectivePct.toFixed(1) + '%' : (isEn ? '₩0 (offset by FTC)' : '0원 (FTC로 상계)'),
+      label2: isEn ? 'Korea additional tax (income + local, w/ foreign tax credit)' : '한국 추가 납부 (종합소득세+지방세, 외국납부세액공제 적용)',
+      val2: koreaAdditionalNationalTaxWon > 0 ? '-' + koreaEffectivePct.toFixed(1) + '%' : (isEn ? '₩0 (offset by tax credit)' : '0원 (세액공제로 상계)'),
       basisSuffix: isEn ? 'Korea resident · Progressive income tax + Foreign Tax Credit applied' : '한국 거주자 · 종합소득세 누진세율 + 외국납부세액공제 반영'
     };
   }
