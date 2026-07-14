@@ -698,7 +698,7 @@ function formatWonEn(n){
     numStr = (krw / 1e6).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
     unit = 'million';
   }
-  return '₩' + numStr + ' ' + unit;
+  return '₩ ' + numStr + ' ' + unit;
 }
 
 const TAX_MODEL = {
