@@ -51,6 +51,7 @@ const I18N = {
   'common.exchangeRate': { en: 'Rate' },
   'common.won':        { en: 'KRW' },
   'common.close':      { en: 'Close' },
+  'common.refreshRate': { en: 'Refresh exchange rate' },
   'common.adSlot':     { en: 'Ad Space (Google AdSense)' },
   'compare.breadcrumb':  { en: 'Country Comparison' },
   'compare.panelTitle':  { en: 'Curious what actually lands in your pocket?' },
@@ -408,10 +409,10 @@ const I18N = {
   'home.groundingNote': { en: '🌱 But honestly, what you already have might be more than enough for a good day' },
   'home.dreamSummary': { en: '🎬 What would you do first if you won? (just for fun)' },
   'home.dreamIntro':   { en: 'What would you do first if you won? Pick one:' },
-  'home.dreamFreedom': { en: '🕊️ Hand in my resignation letter first' },
-  'home.dreamFamily':  { en: '🏠 Buy a house for every family member' },
-  'home.dreamTravel':  { en: '✈️ Leave on a world trip right away' },
-  'home.dreamCalm':    { en: '💼 Just quietly check my bank balance' },
+  'home.dreamFreedom': { en: '<span class="dream-emoji">🕊️</span> Hand in my resignation letter first' },
+  'home.dreamFamily':  { en: '<span class="dream-emoji">🏠</span> Buy a house for every family member' },
+  'home.dreamTravel':  { en: '<span class="dream-emoji">✈️</span> Leave on a world trip right away' },
+  'home.dreamCalm':    { en: '<span class="dream-emoji">💼</span> Just quietly check my bank balance' },
   'home.shareDreamBtn': { en: '📤 Share this result' },
   'home.jackpotToggle': { en: '🎟️ Check today\u2019s jackpot' },
   'home.manualCheck':   { en: 'Checked manually' },
@@ -1303,6 +1304,11 @@ function animateValueChange(el, fromVal, toVal, suffix, decimals, duration, onDo
   _activeAnimations.set(el, id);
 }
 
+const MAX_INPUT_MILLIONS = 1000000; // $1조 달러 — 역대 최고 잭팟(약 20억 달러)의 500배 수준으로 이미 비현실적인 상한.
+// 이 상한이 없으면 자릿수가 극단적으로 큰 입력(예: 30자리 숫자)이 들어왔을 때, 결과 숫자가 애니메이션으로
+// 올라가는 도중 극단적으로 큰 이전 값과 정상 범위의 새 값 사이의 부동소수점 연산(a + (b-a)*progress)에서
+// 자릿수 차이가 너무 커 오차가 발생해, 이후 정상적인 금액을 입력해도 결과가 "0"에 멈춰버리는 문제가 있었음
+
 function parseMillionsInput(str){
   // 소수점이 두 개 이상(예: "100.5.5") 들어오면, 뒤에 오는 숫자를 이어붙이지 않고 무시함.
   // "100.5.5"는 "100.5"를 치려다 마침표를 실수로 한 번 더 누른 경우일 가능성이 높아서,
@@ -1310,7 +1316,8 @@ function parseMillionsInput(str){
   const parts = str.replace(/[^0-9.]/g, '').split('.');
   const sanitized = parts.length > 1 ? parts[0] + '.' + parts[1] : parts[0];
   const n = Number(sanitized);
-  return isNaN(n) ? 0 : n;
+  if (isNaN(n)) return 0;
+  return Math.min(n, MAX_INPUT_MILLIONS);
 }
 
 function parseRateInput(str){

@@ -325,7 +325,7 @@
   }
   /* 시그니처 요소 — "참"(眞, 진짜·검증됨)의 뜻을 담은 도장 마크.
      한국 전통 인감도장처럼, 이 결과가 근거 있게 계산된 값이라는 걸 시각적으로 표현함 */
-  .result-seal-row{ display:flex; justify-content:flex-end; margin-bottom:6px; }
+  .result-seal-row{ float:right; margin:0 0 6px 10px; }
   .result-seal{
     width:44px; height:44px; border-radius:50%;
     border:1.5px solid var(--gold); display:flex; align-items:center; justify-content:center;
@@ -333,7 +333,7 @@
     transform:rotate(-8deg); opacity:0.9; pointer-events:none; font-family:inherit;
     background:rgba(156,111,30,0.05); flex-shrink:0;
   }
-  .result-hero-label{ position:relative; font-size:var(--fs-h3); color:var(--text-muted); font-weight:600; margin:0 0 8px; }
+  .result-hero-label{ position:relative; font-size:var(--fs-h3); color:var(--text-muted); font-weight:600; margin:0 0 8px; overflow-wrap:normal; }
   .result-trust-badge{
     font-size:var(--fs-note); color:var(--teal); font-weight:600; text-align:center; margin:8px 0 0;
   }
@@ -356,7 +356,7 @@
   html[lang="en"] .feature-sub{ line-height:1.7; }
   .result-hero-amt{
     position:relative; font-size:clamp(30px, 11vw, 54px); font-weight:800; margin:0;
-    font-variant-numeric:tabular-nums; white-space:nowrap;
+    font-variant-numeric:tabular-nums; white-space:nowrap; clear:both;
     color:var(--teal); text-shadow:none; line-height:1.25;
   }
   .result-hero-basis{ font-size:var(--fs-note); color:var(--text-muted); margin:4px 0 0; }
@@ -559,6 +559,7 @@
     color:var(--text-dark); cursor:pointer; transition:border-color 0.15s ease;
   }
   .dream-option:active{ transform:scale(0.98); }
+  .dream-emoji{ font-size:1.4em; vertical-align:-3px; margin-right:2px; }
   @media (hover: hover) { .dream-option:hover{ border-color:var(--teal); } }
   .dream-result{
     margin-top:14px; padding:18px 16px; text-align:center; background:var(--grad-soft);
@@ -881,4 +882,5 @@
     .footer-links button{ font-size:13px; }
     .panel{ padding:10px; }
     .refund-link-buttons{ grid-template-columns:1fr; }
+    .result-seal{ width:34px; height:34px; font-size:10px; }
   }
