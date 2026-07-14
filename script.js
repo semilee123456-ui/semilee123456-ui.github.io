@@ -1628,13 +1628,6 @@ function updateHomeCalc(usdOverride){
     }
   }
 
-  const compareCta = document.getElementById('home-compare-cta');
-  if (compareCta) {
-    // 국기 이모지(🇺🇸/🇰🇷)는 Windows 등 일부 환경에서 렌더링이 안 되고 "US"/"KR" 텍스트로
-    // 깨져 보이는 문제가 있어서, 특정 국기에 의존하지 않는 나침반 이모지 + 범용 문구로 변경함
-    compareCta.textContent = currentLang === 'en' ? '🧭 What about another country? →' : '🧭 다른 나라면 얼마나 다를까? →';
-  }
-
   const milestoneEl = document.getElementById('home-milestone');
   const newMilestoneTier = final >= 10000 ? 2 : (final >= 1000 ? 1 : 0);
   if (newMilestoneTier === 2) {

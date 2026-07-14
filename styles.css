@@ -544,7 +544,7 @@
   .flex-icon{ flex-shrink:0; font-size:15px; }
   .flex-label{ flex:1; min-width:120px; color:var(--text-dark); }
   .flex-val{ font-weight:800; color:var(--text-dark); white-space:nowrap; }
-  .flex-note{ font-size:var(--fs-small); color:var(--text-muted); margin:8px 0 0; text-align:right; }
+  .flex-note{ font-size:var(--fs-small); color:var(--text-muted); margin:8px 0 0; text-align:center; }
   .flex-capture{
     font-size:var(--fs-note); font-weight:700; color:var(--navy); text-align:center; margin:10px 0 0;
     padding-top:10px; border-top:1px dashed rgba(11,37,69,0.15);
