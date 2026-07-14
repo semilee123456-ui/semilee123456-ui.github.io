@@ -187,7 +187,7 @@
       "name": "파워볼·메가밀리언즈 말고 다른 복권도 있어요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "네! 2026년 2월 22일부터 \"밀리어네어 포 라이프(Millionaire for Life)\"라는 새 복권이 생겼어요. 기존에 있던 \"럭키 포 라이프\"와 \"캐시4라이프\"라는 두 게임이 통합되어 새로 출시된 거예요. 1등에 당첨되면 매년 $100만(약 14억원)을 평생 받을 수 있고(일시불로는 약 $1,800만), 2등도 매년 $10만(약 1억원)씩 평생 받아요. 한 장에 $5이고, 매일 밤 추첨해요. 다만 이 사이트의 세금 계산기는 아직 파워볼·메가밀리언즈 기준으로만 맞춰져 있어요."
+        "text": "네! 2026년 2월 22일부터 \"밀리어네어 포 라이프(Millionaire for Life)\"라는 새 복권이 생겼어요. 기존에 있던 \"럭키 포 라이프\"와 \"캐시4라이프\"라는 두 게임이 통합되어 새로 출시된 거예요. 1등에 당첨되면 매년 $100만(약 15억원)을 평생 받을 수 있고(일시불로는 약 $1,800만), 2등도 매년 $10만(약 1.5억원)씩 평생 받아요. 한 장에 $5이고, 매일 밤 추첨해요. 다만 이 사이트의 세금 계산기는 아직 파워볼·메가밀리언즈 기준으로만 맞춰져 있어요."
       }
     }
   ]
@@ -268,7 +268,7 @@
             <div class="field-labels">
               <span data-i18n="input.amountLabel">당첨금 입력</span><span data-i18n="input.basisLabel">세금 계산 기준</span>
             </div>
-            <p class="krw-hint" style="margin-bottom:6px;" data-i18n="input.krwHintFull">💡 발표 잭팟과 실제 수령액은 달라요 — 일시불 세전 현재가치(약 45~60%)를 입력해요</p>
+            <p class="krw-hint" style="margin-bottom:6px;" data-i18n="input.krwHintFull">💡 뉴스 속 잭팟 금액이 아니라, 일시불로 받는 실제 금액(약 45~60%)을 입력해요</p>
             <p class="panel-desc" style="margin-bottom:6px;" data-i18n="home.inputHint">👇 아래 예시 금액을 내 당첨금으로 직접 바꿔보세요</p>
             <div class="input-row" style="margin-bottom:4px;">
               <div class="million-input-wrap">
@@ -341,8 +341,6 @@
             <p class="sim-note" data-i18n="compare.simNote">💡 종합소득세 누진세율과 외국납부세액공제(FTC)를 반영한 참고용 계산이에요 — 실제 세액은 개인 상황에 따라 달라질 수 있어 세무 전문가 상담을 권해요</p>
           </details>
 
-          <button class="cta-btn" id="home-compare-cta" style="margin-top:16px;" onclick="goToCompareWithOppositeCountry()" data-i18n="home.compareCta">🌍 다른 나라면 얼마나 다를까? →</button>
-
           <details class="fun-toggle">
             <summary class="calc-detail-summary" data-i18n="home.funSummaryMerged">🤑 이 돈이면 얼마나 살 수 있을까요? (재미로 보기)</summary>
             <div class="flex-box" style="margin-top:8px;">
@@ -368,15 +366,14 @@
                 <button class="share-btn" onclick="shareDreamResult()" data-i18n="home.shareDreamBtn">📤 이 결과 공유하기</button>
               </div>
             </div>
+            <button class="share-btn" id="home-share-btn" style="margin-top:16px;" onclick="shareResult()" data-i18n="result.share">📤 결과 공유하기</button>
           </details>
-
-          <button class="share-btn" id="home-share-btn" onclick="shareResult()" data-i18n="result.share">📤 결과 공유하기</button>
         </div>
 
         <div class="explore-section">
           <p class="explore-title" data-i18n="explore.title">🧭 이것도 궁금하지 않으세요?</p>
           <div class="explore-grid">
-            <button class="explore-card" onclick="go('compare')">
+            <button class="explore-card" onclick="goToCompareWithOppositeCountry()">
               <span class="explore-icon">🌍</span>
               <span class="explore-label" data-i18n="explore.compareLabel">국가별 비교</span>
               <span class="explore-sub" data-i18n="explore.compareSub">어디 살면 더 유리할까</span>
@@ -520,8 +517,8 @@
       <div class="view" id="view-odds">
         <button class="back-btn" onclick="go('home')" data-i18n="common.backHome">← 홈으로</button>
 
-        <div class="panel">
-          <p class="panel-title" data-i18n="odds.panelTitle">이 확률, 솔직히 감이 안 오시죠?</p>
+        <details class="panel odds-accordion" open>
+          <summary class="panel-title-toggle" data-i18n="odds.panelTitle">이 확률, 솔직히 감이 안 오시죠?</summary>
           <p class="panel-desc" data-i18n="odds.panelDesc">1/2억 9,200만이라는 숫자, 사실 와닿지 않잖아요. 그래서 비교해봤어요.</p>
 
           <div class="bar-row">
@@ -546,10 +543,10 @@
           </div>
 
           <div class="callout" data-i18n-html="odds.callout">💡 파워볼 1등 확률, <b>번개를 19,000번 연속으로 맞는 것</b>과 비슷해요. 그래도 매년 여러 명은 당첨되고 있어요 🍀</div>
-        </div>
+        </details>
 
-        <div class="panel">
-          <p class="panel-title" data-i18n="odds.winnersTitle">🏆 실제로 이만큼 당첨된 사람들도 있어요</p>
+        <details class="panel odds-accordion">
+          <summary class="panel-title-toggle" data-i18n="odds.winnersTitle">🏆 실제로 이만큼 당첨된 사람들도 있어요</summary>
           <p class="panel-desc" data-i18n="odds.winnersDesc">그래도 정말 당첨되긴 해요 — 실제 있었던 역대급 사례들이에요</p>
           <div class="winner-story">
             <span class="ws-amt" data-i18n="odds.winner1Amt">$20억 4천만</span>
@@ -563,21 +560,12 @@
             <span class="ws-amt" data-i18n="odds.winner3Amt">익명 다수</span>
             <span class="ws-desc" data-i18n="odds.winner3">주(state)에 따라 당첨자가 신원을 공개 안 해도 되는 곳도 있어요 (플로리다·텍사스·델라웨어 등). 실제로 많은 고액 당첨자들이 이 방법을 택해요.</span>
           </div>
-        </div>
+        </details>
 
-        <div class="panel">
-          <p class="panel-title" data-i18n="odds.lightningTitle">⚡ 오늘의 번개 번호 뽑기</p>
-          <p class="panel-desc" data-i18n="odds.lightningDesc">오늘 당신이 번개에 맞을 그 기운으로, 재미 삼아 번호 6개를 뽑아드려요</p>
-          <div class="lightning-result" id="lightning-result">
-            <span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball pb">?</span>
-          </div>
-          <button class="cta-btn" onclick="drawLightningNumbers()" data-i18n="odds.drawBtn">⚡⚡⚡ 번호 뽑아보기</button>
-          <p class="foot-note" style="margin-top:10px; text-align:center;" data-i18n="odds.drawNote">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉 (실제 구매 안내 아님)</p>
-        </div>
-
-        <div class="panel">
-          <p class="panel-title" data-i18n="odds.payoutTitle">몇 개 맞추면 얼마 받을까요?</p>
+        <details class="panel odds-accordion" open>
+          <summary class="panel-title-toggle" data-i18n="odds.payoutTitle">몇 개 맞추면 얼마 받을까요?</summary>
           <p class="panel-desc" data-i18n="odds.payoutDesc">파워볼 기준, 맞춘 개수별 당첨금이에요</p>
+          <p class="foot-note" style="margin:-8px 0 14px;" data-i18n-html="odds.megaNote">💡 메가밀리언즈는 번호·상금 체계가 달라요 — <a href="https://www.megamillions.com" target="_blank" rel="noopener noreferrer" style="color:var(--teal); font-weight:700; text-decoration:none;">공식 사이트에서 확인하세요 →</a></p>
 
           <div class="howto-box">
             <p class="howto-title" data-i18n="odds.howtoTitle">🎱 먼저, 게임 방식부터</p>
@@ -644,7 +632,7 @@
               <p class="prize-explain" data-i18n="odds.missedPB">파워볼은 틀림</p>
             </div>
             <div class="prize-right">
-              <p class="prize-amt"><span data-i18n="odds.amt5">약 14억원</span> <span class="prize-usd">($1,000,000)</span></p>
+              <p class="prize-amt"><span data-i18n="odds.amt5">약 15억원</span> <span class="prize-usd">($1,000,000)</span></p>
               <p class="prize-odds"><span data-i18n="odds.odds5">1 / 1,169만</span> <span class="prize-pct">(0.0000086%)</span></p>
             </div>
           </div>
@@ -653,7 +641,7 @@
               <p class="prize-match" data-i18n="odds.match4pb">숫자 4개 + 파워볼 맞춤</p>
             </div>
             <div class="prize-right">
-              <p class="prize-amt"><span data-i18n="odds.amt4pb">약 690만원</span> <span class="prize-usd">($50,000)</span></p>
+              <p class="prize-amt"><span data-i18n="odds.amt4pb">약 7,500만원</span> <span class="prize-usd">($50,000)</span></p>
               <p class="prize-odds"><span data-i18n="odds.odds4pb">1 / 91만</span> <span class="prize-pct">(0.00011%)</span></p>
             </div>
           </div>
@@ -663,7 +651,7 @@
               <p class="prize-explain" data-i18n="odds.missedPB">파워볼은 틀림</p>
             </div>
             <div class="prize-right">
-              <p class="prize-amt"><span data-i18n="odds.amt4">약 14,000원</span> <span class="prize-usd">($100)</span></p>
+              <p class="prize-amt"><span data-i18n="odds.amt4">약 15만원</span> <span class="prize-usd">($100)</span></p>
               <p class="prize-odds"><span data-i18n="odds.odds4">1 / 3만 6,525</span> <span class="prize-pct">(0.27%)</span></p>
             </div>
           </div>
@@ -672,7 +660,7 @@
               <p class="prize-match" data-i18n="odds.match3pb">숫자 3개 + 파워볼 맞춤</p>
             </div>
             <div class="prize-right">
-              <p class="prize-amt"><span data-i18n="odds.amt3pb">약 14,000원</span> <span class="prize-usd">($100)</span></p>
+              <p class="prize-amt"><span data-i18n="odds.amt3pb">약 15만원</span> <span class="prize-usd">($100)</span></p>
               <p class="prize-odds"><span data-i18n="odds.odds3pb">1 / 1만 4,494</span> <span class="prize-pct">(0.69%)</span></p>
             </div>
           </div>
@@ -681,11 +669,21 @@
               <p class="prize-match" data-i18n="odds.matchPBonly">파워볼 번호만 맞춤</p>
             </div>
             <div class="prize-right">
-              <p class="prize-amt"><span data-i18n="odds.amtPBonly">약 550원</span> <span class="prize-usd">($4)</span></p>
+              <p class="prize-amt"><span data-i18n="odds.amtPBonly">약 6,000원</span> <span class="prize-usd">($4)</span></p>
               <p class="prize-odds"><span data-i18n="odds.oddsPBonly">1 / 38</span> <span class="prize-pct">(2.63%)</span></p>
             </div>
           </div>
-        </div>
+        </details>
+
+        <details class="panel odds-accordion">
+          <summary class="panel-title-toggle" data-i18n="odds.lightningTitle">⚡ 오늘의 번개 번호 뽑기</summary>
+          <p class="panel-desc" data-i18n="odds.lightningDesc">오늘 당신이 번개에 맞을 그 기운으로, 재미 삼아 번호 6개를 뽑아드려요</p>
+          <div class="lightning-result" id="lightning-result">
+            <span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball pb">?</span>
+          </div>
+          <button class="cta-btn" onclick="drawLightningNumbers()" data-i18n="odds.drawBtn">⚡⚡⚡ 번호 뽑아보기</button>
+          <p class="foot-note" style="margin-top:10px; text-align:center;" data-i18n="odds.drawNote">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉 (실제 구매 안내 아님)</p>
+        </details>
 
         <p class="disclaimer" data-i18n="odds.disclaimer">확률 수치는 공식 발표 자료 기준이에요. 원화 환산은 참고용 환율 적용이라 실제와 다를 수 있어요.</p>
       </div>
@@ -859,7 +857,7 @@
           </details>
           <details class="faq-item" data-cat="game">
             <summary class="faq-q" data-i18n="faq.q20">파워볼·메가밀리언즈 말고 다른 복권도 있어요?</summary>
-            <p class="faq-a" data-i18n-html="faq.a20">네! 2026년 2월 22일부터 <b>"밀리어네어 포 라이프(Millionaire for Life)"</b>라는 새 복권이 생겼어요. 기존에 있던 "럭키 포 라이프"와 "캐시4라이프"라는 두 게임이 통합되어 새로 출시된 거예요. 1등에 당첨되면 <b>매년 $100만(약 14억원)을 평생</b> 받을 수 있고(일시불로는 약 $1,800만), 2등도 매년 $10만(약 1억원)씩 평생 받아요. 한 장에 $5이고, 매일 밤 추첨해요. 다만 이 사이트의 세금 계산기는 아직 파워볼·메가밀리언즈 기준으로만 맞춰져 있어요.</p>
+            <p class="faq-a" data-i18n-html="faq.a20">네! 2026년 2월 22일부터 <b>"밀리어네어 포 라이프(Millionaire for Life)"</b>라는 새 복권이 생겼어요. 기존에 있던 "럭키 포 라이프"와 "캐시4라이프"라는 두 게임이 통합되어 새로 출시된 거예요. 1등에 당첨되면 <b>매년 $100만(약 15억원)을 평생</b> 받을 수 있고(일시불로는 약 $1,800만), 2등도 매년 $10만(약 1.5억원)씩 평생 받아요. 한 장에 $5이고, 매일 밤 추첨해요. 다만 이 사이트의 세금 계산기는 아직 파워볼·메가밀리언즈 기준으로만 맞춰져 있어요.</p>
           </details>
         </div>
 

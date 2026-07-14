@@ -35,7 +35,7 @@ const I18N = {
   'input.bridge': { en: '👇 The amount above is just an example — try entering your own' },
   'input.basisLabel':  { en: 'Tax basis' },
   'input.krwHint':     { en: '💡 The advertised jackpot isn\u2019t what you actually receive —' },
-  'input.krwHintFull': { en: '💡 The advertised jackpot isn\u2019t your take-home amount — enter the pre-tax lump-sum value (about 45–60%)' },
+  'input.krwHintFull': { en: '💡 Enter the actual lump-sum amount (about 45–60%) — not the jackpot number from the news' },
   'home.inputHint': { en: '👇 Try replacing the example amount below with your own prize' },
   'input.optKorea':    { en: 'Korea resident' },
   'input.optUS':       { en: 'US resident' },
@@ -130,6 +130,7 @@ const I18N = {
   'odds.drawNote': { en: 'Your odds with these numbers are still 1 in 292 million \u2014 just for fun 😉 (not a purchase suggestion)' },
   'odds.payoutTitle': { en: 'How much do you win for each match?' },
   'odds.payoutDesc':  { en: 'Powerball prize tiers by numbers matched' },
+  'odds.megaNote':    { en: '💡 Mega Millions has different numbers and prizes — <a href="https://www.megamillions.com" target="_blank" rel="noopener noreferrer" style="color:var(--teal); font-weight:700; text-decoration:none;">check the official site →</a>' },
   'odds.howtoTitle': { en: '🎱 First, how the game works' },
   'odds.howtoText':  { en: 'Powerball is a game of matching <b>5 regular numbers</b> (from 1\u201369) plus <b>1 Powerball number</b> (from 1\u201326) \u2014 6 numbers total. The prize depends on how many regular numbers you match, plus whether you match the Powerball.' },
   'odds.jackpotTag':     { en: '🏆 Jackpot' },
@@ -147,19 +148,19 @@ const I18N = {
   'odds.jcAnnuityNote': { en: 'Unlike the discounted lump sum, an annuity pays out <b>the full announced jackpot</b> over 30 payments across 29 years (each payment grows 5% after the first). Spreading it out over years also spreads the tax burden \u2014 the amount above is a simple average, so the actual first payment is lower.' },
   'odds.match5':      { en: 'Match 5 numbers' },
   'odds.missedPB':    { en: 'Missed the Powerball' },
-  'odds.amt5':        { en: 'About \u20a91.4B' },
+  'odds.amt5':        { en: 'About \u20a91.5B' },
   'odds.odds5':       { en: '1 / 11.69M' },
   'odds.match4pb':    { en: 'Match 4 + Powerball' },
-  'odds.amt4pb':      { en: 'About \u20a96.9M' },
+  'odds.amt4pb':      { en: 'About \u20a975.2M' },
   'odds.odds4pb':     { en: '1 / 910K' },
   'odds.match4':      { en: 'Match 4 numbers' },
-  'odds.amt4':        { en: 'About \u20a914,000' },
+  'odds.amt4':        { en: 'About \u20a9150,000' },
   'odds.odds4':       { en: '1 / 36,525' },
   'odds.match3pb':    { en: 'Match 3 + Powerball' },
-  'odds.amt3pb':      { en: 'About \u20a914,000' },
+  'odds.amt3pb':      { en: 'About \u20a9150,000' },
   'odds.odds3pb':     { en: '1 / 14,494' },
   'odds.matchPBonly': { en: 'Powerball number only' },
-  'odds.amtPBonly':   { en: 'About \u20a9550' },
+  'odds.amtPBonly':   { en: 'About \u20a96,000' },
   'odds.oddsPBonly':  { en: '1 / 38' },
   'odds.disclaimer': { en: 'Odds figures are based on official published data. KRW conversion uses a reference exchange rate and may differ from actual amounts.' },
   'faq.breadcrumb':  { en: 'Frequently Asked Questions' },
@@ -250,7 +251,7 @@ const I18N = {
   'faq.q19': { en: 'How do I file these taxes?' },
   'faq.a19': { en: '30% is withheld in the US first, and in Korea, <b>you must combine it as other income and file with your comprehensive income tax return the following May</b> (based on an NTS online consultation response from July 2026). Tax paid in the US can be offset via Foreign Tax Credit (FTC). Since this is a consultation answer rather than an official ruling, please consult a tax professional who handles both US and Korean tax when you actually file.' },
   'faq.q20': { en: 'Are there lotteries other than Powerball and Mega Millions?' },
-  'faq.a20': { en: 'Yes! Starting February 22, 2026, a new lottery called <b>"Millionaire for Life"</b> launched, merging the two previous games "Lucky for Life" and "Cash4Life." The top prize pays <b>$1M per year for life</b> (about ₩1.4B/year, or roughly $18M as a lump sum), and the second prize pays $100K per year for life (about ₩140M/year). Tickets are $5, with drawings every night. Note that this site\u2019s tax calculator is currently set up for Powerball and Mega Millions only.' },
+  'faq.a20': { en: 'Yes! Starting February 22, 2026, a new lottery called <b>"Millionaire for Life"</b> launched, merging the two previous games "Lucky for Life" and "Cash4Life." The top prize pays <b>$1M per year for life</b> (about ₩1.5B/year, or roughly $18M as a lump sum), and the second prize pays $100K per year for life (about ₩150M/year). Tickets are $5, with drawings every night. Note that this site\u2019s tax calculator is currently set up for Powerball and Mega Millions only.' },
   'faq.moreTitle':  { en: '📚 Learn more (terms, purchase process, payout methods, etc.)' },
   'faq.termsTitle': { en: 'Let\u2019s start with the basic terms' },
   'faq.termsDesc':  { en: 'The part people mix up the most \u2014 here\u2019s a side-by-side comparison of the two games' },
@@ -402,7 +403,6 @@ const I18N = {
   'home.calcBasisBox':    { en: '• Lump-sum basis (differs for installment payouts)' },
   'home.funMoneySummary': { en: '🤑 How much could you actually buy with this? (just for fun)' },
   'home.funSummaryMerged': { en: '🤑 What could this buy? (just for fun)' },
-  'home.compareCta': { en: '🌍 Compare countries →' },
   'home.flexApt':      { en: 'Gangnam apartment (based on ₩2.5B)' },
   'home.flexCar':      { en: 'Ferrari Roma (based on ₩350M)' },
   'home.flexCoffee':   { en: 'Starbucks Americano (₩5,000)' },
@@ -485,14 +485,16 @@ function applyTranslations(){
   // 언어 전환 시 환율 배지의 상태 문구(title)도 항상 다시 반영 (실패/성공/기본 상태와 무관하게 현재 언어로)
   updateExchangeRateBadges(exchangeRateFetchFailed);
 
-  // 언어 전환 시 동적으로 생성되는 텍스트(CTA 버튼, 잭팟 패널, 추첨 카운트다운 등)도 다시 계산해서 갱신
-  if (document.getElementById('view-home').classList.contains('on')) {
-    updateHomeCalc();
-    applyJackpotData();
-    updateDrawCountdown();
-    initJackpotCardAmt();
-    refreshJackpotDrawerIfOpen();
-  }
+  // 언어 전환 시 동적으로 생성되는 텍스트(CTA 버튼, 잭팟 패널, 추첨 카운트다운 등)도 다시 계산해서 갱신.
+  // 홈 화면이 켜져 있을 때만 갱신하면, 확률체감 페이지의 잭팟 카드(#jackpot-card-amt 등 — 홈과 ID를
+  // 공유함)가 언어 전환 시 갱신되지 않고 예전 언어로 남아있다가, 나중에 환율 자동갱신 등 무관한
+  // 이벤트가 발생할 때에야 그 시점의 언어로 갑자기 바뀌어 "언어가 왔다갔다 하는" 것처럼 보이는
+  // 버그가 있었음 — 뷰와 무관하게 항상 갱신해서 어느 화면에 있든 즉시 반영되게 함
+  updateHomeCalc();
+  applyJackpotData();
+  updateDrawCountdown();
+  initJackpotCardAmt();
+  refreshJackpotDrawerIfOpen();
 }
 
 // 최초 로드 시, data-i18n 요소들의 원본 한국어를 저장해둠(다시 한국어로 돌아갈 때 쓰기 위함)
