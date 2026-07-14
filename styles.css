@@ -64,7 +64,7 @@
     box-shadow:0 1px 3px rgba(38,36,32,0.08), 0 8px 24px rgba(38,36,32,0.06);
   }
 
-  .nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; row-gap:8px; }
+  .nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; row-gap:8px; column-gap:10px; }
   .logo{
     font-size:17px; font-weight:700; color:var(--navy); letter-spacing:-0.02em; cursor:pointer;
     background:none; border:none; font-family:inherit; padding:0;
@@ -74,7 +74,7 @@
   .logo span{ color:var(--teal); }
   .menu{ display:flex; gap:14px; align-items:center; margin-left:auto; }
   .menu button{
-    font-size:15px; color:var(--text-muted); font-weight:500; background:none; border:none;
+    font-size:16px; color:var(--text-muted); font-weight:500; background:none; border:none;
     cursor:pointer; font-family:inherit; padding:0; position:relative;
   }
   .menu button::after{ content:''; position:absolute; top:-12px; left:-8px; right:-8px; bottom:-12px; }
@@ -467,10 +467,10 @@
   .flow-explain{ font-size:var(--fs-small); color:var(--text-muted); text-align:left; margin:0 0 4px; }
   .select-hint{ font-size:var(--fs-small); color:var(--text-muted); margin:-4px 0 10px 2px; }
   .filing-note{
-    font-size:var(--fs-note); color:var(--text-dark); background:var(--bg); border-radius:8px;
-    padding:10px 12px; margin:10px 0; line-height:1.6;
+    font-size:var(--fs-small); color:var(--text-muted); background:var(--bg); border-radius:8px;
+    padding:8px 12px; margin:10px 0; line-height:1.55;
   }
-  .filing-note b{ color:var(--text-dark); }
+  .filing-note b{ color:var(--text-dark); font-weight:700; }
   .filing-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0 0 6px; }
   .filing-label span{ font-weight:400; color:var(--text-muted); }
   .filing-note-small{ font-size:var(--fs-small); color:var(--text-muted); margin:-4px 0 10px; line-height:1.5; }
@@ -860,7 +860,7 @@
      실제로 흔히 쓰이는 폰 폭에서도 로고+메뉴가 한 줄에 안 들어가 줄바꿈되는 걸 방지 */
   @media (max-width: 480px) {
     .menu{ gap:11px; }
-    .menu button{ font-size:13px; }
+    .menu button{ font-size:15px; }
     .logo{ font-size:15px; gap:4px; }
     .logo .mascot-mark{ width:26px; height:26px; }
   }
@@ -875,7 +875,7 @@
     .jc-step-val-big{ font-size:22px; }
     .prize-card.jackpot .prize-amt{ font-size:17px; }
     .menu{ gap:8px; }
-    .menu button{ font-size:12px; }
+    .menu button{ font-size:14px; }
     .logo{ font-size:14px; }
     .logo .mascot-mark{ width:22px; height:22px; }
     .footer-links{ gap:6px 10px; }
