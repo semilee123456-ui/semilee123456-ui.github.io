@@ -179,7 +179,7 @@ const I18N = {
   'faq.q2': { en: 'Wait, I pay tax in Korea too? Isn\u2019t that double taxation?' },
   'faq.a2': { en: 'Yes, you\u2019ll owe tax in Korea too. <b>Based on a direct inquiry to Korea\u2019s National Tax Service in July 2026</b>, US lottery winnings aren\u2019t domestic lottery income under the Lottery and Lottery Fund Act, so it doesn\u2019t end with a flat 22\u201333% separate tax like Korean lotto \u2014 instead it must be <b>combined and reported as comprehensive income tax (progressive rate, up to 45%)</b>. However, tax already paid in the US (30% withholding) can be offset via <b>Foreign Tax Credit (FTC)</b>, so the two taxes aren\u2019t simply added together \u2014 they\u2019re reconciled. Note this answer came through an NTS phone/online consultation (not an official binding ruling), so we\u2019ll double-check once we receive the formal written response. The calculator reflects this current understanding.' },
   'faq.q3': { en: 'Can I get any of the tax back? 💸' },
-  'faq.a3': { en: 'I won\u2019t just tell you "yes, you can get a refund." Here\u2019s what actually works and what doesn\u2019t.<br><br>👉 <b>US federal tax (30%) \u2014 realistically difficult.</b> Korea isn\u2019t treaty-exempt with the US for gambling/lottery income (confirmed by Park v. Commissioner), and nonresident aliens can\u2019t claim gambling loss deductions, so the 30% federal withholding is usually final.<br><br>👉 <b>State Tax \u2014 select the state you won in to check directly:</b><br>💡 Note: <b>Maryland and Arizona are the two unusual states that tax winners even if they don\u2019t live there</b> \u2014 most other states only withhold state tax based on residency, not where the ticket was purchased. So if you won while traveling, it only matters which state you bought the ticket in if it was one of these two.' },
+  'faq.a3': { en: 'I won\u2019t just tell you "yes, you can get a refund." Here\u2019s what actually works and what doesn\u2019t.<br><br>👉 <b>US federal tax (30%) \u2014 realistically difficult.</b> Korea isn\u2019t treaty-exempt with the US for gambling/lottery income (confirmed by Park v. Commissioner), and nonresident aliens can\u2019t claim gambling loss deductions, so the 30% federal withholding is usually final.<br><br>👉 <b>State Tax \u2014 rates vary a lot by state — check below:</b><br>💡 Note: <b>Maryland and Arizona are the two unusual states that tax winners even if they don\u2019t live there</b> \u2014 most other states only withhold state tax based on residency, not where the ticket was purchased. So if you won while traveling, it only matters which state you bought the ticket in if it was one of these two.' },
   'faq.step': { en: 'STEP' },
   'faq.selectState': { en: 'Select the state you won in' },
   'faq.selectStatePlaceholder': { en: 'Select the state you won in 👇' },
@@ -648,6 +648,8 @@ function syncHomeFromShared(){
   slider.min = Math.min(10, Math.round(millions)); // $10M 미만 입력 시 슬라이더 하한도 같이 낮춰 불일치 방지
   slider.value = Math.round(millions);
   document.getElementById('homeCountrySelect').value = sharedCountry;
+  document.getElementById('homeCountryBtnKr').classList.toggle('active', sharedCountry === 'kr');
+  document.getElementById('homeCountryBtnUs').classList.toggle('active', sharedCountry === 'us');
   document.getElementById('homeStateSelect').value = sharedState;
   document.getElementById('home-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR');
   updateHomeCalc(sharedAmountUsd);
@@ -1590,6 +1592,13 @@ function calcReverseJackpot(){
   resultEl.innerHTML = currentLang === 'en'
     ? `You\u2019d need to win about <b>${formatWon(required억)}</b> (roughly <b>${usdText}</b>) to take home <b>${formatWon(target억)}</b> after tax.`
     : `약 <b>${formatWon(required억)}</b> (달러로 약 <b>${usdText}</b>)에 당첨돼야, 세금 떼고 <b>${formatWon(target억)}</b>을 받을 수 있어요.`;
+}
+
+function setHomeCountry(country){
+  document.getElementById('homeCountrySelect').value = country;
+  document.getElementById('homeCountryBtnKr').classList.toggle('active', country === 'kr');
+  document.getElementById('homeCountryBtnUs').classList.toggle('active', country === 'us');
+  updateHomeCalc();
 }
 
 function updateHomeCalc(usdOverride){

@@ -103,9 +103,12 @@
     background:rgba(21,84,69,0.08); border-radius:20px; padding:5px 14px; margin:0 0 10px;
   }
   .hero-label{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 8px; font-weight:500; }
-  .tax-impact-box{ background:rgba(192,57,43,0.06); border-radius:10px; padding:10px 14px; margin-top:10px; }
-  .tax-impact-row{ display:flex; justify-content:space-between; gap:10px; font-size:var(--fs-small); color:var(--text-dark); padding:3px 0; }
-  .tax-impact-row.highlight{ font-weight:800; color:var(--status-red); border-top:1px dashed rgba(192,57,43,0.25); margin-top:3px; padding-top:6px; }
+  .tax-impact-compact{
+    display:flex; flex-wrap:wrap; justify-content:center; align-items:baseline; gap:8px;
+    margin-top:10px; font-size:15px; color:var(--text-muted);
+  }
+  .tax-impact-strike{ text-decoration:line-through; }
+  .tax-impact-diff-big{ font-weight:800; color:var(--status-red); font-size:var(--fs-small); }
   .hero-amount{ font-size:var(--fs-h1); font-weight:800; color:var(--navy); margin:0; letter-spacing:-0.02em; line-height:1.4; }
   .hero-sub{ font-size:15px; color:var(--text-muted); margin:8px 0 0; }
 
@@ -171,14 +174,25 @@
   }
   .dollar-input:focus{ outline:none; border-color:var(--teal); }
   .million-input-wrap{
-    display:flex; align-items:center; gap:8px; flex:1.5; border:1.5px solid var(--border);
-    border-radius:8px; padding:0 4px 0 12px; height:42px; background:var(--card);
-    min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden;
+    display:flex; align-items:center; gap:10px; flex:1.5; border:2px solid var(--teal);
+    border-radius:14px; padding:8px 10px 8px 18px; height:auto; background:var(--card);
+    min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden; transition:box-shadow 0.15s ease;
   }
-  .million-input-wrap:focus-within{ border-color:var(--teal); }
-  .million-input-wrap .dollar-input{ border:none; padding:0; height:auto; flex:1; min-width:0; width:auto; }
-  .million-unit{ font-size:var(--fs-note); color:var(--text-muted); font-weight:600; white-space:nowrap; padding-right:8px; flex-shrink:0; }
+  .million-input-wrap:focus-within{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(21,84,69,0.14); }
+  .million-input-wrap .dollar-input{
+    border:none; padding:8px 0; height:auto; flex:1; min-width:0; width:auto;
+    font-size:clamp(26px, 10vw, 38px); font-weight:800; color:var(--teal);
+  }
+  .million-unit{ font-size:16px; color:var(--text-muted); font-weight:700; white-space:nowrap; padding-right:4px; flex-shrink:0; }
   .unit-short{ display:none; }
+  .input-card-headline{ font-size:18px; font-weight:800; color:var(--text-dark); margin:0 0 4px; }
+  .country-toggle{ display:flex; gap:8px; margin:8px 0 14px; }
+  .country-toggle-btn{
+    flex:1; height:46px; border-radius:11px; border:2px solid var(--border); background:var(--card);
+    color:var(--text-dark); font-family:inherit; font-size:16px; font-weight:800; cursor:pointer;
+    transition:border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  }
+  .country-toggle-btn.active{ border-color:var(--teal); background:rgba(21,84,69,0.08); color:var(--teal); }
   .rate-input{
     width:60px; border:none; border-bottom:1.5px dashed var(--teal); background:transparent;
     font-family:inherit; font-size:var(--fs-body); font-weight:700; color:var(--teal); text-align:center; padding:0 2px;
@@ -484,8 +498,6 @@
     margin:14px 0 0; padding:0 4px;
   }
   .input-card{ background:#F9F5EB; border:1px solid #EEE7D4; border-radius:12px; padding:14px 16px 16px; margin-top:14px; }
-  .field-labels{ display:flex; gap:14px; margin-bottom:4px; }
-  .field-labels span{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; flex:none; }
   .field-label-single{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; margin:0 0 4px; }
   .section-divider{
     text-align:center; font-size:var(--fs-small); font-weight:700; color:var(--text-muted);
@@ -840,8 +852,7 @@
     .back-btn{ padding:10px 16px; }
     .cta-btn{ padding:15px; }
     .million-unit{ font-size:var(--fs-small); padding-right:4px; }
-    .million-input-wrap{ padding:0 2px 0 8px; gap:4px; }
-    .million-input-wrap .dollar-input{ font-size:16px; }
+    .million-input-wrap{ padding:6px 6px 6px 14px; gap:6px; }
     .unit-full{ display:none; }
     .unit-short{ display:inline; }
     .lightning-ball{ width:38px; height:38px; font-size:15px; }
@@ -850,7 +861,6 @@
     .prize-card.jackpot .prize-right{ text-align:left; width:100%; }
     .prize-card.jackpot .prize-amt{ font-size:20px; white-space:nowrap; }
     .input-row{ flex-wrap:wrap; }
-    .input-row .million-input-wrap{ flex:1 1 100%; }
     .input-row select{ flex:1 1 100%; }
     body{ overflow-x:hidden; }
     .result-grid{ grid-template-columns:1fr !important; }
@@ -875,7 +885,6 @@
     .hero-amount{ font-size:clamp(24px, 8vw, var(--fs-hero)); }
     .result-hero-amt{ font-size:clamp(26px, 9vw, 40px); }
     .live-result-mini-amt{ font-size:clamp(16px, 6vw, 19px); }
-    .field-labels{ flex-direction:column; gap:2px; }
     .flow-step{ gap:8px; }
     .jc-step{ gap:8px; }
     .playslip-mock{ padding:8px; }
@@ -893,7 +902,7 @@
   }
   /* 갤럭시 Z 플립 커버 화면 등 극단적으로 좁은 경우(약 300px 이하) 추가 방어 */
   @media (max-width: 300px) {
-    .tax-impact-row{ gap:4px; font-size:15px; }
+    .tax-impact-compact{ gap:5px; font-size:13px; }
     body{ padding:18px 6px 56px; }
     .page{ padding:12px 8px 20px; }
     .bar-label{ flex-basis:48px; font-size:11px; }
