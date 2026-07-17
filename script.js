@@ -36,8 +36,8 @@ const I18N = {
   'input.krwHint':     { en: '💡 The advertised jackpot isn\u2019t what you actually receive —' },
   'input.krwHintFull': { en: 'Enter the actual lump-sum amount (about 45–60%) — not the jackpot number from the news' },
   'home.inputHint': { en: 'Enter your winnings directly' },
-  'home.quickfillPowerball': { en: 'Powerball today’s jackpot' },
-  'home.quickfillMega': { en: 'Mega Millions today’s jackpot' },
+  'home.quickfillPowerball': { en: 'Powerball recent jackpot' },
+  'home.quickfillMega': { en: 'Mega Millions recent jackpot' },
   'input.optKorea':    { en: '🇰🇷 Korea basis' },
   'input.optUS':       { en: '🇺🇸 US basis' },
   'home.filingNoteState': { en: '💡 Korean residents face the same 30% US non-resident withholding regardless of which state they won in — no need to factor in state tax.' },
@@ -68,6 +68,7 @@ const I18N = {
   'compare.filingNote':  { en: '💡 Korea residents are <b>subject to US nonresident withholding</b>, so there\u2019s no need to choose a filing status (Single/Married). (May vary by payout type or tax treaty.)' },
   'compare.flowExplain': { en: 'The US withholds tax first, then Korea taxes the rest (with some credit available)' },
   'compare.sideTitle': { en: 'Korea vs. US, side by side' },
+  'compare.otherLangTitle': { en: 'Living in Korea as a different nationality?' },
   'compare.sideKRFlag': { en: '🇰🇷 Korea resident' },
   'compare.sideUSFlag': { en: '🇺🇸 US resident (average state tax)' },
   'compare.sideRateLabel': { en: 'Take-home rate about' },
@@ -491,7 +492,7 @@ const I18N = {
   'home.dreamTravel':  { en: '<span class="dream-emoji">✈️</span> Leave on a world trip right away' },
   'home.dreamCalm':    { en: '<span class="dream-emoji">💼</span> Just quietly check my bank balance' },
   'home.shareDreamBtn': { en: '📤 Share this result' },
-  'home.jackpotToggle': { en: '🎟️ Check today\u2019s jackpot' },
+  'home.jackpotToggle': { en: '🎟️ Check the recent jackpot' },
   'home.powerballName': { en: 'Powerball' },
   'home.megaName':      { en: 'Mega Millions' },
   'home.officialLink':  { en: '\ud83d\udd17 Check the official site' },
@@ -791,6 +792,13 @@ const TAX_MODEL = {
     // IRC 871(a)에 따라 일괄 30% 원천징수가 적용되며, 대부분 이것이 최종세율(추가 정산 없음)
     us_withholding: 0.30
     // 한국 세금은 KOREA_TAX_BRACKETS(종합소득세 누진세율) + FTC로 계산 — 2026-07 국세청 답변 반영
+  },
+  cn_resident: {
+    // 중국 개인소득세법 제3조: 복권 당첨 등 "偶然所得"(우연소득)은 20% 단일 비례세율.
+    // 개인소득세법 실시조례 제20조 + 재정부세무총국공고 2020년 제3호: 경외(境外) 우연소득은
+    // 경내 종합소득과 합산하지 않고 별도 계산 — 한국의 누진세율 같은 구간 구조가 없음.
+    incidental_income_rate: 0.20
+    // FTC(경외세액공제)는 한도 내 상계, 초과분은 5년 이월 가능(국가세무총국 공고) — 여기 계산은 당해년도 상계분만 반영
   }
 };
 
@@ -873,12 +881,11 @@ function calcKoreaProgressiveTaxWon(wonAmount){
   return 0;
 }
 
-// ⚠️ [향후 국가 확장 시 필독 — 가장 큰 작업] 이 함수는 country==='us' 아니면 무조건
-// 한국 세법(누진세+FTC)을 적용하는 이진 if/else 구조. 베트남처럼 3번째 국가를 추가하는 건
-// 그냥 옵션 하나 늘리는 게 아니라, 그 나라가 해외 복권 당첨금을 어떻게 과세하는지
-// (자체 세율표 구조, 미국과의 조세조약 여부, 원천징수 상계 방식 등)를 처음부터 리서치해서
-// 완전히 새로운 계산 분기를 만들어야 함. 실제 세법 데이터 없이 구조부터 짜면 잘못된 형태로
-// 미리 만들 위험이 있어 데이터가 확정되기 전까진 손대지 않기로 결정함 (2026년 7월).
+// ⚠️ [향후 국가 확장 시 필독] 새 나라를 추가하는 건 그냥 옵션 하나 늘리는 게 아니라, 그 나라가
+// 해외 복권 당첨금을 어떻게 과세하는지(자체 세율표 구조, 미국과의 조세조약 여부, 원천징수 상계 방식 등)를
+// 처음부터 리서치해서 완전히 새로운 계산 분기를 만들어야 함. 실제 세법 데이터 없이 구조부터 짜면
+// 잘못된 형태로 미리 만들 위험이 있어 데이터가 확정되기 전까진 손대지 않기로 결정함 (2026년 7월).
+// 'cn' 분기는 이 원칙대로 공식 자료(개인소득세법 제3조·실시조례 제20조 등) 확인 후 추가함 (2026년 7월).
 function calcTakeHome(amount, country, stateCode){
   const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
   if (country === 'us') {
@@ -895,6 +902,26 @@ function calcTakeHome(amount, country, stateCode){
       label2: isEn ? `${cleanStateLabelEn} State Tax` : `${cleanStateLabel} 주세`,
       val2: '-' + (stateInfo.rate * 100).toFixed(stateInfo.rate * 100 % 1 === 0 ? 0 : 2) + '%',
       basisSuffix: isEn ? 'US resident' : `미국 거주자`
+    };
+  } else if (country === 'cn') {
+    // 중국 개인소득세법 제3조: 복권 당첨(偶然所得)은 20% 단일세율. 실시조례 제20조 + 재정부세무총국공고
+    // 2020년 제3호: 경외 우연소득은 경내 종합소득과 합산하지 않고 별도 계산(한국처럼 누진세율 구간 없음).
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const chinaCalculatedTaxWon = wonAmount * TAX_MODEL.cn_resident.incidental_income_rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, chinaCalculatedTaxWon); // FTC 공제액(한도 내, 초과분은 5년 이월 가능하나 여기 반영 안 함)
+    const chinaAdditionalTaxWon = Math.max(chinaCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (chinaAdditionalTaxWon / 100000000);
+    const chinaEffectivePct = wonAmount > 0 ? (chinaAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: isEn ? 'US Federal Tax (nonresident)' : '미국 연방세 (비거주자)', val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: isEn ? 'China additional tax (FTC applied)' : '중국 추가 납부 (FTC 적용)',
+      val2: chinaAdditionalTaxWon > 0 ? '-' + chinaEffectivePct.toFixed(1) + '%' : (isEn ? '₩0 (offset by tax credit)' : '0원 (세액공제로 상계)'),
+      basisSuffix: isEn ? 'China resident' : '중국 거주자'
     };
   } else {
     // 2026-07 국세청 인터넷 상담 답변 기준: 미국 복권은 「복권 및 복권기금법」상 복권이 아니라
@@ -2130,8 +2157,36 @@ function updateCalc(usdOverride){
 const COUNTRY_TAX_PROFILES = [
   { code: 'kr', flag: '🇰🇷', label: '한국 거주자', labelEn: 'Korea resident', implemented: true, needsState: false },
   { code: 'us', flag: '🇺🇸', label: '미국 거주자', labelEn: 'US resident', implemented: true, needsState: true },
-  { code: 'vn', flag: '🇻🇳', label: '베트남 거주자', labelEn: 'Vietnam resident', implemented: false, needsState: false, contentPage: 'vietnamese-in-korea-lottery-tax.html', contentLabel: 'Tiếng Việt →' },
+  { code: 'vn', flag: '🇻🇳', label: '베트남 거주자 (실제 베트남 거주 기준)', labelEn: 'Vietnam resident (living in Vietnam)', implemented: false, needsState: false },
+  { code: 'cn', flag: '🇨🇳', label: '중국 거주자 (실제 중국 거주 기준)', labelEn: 'China resident (living in China)', implemented: true, needsState: false, detailPage: 'china-resident-us-lottery-tax.html', detailLabel: '자세히 보기 →', detailLabelEn: 'Learn more →' },
 ];
+
+// "한국에 사는 OO 국적자" 안내 페이지 목록 — 실제 그 나라 세법이 아니라 한국 세법(위 kr 기준)을
+// 그대로 따르는 번역 콘텐츠라서, COUNTRY_TAX_PROFILES(진짜 다른 나라 세금 비교)와는 완전히 분리해서 관리함.
+// 새 언어 추가할 땐 이 배열에 한 줄만 추가하면 됨.
+const LANGUAGE_CONTENT_PAGES = [
+  { flag: '🇻🇳', label: '한국에 사는 베트남분이라면', labelEn: 'Living in Korea as a Vietnamese national', contentPage: 'vietnamese-in-korea-lottery-tax.html', contentLabel: 'Tiếng Việt →' },
+];
+
+function renderLanguageContentLinks(){
+  const container = document.getElementById('otherLanguagesList');
+  if (!container) return;
+  const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
+  container.innerHTML = '';
+  LANGUAGE_CONTENT_PAGES.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'other-lang-row';
+    const labelEl = document.createElement('span');
+    labelEl.className = 'other-lang-label';
+    labelEl.textContent = `${item.flag} ${isEn ? item.labelEn : item.label}`;
+    const linkEl = document.createElement('a');
+    linkEl.className = 'other-lang-link';
+    linkEl.href = item.contentPage;
+    linkEl.textContent = item.contentLabel;
+    row.append(labelEl, linkEl);
+    container.appendChild(row);
+  });
+}
 
 function updateSideBySide(eok, stateCode){
   const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
@@ -2154,13 +2209,6 @@ function updateSideBySide(eok, stateCode){
       amtEl.textContent = isEn ? 'Coming soon' : '준비 중';
       card.innerHTML = `<p class="side-card-flag">${baseLabel}</p>`;
       card.appendChild(amtEl);
-      if (profile.contentPage) {
-        const linkEl = document.createElement('a');
-        linkEl.className = 'side-card-lang-link';
-        linkEl.href = profile.contentPage;
-        linkEl.textContent = profile.contentLabel;
-        card.appendChild(linkEl);
-      }
       grid.appendChild(card);
       return;
     }
@@ -2182,6 +2230,13 @@ function updateSideBySide(eok, stateCode){
     const rateEl = document.createElement('p'); rateEl.className = 'side-card-rate';
     rateEl.textContent = (isEn ? 'Take-home rate about ' : '실수령률 약 ') + pct.toFixed(1) + '%';
     card.append(flagEl, amtEl, rateEl);
+    if (profile.detailPage) {
+      const detailEl = document.createElement('a');
+      detailEl.className = 'side-card-detail-link';
+      detailEl.href = profile.detailPage;
+      detailEl.textContent = isEn ? profile.detailLabelEn : profile.detailLabel;
+      card.appendChild(detailEl);
+    }
     grid.appendChild(card);
 
     const groupLabel = document.createElement('p'); groupLabel.className = 'side-group-label'; groupLabel.textContent = labelText;
@@ -2195,4 +2250,6 @@ function updateSideBySide(eok, stateCode){
     });
     breakdownContainer.append(groupLabel, bGrid);
   });
+
+  renderLanguageContentLinks();
 }
