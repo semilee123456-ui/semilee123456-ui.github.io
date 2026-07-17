@@ -249,7 +249,11 @@
           <button id="nav-compare" onclick="go('compare')" data-i18n="nav.compare">비교</button>
           <button id="nav-odds" onclick="go('odds')" data-i18n="nav.odds">확률</button>
           <button id="nav-faq" onclick="go('faq')" data-i18n="nav.faq">FAQ</button>
-          <button id="lang-toggle" class="lang-toggle" onclick="toggleLanguage()">EN</button>
+          <select id="lang-toggle" class="lang-toggle" onchange="setLanguage(this.value)" aria-label="Language">
+            <option value="ko">한국어</option>
+            <option value="en">English</option>
+            <option value="zh">中文</option>
+          </select>
         </div>
       </div>
 
@@ -296,11 +300,11 @@
             <p class="krw-hint" style="margin-bottom:10px;" data-i18n="input.krwHintFull">뉴스 속 잭팟 금액이 아니라, 일시불로 받는 실제 금액(약 45~60%)을 넣어요</p>
             <div class="jackpot-quickfill-row" style="margin-bottom:16px;">
               <button type="button" class="jackpot-quickfill-btn" onclick="fillHomeAmountFromJackpot('powerball')">
-                <span data-i18n="home.quickfillPowerball">파워볼 오늘 잭팟</span>
+                <span data-i18n="home.quickfillPowerball">파워볼 최근 잭팟</span>
                 <span class="jackpot-quickfill-amt" id="quickfill-pb-amt">-</span>
               </button>
               <button type="button" class="jackpot-quickfill-btn" onclick="fillHomeAmountFromJackpot('megamillions')">
-                <span data-i18n="home.quickfillMega">메가밀리언즈 오늘 잭팟</span>
+                <span data-i18n="home.quickfillMega">메가밀리언즈 최근 잭팟</span>
                 <span class="jackpot-quickfill-amt" id="quickfill-mm-amt">-</span>
               </button>
             </div>
@@ -438,7 +442,7 @@
         </div>
 
         <details class="more-details-toggle">
-        <summary class="section-divider-toggle"><span class="jp-summary-title" data-i18n="home.jackpotToggle">🎟️ 오늘 잭팟 확인하기</span></summary>
+        <summary class="section-divider-toggle"><span class="jp-summary-title" data-i18n="home.jackpotToggle">🎟️ 최근 잭팟 확인하기</span></summary>
         <div class="jp-panel-content" id="home-jackpot-panel">
           <div class="cards-row" style="grid-template-columns:1fr 1fr; margin-bottom:0; gap:8px;">
             <div class="feature-card jp-card" style="cursor:default; padding:14px;">
@@ -614,6 +618,11 @@
           <p class="side-breakdown-title" data-i18n="compare.sideBreakdownTitle">세금은 이렇게 빠져나가요</p>
           <div id="sideBreakdownContainer"></div>
           <p class="sim-note" data-i18n="compare.simNote">💡 종합소득세 누진세율과 외국납부세액공제(FTC)를 반영한 참고용 계산이에요 — 실제 세액은 개인 상황에 따라 달라질 수 있어 세무 전문가 상담을 권해요</p>
+        </div>
+
+        <div class="panel" id="otherLanguagesPanel">
+          <p class="panel-title" data-i18n="compare.otherLangTitle">한국에 사는 다른 나라 분이라면</p>
+          <div id="otherLanguagesList" class="other-lang-list"></div>
         </div>
 
         <div class="ad-slot" data-i18n="common.adSlot">광고 영역 (Google AdSense)</div>

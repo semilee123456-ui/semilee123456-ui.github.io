@@ -79,10 +79,13 @@
   }
   .menu button::after{ content:''; position:absolute; top:-12px; left:-8px; right:-8px; bottom:-12px; }
   .menu button.active{ color:var(--text-dark); font-weight:700; text-decoration:underline; }
-  .menu button.lang-toggle{
-    border:1px solid rgba(21,84,69,0.25); border-radius:14px; padding:6px 10px; min-height:32px;
+  .menu .lang-toggle{
+    border:1px solid rgba(21,84,69,0.25); border-radius:14px; padding:6px 22px 6px 10px; min-height:32px;
     font-size:16px; font-weight:700; color:var(--teal); background:rgba(21,84,69,0.08);
     cursor:pointer; font-family:inherit; margin-left:0;
+    -webkit-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23155445' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 8px center; background-size:10px;
   }
 
   .view{ display:none; }
