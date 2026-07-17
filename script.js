@@ -31,7 +31,7 @@ const I18N = {
   'intro.abroadAction': { en: 'See your Korea tax duty →' , zh: '了解韩国纳税义务 →' },
   'intro.foreignerLabel': { en: '🌏 I’m a foreigner living in Korea' , zh: '🌏 我是住在韩国的外国人' },
   'intro.foreignerHint': { en: 'View in this language' , zh: '直接用这个语言查看' },
-  'intro.realAbroadLabel': { en: '🌐 I’m a foreigner with no connection to Korea (US, China, etc.)' , zh: '🌐 我是与韩国没有关系的外国人（美国、中国等）' },
+  'intro.realAbroadLabel': { en: '🌐 I live outside Korea (US, China, etc.)' , zh: '🌐 我住在韩国以外的国家（美国、中国等）' },
   'intro.realAbroadHint': { en: 'See it in my own country’s terms' , zh: '直接按我自己国家的标准查看' },
   'intro.realAbroadAction': { en: 'Or see the full country comparison →' , zh: '或查看完整的国家对比 →' },
   'result.label':      { en: '💰 Estimated take-home amount' , zh: '💰 预计实得金额' },
