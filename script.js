@@ -557,6 +557,13 @@ function applyTranslations(){
     el.setAttribute('aria-label', (currentLang === 'en' && entry.en) ? entry.en : el.getAttribute('data-i18n-ko-aria-label'));
   });
 
+  // 역대 잭팟 TOP5 링크는 영문 모드일 때 별도로 만들어둔 영어 페이지로 이어지게 함
+  // (텍스트만 번역되고 href는 그대로 한국어 페이지를 가리키던 문제 수정)
+  const jackpotFullLink = document.getElementById('jackpot-history-full-link');
+  if (jackpotFullLink) {
+    jackpotFullLink.href = (currentLang === 'en') ? 'biggest-lottery-jackpots-after-tax.html' : 'biggest-jackpot-payouts.html';
+  }
+
   // 언어 전환 시 환율 배지의 상태 문구(title)도 항상 다시 반영 (실패/성공/기본 상태와 무관하게 현재 언어로)
   updateExchangeRateBadges(exchangeRateFetchFailed);
 
