@@ -675,6 +675,11 @@ async function fetchLiveExchangeRate(force){
       const data = await res.json();
       const rate = source.getRate(data);
       if (rate) {
+        // fetch가 진행되는 동안(최대 약 12초, 소스 2개 × 6초 타임아웃) 사용자가 환율을 직접
+        // 수정했을 수 있음 — 맨 위의 isRateManuallyEdited 체크는 fetch 시작 "전"에 한 번만
+        // 확인하므로, 진행 중에 수정된 경우를 못 잡아서 사용자 입력이 뒤늦게 덮어써지는
+        // 레이스 컨디션이 있었음. await 이후 여기서 한 번 더 확인해서 방지함
+        if (isRateManuallyEdited && !force) return false;
         EXCHANGE_RATE = Math.round(rate * 100) / 100; // 소수점 둘째자리까지 유지 (기준환율은 보통 소수점 단위로 고시됨)
         const rateCny = source.getRateCny(data);
         if (rateCny) EXCHANGE_RATE_CNY = Math.round(rateCny * 10000) / 10000; // CNY는 소수점 넷째자리까지(보통 6.xx대라 소수점 둘째자리로는 정밀도 부족)
@@ -1081,6 +1086,10 @@ function go(view){
     updateDrawCountdown();
   } else if (view === 'compare') {
     syncCompareFromShared();
+  } else if (view === 'faq') {
+    // 국가 토글을 한 번도 안 건드린 상태로 FAQ 탭을 바로 누르면 filterFaq()가 아직 한 번도
+    // 실행된 적이 없어서, 세금 기준(kr/us/cn)과 무관한 질문까지 전부 보이던 버그가 있었음
+    filterFaq();
   }
 
   document.querySelector('.page').scrollIntoView({behavior:'smooth', block:'start'});
@@ -1922,9 +1931,26 @@ const FAQ_TG2 = {
   }
 };
 
+// FAQ 상단 소개문 — "국세청 상담 기준"이라는 출처 표기가 세금 기준(kr/us/cn)과 무관하게
+// 항상 똑같이 나오고 있었음. us/cn 기준 방문자에게는 실제로 확인 근거가 국세청이 아니라
+// IRS·중국 국가세무총국 쪽인데 "국세청"이라고만 말하는 건 부정확해서, 기준별로 출처를 다르게 표기함
+const FAQ_PANEL_DESC = {
+  kr: () => pickLang('검색하다 오신 분들이 자주 물어보는 질문 모았어요 · 국세청 상담 기준으로 확인된 정보예요', 'Common questions from people who searched their way here · Confirmed based on Korea’s National Tax Service consultations', '搜索到这里的朋友们经常问的问题 · 已通过韩国国税厅咨询确认'),
+  us: () => pickLang('검색하다 오신 분들이 자주 물어보는 질문 모았어요 · IRS 공식 자료 기준으로 확인된 정보예요', 'Common questions from people who searched their way here · Confirmed based on official IRS sources', '搜索到这里的朋友们经常问的问题 · 已根据美国国税局（IRS）官方资料确认'),
+  cn: () => pickLang('검색하다 오신 분들이 자주 물어보는 질문 모았어요 · 중국 국가세무총국 공고 기준으로 확인된 정보예요', 'Common questions from people who searched their way here · Confirmed based on China’s State Taxation Administration notices', '搜索到这里的朋友们经常问的问题 · 已根据中国国家税务总局公告确认')
+};
+
+function updateFaqPanelDesc(){
+  const el = document.getElementById('faq-panel-desc');
+  if (!el) return;
+  const entry = FAQ_PANEL_DESC[sharedCountry] || FAQ_PANEL_DESC.kr;
+  el.textContent = entry();
+}
+
 function updateFaqTg2Card(){
   const titleEl = document.getElementById('faq-tg2-title');
   const subEl = document.getElementById('faq-tg2-sub');
+  updateFaqPanelDesc();
   if (!titleEl || !subEl) return;
   const entry = FAQ_TG2[sharedCountry] || FAQ_TG2.kr;
   titleEl.textContent = entry.title();
@@ -2401,7 +2427,11 @@ function onCompareRateChanged(){
 }
 
 function updateCalc(usdOverride){
-  const usd = usdOverride !== undefined ? usdOverride : parseMillionsInput(document.getElementById('amountInput').value) * 1000000;
+  // 입력창이 비어있을 땐 0으로 계산하지 않고 마지막 유효값(sharedAmountUsd)을 씀 — updateHomeCalc()와
+  // 동일한 패턴. 이게 없으면 입력칸을 지웠을 때 실수령액이 0으로 고정되고, 그 상태로 홈 화면에
+  // 돌아가도(공유 상태라) 0이 그대로 유지되는 버그가 있었음
+  const typedValue = parseMillionsInput(document.getElementById('amountInput').value);
+  const usd = usdOverride !== undefined ? usdOverride : (typedValue > 0 ? typedValue * 1000000 : sharedAmountUsd);
   const stateCode = document.getElementById('compareStateSelect').value;
   sharedAmountUsd = usd;
   sharedState = stateCode;
