@@ -1502,6 +1502,15 @@ document.addEventListener('DOMContentLoaded', () => {
     go(hashView);
   }
 });
+
+// 영어 랜딩페이지(korean-abroad-lottery-tax.html 등)에서 "index.html?lang=en"으로 들어왔을 때
+// 기본값인 한국어 화면이 아니라 바로 영어로 보이도록 함
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(location.search);
+  if (params.get('lang') === 'en' && currentLang !== 'en') {
+    toggleLanguage();
+  }
+});
 setInterval(() => { fetchLiveExchangeRate(); }, 60 * 60 * 1000); // 1시간마다 환율 자동 재조회 — 유저가 직접 수정한 경우는 fetchLiveExchangeRate 내부에서 자동으로 건너뜀
 
 // Pretendard 웹폰트는 렌더링 차단 없이 비동기로 로드되는데(느린 CDN 대비), 그 말은 즉
