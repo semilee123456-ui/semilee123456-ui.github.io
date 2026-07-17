@@ -276,6 +276,32 @@
           <button class="site-notice-close" onclick="document.getElementById('site-notice').style.display='none';" aria-label="닫기" data-i18n-aria-label="common.close">✕</button>
         </div>
 
+        <details class="panel odds-accordion" id="introPersonaAccordion" style="margin:14px 0;">
+          <summary class="panel-title-toggle" data-i18n="intro.panelTitle">👋 나는 어떤 경우일까요?</summary>
+          <div class="intro-persona-list">
+            <a class="intro-persona-row is-clickable" href="#" onclick="goToCalculatorInput(); return false;">
+              <p class="intro-persona-label"><span class="flag-badge">KR</span> <span data-i18n="intro.krLabel">한국에 살아요</span></p>
+              <p class="intro-persona-action is-link" data-i18n="intro.krAction">바로 계산하러 가기 →</p>
+            </a>
+            <a class="intro-persona-row is-clickable" href="korean-abroad-us-lottery-tax.html">
+              <p class="intro-persona-label" data-i18n="intro.abroadLabel">✈️ 해외에 살지만 한국 국적이에요</p>
+              <p class="intro-persona-action is-link" data-i18n="intro.abroadAction">한국 세금 의무 알아보기 →</p>
+            </a>
+            <div class="intro-persona-row">
+              <p class="intro-persona-label" data-i18n="intro.foreignerLabel">🌏 한국에 사는 외국인이에요</p>
+              <p class="intro-persona-action" data-i18n="intro.foreignerHint">이 언어로 바로 보기</p>
+              <div class="intro-lang-btns">
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('en'); goToCalculatorInput();">English</button>
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('zh'); goToCalculatorInput();">中文</button>
+              </div>
+            </div>
+            <a class="intro-persona-row is-clickable" href="#" onclick="go('compare'); return false;">
+              <p class="intro-persona-label" data-i18n="intro.realAbroadLabel">🏠 실제로 다른 나라(미국·중국)에 살아요</p>
+              <p class="intro-persona-action is-link" data-i18n="intro.realAbroadAction">국가별 비교에서 확인하기 →</p>
+            </a>
+          </div>
+        </details>
+
         <div style="margin:16px 0; margin-top:0;">
           <div class="result-hero">
             <div class="result-seal-row"><span class="result-seal" aria-hidden="true">참</span></div>
@@ -289,6 +315,7 @@
             <p class="milestone-badge" id="home-milestone" style="display:none;"></p>
             <span class="milestone-burst" id="milestone-burst"></span>
             <p class="usd-actual-note" id="home-usd-note" style="display:none; margin-top:4px;"></p>
+            <p class="usd-actual-note" id="home-cny-note" style="display:none; margin-top:4px;"></p>
             <div class="result-meta-group">
               <p class="result-hero-basis-mini" id="home-final-basis-mini">100M USD 당첨 · 한국 거주자</p>
               <p class="foot-note" id="home-trust-line">환율 -</p>
@@ -318,12 +345,14 @@
 
             <p class="field-label-single" style="margin-top:20px; padding-top:14px; border-top:1px dashed var(--border);" data-i18n="input.basisLabel">세금 계산 기준</p>
             <input type="hidden" id="homeCountrySelect" value="kr">
-            <div class="country-toggle">
-              <button type="button" id="homeCountryBtnKr" class="country-toggle-btn active" onclick="setHomeCountry('kr')" data-i18n="input.optKorea">🇰🇷 한국 기준</button>
-              <button type="button" id="homeCountryBtnUs" class="country-toggle-btn" onclick="setHomeCountry('us')" data-i18n="input.optUS">🇺🇸 미국 기준</button>
+            <div class="country-toggle" id="homeCountryToggle">
+              <button type="button" class="country-toggle-btn active" data-country="kr" onclick="setHomeCountry('kr')"><span class="flag-badge">KR</span> <span data-i18n="input.optKorea">한국 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="us" onclick="setHomeCountry('us')"><span class="flag-badge">US</span> <span data-i18n="input.optUS">미국 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="cn" onclick="setHomeCountry('cn')"><span class="flag-badge">CN</span> <span data-i18n="input.optChina">중국 기준</span></button>
             </div>
+            <p class="krw-hint" style="margin:-6px 0 14px;" data-i18n="input.basisHint">💡 실제로 세금을 내야 하는 나라 기준으로 골라주세요 — 한국에 사신다면 그대로 두시면 돼요</p>
 
-            <p class="filing-label" id="home-state-label" style="display:none;" data-i18n-html="compare.stateLabel">🇺🇸 미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9%로 크게 달라요)</span></p>
+            <p class="filing-label" id="home-state-label" style="display:none;"><span class="flag-badge">US</span> <span data-i18n-html="compare.stateLabel">미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9%로 크게 달라요)</span></span></p>
             <div class="input-row" style="margin-bottom:4px;" id="home-state-row">
               <select style="flex:1;" id="homeStateSelect" onchange="updateHomeCalc()">
                 <option value="AVG" data-i18n="state.AVG">평균 주세 (예시, 8%)</option>
@@ -382,7 +411,7 @@
             </div>
             <p class="filing-label" id="home-filing-label" style="display:none;" data-i18n="compare.filingLabel">미국 거주자 신고 상태</p>
             <p class="filing-note-small" id="home-filing-small" style="display:none;" data-i18n="compare.filingSmall">💬 복권 당첨금처럼 큰 금액에서는 싱글/기혼 여부와 상관없이 결과가 거의 동일해요 (구간 차이가 전체 금액의 0.1% 미만이라서요)</p>
-            <p class="filing-note" id="home-filing-note" style="display:none; margin-top:8px;" data-i18n="home.filingNoteState">💡 한국 거주자는 어느 주(State)에서 당첨되든 미국 비거주자 원천징수(30%)가 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.</p>
+            <p class="filing-note" id="home-filing-note" style="display:none; margin-top:8px;">💡 한국 거주자는 어느 주(State)에서 당첨되든 미국 비거주자 원천징수(30%)가 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.</p>
 
             <p class="krw-hint" style="margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);">≈ <span id="home-krw-amt">1,503억원</span> · <span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="home-rate-input" value="1,503.4" inputmode="decimal" oninput="onHomeRateChanged()"><span data-i18n="common.won">원</span></p>
 
@@ -550,7 +579,7 @@
           <div class="slider-range-label"><span data-i18n="home.sliderMin">1천만 달러</span><span data-i18n="home.sliderMax">20억 달러</span></div>
           <p class="krw-hint">≈ <span id="compare-krw-amt">1,503억원</span> · <span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="compare-rate-input" value="1,503.4" inputmode="decimal" oninput="onCompareRateChanged()"><span data-i18n="common.won">원</span> <button type="button" class="rate-live-badge" onclick="retryLiveExchangeRate(this)" title="기본값 사용 중 · 탭하면 실시간 환율로 갱신" aria-label="환율 새로고침" data-i18n-aria-label="common.refreshRate"><span aria-hidden="true">🔄</span></button></p>
 
-          <p class="filing-label" id="compare-state-label" data-i18n-html="compare.stateLabel">🇺🇸 미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9%로 크게 달라요)</span></p>
+          <p class="filing-label" id="compare-state-label"><span class="flag-badge">US</span> <span data-i18n-html="compare.stateLabel">미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9%로 크게 달라요)</span></span></p>
           <div class="input-row" style="margin-bottom:4px;" id="compare-state-row">
             <select id="compareStateSelect" onchange="updateCalc()">
               <option value="AVG" data-i18n="state.AVG">평균 주세 (예시, 8%)</option>
@@ -607,7 +636,7 @@
               <option value="WY" data-i18n="state.WY">와이오밍 (0%)</option>
             </select>
           </div>
-          <p class="filing-note" data-i18n-html="compare.filingNote">💡 한국 거주자는 <b>미국 비거주자 원천징수 대상</b>이라, 신고 상태(싱글/기혼)를 따로 선택하지 않아도 돼요. (당첨 형태·조세조약에 따라 달라질 수 있어요)</p>
+          <p class="filing-note" data-i18n-html="compare.filingNote">💡 외국 거주자는 <b>미국 비거주자 원천징수 대상</b>이라, 신고 상태(싱글/기혼)를 따로 선택하지 않아도 돼요. (당첨 형태·조세조약에 따라 달라질 수 있어요)</p>
           <p class="usd-actual-note" id="compare-usd-note" style="display:none;"></p>
         </div>
 

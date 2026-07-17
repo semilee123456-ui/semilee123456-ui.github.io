@@ -24,6 +24,15 @@ const I18N = {
   'nav.faq':       { en: 'FAQ' , zh: '常见问题' },
   'hero.tag':      { en: '🧮 US Lottery Tax Calculator' , zh: '🧮 美国彩票税金计算器' },
   'hero.title':    { en: 'how much would<br>you actually take home?' , zh: '我的账户里<br>实际能拿到多少？' },
+  'intro.panelTitle': { en: '👋 Which one am I?' , zh: '👋 我是哪种情况？' },
+  'intro.krLabel': { en: 'I live in Korea' , zh: '我住在韩国' },
+  'intro.krAction': { en: 'Go straight to the calculator →' , zh: '直接去计算 →' },
+  'intro.abroadLabel': { en: '✈️ I live abroad but I’m a Korean citizen' , zh: '✈️ 我住在国外，但持有韩国国籍' },
+  'intro.abroadAction': { en: 'See your Korea tax duty →' , zh: '了解韩国纳税义务 →' },
+  'intro.foreignerLabel': { en: '🌏 I’m a foreigner living in Korea' , zh: '🌏 我是住在韩国的外国人' },
+  'intro.foreignerHint': { en: 'View in this language' , zh: '直接用这个语言查看' },
+  'intro.realAbroadLabel': { en: '🏠 I actually live in another country (US, China, etc.)' , zh: '🏠 我实际住在其他国家（美国、中国等）' },
+  'intro.realAbroadAction': { en: 'Check the country comparison →' , zh: '查看国家对比 →' },
   'result.label':      { en: '💰 Estimated take-home amount' , zh: '💰 预计实得金额' },
   'result.trustBadge': { en: 'Based on official IRS · Korea NTS data' , zh: '基于美国IRS·韩国国税厅官方数据' },
   'result.share':      { en: '📤 Share this result' , zh: '📤 分享这个结果' },
@@ -38,9 +47,10 @@ const I18N = {
   'home.inputHint': { en: 'Enter your winnings directly' , zh: '请直接输入奖金金额' },
   'home.quickfillPowerball': { en: 'Powerball recent jackpot' , zh: '强力球最近头奖' },
   'home.quickfillMega': { en: 'Mega Millions recent jackpot' , zh: '超级百万最近头奖' },
-  'input.optKorea':    { en: '🇰🇷 Korea basis' , zh: '🇰🇷 韩国标准' },
-  'input.optUS':       { en: '🇺🇸 US basis' , zh: '🇺🇸 美国标准' },
-  'home.filingNoteState': { en: '💡 Korean residents face the same 30% US non-resident withholding regardless of which state they won in — no need to factor in state tax.' , zh: '💡 韩国税收居民无论在哪个州中奖，都统一适用美国非居民30%预扣税——不需要另外考虑州税' },
+  'input.optKorea':    { en: 'Korea basis' , zh: '韩国标准' },
+  'input.optUS':       { en: 'US basis' , zh: '美国标准' },
+  'input.optChina':    { en: 'China basis' , zh: '中国标准' },
+  'input.basisHint':   { en: '💡 Pick the country whose tax law actually applies to you — if you live in Korea, just leave this as is' , zh: '💡 请按照实际需要缴税的国家选择 — 如果您住在韩国，保持默认即可' },
   'common.seeMore':    { en: 'See more' , zh: '查看更多' },
   'explore.title':      { en: '🧭 Curious about more?' , zh: '🧭 还想了解更多？' },
   'explore.compareLabel': { en: 'Country Compare' , zh: '国家比较' },
@@ -61,11 +71,11 @@ const I18N = {
   'compare.panelDesc':   { en: 'Type the prize amount or use the slider 👇' , zh: '输入奖金金额或拖动滑块 👇' },
   'compare.krwHint':     { en: '💡 Not the advertised annuity jackpot — enter the pre-tax lump-sum cash value.' , zh: '💡 不是新闻公布的年金头奖金额，请输入税前一次性现金金额' },
   'compare.selectHint':  { en: '💬 Your take-home amount depends on where you live' , zh: '💬 实得金额取决于你住在哪里' },
-  'compare.stateLabel':  { en: '🇺🇸 State used for the US-resident calculation <span>(state tax ranges 0%~10.9%)</span>' , zh: '🇺🇸 用于美国居民计算的州 <span>（州税从0%到10.9%不等）</span>' },
+  'compare.stateLabel':  { en: 'State used for the US-resident calculation <span>(state tax ranges 0%~10.9%)</span>' , zh: '用于美国居民计算的州 <span>（州税从0%到10.9%不等）</span>' },
   'compare.filingLabel': { en: 'US resident filing status' , zh: '美国居民申报身份' },
   'compare.filingSmall': { en: '💬 For prizes this large, filing status (single/married) barely changes the result (bracket difference is under 0.1% of the total)' , zh: '💬 对于这么大金额的奖金，申报身份（单身/已婚）几乎不影响结果（税率级距差异不到总额的0.1%）' },
   'compare.filingRow':   { en: 'Single and Married Filing Jointly give nearly identical results, so no selection is needed' , zh: '单身和已婚联合申报的结果几乎相同，无需选择' },
-  'compare.filingNote':  { en: '💡 Korea residents are <b>subject to US nonresident withholding</b>, so there\u2019s no need to choose a filing status (Single/Married). (May vary by payout type or tax treaty.)' , zh: '💡 韩国居民适用<b>美国非居民预扣税</b>，所以不需要另外选择申报身份（单身/已婚）。（可能因奖金支付方式或税收协定而有所不同）' },
+  'compare.filingNote':  { en: '💡 Winners living outside the US are <b>subject to US nonresident withholding</b>, so there\u2019s no need to choose a filing status (Single/Married). (May vary by payout type or tax treaty.)' , zh: '💡 居住在美国以外的中奖者适用<b>美国非居民预扣税</b>，所以不需要另外选择申报身份（单身/已婚）。（可能因奖金支付方式或税收协定而有所不同）' },
   'compare.flowExplain': { en: 'The US withholds tax first, then Korea taxes the rest (with some credit available)' , zh: '美国先扣税，之后韩国对剩余部分征税（可抵免部分税款）' },
   'compare.sideTitle': { en: 'Korea vs. US, side by side' , zh: '韩国 vs 美国 对比' },
   'compare.otherLangTitle': { en: 'Living in Korea as a different nationality?' , zh: '住在韩国的其他国籍人士' },
@@ -149,326 +159,326 @@ const I18N = {
   'state.WI': { en: 'Wisconsin (7.65%)' , zh: '威斯康星州（7.65%）' },
   'state.WY': { en: 'Wyoming (0%)' , zh: '怀俄明州（0%）' },
   'odds.breadcrumb':  { en: 'Odds Sense Tool' },
-  'odds.panelTitle':  { en: 'This probability doesn\u2019t really register, does it?' },
-  'odds.panelDesc':   { en: '1 in 292 million doesn\u2019t feel real. So we compared it to things that do.' },
-  'odds.barPowerball': { en: 'Powerball Jackpot' },
-  'odds.barLightning': { en: 'Struck by lightning' },
-  'odds.barPlane':     { en: 'Plane crash' },
-  'odds.barShark':     { en: 'Shark attack' },
-  'odds.oddsPowerball': { en: '1 / 292M' },
-  'odds.oddsLightning': { en: '1 / 15,000' },
-  'odds.oddsPlane':     { en: '1 / 11M' },
-  'odds.oddsShark':     { en: '1 / 3.75M' },
-  'odds.callout': { en: '💡 Winning the Powerball jackpot is about as likely as <b>getting struck by lightning 19,000 times in a row.</b> Yet several people still win every year 🍀' },
-  'odds.winnersTitle': { en: '🏆 People really have won this much' },
-  'odds.winnersDesc':  { en: 'It does actually happen \u2014 here are some record-breaking real cases' },
-  'odds.historyTitle': { en: '📜 Past Jackpot Records' },
-  'odds.historyDesc':  { en: 'Jackpot amounts we\u2019ve checked, with estimated take-home for both Korean and US residents (including the top 5 all-time records)' },
-  'odds.historyFullLink': { en: '📄 See the Top 5 all-time jackpots in detail →' },
-  'odds.winner1Amt': { en: '$2.04 billion' },
-  'odds.winner1':    { en: 'November 2022, California \u2014 Edwin Castro, winner of the largest Powerball jackpot in history. He took the $997.6M lump sum and bought $25.5M and $47M houses back to back. Sued over a claim the ticket was stolen, he was confirmed the rightful owner in 2024, then in 2025 donated land to build homes for wildfire victims.' },
-  'odds.winner2Amt': { en: '$758.7 million' },
-  'odds.winner2':    { en: 'August 2017, Massachusetts \u2014 Mavis Wanczyk quit her job at a hospital where she\u2019d worked for 32 years the moment she found out she\u2019d won. Once she became famous, though, dozens of fake accounts impersonating her popped up online, and police had to step in.' },
-  'odds.winner3Amt': { en: '🍀 Anonymous winners' },
-  'odds.winner3':    { en: 'Some states let winners stay anonymous (Florida, Texas, Delaware, etc.). If you’d rather not end up like Castro or Wanczyk, this is the option many big winners choose.' },
-  'odds.lightningTitle': { en: '⚡ Today\u2019s Lightning Numbers' },
-  'odds.lightningDesc':  { en: 'Drawn just for fun, with today\u2019s "lightning" energy \u2014 6 random numbers' },
-  'odds.drawBtn':  { en: '⚡⚡⚡ Draw numbers' },
-  'odds.drawNote': { en: 'Your odds with these numbers are still 1 in 292 million \u2014 just for fun 😉' },
-  'odds.payoutTitle': { en: 'How much do you win for each match?' },
-  'odds.payoutDesc':  { en: 'Powerball prize tiers by numbers matched' },
-  'odds.megaNote':    { en: '💡 Mega Millions has different numbers and prizes — <a href="https://www.megamillions.com" target="_blank" rel="noopener noreferrer" style="color:var(--teal); font-weight:700; text-decoration:none;">check the official site →</a>' },
-  'odds.howtoTitle': { en: '🎱 First, how the game works' },
-  'odds.howtoText':  { en: 'Powerball is a game of matching <b>5 regular numbers</b> (from 1\u201369) plus <b>1 Powerball number</b> (from 1\u201326) \u2014 6 numbers total. The prize depends on how many regular numbers you match, plus whether you match the Powerball.' },
-  'odds.jackpotTag':     { en: '🏆 Jackpot' },
-  'odds.jackpotMatch':   { en: '🎯 Match all 6 numbers' },
-  'odds.jackpotExplain': { en: 'Keeps growing until someone wins' },
-  'odds.jcStep1': { en: '📢 Announced jackpot (annuity basis)' },
-  'odds.jcStep2': { en: '💰 Lump-sum option (present value, pre-tax, ~58%)' },
-  'odds.jcStep3': { en: 'What actually lands in your hand after tax' },
-  'odds.jcStep4': { en: '💡 What if you take the annuity instead of the lump sum?' },
-  'odds.jcAnnuityYear':    { en: '📅 30 payments, average per year (pre-tax)' },
-  'odds.jcAnnuityYearNet': { en: 'What you actually get each year' },
-  'odds.jcAnnuityMonth':   { en: '🗓️ Per month' },
-  'odds.jcAnnuityNote': { en: 'Unlike the discounted lump sum, an annuity pays out <b>the full announced jackpot</b> over 30 payments across 29 years (each payment grows 5% after the first). Spreading it out over years also spreads the tax burden \u2014 the amount above is a simple average, so the actual first payment is lower.' },
-  'odds.match5':      { en: 'Match 5 numbers' },
-  'odds.missedPB':    { en: 'Missed the Powerball' },
-  'odds.amt5':        { en: 'About \u20a91.5B' },
-  'odds.odds5':       { en: '1 / 11.69M' },
-  'odds.match4pb':    { en: 'Match 4 + Powerball' },
-  'odds.amt4pb':      { en: 'About \u20a975.2M' },
-  'odds.odds4pb':     { en: '1 / 910K' },
-  'odds.match4':      { en: 'Match 4 numbers' },
-  'odds.amt4':        { en: 'About \u20a9150,000' },
-  'odds.odds4':       { en: '1 / 36,525' },
-  'odds.match3pb':    { en: 'Match 3 + Powerball' },
-  'odds.amt3pb':      { en: 'About \u20a9150,000' },
-  'odds.odds3pb':     { en: '1 / 14,494' },
-  'odds.matchPBonly': { en: 'Powerball number only' },
-  'odds.amtPBonly':   { en: 'About \u20a96,000' },
-  'odds.oddsPBonly':  { en: '1 / 38' },
-  'odds.disclaimer': { en: 'Odds figures are based on official published data. KRW conversion uses a reference exchange rate and may differ from actual amounts.' },
+  'odds.panelTitle':  { en: 'This probability doesn\u2019t really register, does it?' , zh: '这个概率，说实话没什么感觉吧？' },
+  'odds.panelDesc':   { en: '1 in 292 million doesn\u2019t feel real. So we compared it to things that do.' , zh: '1/2.92亿这个数字，说实话没什么真实感。所以我们拿它跟一些更有真实感的东西比较了一下。' },
+  'odds.barPowerball': { en: 'Powerball Jackpot' , zh: '强力球头奖' },
+  'odds.barLightning': { en: 'Struck by lightning' , zh: '被闪电击中的概率' },
+  'odds.barPlane':     { en: 'Plane crash' , zh: '飞机事故' },
+  'odds.barShark':     { en: 'Shark attack' , zh: '被鲨鱼咬伤的概率' },
+  'odds.oddsPowerball': { en: '1 / 292M' , zh: '1 / 2.92亿' },
+  'odds.oddsLightning': { en: '1 / 15,000' , zh: '1 / 1.5万' },
+  'odds.oddsPlane':     { en: '1 / 11M' , zh: '1 / 1100万' },
+  'odds.oddsShark':     { en: '1 / 3.75M' , zh: '1 / 375万' },
+  'odds.callout': { en: '💡 Winning the Powerball jackpot is about as likely as <b>getting struck by lightning 19,000 times in a row.</b> Yet several people still win every year 🍀' , zh: '💡 中强力球头奖的概率，大约相当于<b>连续被闪电击中19,000次。</b>不过每年仍有好几个人中奖 🍀' },
+  'odds.winnersTitle': { en: '🏆 People really have won this much' , zh: '🏆 真的有人中过这么多钱' },
+  'odds.winnersDesc':  { en: 'It does actually happen \u2014 here are some record-breaking real cases' , zh: '确实会发生 —— 这些是真实存在的历史级中奖案例' },
+  'odds.historyTitle': { en: '📜 Past Jackpot Records' , zh: '📜 历史头奖查询记录' },
+  'odds.historyDesc':  { en: 'Jackpot amounts we\u2019ve checked, with estimated take-home for both Korean and US residents (including the top 5 all-time records)' , zh: '记录了查询当天的头奖金额，以及韩国·美国居民标准下的实得金额（含历史最高5笔纪录）' },
+  'odds.historyFullLink': { en: '📄 See the Top 5 all-time jackpots in detail →' , zh: '📄 查看历史最高头奖TOP5详情 →' },
+  'odds.winner1Amt': { en: '$2.04 billion' , zh: '20.4亿美元' },
+  'odds.winner1':    { en: 'November 2022, California \u2014 Edwin Castro, winner of the largest Powerball jackpot in history. He took the $997.6M lump sum and bought $25.5M and $47M houses back to back. Sued over a claim the ticket was stolen, he was confirmed the rightful owner in 2024, then in 2025 donated land to build homes for wildfire victims.' , zh: '2022年11月，加利福尼亚州——爱德温·卡斯特罗，历史最大强力球头奖得主。他选择一次性支付9.976亿美元，随后接连买下2550万和4700万美元的房子。曾被起诉称彩票是偷来的，但2024年被确认为合法所有者，2025年他还捐地为山火受灾者建房。' },
+  'odds.winner2Amt': { en: '$758.7 million' , zh: '7.587亿美元' },
+  'odds.winner2':    { en: 'August 2017, Massachusetts \u2014 Mavis Wanczyk quit her job at a hospital where she\u2019d worked for 32 years the moment she found out she\u2019d won. Once she became famous, though, dozens of fake accounts impersonating her popped up online, and police had to step in.' , zh: '2017年8月，马萨诸塞州——梅维斯·万奇克得知中奖的那一刻，立刻辞去了她干了32年的医院工作。可成名之后，网上冒出了几十个冒充她的假账号，警方不得不介入处理。' },
+  'odds.winner3Amt': { en: '🍀 Anonymous winners' , zh: '🍀 匿名中奖者' },
+  'odds.winner3':    { en: 'Some states let winners stay anonymous (Florida, Texas, Delaware, etc.). If you’d rather not end up like Castro or Wanczyk, this is the option many big winners choose.' , zh: '有些州允许中奖者匿名（佛罗里达、德克萨斯、特拉华等）。如果你不想像卡斯特罗或万奇克那样被曝光，很多大奖得主都会选择这个方式。' },
+  'odds.lightningTitle': { en: '⚡ Today\u2019s Lightning Numbers' , zh: '⚡ 今日闪电抽号' },
+  'odds.lightningDesc':  { en: 'Drawn just for fun, with today\u2019s "lightning" energy \u2014 6 random numbers' , zh: '借助你今天被闪电击中的运气，为你抽取6个号码，纯属娱乐' },
+  'odds.drawBtn':  { en: '⚡⚡⚡ Draw numbers' , zh: '⚡⚡⚡ 抽取号码' },
+  'odds.drawNote': { en: 'Your odds with these numbers are still 1 in 292 million \u2014 just for fun 😉' , zh: '用这些号码中奖的概率依然是1/2.92亿，纯属娱乐哦 😉' },
+  'odds.payoutTitle': { en: 'How much do you win for each match?' , zh: '猜中几个能拿多少奖金？' },
+  'odds.payoutDesc':  { en: 'Powerball prize tiers by numbers matched' , zh: '强力球各中奖等级对应的奖金' },
+  'odds.megaNote':    { en: '💡 Mega Millions has different numbers and prizes — <a href="https://www.megamillions.com" target="_blank" rel="noopener noreferrer" style="color:var(--teal); font-weight:700; text-decoration:none;">check the official site →</a>' , zh: '💡 超级百万的号码和奖金体系不同 — <a href="https://www.megamillions.com" target="_blank" rel="noopener noreferrer" style="color:var(--teal); font-weight:700; text-decoration:none;">请查看官方网站 →</a>' },
+  'odds.howtoTitle': { en: '🎱 First, how the game works' , zh: '🎱 首先，了解一下游戏规则' },
+  'odds.howtoText':  { en: 'Powerball is a game of matching <b>5 regular numbers</b> (from 1\u201369) plus <b>1 Powerball number</b> (from 1\u201326) \u2014 6 numbers total. The prize depends on how many regular numbers you match, plus whether you match the Powerball.' , zh: '强力球是从<b>1~69中选5个普通号码</b> + <b>从1~26中选1个强力球号码</b>，总共猜中6个数字的游戏。根据猜中几个普通号码，以及是否猜中强力球号码，奖金会有所不同。' },
+  'odds.jackpotTag':     { en: '🏆 Jackpot' , zh: '🏆 头奖' },
+  'odds.jackpotMatch':   { en: '🎯 Match all 6 numbers' , zh: '🎯 6个数字全部猜中' },
+  'odds.jackpotExplain': { en: 'Keeps growing until someone wins' , zh: '没有人中奖就会持续累积' },
+  'odds.jcStep1': { en: '📢 Announced jackpot (annuity basis)' , zh: '📢 公布的头奖金额（年金基准）' },
+  'odds.jcStep2': { en: '💰 Lump-sum option (present value, pre-tax, ~58%)' , zh: '💰 选择一次性支付时（现值，税前，约58%）' },
+  'odds.jcStep3': { en: 'What actually lands in your hand after tax' , zh: '扣税后实际到手金额' },
+  'odds.jcStep4': { en: '💡 What if you take the annuity instead of the lump sum?' , zh: '💡 如果选择年金（annuity）而不是一次性支付呢？' },
+  'odds.jcAnnuityYear':    { en: '📅 30 payments, average per year (pre-tax)' , zh: '📅 分30次领取，税前年平均' },
+  'odds.jcAnnuityYearNet': { en: 'What you actually get each year' , zh: '每年实际到手金额' },
+  'odds.jcAnnuityMonth':   { en: '🗓️ Per month' , zh: '🗓️ 按每月计算' },
+  'odds.jcAnnuityNote': { en: 'Unlike the discounted lump sum, an annuity pays out <b>the full announced jackpot</b> over 30 payments across 29 years (each payment grows 5% after the first). Spreading it out over years also spreads the tax burden \u2014 the amount above is a simple average, so the actual first payment is lower.' , zh: '与一次性支付（折现后的现值）不同，年金方式会在29年内分30次<b>足额领取公布的头奖总额</b>（首次之后每年递增5%）。因为不是一次性集中，税负也会分散——上面的金额是简单平均值，实际首次领取金额会比这个少。' },
+  'odds.match5':      { en: 'Match 5 numbers' , zh: '猜中5个数字' },
+  'odds.missedPB':    { en: 'Missed the Powerball' , zh: '强力球号码未中' },
+  'odds.amt5':        { en: 'About \u20a91.5B' , zh: '约15亿韩元' },
+  'odds.odds5':       { en: '1 / 11.69M' , zh: '1 / 1169万' },
+  'odds.match4pb':    { en: 'Match 4 + Powerball' , zh: '猜中4个数字+强力球' },
+  'odds.amt4pb':      { en: 'About \u20a975.2M' , zh: '约7500万韩元' },
+  'odds.odds4pb':     { en: '1 / 910K' , zh: '1 / 91万' },
+  'odds.match4':      { en: 'Match 4 numbers' , zh: '猜中4个数字' },
+  'odds.amt4':        { en: 'About \u20a9150,000' , zh: '约15万韩元' },
+  'odds.odds4':       { en: '1 / 36,525' , zh: '1 / 36525' },
+  'odds.match3pb':    { en: 'Match 3 + Powerball' , zh: '猜中3个数字+强力球' },
+  'odds.amt3pb':      { en: 'About \u20a9150,000' , zh: '约15万韩元' },
+  'odds.odds3pb':     { en: '1 / 14,494' , zh: '1 / 14494' },
+  'odds.matchPBonly': { en: 'Powerball number only' , zh: '只猜中强力球号码' },
+  'odds.amtPBonly':   { en: 'About \u20a96,000' , zh: '约6000韩元' },
+  'odds.oddsPBonly':  { en: '1 / 38' , zh: '1 / 38' },
+  'odds.disclaimer': { en: 'Odds figures are based on official published data. KRW conversion uses a reference exchange rate and may differ from actual amounts.' , zh: '概率数值以官方公布资料为准。韩元换算采用参考汇率，可能与实际金额有所不同。' },
   'faq.breadcrumb':  { en: 'Frequently Asked Questions' },
-  'faq.panelTitle':  { en: 'Questions people often ask' },
-  'faq.panelDesc':   { en: 'Common questions from people who searched their way here · Confirmed based on National Tax Service consultations' },
-  'faq.searchPlaceholder': { en: '🔍 Search (e.g. tax, citizenship, Powerball)' },
-  'faq.catAll':      { en: 'All' },
-  'faq.catTax':      { en: 'Tax & Double Taxation' },
-  'faq.catLife':     { en: 'Health, Pension & Gift Tax' },
-  'faq.catRefund':   { en: 'Refunds & Deadlines' },
-  'faq.catPurchase': { en: 'Purchasing & Process' },
-  'faq.catGame':     { en: 'Game Info' },
-  'faq.noResult':    { en: 'No content.' },
-  'faq.q1': { en: 'How much tax is actually deducted? 😮' },
-  'faq.a1': { en: 'US residents get 24% withheld upfront, settled up to 37% later. Non-US residents (including Korean residents) generally face a 30% withholding rule.' },
-  'faq.q2': { en: 'Wait, I pay tax in Korea too?' },
-  'faq.a2': { en: 'Yes. US lottery winnings aren\u2019t a domestic lottery, so they\u2019re combined into comprehensive income tax (up to 45%). Tax already paid in the US can offset via Foreign Tax Credit (FTC).' },
-  'faq.q3': { en: 'Can I get any of the tax back? 💸' },
-  'faq.a3': { en: 'The 30% US federal withholding is practically non-refundable. State tax varies \u2014 Maryland and Arizona are unusual in taxing non-residents too. Pick your winning state below to check.' },
-  'faq.step': { en: 'STEP' },
-  'faq.selectState': { en: 'Select the state you won in' },
-  'faq.selectStatePlaceholder': { en: 'Select the state you won in 👇' },
-  'faq.wizardDefault': { en: 'Select a state to see your refund possibility instantly' },
-  'faq.q4': { en: 'Will my health insurance premium spike if I win? 🏥' },
-  'faq.a4': { en: 'Regional subscribers see winnings fully counted as income, raising premiums a lot. Employed subscribers pay extra premium above ₩20M/year in outside income too. If registered as a dependent, you may lose that status.' },
-  'faq.q5': { en: 'I\u2019m already receiving National Pension / Basic Pension \u2014 does this affect it? 👴' },
-  'faq.a5': { en: 'Depends on the program. National Pension \u2014 if already receiving it, the reduction rule applies to earned/business income, not a one-time windfall. Basic Pension / welfare benefits reassess eligibility by income and assets, so benefits could change.' },
-  'faq.q6': { en: 'How do I tell if a "you won" message is a scam? 🚨' },
-  'faq.a6': { en: 'Common scam patterns: impersonating card companies asking for card info to "refund" a losing ticket, fake lottery commission asking for crypto purchases, or selling fake winning-number predictions. Real winnings are checked by you on the official site \u2014 unsolicited requests for money or info are 100% scams.' },
-  'faq.q7': { en: 'How much gift tax if I share with family? 👨‍👩‍👧' },
-  'faq.a7': { en: 'Spouse up to ₩600M, adult children up to ₩50M are tax-free. Amounts above that face a 10–50% progressive rate. Filing on time gets you a 3% credit.' },
-  'faq.q8': { en: 'Is prize money subject to property division in a divorce? 💍' },
-  'faq.a8': { en: 'In principle, no \u2014 courts treat it as personal property from pure luck. But if a spouse helped preserve or grow the money afterward, that contribution may be included.' },
-  'faq.q9': { en: 'By when do I have to claim the winnings? ⏰' },
-  'faq.deadlineBadge': { en: 'Has a deadline' },
-  'faq.a9': { en: 'Usually 90 days to 1 year. Miss it, and it reverts to the state \u2014 gone forever. One winner actually lost $138M by missing the deadline.' },
-  'state.name.AL': { en: 'Alabama' },
-  'state.name.AK': { en: 'Alaska' },
-  'state.name.AZ': { en: 'Arizona' },
-  'state.name.AR': { en: 'Arkansas' },
-  'state.name.CA': { en: 'California' },
-  'state.name.CO': { en: 'Colorado' },
-  'state.name.CT': { en: 'Connecticut' },
-  'state.name.DE': { en: 'Delaware' },
-  'state.name.FL': { en: 'Florida' },
-  'state.name.GA': { en: 'Georgia' },
-  'state.name.HI': { en: 'Hawaii' },
-  'state.name.ID': { en: 'Idaho' },
-  'state.name.IL': { en: 'Illinois' },
-  'state.name.IN': { en: 'Indiana' },
-  'state.name.IA': { en: 'Iowa' },
-  'state.name.KS': { en: 'Kansas' },
-  'state.name.KY': { en: 'Kentucky' },
-  'state.name.LA': { en: 'Louisiana' },
-  'state.name.ME': { en: 'Maine' },
-  'state.name.MD': { en: 'Maryland' },
-  'state.name.MA': { en: 'Massachusetts' },
-  'state.name.MI': { en: 'Michigan' },
-  'state.name.MN': { en: 'Minnesota' },
-  'state.name.MS': { en: 'Mississippi' },
-  'state.name.MO': { en: 'Missouri' },
-  'state.name.MT': { en: 'Montana' },
-  'state.name.NE': { en: 'Nebraska' },
-  'state.name.NV': { en: 'Nevada' },
-  'state.name.NH': { en: 'New Hampshire' },
-  'state.name.NJ': { en: 'New Jersey' },
-  'state.name.NM': { en: 'New Mexico' },
-  'state.name.NY': { en: 'New York' },
-  'state.name.NC': { en: 'North Carolina' },
-  'state.name.ND': { en: 'North Dakota' },
-  'state.name.OH': { en: 'Ohio' },
-  'state.name.OK': { en: 'Oklahoma' },
-  'state.name.OR': { en: 'Oregon' },
-  'state.name.PA': { en: 'Pennsylvania' },
-  'state.name.RI': { en: 'Rhode Island' },
-  'state.name.SC': { en: 'South Carolina' },
-  'state.name.SD': { en: 'South Dakota' },
-  'state.name.TN': { en: 'Tennessee' },
-  'state.name.TX': { en: 'Texas' },
-  'state.name.UT': { en: 'Utah' },
-  'state.name.VT': { en: 'Vermont' },
-  'state.name.VA': { en: 'Virginia' },
-  'state.name.WA': { en: 'Washington' },
-  'state.name.DC': { en: 'Washington D.C.' },
-  'state.name.WV': { en: 'West Virginia' },
-  'state.name.WI': { en: 'Wisconsin' },
-  'state.name.WY': { en: 'Wyoming' },
-  'faq.q10': { en: 'Aside from the lottery, might I have unclaimed money that\u2019s already mine?' },
-  'faq.a10': { en: 'Unlike the lottery, this is money already confirmed under your name — old tax refunds, forgotten bank accounts, unclaimed retirement plans, and more. Billions of dollars in unclaimed property sit unclaimed in the US every year. Check the list below.' },
-  'faq.checklistTitle': { en: 'Check if any of these apply to you' },
-  'faq.check1': { en: 'Never claimed a state or federal tax refund you were actually owed' },
-  'faq.check2': { en: 'Worked as a freelancer/contractor and might have skipped filing some year' },
-  'faq.check3': { en: 'Left a job mid-year and never checked if you overpaid that year\u2019s taxes' },
-  'faq.check4': { en: 'Might have missed deductions (medical, donations, etc.) in some year' },
-  'faq.check5': { en: 'Not sure where to even start \u2014 want a general starting point' },
-  'faq.check6': { en: 'Have an old bank account, uncashed check, or insurance payout you forgot about' },
-  'faq.check7': { en: 'Changed jobs and never rolled over an old 401(k) or pension plan' },
-  'faq.check8': { en: 'Own U.S. Savings Bonds that matured years ago and stopped earning interest' },
-  'faq.checkDefault': { en: 'If any apply, check for real below 👇' },
-  'faq.recommend': { en: '⭐ Recommended' },
-  'faq.linkHometax':   { en: 'IRS Refund<br>Status' },
-  'faq.linkGov24':     { en: 'Unclaimed Money<br>Hub' },
-  'faq.linkFine':      { en: 'Find Unclaimed<br>Property' },
-  'faq.linkHealth':    { en: 'Old 401(k)/<br>Retirement Plans' },
-  'faq.linkCardpoint': { en: 'Matured Savings<br>Bonds' },
-  'faq.checklistFooter': { en: 'We can\u2019t do the lookup for you \u2014 a couple of these (MissingMoney, USA.gov) just need your name, but others (IRS, retirement plans, savings bonds) will ask for your SSN, the same way Korean sites ask for your resident registration number. Either way, these are the real official channels. Takes about 10 minutes to check.' },
-  'faq.shareChecklist': { en: '📤 Share this with a friend' },
-  'faq.q11': { en: 'Is it better to take it all at once, or in installments?' },
-  'faq.a11': { en: 'The announced jackpot is the annuity total — lump sum is about 45–60% of that. Most winners choose lump sum — check the <button type="button" class="inline-link-btn" onclick="goToAnnuityInfo()">jackpot calculator under Odds</button> for a detailed comparison.' },
-  'faq.q12': { en: 'Where can I buy a US lottery ticket?' },
-  'faq.a12': { en: 'Sold at convenience stores and gas stations in the US. Domestic purchase-agent services carry legal risk, so we don\u2019t refer them.' },
-  'faq.q13': { en: 'What if a friend buys a ticket for me, or claims the prize on my behalf?' },
-  'faq.a13': { en: 'Even a friend buying it personally creates complications. Ownership is usually determined by who signs to claim it. If they claim as a US resident, their tax rate applies, and transferring the money could trigger both US and Korean gift tax.' },
-  'faq.q14': { en: 'Where can I check past winning numbers?' },
-  'faq.a14b': { en: 'We show recent numbers on our home screen, but the official sites are the most accurate source.' },
-  'faq.linkPowerball': { en: '🔗 Powerball official site →' },
-  'faq.linkMega':      { en: '🔗 Mega Millions official site →' },
-  'faq.q15': { en: 'Can I claim winnings without US citizenship?' },
-  'faq.a15': { en: 'Yes, foreigners who legally bought a ticket can claim. Non-resident aliens face the 30% withholding though.' },
-  'faq.q16': { en: 'I\u2019m a Korean living in the US \u2014 which option should I choose? (students, expats, green card, citizens)' },
-  'faq.a16': { en: '\u201cLiving in the US\u201d and \u201cUS tax resident\u201d can differ. Green card/citizenship holders should pick \u201cUS.\u201d Students or early-stage expats may still be non-resident aliens, making \u201cKorea (non-resident)\u201d more accurate. Consult a US tax pro if unsure.' },
-  'faq.q17': { en: 'What is the "filing status (single/married)" option in the calculator?' },
-  'faq.a17': { en: 'US filing status affects tax brackets, but for lottery-size amounts it barely matters \u2014 the difference between single and joint top brackets is a rounding error.' },
-  'faq.q18': { en: 'What actually happens, step by step, if I win?' },
-  'faq.a18': { en: 'It’s a 6-step process: buy in the US → confirm the win → claim it. See the full breakdown under <b>A closer look at the purchase process</b> below.' },
-  'faq.q19': { en: 'How do I file these taxes?' },
-  'faq.a19': { en: 'The US withholds 30% first; in Korea you report it as other income the following May. Tax paid in the US can offset via FTC. Consult a tax pro handling both countries.' },
-  'faq.q20': { en: 'How do I claim the Foreign Tax Credit (FTC)? What documents do I need?' },
-  'faq.a20': { en: 'To offset the US tax (30% withholding) against your Korean income tax filing, based on a July 2026 National Tax Service phone consultation you’ll need: <b>a certificate of tax payment issued by the foreign (US) government, a payment receipt, a withholding tax receipt, and proof of the prize itself</b>. The exchange rate used is <b>the rate on the day you actually received the prize money</b> (per Enforcement Decree of the Income Tax Act, Article 50). This isn’t an official written ruling, so confirm the exact document list with a tax professional before filing.' },
-  'faq.moreTitle':  { en: '📚 Learn more (terms, purchase process, payout methods, etc.)' },
-  'faq.termsTitle': { en: 'Let\u2019s start with the basic terms' },
-  'faq.termsDesc':  { en: 'The part people mix up the most \u2014 here\u2019s a side-by-side comparison of the two games' },
-  'faq.gamePowerball':  { en: '🔴 Powerball' },
-  'faq.gamePrice':      { en: 'Price' },
-  'faq.gameDrawDay':    { en: 'Draw days' },
-  'faq.gameNumFormat':  { en: 'Number format' },
-  'faq.pbDrawDays':     { en: 'Mon, Wed, Sat' },
-  'faq.pbNumFormat':    { en: '5 of 1\u201369<br>+ 1 of 1\u201326' },
-  'faq.gameOdds':    { en: 'Jackpot odds' },
-  'faq.gameMega':    { en: '🟡 Mega Millions' },
-  'faq.multiplierOption': { en: '(includes Megaplier option)' },
-  'faq.mgDrawDays':  { en: 'Tue, Fri' },
-  'faq.mgNumFormat': { en: '5 of 1\u201370<br>+ 1 of 1\u201324' },
-  'faq.mgOdds':      { en: '1 / 290.47M' },
-  'faq.samePlace': { en: '📍 Where to buy: <b>Same place!</b> Both are sold at the same convenience stores and gas stations' },
-  'faq.sameStoreCallout': { en: '\ud83d\udca1 Many wonder "where do I buy Powerball vs Mega Millions?" \u2014 they\u2019re actually sold at the same stores. Just tell the cashier which game you want.' },
-  'faq.otherGamesNote': { en: 'Note: there\u2019s also Millionaire for Life, Lotto America, and state-specific lotteries, but only these two make Korean news, so that\u2019s our focus.' },
-  'faq.trivia': { en: 'Trivia you don\u2019t need to know this month: Millionaire for Life replaced the previous "Lucky for Life" and "Cash4Life," which ended and merged on February 21, 2026.' },
-  'faq.taxGuideTitle': { en: 'The tax basics, in a nutshell' },
-  'faq.tg1Title': { en: 'How is US tax calculated?' },
-  'faq.tg1Sub':   { en: 'Federal 24\u201337% + 30% nonresident withholding' },
-  'faq.tg2Title': { en: 'Do I pay again in Korea?' },
-  'faq.tg2Sub':   { en: 'Progressive income tax (up to 45%), adjusted via Foreign Tax Credit (FTC) \u2014 reference calculation' },
-  'faq.tg3Title': { en: 'Lump sum vs. annuity \u2014 what\u2019s the difference?' },
-  'faq.tg3Sub':   { en: 'Different tax brackets apply, so total tax owed can differ' },
-  'faq.purchaseGuideTitle': { en: 'A closer look at the purchase process' },
-  'faq.purchaseGuideDesc':  { en: 'A step-by-step guide for first-timers' },
-  'faq.gateLabel': { en: '⚠️ Prerequisite' },
-  'faq.gateText':  { en: 'You need to actually be in the US<br>(travel, business trip, studying abroad, etc.)' },
-  'faq.gateSub':   { en: 'There\u2019s no legal way to buy remotely from Korea' },
-  'faq.step1Title':  { en: 'Find a retailer' },
-  'faq.step1Detail': { en: 'Any convenience store, gas station, or supermarket with a \u2018Lottery\u2019 sign works' },
-  'faq.ticketTitle': { en: '🎫 What the ticket looks like' },
-  'faq.ticketMeta':  { en: 'Draw date: MON JUL 06 2026  |  QP (Quick Pick)  |  $2.00' },
-  'faq.ticketDetail': { en: 'The front shows <b>your chosen numbers (or Quick Pick random numbers), the draw date, price, and a scannable barcode</b>. That barcode is essential for verifying a win later \u2014 keep it safe!' },
-  'faq.step2FlowTitle':  { en: 'Pay' },
-  'faq.step2FlowDetail': { en: 'Usually $2\u2013$5 per ticket. You pay right at the counter.' },
-  'faq.tagCash':      { en: '✓ Cash accepted' },
-  'faq.tagCard':      { en: '✓ Card accepted' },
-  'faq.tagNoInstall': { en: '✗ No installment payments' },
-  'faq.phraseTitle': { en: '🗣️ Useful phrases even if you don\u2019t speak English' },
-  'faq.phrase1': { en: 'One Powerball, quick pick, please' },
-  'faq.phrase2': { en: 'One Mega Millions, please' },
-  'faq.phrase3': { en: 'Cash / Card, please' },
-  'faq.phraseTip': { en: '\ud83d\udca1 Just say "quick pick" and the computer picks random numbers \u2014 most people buy this way!' },
-  'faq.playslipTitle': { en: '✏️ Want to pick your own numbers? (How to fill out a play slip)' },
-  'faq.psRegular':   { en: '5 regular numbers (1\u201369)' },
-  'faq.psPowerball': { en: '1 Powerball number (1\u201326)' },
-  'faq.psStep1': { en: 'Grab a <b>free play slip</b> from the store, and fill in bubbles with a black or blue pen (or pencil) \u2014 <b>fill the circles solidly</b> (red pen won\u2019t scan)' },
-  'faq.psStep2': { en: 'You can pick some numbers yourself and mark <b>QP (Quick Pick)</b> for the rest \u2014 only those get filled randomly' },
-  'faq.psStep3': { en: 'If you make a mistake, don\u2019t erase \u2014 mark the <b>VOID</b> box and fill in the next row' },
-  'faq.psStep4': { en: 'Hand the completed slip to <b>the cashier</b>, who scans it on the spot to turn it into a real ticket (the slip itself isn\u2019t a ticket!)' },
-  'faq.signBackNote': { en: '💡 If you win, <b>sign the back of the ticket immediately</b> \u2014 this is an important step to prove ownership if lost' },
-  'faq.step3Title':  { en: 'Age verification' },
-  'faq.step3Detail': { en: 'Most states require you to be <b>18 or older</b> (some require 21). You can buy regardless of nationality.' },
-  'faq.step4Title':  { en: '📢 Want to check past winning numbers?' },
-  'faq.step4Detail': { en: 'You can check winning numbers directly on the official sites.' },
-  'faq.newTabNote':  { en: '(opens in a new tab)' },
-  'faq.checkWinTitle': { en: '💡 Here\u2019s how to check if your ticket won' },
-  'faq.checkMethod1': { en: '<b>Compare the numbers yourself</b> \u2014 the most reliable method' },
-  'faq.checkMethod2': { en: 'Scan the barcode with the state lottery\u2019s official app' },
-  'faq.checkMethod3': { en: 'Use the store\u2019s self-service scanner or ask staff' },
-  'faq.step5Title':  { en: 'If you won, claim it' },
-  'faq.step5Detail': { en: 'Visit the <b>lottery office for that state</b> in person with your ID and ticket. The deadline is usually <b>180 days to 1 year</b>' },
-  'faq.step6Title':  { en: 'Lump sum or annuity? You must choose when claiming' },
-  'faq.step6Detail': { en: 'After claiming, you usually have <b>60 days</b> to choose one or the other. If you don\u2019t choose in time, it defaults to the annuity.' },
-  'faq.lumpSumTitle':  { en: '💵 Lump Sum' },
-  'faq.lumpSumDetail': { en: 'Receive about <b>45\u201360%</b> of the announced amount all at once. The option most winners choose' },
-  'faq.annuityTitle':  { en: '📅 Annuity' },
-  'faq.annuityDetail': { en: 'Full announced amount paid over 29 years in 30 installments (first immediate, +5%/year after)' },
-  'faq.payoutIrreversible': { en: 'This choice is irreversible \u2014 decide only after consulting a tax/financial professional' },
-  'faq.sixStepsNote': { en: 'That\u2019s all 6 steps. The key point is that if step 1 (the prerequisite) isn\u2019t met, none of the later steps apply to you.' },
-  'faq.payMethodTitle': { en: 'Do you get paid in cash or by bank transfer?' },
-  'faq.payMethodDesc':  { en: 'Completely different depending on the amount' },
-  'faq.small600':       { en: '💵 $600 or less' },
-  'faq.small600Detail': { en: 'You can get <b>cash</b> right on the spot at the store where you bought the ticket.' },
-  'faq.largeAmt':       { en: '🏦 Large amounts (hundreds of thousands to millions of dollars)' },
-  'faq.largeAmtDetail': { en: 'Not paid in cash. Paid by check or bank transfer, usually taking 6\u20138 weeks.' },
-  'faq.krResident':       { en: 'If you\u2019re a Korea resident?' },
-  'faq.krResidentDetail': { en: 'There\u2019s no clearly published official process. If this happens, proceed together with the lottery office, a bank capable of international transfer, and a tax/legal professional.' },
-  'faq.howManyTitle': { en: 'How many tickets can I buy at once?' },
-  'faq.howManyDesc':  { en: 'Actually two different questions mixed together' },
-  'faq.multiTicketQ': { en: 'Q. Can I buy multiple tickets at once?' },
-  'faq.multiTicketA': { en: 'Yes, no legal limit. A play slip usually allows up to 5 games per slip.' },
-  'faq.multiDrawQ': { en: 'Q. Can I enter the same numbers into multiple future drawings at once?' },
-  'faq.multiDrawA': { en: 'Yes, via \u2018multi-draw\u2019 \u2014 usually 10\u201326 draws at once depending on the state.' },
-  'faq.noRefundNote': { en: 'Note: tickets can\u2019t be refunded or canceled once purchased (all sales are final)' },
-  'faq.finalDisclaimer': { en: 'If you have any other questions, feel free to reach out via Contact!' },
-  'privacy.breadcrumb':    { en: 'Privacy Policy' },
-  'privacy.title':         { en: 'Privacy Policy' },
-  'privacy.effectiveDate': { en: 'Effective date: July 9, 2026' },
-  'disclaimer.effectiveDate': { en: 'Effective date: July 9, 2026' },
-  'privacy.h1': { en: '1. Personal information collected' },
-  'privacy.b1': { en: 'ChamTax (the "Site") does <b>not store calculator input values (prize amount, country of residence, exchange rate, etc.) on any server.</b> All calculations happen only within the visitor\u2019s browser and disappear when you leave the page.<br>However, if you contact us via "Contact," we collect only the <b>email address and message content</b> you provide.' },
-  'privacy.h2': { en: '2. Purpose of collection' },
-  'privacy.b2': { en: 'Used only to review and respond to inquiries \u2014 never for marketing or other purposes.' },
-  'privacy.h3': { en: '3. Retention period' },
-  'privacy.b3': { en: 'Retained for up to 1 year after the inquiry is resolved, then promptly destroyed.' },
-  'privacy.h4': { en: '4. Sharing with third parties' },
-  'privacy.b4': { en: 'We do not share collected personal information with third parties. However, ads displayed on the site (Google AdSense) may independently collect visit information via cookies through Google, which is handled under Google\u2019s privacy policy, not this site\u2019s.' },
-  'privacy.h5': { en: '5. Use of cookies' },
-  'privacy.b5': { en: 'Cookies from third-party ad services such as Google may be used to serve ads. You can refuse or delete cookies in your browser settings, though this may limit ad personalization.' },
-  'privacy.h6': { en: '6. User rights' },
-  'privacy.b6': { en: 'You may request to view, correct, or delete any personal information you provided via inquiries at any time. Please contact us via the Contact page below.' },
-  'privacy.h7': { en: '7. Privacy officer' },
-  'common.inquiry': { en: 'Contact' },
-  'common.contactPageLink': { en: 'Please use the Contact page' },
-  'disclaimer.breadcrumb': { en: 'Disclaimer' },
-  'disclaimer.title':      { en: 'Disclaimer' },
-  'disclaimer.h1': { en: '1. Purpose of information' },
-  'disclaimer.b1': { en: 'All calculation results and information provided on this site are a <b>reference simulation</b>, not tax, legal, or financial advice.' },
-  'disclaimer.h2': { en: '2. Accuracy of calculations' },
-  'disclaimer.b2': { en: 'The tax rates, exchange rates, etc. used in the calculator are simplified examples based on tax law and may differ from actual tax owed. Regarding how foreign lottery winnings are taxed under Korean law, the calculator reflects an answer received via a July 2026 NTS online consultation ("comprehensive income tax combined, Foreign Tax Credit applicable"), but this is a consultation response, not an official binding ruling, and actual application may vary by circumstance (see FAQ for details).' },
-  'disclaimer.h3': { en: '3. Recommendation to consult a professional' },
-  'disclaimer.b3': { en: 'If you actually win a lottery and need to make decisions such as tax filing, please be sure to consult a professional such as a tax accountant who handles both Korean and US tax matters. This site is not liable for decisions made based solely on information provided here.' },
-  'disclaimer.h4': { en: '4. No purchase agency or brokerage' },
-  'disclaimer.b4': { en: 'This site does not act as an agent or broker for lottery ticket purchases and does not provide any purchase channels. Acting as a purchase agent for foreign lotteries within Korea may be subject to penalties under relevant law (e.g., Criminal Act Article 248).' },
-  'disclaimer.h5': { en: '5. Trademarks and third-party services' },
-  'disclaimer.b5': { en: 'Powerball®, Mega Millions®, etc. are registered trademarks of their respective operating organizations (MUSL, etc.). This site is an independent information service with no affiliation or partnership with those organizations.' },
-  'disclaimer.h6': { en: '6. Limitation of liability' },
-  'disclaimer.b6': { en: 'To the extent permitted by law, the operator of this site is not liable for direct or indirect damages arising from use of the site, reliance on calculation results, or errors in information.' },
-  'disclaimer.h7': { en: '7. Changes to content' },
-  'disclaimer.b7': { en: 'The content, tax rate information, and policies of this site may change without prior notice.' },
-  'contact.breadcrumb': { en: 'Contact' },
-  'contact.title': { en: 'Let us know if something\u2019s off or you have questions' },
-  'contact.desc':  { en: 'If a calculation seems wrong or you\u2019re curious about something, feel free to leave a message :)' },
-  'contact.leaveEmpty': { en: 'Leave this field empty' },
-  'contact.emailPlaceholder':   { en: 'Email address (for our reply)' },
-  'contact.messagePlaceholder': { en: 'Type your message here' },
-  'contact.send':    { en: 'Send' },
-  'contact.success': { en: '✓ Your message was sent, thank you!' },
-  'contact.error':   { en: 'Something went wrong sending this \u2014 please try again shortly.' },
-  'footer.copy': { en: 'This site is an informational simulator and does not act as an agent or broker for lottery purchases.' },
+  'faq.panelTitle':  { en: 'Questions people often ask' , zh: '大家都很好奇的问题' },
+  'faq.panelDesc':   { en: 'Common questions from people who searched their way here · Confirmed based on National Tax Service consultations' , zh: '搜索到这里的朋友们经常问的问题 · 已通过韩国国税厅咨询确认' },
+  'faq.searchPlaceholder': { en: '🔍 Search (e.g. tax, citizenship, Powerball)' , zh: '🔍 搜索（如：税金、国籍、强力球）' },
+  'faq.catAll':      { en: 'All' , zh: '全部' },
+  'faq.catTax':      { en: 'Tax & Double Taxation' , zh: '税金·双重征税' },
+  'faq.catLife':     { en: 'Health, Pension & Gift Tax' , zh: '健康保险·年金·赠与税' },
+  'faq.catRefund':   { en: 'Refunds & Deadlines' , zh: '退税·申领期限' },
+  'faq.catPurchase': { en: 'Purchasing & Process' , zh: '购买·流程' },
+  'faq.catGame':     { en: 'Game Info' , zh: '游戏信息' },
+  'faq.noResult':    { en: 'No content.' , zh: '没有相关内容。' },
+  'faq.q1': { en: 'How much tax is actually deducted? 😮' , zh: '税到底扣多少啊？😮' },
+  'faq.a1': { en: 'US residents get 24% withheld upfront, settled up to 37% later. Non-US residents (including Korean residents) generally face a 30% withholding rule.' , zh: '美国居民中奖时先预扣24%，之后最高结算至37%。包括韩国居民在内的非美国居民，一般适用30%的预扣税规定。' },
+  'faq.q2': { en: 'Wait, I pay tax in Korea too?' , zh: '啊，在韩国还要再交一次税？' },
+  'faq.a2': { en: 'Yes. US lottery winnings aren\u2019t a domestic lottery, so they\u2019re combined into comprehensive income tax (up to 45%). Tax already paid in the US can offset via Foreign Tax Credit (FTC).' , zh: '是的。美国彩票不是韩国国内彩票，所以要计入综合所得税（最高45%）合并申报。已在美国缴纳的税款可以通过外国税收抵免（FTC）抵消。' },
+  'faq.q3': { en: 'Can I get any of the tax back? 💸' , zh: '这税还能退回来一些吗？💸' },
+  'faq.a3': { en: 'The 30% US federal withholding is practically non-refundable. State tax varies \u2014 Maryland and Arizona are unusual in taxing non-residents too. Pick your winning state below to check.' , zh: '美国联邦税（30%）基本上很难退回。州税（State Tax）因州而异——马里兰、亚利桑那比较特殊，即使不是当地居民也要交税。请在下方选择中奖的州查看。' },
+  'faq.step': { en: 'STEP' , zh: 'STEP' },
+  'faq.selectState': { en: 'Select the state you won in' , zh: '选择中奖的州' },
+  'faq.selectStatePlaceholder': { en: 'Select the state you won in 👇' , zh: '选择中奖的州 👇' },
+  'faq.wizardDefault': { en: 'Select a state to see your refund possibility instantly' , zh: '选择州之后，马上告诉您退税的可能性' },
+  'faq.q4': { en: 'Will my health insurance premium spike if I win? 🏥' , zh: '中奖了健康保险费会不会暴涨？🏥' },
+  'faq.a4': { en: 'Regional subscribers see winnings fully counted as income, raising premiums a lot. Employed subscribers pay extra premium above ₩20M/year in outside income too. If registered as a dependent, you may lose that status.' , zh: '地区加入者的话，中奖金额会100%计入收入，保险费可能大幅上涨。职场加入者若境外收入超过年2000万韩元，也要额外缴纳保险费。如果是被抚养人身份，可能会失去该资格。' },
+  'faq.q5': { en: 'I\u2019m already receiving National Pension / Basic Pension \u2014 does this affect it? 👴' , zh: '我已经在领国民年金/基础年金了，会有影响吗？👴' },
+  'faq.a5': { en: 'Depends on the program. National Pension \u2014 if already receiving it, the reduction rule applies to earned/business income, not a one-time windfall. Basic Pension / welfare benefits reassess eligibility by income and assets, so benefits could change.' , zh: '要看具体情况。国民年金（老龄年金）——如果已经在领取，减额制度适用于劳动/事业所得，不适用于一次性意外之财。基础年金/福利补贴会根据收入和财产重新评估资格，所以待遇可能会有变化。' },
+  'faq.q6': { en: 'How do I tell if a "you won" message is a scam? 🚨' , zh: '"你中奖了"这种联系，怎么判断是不是诈骗？🚨' },
+  'faq.a6': { en: 'Common scam patterns: impersonating card companies asking for card info to "refund" a losing ticket, fake lottery commission asking for crypto purchases, or selling fake winning-number predictions. Real winnings are checked by you on the official site \u2014 unsolicited requests for money or info are 100% scams.' , zh: '常见的诈骗手法：冒充信用卡公司，以"退还未中奖彩票"为由索要卡号信息；冒充彩票委员会，要求用虚拟货币购买；出售虚假的预测中奖号码。真正的中奖信息是你自己在官方网站上查询确认的——凡是主动联系你索要钱财或信息的，100%是诈骗。' },
+  'faq.q7': { en: 'How much gift tax if I share with family? 👨‍👩‍👧' , zh: '分给家人的话，赠与税要交多少？👨‍👩‍👧' },
+  'faq.a7': { en: 'Spouse up to ₩600M, adult children up to ₩50M are tax-free. Amounts above that face a 10–50% progressive rate. Filing on time gets you a 3% credit.' , zh: '配偶6亿韩元、成年子女5000万韩元以内免税。超出部分适用10~50%的累进税率。在申报期限内自行申报可获得3%的税额抵免。' },
+  'faq.q8': { en: 'Is prize money subject to property division in a divorce? 💍' , zh: '中奖金，离婚时会被列入财产分割对象吗？💍' },
+  'faq.a8': { en: 'In principle, no \u2014 courts treat it as personal property from pure luck. But if a spouse helped preserve or grow the money afterward, that contribution may be included.' , zh: '原则上不会——法院通常将其视为纯粹靠运气获得的个人"特有财产"，离婚时不列入财产分割对象。但如果配偶事后为保全或增值这笔钱做出了贡献，这部分贡献可能会被计入。' },
+  'faq.q9': { en: 'By when do I have to claim the winnings? ⏰' , zh: '中奖金要在什么期限内领取？⏰' },
+  'faq.deadlineBadge': { en: 'Has a deadline' , zh: '有期限' },
+  'faq.a9': { en: 'Usually 90 days to 1 year. Miss it, and it reverts to the state \u2014 gone forever. One winner actually lost $138M by missing the deadline.' , zh: '通常是90天到1年之间。错过期限，奖金就会归属于该州，永远拿不回来了。曾有一位中奖者因错过期限，损失了1.38亿美元。' },
+  'state.name.AL': { en: 'Alabama' , zh: '阿拉巴马' },
+  'state.name.AK': { en: 'Alaska' , zh: '阿拉斯加' },
+  'state.name.AZ': { en: 'Arizona' , zh: '亚利桑那' },
+  'state.name.AR': { en: 'Arkansas' , zh: '阿肯色' },
+  'state.name.CA': { en: 'California' , zh: '加利福尼亚' },
+  'state.name.CO': { en: 'Colorado' , zh: '科罗拉多' },
+  'state.name.CT': { en: 'Connecticut' , zh: '康涅狄格' },
+  'state.name.DE': { en: 'Delaware' , zh: '特拉华' },
+  'state.name.FL': { en: 'Florida' , zh: '佛罗里达' },
+  'state.name.GA': { en: 'Georgia' , zh: '佐治亚' },
+  'state.name.HI': { en: 'Hawaii' , zh: '夏威夷' },
+  'state.name.ID': { en: 'Idaho' , zh: '爱达荷' },
+  'state.name.IL': { en: 'Illinois' , zh: '伊利诺伊' },
+  'state.name.IN': { en: 'Indiana' , zh: '印第安纳' },
+  'state.name.IA': { en: 'Iowa' , zh: '艾奥瓦' },
+  'state.name.KS': { en: 'Kansas' , zh: '堪萨斯' },
+  'state.name.KY': { en: 'Kentucky' , zh: '肯塔基' },
+  'state.name.LA': { en: 'Louisiana' , zh: '路易斯安那' },
+  'state.name.ME': { en: 'Maine' , zh: '缅因' },
+  'state.name.MD': { en: 'Maryland' , zh: '马里兰' },
+  'state.name.MA': { en: 'Massachusetts' , zh: '马萨诸塞' },
+  'state.name.MI': { en: 'Michigan' , zh: '密歇根' },
+  'state.name.MN': { en: 'Minnesota' , zh: '明尼苏达' },
+  'state.name.MS': { en: 'Mississippi' , zh: '密西西比' },
+  'state.name.MO': { en: 'Missouri' , zh: '密苏里' },
+  'state.name.MT': { en: 'Montana' , zh: '蒙大拿' },
+  'state.name.NE': { en: 'Nebraska' , zh: '内布拉斯加' },
+  'state.name.NV': { en: 'Nevada' , zh: '内华达' },
+  'state.name.NH': { en: 'New Hampshire' , zh: '新罕布什尔' },
+  'state.name.NJ': { en: 'New Jersey' , zh: '新泽西' },
+  'state.name.NM': { en: 'New Mexico' , zh: '新墨西哥' },
+  'state.name.NY': { en: 'New York' , zh: '纽约' },
+  'state.name.NC': { en: 'North Carolina' , zh: '北卡罗来纳' },
+  'state.name.ND': { en: 'North Dakota' , zh: '北达科他' },
+  'state.name.OH': { en: 'Ohio' , zh: '俄亥俄' },
+  'state.name.OK': { en: 'Oklahoma' , zh: '俄克拉何马' },
+  'state.name.OR': { en: 'Oregon' , zh: '俄勒冈' },
+  'state.name.PA': { en: 'Pennsylvania' , zh: '宾夕法尼亚' },
+  'state.name.RI': { en: 'Rhode Island' , zh: '罗德岛' },
+  'state.name.SC': { en: 'South Carolina' , zh: '南卡罗来纳' },
+  'state.name.SD': { en: 'South Dakota' , zh: '南达科他' },
+  'state.name.TN': { en: 'Tennessee' , zh: '田纳西' },
+  'state.name.TX': { en: 'Texas' , zh: '得克萨斯' },
+  'state.name.UT': { en: 'Utah' , zh: '犹他' },
+  'state.name.VT': { en: 'Vermont' , zh: '佛蒙特' },
+  'state.name.VA': { en: 'Virginia' , zh: '弗吉尼亚' },
+  'state.name.WA': { en: 'Washington' , zh: '华盛顿' },
+  'state.name.DC': { en: 'Washington D.C.' , zh: '华盛顿特区' },
+  'state.name.WV': { en: 'West Virginia' , zh: '西弗吉尼亚' },
+  'state.name.WI': { en: 'Wisconsin' , zh: '威斯康星' },
+  'state.name.WY': { en: 'Wyoming' , zh: '怀俄明' },
+  'faq.q10': { en: 'Aside from the lottery, might I have unclaimed money that\u2019s already mine?' , zh: '除了彩票，会不会还有本来就属于我、但没找回来的钱？' },
+  'faq.a10': { en: 'Unlike the lottery, this is money already confirmed under your name — old tax refunds, forgotten bank accounts, unclaimed retirement plans, and more. Billions of dollars in unclaimed property sit unclaimed in the US every year. Check the list below.' , zh: '这和彩票不一样，这是已经确定归你所有的钱——比如以前的退税、被遗忘的银行账户、未领取的退休金账户等等。美国每年有数十亿美元的无人认领财产。可以查看下方列表。' },
+  'faq.checklistTitle': { en: 'Check if any of these apply to you' , zh: '符合以下任意一项的话，可以确认一下' },
+  'faq.check1': { en: 'Never claimed a state or federal tax refund you were actually owed' , zh: '最近5年内换过工作或离职' },
+  'faq.check2': { en: 'Worked as a freelancer/contractor and might have skipped filing some year' , zh: '做过兼职·自由职业，但有的年份没有报税' },
+  'faq.check3': { en: 'Left a job mid-year and never checked if you overpaid that year\u2019s taxes' , zh: '中途离职导致那一年没能进行年末汇算' },
+  'faq.check4': { en: 'Might have missed deductions (medical, donations, etc.) in some year' , zh: '感觉有的年份漏报了医疗费·信用卡·捐赠等扣除项目' },
+  'faq.check5': { en: 'Not sure where to even start \u2014 want a general starting point' , zh: '交过汽车税·财产税等地方税，但从没再核实过' },
+  'faq.check6': { en: 'Have an old bank account, uncashed check, or insurance payout you forgot about' , zh: '以前用过的银行账户·保险，好几年没确认过了' },
+  'faq.check7': { en: 'Changed jobs and never rolled over an old 401(k) or pension plan' , zh: '健康保险·国民年金资格发生过变化（换工作·离职等），但没确认过' },
+  'faq.check8': { en: 'Own U.S. Savings Bonds that matured years ago and stopped earning interest' , zh: '信用卡积分好几年没用，就那么放着' },
+  'faq.checkDefault': { en: 'If any apply, check for real below 👇' , zh: '如果有符合的项目，请在下方实际确认一下 👇' },
+  'faq.recommend': { en: '⭐ Recommended' , zh: '⭐ 推荐' },
+  'faq.linkHometax':   { en: 'IRS Refund<br>Status' , zh: '国税退税款<br>查找' },
+  'faq.linkGov24':     { en: 'Unclaimed Money<br>Hub' , zh: '未退还款项<br>查询' },
+  'faq.linkFine':      { en: 'Find Unclaimed<br>Property' , zh: '沉睡的我的钱<br>查找' },
+  'faq.linkHealth':    { en: 'Old 401(k)/<br>Retirement Plans' , zh: '健康保险·年金<br>退款' },
+  'faq.linkCardpoint': { en: 'Matured Savings<br>Bonds' , zh: '信用卡积分<br>统一查询' },
+  'faq.checklistFooter': { en: 'We can\u2019t do the lookup for you \u2014 a couple of these (MissingMoney, USA.gov) just need your name, but others (IRS, retirement plans, savings bonds) will ask for your SSN, the same way Korean sites ask for your resident registration number. Either way, these are the real official channels. Takes about 10 minutes to check.' , zh: '我们没办法直接帮您查询（因为需要身份证号码认证的政府系统），不过已经为您直接连接到真正的官方渠道。大概10分钟就能确认完。' },
+  'faq.shareChecklist': { en: '📤 Share this with a friend' , zh: '📤 分享给朋友' },
+  'faq.q11': { en: 'Is it better to take it all at once, or in installments?' , zh: '是一次性领取好，还是分期领取好？' },
+  'faq.a11': { en: 'The announced jackpot is the annuity total — lump sum is about 45–60% of that. Most winners choose lump sum — check the <button type="button" class="inline-link-btn" onclick="goToAnnuityInfo()">jackpot calculator under Odds</button> for a detailed comparison.' , zh: '公布的头奖金额是年金总额——一次性支付大约是这个金额的45~60%。大多数中奖者会选择一次性支付——详细比较请看<button type="button" class="inline-link-btn" onclick="goToAnnuityInfo()">"概率体验"里的头奖计算器</button>。' },
+  'faq.q12': { en: 'Where can I buy a US lottery ticket?' , zh: '美国彩票在哪里能买到？' },
+  'faq.a12': { en: 'Sold at convenience stores and gas stations in the US. Domestic purchase-agent services carry legal risk, so we don\u2019t refer them.' , zh: '在美国当地的便利店、加油站等地有售。国内的代购服务存在法律风险，我们不做相关介绍。' },
+  'faq.q13': { en: 'What if a friend buys a ticket for me, or claims the prize on my behalf?' , zh: '如果朋友帮我买了彩票，或者代我领奖，会怎么样？' },
+  'faq.a13': { en: 'Even a friend buying it personally creates complications. Ownership is usually determined by who signs to claim it. If they claim as a US resident, their tax rate applies, and transferring the money could trigger both US and Korean gift tax.' , zh: '即使是朋友私下帮忙购买，也会产生复杂的问题。所有权通常取决于谁签字领奖。如果对方以美国居民身份领奖，适用的就是对方的税率，之后把钱转给你还可能同时触发美国和韩国的赠与税。' },
+  'faq.q14': { en: 'Where can I check past winning numbers?' , zh: '之前的中奖号码在哪里查？' },
+  'faq.a14b': { en: 'We show recent numbers on our home screen, but the official sites are the most accurate source.' , zh: '我们首页也会显示最近的开奖号码，但最准确的还是官方网站。' },
+  'faq.linkPowerball': { en: '🔗 Powerball official site →' , zh: '🔗 强力球官方网站 →' },
+  'faq.linkMega':      { en: '🔗 Mega Millions official site →' , zh: '🔗 超级百万官方网站 →' },
+  'faq.q15': { en: 'Can I claim winnings without US citizenship?' , zh: '没有美国国籍也能领奖吗？' },
+  'faq.a15': { en: 'Yes, foreigners who legally bought a ticket can claim. Non-resident aliens face the 30% withholding though.' , zh: '可以，合法购买彩票的外国人也能领奖。不过非居民外国人需要缴纳30%的预扣税。' },
+  'faq.q16': { en: 'I\u2019m a Korean living in the US \u2014 which option should I choose? (students, expats, green card, citizens)' , zh: '我是住在美国的韩国人，应该选哪个选项？（留学生·常驻员工·绿卡·公民）' },
+  'faq.a16': { en: '\u201cLiving in the US\u201d and \u201cUS tax resident\u201d can differ. Green card/citizenship holders should pick \u201cUS.\u201d Students or early-stage expats may still be non-resident aliens, making \u201cKorea (non-resident)\u201d more accurate. Consult a US tax pro if unsure.' , zh: '"住在美国"和"美国税法上的居民"可能是两回事。绿卡持有者、公民，以及长期居住的常驻员工可以选择"美国"；留学生或刚派驻不久的员工可能仍是非居民外国人，选择"韩国（非居民）"会更准确。如果不确定，请咨询美国税务专业人士。' },
+  'faq.q17': { en: 'What is the "filing status (single/married)" option in the calculator?' , zh: '计算器里的"申报状态（单身/已婚）"选项是什么？' },
+  'faq.a17': { en: 'US filing status affects tax brackets, but for lottery-size amounts it barely matters \u2014 the difference between single and joint top brackets is a rounding error.' , zh: '美国报税时申报状态会影响税率区间，但对彩票这种大金额来说几乎没有影响——单身和已婚联合申报最高税率区间的差异，几乎可以忽略不计。' },
+  'faq.q18': { en: 'What actually happens, step by step, if I win?' , zh: '真的中奖了的话，具体要经过哪些步骤？' },
+  'faq.a18': { en: 'It’s a 6-step process: buy in the US → confirm the win → claim it. See the full breakdown under <b>A closer look at the purchase process</b> below.' , zh: '一共分6个步骤：在美国购买 → 确认中奖 → 领奖。详细说明请看下方<b>"购买流程，仔细了解一下"</b>部分。' },
+  'faq.q19': { en: 'How do I file these taxes?' , zh: '这个税到底该怎么申报？' },
+  'faq.a19': { en: 'The US withholds 30% first; in Korea you report it as other income the following May. Tax paid in the US can offset via FTC. Consult a tax pro handling both countries.' , zh: '美国会先预扣30%；在韩国，需要在第二年5月作为其他所得申报。已在美国缴纳的税款可以通过外国税收抵免（FTC）抵消。请咨询同时熟悉两国税务的专业人士。' },
+  'faq.q20': { en: 'How do I claim the Foreign Tax Credit (FTC)? What documents do I need?' , zh: '外国税收抵免（FTC）要怎么申请？需要哪些材料？' },
+  'faq.a20': { en: 'To offset the US tax (30% withholding) against your Korean income tax filing, based on a July 2026 National Tax Service phone consultation you’ll need: <b>a certificate of tax payment issued by the foreign (US) government, a payment receipt, a withholding tax receipt, and proof of the prize itself</b>. The exchange rate used is <b>the rate on the day you actually received the prize money</b> (per Enforcement Decree of the Income Tax Act, Article 50). This isn’t an official written ruling, so confirm the exact document list with a tax professional before filing.' , zh: '要在韩国综合所得税申报时抵免已在美国缴纳的税款（30%预扣税），根据2026年7月国税厅电话咨询的答复，需要准备：<b>外国政府（美国）出具的纳税事实证明、缴税收据、预扣税收据，以及中奖事实证明材料</b>。适用的汇率是<b>实际收到奖金当天的汇率</b>（根据《所得税法施行令》第50条）。这不是正式的书面解释，请在申报前与税务师再次确认具体材料清单。' },
+  'faq.moreTitle':  { en: '📚 Learn more (terms, purchase process, payout methods, etc.)' , zh: '📚 深入了解（术语·购买流程·支付方式等）' },
+  'faq.termsTitle': { en: 'Let\u2019s start with the basic terms' , zh: '先从基本术语了解一下吧' },
+  'faq.termsDesc':  { en: 'The part people mix up the most \u2014 here\u2019s a side-by-side comparison of the two games' , zh: '大家最容易搞混的部分——把两款游戏放在一起比较了一下' },
+  'faq.gamePowerball':  { en: '🔴 Powerball' , zh: '🔴 强力球' },
+  'faq.gamePrice':      { en: 'Price' , zh: '价格' },
+  'faq.gameDrawDay':    { en: 'Draw days' , zh: '开奖日' },
+  'faq.gameNumFormat':  { en: 'Number format' , zh: '选号方式' },
+  'faq.pbDrawDays':     { en: 'Mon, Wed, Sat' , zh: '周一·周三·周六' },
+  'faq.pbNumFormat':    { en: '5 of 1\u201369<br>+ 1 of 1\u201326' , zh: '1~69中选5个<br>+ 1~26中选1个' },
+  'faq.gameOdds':    { en: 'Jackpot odds' , zh: '头奖概率' },
+  'faq.gameMega':    { en: '🟡 Mega Millions' , zh: '🟡 超级百万' },
+  'faq.multiplierOption': { en: '(includes Megaplier option)' , zh: '（含倍数选项 Megaplier）' },
+  'faq.mgDrawDays':  { en: 'Tue, Fri' , zh: '周二·周五' },
+  'faq.mgNumFormat': { en: '5 of 1\u201370<br>+ 1 of 1\u201324' , zh: '1~70中选5个<br>+ 1~24中选1个' },
+  'faq.mgOdds':      { en: '1 / 290.47M' , zh: '1 / 2.9047亿' },
+  'faq.samePlace': { en: '📍 Where to buy: <b>Same place!</b> Both are sold at the same convenience stores and gas stations' , zh: '📍 购买地点：<b>一样！</b>两款游戏都在同样的便利店、加油站有售' },
+  'faq.sameStoreCallout': { en: '\ud83d\udca1 Many wonder "where do I buy Powerball vs Mega Millions?" \u2014 they\u2019re actually sold at the same stores. Just tell the cashier which game you want.' , zh: '💡 很多人好奇"强力球和超级百万要去不同的地方买吗？"——其实是在同一家店买的。只要告诉店员你想买哪款游戏就行。' },
+  'faq.otherGamesNote': { en: 'Note: there\u2019s also Millionaire for Life, Lotto America, and state-specific lotteries, but only these two make Korean news, so that\u2019s our focus.' , zh: '参考：除了这两款，还有"终身百万富翁"、"美国乐透"等联合多州游戏，各州也有自己的彩票，但在韩国只有这两款游戏会成为话题，所以本网站只介绍这两款。' },
+  'faq.trivia': { en: 'Trivia you don\u2019t need to know this month: Millionaire for Life replaced the previous "Lucky for Life" and "Cash4Life," which ended and merged on February 21, 2026.' , zh: '这个月不知道也没关系的冷知识：终身百万富翁取代了之前的"Lucky for Life"和"Cash4Life"，这两款游戏已于2026年2月21日结束并合并。' },
+  'faq.taxGuideTitle': { en: 'The tax basics, in a nutshell' , zh: '税务指南，知道这些就够了' },
+  'faq.tg1Title': { en: 'How is US tax calculated?' , zh: '美国的税是怎么算的？' },
+  'faq.tg1Sub':   { en: 'Federal 24\u201337% + 30% nonresident withholding' , zh: '联邦税24~37% + 非居民预扣税30%' },
+  'faq.tg2Title': { en: 'Do I pay again in Korea?' , zh: '在韩国还要再交一次吗？' },
+  'faq.tg2Sub':   { en: 'Progressive income tax (up to 45%), adjusted via Foreign Tax Credit (FTC) \u2014 reference calculation' , zh: '综合所得税累进税率（最高45%），通过外国税收抵免（FTC）调整——仅供参考的计算' },
+  'faq.tg3Title': { en: 'Lump sum vs. annuity \u2014 what\u2019s the difference?' , zh: '一次性支付 vs 年金，有什么区别？' },
+  'faq.tg3Sub':   { en: 'Different tax brackets apply, so total tax owed can differ' , zh: '适用的税率区间不同，总税额可能有差异' },
+  'faq.purchaseGuideTitle': { en: 'A closer look at the purchase process' , zh: '购买流程，仔细了解一下' },
+  'faq.purchaseGuideDesc':  { en: 'A step-by-step guide for first-timers' , zh: '为完全第一次尝试的朋友准备的流程说明' },
+  'faq.gateLabel': { en: '⚠️ Prerequisite' , zh: '⚠️ 前提条件' },
+  'faq.gateText':  { en: 'You need to actually be in the US<br>(travel, business trip, studying abroad, etc.)' , zh: '需要人实际在美国<br>（旅行、出差、留学等）' },
+  'faq.gateSub':   { en: 'There\u2019s no legal way to buy remotely from Korea' , zh: '没有能在韩国远程购买的合法方式' },
+  'faq.step1Title':  { en: 'Find a retailer' , zh: '寻找销售点' },
+  'faq.step1Detail': { en: 'Any convenience store, gas station, or supermarket with a \u2018Lottery\u2019 sign works' , zh: '任何挂有"Lottery"标志的便利店、加油站、超市都可以' },
+  'faq.ticketTitle': { en: '🎫 What the ticket looks like' , zh: '🎫 彩票长这样' },
+  'faq.ticketMeta':  { en: 'Draw date: MON JUL 06 2026  |  QP (Quick Pick)  |  $2.00' , zh: '开奖日：MON JUL 06 2026  |  QP（快选）  |  $2.00' },
+  'faq.ticketDetail': { en: 'The front shows <b>your chosen numbers (or Quick Pick random numbers), the draw date, price, and a scannable barcode</b>. That barcode is essential for verifying a win later \u2014 keep it safe!' , zh: '正面印有<b>你选的号码（或快选随机号码）、开奖日期、价格，以及用于扫描的条形码</b>。这个条形码是之后确认中奖的关键——请务必妥善保管！' },
+  'faq.step2FlowTitle':  { en: 'Pay' , zh: '付款' },
+  'faq.step2FlowDetail': { en: 'Usually $2\u2013$5 per ticket. You pay right at the counter.' , zh: '一张通常$2~$5左右，当场直接付款。' },
+  'faq.tagCash':      { en: '✓ Cash accepted' , zh: '✓ 可用现金' },
+  'faq.tagCard':      { en: '✓ Card accepted' , zh: '✓ 可用信用卡' },
+  'faq.tagNoInstall': { en: '✗ No installment payments' , zh: '✗ 不能分期付款' },
+  'faq.phraseTitle': { en: '🗣️ Useful phrases even if you don\u2019t speak English' , zh: '🗣️ 不会说英语也没关系，记住这几句就行' },
+  'faq.phrase1': { en: 'One Powerball, quick pick, please' , zh: 'One Powerball, quick pick, please（给我一张强力球，电脑随机选号）' },
+  'faq.phrase2': { en: 'One Mega Millions, please' , zh: 'One Mega Millions, please（给我一张超级百万）' },
+  'faq.phrase3': { en: 'Cash / Card, please' , zh: 'Cash / Card, please（现金/刷卡）' },
+  'faq.phraseTip': { en: '\ud83d\udca1 Just say "quick pick" and the computer picks random numbers \u2014 most people buy this way!' , zh: '💡 只要说"quick pick"，电脑就会随机帮你选号——大部分人都是这样买的！' },
+  'faq.playslipTitle': { en: '✏️ Want to pick your own numbers? (How to fill out a play slip)' , zh: '✏️ 想自己选号码？（投注单填写方法）' },
+  'faq.psRegular':   { en: '5 regular numbers (1\u201369)' , zh: '5个普通号码（1~69）' },
+  'faq.psPowerball': { en: '1 Powerball number (1\u201326)' , zh: '1个强力球号码（1~26）' },
+  'faq.psStep1': { en: 'Grab a <b>free play slip</b> from the store, and fill in bubbles with a black or blue pen (or pencil) \u2014 <b>fill the circles solidly</b> (red pen won\u2019t scan)' , zh: '在店里拿一张<b>免费投注单</b>，用黑色或蓝色的笔（或铅笔）填涂圆圈——<b>要涂实</b>（红笔无法识别）' },
+  'faq.psStep2': { en: 'You can pick some numbers yourself and mark <b>QP (Quick Pick)</b> for the rest \u2014 only those get filled randomly' , zh: '你可以自己选一部分号码，剩下的标记<b>QP（快选）</b>——只有这部分会随机填号' },
+  'faq.psStep3': { en: 'If you make a mistake, don\u2019t erase \u2014 mark the <b>VOID</b> box and fill in the next row' , zh: '如果填错了，不要涂改——请标记<b>VOID（作废）</b>栏，然后在下一行重新填写' },
+  'faq.psStep4': { en: 'Hand the completed slip to <b>the cashier</b>, who scans it on the spot to turn it into a real ticket (the slip itself isn\u2019t a ticket!)' , zh: '把填好的投注单交给<b>收银员</b>，当场扫描后就会变成正式彩票（投注单本身不是彩票！）' },
+  'faq.signBackNote': { en: '💡 If you win, <b>sign the back of the ticket immediately</b> \u2014 this is an important step to prove ownership if lost' , zh: '💡 中奖的话，<b>请立刻在彩票背面签名</b>——这是万一遗失时证明所有权的重要步骤' },
+  'faq.step3Title':  { en: 'Age verification' , zh: '年龄确认' },
+  'faq.step3Detail': { en: 'Most states require you to be <b>18 or older</b> (some require 21). You can buy regardless of nationality.' , zh: '大多数州要求<b>年满18岁</b>（部分州要求21岁）。国籍不限，都可以购买。' },
+  'faq.step4Title':  { en: '📢 Want to check past winning numbers?' , zh: '📢 想查以前的中奖号码？' },
+  'faq.step4Detail': { en: 'You can check winning numbers directly on the official sites.' , zh: '可以直接在官方网站查询中奖号码。' },
+  'faq.newTabNote':  { en: '(opens in a new tab)' , zh: '（在新标签页打开）' },
+  'faq.checkWinTitle': { en: '💡 Here\u2019s how to check if your ticket won' , zh: '💡 这样确认你的彩票是否中奖' },
+  'faq.checkMethod1': { en: '<b>Compare the numbers yourself</b> \u2014 the most reliable method' , zh: '<b>亲自对比号码</b>——最可靠的方法' },
+  'faq.checkMethod2': { en: 'Scan the barcode with the state lottery\u2019s official app' , zh: '用该州彩票官方App扫描条形码' },
+  'faq.checkMethod3': { en: 'Use the store\u2019s self-service scanner or ask staff' , zh: '使用店内自助扫描仪，或请店员帮忙' },
+  'faq.step5Title':  { en: 'If you won, claim it' , zh: '中奖了的话，去领奖' },
+  'faq.step5Detail': { en: 'Visit the <b>lottery office for that state</b> in person with your ID and ticket. The deadline is usually <b>180 days to 1 year</b>' , zh: '需携带身份证件和彩票，亲自前往<b>该州的彩票办公室</b>。期限通常是<b>180天到1年</b>' },
+  'faq.step6Title':  { en: 'Lump sum or annuity? You must choose when claiming' , zh: '一次性支付？年金？领奖时必须选择' },
+  'faq.step6Detail': { en: 'After claiming, you usually have <b>60 days</b> to choose one or the other. If you don\u2019t choose in time, it defaults to the annuity.' , zh: '领奖后通常有<b>60天</b>时间可以二选一。如果没有在期限内做出选择，会自动按年金方式支付。' },
+  'faq.lumpSumTitle':  { en: '💵 Lump Sum' , zh: '💵 一次性支付' },
+  'faq.lumpSumDetail': { en: 'Receive about <b>45\u201360%</b> of the announced amount all at once. The option most winners choose' , zh: '一次性领取公布金额的<b>约45~60%</b>。大多数中奖者会选择这个方式' },
+  'faq.annuityTitle':  { en: '📅 Annuity' , zh: '📅 年金' },
+  'faq.annuityDetail': { en: 'Full announced amount paid over 29 years in 30 installments (first immediate, +5%/year after)' , zh: '公布金额在29年内分30次全额支付（首次立即支付，之后每年+5%）' },
+  'faq.payoutIrreversible': { en: 'This choice is irreversible \u2014 decide only after consulting a tax/financial professional' , zh: '这个选择无法撤回——请务必咨询税务/财务专业人士后再决定' },
+  'faq.sixStepsNote': { en: 'That\u2019s all 6 steps. The key point is that if step 1 (the prerequisite) isn\u2019t met, none of the later steps apply to you.' , zh: '这6个步骤就是全部了。关键在于，如果第1步（前提条件）不满足，后面的步骤对你来说就都不成立。' },
+  'faq.payMethodTitle': { en: 'Do you get paid in cash or by bank transfer?' , zh: '中奖金是给现金，还是打到账户？' },
+  'faq.payMethodDesc':  { en: 'Completely different depending on the amount' , zh: '根据金额完全不同' },
+  'faq.small600':       { en: '💵 $600 or less' , zh: '💵 $600以下小额' },
+  'faq.small600Detail': { en: 'You can get <b>cash</b> right on the spot at the store where you bought the ticket.' , zh: '可以在购买彩票的便利店当场领取<b>现金</b>。' },
+  'faq.largeAmt':       { en: '🏦 Large amounts (hundreds of thousands to millions of dollars)' , zh: '🏦 大额（数十万~数百万美元）' },
+  'faq.largeAmtDetail': { en: 'Not paid in cash. Paid by check or bank transfer, usually taking 6\u20138 weeks.' , zh: '不会给现金。会通过<b>支票或银行账户转账</b>支付，处理通常需要<b>6~8周</b>。' },
+  'faq.krResident':       { en: 'If you\u2019re a Korea resident?' , zh: '如果是韩国居民呢？' },
+  'faq.krResidentDetail': { en: 'There\u2019s no clearly published official process. If this happens, proceed together with the lottery office, a bank capable of international transfer, and a tax/legal professional.' , zh: '目前没有公开明确的官方流程。如果遇到这种情况，建议与<b>该州彩票办公室、能办理国际汇款的银行、税务/法律专业人士</b>一起处理。' },
+  'faq.howManyTitle': { en: 'How many tickets can I buy at once?' , zh: '一次最多能买几张？' },
+  'faq.howManyDesc':  { en: 'Actually two different questions mixed together' , zh: '其实这里混合了两个不同的问题' },
+  'faq.multiTicketQ': { en: 'Q. Can I buy multiple tickets at once?' , zh: 'Q. 可以一次买好几张吗？' },
+  'faq.multiTicketA': { en: 'Yes, no legal limit. A play slip usually allows up to 5 games per slip.' , zh: '可以，法律上没有限制。一张投注单通常最多可以填5个游戏。' },
+  'faq.multiDrawQ': { en: 'Q. Can I enter the same numbers into multiple future drawings at once?' , zh: 'Q. 可以用同一组号码一次性投注多期吗？' },
+  'faq.multiDrawA': { en: 'Yes, via \u2018multi-draw\u2019 \u2014 usually 10\u201326 draws at once depending on the state.' , zh: '可以，这叫"多期投注（Multi-draw）"。同一组号码<b>根据州的不同，通常可以一次投注10~26期</b>。' },
+  'faq.noRefundNote': { en: 'Note: tickets can\u2019t be refunded or canceled once purchased (all sales are final)' , zh: '提示：彩票一旦购买不能退款或取消（all sales are final）' },
+  'faq.finalDisclaimer': { en: 'If you have any other questions, feel free to reach out via Contact!' , zh: '还有其他疑问的话，欢迎随时通过"联系我们"告诉我们！' },
+  'privacy.breadcrumb':    { en: 'Privacy Policy' , zh: '隐私政策' },
+  'privacy.title':         { en: 'Privacy Policy' , zh: '隐私政策' },
+  'privacy.effectiveDate': { en: 'Effective date: July 9, 2026' , zh: '生效日期：2026年7月9日' },
+  'disclaimer.effectiveDate': { en: 'Effective date: July 9, 2026' , zh: '生效日期：2026年7月9日' },
+  'privacy.h1': { en: '1. Personal information collected' , zh: '1. 收集的个人信息项目' },
+  'privacy.b1': { en: 'ChamTax (the "Site") does <b>not store calculator input values (prize amount, country of residence, exchange rate, etc.) on any server.</b> All calculations happen only within the visitor\u2019s browser and disappear when you leave the page.<br>However, if you contact us via "Contact," we collect only the <b>email address and message content</b> you provide.', zh: 'ChamTax（以下简称"本网站"）<b>不会将计算器输入内容（奖金金额、居住国、汇率等）保存在服务器上。</b>所有计算仅在访问者的浏览器内处理，离开页面后即消失。<br>但如果您通过"联系我们"与我们联系，我们只会收集您填写的<b>邮箱地址和咨询内容</b>。' },
+  'privacy.h2': { en: '2. Purpose of collection' , zh: '2. 收集目的' },
+  'privacy.b2': { en: 'Used only to review and respond to inquiries \u2014 never for marketing or other purposes.' , zh: '仅用于确认和回复咨询内容，不会用于营销或其他用途。' },
+  'privacy.h3': { en: '3. Retention period' , zh: '3. 保留和使用期限' },
+  'privacy.b3': { en: 'Retained for up to 1 year after the inquiry is resolved, then promptly destroyed.' , zh: '咨询处理完成后最多保留1年，此后将立即销毁。' },
+  'privacy.h4': { en: '4. Sharing with third parties' , zh: '4. 向第三方提供' },
+  'privacy.b4': { en: 'We do not share collected personal information with third parties. However, ads displayed on the site (Google AdSense) may independently collect visit information via cookies through Google, which is handled under Google\u2019s privacy policy, not this site\u2019s.' , zh: '我们不会将收集的个人信息提供给第三方。但网站上展示的广告（Google AdSense）中，Google可能会通过自己的Cookie收集访问信息，这部分内容依据的是Google的隐私政策，而非本网站的政策。' },
+  'privacy.h5': { en: '5. Use of cookies' , zh: '5. Cookie（网络跟踪工具）的使用' },
+  'privacy.b5': { en: 'Cookies from third-party ad services such as Google may be used to serve ads. You can refuse or delete cookies in your browser settings, though this may limit ad personalization.' , zh: '为投放广告，可能会使用Google等第三方广告服务的Cookie。您可以在浏览器设置中拒绝保存或删除Cookie，这种情况下广告个性化功能可能会受到限制。' },
+  'privacy.h6': { en: '6. User rights' , zh: '6. 用户的权利' },
+  'privacy.b6': { en: 'You may request to view, correct, or delete any personal information you provided via inquiries at any time. Please contact us via the Contact page below.' , zh: '对于您通过咨询提供的个人信息，您可以随时要求查阅、更正或删除。请通过下方"联系我们"与我们联系。' },
+  'privacy.h7': { en: '7. Privacy officer' , zh: '7. 个人信息保护负责人' },
+  'common.inquiry': { en: 'Contact' , zh: '咨询' },
+  'common.contactPageLink': { en: 'Please use the Contact page' , zh: '请使用"联系我们"页面' },
+  'disclaimer.breadcrumb': { en: 'Disclaimer' , zh: '免责声明' },
+  'disclaimer.title':      { en: 'Disclaimer' , zh: '免责声明' },
+  'disclaimer.h1': { en: '1. Purpose of information' , zh: '1. 信息提供目的' },
+  'disclaimer.b1': { en: 'All calculation results and information provided on this site are a <b>reference simulation</b>, not tax, legal, or financial advice.', zh: '本网站提供的所有计算结果和信息均为<b>仅供参考的模拟计算</b>，并非税务、法律或财务方面的专业意见（Advice）。' },
+  'disclaimer.h2': { en: '2. Accuracy of calculations' , zh: '2. 计算结果的准确性' },
+  'disclaimer.b2': { en: 'The tax rates, exchange rates, etc. used in the calculator are simplified examples based on tax law and may differ from actual tax owed. Regarding how foreign lottery winnings are taxed under Korean law, the calculator reflects an answer received via a July 2026 NTS online consultation ("comprehensive income tax combined, Foreign Tax Credit applicable"), but this is a consultation response, not an official binding ruling, and actual application may vary by circumstance (see FAQ for details).' , zh: '计算器中使用的税率、汇率等均为简化后的示例基准，可能与实际税额有所不同。关于韩国税法下境外彩票中奖金的计税方式，本计算器参考了2026年7月通过韩国国税厅网络咨询获得的答复（"计入综合所得税、可适用外国税收抵免"），但这只是咨询答复，并非正式的法律解释，实际适用可能因具体情况而异（详见FAQ）。' },
+  'disclaimer.h3': { en: '3. Recommendation to consult a professional' , zh: '3. 建议咨询专业人士' },
+  'disclaimer.b3': { en: 'If you actually win a lottery and need to make decisions such as tax filing, please be sure to consult a professional such as a tax accountant who handles both Korean and US tax matters. This site is not liable for decisions made based solely on information provided here.' , zh: '如果您真的中了彩票，需要就报税等事项做出决定，请务必咨询同时熟悉韩美两国税务的税务师等专业人士。仅凭本网站信息做出的决定，本网站概不负责。' },
+  'disclaimer.h4': { en: '4. No purchase agency or brokerage' , zh: '4. 禁止代购或中介' },
+  'disclaimer.b4': { en: 'This site does not act as an agent or broker for lottery ticket purchases and does not provide any purchase channels. Acting as a purchase agent for foreign lotteries within Korea may be subject to penalties under relevant law (e.g., Criminal Act Article 248).' , zh: '本网站不代理或中介彩票购买，也不提供任何购买渠道。在韩国境内代购境外彩票的行为，可能根据相关法律（《刑法》第248条等）受到处罚。' },
+  'disclaimer.h5': { en: '5. Trademarks and third-party services' , zh: '5. 商标及第三方服务' },
+  'disclaimer.b5': { en: 'Powerball®, Mega Millions®, etc. are registered trademarks of their respective operating organizations (MUSL, etc.). This site is an independent information service with no affiliation or partnership with those organizations.' , zh: 'Powerball®、Mega Millions®等均为各运营机构（MUSL等）的注册商标，本网站是独立的信息提供网站，与上述机构没有任何合作或关联关系。' },
+  'disclaimer.h6': { en: '6. Limitation of liability' , zh: '6. 责任限制' },
+  'disclaimer.b6': { en: 'To the extent permitted by law, the operator of this site is not liable for direct or indirect damages arising from use of the site, reliance on calculation results, or errors in information.' , zh: '因使用本网站、信赖计算结果或信息错误而产生的直接或间接损失，本网站运营者在法律允许的范围内不承担责任。' },
+  'disclaimer.h7': { en: '7. Changes to content' , zh: '7. 内容变更' },
+  'disclaimer.b7': { en: 'The content, tax rate information, and policies of this site may change without prior notice.' , zh: '本网站的内容、税率信息及政策可能会在不预先通知的情况下变更。' },
+  'contact.breadcrumb': { en: 'Contact' , zh: '联系我们' },
+  'contact.title': { en: 'Let us know if something\u2019s off or you have questions' , zh: '有疑问或发现异常，欢迎告诉我们' },
+  'contact.desc':  { en: 'If a calculation seems wrong or you\u2019re curious about something, feel free to leave a message :)' , zh: '如果计算结果有问题或有任何疑问，请随时留言 :)' },
+  'contact.leaveEmpty': { en: 'Leave this field empty' , zh: '请将此栏留空' },
+  'contact.emailPlaceholder':   { en: 'Email address (for our reply)' , zh: '邮箱地址（用于回复）' },
+  'contact.messagePlaceholder': { en: 'Type your message here' , zh: '请输入咨询内容' },
+  'contact.send':    { en: 'Send' , zh: '发送' },
+  'contact.success': { en: '✓ Your message was sent, thank you!' , zh: '✓ 咨询已成功发送，谢谢！' },
+  'contact.error':   { en: 'Something went wrong sending this \u2014 please try again shortly.' , zh: '发送失败，请稍后再试。' },
+  'footer.copy': { en: 'This site is an informational simulator and does not act as an agent or broker for lottery purchases.' , zh: '本网站是信息提供性质的模拟计算工具，不代理或中介彩票购买。' },
   'home.taxBefore': { en: 'Announced' , zh: '公布金额' },
   'home.taxAfter':  { en: 'Take-home' , zh: '实得金额' },
   'home.taxDiff':   { en: 'Taxes' , zh: '税金' },
@@ -585,6 +595,8 @@ function applyTranslations(){
   // 이벤트가 발생할 때에야 그 시점의 언어로 갑자기 바뀌어 "언어가 왔다갔다 하는" 것처럼 보이는
   // 버그가 있었음 — 뷰와 무관하게 항상 갱신해서 어느 화면에 있든 즉시 반영되게 함
   updateHomeCalc();
+  updateCalc(); // 국가별 비교 화면(나라별 카드·다른 언어로 보기 패널)도 같은 이유로 뷰와 무관하게 항상 갱신 —
+                // 이게 빠져있어서 "비교 화면에 머문 채로 언어를 바꾸면 카드는 그대로 예전 언어로 남는" 버그가 있었음
   applyJackpotData();
   updateDrawCountdown();
   initJackpotCardAmt();
@@ -602,6 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let EXCHANGE_RATE = 1503.40; // 기본값(fallback). 중앙은행 고시 기반 기준환율(2026-07-13 확인) — 페이지 로드 시 실시간 환율로 자동 갱신을 시도함. 이 기본값은 주기적으로 수동 업데이트 필요
+let EXCHANGE_RATE_CNY = 6.77; // 기본값(fallback), USD/CNY (2026-07-17 확인). 중국 거주자 기준 결과에서 위안화 참고 환산용 — KRW와 마찬가지로 실시간 조회 시도, 실패하면 이 기본값 사용
 
 // 환율 입력창(표시값)을 실제 계산에 쓰이는 EXCHANGE_RATE와 강제로 맞춰줌.
 // 이게 없으면 HTML에 하드코딩된 옛 기본값이 입력창에 남아있는 채로, 실제 계산은
@@ -626,10 +639,11 @@ function fetchWithTimeout(url, ms){
 }
 
 // 환율 API 후보 목록 — 중앙은행 고시 기반 기준환율(재현성·출처가 명확함)을 우선으로 하고,
-// 막히거나(지역 차단) 타임아웃 나면 순서대로 다음 걸 시도. 응답 형식이 달라서 각자 getRate로 KRW 환율만 뽑아냄
+// 막히거나(지역 차단) 타임아웃 나면 순서대로 다음 걸 시도. 응답 형식이 달라서 각자 getRate로 KRW/CNY 환율을 뽑아냄
+// (두 API 모두 한 번의 응답에 여러 통화 환율을 같이 내려주므로, 별도 API 호출 없이 CNY도 같이 얻을 수 있음)
 const EXCHANGE_RATE_SOURCES = [
-  { url: 'https://api.frankfurter.app/latest?from=USD&to=KRW', getRate: (data) => data && data.rates && data.rates.KRW, name: 'Frankfurter (중앙은행 기준환율)', nameEn: 'Frankfurter (central bank reference rate)' },
-  { url: 'https://open.er-api.com/v6/latest/USD', getRate: (data) => data && data.rates && data.rates.KRW, name: 'open.er-api.com', nameEn: 'open.er-api.com' },
+  { url: 'https://api.frankfurter.app/latest?from=USD&to=KRW,CNY', getRate: (data) => data && data.rates && data.rates.KRW, getRateCny: (data) => data && data.rates && data.rates.CNY, name: 'Frankfurter (중앙은행 기준환율)', nameEn: 'Frankfurter (central bank reference rate)' },
+  { url: 'https://open.er-api.com/v6/latest/USD', getRate: (data) => data && data.rates && data.rates.KRW, getRateCny: (data) => data && data.rates && data.rates.CNY, name: 'open.er-api.com', nameEn: 'open.er-api.com' },
 ];
 
 async function fetchLiveExchangeRate(force){
@@ -643,6 +657,8 @@ async function fetchLiveExchangeRate(force){
       const rate = source.getRate(data);
       if (rate) {
         EXCHANGE_RATE = Math.round(rate * 100) / 100; // 소수점 둘째자리까지 유지 (기준환율은 보통 소수점 단위로 고시됨)
+        const rateCny = source.getRateCny(data);
+        if (rateCny) EXCHANGE_RATE_CNY = Math.round(rateCny * 10000) / 10000; // CNY는 소수점 넷째자리까지(보통 6.xx대라 소수점 둘째자리로는 정밀도 부족)
         exchangeRateSourceName = source;
         exchangeRateIsLive = true;
         exchangeRateFetchFailed = false;
@@ -732,8 +748,9 @@ function syncHomeFromShared(){
   slider.min = Math.min(10, Math.round(millions)); // $10M 미만 입력 시 슬라이더 하한도 같이 낮춰 불일치 방지
   slider.value = Math.round(millions);
   document.getElementById('homeCountrySelect').value = sharedCountry;
-  document.getElementById('homeCountryBtnKr').classList.toggle('active', sharedCountry === 'kr');
-  document.getElementById('homeCountryBtnUs').classList.toggle('active', sharedCountry === 'us');
+  document.querySelectorAll('#homeCountryToggle .country-toggle-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.country === sharedCountry);
+  });
   document.getElementById('homeStateSelect').value = sharedState;
   document.getElementById('home-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR');
   updateHomeCalc(sharedAmountUsd);
@@ -1039,6 +1056,15 @@ function go(view){
   document.querySelector('.page').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
+// "나는 어떤 경우일까요?" 안내 배너에서 "한국에 살아요" 카드를 누르면, 배너를 접고
+// 바로 아래 입력창으로 스크롤해줌 — 이미 홈 화면에 있으니 페이지 이동은 필요 없음
+function goToCalculatorInput(){
+  const accordion = document.getElementById('introPersonaAccordion');
+  if (accordion) accordion.open = false;
+  const inputCard = document.querySelector('.input-card');
+  if (inputCard) inputCard.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
 function formatAbbreviatedUsd(value){
   if (value >= 1e9) return (value / 1e9).toFixed(1) + 'B';
   if (value >= 1e6) return (value / 1e6).toFixed(0) + 'M';
@@ -1110,7 +1136,7 @@ function getJackpotKRW(){
 // (href·아이콘·출처명 모두 교체, 텍스트는 data-i18n으로 별도 처리)
 const HIDDEN_MONEY_CHANNELS_EN = {
   hometax:   { href: 'https://www.irs.gov/refunds', icon: '🏛️', sub: 'IRS.gov' },
-  gov24:     { href: 'https://www.usa.gov/unclaimed-money', icon: '🇺🇸', sub: 'USA.gov' },
+  gov24:     { href: 'https://www.usa.gov/unclaimed-money', icon: '🏢', sub: 'USA.gov' },
   fine:      { href: 'https://www.missingmoney.com', icon: '💰', sub: 'MissingMoney' },
   health:    { href: 'https://www.unclaimedretirementbenefits.com', icon: '💼', sub: 'Unclaimed Retirement' },
   cardpoint: { href: 'https://www.treasurydirect.gov/indiv/tools/treasuryhunt.htm', icon: '🏦', sub: 'TreasuryDirect' },
@@ -1145,26 +1171,31 @@ function checkHiddenMoney(){
   const checkedBoxes = Array.from(checks).filter(c => c.checked);
   const checkedCount = checkedBoxes.length;
   const resultEl = document.getElementById('hiddenMoneyResult');
-  const isEnHm = (typeof currentLang !== 'undefined' && currentLang === 'en');
 
   if (checkedCount === 0) {
-    resultEl.textContent = isEnHm
-      ? 'If even one applies to you, check below to find out 👇'
-      : '하나라도 해당되면, 아래에서 실제로 확인해보세요 👇';
+    resultEl.textContent = pickLang(
+      '\uD558\uB098\uB77C\uB3C4 \uD574\uB2F9\uB418\uBA74, \uC544\uB798\uC5D0\uC11C \uC2E4\uC81C\uB85C \uD655\uC778\uD574\uBCF4\uC138\uC694 \uD83D\uDC47',
+      'If even one applies to you, check below to find out \uD83D\uDC47',
+      '\u5982\u679C\u6709\u7B26\u5408\u7684\u9879\u76EE\uFF0C\u8BF7\u5728\u4E0B\u65B9\u5B9E\u9645\u786E\u8BA4\u4E00\u4E0B \uD83D\uDC47'
+    );
     resultEl.className = 'refund-wizard-result';
   } else if (checkedCount === 1) {
-    resultEl.textContent = isEnHm
-      ? '✅ You checked one — there may be money you haven\u2019t claimed. We\u2019ve highlighted the right place for you below'
-      : '✅ 해당하시는 게 있네요 — 못 받은 돈이 있을 가능성이 있어요. 아래에서 회원님한테 맞는 곳을 추천해드렸어요';
+    resultEl.textContent = pickLang(
+      '\u2705 \uD574\uB2F9\uD558\uC2DC\uB294 \uAC8C \uC788\uB124\uC694 \u2014 \uBABB \uBC1B\uC740 \uB3C8\uC774 \uC788\uC744 \uAC00\uB2A5\uC131\uC774 \uC788\uC5B4\uC694. \uC544\uB798\uC5D0\uC11C \uD68C\uC6D0\uB2D8\uD55C\uD14C \uB9DE\uB294 \uACF3\uC744 \uCD94\uCC9C\uD574\uB4DC\uB838\uC5B4\uC694',
+      '\u2705 You checked one \u2014 there may be money you haven\u2019t claimed. We\u2019ve highlighted the right place for you below',
+      '\u2705 \u6709\u4E00\u9879\u7B26\u5408\u2014\u2014\u53EF\u80FD\u6709\u60A8\u8FD8\u6CA1\u9886\u53D6\u7684\u94B1\u3002\u6211\u4EEC\u5DF2\u7ECF\u5728\u4E0B\u65B9\u4E3A\u60A8\u6807\u51FA\u4E86\u5BF9\u5E94\u7684\u67E5\u8BE2\u6E20\u9053'
+    );
     resultEl.className = 'refund-wizard-result tag-hit';
   } else {
-    resultEl.textContent = isEnHm
-      ? `✅ You checked ${checkedCount} — there\u2019s a good chance you have unclaimed money. We\u2019ve highlighted the right places for you below`
-      : `✅ ${checkedCount}개나 해당되시네요 — 실제로 못 받은 돈이 있을 가능성이 꽤 높아요. 아래에서 회원님한테 맞는 곳을 추천해드렸어요`;
+    resultEl.textContent = pickLang(
+      `\u2705 ${checkedCount}\uAC1C\uB098 \uD574\uB2F9\uB418\uC2DC\uB124\uC694 \u2014 \uC2E4\uC81C\uB85C \uBABB \uBC1B\uC740 \uB3C8\uC774 \uC788\uC744 \uAC00\uB2A5\uC131\uC774 \uAF64 \uB192\uC544\uC694. \uC544\uB798\uC5D0\uC11C \uD68C\uC6D0\uB2D8\uD55C\uD14C \uB9DE\uB294 \uACF3\uC744 \uCD94\uCC9C\uD574\uB4DC\uB838\uC5B4\uC694`,
+      `\u2705 You checked ${checkedCount} \u2014 there\u2019s a good chance you have unclaimed money. We\u2019ve highlighted the right places for you below`,
+      `\u2705 \u6709${checkedCount}\u9879\u7B26\u5408\u2014\u2014\u5F88\u6709\u53EF\u80FD\u6709\u60A8\u8FD8\u6CA1\u9886\u53D6\u7684\u94B1\u3002\u6211\u4EEC\u5DF2\u7ECF\u5728\u4E0B\u65B9\u4E3A\u60A8\u6807\u51FA\u4E86\u5BF9\u5E94\u7684\u67E5\u8BE2\u6E20\u9053`
+    );
     resultEl.className = 'refund-wizard-result tag-hit';
   }
 
-  // 체크한 항목에 연결된 사이트만 추천(강조)하고, 나머지는 흐리게
+  // \uCCB4\uD06C\uD55C \uD56D\uBAA9\uC5D0 \uC5F0\uACB0\uB41C \uC0AC\uC774\uD2B8\uB9CC \uCD94\uCC9C(\uAC15\uC870)\uD558\uACE0, \uB098\uBA38\uC9C0\uB294 \uD750\uB9AC\uAC8C
   const recommendedSites = new Set(checkedBoxes.map(c => c.dataset.site));
   const allSites = ['hometax', 'gov24', 'fine', 'health', 'cardpoint'];
   allSites.forEach(site => {
@@ -1185,27 +1216,28 @@ function checkHiddenMoney(){
 function checkRefundPossibility(){
   const stateCode = document.getElementById('refundStateSelect').value;
   const resultEl = document.getElementById('refundWizardResult');
-  const isEnRp = (typeof currentLang !== 'undefined' && currentLang === 'en');
   if (!stateCode) {
-    resultEl.textContent = isEnRp
-      ? 'Select a state and we\u2019ll tell you right away whether a refund is likely'
-      : '주를 선택하면 환급 가능성을 바로 알려드려요';
+    resultEl.textContent = pickLang(
+      '\uC8FC\uB97C \uC120\uD0DD\uD558\uBA74 \uD658\uAE09 \uAC00\uB2A5\uC131\uC744 \uBC14\uB85C \uC54C\uB824\uB4DC\uB824\uC694',
+      'Select a state and we\u2019ll tell you right away whether a refund is likely',
+      '\u9009\u62E9\u5DDE\u4E4B\u540E\uFF0C\u9A6C\u4E0A\u544A\u8BC9\u60A8\u9000\u7A0E\u7684\u53EF\u80FD\u6027'
+    );
     resultEl.className = 'refund-wizard-result';
     return;
   }
 
   const STATE_DISPLAY_NAMES = {
-    AL: '앨라배마', AK: '알래스카', AZ: '애리조나', AR: '아칸소', CA: '캘리포니아',
-    CO: '콜로라도', CT: '코네티컷', DE: '델라웨어', FL: '플로리다', GA: '조지아',
-    HI: '하와이', ID: '아이다호', IL: '일리노이', IN: '인디애나', IA: '아이오와',
-    KS: '캔자스', KY: '켄터키', LA: '루이지애나', ME: '메인', MD: '메릴랜드',
-    MA: '매사추세츠', MI: '미시간', MN: '미네소타', MS: '미시시피', MO: '미주리',
-    MT: '몬태나', NE: '네브래스카', NV: '네바다', NH: '뉴햄프셔', NJ: '뉴저지',
-    NM: '뉴멕시코', NY: '뉴욕', NC: '노스캐롤라이나', ND: '노스다코타', OH: '오하이오',
-    OK: '오클라호마', OR: '오리건', PA: '펜실베이니아', RI: '로드아일랜드', SC: '사우스캐롤라이나',
-    SD: '사우스다코타', TN: '테네시', TX: '텍사스', UT: '유타', VT: '버몬트',
-    VA: '버지니아', WA: '워싱턴', DC: '워싱턴 D.C.', WV: '웨스트버지니아', WI: '위스콘신',
-    WY: '와이오밍',
+    AL: '\uC575\uB77C\uBC14\uB9C8', AK: '\uC54C\uB798\uC2A4\uCE74', AZ: '\uC560\uB9AC\uC870\uB098', AR: '\uC544\uCE78\uC18C', CA: '\uCE98\uB9AC\uD3EC\uB2C8\uC544',
+    CO: '\uCF5C\uB85C\uB77C\uB3C4', CT: '\uCF54\uB124\uD2F0\uCEF7', DE: '\uB378\uB77C\uC6E8\uC5B4', FL: '\uD50C\uB85C\uB9AC\uB2E4', GA: '\uC870\uC9C0\uC544',
+    HI: '\uD558\uC640\uC774', ID: '\uC544\uC774\uB2E4\uD638', IL: '\uC77C\uB9AC\uB178\uC774', IN: '\uC778\uB514\uC544\uB098', IA: '\uC544\uC774\uC624\uC640',
+    KS: '\uCE94\uC790\uC2A4', KY: '\uCF00\uD130\uD0A4', LA: '\uB8E8\uC774\uC9C0\uC544\uB098', ME: '\uBA54\uC778', MD: '\uBA54\uB9B4\uB79C\uB4DC',
+    MA: '\uB9E4\uC0AC\uCD94\uC138\uCE20', MI: '\uBBF8\uC2DC\uAC74', MN: '\uBBF8\uB124\uC18C\uD0C0', MS: '\uBBF8\uC2DC\uC2DC\uD53C', MO: '\uBBF8\uC8FC\uB9AC',
+    MT: '\uBAAC\uD0C0\uB098', NE: '\uB124\uBE0C\uB798\uC2A4\uCE74', NV: '\uB124\uBC14\uB2E4', NH: '\uB274\uD584\uD504\uC154', NJ: '\uB274\uC800\uC9C0',
+    NM: '\uB274\uBA55\uC2DC\uCF54', NY: '\uB274\uC695', NC: '\uB178\uC2A4\uCE90\uB864\uB77C\uC774\uB098', ND: '\uB178\uC2A4\uB2E4\uCF54\uD0C0', OH: '\uC624\uD558\uC774\uC624',
+    OK: '\uC624\uD074\uB77C\uD638\uB9C8', OR: '\uC624\uB9AC\uAC74', PA: '\uD39C\uC2E4\uBC14\uB2C8\uC544', RI: '\uB85C\uB4DC\uC544\uC77C\uB79C\uB4DC', SC: '\uC0AC\uC6B0\uC2A4\uCE90\uB864\uB77C\uC774\uB098',
+    SD: '\uC0AC\uC6B0\uC2A4\uB2E4\uCF54\uD0C0', TN: '\uD14C\uB124\uC2DC', TX: '\uD14D\uC0AC\uC2A4', UT: '\uC720\uD0C0', VT: '\uBC84\uBAAC\uD2B8',
+    VA: '\uBC84\uC9C0\uB2C8\uC544', WA: '\uC6CC\uC2F1\uD134', DC: '\uC6CC\uC2F1\uD134 D.C.', WV: '\uC6E8\uC2A4\uD2B8\uBC84\uC9C0\uB2C8\uC544', WI: '\uC704\uC2A4\uCEE8\uC2E0',
+    WY: '\uC640\uC774\uC624\uBC0D',
   };
   const STATE_DISPLAY_NAMES_EN = {
     AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California',
@@ -1220,32 +1252,53 @@ function checkRefundPossibility(){
     VA: 'Virginia', WA: 'Washington', DC: 'Washington D.C.', WV: 'West Virginia', WI: 'Wisconsin',
     WY: 'Wyoming',
   };
+  const STATE_DISPLAY_NAMES_ZH = {
+    AL: '\u963F\u62C9\u5DF4\u9A6C', AK: '\u963F\u62C9\u65AF\u52A0', AZ: '\u4E9A\u5229\u6851\u90A3', AR: '\u963F\u80AF\u8272', CA: '\u52A0\u5229\u798F\u5C3C\u4E9A',
+    CO: '\u79D1\u7F57\u62C9\u591A', CT: '\u5EB7\u6D85\u72C4\u683C', DE: '\u7279\u62C9\u534E', FL: '\u4F5B\u7F57\u91CC\u8FBE', GA: '\u4F50\u6CBB\u4E9A',
+    HI: '\u590F\u5A01\u5937', ID: '\u7231\u8FBE\u8377', IL: '\u4F0A\u5229\u8BFA\u4F0A', IN: '\u5370\u7B2C\u5B89\u7EB3', IA: '\u827E\u5965\u74E6',
+    KS: '\u5821\u8428\u65AF', KY: '\u80AF\u5854\u57FA', LA: '\u8DEF\u6613\u65AF\u5B89\u90A3', ME: '\u7F05\u56E0', MD: '\u9A6C\u91CC\u5170',
+    MA: '\u9A6C\u8428\u8BF8\u585E', MI: '\u5BC6\u6B47\u6839', MN: '\u660E\u5C3C\u82CF\u8FBE', MS: '\u5BC6\u897F\u897F\u6BD4', MO: '\u5BC6\u82CF\u91CC',
+    MT: '\u8499\u5927\u62FF', NE: '\u5185\u5E03\u62C9\u65AF\u52A0', NV: '\u5185\u534E\u8FBE', NH: '\u65B0\u7F55\u5E03\u4EC0\u5C14', NJ: '\u65B0\u6CFD\u897F',
+    NM: '\u65B0\u58A8\u897F\u54E5', NY: '\u7EBD\u7EA6', NC: '\u5317\u5361\u7F57\u6765\u7EB3', ND: '\u5317\u8FBE\u79D1\u4ED6', OH: '\u4FC4\u4EA5\u4FC4',
+    OK: '\u4FC4\u514B\u62C9\u4F55\u9A6C', OR: '\u4FC4\u52D2\u5188', PA: '\u5BBE\u5915\u6CD5\u5C3C\u4E9A', RI: '\u7F57\u5FB7\u5C9B', SC: '\u5357\u5361\u7F57\u6765\u7EB3',
+    SD: '\u5357\u8FBE\u79D1\u4ED6', TN: '\u7530\u7EB3\u897F', TX: '\u5F97\u514B\u8428\u65AF', UT: '\u72B9\u4ED6', VT: '\u4F5B\u8499\u7279',
+    VA: '\u5F17\u5409\u5C3C\u4E9A', WA: '\u534E\u76DB\u987F', DC: '\u534E\u76DB\u987F\u7279\u533A', WV: '\u897F\u5F17\u5409\u5C3C\u4E9A', WI: '\u5A01\u65AF\u5EB7\u661F',
+    WY: '\u6021\u4FC4\u660E',
+  };
   const NO_TAX_STATES = ['AK', 'FL', 'NV', 'NH', 'SD', 'TN', 'TX', 'WA', 'WY'];
   const EXEMPT_STATES = ['CA'];
   const UNCERTAIN_STATES = ['MD'];
   const stateInfo = STATE_TAX_RATES[stateCode];
-  const stateName = isEnRp ? STATE_DISPLAY_NAMES_EN[stateCode] : STATE_DISPLAY_NAMES[stateCode];
+  const stateName = pickLang(STATE_DISPLAY_NAMES[stateCode], STATE_DISPLAY_NAMES_EN[stateCode], STATE_DISPLAY_NAMES_ZH[stateCode]);
 
   let msg, cls;
   if (NO_TAX_STATES.includes(stateCode)) {
-    msg = isEnRp
-      ? `✕ This state (${stateName}) has no state income tax at all. Nothing was withheld in the first place, so there\u2019s nothing to get back.`
-      : `✕ 이 주(${stateName})는 주 소득세 자체가 없는 무과세 주예요. 애초에 원천징수된 게 없어서 돌려받을 것도 없어요.`;
+    msg = pickLang(
+      `\u2715 \uC774 \uC8FC(${stateName})\uB294 \uC8FC \uC18C\uB4DD\uC138 \uC790\uCCB4\uAC00 \uC5C6\uB294 \uBB34\uACFC\uC138 \uC8FC\uC608\uC694. \uC560\uCD08\uC5D0 \uC6D0\uCC9C\uC9D5\uC218\uB41C \uAC8C \uC5C6\uC5B4\uC11C \uB3CC\uB824\uBC1B\uC744 \uAC83\uB3C4 \uC5C6\uC5B4\uC694.`,
+      `\u2715 This state (${stateName}) has no state income tax at all. Nothing was withheld in the first place, so there\u2019s nothing to get back.`,
+      `\u2715 \u8BE5\u5DDE\uFF08${stateName}\uFF09\u6839\u672C\u6CA1\u6709\u5DDE\u6240\u5F97\u7A0E\u3002\u672C\u6765\u5C31\u6CA1\u6709\u9884\u6263\u8FC7\u7A0E\u6B3E\uFF0C\u6240\u4EE5\u6CA1\u6709\u53EF\u9000\u7684\u90E8\u5206\u3002`
+    );
     cls = 'tag-none';
   } else if (EXEMPT_STATES.includes(stateCode)) {
-    msg = isEnRp
-      ? `✕ This state (${stateName}) has state income tax, but exempts lottery winnings specifically. This is also a case where there\u2019s nothing to get back.`
-      : `✕ 이 주(${stateName})는 주 소득세는 있지만 복권 당첨금은 별도로 면제해줘요. 이것도 돌려받을 게 없는 경우예요.`;
+    msg = pickLang(
+      `\u2715 \uC774 \uC8FC(${stateName})\uB294 \uC8FC \uC18C\uB4DD\uC138\uB294 \uC788\uC9C0\uB9CC \uBCF5\uAD8C \uB2F9\uCCA8\uAE08\uC740 \uBCC4\uB3C4\uB85C \uBA74\uC81C\uD574\uC918\uC694. \uC774\uAC83\uB3C4 \uB3CC\uB824\uBC1B\uC744 \uAC8C \uC5C6\uB294 \uACBD\uC6B0\uC608\uC694.`,
+      `\u2715 This state (${stateName}) has state income tax, but exempts lottery winnings specifically. This is also a case where there\u2019s nothing to get back.`,
+      `\u2715 \u8BE5\u5DDE\uFF08${stateName}\uFF09\u6709\u5DDE\u6240\u5F97\u7A0E\uFF0C\u4F46\u5F69\u7968\u4E2D\u5956\u91D1\u5355\u72EC\u514D\u7A0E\u3002\u8FD9\u4E5F\u662F\u6CA1\u6709\u53EF\u9000\u90E8\u5206\u7684\u60C5\u51B5\u3002`
+    );
     cls = 'tag-none';
   } else if (UNCERTAIN_STATES.includes(stateCode)) {
-    msg = isEnRp
-      ? `⚠ This state (${stateName}) has withholding rate figures that vary slightly across official sources (8.75~9.5%), so it needs more checking. Be sure to confirm the actual withholding rate on the state lottery\u2019s official site if you win.`
-      : `⚠ 이 주(${stateName})는 원천징수율 정보가 공식 자료마다 조금씩 달라서(8.75~9.5%) 정확한 확인이 더 필요해요. 당첨 시 주 복권 공식 사이트에서 실제 원천징수율을 꼭 확인하세요.`;
+    msg = pickLang(
+      `\u26A0 \uC774 \uC8FC(${stateName})\uB294 \uC6D0\uCC9C\uC9D5\uC218\uC728 \uC815\uBCF4\uAC00 \uACF5\uC2DD \uC790\uB8CC\uB9C8\uB2E4 \uC870\uAE08\uC529 \uB2EC\uB77C\uC11C(8.75~9.5%) \uC815\uD655\uD55C \uD655\uC778\uC774 \uB354 \uD544\uC694\uD574\uC694. \uB2F9\uCCA8 \uC2DC \uC8FC \uBCF5\uAD8C \uACF5\uC2DD \uC0AC\uC774\uD2B8\uC5D0\uC11C \uC2E4\uC81C \uC6D0\uCC9C\uC9D5\uC218\uC728\uC744 \uAF2D \uD655\uC778\uD558\uC138\uC694.`,
+      `\u26A0 This state (${stateName}) has withholding rate figures that vary slightly across official sources (8.75~9.5%), so it needs more checking. Be sure to confirm the actual withholding rate on the state lottery\u2019s official site if you win.`,
+      `\u26A0 \u8BE5\u5DDE\uFF08${stateName}\uFF09\u7684\u9884\u6263\u7A0E\u7387\u5728\u5B98\u65B9\u8D44\u6599\u4E2D\u7565\u6709\u5DEE\u5F02\uFF088.75~9.5%\uFF09\uFF0C\u9700\u8981\u8FDB\u4E00\u6B65\u786E\u8BA4\u3002\u4E2D\u5956\u65F6\u8BF7\u52A1\u5FC5\u5728\u8BE5\u5DDE\u5F69\u7968\u5B98\u7F51\u786E\u8BA4\u5B9E\u9645\u9884\u6263\u7A0E\u7387\u3002`
+    );
     cls = 'tag-maybe';
   } else {
-    msg = isEnRp
-      ? `ℹ This state (${stateName}) withholds about ${(stateInfo.rate*100).toFixed(2)}%. For nonresidents, this withholding often ends up being the final tax, but you can only know for sure by settling it through a US nonresident tax return (1040-NR) \u2014 a refund isn\u2019t guaranteed.`
-      : `ℹ 이 주(${stateName})는 원천징수율이 약 ${(stateInfo.rate*100).toFixed(2)}%예요. 비거주자는 대체로 이 원천징수율 자체가 최종 세금으로 확정되는 경우가 많지만, 실제로 더 냈는지는 미국 비거주자 세금신고(1040-NR)로 정산해봐야 정확히 알 수 있어요 — 무조건 환급된다는 뜻은 아니에요.`;
+    msg = pickLang(
+      `\u2139 \uC774 \uC8FC(${stateName})\uB294 \uC6D0\uCC9C\uC9D5\uC218\uC728\uC774 \uC57D ${(stateInfo.rate*100).toFixed(2)}%\uC608\uC694. \uBE44\uAC70\uC8FC\uC790\uB294 \uB300\uCCB4\uB85C \uC774 \uC6D0\uCC9C\uC9D5\uC218\uC728 \uC790\uCCB4\uAC00 \uCD5C\uC885 \uC138\uAE08\uC73C\uB85C \uD655\uC815\uB418\uB294 \uACBD\uC6B0\uAC00 \uB9CE\uC9C0\uB9CC, \uC2E4\uC81C\uB85C \uB354 \uB0C8\uB294\uC9C0\uB294 \uBBF8\uAD6D \uBE44\uAC70\uC8FC\uC790 \uC138\uAE08\uC2E0\uACE0(1040-NR)\uB85C \uC815\uC0B0\uD574\uBD10\uC57C \uC815\uD655\uD788 \uC54C \uC218 \uC788\uC5B4\uC694 \u2014 \uBB34\uC870\uAC74 \uD658\uAE09\uB41C\uB2E4\uB294 \uB73B\uC740 \uC544\uB2C8\uC5D0\uC694.`,
+      `\u2139 This state (${stateName}) withholds about ${(stateInfo.rate*100).toFixed(2)}%. For nonresidents, this withholding often ends up being the final tax, but you can only know for sure by settling it through a US nonresident tax return (1040-NR) \u2014 a refund isn\u2019t guaranteed.`,
+      `\u2139 \u8BE5\u5DDE\uFF08${stateName}\uFF09\u7684\u9884\u6263\u7A0E\u7387\u7EA6\u4E3A${(stateInfo.rate*100).toFixed(2)}%\u3002\u5BF9\u4E8E\u975E\u5C45\u6C11\u6765\u8BF4\uFF0C\u8FD9\u4E2A\u9884\u6263\u7A0E\u7387\u5F88\u591A\u65F6\u5019\u5C31\u662F\u6700\u7EC8\u7A0E\u989D\uFF0C\u4F46\u5B9E\u9645\u662F\u5426\u591A\u4EA4\u4E86\u7A0E\uFF0C\u9700\u8981\u901A\u8FC7\u7F8E\u56FD\u975E\u5C45\u6C11\u62A5\u7A0E\uFF081040-NR\uFF09\u6765\u7ED3\u7B97\u624D\u80FD\u786E\u5B9A \u2014 \u5E76\u4E0D\u610F\u5473\u7740\u4E00\u5B9A\u4F1A\u9000\u7A0E\u3002`
+    );
     cls = 'tag-check';
   }
   resultEl.textContent = msg;
@@ -1888,8 +1941,11 @@ async function shareDreamResult(){
 async function shareResult(){
   const amountText = document.getElementById('homeAmountInput').value || '100';
   const finalAmt = document.getElementById('home-final-amt').textContent;
-  const country = document.getElementById('homeCountrySelect').value === 'us'
+  const homeCountryVal = document.getElementById('homeCountrySelect').value;
+  const country = homeCountryVal === 'us'
     ? pickLang('미국 거주자', 'US resident', '美国居民')
+    : homeCountryVal === 'cn'
+    ? pickLang('중국 거주자', 'China resident', '中国居民')
     : pickLang('한국 거주자', 'Korea resident', '韩国居民');
   const shareText = pickLang(
     `미국 복권(${amountText} Million USD) 당첨되면 ${country} 기준 실수령액이 약 ${finalAmt}이래요. 세금 떼고 나면 실제로 얼마 남는지 참택스에서 계산해보세요! (참고용 시뮬레이션 결과예요)`,
@@ -1925,16 +1981,21 @@ async function shareResult(){
 }
 
 async function shareRefundChecklist(){
-  const isEnSc = (typeof currentLang !== 'undefined' && currentLang === 'en');
-  const shareText = isEnSc
-    ? 'I checked whether I had unclaimed money using this checklist. Apparently hundreds of billions of won in unclaimed tax refunds go unclaimed every year in Korea (reverts to the treasury after 5 years). Takes 10 minutes to check on the ChamTax FAQ!'
-    : '나도 모르게 못 받은 돈이 있는지 체크리스트로 확인해봤어요. 국세환급금만 매년 수천억 원대가 안 찾아가서 사라진대요 (5년 지나면 국고로 귀속). 참택스 FAQ에서 10분이면 확인 끝나요!';
+  const shareText = pickLang(
+    '\uB098\uB3C4 \uBAA8\uB974\uAC8C \uBABB \uBC1B\uC740 \uB3C8\uC774 \uC788\uB294\uC9C0 \uCCB4\uD06C\uB9AC\uC2A4\uD2B8\uB85C \uD655\uC778\uD574\uBD10\uC694. \uAD6D\uC138\uD658\uAE09\uAE08\uB9CC \uB9E4\uB144 \uC218\uCC9C\uC5B5 \uC6D0\uB300\uAC00 \uC548 \uCC3E\uC544\uAC00\uC11C \uC0AC\uB77C\uC9C4\uB300\uC694 (5\uB144 \uC9C0\uB098\uBA74 \uAD6D\uACE0\uB85C \uADC0\uC18D). \uCC38\uD0DD\uC2A4 FAQ\uC5D0\uC11C 10\uBD84\uC774\uBA74 \uD655\uC778 \uB05D\uB098\uC694!',
+    'I checked whether I had unclaimed money using this checklist. Apparently hundreds of billions of won in unclaimed tax refunds go unclaimed every year in Korea (reverts to the treasury after 5 years). Takes 10 minutes to check on the ChamTax FAQ!',
+    '\u6211\u7528\u8FD9\u4E2A\u6E05\u5355\u786E\u8BA4\u4E86\u81EA\u5DF1\u662F\u5426\u6709\u4E0D\u77E5\u9053\u7684\u672A\u9886\u53D6\u7684\u94B1\u3002\u636E\u8BF4\u97E9\u56FD\u6BCF\u5E74\u90FD\u6709\u6570\u767E\u4EBF\u97E9\u5143\u7684\u7A0E\u6B3E\u6CA1\u4EBA\u9886\u53D6\uFF085\u5E74\u540E\u5F52\u56FD\u5E93\uFF09\u3002\u5728ChamTax\u7684FAQ\u91CC10\u5206\u949F\u5C31\u80FD\u786E\u8BA4\u5B8C\uFF01'
+  );
   const shareUrl = location.href;
   const btn = document.getElementById('refund-share-btn');
 
   if (navigator.share) {
     try {
-      await navigator.share({ title: isEnSc ? 'Find money you didn\u2019t know you had \u2014 checklist' : '나도 모르는 잠자는 내 돈 찾기 체크리스트', text: shareText, url: shareUrl });
+      await navigator.share({ title: pickLang(
+        '\uB098\uB3C4 \uBAA8\uB974\uB294 \uC7A0\uC790\uB294 \uB0B4 \uB3C8 \uCC3E\uAE30 \uCCB4\uD06C\uB9AC\uC2A4\uD2B8',
+        'Find money you didn\u2019t know you had \u2014 checklist',
+        '\u627E\u51FA\u4F60\u4E0D\u77E5\u9053\u7684\u6C89\u7761\u8D44\u4EA7 \u2014 \u68C0\u67E5\u6E05\u5355'
+      ), text: shareText, url: shareUrl });
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return;
@@ -1945,12 +2006,16 @@ async function shareRefundChecklist(){
     await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
     if (btn) {
       const original = btn.textContent;
-      btn.textContent = isEnSc ? '✅ Link copied' : '✅ 링크가 복사됐어요';
+      btn.textContent = pickLang('\u2705 \uB9C1\uD06C\uAC00 \uBCF5\uC0AC\uB410\uC5B4\uC694', '\u2705 Link copied', '\u2705 \u94FE\u63A5\u5DF2\u590D\u5236');
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
     }
   } catch (e) {
-    window.prompt(isEnSc ? 'Press and hold to copy, then share it' : '아래 내용을 길게 눌러 복사해서 공유해주세요', `${shareText} ${shareUrl}`);
+    window.prompt(pickLang(
+      '\uC544\uB798 \uB0B4\uC6A9\uC744 \uAE38\uAC8C \uB20C\uB7EC \uBCF5\uC0AC\uD574\uC11C \uACF5\uC720\uD574\uC8FC\uC138\uC694',
+      'Press and hold to copy, then share it',
+      '\u957F\u6309\u4E0B\u65B9\u5185\u5BB9\u590D\u5236\u540E\u5206\u4EAB'
+    ), `${shareText} ${shareUrl}`);
   }
 }
 
@@ -2046,8 +2111,9 @@ function confirmEditMiniResult(rawValue){
 }
 function setHomeCountry(country){
   document.getElementById('homeCountrySelect').value = country;
-  document.getElementById('homeCountryBtnKr').classList.toggle('active', country === 'kr');
-  document.getElementById('homeCountryBtnUs').classList.toggle('active', country === 'us');
+  document.querySelectorAll('#homeCountryToggle .country-toggle-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.country === country);
+  });
   updateHomeCalc();
 }
 
@@ -2072,11 +2138,28 @@ function updateHomeCalc(usdOverride){
   const trustLine = document.getElementById('home-trust-line');
   if (trustLine) {
     const rateStr = EXCHANGE_RATE.toLocaleString(currentLang === 'zh' ? 'zh-CN' : 'ko-KR');
-    trustLine.textContent = pickLang(
-      `국세청·IRS 공식 자료 기반 · 2026년 세율 · 환율 ${rateStr}원 적용`,
-      `Based on IRS/NTS official data · 2026 tax rates · rate ${rateStr} KRW/USD`,
-      `基于IRS·韩国国税厅官方数据 · 2026年税率 · 汇率${rateStr}韩元/美元`
-    );
+    // 국가별로 실제 근거가 되는 과세당국이 다름 — 중국 거주자 시나리오에 한국 국세청 자료가
+    // 근거인 것처럼 표기하면 사실과 다르므로, 국가에 맞는 과세당국만 표기함
+    const authorityText = (country === 'cn')
+      ? pickLang('중국 국가세무총국·IRS', 'China State Taxation Administration/IRS', '中国国家税务总局·IRS')
+      : (country === 'us')
+      ? pickLang('IRS', 'IRS', 'IRS')
+      : pickLang('국세청·IRS', 'IRS/NTS', 'IRS·韩国国税厅');
+    // 환율은 한국 거주자 시나리오에서만 실제 세액(누진세율 구간) 산정에 실질적으로 쓰임 —
+    // 미국·중국 거주자는 세금 자체가 달러 기준 정률로 정해지고, 원화 환산은 비교를 위한 표시일 뿐이라
+    // (아래 usdNote에서 별도 안내) "공식 자료 기반" 문구에 환율을 같이 넣으면 마치 환율이 그 나라
+    // 세법 계산에 쓰인 것처럼 오해될 수 있어 kr에서만 환율 문구를 붙임
+    trustLine.textContent = (country === 'kr')
+      ? pickLang(
+          `${authorityText} 공식 자료 기반 · 2026년 세율 · 환율 ${rateStr}원 적용`,
+          `Based on ${authorityText} official data · 2026 tax rates · rate ${rateStr} KRW/USD`,
+          `基于${authorityText}官方数据 · 2026年税率 · 汇率${rateStr}韩元/美元`
+        )
+      : pickLang(
+          `${authorityText} 공식 자료 기반 · 2026년 세율 (원화 환산은 비교용)`,
+          `Based on ${authorityText} official data · 2026 tax rates (KRW figure is for comparison only)`,
+          `基于${authorityText}官方数据 · 2026年税率（韩元金额仅供对比参考）`
+        );
   }
 
   const milestoneEl = document.getElementById('home-milestone');
@@ -2130,17 +2213,35 @@ function updateHomeCalc(usdOverride){
   document.getElementById('tax-impact-diff').textContent = '-' + formatWon(억 - final) + ` (${taxImpactPct}%)`;
 
   const usdNote = document.getElementById('home-usd-note');
-  if (country === 'us') {
-    const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
-    const finalUsd = Math.round(usd * (1 - TAX_MODEL.us_resident.federal) * (1 - stateInfo.rate));
+  const cnyNote = document.getElementById('home-cny-note');
+  if (country === 'us' || country === 'cn') {
+    // 미국·중국 거주자 모두 실제로는 달러(USD)로 그대로 받고, 자국 세법상 세액도 원래는
+    // 그 나라 통화 기준으로 계산됨 — 여기 보이는 원화 금액은 한국 기준과 비교하기 위한 표시일 뿐이라
+    // 실수령률(final/억)을 그대로 USD 원금에 곱해서 실제 달러 수령액을 구함 (국가별 세율 하드코딩 없이 공통 처리)
+    const finalUsd = Math.round(usd * (final / 억));
     usdNote.textContent = pickLang(
       `💵 실제로는 달러($${finalUsd.toLocaleString('en-US')})로 그대로 받아요 — 원화는 한국 기준과 비교하기 위한 참고용이에요`,
       `💵 You actually receive USD ($${finalUsd.toLocaleString('en-US')}) directly — the KRW figure is just for comparison with the Korea basis`,
       `💵 实际上会直接以美元（$${finalUsd.toLocaleString('en-US')}）收到 —— 韩元金额仅供与韩国标准对比参考`
     );
     usdNote.style.display = 'block';
+
+    // 중국 거주자는 실제 생활 통화가 위안화라, 달러 수령액만 보여주면 감이 잘 안 옴 —
+    // 위안화 참고 환산액도 같이 보여줌(실시간 환율 시도, 실패 시 기본값 사용 — KRW와 동일한 방식)
+    if (country === 'cn') {
+      const finalCny = Math.round(finalUsd * EXCHANGE_RATE_CNY);
+      cnyNote.textContent = pickLang(
+        `💴 위안화로는 대략 ¥${finalCny.toLocaleString('zh-CN')}위안이에요 (참고용 환율)`,
+        `💴 That's roughly ¥${finalCny.toLocaleString('en-US')} CNY (reference exchange rate)`,
+        `💴 折合人民币约¥${finalCny.toLocaleString('zh-CN')}元（仅供参考的汇率）`
+      );
+      cnyNote.style.display = 'block';
+    } else {
+      cnyNote.style.display = 'none';
+    }
   } else {
     usdNote.style.display = 'none';
+    cnyNote.style.display = 'none';
   }
 
   const showFiling = (country === 'us');
@@ -2149,7 +2250,21 @@ function updateHomeCalc(usdOverride){
   updateFlexBox(final);
   document.getElementById('home-filing-label').style.display = showFiling ? 'block' : 'none';
   document.getElementById('home-filing-small').style.display = showFiling ? 'block' : 'none';
-  document.getElementById('home-filing-note').style.display = showFiling ? 'none' : 'block';
+  const filingNote = document.getElementById('home-filing-note');
+  if (!showFiling) {
+    filingNote.textContent = (country === 'cn')
+      ? pickLang(
+          '💡 중국 거주자는 어느 주(State)에서 당첨되든 미국 비거주자 원천징수(30%)가 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.',
+          '💡 China residents face the same 30% US non-resident withholding regardless of which state they won in — no need to factor in state tax.',
+          '💡 中国税收居民无论在哪个州中奖，都统一适用美国非居民30%预扣税——不需要另外考虑州税'
+        )
+      : pickLang(
+          '💡 한국 거주자는 어느 주(State)에서 당첨되든 미국 비거주자 원천징수(30%)가 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.',
+          '💡 Korean residents face the same 30% US non-resident withholding regardless of which state they won in — no need to factor in state tax.',
+          '💡 韩国税收居民无论在哪个州中奖，都统一适用美国非居民30%预扣税——不需要另外考虑州税'
+        );
+  }
+  filingNote.style.display = showFiling ? 'none' : 'block';
   refreshDreamResultIfOpen(formatWon(final));
 }
 
@@ -2203,18 +2318,28 @@ function updateCalc(usdOverride){
 // implemented:false면 "준비 중" 카드로만 표시되고, calcTakeHome()에 해당 country 분기를
 // 추가한 뒤 implemented:true로 바꾸면 실제 계산이 자동으로 반영됨.
 const COUNTRY_TAX_PROFILES = [
-  { code: 'kr', flag: '🇰🇷', label: '한국 거주자', labelEn: 'Korea resident', labelZh: '韩国居民', implemented: true, needsState: false },
-  { code: 'us', flag: '🇺🇸', label: '미국 거주자', labelEn: 'US resident', labelZh: '美国居民', implemented: true, needsState: true },
-  { code: 'vn', flag: '🇻🇳', label: '베트남 거주자 (실제 베트남 거주 기준)', labelEn: 'Vietnam resident (living in Vietnam)', labelZh: '越南居民（实际住在越南）', implemented: false, needsState: false },
-  { code: 'cn', flag: '🇨🇳', label: '중국 거주자 (실제 중국 거주 기준)', labelEn: 'China resident (living in China)', labelZh: '中国居民（实际住在中国）', implemented: true, needsState: false, detailPage: 'china-resident-us-lottery-tax.html', detailLabel: '中文详情 →' },
+  { code: 'kr', flagCode: 'KR', label: '한국 거주자', labelEn: 'Korea resident', labelZh: '韩国居民', implemented: true, needsState: false },
+  { code: 'us', flagCode: 'US', label: '미국 거주자', labelEn: 'US resident', labelZh: '美国居民', implemented: true, needsState: true },
+  { code: 'vn', flagCode: 'VN', label: '베트남 거주자 (실제 베트남 거주 기준)', labelEn: 'Vietnam resident (living in Vietnam)', labelZh: '越南居民（实际住在越南）', implemented: false, needsState: false },
+  { code: 'cn', flagCode: 'CN', label: '중국 거주자 (실제 중국 거주 기준)', labelEn: 'China resident (living in China)', labelZh: '中国居民（实际住在中国）', implemented: true, needsState: false, detailPage: 'china-resident-us-lottery-tax.html', detailLabel: '中文详情 →' },
 ];
 
 // "한국에 사는 OO 국적자" 안내 페이지 목록 — 실제 그 나라 세법이 아니라 한국 세법(위 kr 기준)을
 // 그대로 따르는 번역 콘텐츠라서, COUNTRY_TAX_PROFILES(진짜 다른 나라 세금 비교)와는 완전히 분리해서 관리함.
 // 새 언어 추가할 땐 이 배열에 한 줄만 추가하면 됨.
 const LANGUAGE_CONTENT_PAGES = [
-  { flag: '🇻🇳', label: '한국에 사는 베트남분이라면', labelEn: 'Living in Korea as a Vietnamese national', labelZh: '住在韩国的越南人', contentPage: 'vietnamese-in-korea-lottery-tax.html', contentLabel: 'Tiếng Việt →' },
+  { flagCode: 'VN', label: '한국에 사는 베트남분이라면', labelEn: 'Living in Korea as a Vietnamese national', labelZh: '住在韩国的越南人', contentPage: 'vietnamese-in-korea-lottery-tax.html', contentLabel: 'Tiếng Việt →' },
 ];
+
+// 국기 이모지(regional indicator 시퀀스)는 기기·브라우저에 따라 실제 국기 대신 "KR" 같은
+// 문자로 깨져서 나오는 경우가 있어서(특히 일부 임베디드 웹뷰), 이모지 대신 항상 동일하게
+// 렌더링되는 색 배지(span.flag-badge)로 통일해서 씀
+function makeFlagBadge(code){
+  const span = document.createElement('span');
+  span.className = 'flag-badge';
+  span.textContent = code;
+  return span;
+}
 
 function renderLanguageContentLinks(){
   const container = document.getElementById('otherLanguagesList');
@@ -2225,7 +2350,7 @@ function renderLanguageContentLinks(){
     row.className = 'other-lang-row';
     const labelEl = document.createElement('span');
     labelEl.className = 'other-lang-label';
-    labelEl.textContent = `${item.flag} ${pickLang(item.label, item.labelEn, item.labelZh)}`;
+    labelEl.append(makeFlagBadge(item.flagCode), document.createTextNode(' ' + pickLang(item.label, item.labelEn, item.labelZh)));
     const linkEl = document.createElement('a');
     linkEl.className = 'other-lang-link';
     linkEl.href = item.contentPage;
@@ -2243,7 +2368,14 @@ function updateSideBySide(eok, stateCode){
   breakdownContainer.innerHTML = '';
 
   COUNTRY_TAX_PROFILES.forEach(profile => {
-    const baseLabel = `${profile.flag} ${pickLang(profile.label, profile.labelEn, profile.labelZh)}`;
+    const baseLabelText = pickLang(profile.label, profile.labelEn, profile.labelZh);
+    // labelText가 뒤에 (주 이름) 등 접미사가 붙을 수 있어서, 배지+본문 텍스트를 한번에 만들어주는
+    // 헬퍼로 side-card-flag/side-group-label 양쪽에 그대로 재사용함
+    function buildLabelNode(suffix){
+      const frag = document.createDocumentFragment();
+      frag.append(makeFlagBadge(profile.flagCode), document.createTextNode(' ' + baseLabelText + (suffix || '')));
+      return frag;
+    }
 
     if (!profile.implemented) {
       // 데이터가 아직 준비 안 된 나라 — 카드만 "준비 중"으로 보여주고 breakdown은 생략
@@ -2253,7 +2385,8 @@ function updateSideBySide(eok, stateCode){
       amtEl.className = 'side-card-amt';
       amtEl.style.cssText = 'color:var(--text-muted); font-size:16px;';
       amtEl.textContent = pickLang('준비 중', 'Coming soon', '准备中');
-      card.innerHTML = `<p class="side-card-flag">${baseLabel}</p>`;
+      const flagP = document.createElement('p'); flagP.className = 'side-card-flag'; flagP.appendChild(buildLabelNode());
+      card.appendChild(flagP);
       card.appendChild(amtEl);
       grid.appendChild(card);
       return;
@@ -2261,17 +2394,17 @@ function updateSideBySide(eok, stateCode){
 
     const result = calcTakeHome(eok, profile.code, profile.needsState ? (stateCode || 'AVG') : null);
     const pct = eok > 0 ? (result.final / eok * 100) : 0;
-    let labelText = baseLabel;
+    let stateSuffix = '';
     if (profile.needsState) {
       const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
       const stateLabelRaw = pickLang(stateInfo.label, stateInfo.labelEn, stateInfo.labelZh);
       const stateLabel = stateLabelRaw.replace(/\s*\(예시\)|\s*\(example\)/i, '').replace(/\s*（示例）/, '');
-      labelText = `${baseLabel} (${stateLabel})`;
+      stateSuffix = ` (${stateLabel})`;
     }
 
     const card = document.createElement('div');
     card.className = 'side-card';
-    const flagEl = document.createElement('p'); flagEl.className = 'side-card-flag'; flagEl.textContent = labelText;
+    const flagEl = document.createElement('p'); flagEl.className = 'side-card-flag'; flagEl.appendChild(buildLabelNode(stateSuffix));
     const amtEl = document.createElement('p'); amtEl.className = 'side-card-amt'; amtEl.textContent = formatWon(result.final);
     const rateEl = document.createElement('p'); rateEl.className = 'side-card-rate';
     rateEl.textContent = pickLang('실수령률 약 ', 'Take-home rate about ', '实得比例约') + pct.toFixed(1) + '%';
@@ -2285,7 +2418,7 @@ function updateSideBySide(eok, stateCode){
     }
     grid.appendChild(card);
 
-    const groupLabel = document.createElement('p'); groupLabel.className = 'side-group-label'; groupLabel.textContent = labelText;
+    const groupLabel = document.createElement('p'); groupLabel.className = 'side-group-label'; groupLabel.appendChild(buildLabelNode(stateSuffix));
     const bGrid = document.createElement('div'); bGrid.className = 'side-breakdown-grid';
     [[result.label1, result.val1], [result.label2, result.val2]].forEach(([label, val]) => {
       const cell = document.createElement('div'); cell.className = 'side-breakdown-cell';
