@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cellipse cx='5.5' cy='8' rx='3.2' ry='4.6' fill='none' stroke='%23155445' stroke-width='2.2' transform='rotate(-25 5.5 8)'/%3E%3Cellipse cx='20.5' cy='8' rx='3.2' ry='4.6' fill='none' stroke='%23155445' stroke-width='2.2' transform='rotate(25 20.5 8)'/%3E%3Ccircle cx='13' cy='14.5' r='8.3' fill='none' stroke='%23155445' stroke-width='2.2'/%3E%3Ccircle cx='9.7' cy='13' r='1.4' fill='%23155445'/%3E%3Ccircle cx='16.3' cy='13' r='1.4' fill='%23155445'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#155445">
+<meta name="robots" content="noindex">
+<title>페이지를 찾을 수 없어요 | 참택스</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --teal:#155445; --bg:#FAF6EC; --card:#FFFEF9; --text-dark:#262420; --text-muted:#544E42; --border:#E8E2D3;
+    --fs-hero:36px; --fs-h1:26px; --fs-h2:20px; --fs-h3:18px; --fs-body:16px; --fs-note:14px; --fs-small:13px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--bg); color:var(--text-dark); line-height:1.6;
+  }
+  .wrap{ max-width:640px; margin:0 auto; padding:20px 20px 60px; }
+  .nav{ display:flex; justify-content:space-between; align-items:center; padding:16px 0; }
+  .logo{ font-size:20px; font-weight:800; color:var(--text-dark); text-decoration:none; }
+  .logo span{ color:var(--teal); }
+
+  .mascot{ text-align:center; margin:40px 0 8px; }
+  .mascot svg{ width:96px; height:96px; }
+
+  h1{ font-size:var(--fs-h1); line-height:1.4; margin:8px 0 8px; text-align:center; }
+  .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 32px; text-align:center; }
+
+  .cta-box{
+    background:var(--teal); border-radius:16px; padding:28px 24px; text-align:center; margin:0 0 32px;
+  }
+  .cta-box p{ color:var(--card); font-size:var(--fs-h3); font-weight:700; margin:0 0 14px; }
+  .cta-box a{
+    display:inline-block; background:var(--card); color:var(--teal); font-weight:800; font-size:var(--fs-body);
+    padding:13px 28px; border-radius:10px; text-decoration:none;
+  }
+
+  h2{ font-size:var(--fs-h2); margin:0 0 12px; }
+  .related-links{ display:flex; flex-direction:column; gap:8px; margin:0 0 32px; }
+  .related-links a{ font-size:var(--fs-note); color:var(--teal); text-decoration:none; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav">
+    <a class="logo" href="index.html">참<span>택스</span></a>
+  </div>
+
+  <div class="mascot">
+    <svg viewBox="0 0 28 28">
+      <ellipse cx="6.1" cy="10.4" rx="2.7" ry="4" fill="var(--card)" stroke="var(--teal)" stroke-width="1.7" transform="rotate(-24 6.1 10.4)"/>
+      <ellipse cx="21.9" cy="10.4" rx="2.7" ry="4" fill="var(--card)" stroke="var(--teal)" stroke-width="1.7" transform="rotate(24 21.9 10.4)"/>
+      <circle cx="14" cy="15.6" r="9.7" fill="var(--card)" stroke="var(--teal)" stroke-width="1.8"/>
+      <ellipse cx="8.5" cy="17.5" rx="1.6" ry="1.05" fill="#F0A98C" opacity="0.55"/>
+      <ellipse cx="19.5" cy="17.5" rx="1.6" ry="1.05" fill="#F0A98C" opacity="0.55"/>
+      <circle cx="10.5" cy="14.4" r="1.7" fill="var(--text-dark)"/>
+      <circle cx="11.05" cy="13.85" r="0.5" fill="#fff"/>
+      <circle cx="17.5" cy="14.4" r="1.7" fill="var(--text-dark)"/>
+      <circle cx="18.05" cy="13.85" r="0.5" fill="#fff"/>
+      <ellipse cx="14" cy="17.75" rx="1.85" ry="1.3" fill="var(--teal)"/>
+      <path d="M14 19.1v0.55M9.6 19.8c1.3 2.15 7.5 2.15 8.8 0" fill="none" stroke="var(--teal)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <h1>어라, 이 페이지는 당첨되지 않았나 봐요</h1>
+  <p class="lead">요청하신 주소를 찾을 수 없어요. 주소가 바뀌었거나 잘못 입력되셨을 수 있어요.</p>
+
+  <div class="cta-box">
+    <p>대신 실수령액 계산기로 가볼까요?</p>
+    <a href="index.html">계산기로 바로가기 →</a>
+  </div>
+
+  <h2>이런 페이지는 어떠세요?</h2>
+  <div class="related-links">
+    <a href="powerball-tax.html">→ 파워볼 세금, 얼마나 떼가나요?</a>
+    <a href="megamillions-tax.html">→ 메가밀리언즈 세금 계산</a>
+    <a href="korea-resident-us-lottery-tax.html">→ 한국 거주자 미국 복권 세금 총정리</a>
+    <a href="us-lottery-tax-rate.html">→ 미국 복권 세율, 주(state)별 비교</a>
+    <a href="us-lottery-take-home.html">→ 미국 복권 실수령액 미리 보기</a>
+    <a href="biggest-jackpot-payouts.html">→ 역대 최고 잭팟 TOP 5 실수령액</a>
+  </div>
+
+</div>
+</body>
+</html>

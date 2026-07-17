@@ -31,10 +31,13 @@ const I18N = {
   'input.amountLabelFull': { en: 'Prize amount (pre-tax lump sum)' },
   'input.amountPlaceholder': { en: 'e.g. 100' },
   'input.bridge': { en: '👇 The amount above is just an example — try entering your own' },
+  'input.orManualLabel': { en: 'Or enter an amount directly' },
   'input.basisLabel':  { en: 'Tax basis' },
   'input.krwHint':     { en: '💡 The advertised jackpot isn\u2019t what you actually receive —' },
   'input.krwHintFull': { en: '💡 Enter the actual lump-sum amount (about 45–60%) — not the jackpot number from the news' },
   'home.inputHint': { en: '👇 Enter your winnings directly' },
+  'home.quickfillPowerball': { en: '🔴 Powerball today’s jackpot' },
+  'home.quickfillMega': { en: '🟡 Mega Millions today’s jackpot' },
   'input.optKorea':    { en: '🇰🇷 Korea basis' },
   'input.optUS':       { en: '🇺🇸 US basis' },
   'home.filingNoteState': { en: '💡 Korean residents face the same 30% US non-resident withholding regardless of which state they won in — no need to factor in state tax.' },
@@ -93,16 +96,57 @@ const I18N = {
   'compare.oddsHint':    { en: 'Curious? Try the <b>Odds Sense</b> menu too \u2192 it\u2019s pretty fun' },
   'compare.disclaimer':  { en: 'Built with reference to IRS and Korean NTS guidance (hope you get the chance to actually win!)' },
   'state.AVG': { en: 'Average (example, 8%)' },
-  'state.TX':  { en: 'Texas (0%)' },
-  'state.FL':  { en: 'Florida (0%)' },
-  'state.CA':  { en: 'California (lottery-exempt, 0%)' },
-  'state.WA':  { en: 'Washington (0%)' },
-  'state.NV':  { en: 'Nevada (0%)' },
-  'state.NY':  { en: 'New York (10.9%)' },
-  'state.NJ':  { en: 'New Jersey (10.75%)' },
-  'state.OR':  { en: 'Oregon (9.9%)' },
-  'state.MN':  { en: 'Minnesota (9.85%)' },
-  'state.MD':  { en: 'Maryland (8.95%, unconfirmed)' },
+  'state.AL': { en: 'Alabama (5%)' },
+  'state.AK': { en: 'Alaska (0%)' },
+  'state.AZ': { en: 'Arizona (2.5%)' },
+  'state.AR': { en: 'Arkansas (3.9%)' },
+  'state.CA': { en: 'California (lottery-exempt, 0%)' },
+  'state.CO': { en: 'Colorado (4.4%)' },
+  'state.CT': { en: 'Connecticut (6.99%)' },
+  'state.DE': { en: 'Delaware (6.6%)' },
+  'state.FL': { en: 'Florida (0%)' },
+  'state.GA': { en: 'Georgia (5.39%)' },
+  'state.HI': { en: 'Hawaii (11%)' },
+  'state.ID': { en: 'Idaho (5.3%)' },
+  'state.IL': { en: 'Illinois (4.95%)' },
+  'state.IN': { en: 'Indiana (2.95%)' },
+  'state.IA': { en: 'Iowa (3.8%)' },
+  'state.KS': { en: 'Kansas (5.58%)' },
+  'state.KY': { en: 'Kentucky (3.5%)' },
+  'state.LA': { en: 'Louisiana (3%)' },
+  'state.ME': { en: 'Maine (7.15%)' },
+  'state.MD': { en: 'Maryland (8.95%, unconfirmed)' },
+  'state.MA': { en: 'Massachusetts (9%)' },
+  'state.MI': { en: 'Michigan (4.25%)' },
+  'state.MN': { en: 'Minnesota (9.85%)' },
+  'state.MS': { en: 'Mississippi (4%)' },
+  'state.MO': { en: 'Missouri (4.7%)' },
+  'state.MT': { en: 'Montana (5.65%)' },
+  'state.NE': { en: 'Nebraska (4.55%)' },
+  'state.NV': { en: 'Nevada (0%)' },
+  'state.NH': { en: 'New Hampshire (0%)' },
+  'state.NJ': { en: 'New Jersey (10.75%)' },
+  'state.NM': { en: 'New Mexico (5.9%)' },
+  'state.NY': { en: 'New York (10.9%)' },
+  'state.NC': { en: 'North Carolina (3.99%)' },
+  'state.ND': { en: 'North Dakota (1.95%)' },
+  'state.OH': { en: 'Ohio (2.75%)' },
+  'state.OK': { en: 'Oklahoma (4.5%)' },
+  'state.OR': { en: 'Oregon (9.9%)' },
+  'state.PA': { en: 'Pennsylvania (3.07%)' },
+  'state.RI': { en: 'Rhode Island (5.99%)' },
+  'state.SC': { en: 'South Carolina (6.2%)' },
+  'state.SD': { en: 'South Dakota (0%)' },
+  'state.TN': { en: 'Tennessee (0%)' },
+  'state.TX': { en: 'Texas (0%)' },
+  'state.UT': { en: 'Utah (4.55%)' },
+  'state.VT': { en: 'Vermont (8.75%)' },
+  'state.VA': { en: 'Virginia (5.75%)' },
+  'state.WA': { en: 'Washington (0%)' },
+  'state.DC': { en: 'Washington D.C. (10.75%)' },
+  'state.WV': { en: 'West Virginia (4.82%)' },
+  'state.WI': { en: 'Wisconsin (7.65%)' },
+  'state.WY': { en: 'Wyoming (0%)' },
   'odds.breadcrumb':  { en: 'Odds Sense Tool' },
   'odds.panelTitle':  { en: 'This probability doesn\u2019t really register, does it?' },
   'odds.panelDesc':   { en: '1 in 292 million doesn\u2019t feel real. So we compared it to things that do.' },
@@ -117,12 +161,15 @@ const I18N = {
   'odds.callout': { en: '💡 Winning the Powerball jackpot is about as likely as <b>getting struck by lightning 19,000 times in a row.</b> Yet several people still win every year 🍀' },
   'odds.winnersTitle': { en: '🏆 People really have won this much' },
   'odds.winnersDesc':  { en: 'It does actually happen \u2014 here are some record-breaking real cases' },
+  'odds.historyTitle': { en: '📜 Past Jackpot Records' },
+  'odds.historyDesc':  { en: 'Jackpot amounts we\u2019ve checked, with estimated take-home for both Korean and US residents (including the top 5 all-time records)' },
+  'odds.historyFullLink': { en: '📄 See the Top 5 all-time jackpots in detail →' },
   'odds.winner1Amt': { en: '$2.04 billion' },
-  'odds.winner1':    { en: 'November 2022, California \u2014 the largest Powerball jackpot in history. The winner chose the lump-sum cash option (about $997.6M).' },
+  'odds.winner1':    { en: 'November 2022, California \u2014 Edwin Castro, winner of the largest Powerball jackpot in history. He took the $997.6M lump sum and bought $25.5M and $47M houses back to back. Sued over a claim the ticket was stolen, he was confirmed the rightful owner in 2024, then in 2025 donated land to build homes for wildfire victims.' },
   'odds.winner2Amt': { en: '$758.7 million' },
-  'odds.winner2':    { en: 'August 2017, Massachusetts \u2014 the winner made headlines by announcing she would not be returning to work.' },
+  'odds.winner2':    { en: 'August 2017, Massachusetts \u2014 Mavis Wanczyk quit her job at a hospital where she\u2019d worked for 32 years the moment she found out she\u2019d won. Once she became famous, though, dozens of fake accounts impersonating her popped up online, and police had to step in.' },
   'odds.winner3Amt': { en: '🍀 Anonymous winners' },
-  'odds.winner3':    { en: 'Some states let winners stay anonymous (Florida, Texas, Delaware, etc.). Many large winners actually choose this option.' },
+  'odds.winner3':    { en: 'Some states let winners stay anonymous (Florida, Texas, Delaware, etc.). If you’d rather not end up like Castro or Wanczyk, this is the option many big winners choose.' },
   'odds.lightningTitle': { en: '⚡ Today\u2019s Lightning Numbers' },
   'odds.lightningDesc':  { en: 'Drawn just for fun, with today\u2019s "lightning" energy \u2014 6 random numbers' },
   'odds.drawBtn':  { en: '⚡⚡⚡ Draw numbers' },
@@ -162,7 +209,7 @@ const I18N = {
   'odds.disclaimer': { en: 'Odds figures are based on official published data. KRW conversion uses a reference exchange rate and may differ from actual amounts.' },
   'faq.breadcrumb':  { en: 'Frequently Asked Questions' },
   'faq.panelTitle':  { en: 'Questions people often ask' },
-  'faq.panelDesc':   { en: 'Common questions from people who searched their way here' },
+  'faq.panelDesc':   { en: 'Common questions from people who searched their way here · Confirmed based on National Tax Service consultations' },
   'faq.searchPlaceholder': { en: '🔍 Search (e.g. tax, citizenship, Powerball)' },
   'faq.catAll':      { en: 'All' },
   'faq.catTax':      { en: 'Tax & Double Taxation' },
@@ -170,7 +217,7 @@ const I18N = {
   'faq.catRefund':   { en: 'Refunds & Deadlines' },
   'faq.catPurchase': { en: 'Purchasing & Process' },
   'faq.catGame':     { en: 'Game Info' },
-  'faq.noResult':    { en: 'No results found. Try a different search term!' },
+  'faq.noResult':    { en: 'No content.' },
   'faq.q1': { en: 'How much tax is actually deducted? 😮' },
   'faq.a1': { en: 'US residents get 24% withheld upfront, settled up to 37% later. Non-US residents (including Korean residents) generally face a 30% withholding rule.' },
   'faq.q2': { en: 'Wait, I pay tax in Korea too?' },
@@ -194,16 +241,57 @@ const I18N = {
   'faq.q9': { en: 'By when do I have to claim the winnings? ⏰' },
   'faq.deadlineBadge': { en: 'Has a deadline' },
   'faq.a9': { en: 'Usually 90 days to 1 year. Miss it, and it reverts to the state \u2014 gone forever. One winner actually lost $138M by missing the deadline.' },
-  'state.name.TX': { en: 'Texas' },
-  'state.name.FL': { en: 'Florida' },
+  'state.name.AL': { en: 'Alabama' },
+  'state.name.AK': { en: 'Alaska' },
+  'state.name.AZ': { en: 'Arizona' },
+  'state.name.AR': { en: 'Arkansas' },
   'state.name.CA': { en: 'California' },
-  'state.name.WA': { en: 'Washington' },
-  'state.name.NV': { en: 'Nevada' },
-  'state.name.NY': { en: 'New York' },
-  'state.name.NJ': { en: 'New Jersey' },
-  'state.name.OR': { en: 'Oregon' },
-  'state.name.MN': { en: 'Minnesota' },
+  'state.name.CO': { en: 'Colorado' },
+  'state.name.CT': { en: 'Connecticut' },
+  'state.name.DE': { en: 'Delaware' },
+  'state.name.FL': { en: 'Florida' },
+  'state.name.GA': { en: 'Georgia' },
+  'state.name.HI': { en: 'Hawaii' },
+  'state.name.ID': { en: 'Idaho' },
+  'state.name.IL': { en: 'Illinois' },
+  'state.name.IN': { en: 'Indiana' },
+  'state.name.IA': { en: 'Iowa' },
+  'state.name.KS': { en: 'Kansas' },
+  'state.name.KY': { en: 'Kentucky' },
+  'state.name.LA': { en: 'Louisiana' },
+  'state.name.ME': { en: 'Maine' },
   'state.name.MD': { en: 'Maryland' },
+  'state.name.MA': { en: 'Massachusetts' },
+  'state.name.MI': { en: 'Michigan' },
+  'state.name.MN': { en: 'Minnesota' },
+  'state.name.MS': { en: 'Mississippi' },
+  'state.name.MO': { en: 'Missouri' },
+  'state.name.MT': { en: 'Montana' },
+  'state.name.NE': { en: 'Nebraska' },
+  'state.name.NV': { en: 'Nevada' },
+  'state.name.NH': { en: 'New Hampshire' },
+  'state.name.NJ': { en: 'New Jersey' },
+  'state.name.NM': { en: 'New Mexico' },
+  'state.name.NY': { en: 'New York' },
+  'state.name.NC': { en: 'North Carolina' },
+  'state.name.ND': { en: 'North Dakota' },
+  'state.name.OH': { en: 'Ohio' },
+  'state.name.OK': { en: 'Oklahoma' },
+  'state.name.OR': { en: 'Oregon' },
+  'state.name.PA': { en: 'Pennsylvania' },
+  'state.name.RI': { en: 'Rhode Island' },
+  'state.name.SC': { en: 'South Carolina' },
+  'state.name.SD': { en: 'South Dakota' },
+  'state.name.TN': { en: 'Tennessee' },
+  'state.name.TX': { en: 'Texas' },
+  'state.name.UT': { en: 'Utah' },
+  'state.name.VT': { en: 'Vermont' },
+  'state.name.VA': { en: 'Virginia' },
+  'state.name.WA': { en: 'Washington' },
+  'state.name.DC': { en: 'Washington D.C.' },
+  'state.name.WV': { en: 'West Virginia' },
+  'state.name.WI': { en: 'Wisconsin' },
+  'state.name.WY': { en: 'Wyoming' },
   'faq.q10': { en: 'Aside from the lottery, might I have unclaimed money that\u2019s already mine?' },
   'faq.a10': { en: 'Unlike the lottery, this is money already confirmed under your name — old tax refunds, forgotten bank accounts, unclaimed retirement plans, and more. Billions of dollars in unclaimed property sit unclaimed in the US every year. Check the list below.' },
   'faq.checklistTitle': { en: 'Check if any of these apply to you' },
@@ -225,7 +313,7 @@ const I18N = {
   'faq.checklistFooter': { en: 'We can\u2019t do the lookup for you \u2014 a couple of these (MissingMoney, USA.gov) just need your name, but others (IRS, retirement plans, savings bonds) will ask for your SSN, the same way Korean sites ask for your resident registration number. Either way, these are the real official channels. Takes about 10 minutes to check.' },
   'faq.shareChecklist': { en: '📤 Share this with a friend' },
   'faq.q11': { en: 'Is it better to take it all at once, or in installments?' },
-  'faq.a11': { en: 'The announced jackpot is the annuity total — lump sum is about 45–60% of that. Most winners choose lump sum — check the jackpot calculator under <b>Odds</b> for a detailed comparison.' },
+  'faq.a11': { en: 'The announced jackpot is the annuity total — lump sum is about 45–60% of that. Most winners choose lump sum — check the <button type="button" class="inline-link-btn" onclick="goToAnnuityInfo()">jackpot calculator under Odds</button> for a detailed comparison.' },
   'faq.q12': { en: 'Where can I buy a US lottery ticket?' },
   'faq.a12': { en: 'Sold at convenience stores and gas stations in the US. Domestic purchase-agent services carry legal risk, so we don\u2019t refer them.' },
   'faq.q13': { en: 'What if a friend buys a ticket for me, or claims the prize on my behalf?' },
@@ -244,6 +332,8 @@ const I18N = {
   'faq.a18': { en: 'It’s a 6-step process: buy in the US → confirm the win → claim it. See the full breakdown under <b>A closer look at the purchase process</b> below.' },
   'faq.q19': { en: 'How do I file these taxes?' },
   'faq.a19': { en: 'The US withholds 30% first; in Korea you report it as other income the following May. Tax paid in the US can offset via FTC. Consult a tax pro handling both countries.' },
+  'faq.q20': { en: 'How do I claim the Foreign Tax Credit (FTC)? What documents do I need?' },
+  'faq.a20': { en: 'To offset the US tax (30% withholding) against your Korean income tax filing, based on a July 2026 National Tax Service phone consultation you’ll need: <b>a certificate of tax payment issued by the foreign (US) government, a payment receipt, a withholding tax receipt, and proof of the prize itself</b>. The exchange rate used is <b>the rate on the day you actually received the prize money</b> (per Enforcement Decree of the Income Tax Act, Article 50). This isn’t an official written ruling, so confirm the exact document list with a tax professional before filing.' },
   'faq.moreTitle':  { en: '📚 Learn more (terms, purchase process, payout methods, etc.)' },
   'faq.termsTitle': { en: 'Let\u2019s start with the basic terms' },
   'faq.termsDesc':  { en: 'The part people mix up the most \u2014 here\u2019s a side-by-side comparison of the two games' },
@@ -336,7 +426,7 @@ const I18N = {
   'privacy.breadcrumb':    { en: 'Privacy Policy' },
   'privacy.title':         { en: 'Privacy Policy' },
   'privacy.effectiveDate': { en: 'Effective date: July 9, 2026' },
-  'legal.draftNotice':     { en: '⚠️ This document is a draft. It has not yet undergone formal legal review (by an attorney) — please treat it as reference only until that review is complete.' },
+  'disclaimer.effectiveDate': { en: 'Effective date: July 9, 2026' },
   'privacy.h1': { en: '1. Personal information collected' },
   'privacy.b1': { en: 'ChamTax (the "Site") does <b>not store calculator input values (prize amount, country of residence, exchange rate, etc.) on any server.</b> All calculations happen only within the visitor\u2019s browser and disappear when you leave the page.<br>However, if you contact us via "Contact," we collect only the <b>email address and message content</b> you provide.' },
   'privacy.h2': { en: '2. Purpose of collection' },
@@ -351,6 +441,7 @@ const I18N = {
   'privacy.b6': { en: 'You may request to view, correct, or delete any personal information you provided via inquiries at any time. Please contact us via the Contact page below.' },
   'privacy.h7': { en: '7. Privacy officer' },
   'common.inquiry': { en: 'Contact' },
+  'common.contactPageLink': { en: 'Please use the Contact page' },
   'disclaimer.breadcrumb': { en: 'Disclaimer' },
   'disclaimer.title':      { en: 'Disclaimer' },
   'disclaimer.h1': { en: '1. Purpose of information' },
@@ -386,9 +477,9 @@ const I18N = {
   'home.sliderMax': { en: '$2B' },
   'home.detailSummary':   { en: '🔍 See the full breakdown' },
   'home.flowExplain1':    { en: '💡 The <b>advertised jackpot (annuity basis)</b> shown in the news isn\u2019t what you actually receive. Taking the lump sum gets you roughly 45\u201360% of that as the <b>pre-tax cash value</b>, and this calculator is based on that pre-tax cash amount.' },
+  'home.annuityInfoLink': { en: '\ud83d\udcc5 How is it different if you take the annuity? \u2192' },
   'home.calcBasisBox':    { en: '• Lump-sum basis (differs for installment payouts)' },
   'home.funMoneySummary': { en: '🤑 How much could you actually buy with this? (just for fun)' },
-  'home.funSummaryMerged': { en: '🤑 What could this buy? (just for fun)' },
   'home.flexApt':      { en: 'Manhattan apartment (based on $1.5M)' },
   'home.flexCar':      { en: 'Ferrari Roma (based on ₩350M)' },
   'home.flexCoffee':   { en: 'Starbucks Americano (₩5,000)' },
@@ -481,6 +572,7 @@ function applyTranslations(){
   refreshJackpotDrawerIfOpen();
   updateJcTapLabel();
   updateHiddenMoneyChannelsForLang();
+  renderJackpotHistory();
 }
 
 // 최초 로드 시, data-i18n 요소들의 원본 한국어를 저장해둠(다시 한국어로 돌아갈 때 쓰기 위함)
@@ -695,19 +787,63 @@ const TAX_MODEL = {
   }
 };
 
-// 실제 리서치 결과 (3~6주차) 기반 주별 복권 세율. 출처: 각 주 복권 공식 사이트, IRS Pub 515/519
+// 50개 주 + DC 전체 세율 (2026년 7월 컴파일). 출처: 각 주 세무당국 공식 최고 한계세율(top marginal
+// individual income tax rate)을 "거대 당첨금이 최고 구간에 해당한다"는 가정하에 근사치로 사용.
+// ⚠️ 매년 주별로 세율 개정이 있어(예: 2026년만 해도 인디애나·켄터키·미시시피·노스캐롤라이나·오하이오 등
+// 다수 인하) 실제 신고 전에는 반드시 해당 주 세무당국/복권위원회 공식 자료로 재확인 필요.
 const STATE_TAX_RATES = {
   AVG:   { label: '평균 (예시)', labelEn: 'Average (example)', rate: 0.08 },
-  TX:    { label: '텍사스', labelEn: 'Texas', rate: 0 },
-  FL:    { label: '플로리다', labelEn: 'Florida', rate: 0 },
-  CA:    { label: '캘리포니아 (복권 당첨금 면제)', labelEn: 'California (lottery-exempt)', rate: 0 },
-  WA:    { label: '워싱턴', labelEn: 'Washington', rate: 0 },
-  NV:    { label: '네바다', labelEn: 'Nevada', rate: 0 },
-  NY:    { label: '뉴욕', labelEn: 'New York', rate: 0.109 },
-  NJ:    { label: '뉴저지', labelEn: 'New Jersey', rate: 0.1075 },
-  OR:    { label: '오리건', labelEn: 'Oregon', rate: 0.099 },
-  MN:    { label: '미네소타', labelEn: 'Minnesota', rate: 0.0985 },
-  MD:    { label: '메릴랜드 (확인중)', labelEn: 'Maryland (unconfirmed)', rate: 0.0895 }, // 공식 출처마다 8.75~9.5%로 상이 — 최신 수치 재확인 필요
+  AL:  { label: '앨라배마', labelEn: 'Alabama', rate: 0.05 },
+  AK:  { label: '알래스카', labelEn: 'Alaska', rate: 0.0 },
+  AZ:  { label: '애리조나', labelEn: 'Arizona', rate: 0.025 },
+  AR:  { label: '아칸소', labelEn: 'Arkansas', rate: 0.039 },
+  CA:  { label: '캘리포니아 (복권 당첨금 면제)', labelEn: 'California (lottery-exempt)', rate: 0.0 },
+  CO:  { label: '콜로라도', labelEn: 'Colorado', rate: 0.044 },
+  CT:  { label: '코네티컷', labelEn: 'Connecticut', rate: 0.0699 },
+  DE:  { label: '델라웨어', labelEn: 'Delaware', rate: 0.066 },
+  FL:  { label: '플로리다', labelEn: 'Florida', rate: 0.0 },
+  GA:  { label: '조지아', labelEn: 'Georgia', rate: 0.0539 },
+  HI:  { label: '하와이', labelEn: 'Hawaii', rate: 0.11 },
+  ID:  { label: '아이다호', labelEn: 'Idaho', rate: 0.053 },
+  IL:  { label: '일리노이', labelEn: 'Illinois', rate: 0.0495 },
+  IN:  { label: '인디애나', labelEn: 'Indiana', rate: 0.0295 },
+  IA:  { label: '아이오와', labelEn: 'Iowa', rate: 0.038 },
+  KS:  { label: '캔자스', labelEn: 'Kansas', rate: 0.0558 },
+  KY:  { label: '켄터키', labelEn: 'Kentucky', rate: 0.035 },
+  LA:  { label: '루이지애나', labelEn: 'Louisiana', rate: 0.03 },
+  ME:  { label: '메인', labelEn: 'Maine', rate: 0.0715 },
+  MD:  { label: '메릴랜드 (확인중)', labelEn: 'Maryland (unconfirmed)', rate: 0.0895 }, // 공식 출처마다 8.75~9.5%로 상이 — 최신 수치 재확인 필요
+  MA:  { label: '매사추세츠', labelEn: 'Massachusetts', rate: 0.09 },
+  MI:  { label: '미시간', labelEn: 'Michigan', rate: 0.0425 },
+  MN:  { label: '미네소타', labelEn: 'Minnesota', rate: 0.0985 },
+  MS:  { label: '미시시피', labelEn: 'Mississippi', rate: 0.04 },
+  MO:  { label: '미주리', labelEn: 'Missouri', rate: 0.047 },
+  MT:  { label: '몬태나', labelEn: 'Montana', rate: 0.0565 },
+  NE:  { label: '네브래스카', labelEn: 'Nebraska', rate: 0.0455 },
+  NV:  { label: '네바다', labelEn: 'Nevada', rate: 0.0 },
+  NH:  { label: '뉴햄프셔', labelEn: 'New Hampshire', rate: 0.0 },
+  NJ:  { label: '뉴저지', labelEn: 'New Jersey', rate: 0.1075 },
+  NM:  { label: '뉴멕시코', labelEn: 'New Mexico', rate: 0.059 },
+  NY:  { label: '뉴욕', labelEn: 'New York', rate: 0.109 },
+  NC:  { label: '노스캐롤라이나', labelEn: 'North Carolina', rate: 0.0399 },
+  ND:  { label: '노스다코타', labelEn: 'North Dakota', rate: 0.0195 },
+  OH:  { label: '오하이오', labelEn: 'Ohio', rate: 0.0275 },
+  OK:  { label: '오클라호마', labelEn: 'Oklahoma', rate: 0.045 },
+  OR:  { label: '오리건', labelEn: 'Oregon', rate: 0.099 },
+  PA:  { label: '펜실베이니아', labelEn: 'Pennsylvania', rate: 0.0307 },
+  RI:  { label: '로드아일랜드', labelEn: 'Rhode Island', rate: 0.0599 },
+  SC:  { label: '사우스캐롤라이나', labelEn: 'South Carolina', rate: 0.062 },
+  SD:  { label: '사우스다코타', labelEn: 'South Dakota', rate: 0.0 },
+  TN:  { label: '테네시', labelEn: 'Tennessee', rate: 0.0 },
+  TX:  { label: '텍사스', labelEn: 'Texas', rate: 0.0 },
+  UT:  { label: '유타', labelEn: 'Utah', rate: 0.0455 },
+  VT:  { label: '버몬트', labelEn: 'Vermont', rate: 0.0875 },
+  VA:  { label: '버지니아', labelEn: 'Virginia', rate: 0.0575 },
+  WA:  { label: '워싱턴', labelEn: 'Washington', rate: 0.0 },
+  DC:  { label: '워싱턴 D.C.', labelEn: 'Washington D.C.', rate: 0.1075 },
+  WV:  { label: '웨스트버지니아', labelEn: 'West Virginia', rate: 0.0482 },
+  WI:  { label: '위스콘신', labelEn: 'Wisconsin', rate: 0.0765 },
+  WY:  { label: '와이오밍', labelEn: 'Wyoming', rate: 0.0 },
 };
 
 // 2026년 종합소득세 누진세율표 (국세청 기준, 8단계) — 원(KRW) 단위
@@ -820,6 +956,7 @@ function goToFaqItem(query){
 function go(view){
   document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
   document.getElementById('view-' + view).classList.add('on');
+  setupRevealAnimation();
   document.getElementById('nav-compare').classList.toggle('active', view === 'compare');
   document.getElementById('nav-odds').classList.toggle('active', view === 'odds');
   document.getElementById('nav-faq').classList.toggle('active', view === 'faq');
@@ -999,14 +1136,32 @@ function checkRefundPossibility(){
   }
 
   const STATE_DISPLAY_NAMES = {
-    TX: '텍사스', FL: '플로리다', CA: '캘리포니아', WA: '워싱턴', NV: '네바다',
-    NY: '뉴욕', NJ: '뉴저지', OR: '오리건', MN: '미네소타', MD: '메릴랜드',
+    AL: '앨라배마', AK: '알래스카', AZ: '애리조나', AR: '아칸소', CA: '캘리포니아',
+    CO: '콜로라도', CT: '코네티컷', DE: '델라웨어', FL: '플로리다', GA: '조지아',
+    HI: '하와이', ID: '아이다호', IL: '일리노이', IN: '인디애나', IA: '아이오와',
+    KS: '캔자스', KY: '켄터키', LA: '루이지애나', ME: '메인', MD: '메릴랜드',
+    MA: '매사추세츠', MI: '미시간', MN: '미네소타', MS: '미시시피', MO: '미주리',
+    MT: '몬태나', NE: '네브래스카', NV: '네바다', NH: '뉴햄프셔', NJ: '뉴저지',
+    NM: '뉴멕시코', NY: '뉴욕', NC: '노스캐롤라이나', ND: '노스다코타', OH: '오하이오',
+    OK: '오클라호마', OR: '오리건', PA: '펜실베이니아', RI: '로드아일랜드', SC: '사우스캐롤라이나',
+    SD: '사우스다코타', TN: '테네시', TX: '텍사스', UT: '유타', VT: '버몬트',
+    VA: '버지니아', WA: '워싱턴', DC: '워싱턴 D.C.', WV: '웨스트버지니아', WI: '위스콘신',
+    WY: '와이오밍',
   };
   const STATE_DISPLAY_NAMES_EN = {
-    TX: 'Texas', FL: 'Florida', CA: 'California', WA: 'Washington', NV: 'Nevada',
-    NY: 'New York', NJ: 'New Jersey', OR: 'Oregon', MN: 'Minnesota', MD: 'Maryland',
+    AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California',
+    CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware', FL: 'Florida', GA: 'Georgia',
+    HI: 'Hawaii', ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa',
+    KS: 'Kansas', KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland',
+    MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota', MS: 'Mississippi', MO: 'Missouri',
+    MT: 'Montana', NE: 'Nebraska', NV: 'Nevada', NH: 'New Hampshire', NJ: 'New Jersey',
+    NM: 'New Mexico', NY: 'New York', NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio',
+    OK: 'Oklahoma', OR: 'Oregon', PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina',
+    SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah', VT: 'Vermont',
+    VA: 'Virginia', WA: 'Washington', DC: 'Washington D.C.', WV: 'West Virginia', WI: 'Wisconsin',
+    WY: 'Wyoming',
   };
-  const NO_TAX_STATES = ['TX', 'FL', 'WA', 'NV'];
+  const NO_TAX_STATES = ['AK', 'FL', 'NV', 'NH', 'SD', 'TN', 'TX', 'WA', 'WY'];
   const EXEMPT_STATES = ['CA'];
   const UNCERTAIN_STATES = ['MD'];
   const stateInfo = STATE_TAX_RATES[stateCode];
@@ -1134,6 +1289,57 @@ const JACKPOT_DATA = {
   megamillions: { amountUsd: 450000000 },
 };
 
+// 🗂️ 역대 잭팟 확인 기록 — JACKPOT_DATA를 갱신할 때마다 그 시점 금액을 한 줄씩 추가.
+// 경쟁사가 하루 만에 못 베끼는 누적형 콘텐츠(가이드북 Moat Rule 참고). date는 YYYY-MM-DD.
+// cashUsd: 실제 당첨자가 받은 일시불 금액이 공식 확인된 경우 그 실제값(출처: powerball.com/megamillions.com
+// 공식 발표, CNN·CBS 등 언론 보도) — 없으면 렌더링 시 CASH_VALUE_RATIO(0.58)로 추정.
+// stateCode: 당첨 주(State) — 세율 있는 주로 단일 특정 가능한 경우만 표기, 복수 주 분할 당첨은 'AVG' 처리.
+const JACKPOT_HISTORY = [
+  // 역대 최고액 기록 5건 (공식 발표·언론 보도로 확인된 실제 일시불 금액 기준)
+  { date: '2022-11-07', game: 'powerball', amountUsd: 2040000000, cashUsd: 997600000, stateCode: 'CA', noteKo: '역대 최고액 (캘리포니아, 1인)', noteEn: 'All-time record (California, single winner)' },
+  { date: '2025-09-06', game: 'powerball', amountUsd: 1787000000, cashUsd: 820600000, stateCode: 'AVG', noteKo: '역대 2위 (미주리·텍사스 2인 분할)', noteEn: '2nd all-time (Missouri & Texas, split 2 ways)' },
+  { date: '2016-01-13', game: 'powerball', amountUsd: 1586000000, cashUsd: 983400000, stateCode: 'AVG', noteKo: '캘리포니아·플로리다·테네시 3인 분할', noteEn: 'California, Florida & Tennessee, split 3 ways' },
+  { date: '2023-10-11', game: 'powerball', amountUsd: 1765000000, cashUsd: 774100000, stateCode: 'CA', noteKo: '캘리포니아, 1인', noteEn: 'California, single winner' },
+  { date: '2023-08-08', game: 'megamillions', amountUsd: 1602000000, cashUsd: 794200000, stateCode: 'FL', noteKo: '역대 메가밀리언즈 최고액 (플로리다, 1인)', noteEn: 'Mega Millions all-time record (Florida, single winner)' },
+  { date: '2026-07-16', game: 'powerball', amountUsd: 1200000000 },
+  { date: '2026-07-16', game: 'megamillions', amountUsd: 450000000 },
+];
+
+function renderJackpotHistory(){
+  const listEl = document.getElementById('jackpot-history-list');
+  if (!listEl) return;
+  const isEnJh = (typeof currentLang !== 'undefined' && currentLang === 'en');
+  if (!JACKPOT_HISTORY.length) {
+    listEl.innerHTML = `<p class="jackpot-history-empty">${isEnJh ? 'No records yet.' : '아직 기록이 없어요.'}</p>`;
+    return;
+  }
+  const gameNameKo = { powerball: '파워볼', megamillions: '메가밀리언즈' };
+  const gameNameEn = { powerball: 'Powerball', megamillions: 'Mega Millions' };
+  const sorted = [...JACKPOT_HISTORY].sort((a, b) => b.date.localeCompare(a.date));
+  listEl.innerHTML = sorted.map(entry => {
+    const cashUsd = entry.cashUsd || entry.amountUsd * CASH_VALUE_RATIO;
+    const cashKrw = cashUsd * EXCHANGE_RATE;
+    const rKr = calcTakeHome(cashKrw / 100000000, 'kr');
+    const rUs = calcTakeHome(cashKrw / 100000000, 'us', entry.stateCode || 'AVG');
+    const krLabel = isEnJh ? formatWonEn(rKr.final) : formatWon(rKr.final);
+    const usLabel = isEnJh ? formatWonEn(rUs.final) : formatWon(rUs.final);
+    const gameLabel = isEnJh ? gameNameEn[entry.game] : gameNameKo[entry.game];
+    const note = isEnJh ? entry.noteEn : entry.noteKo;
+    const noteHtml = note ? `<p class="jh-note">${note}</p>` : '';
+    return `<div class="jackpot-history-row">
+      <div class="jh-top">
+        <span class="jh-date">${entry.date}</span>
+        <span class="jh-game">${gameLabel}</span>
+      </div>
+      ${noteHtml}
+      <div class="jh-amounts">
+        <span class="jh-amt-item"><span class="jh-amt-label">${isEnJh ? 'Korea resident' : '한국 거주자'}</span><span class="jh-amt">${krLabel}</span></span>
+        <span class="jh-amt-item"><span class="jh-amt-label">${isEnJh ? 'US resident' : '미국 거주자'}</span><span class="jh-amt">${usLabel}</span></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function applyJackpotData(){
   document.getElementById('jp-powerball').setAttribute('data-target', JACKPOT_DATA.powerball.amountUsd);
   document.getElementById('jp-mega').setAttribute('data-target', JACKPOT_DATA.megamillions.amountUsd);
@@ -1154,6 +1360,34 @@ function initJackpotCardAmt(){
   const mgUsd = Number(document.getElementById('jp-mega').getAttribute('data-target'));
   document.getElementById('jp-powerball-krw').textContent = usdToKrwLabel(pbUsd);
   document.getElementById('jp-mega-krw').textContent = usdToKrwLabel(mgUsd);
+
+  // "million/billion 감이 안 온다"는 사용자에게 숫자를 직접 타이핑하게 하는 대신,
+  // 오늘 실제 잭팟의 일시불 환산액을 버튼에 미리 보여주고 누르면 바로 채워지게 함.
+  // 버튼에는 실제로 입력창에 채워질 값(M USD)과 그 원화 감(약 -억원)을 같이 보여줘서,
+  // "버튼을 누르면 아래 M USD 칸에 정확히 이 숫자가 들어간다"는 걸 한눈에 알 수 있게 함
+  const quickfillLabel = (usd) => {
+    const cashUsd = usd * CASH_VALUE_RATIO;
+    const millions = Math.round(cashUsd / 1000000);
+    const krwLabel = usdToKrwLabel(cashUsd).replace(/^\(|\)$/g, '');
+    return isEnCard ? `$${millions}M USD (${krwLabel})` : `${millions}M USD (${krwLabel})`;
+  };
+  document.getElementById('quickfill-pb-amt').textContent = quickfillLabel(pbUsd);
+  document.getElementById('quickfill-mm-amt').textContent = quickfillLabel(mgUsd);
+}
+
+function fillHomeAmountFromJackpot(game){
+  const amountUsd = JACKPOT_DATA[game].amountUsd;
+  const cashUsd = amountUsd * CASH_VALUE_RATIO;
+  const millions = Math.round(cashUsd / 1000000);
+  const input = document.getElementById('homeAmountInput');
+  input.value = millions;
+  const slider = document.getElementById('homeAmountSlider');
+  slider.max = Math.max(2000, millions);
+  slider.step = 1;
+  slider.min = Math.min(10, millions);
+  slider.value = millions;
+  updateHomeCalc(millions * 1000000);
+  input.focus();
 }
 
 function refreshJackpotDrawerIfOpen(){
@@ -1221,7 +1455,42 @@ function toggleJackpotCalc(){
   if (isShowing) refreshJackpotDrawerIfOpen();
 }
 
-document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); fetchLiveExchangeRate(); });
+// 홈 화면 계산기는 일시불(lump sum) 기준으로만 계산함 — 연금(annuity) 세금은 30년에 걸쳐
+// 매년 다른 세율 구간이 적용되는 완전히 별도의 계산이라 여기에 중복으로 넣지 않고,
+// 이미 만들어둔 확률체감 페이지의 잭팟 계산기(연금 단계 포함)로 안내만 함
+function goToAnnuityInfo(){
+  go('odds');
+  const box = document.getElementById('jackpot-calc-box');
+  if (!box.classList.contains('show')) toggleJackpotCalc();
+  setTimeout(() => {
+    document.querySelector('.prize-card.jackpot').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 400);
+}
+
+// 스크롤하면서 각 섹션이 살짝 떠오르며 나타나는 효과. reduced-motion 환경에서는 CSS가 즉시 보이게 처리함
+let _revealObserver = null;
+function setupRevealAnimation(){
+  const activeView = document.querySelector('.view.on');
+  if (!activeView) return;
+  const targets = activeView.querySelectorAll(':scope > .hero, :scope > .panel, :scope > .input-card, :scope > .explore-section, :scope > details, :scope > .legal-section, :scope > form');
+  if (!_revealObserver){
+    _revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting){
+          entry.target.classList.add('is-in');
+          _revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+  }
+  targets.forEach(el => {
+    if (el.classList.contains('is-in') || el.classList.contains('reveal-up')) return;
+    el.classList.add('reveal-up');
+    _revealObserver.observe(el);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderJackpotHistory(); fetchLiveExchangeRate(); });
 
 // 다른 페이지(korea-resident-us-lottery-tax.html 등)에서 "index.html#faq"처럼 해시가 붙은 링크로
 // 들어왔을 때, 이 SPA는 해시를 안 보고 항상 홈 화면부터 그려서 그 링크가 사실상 무시되던 문제 수정.
@@ -1339,7 +1608,9 @@ function parseRateInput(str){
   const parts = cleaned.split('.');
   const sanitized = parts.length > 1 ? parts[0] + '.' + parts.slice(1).join('') : parts[0];
   const n = Number(sanitized);
-  return isNaN(n) || n <= 0 ? EXCHANGE_RATE : n;
+  // 원/달러 환율은 현대사에서 대체로 700~2000원 사이였음 — 이 범위를 크게 벗어나면
+  // 입력 실수(자릿수 오타 등)일 가능성이 높아 직전 값을 그대로 유지함
+  return isNaN(n) || n < 500 || n > 3000 ? EXCHANGE_RATE : n;
 }
 
 function onHomeAmountTyped(){
@@ -1386,7 +1657,19 @@ function onHomeRateChanged(){
   refreshJackpotDrawerIfOpen();
 }
 
+// 요약줄에 "이 돈"처럼 추상적인 표현 대신 실제 금액을 직접 넣어서, 위쪽에 함께 보이는
+// 발표 금액과 헷갈리지 않고 바로 어떤 액수 얘기인지 알 수 있게 함
+function updateFunSummary(finalEok){
+  const el = document.getElementById('fun-summary');
+  if (!el) return;
+  const amt = formatWon(finalEok);
+  el.textContent = (currentLang === 'en')
+    ? `🤑 What could ${amt} buy? (just for fun)`
+    : `🤑 ${amt}이면 얼마나 살 수 있을까요? (재미로 보기)`;
+}
+
 function updateFlexBox(finalEok){
+  updateFunSummary(finalEok);
   const wonAmount = finalEok * 100000000;
   const isEnFlex = (currentLang === 'en');
   // 강남 아파트는 한국 사용자에게는 익숙한 '엄청 비싼 곳' 기준이지만, 영어권 사용자에게는

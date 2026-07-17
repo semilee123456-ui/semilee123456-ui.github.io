@@ -151,7 +151,7 @@
   }
   .panel-title-toggle::-webkit-details-marker{ display:none; }
   .panel-title-toggle::after{
-    content:'▾'; color:var(--teal); font-weight:400; position:absolute; right:0; top:50%;
+    content:'▾'; color:var(--teal); font-weight:400; position:absolute; right:0; top:calc(var(--fs-h2) * 0.825);
     transform:translateY(-50%); transition:transform 0.2s ease;
   }
   details.odds-accordion{ transition:border-color 0.15s ease; }
@@ -173,6 +173,14 @@
     flex:1.5; width:100%; font-variant-numeric:tabular-nums;
   }
   .dollar-input:focus{ outline:none; border-color:var(--teal); }
+  .jackpot-quickfill-row{ display:flex; gap:8px; margin:0 0 10px; flex-wrap:wrap; }
+  .jackpot-quickfill-btn{
+    flex:1; min-width:140px; min-height:44px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px; font-family:inherit; font-size:16px; font-weight:700; color:var(--teal); background:rgba(21,84,69,0.08);
+    border:1.5px solid rgba(21,84,69,0.25); border-radius:12px; padding:8px 10px; cursor:pointer; text-align:center;
+  }
+  .jackpot-quickfill-btn:active{ background:rgba(21,84,69,0.16); }
+  .jackpot-quickfill-amt{ font-size:16px; font-weight:800; color:var(--status-red); }
   .million-input-wrap{
     display:flex; align-items:center; gap:10px; flex:1.5; border:2px solid var(--teal);
     border-radius:14px; padding:8px 10px 8px 18px; height:auto; background:var(--card);
@@ -220,6 +228,7 @@
   .result-grid{ display:grid; grid-template-columns:0.85fr 0.85fr 1.3fr; gap:10px; align-items:stretch; }
   .side-by-side-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(105px, 1fr)); gap:10px; margin-top:14px; }
   .side-card{ background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:16px; min-width:0; }
+  .side-card:last-child:nth-child(odd){ grid-column:1 / -1; }
   .side-card-flag{ font-size:var(--fs-small); color:var(--text-muted); font-weight:700; margin:0 0 8px; }
   .side-card-amt{ font-size:clamp(17px, 6vw, 22px); font-weight:800; color:var(--teal); margin:0 0 6px; font-variant-numeric:tabular-nums; overflow-wrap:break-word; }
   .side-card-rate{ font-size:var(--fs-small); color:var(--text-muted); margin:0; }
@@ -232,6 +241,7 @@
   .side-breakdown-val{ font-size:18px; font-weight:700; color:var(--text-dark); margin:0; font-variant-numeric:tabular-nums; }
   @media (max-width:340px){
     .side-by-side-grid, .side-breakdown-grid{ grid-template-columns:1fr; }
+    .jh-amounts{ flex-wrap:wrap; row-gap:4px; }
   }
   .result-cell{ background:var(--bg); border-radius:8px; padding:12px; }
   .result-label{ font-size:var(--fs-note); color:var(--text-muted); margin:0 0 4px; font-weight:400; }
@@ -253,12 +263,19 @@
 
   .callout{ background:rgba(38,36,32,0.08); border:1px solid rgba(38,36,32,0.15); border-radius:10px; padding:14px 16px; margin-top:16px; font-size:var(--fs-small); color:var(--text-muted); line-height:1.6; }
   .callout b{ color:var(--text-dark); }
-  .draft-notice{ background:rgba(184,134,46,0.1); border:1px solid rgba(184,134,46,0.3); border-radius:10px; padding:12px 14px; margin:10px 0 16px; font-size:var(--fs-small); color:var(--text-dark); line-height:1.6; }
 
   .disclaimer{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; line-height:1.7; margin-top:4px; }
   .breadcrumb{ font-size:var(--fs-small); color:var(--text-muted); margin-bottom:16px; }
   .breadcrumb button{ background:none;border:none;font-family:inherit;font-size:var(--fs-small);color:var(--text-muted);cursor:pointer;padding:0; }
   .breadcrumb .cur{ color:var(--text-dark); font-weight:600; }
+
+  /* 스크롤 진입 시 섹션이 살짝 떠오르며 나타나는 효과 — 모바일에서 긴 목록을 스크롤할 때
+     구간이 바뀌는 걸 시각적으로 짚어주기 위함. 모션에 민감한 사용자를 위해 prefers-reduced-motion에서 비활성화 */
+  .reveal-up{ opacity:0; transform:translateY(14px); transition:opacity 0.5s ease, transform 0.5s ease; }
+  .reveal-up.is-in{ opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce){
+    .reveal-up{ opacity:1; transform:none; transition:none; }
+  }
 
   .hint{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); margin-top:12px; }
   .hint b{ color:var(--text-dark); }
@@ -301,6 +318,11 @@
     display:block; font-size:var(--fs-small); color:var(--teal); font-weight:700; text-decoration:none;
     margin-top:5px; padding-top:5px; border-top:1px dashed var(--border);
   }
+  .annuity-info-link{
+    display:block; width:100%; text-align:left; font-family:inherit; font-size:var(--fs-small); color:var(--teal);
+    font-weight:700; background:none; border:none; cursor:pointer; margin-top:6px; padding:6px 0; min-height:32px;
+  }
+  .annuity-info-link:hover{ text-decoration:underline; }
   
   .source-links{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); margin:6px 0 0; }
   .source-links a{ color:var(--teal); font-weight:400; text-decoration:none; }
@@ -489,7 +511,7 @@
   .input-card{ position:relative; background:#F9F5EB; border:2.5px solid var(--teal); border-radius:12px; padding:14px 16px 16px; margin-top:22px; }
   .input-card-badge{
     position:absolute; top:-20px; left:16px; width:30px; height:30px; border-radius:50%;
-    background:var(--teal); color:#fff; font-weight:800; font-size:15px;
+    background:var(--teal); color:#fff; font-weight:800; font-size:16px;
     display:flex; align-items:center; justify-content:center;
   }
   .field-label-single{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; margin:0 0 4px; }
@@ -622,6 +644,17 @@
   .ws-amt{ font-size:var(--fs-body); font-weight:800; color:var(--teal); }
   .ws-amt-alt{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); }
   .ws-desc{ font-size:var(--fs-note); color:var(--text-muted); line-height:1.6; }
+  .jackpot-history-row{ padding:12px 0; border-bottom:1px solid var(--border); }
+  .jackpot-history-row:last-child{ border-bottom:none; }
+  .jh-top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .jh-date{ font-size:var(--fs-small); color:var(--text-muted); flex:0 0 auto; }
+  .jh-game{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); }
+  .jh-note{ font-size:var(--fs-small); color:var(--text-muted); margin:2px 0 0; }
+  .jh-amounts{ display:flex; gap:16px; margin-top:6px; }
+  .jh-amt-item{ display:flex; flex-direction:column; gap:1px; }
+  .jh-amt-label{ font-size:var(--fs-small); color:var(--text-muted); }
+  .jh-amt{ font-size:var(--fs-note); font-weight:800; color:var(--teal); }
+  .jackpot-history-empty{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; padding:12px 0; }
   .filing-static-note{
     background:var(--bg); border-radius:8px; padding:10px 12px; font-size:var(--fs-note);
     color:var(--text-muted); margin-bottom:4px; text-align:center;
@@ -798,13 +831,13 @@
   .refund-wizard-result.tag-hit{ border-left-color:var(--teal); }
 
   .refund-check-row{
-    display:flex; align-items:center; gap:8px; font-size:var(--fs-note); color:var(--text-dark);
+    display:flex; align-items:flex-start; gap:8px; font-size:var(--fs-note); color:var(--text-dark);
     background:var(--card); border:1px solid transparent; border-radius:8px; padding:9px 12px; margin-bottom:6px; cursor:pointer;
   }
   .refund-check-row.checked{ background:rgba(21,84,69,0.08); border-color:var(--teal); color:var(--teal); font-weight:700; }
   .refund-check-row:last-of-type{ margin-bottom:0; }
   .refund-check-row span{ min-width:0; overflow-wrap:break-word; }
-  .refund-check-row input{ width:16px; height:16px; accent-color:var(--teal); flex-shrink:0; cursor:pointer; }
+  .refund-check-row input{ width:16px; height:16px; margin-top:3px; accent-color:var(--teal); flex-shrink:0; cursor:pointer; }
 
   .refund-link-buttons{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
   .refund-link-btn{
@@ -850,7 +883,7 @@
     .million-input-wrap{ padding:6px 6px 6px 14px; gap:6px; }
     .unit-full{ display:none; }
     .unit-short{ display:inline; }
-    .lightning-ball{ width:38px; height:38px; font-size:15px; }
+    .lightning-ball{ width:38px; height:38px; font-size:16px; }
     .lightning-result{ gap:5px; }
     .prize-card.jackpot{ flex-direction:column; align-items:flex-start; gap:10px; }
     .prize-card.jackpot .prize-right{ text-align:left; width:100%; }
@@ -872,8 +905,8 @@
     .page{ padding:18px 14px 28px; }
     .trust-grid{ grid-template-columns:1fr; row-gap:12px; }
     .bar-row{ gap:6px; }
-    .bar-label{ width:auto; flex:0 0 64px; font-size:12px; }
-    .bar-value{ width:auto; flex:0 0 56px; font-size:12px; }
+    .bar-label{ width:auto; flex:0 0 76px; }
+    .bar-value{ width:auto; flex:0 0 76px; }
     .jc-step-val-big{ font-size:24px; }
     .hero-amount{ font-size:clamp(24px, 8vw, var(--fs-hero)); }
     .result-hero-amt{ font-size:clamp(26px, 9vw, 40px); }
@@ -882,7 +915,6 @@
     .playslip-mock{ padding:8px; }
     .panel{ padding:14px; }
     .footer-links{ gap:8px 12px; }
-    .footer-links button{ font-size:14px; }
   }
   /* nav(로고+메뉴)는 훨씬 넓은 범위(480px 이하)에서 미리 축소 — 390px·393px·412px 같은
      실제로 흔히 쓰이는 폰 폭에서도 로고+메뉴가 한 줄에 안 들어가 줄바꿈되는 걸 방지 */
