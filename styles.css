@@ -199,9 +199,11 @@
   .input-card-headline{ font-size:18px; font-weight:800; color:var(--text-dark); margin:0 0 4px; }
   .country-toggle{ display:flex; gap:8px; margin:8px 0 14px; }
   .country-toggle-btn{
-    flex:1; height:46px; border-radius:11px; border:2px solid var(--border); background:var(--card);
+    flex:1; min-height:46px; border-radius:11px; border:2px solid var(--border); background:var(--card);
     color:var(--text-dark); font-family:inherit; font-size:16px; font-weight:800; cursor:pointer;
     transition:border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0 4px;
+    text-align:center; line-height:1.2; padding:6px 4px;
   }
   .country-toggle-btn.active{ border-color:var(--teal); background:rgba(21,84,69,0.08); color:var(--teal); }
   .rate-input{
