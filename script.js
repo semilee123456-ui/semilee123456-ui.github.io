@@ -31,8 +31,9 @@ const I18N = {
   'intro.abroadAction': { en: 'See your Korea tax duty →' , zh: '了解韩国纳税义务 →' },
   'intro.foreignerLabel': { en: '🌏 I’m a foreigner living in Korea' , zh: '🌏 我是住在韩国的外国人' },
   'intro.foreignerHint': { en: 'View in this language' , zh: '直接用这个语言查看' },
-  'intro.realAbroadLabel': { en: '🏠 I actually live in another country (US, China, etc.)' , zh: '🏠 我实际住在其他国家（美国、中国等）' },
-  'intro.realAbroadAction': { en: 'Check the country comparison →' , zh: '查看国家对比 →' },
+  'intro.realAbroadLabel': { en: '🌐 I’m a foreigner with no connection to Korea (US, China, etc.)' , zh: '🌐 我是与韩国没有关系的外国人（美国、中国等）' },
+  'intro.realAbroadHint': { en: 'See it in my own country’s terms' , zh: '直接按我自己国家的标准查看' },
+  'intro.realAbroadAction': { en: 'Or see the full country comparison →' , zh: '或查看完整的国家对比 →' },
   'result.label':      { en: '💰 Estimated take-home amount' , zh: '💰 预计实得金额' },
   'result.trustBadge': { en: 'Based on official IRS · Korea NTS data' , zh: '基于美国IRS·韩国国税厅官方数据' },
   'result.share':      { en: '📤 Share this result' , zh: '📤 分享这个结果' },
@@ -221,6 +222,7 @@ const I18N = {
   'faq.breadcrumb':  { en: 'Frequently Asked Questions' },
   'faq.panelTitle':  { en: 'Questions people often ask' , zh: '大家都很好奇的问题' },
   'faq.panelDesc':   { en: 'Common questions from people who searched their way here · Confirmed based on National Tax Service consultations' , zh: '搜索到这里的朋友们经常问的问题 · 已通过韩国国税厅咨询确认' },
+  'faq.basisNote':   { en: '💡 Showing only the questions relevant to the tax basis (Korea/US/China) you chose on the home screen' , zh: '💡 只显示与您在首页选择的计税基准（韩国·美国·中国）相关的问题' },
   'faq.searchPlaceholder': { en: '🔍 Search (e.g. tax, citizenship, Powerball)' , zh: '🔍 搜索（如：税金、国籍、强力球）' },
   'faq.catAll':      { en: 'All' , zh: '全部' },
   'faq.catTax':      { en: 'Tax & Double Taxation' , zh: '税金·双重征税' },
@@ -247,6 +249,10 @@ const I18N = {
   'faq.a6': { en: 'Common scam patterns: impersonating card companies asking for card info to "refund" a losing ticket, fake lottery commission asking for crypto purchases, or selling fake winning-number predictions. Real winnings are checked by you on the official site \u2014 unsolicited requests for money or info are 100% scams.' , zh: '常见的诈骗手法：冒充信用卡公司，以"退还未中奖彩票"为由索要卡号信息；冒充彩票委员会，要求用虚拟货币购买；出售虚假的预测中奖号码。真正的中奖信息是你自己在官方网站上查询确认的——凡是主动联系你索要钱财或信息的，100%是诈骗。' },
   'faq.q7': { en: 'How much gift tax if I share with family? 👨‍👩‍👧' , zh: '分给家人的话，赠与税要交多少？👨‍👩‍👧' },
   'faq.a7': { en: 'Spouse up to ₩600M, adult children up to ₩50M are tax-free. Amounts above that face a 10–50% progressive rate. Filing on time gets you a 3% credit.' , zh: '配偶6亿韩元、成年子女5000万韩元以内免税。超出部分适用10~50%的累进税率。在申报期限内自行申报可获得3%的税额抵免。' },
+  'faq.q7us': { en: 'How much gift tax if I share with family? 👨‍👩‍👧' , zh: '分给家人的话，赠与税要交多少？👨‍👩‍👧' },
+  'faq.a7us': { en: 'As of 2026, you can give up to $19,000 per person per year with no filing required at all. Give more than that, and you’ll need to file a gift tax return — but you still won’t actually owe any tax until your lifetime gifts pass the $15 million exemption. For almost everyone, that means you can share freely without worrying about gift tax.' , zh: '截至2026年，每人每年可赠与最多$19,000，完全无需申报。超过这个金额需要申报赠与税表，但实际需要缴税要等到您一生赠与总额超过1500万美元的终身免税额度才会发生。对绝大多数人来说，这意味着可以放心分享，不用担心赠与税。' },
+  'faq.q7cn': { en: 'How much gift tax if I share with family? 👨‍👩‍👧' , zh: '分给家人的话，赠与税要交多少？👨‍👩‍👧' },
+  'faq.a7cn': { en: 'China has no dedicated gift tax on cash gifts between individuals — you don’t need to worry about tax when giving cash to a spouse, parent, or child. Gifting real estate is a separate matter with its own taxes (like deed tax), so check that separately if it applies.' , zh: '中国对个人之间的现金赠与没有专门的赠与税——把现金分给配偶、父母或子女不需要担心税收问题。但赠与房产等不动产则涉及其他税种（如契税），需要另外确认。' },
   'faq.q8': { en: 'Is prize money subject to property division in a divorce? 💍' , zh: '中奖金，离婚时会被列入财产分割对象吗？💍' },
   'faq.a8': { en: 'In principle, no \u2014 courts treat it as personal property from pure luck. But if a spouse helped preserve or grow the money afterward, that contribution may be included.' , zh: '原则上不会——法院通常将其视为纯粹靠运气获得的个人"特有财产"，离婚时不列入财产分割对象。但如果配偶事后为保全或增值这笔钱做出了贡献，这部分贡献可能会被计入。' },
   'faq.q9': { en: 'By when do I have to claim the winnings? ⏰' , zh: '中奖金要在什么期限内领取？⏰' },
@@ -343,6 +349,10 @@ const I18N = {
   'faq.a18': { en: 'It’s a 6-step process: buy in the US → confirm the win → claim it. See the full breakdown under <b>A closer look at the purchase process</b> below.' , zh: '一共分6个步骤：在美国购买 → 确认中奖 → 领奖。详细说明请看下方<b>"购买流程，仔细了解一下"</b>部分。' },
   'faq.q19': { en: 'How do I file these taxes?' , zh: '这个税到底该怎么申报？' },
   'faq.a19': { en: 'The US withholds 30% first; in Korea you report it as other income the following May. Tax paid in the US can offset via FTC. Consult a tax pro handling both countries.' , zh: '美国会先预扣30%；在韩国，需要在第二年5月作为其他所得申报。已在美国缴纳的税款可以通过外国税收抵免（FTC）抵消。请咨询同时熟悉两国税务的专业人士。' },
+  'faq.q19us': { en: 'How do I file these taxes?' , zh: '这个税到底该怎么申报？' },
+  'faq.a19us': { en: 'As a US resident, you report the winnings as "Other Income" on your federal return (Form 1040, Schedule 1). For large amounts you’ll typically get a W-2G showing 24% withheld upfront — that’s just a down payment against your actual tax rate (up to 37%), so you may owe more or get some back when you file. Depending on the state, you may also need to file a separate state return.' , zh: '作为美国居民，您需要在联邦报税表（Form 1040，Schedule 1）中将中奖金作为"其他收入"申报。大额奖金通常会收到W-2G表格，上面显示已预扣24%——这只是预付款，和您的实际税率（最高37%）可能有差异，报税时可能需要补税或退税。根据所在州的不同，可能还需要单独申报州税。' },
+  'faq.q19cn': { en: 'How do I file these taxes?' , zh: '这个税到底该怎么申报？' },
+  'faq.a19cn': { en: 'The US withholds 30% first. In China, this income is classified as "incidental income" (偶然所得) taxed at a flat 20%, which you self-report between March 1 and June 30 of the following year via the "个人所得税" app or the natural person e-tax portal (per MOF/STA Announcement No. 3 of 2020). Tax already paid in the US can offset this through the foreign tax credit.' , zh: '美国会先预扣30%。在中国，这笔所得属于"偶然所得"，适用20%的单一税率，需要在次年3月1日至6月30日期间通过"个人所得税"App或自然人电子税务局自行申报（根据财政部税务总局公告2020年第3号）。已在美国缴纳的税款可以通过境外税收抵免来抵消。' },
   'faq.q20': { en: 'How do I claim the Foreign Tax Credit (FTC)? What documents do I need?' , zh: '外国税收抵免（FTC）要怎么申请？需要哪些材料？' },
   'faq.a20': { en: 'To offset the US tax (30% withholding) against your Korean income tax filing, based on a July 2026 National Tax Service phone consultation you’ll need: <b>a certificate of tax payment issued by the foreign (US) government, a payment receipt, a withholding tax receipt, and proof of the prize itself</b>. The exchange rate used is <b>the rate on the day you actually received the prize money</b> (per Enforcement Decree of the Income Tax Act, Article 50). This isn’t an official written ruling, so confirm the exact document list with a tax professional before filing.' , zh: '要在韩国综合所得税申报时抵免已在美国缴纳的税款（30%预扣税），根据2026年7月国税厅电话咨询的答复，需要准备：<b>外国政府（美国）出具的纳税事实证明、缴税收据、预扣税收据，以及中奖事实证明材料</b>。适用的汇率是<b>实际收到奖金当天的汇率</b>（根据《所得税法施行令》第50条）。这不是正式的书面解释，请在申报前与税务师再次确认具体材料清单。' },
   'faq.moreTitle':  { en: '📚 Learn more (terms, purchase process, payout methods, etc.)' , zh: '📚 深入了解（术语·购买流程·支付方式等）' },
@@ -754,6 +764,7 @@ function syncHomeFromShared(){
   document.getElementById('homeStateSelect').value = sharedState;
   document.getElementById('home-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR');
   updateHomeCalc(sharedAmountUsd);
+  filterFaq();
 }
 
 // ⚠️ [향후 국가 확장 시 필독] "반대 국가로 전환"은 국가가 딱 2개(kr/us)일 때만 성립하는
@@ -1065,6 +1076,15 @@ function goToCalculatorInput(){
   if (inputCard) inputCard.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
+// "실제로 다른 나라에 살아요" 카드의 US/CN 버튼 — 한국이랑 아무 상관없는 진짜 외국인(예: 순수
+// 미국인·중국인)을 위한 원클릭 진입점. 언어와 세금 기준을 그 나라에 맞게 한 번에 맞춰주고
+// 계산기로 스크롤함 — 이게 없으면 한국어 화면만 보고 이탈할 위험이 있었음
+function goToRealAbroad(country, lang){
+  setLanguage(lang);
+  setHomeCountry(country);
+  goToCalculatorInput();
+}
+
 function formatAbbreviatedUsd(value){
   if (value >= 1e9) return (value / 1e9).toFixed(1) + 'B';
   if (value >= 1e6) return (value / 1e6).toFixed(0) + 'M';
@@ -1316,15 +1336,20 @@ function setFaqCategory(cat, btnEl){
 
 function filterFaq(){
   const query = document.getElementById('faqSearch').value.trim().toLowerCase();
-  const items = document.querySelectorAll('#view-faq .faq-item');
+  // 세금 계산 기준(홈 화면의 KR/US/CN 토글)에 따라, 그 나라와 무관한 질문(예: CN 기준인데
+  // 한국 국민연금 질문)은 아예 숨김. data-basis가 없으면 어느 기준에서나 다 관련 있는
+  // 공통 질문이라는 뜻이라 항상 보여줌
+  const currentBasis = sharedCountry || 'kr';
+  const items = document.querySelectorAll('#view-faq .faq-item, #view-faq .refund-step-card[data-basis]');
   let visibleCount = 0;
   items.forEach(item => {
     const text = item.textContent.toLowerCase();
     const searchMatch = query === '' || text.includes(query);
-    const catMatch = activeFaqCategory === 'all' || item.dataset.cat === activeFaqCategory;
-    const match = searchMatch && catMatch;
+    const catMatch = activeFaqCategory === 'all' || !item.dataset.cat || item.dataset.cat === activeFaqCategory;
+    const basisMatch = !item.dataset.basis || item.dataset.basis === currentBasis;
+    const match = searchMatch && catMatch && basisMatch;
     item.style.display = match ? '' : 'none';
-    if (match) visibleCount++;
+    if (match && item.classList.contains('faq-item')) visibleCount++;
     if (query !== '' && match && item.tagName === 'DETAILS') item.open = true;
     if (query === '' && item.tagName === 'DETAILS') item.open = false;
   });
@@ -2115,6 +2140,7 @@ function setHomeCountry(country){
     btn.classList.toggle('active', btn.dataset.country === country);
   });
   updateHomeCalc();
+  filterFaq(); // FAQ가 세금 기준(KR/US/CN)에 따라 관련 없는 질문은 숨기므로, 기준 바뀔 때마다 다시 걸러줌
 }
 
 function updateHomeCalc(usdOverride){
