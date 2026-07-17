@@ -2459,6 +2459,7 @@ const COUNTRY_TAX_PROFILES = [
 // 새 언어 추가할 땐 이 배열에 한 줄만 추가하면 됨.
 const LANGUAGE_CONTENT_PAGES = [
   { flagCode: 'VN', label: '한국에 사는 베트남분이라면', labelEn: 'Living in Korea as a Vietnamese national', labelZh: '住在韩国的越南人', contentPage: 'vietnamese-in-korea-lottery-tax.html', contentLabel: 'Tiếng Việt →' },
+  { flagCode: 'CN', label: '한국에 사는 중국분이라면', labelEn: 'Living in Korea as a Chinese national', labelZh: '住在韩国的中国人', contentPage: 'china_in_korea_lottery_tax.html', contentLabel: '中文 →' },
 ];
 
 // 국기 이모지(regional indicator 시퀀스)는 기기·브라우저에 따라 실제 국기 대신 "KR" 같은
