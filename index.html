@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-52R7SSXXNB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-52R7SSXXNB');
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>미국 복권 세금 계산기 | 참택스 - 미국 파워볼·메가밀리언즈 실수령액</title>
@@ -852,7 +861,7 @@
 
         <div class="panel">
           <p class="panel-title" data-i18n="faq.panelTitle">다들 이런 거 궁금해하시더라고요</p>
-          <p class="panel-desc" data-i18n="faq.panelDesc">검색하다 오신 분들이 자주 물어보는 질문 모았어요 · 국세청 상담 기준으로 확인된 정보예요</p>
+          <p class="panel-desc" id="faq-panel-desc">검색하다 오신 분들이 자주 물어보는 질문 모았어요 · 국세청 상담 기준으로 확인된 정보예요</p>
           <p class="krw-hint" style="margin-bottom:10px;" data-i18n="faq.basisNote">💡 홈 화면에서 고르신 세금 계산 기준(한국·미국·중국)에 맞는 질문만 보여드려요</p>
           <input type="text" class="faq-search" id="faqSearch" placeholder="🔍 궁금한 거 검색해보세요 (예: 세금, 시민권, 파워볼)" oninput="filterFaq()" data-i18n-placeholder="faq.searchPlaceholder">
           <div class="faq-chip-row">
