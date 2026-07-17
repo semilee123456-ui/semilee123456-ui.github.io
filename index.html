@@ -867,17 +867,17 @@
 
           <details class="faq-item" data-cat="tax">
             <summary class="faq-q" data-i18n="faq.q1">세금 대체 얼마나 떼가는 거예요? 😮</summary>
-            <p class="faq-a" data-i18n-html="faq.a1">미국 거주자는 당첨 시 24%가 먼저 원천징수되고, 최대 37%까지 정산돼요. 한국 거주자를 포함한 미국 비거주자는 일반적으로 30% 원천징수 규정이 적용돼요.</p>
+            <p class="faq-a" data-i18n-html="faq.a1">미국 거주자는 당첨 시 24%가 먼저 원천징수되고, 최대 37%까지 정산돼요. 한국·중국 거주자 등 미국 비거주자는 일반적으로 30% 원천징수 규정이 적용돼요.</p>
           </details>
           <details class="faq-item" data-cat="tax" data-basis="kr">
             <summary class="faq-q" data-i18n="faq.q2">헐, 한국에서 세금 또 내요?</summary>
             <p class="faq-a" data-i18n-html="faq.a2">맞아요. 미국 복권은 국내 복권이 아니라서 종합소득세(최고 45%)에 합산 신고해야 해요. 미국에서 낸 세금은 외국납부세액공제(FTC)로 상계할 수 있어요.</p>
           </details>
-          <details class="faq-item" data-cat="refund">
+          <details class="faq-item" data-cat="refund" data-basis="kr,cn">
             <summary class="faq-q" data-i18n="faq.q3">혹시 나도 세금 돌려받을 수 있어요? 💸</summary>
             <p class="faq-a" data-i18n-html="faq.a3">미국 연방세(30%)는 사실상 환급이 어려워요. 주세(State Tax)는 주마다 달라요 — 메릴랜드·애리조나는 거주지가 아니어도 세금을 매기는 특이 케이스예요. 아래에서 당첨 주를 골라 환급 가능성을 확인해보세요.</p>
           </details>
-          <div class="refund-step-card">
+          <div class="refund-step-card" data-basis="kr,cn">
             <p class="refund-step-tag" data-i18n="faq.step">STEP</p>
             <p class="refund-step-title" data-i18n="faq.selectState">당첨된 주를 선택하세요</p>
             <select id="refundStateSelect" onchange="checkRefundPossibility()">
@@ -1029,7 +1029,7 @@
           </details>
           <details class="faq-item" data-cat="purchase">
             <summary class="faq-q" data-i18n="faq.q13">지인이 대신 사주거나, 대신 당첨금을 수령해주면 어떻게 돼요?</summary>
-            <p class="faq-a" data-i18n-html="faq.a13">개인적으로 사주는 경우도 복잡한 문제가 생겨요. 소유권은 대부분 '누가 서명해서 청구하느냐'로 정해지고, 서면 합의 없으면 항의하기 어려워요. 또 지인이 미국 거주자로 청구하면 그 사람 세율(24~37%)이 적용되고, 그 돈을 보내주는 건 미국 증여세, 받는 쪽은 한국 증여세 대상이 될 수 있어 세금이 더 늘어날 수 있어요.</p>
+            <p class="faq-a" data-i18n-html="faq.a13">개인적으로 사주는 경우도 복잡한 문제가 생겨요. 소유권은 대부분 '누가 서명해서 청구하느냐'로 정해지고, 서면 합의 없으면 항의하기 어려워요. 또 지인이 미국 거주자로 청구하면 그 사람 세율(24~37%)이 적용되고, 그 돈을 보내주는 건 미국 증여세 대상이 되고, 받는 쪽도 받는 사람이 사는 나라의 증여세 규정 적용을 받을 수 있어 세금이 더 늘어날 수 있어요.</p>
           </details>
           <details class="faq-item" data-cat="game">
             <summary class="faq-q" data-i18n="faq.q14">지난 당첨번호는 어디서 확인해요?</summary>
@@ -1109,8 +1109,8 @@
               <p class="feature-sub" data-i18n="faq.tg1Sub">연방세 24~37% + 비거주 외국인 30% 원천징수</p>
             </div>
             <div class="feature-card tg-card">
-              <p class="feature-title" style="font-size:var(--fs-h3);" data-i18n="faq.tg2Title">한국에서도 또 내요?</p>
-              <p class="feature-sub" data-i18n="faq.tg2Sub">종합소득세 누진세율(최고 45%), 외국납부세액공제(FTC)로 조정 — 참고용 계산</p>
+              <p class="feature-title" style="font-size:var(--fs-h3);" id="faq-tg2-title">한국에서도 또 내요?</p>
+              <p class="feature-sub" id="faq-tg2-sub">종합소득세 누진세율(최고 45%), 외국납부세액공제(FTC)로 조정 — 참고용 계산</p>
             </div>
             <div class="feature-card tg-card">
               <p class="feature-title" style="font-size:var(--fs-h3);" data-i18n="faq.tg3Title">일시불 vs 연금, 뭐가 달라요?</p>

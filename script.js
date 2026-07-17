@@ -232,7 +232,7 @@ const I18N = {
   'faq.catGame':     { en: 'Game Info' , zh: '游戏信息' },
   'faq.noResult':    { en: 'No content.' , zh: '没有相关内容。' },
   'faq.q1': { en: 'How much tax is actually deducted? 😮' , zh: '税到底扣多少啊？😮' },
-  'faq.a1': { en: 'US residents get 24% withheld upfront, settled up to 37% later. Non-US residents (including Korean residents) generally face a 30% withholding rule.' , zh: '美国居民中奖时先预扣24%，之后最高结算至37%。包括韩国居民在内的非美国居民，一般适用30%的预扣税规定。' },
+  'faq.a1': { en: 'US residents get 24% withheld upfront, settled up to 37% later. Non-US residents (including Korean and Chinese residents) generally face a 30% withholding rule.' , zh: '美国居民中奖时先预扣24%，之后最高结算至37%。包括韩国、中国居民在内的非美国居民，一般适用30%的预扣税规定。' },
   'faq.q2': { en: 'Wait, I pay tax in Korea too?' , zh: '啊，在韩国还要再交一次税？' },
   'faq.a2': { en: 'Yes. US lottery winnings aren\u2019t a domestic lottery, so they\u2019re combined into comprehensive income tax (up to 45%). Tax already paid in the US can offset via Foreign Tax Credit (FTC).' , zh: '是的。美国彩票不是韩国国内彩票，所以要计入综合所得税（最高45%）合并申报。已在美国缴纳的税款可以通过外国税收抵免（FTC）抵消。' },
   'faq.q3': { en: 'Can I get any of the tax back? 💸' , zh: '这税还能退回来一些吗？💸' },
@@ -334,7 +334,7 @@ const I18N = {
   'faq.q12': { en: 'Where can I buy a US lottery ticket?' , zh: '美国彩票在哪里能买到？' },
   'faq.a12': { en: 'Sold at convenience stores and gas stations in the US. Domestic purchase-agent services carry legal risk, so we don\u2019t refer them.' , zh: '在美国当地的便利店、加油站等地有售。国内的代购服务存在法律风险，我们不做相关介绍。' },
   'faq.q13': { en: 'What if a friend buys a ticket for me, or claims the prize on my behalf?' , zh: '如果朋友帮我买了彩票，或者代我领奖，会怎么样？' },
-  'faq.a13': { en: 'Even a friend buying it personally creates complications. Ownership is usually determined by who signs to claim it. If they claim as a US resident, their tax rate applies, and transferring the money could trigger both US and Korean gift tax.' , zh: '即使是朋友私下帮忙购买，也会产生复杂的问题。所有权通常取决于谁签字领奖。如果对方以美国居民身份领奖，适用的就是对方的税率，之后把钱转给你还可能同时触发美国和韩国的赠与税。' },
+  'faq.a13': { en: 'Even a friend buying it personally creates complications. Ownership is usually determined by who signs to claim it. If they claim as a US resident, their tax rate applies, and transferring the money could trigger US gift tax on their end, plus gift tax rules in whichever country you live in.' , zh: '即使是朋友私下帮忙购买，也会产生复杂的问题。所有权通常取决于谁签字领奖。如果对方以美国居民身份领奖，适用的就是对方的税率，之后把钱转给你，可能会触发美国的赠与税，以及你所在国家的赠与税规定。' },
   'faq.q14': { en: 'Where can I check past winning numbers?' , zh: '之前的中奖号码在哪里查？' },
   'faq.a14b': { en: 'We show recent numbers on our home screen, but the official sites are the most accurate source.' , zh: '我们首页也会显示最近的开奖号码，但最准确的还是官方网站。' },
   'faq.linkPowerball': { en: '🔗 Powerball official site →' , zh: '🔗 强力球官方网站 →' },
@@ -377,8 +377,6 @@ const I18N = {
   'faq.taxGuideTitle': { en: 'The tax basics, in a nutshell' , zh: '税务指南，知道这些就够了' },
   'faq.tg1Title': { en: 'How is US tax calculated?' , zh: '美国的税是怎么算的？' },
   'faq.tg1Sub':   { en: 'Federal 24\u201337% + 30% nonresident withholding' , zh: '联邦税24~37% + 非居民预扣税30%' },
-  'faq.tg2Title': { en: 'Do I pay again in Korea?' , zh: '在韩国还要再交一次吗？' },
-  'faq.tg2Sub':   { en: 'Progressive income tax (up to 45%), adjusted via Foreign Tax Credit (FTC) \u2014 reference calculation' , zh: '综合所得税累进税率（最高45%），通过外国税收抵免（FTC）调整——仅供参考的计算' },
   'faq.tg3Title': { en: 'Lump sum vs. annuity \u2014 what\u2019s the difference?' , zh: '一次性支付 vs 年金，有什么区别？' },
   'faq.tg3Sub':   { en: 'Different tax brackets apply, so total tax owed can differ' , zh: '适用的税率区间不同，总税额可能有差异' },
   'faq.purchaseGuideTitle': { en: 'A closer look at the purchase process' , zh: '购买流程，仔细了解一下' },
@@ -617,6 +615,7 @@ function applyTranslations(){
   updateHomeCalc();
   updateCalc(); // 국가별 비교 화면(나라별 카드·다른 언어로 보기 패널)도 같은 이유로 뷰와 무관하게 항상 갱신 —
                 // 이게 빠져있어서 "비교 화면에 머문 채로 언어를 바꾸면 카드는 그대로 예전 언어로 남는" 버그가 있었음
+  updateFaqTg2Card(); // FAQ "세금 가이드" 요약 카드도 언어만 바뀌는 경우까지 커버(기준 변경 시엔 filterFaq()에서 이미 호출됨)
   applyJackpotData();
   updateDrawCountdown();
   initJackpotCardAmt();
@@ -1355,6 +1354,7 @@ function setFaqCategory(cat, btnEl){
 }
 
 function filterFaq(){
+  updateFaqTg2Card(); // 검색/카테고리와 무관하게, 세금 기준이 바뀌었을 수 있는 시점마다 같이 갱신
   const query = document.getElementById('faqSearch').value.trim().toLowerCase();
   // 세금 계산 기준(홈 화면의 KR/US/CN 토글)에 따라, 그 나라와 무관한 질문(예: CN 기준인데
   // 한국 국민연금 질문)은 아예 숨김. data-basis가 없으면 어느 기준에서나 다 관련 있는
@@ -1366,7 +1366,7 @@ function filterFaq(){
     const text = item.textContent.toLowerCase();
     const searchMatch = query === '' || text.includes(query);
     const catMatch = activeFaqCategory === 'all' || !item.dataset.cat || item.dataset.cat === activeFaqCategory;
-    const basisMatch = !item.dataset.basis || item.dataset.basis === currentBasis;
+    const basisMatch = !item.dataset.basis || item.dataset.basis.split(',').includes(currentBasis);
     const match = searchMatch && catMatch && basisMatch;
     item.style.display = match ? '' : 'none';
     if (match && item.classList.contains('faq-item')) visibleCount++;
@@ -1902,6 +1902,33 @@ function updateFlexBox(finalEok, country){
   document.getElementById('flex-coffee').textContent = coffeeYears > 0
     ? pickLang(`하루 3잔씩 ${coffeeYears.toLocaleString(localeStr)}년`, `3/day for ${coffeeYears.toLocaleString(localeStr)} years`, `每天3杯，喝${coffeeYears.toLocaleString(localeStr)}年`)
     : coffeeCups.toLocaleString(localeStr) + pickLang('잔', ' cups', '杯');
+}
+
+// FAQ "세금 가이드" 3칸 요약 카드의 2번째 칸 — "다른 나라에서도 또 내는지"는 세금 계산
+// 기준(kr/us/cn)에 따라 완전히 다른 질문이라(한국은 종합소득세, 미국은 이미 federal에 다 포함,
+// 중국은 우연소득세), 항상 "한국에서도 또 내요?"로 고정돼 있으면 미국·중국 기준에서는 내용이 안 맞음
+const FAQ_TG2 = {
+  kr: {
+    title: () => pickLang('한국에서도 또 내요?', 'Do I also pay in Korea?', '在韩国也要交税吗？'),
+    sub: () => pickLang('종합소득세 누진세율(최고 45%), 외국납부세액공제(FTC)로 조정 — 참고용 계산', 'Progressive comprehensive income tax (up to 45%), adjusted by Foreign Tax Credit (FTC) — reference estimate', '综合所得税累进税率（最高45%），通过外国税收抵免（FTC）调整 — 仅供参考')
+  },
+  us: {
+    title: () => pickLang('주(State) 세금은 얼마나 붙어요?', 'How much does state tax add?', '州税会加多少？'),
+    sub: () => pickLang('주에 따라 0%~10.9%까지 다양해요 — 텍사스·플로리다 등은 아예 없어요', 'Ranges from 0%–10.9% depending on the state — some states like Texas and Florida have none', '因州而异，从0%到10.9%不等 — 德克萨斯、佛罗里达等州完全没有州税')
+  },
+  cn: {
+    title: () => pickLang('중국에서도 또 내요?', 'Do I also pay in China?', '在中国也要交税吗？'),
+    sub: () => pickLang('우연소득 20% 단일세율 — 미국에서 낸 세금은 세액공제로 상계 가능', 'Flat 20% rate on incidental income — the US tax already paid can offset it via tax credit', '偶然所得20%单一税率 — 已在美国缴纳的税款可通过税收抵免抵消')
+  }
+};
+
+function updateFaqTg2Card(){
+  const titleEl = document.getElementById('faq-tg2-title');
+  const subEl = document.getElementById('faq-tg2-sub');
+  if (!titleEl || !subEl) return;
+  const entry = FAQ_TG2[sharedCountry] || FAQ_TG2.kr;
+  titleEl.textContent = entry.title();
+  subEl.textContent = entry.sub();
 }
 
 const DREAM_DATA = {
