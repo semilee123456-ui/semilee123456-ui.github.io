@@ -244,7 +244,7 @@ const I18N = {
   'faq.q4': { en: 'Will my health insurance premium spike if I win? 🏥' , zh: '中奖了健康保险费会不会暴涨？🏥' },
   'faq.a4': { en: 'Regional subscribers see winnings fully counted as income, raising premiums a lot. Employed subscribers pay extra premium above ₩20M/year in outside income too. If registered as a dependent, you may lose that status.' , zh: '地区加入者的话，中奖金额会100%计入收入，保险费可能大幅上涨。职场加入者若境外收入超过年2000万韩元，也要额外缴纳保险费。如果是被抚养人身份，可能会失去该资格。' },
   'faq.q5': { en: 'I\u2019m already receiving National Pension / Basic Pension \u2014 does this affect it? 👴' , zh: '我已经在领国民年金/基础年金了，会有影响吗？👴' },
-  'faq.a5': { en: 'Depends on the program. National Pension \u2014 if already receiving it, the reduction rule applies to earned/business income, not a one-time windfall. Basic Pension / welfare benefits reassess eligibility by income and assets, so benefits could change.' , zh: '要看具体情况。国民年金（老龄年金）——如果已经在领取，减额制度适用于劳动/事业所得，不适用于一次性意外之财。基础年金/福利补贴会根据收入和财产重新评估资格，所以待遇可能会有变化。' },
+  'faq.a5': { en: 'Depends on the program. National Pension \u2014 if already receiving it, the reduction rule applies to earned/business income, not a one-time windfall. Basic Pension / welfare benefits reassess eligibility by income and assets, so benefits could change. (Basic Pension is generally for Korean nationals only \u2014 foreign residents in Korea only need to check the National Pension reduction rule.)' , zh: '要看具体情况。国民年金（老龄年金）——如果已经在领取，减额制度适用于劳动/事业所得，不适用于一次性意外之财。基础年金/福利补贴会根据收入和财产重新评估资格，所以待遇可能会有变化。（基础年金原则上只适用于韩国国籍人士——在韩居住的外国人只需确认国民年金的减额规则即可。）' },
   'faq.q6': { en: 'How do I tell if a "you won" message is a scam? 🚨' , zh: '"你中奖了"这种联系，怎么判断是不是诈骗？🚨' },
   'faq.a6': { en: 'Common scam patterns: impersonating card companies asking for card info to "refund" a losing ticket, fake lottery commission asking for crypto purchases, or selling fake winning-number predictions. Real winnings are checked by you on the official site \u2014 unsolicited requests for money or info are 100% scams.' , zh: '常见的诈骗手法：冒充信用卡公司，以"退还未中奖彩票"为由索要卡号信息；冒充彩票委员会，要求用虚拟货币购买；出售虚假的预测中奖号码。真正的中奖信息是你自己在官方网站上查询确认的——凡是主动联系你索要钱财或信息的，100%是诈骗。' },
   'faq.q7': { en: 'How much gift tax if I share with family? 👨‍👩‍👧' , zh: '分给家人的话，赠与税要交多少？👨‍👩‍👧' },
@@ -501,9 +501,6 @@ const I18N = {
   'home.annuityInfoLink': { en: '\ud83d\udcc5 How is it different if you take the annuity? \u2192' , zh: '📅 如果选择年金支付会有什么不同？→' },
   'home.calcBasisBox':    { en: '• Lump-sum basis (differs for installment payouts)' , zh: '• 以一次性支付为基准（分期支付另有不同）' },
   'home.funMoneySummary': { en: '🤑 How much could you actually buy with this? (just for fun)' , zh: '🤑 这笔钱实际能买到什么？（纯属娱乐）' },
-  'home.flexApt':      { en: 'Manhattan apartment (based on $1.5M)' , zh: '曼哈顿公寓（按150万美元计算）' },
-  'home.flexCar':      { en: 'Ferrari Roma (based on ₩350M)' , zh: '法拉利Roma（按3.5亿韩元计算）' },
-  'home.flexCoffee':   { en: 'Starbucks Americano (₩5,000)' , zh: '星巴克美式咖啡（5,000韩元）' },
   'home.groundingNote': { en: '🌱 But honestly, what you already have might be more than enough for a good day' , zh: '🌱 不过说真的，现在拥有的可能已经足够拥有美好的一天了' },
   'home.dreamSummary': { en: '🎬 What would you do first if you won? (just for fun)' , zh: '🎬 如果中奖了，你会先做什么？（纯属娱乐）' },
   'home.dreamIntro':   { en: 'What would you do first if you won?' , zh: '如果中奖了，你会先做什么？' },
@@ -555,6 +552,9 @@ function applyTranslations(){
   document.documentElement.lang = currentLang;
   if (toggleBtn) toggleBtn.value = currentLang;
 
+  const activeView = document.querySelector('.view.on');
+  if (activeView) applyCurrentViewTitle(activeView.id.replace('view-', ''));
+
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     const entry = I18N[key];
@@ -594,6 +594,16 @@ function applyTranslations(){
   const jackpotFullLink = document.getElementById('jackpot-history-full-link');
   if (jackpotFullLink) {
     jackpotFullLink.href = (currentLang === 'en') ? 'biggest-lottery-jackpots-after-tax.html' : 'biggest-jackpot-payouts.html';
+  }
+
+  // "해외 거주 한국인" 배너 링크도 같은 이유로 언어별 페이지로 이어지게 함 — 이게 없으면
+  // 영어 페이지 하나로 고정되어 있어서 한국어·중국어로 보던 사람이 링크를 누르면 갑자기
+  // 전부 영어로 된 페이지로 넘어가버리는 문제가 있었음
+  const introAbroadLink = document.getElementById('introAbroadLink');
+  if (introAbroadLink) {
+    introAbroadLink.href = (currentLang === 'ko') ? 'korean_abroad_us_lottery_tax_ko.html'
+      : (currentLang === 'zh') ? 'korean_abroad_us_lottery_tax_zh.html'
+      : 'korean-abroad-us-lottery-tax.html';
   }
 
   // 언어 전환 시 환율 배지의 상태 문구(title)도 항상 다시 반영 (실패/성공/기본 상태와 무관하게 현재 언어로)
@@ -1034,6 +1044,25 @@ function goToFaqItem(query){
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// 브라우저 탭 제목 — 뷰가 바뀔 때(go())뿐 아니라 같은 화면에 머문 채로 언어만 바꿀 때도
+// (applyTranslations()) 항상 현재 언어로 다시 반영해야 함. 예전엔 go()에서만, 그것도 한국어
+// 문구로 고정 세팅해서 영어·중국어로 보고 있어도 화면 전환마다 탭 제목이 한국어로 돌아가던 버그가 있었음
+const PAGE_TITLES = {
+  home: { ko: '미국 복권 세금 계산기 | 참택스 - 미국 파워볼·메가밀리언즈 실수령액', en: 'US Lottery Tax Calculator | ChamTax — Powerball & Mega Millions Take-Home', zh: '美国彩票税金计算器 | ChamTax — 强力球·超级百万实得金额' },
+  compare: { ko: '미국 복권 이중과세·국가별 실수령액 비교 | 참택스', en: 'US Lottery Double Taxation & Country Comparison | ChamTax', zh: '美国彩票双重征税·各国实得金额对比 | ChamTax' },
+  odds: { ko: '미국 파워볼 당첨 확률 체감 | 참택스', en: 'US Powerball Odds, Visualized | ChamTax', zh: '美国强力球中奖概率体验 | ChamTax' },
+  faq: { ko: '미국 복권 세금 FAQ - 이중과세·원천징수 | 참택스', en: 'US Lottery Tax FAQ — Double Taxation & Withholding | ChamTax', zh: '美国彩票税金FAQ — 双重征税·预扣税 | ChamTax' },
+  privacy: { ko: '개인정보처리방침 | 참택스', en: 'Privacy Policy | ChamTax', zh: '隐私政策 | ChamTax' },
+  disclaimer: { ko: '면책조항 | 참택스', en: 'Disclaimer | ChamTax', zh: '免责声明 | ChamTax' },
+  contact: { ko: '문의하기 | 참택스', en: 'Contact | ChamTax', zh: '联系我们 | ChamTax' }
+};
+
+function applyCurrentViewTitle(view){
+  const entry = PAGE_TITLES[view];
+  if (!entry) return;
+  document.title = entry[currentLang] || entry.ko;
+}
+
 function go(view){
   document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
   document.getElementById('view-' + view).classList.add('on');
@@ -1041,16 +1070,7 @@ function go(view){
   document.getElementById('nav-compare').classList.toggle('active', view === 'compare');
   document.getElementById('nav-odds').classList.toggle('active', view === 'odds');
   document.getElementById('nav-faq').classList.toggle('active', view === 'faq');
-  const titles = {
-    home: '미국 복권 세금 계산기 | 참택스 - 미국 파워볼·메가밀리언즈 실수령액',
-    compare: '미국 복권 이중과세·국가별 실수령액 비교 | 참택스',
-    odds: '미국 파워볼 당첨 확률 체감 | 참택스',
-    faq: '미국 복권 세금 FAQ - 이중과세·원천징수 | 참택스',
-    privacy: '개인정보처리방침 | 참택스',
-    disclaimer: '면책조항 | 참택스',
-    contact: '문의하기 | 참택스'
-  };
-  document.title = titles[view];
+  applyCurrentViewTitle(view);
 
   // 홈 ↔ 국가비교 이동 시, 어느 쪽에서 왔든 상관없이 항상 공용 상태(sharedAmountUsd/sharedCountry/EXCHANGE_RATE)를
   // 기준으로 화면을 다시 그려서 입력값·환율이 끊기지 않게 함
@@ -1649,7 +1669,15 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(location.search);
   const lang = params.get('lang');
-  if (lang === 'en' || lang === 'zh') setLanguage(lang);
+  if (lang === 'en' || lang === 'zh') {
+    setLanguage(lang);
+    // 한 번 적용한 뒤엔 URL에서 ?lang= 을 지워야 함 — 남겨두면, 방문자가 이후 언어 토글로
+    // 직접 다른 언어를 골라도 새로고침하는 순간 주소창에 남아있는 이 값이 다시 강제로
+    // 적용되면서 "내가 방금 고른 언어가 마음대로 바뀌는" 것처럼 보이는 문제가 있었음
+    params.delete('lang');
+    const newSearch = params.toString();
+    history.replaceState(null, '', location.pathname + (newSearch ? '?' + newSearch : '') + location.hash);
+  }
 });
 setInterval(() => { fetchLiveExchangeRate(); }, 60 * 60 * 1000); // 1시간마다 환율 자동 재조회 — 유저가 직접 수정한 경우는 fetchLiveExchangeRate 내부에서 자동으로 건너뜀
 
@@ -1827,34 +1855,53 @@ function updateFunSummary(finalEok){
   );
 }
 
-function updateFlexBox(finalEok){
+// 재미로 보는 "이 돈이면 뭘 살 수 있나" 비교 대상 — 표시 언어가 아니라 실제 세금 계산 기준(country)에
+// 맞춰야 함(예: 중국 기준으로 계산했는데 한국 강남 아파트/원화 가격이 나오면 앞뒤가 안 맞음).
+// 가격은 참고용 대략치이며 출처: 페라리 로마 — 한국 공식가 약 3.5억원, 미국 MSRP 약 $275,000,
+// 중국 공식가 약 RMB 276만(수입세 포함 실제 거래가는 더 높음); 스타벅스 아메리카노 — 한국 5,000원,
+// 미국 평균 약 $3.75, 중국 30위안(2026년 기준 동결); 아파트는 각 나라에서 "부의 상징"으로 통하는
+// 기준을 사용 — 강남 25억원, 맨해튼 $1.5M, 상하이 고급 아파트 3,000만 위안.
+const FLEX_REF = {
+  kr: {
+    apt:    { currency: 'krw', price: 2500000000, label: () => pickLang('강남 아파트 (25억 기준)', 'Gangnam apartment (based on ₩2.5B)', '江南公寓（按25亿韩元计算）') },
+    car:    { currency: 'krw', price: 350000000,  label: () => pickLang('페라리 로마 (3.5억원 기준)', 'Ferrari Roma (based on ₩350M)', '法拉利Roma（按3.5亿韩元计算）') },
+    coffee: { currency: 'krw', price: 5000,        label: () => pickLang('스타벅스 아메리카노 (5천원)', 'Starbucks Americano (₩5,000)', '星巴克美式咖啡（5,000韩元）') }
+  },
+  us: {
+    apt:    { currency: 'usd', price: 1500000, label: () => pickLang('맨해튼 아파트 (150만 달러 기준)', 'Manhattan apartment (based on $1.5M)', '曼哈顿公寓（按150万美元计算）') },
+    car:    { currency: 'usd', price: 275000,  label: () => pickLang('페라리 로마 (27.5만 달러 기준)', 'Ferrari Roma (based on $275,000)', '法拉利Roma（按27.5万美元计算）') },
+    coffee: { currency: 'usd', price: 3.75,    label: () => pickLang('스타벅스 아메리카노 (3.75달러)', 'Starbucks Americano ($3.75)', '星巴克美式咖啡（3.75美元）') }
+  },
+  cn: {
+    apt:    { currency: 'cny', price: 30000000, label: () => pickLang('상하이 고급 아파트 (3천만 위안 기준)', 'Shanghai luxury apartment (based on ¥30M)', '上海高档公寓（按3000万元计算）') },
+    car:    { currency: 'cny', price: 2760000,  label: () => pickLang('페라리 로마 (276만 위안 기준)', 'Ferrari Roma (based on ¥2.76M)', '法拉利Roma（按276万元计算）') },
+    coffee: { currency: 'cny', price: 30,       label: () => pickLang('스타벅스 아메리카노 (30위안)', 'Starbucks Americano (¥30)', '星巴克美式咖啡（30元）') }
+  }
+};
+
+function updateFlexBox(finalEok, country){
   updateFunSummary(finalEok);
   const wonAmount = finalEok * 100000000;
-  const isEnFlex = (currentLang === 'en');
-  const isZhFlex = (currentLang === 'zh');
-  // 강남 아파트는 한국 사용자에게는 익숙한 '엄청 비싼 곳' 기준이지만, 영어·중국어권 사용자에게는
-  // 와닿지 않을 수 있어서 영어·중국어 버전은 맨해튼 아파트(~$1.5M) 기준으로 따로 계산함
-  const apt = (isEnFlex || isZhFlex)
-    ? Math.floor((wonAmount / EXCHANGE_RATE) / 1500000)
-    : Math.floor(wonAmount / 2500000000);
-  const car = Math.floor(wonAmount / 350000000);
-  const coffeeCups = Math.floor(wonAmount / 5000);
+  const usdAmount = wonAmount / EXCHANGE_RATE;
+  const cnyAmount = usdAmount * EXCHANGE_RATE_CNY;
+  const amountByCurrency = { krw: wonAmount, usd: usdAmount, cny: cnyAmount };
+  const ref = FLEX_REF[country] || FLEX_REF.kr;
+  const localeStr = currentLang === 'en' ? 'en-US' : (currentLang === 'zh' ? 'zh-CN' : 'ko-KR');
+
+  const apt = Math.floor(amountByCurrency[ref.apt.currency] / ref.apt.price);
+  const car = Math.floor(amountByCurrency[ref.car.currency] / ref.car.price);
+  const coffeeCups = Math.floor(amountByCurrency[ref.coffee.currency] / ref.coffee.price);
   const coffeeYears = Math.floor(coffeeCups / 3 / 365);
-  document.getElementById('flex-apt').textContent = isEnFlex ? apt.toLocaleString('en-US') + ' units' : isZhFlex ? apt.toLocaleString('zh-CN') + '套' : apt.toLocaleString('ko-KR') + '채';
-  document.getElementById('flex-car').textContent = isEnFlex ? car.toLocaleString('en-US') + ' cars' : isZhFlex ? car.toLocaleString('zh-CN') + '辆' : car.toLocaleString('ko-KR') + '대';
-  if (isEnFlex) {
-    document.getElementById('flex-coffee').textContent = coffeeYears > 0
-      ? `3/day for ${coffeeYears.toLocaleString('en-US')} years`
-      : coffeeCups.toLocaleString('en-US') + ' cups';
-  } else if (isZhFlex) {
-    document.getElementById('flex-coffee').textContent = coffeeYears > 0
-      ? `每天3杯，喝${coffeeYears.toLocaleString('zh-CN')}年`
-      : coffeeCups.toLocaleString('zh-CN') + '杯';
-  } else {
-    document.getElementById('flex-coffee').textContent = coffeeYears > 0
-      ? `하루 3잔씩 ${coffeeYears.toLocaleString('ko-KR')}년`
-      : coffeeCups.toLocaleString('ko-KR') + '잔';
-  }
+
+  document.getElementById('flex-apt-label').textContent = ref.apt.label();
+  document.getElementById('flex-car-label').textContent = ref.car.label();
+  document.getElementById('flex-coffee-label').textContent = ref.coffee.label();
+
+  document.getElementById('flex-apt').textContent = apt.toLocaleString(localeStr) + pickLang('채', ' units', '套');
+  document.getElementById('flex-car').textContent = car.toLocaleString(localeStr) + pickLang('대', ' cars', '辆');
+  document.getElementById('flex-coffee').textContent = coffeeYears > 0
+    ? pickLang(`하루 3잔씩 ${coffeeYears.toLocaleString(localeStr)}년`, `3/day for ${coffeeYears.toLocaleString(localeStr)} years`, `每天3杯，喝${coffeeYears.toLocaleString(localeStr)}年`)
+    : coffeeCups.toLocaleString(localeStr) + pickLang('잔', ' cups', '杯');
 }
 
 const DREAM_DATA = {
@@ -2273,7 +2320,7 @@ function updateHomeCalc(usdOverride){
   const showFiling = (country === 'us');
   document.getElementById('home-state-row').style.display = showFiling ? 'flex' : 'none';
   document.getElementById('home-state-label').style.display = showFiling ? 'block' : 'none';
-  updateFlexBox(final);
+  updateFlexBox(final, country);
   document.getElementById('home-filing-label').style.display = showFiling ? 'block' : 'none';
   document.getElementById('home-filing-small').style.display = showFiling ? 'block' : 'none';
   const filingNote = document.getElementById('home-filing-note');
