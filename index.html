@@ -292,16 +292,15 @@
           </div>
 
           <div class="input-card">
-            <span class="input-card-badge" aria-hidden="true">1</span>
-            <p class="input-card-headline" data-i18n="home.inputHint">👇 당첨금을 직접 입력해보세요</p>
-            <p class="krw-hint" style="margin-bottom:10px;" data-i18n="input.krwHintFull">💡 뉴스 속 잭팟 금액이 아니라, 일시불로 받는 실제 금액(약 45~60%)을 넣어요</p>
+            <p class="input-card-headline" data-i18n="home.inputHint">당첨금을 직접 입력해보세요</p>
+            <p class="krw-hint" style="margin-bottom:10px;" data-i18n="input.krwHintFull">뉴스 속 잭팟 금액이 아니라, 일시불로 받는 실제 금액(약 45~60%)을 넣어요</p>
             <div class="jackpot-quickfill-row" style="margin-bottom:16px;">
               <button type="button" class="jackpot-quickfill-btn" onclick="fillHomeAmountFromJackpot('powerball')">
-                <span data-i18n="home.quickfillPowerball">🔴 파워볼 오늘 잭팟</span>
+                <span data-i18n="home.quickfillPowerball">파워볼 오늘 잭팟</span>
                 <span class="jackpot-quickfill-amt" id="quickfill-pb-amt">-</span>
               </button>
               <button type="button" class="jackpot-quickfill-btn" onclick="fillHomeAmountFromJackpot('megamillions')">
-                <span data-i18n="home.quickfillMega">🟡 메가밀리언즈 오늘 잭팟</span>
+                <span data-i18n="home.quickfillMega">메가밀리언즈 오늘 잭팟</span>
                 <span class="jackpot-quickfill-amt" id="quickfill-mm-amt">-</span>
               </button>
             </div>
@@ -1306,13 +1305,13 @@
             <p style="position:absolute; left:-9999px;" aria-hidden="true">
               <label><span data-i18n="contact.leaveEmpty">이 칸은 비워두세요</span> <input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
             </p>
-            <div class="input-row" style="margin-bottom:10px;">
-              <input type="email" name="email" id="contactEmail" placeholder="이메일 주소 (답장받을 곳)" required style="flex:1; min-width:0; height:44px; border:1px solid var(--border); border-radius:8px; padding:0 12px; font-size:16px; font-family:inherit;" data-i18n-placeholder="contact.emailPlaceholder">
+            <div class="input-row contact-field-row">
+              <input type="email" name="email" id="contactEmail" placeholder="이메일 주소 (답장받을 곳)" required class="contact-input" data-i18n-placeholder="contact.emailPlaceholder">
             </div>
-            <textarea name="message" id="contactMessage" placeholder="문의 내용을 입력해주세요" required style="width:100%; height:80px; border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:16px; font-family:inherit; resize:none; margin-bottom:10px;" data-i18n-placeholder="contact.messagePlaceholder"></textarea>
-            <button type="submit" class="cta-btn" style="margin-top:0;" data-i18n="contact.send">보내기</button>
-            <p id="contactSuccessMsg" style="display:none; margin-top:10px; padding:10px 12px; background:rgba(21,84,69,0.08); border-radius:8px; color:var(--teal); font-weight:700; font-size:var(--fs-note); text-align:center;" data-i18n="contact.success">✓ 문의가 잘 전달됐어요, 감사합니다!</p>
-            <p id="contactErrorMsg" style="display:none; margin-top:10px; padding:10px 12px; background:rgba(192,57,43,0.08); border-radius:8px; color:var(--status-red); font-weight:700; font-size:var(--fs-note); text-align:center;" data-i18n="contact.error">전송에 실패했어요, 잠시 후 다시 시도해주세요.</p>
+            <textarea name="message" id="contactMessage" placeholder="문의 내용을 입력해주세요" required class="contact-textarea" data-i18n-placeholder="contact.messagePlaceholder"></textarea>
+            <button type="submit" class="cta-btn contact-submit-btn" data-i18n="contact.send">보내기</button>
+            <p id="contactSuccessMsg" class="contact-status-msg contact-status-success" data-i18n="contact.success">✓ 문의가 잘 전달됐어요, 감사합니다!</p>
+            <p id="contactErrorMsg" class="contact-status-msg contact-status-error" data-i18n="contact.error">전송에 실패했어요, 잠시 후 다시 시도해주세요.</p>
           </form>
         </div>
         <div class="ad-slot" data-i18n="common.adSlot">광고 영역 (Google AdSense)</div>

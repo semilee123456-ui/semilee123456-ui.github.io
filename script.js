@@ -25,7 +25,7 @@ const I18N = {
   'hero.tag':      { en: '🧮 US Lottery Tax Calculator' },
   'hero.title':    { en: 'how much would<br>you actually take home?' },
   'result.label':      { en: '💰 Estimated take-home amount' },
-  'result.trustBadge': { en: '📊 Based on official IRS · Korea NTS data' },
+  'result.trustBadge': { en: 'Based on official IRS · Korea NTS data' },
   'result.share':      { en: '📤 Share this result' },
   'input.amountLabel': { en: 'Enter prize amount' },
   'input.amountLabelFull': { en: 'Prize amount (pre-tax lump sum)' },
@@ -34,10 +34,10 @@ const I18N = {
   'input.orManualLabel': { en: 'Or enter an amount directly' },
   'input.basisLabel':  { en: 'Tax basis' },
   'input.krwHint':     { en: '💡 The advertised jackpot isn\u2019t what you actually receive —' },
-  'input.krwHintFull': { en: '💡 Enter the actual lump-sum amount (about 45–60%) — not the jackpot number from the news' },
-  'home.inputHint': { en: '👇 Enter your winnings directly' },
-  'home.quickfillPowerball': { en: '🔴 Powerball today’s jackpot' },
-  'home.quickfillMega': { en: '🟡 Mega Millions today’s jackpot' },
+  'input.krwHintFull': { en: 'Enter the actual lump-sum amount (about 45–60%) — not the jackpot number from the news' },
+  'home.inputHint': { en: 'Enter your winnings directly' },
+  'home.quickfillPowerball': { en: 'Powerball today’s jackpot' },
+  'home.quickfillMega': { en: 'Mega Millions today’s jackpot' },
   'input.optKorea':    { en: '🇰🇷 Korea basis' },
   'input.optUS':       { en: '🇺🇸 US basis' },
   'home.filingNoteState': { en: '💡 Korean residents face the same 30% US non-resident withholding regardless of which state they won in — no need to factor in state tax.' },
@@ -1654,12 +1654,20 @@ function updateSliderFill(slider){
   slider.style.background = `linear-gradient(to right, var(--teal) ${pct}%, var(--border) ${pct}%)`;
 }
 
+let _prevSliderUsdM = null; // 5억 달러 문턱 통과 감지용 (진동 피드백이 방향 전환마다 한 번만 울리게)
 function onHomeSliderMoved(){
   const slider = document.getElementById('homeAmountSlider');
   slider.step = 10; // 유저가 슬라이더를 직접 조작하면 원래대로 10단위 스냅 복원
   const usdMillions = Number(slider.value);
   document.getElementById('homeAmountInput').value = usdMillions;
   updateHomeCalc(usdMillions * 1000000);
+
+  // 5억 달러 문턱을 넘나들 때 짧게 진동 (안드로이드 Chrome 등만 지원, 미지원 브라우저는 조용히 무시됨)
+  if (_prevSliderUsdM !== null && navigator.vibrate) {
+    const crossedThreshold = (_prevSliderUsdM < 500 && usdMillions >= 500) || (_prevSliderUsdM >= 500 && usdMillions < 500);
+    if (crossedThreshold) navigator.vibrate(12);
+  }
+  _prevSliderUsdM = usdMillions;
 }
 
 function onHomeRateChanged(){
@@ -1755,6 +1763,26 @@ function pickDream(key){
   const resultEl = document.getElementById('dream-result');
   resultEl.style.display = 'block';
   resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  fireConfettiBurst();
+}
+
+// 브랜드 컬러 사각 조각 14개가 dream-result 위에서 짧게 떨어지는 연출.
+// prefers-reduced-motion 환경에서는 CSS 쪽에서 애니메이션 자체를 꺼버리므로 여기서는 그냥 만들기만 해도 안전함
+function fireConfettiBurst(){
+  const target = document.getElementById('dream-result');
+  if (!target) return;
+  const colors = ['#155445', '#9C6F1E', '#F0A98C', '#FFFEF9', '#0D3A2F'];
+  const rect = target.getBoundingClientRect();
+  for (let i = 0; i < 14; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = (rect.left + window.scrollX + Math.random() * rect.width) + 'px';
+    piece.style.top = (rect.top + window.scrollY) + 'px';
+    piece.style.background = colors[i % colors.length];
+    piece.style.animationDelay = (Math.random() * 0.15) + 's';
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 1000);
+  }
 }
 
 // dream-result가 이미 열려있는 상태에서 언어가 바뀌거나 당첨 금액이 바뀌면, 고정 텍스트로 남지
@@ -1978,8 +2006,8 @@ function updateHomeCalc(usdOverride){
   if (trustLine) {
     const rateStr = EXCHANGE_RATE.toLocaleString('ko-KR');
     trustLine.textContent = currentLang === 'en'
-      ? `📊 Based on IRS/NTS official data · 2026 tax rates · rate ${rateStr} KRW/USD`
-      : `📊 국세청·IRS 공식 자료 기반 · 2026년 세율 · 환율 ${rateStr}원 적용`;
+      ? `Based on IRS/NTS official data · 2026 tax rates · rate ${rateStr} KRW/USD`
+      : `국세청·IRS 공식 자료 기반 · 2026년 세율 · 환율 ${rateStr}원 적용`;
   }
 
   const milestoneEl = document.getElementById('home-milestone');
@@ -2102,7 +2130,7 @@ function updateCalc(usdOverride){
 const COUNTRY_TAX_PROFILES = [
   { code: 'kr', flag: '🇰🇷', label: '한국 거주자', labelEn: 'Korea resident', implemented: true, needsState: false },
   { code: 'us', flag: '🇺🇸', label: '미국 거주자', labelEn: 'US resident', implemented: true, needsState: true },
-  { code: 'vn', flag: '🇻🇳', label: '베트남 거주자', labelEn: 'Vietnam resident', implemented: false, needsState: false },
+  { code: 'vn', flag: '🇻🇳', label: '베트남 거주자', labelEn: 'Vietnam resident', implemented: false, needsState: false, contentPage: 'vietnamese-in-korea-lottery-tax.html', contentLabel: 'Tiếng Việt →' },
 ];
 
 function updateSideBySide(eok, stateCode){
@@ -2126,6 +2154,13 @@ function updateSideBySide(eok, stateCode){
       amtEl.textContent = isEn ? 'Coming soon' : '준비 중';
       card.innerHTML = `<p class="side-card-flag">${baseLabel}</p>`;
       card.appendChild(amtEl);
+      if (profile.contentPage) {
+        const linkEl = document.createElement('a');
+        linkEl.className = 'side-card-lang-link';
+        linkEl.href = profile.contentPage;
+        linkEl.textContent = profile.contentLabel;
+        card.appendChild(linkEl);
+      }
       grid.appendChild(card);
       return;
     }
