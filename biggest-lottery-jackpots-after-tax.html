@@ -16,14 +16,15 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#155445">
 <title>The 5 Biggest Lottery Jackpots Ever — What Winners Actually Took Home After Tax | ChamTax</title>
-<meta name="description" content="Powerball and Mega Millions' 5 biggest jackpots ever, ranked by actual cash payout. See what the winners really took home after federal and state tax — and what a foreign winner would have kept.">
+<meta name="description" content="Powerball and Mega Millions' 5 biggest jackpots ever, ranked by actual cash payout. See what winners really took home after tax as a US, Korea, China, or India resident.">
 <link rel="canonical" href="https://semilee123456-ui.github.io/biggest-lottery-jackpots-after-tax.html">
 <link rel="alternate" hreflang="en" href="https://semilee123456-ui.github.io/biggest-lottery-jackpots-after-tax.html">
 <link rel="alternate" hreflang="ko" href="https://semilee123456-ui.github.io/biggest-jackpot-payouts.html">
+<link rel="alternate" hreflang="zh" href="https://semilee123456-ui.github.io/biggest_lottery_jackpots_after_tax_zh.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ChamTax">
 <meta property="og:title" content="The 5 Biggest Lottery Jackpots Ever — What Winners Actually Took Home After Tax">
-<meta property="og:description" content="Powerball and Mega Millions' 5 biggest jackpots ever, ranked by actual cash payout. See what the winners really took home after tax — and what a foreign winner would have kept.">
+<meta property="og:description" content="Powerball and Mega Millions' 5 biggest jackpots ever, ranked by actual cash payout. See what winners really took home after tax as a US, Korea, China, or India resident.">
 <meta property="og:url" content="https://semilee123456-ui.github.io/biggest-lottery-jackpots-after-tax.html">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://semilee123456-ui.github.io/og-image.png">
@@ -31,7 +32,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="The 5 Biggest Lottery Jackpots Ever — What Winners Actually Took Home After Tax">
-<meta name="twitter:description" content="Powerball and Mega Millions' 5 biggest jackpots ever, ranked by actual cash payout after tax.">
+<meta name="twitter:description" content="Powerball and Mega Millions' 5 biggest jackpots ever, ranked by actual cash payout after tax across 4 countries.">
 <meta name="twitter:image" content="https://semilee123456-ui.github.io/og-image.png">
 <script type="application/ld+json">
 {
@@ -76,6 +77,14 @@
     },
     {
       "@type": "Question",
+      "name": "Why do China and India residents keep more or less than Korea residents?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "China taxes lottery winnings as incidental income at a flat 20%, and that's already lower than the 30% the US withholds up front — so the foreign tax credit wipes out any additional China tax owed, and a China resident keeps the most of the four. India applies a flat 30% rate plus a surcharge and cess that push the effective rate to about 39%, slightly above the US withholding, so an India resident owes a bit more on top and keeps less than a China resident but more than a Korea resident (who faces Korea's progressive income tax up to 45%)."
+      }
+    },
+    {
+      "@type": "Question",
       "name": "Is this list kept up to date?",
       "acceptedAnswer": {
         "@type": "Answer",
@@ -100,7 +109,7 @@
     {
       "@type": "ListItem",
       "position": 2,
-      "name": "Sep 6, 2025 Powerball $1.787B (Missouri/Texas) — US resident take-home about $475.6M combined"
+      "name": "Sep 6, 2025 Powerball $1.787B (Missouri/Texas) — US resident take-home about $492.8M combined"
     },
     {
       "@type": "ListItem",
@@ -115,7 +124,7 @@
     {
       "@type": "ListItem",
       "position": 5,
-      "name": "Jan 13, 2016 Powerball $1.586B (California/Florida/Tennessee) — US resident take-home about $570.0M combined"
+      "name": "Jan 13, 2016 Powerball $1.586B (California/Florida/Tennessee) — US resident take-home about $590.5M combined"
     }
   ]
 }
@@ -187,6 +196,13 @@
   .disclaimer{ font-size:var(--fs-small); color:var(--text-muted); margin-top:32px; padding-top:16px; border-top:1px solid var(--border); }
   .related-links{ display:flex; flex-direction:column; gap:8px; margin:16px 0 32px; }
   .related-links a{ font-size:var(--fs-note); color:var(--teal); text-decoration:none; font-weight:600; }
+
+  .share-btn{
+    display:inline-flex; align-items:center; gap:6px; background:var(--card); color:var(--teal);
+    border:1.5px solid var(--teal); border-radius:10px; padding:10px 18px; font-size:var(--fs-note);
+    font-weight:700; font-family:inherit; cursor:pointer; margin:0 0 24px;
+  }
+  .share-btn:active{ background:rgba(21,84,69,0.08); }
 </style>
 </head>
 <body>
@@ -198,25 +214,32 @@
   </div>
 
   <h1>The 5 Biggest Lottery Jackpots Ever — What Winners Actually Took Home</h1>
-  <p class="lead">Powerball and Mega Millions' 5 biggest jackpots in history, ranked by the actual lump-sum cash payout — with what the winner really kept after tax, both as a US resident and as a foreign (nonresident alien) winner.</p>
+  <p class="lead">Powerball and Mega Millions' 5 biggest jackpots in history, ranked by the actual lump-sum cash payout — with what the winner really kept after tax as a US resident, and as a foreign (nonresident alien) winner from Korea, China, or India.</p>
+
+  <button type="button" class="share-btn" id="pageShareBtn" onclick="sharePage()">📤 Share this list</button>
 
   <div class="quick-answer">
     <p class="label">#1 of all time</p>
     <div class="row"><span>Nov 7, 2022, Powerball</span><b>$2.04B advertised (California)</b></div>
     <div class="row"><span>Actual lump-sum cash</span><b>$997.6M</b></div>
     <div class="row"><span>US resident take-home</span><b>about $628.5M</b></div>
-    <div class="row"><span>Foreign winner</span><b>takes home less — see below</b></div>
+    <div class="row"><span>Korea resident take-home</span><b>about $533.8M</b></div>
+    <div class="row"><span>China resident take-home</span><b>about $698.3M</b></div>
+    <div class="row"><span>India resident take-home</span><b>about $608.5M</b></div>
   </div>
 
   <h2>The all-time top 5</h2>
-  <p>Ranked by the actual cash lump sum the winner chose, not the advertised annuity headline number. US-resident figures below use a flat 37% top federal rate — all 5 of these draws happened in states that don't tax lottery winnings, so there's no state tax on top.</p>
+  <p>Ranked by the actual cash lump sum the winner chose, not the advertised annuity headline number. US-resident figures below use a flat 37% top federal rate plus each draw's actual state tax (California and Florida don't tax lottery winnings; the Missouri/Texas and California/Florida/Tennessee splits use an average across US states as a stand-in for the exact split).</p>
 
   <div class="rank-card">
     <div class="rank-top"><span class="rank-num">#1</span><span class="rank-date">2022-11-07</span></div>
     <p class="rank-game">Powerball — $2.04B</p>
     <p class="rank-place">California, single winner (the biggest jackpot ever)</p>
     <div class="rank-amounts">
-      <div class="rank-amt-item"><span class="rank-amt-label">US resident take-home</span><span class="rank-amt-val">≈ $628.5M</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">US resident</span><span class="rank-amt-val">≈ $628.5M</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">Korea resident</span><span class="rank-amt-val">≈ $533.8M</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">China resident</span><span class="rank-amt-val">≈ $698.3M</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">India resident</span><span class="rank-amt-val">≈ $608.5M</span></div>
     </div>
     <p class="rank-announced">Actual lump-sum payout: $997.6M (about 49% of the advertised jackpot)</p>
   </div>
@@ -226,7 +249,10 @@
     <p class="rank-game">Powerball — $1.787B</p>
     <p class="rank-place">Missouri &amp; Texas, split between 2 winners</p>
     <div class="rank-amounts">
-      <div class="rank-amt-item"><span class="rank-amt-label">US resident take-home</span><span class="rank-amt-val">≈ $475.6M combined</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">US resident</span><span class="rank-amt-val">≈ $492.8M combined</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">Korea resident</span><span class="rank-amt-val">≈ $439.1M combined</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">China resident</span><span class="rank-amt-val">≈ $574.4M combined</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">India resident</span><span class="rank-amt-val">≈ $500.6M combined</span></div>
     </div>
     <p class="rank-announced">Actual lump-sum payout (combined): $820.6M (about 46% of the advertised jackpot)</p>
   </div>
@@ -236,7 +262,10 @@
     <p class="rank-game">Powerball — $1.765B</p>
     <p class="rank-place">California, single winner</p>
     <div class="rank-amounts">
-      <div class="rank-amt-item"><span class="rank-amt-label">US resident take-home</span><span class="rank-amt-val">≈ $487.7M</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">US resident</span><span class="rank-amt-val">≈ $487.7M</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">Korea resident</span><span class="rank-amt-val">≈ $414.2M</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">China resident</span><span class="rank-amt-val">≈ $541.9M</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">India resident</span><span class="rank-amt-val">≈ $472.2M</span></div>
     </div>
     <p class="rank-announced">Actual lump-sum payout: $774.1M (about 44% of the advertised jackpot)</p>
   </div>
@@ -246,7 +275,10 @@
     <p class="rank-game">Mega Millions — $1.602B</p>
     <p class="rank-place">Florida, single winner (the biggest Mega Millions jackpot ever)</p>
     <div class="rank-amounts">
-      <div class="rank-amt-item"><span class="rank-amt-label">US resident take-home</span><span class="rank-amt-val">≈ $500.3M</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">US resident</span><span class="rank-amt-val">≈ $500.3M</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">Korea resident</span><span class="rank-amt-val">≈ $424.9M</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">China resident</span><span class="rank-amt-val">≈ $555.9M</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">India resident</span><span class="rank-amt-val">≈ $484.5M</span></div>
     </div>
     <p class="rank-announced">Actual lump-sum payout: $794.2M (about 50% of the advertised jackpot)</p>
   </div>
@@ -256,7 +288,10 @@
     <p class="rank-game">Powerball — $1.586B</p>
     <p class="rank-place">California, Florida &amp; Tennessee, split between 3 winners</p>
     <div class="rank-amounts">
-      <div class="rank-amt-item"><span class="rank-amt-label">US resident take-home</span><span class="rank-amt-val">≈ $570.0M combined</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">US resident</span><span class="rank-amt-val">≈ $590.5M combined</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">Korea resident</span><span class="rank-amt-val">≈ $500.6M combined</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">China resident</span><span class="rank-amt-val">≈ $688.4M combined</span></div>
+      <div class="rank-amt-item"><span class="rank-amt-label">India resident</span><span class="rank-amt-val">≈ $599.9M combined</span></div>
     </div>
     <p class="rank-announced">Actual lump-sum payout (combined): $983.4M (about 62% of the advertised jackpot)</p>
   </div>
@@ -265,7 +300,7 @@
   <p>The lump sum vs. advertised-jackpot ratio depends mainly on prevailing interest rates at the time (it's ranged from about 44% to 62% across these five draws). It's not really about the jackpot size itself — it's a present-value calculation, and rates were simply higher or lower at each drawing.</p>
 
   <h2>Would a foreign winner take home more or less?</h2>
-  <p>It depends. A foreign (nonresident alien) winner gets a flat 30% withheld by the US at the border regardless of bracket — which by itself is actually a lower rate than the 37% a US resident pays on a jackpot this size. But foreign winners typically still owe tax back in their home country on top of that (this calculator was originally built around exactly this question for Korean residents, who face an extra layer of home-country tax that a foreign tax credit only partly offsets). Once home-country tax is added in, a foreign winner very often ends up keeping less than a US resident would — sometimes a lot less, depending on the country. Try the calculator with your own country's numbers to see where you'd land.</p>
+  <p>It depends on the country. A foreign (nonresident alien) winner gets a flat 30% withheld by the US at the border regardless of bracket — which by itself is actually a lower rate than the 37% a US resident pays on a jackpot this size. But foreign winners typically still owe tax back in their home country on top of that, only partly offset by a foreign tax credit. A China resident ends up ahead of everyone here: China's flat 20% rate on lottery winnings is already below the 30% the US withholds, so the credit fully absorbs it and nothing more is owed. An India resident owes a bit more, since India's rate (with surcharge and cess) works out to roughly 39%, just above the US withholding. A Korea resident owes the most on top, since Korea taxes it as ordinary income at progressive rates up to 45% — this calculator was originally built around exactly that question. Try the calculator with your own country's numbers to see where you'd land.</p>
 
   <div class="cta-box">
     <p>Curious what you'd actually take home?</p>
@@ -282,17 +317,53 @@
     <p>A foreign (nonresident alien) winner gets a flat 30% withheld by the US regardless of bracket, which is actually lower than the 37% a US resident pays on a jackpot this size. But foreign winners typically also owe tax back in their home country on top of that, only partly offset by a foreign tax credit — so once home-country tax is added in, a foreign winner very often ends up keeping less than a US resident would.</p>
   </details>
   <details class="faq-item">
+    <summary>Why do China and India residents keep more or less than Korea residents?</summary>
+    <p>China taxes lottery winnings as incidental income at a flat 20%, and that's already lower than the 30% the US withholds up front — so the foreign tax credit wipes out any additional China tax owed, and a China resident keeps the most of the four. India applies a flat 30% rate plus a surcharge and cess that push the effective rate to about 39%, slightly above the US withholding, so an India resident owes a bit more on top and keeps less than a China resident but more than a Korea resident (who faces Korea's progressive income tax up to 45%).</p>
+  </details>
+  <details class="faq-item">
     <summary>Is this list kept up to date?</summary>
     <p>Yes, it's updated whenever a new historic jackpot is drawn. The calculator page also tracks recently checked jackpot amounts in real time.</p>
   </details>
 
   <div class="related-links">
-    <a href="biggest-jackpot-payouts.html">→ 한국어로 보기 (Korean-language version, with Korea-resident take-home)</a>
+    <a href="biggest-jackpot-payouts.html">→ 한국어로 보기 (Korean-language version)</a>
+    <a href="biggest_lottery_jackpots_after_tax_zh.html">→ 中文版 (Chinese-language version)</a>
     <a href="korean-abroad-us-lottery-tax.html">→ Korean living abroad? Here's your Korea tax question</a>
     <a href="index.html?lang=en#faq">→ More US lottery tax FAQs (calculator, in English)</a>
   </div>
 
   <p class="disclaimer">This page is an informational simulator only and does not broker or facilitate lottery ticket purchases. Actual tax owed depends on individual circumstances and the exchange rate/tax law in effect at filing time — consult a qualified tax professional.</p>
 </div>
+
+<script>
+// Same pattern as the Korean version and script.js's shareResult(): Web Share API first,
+// clipboard-copy fallback, then a manual-copy prompt as a last resort
+async function sharePage(){
+  const shareText = "The biggest lottery jackpot ever paid out $628.5M after tax to a US resident — but a China resident would have kept even more ($698.3M). See the full top-5 breakdown across the US, Korea, China, and India on ChamTax.";
+  const shareUrl = location.href;
+  const shareTitle = "The 5 Biggest Lottery Jackpots Ever — What Winners Actually Took Home After Tax | ChamTax";
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+  }
+
+  const btn = document.getElementById('pageShareBtn');
+  try {
+    await navigator.clipboard.writeText(shareText + ' ' + shareUrl);
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = '✅ Link copied';
+      setTimeout(() => { btn.textContent = original; }, 2000);
+    }
+  } catch (e) {
+    window.prompt('Press and hold to copy, then share it', shareText + ' ' + shareUrl);
+  }
+}
+</script>
 </body>
 </html>

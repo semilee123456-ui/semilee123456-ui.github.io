@@ -304,6 +304,9 @@
               <div class="intro-lang-btns">
                 <button type="button" class="intro-lang-btn" onclick="setLanguage('en'); goToCalculatorInput();">English</button>
                 <button type="button" class="intro-lang-btn" onclick="setLanguage('zh'); goToCalculatorInput();">中文</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='vietnamese-in-korea-lottery-tax.html'">Tiếng Việt</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='thai_in_korea_lottery_tax.html'">ภาษาไทย</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='philippines_in_korea_lottery_tax.html'">Tagalog</button>
               </div>
             </div>
             <div class="intro-persona-row">
@@ -374,7 +377,7 @@
             <p class="filing-label" id="home-state-label" style="display:none;"><span class="flag-badge">US</span> <span data-i18n-html="compare.stateLabel">미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9%로 크게 달라요)</span></span></p>
             <div class="input-row" style="margin-bottom:4px;" id="home-state-row">
               <select style="flex:1;" id="homeStateSelect" onchange="updateHomeCalc()">
-                <option value="AVG" data-i18n="state.AVG">평균 주세 (예시, 8%)</option>
+                <option value="AVG" data-i18n="state.AVG">평균 주세 (50개 주+DC, 약 4.7%)</option>
                 <option value="AL" data-i18n="state.AL">앨라배마 (5%)</option>
                 <option value="AK" data-i18n="state.AK">알래스카 (0%)</option>
                 <option value="AZ" data-i18n="state.AZ">애리조나 (2.5%)</option>
@@ -394,7 +397,7 @@
                 <option value="KY" data-i18n="state.KY">켄터키 (3.5%)</option>
                 <option value="LA" data-i18n="state.LA">루이지애나 (3%)</option>
                 <option value="ME" data-i18n="state.ME">메인 (7.15%)</option>
-                <option value="MD" data-i18n="state.MD">메릴랜드 (8.95%, 확인중)</option>
+                <option value="MD" data-i18n="state.MD">메릴랜드 (6.5%)</option>
                 <option value="MA" data-i18n="state.MA">매사추세츠 (9%)</option>
                 <option value="MI" data-i18n="state.MI">미시간 (4.25%)</option>
                 <option value="MN" data-i18n="state.MN">미네소타 (9.85%)</option>
@@ -601,7 +604,7 @@
           <p class="filing-label" id="compare-state-label"><span class="flag-badge">US</span> <span data-i18n-html="compare.stateLabel">미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9%로 크게 달라요)</span></span></p>
           <div class="input-row" style="margin-bottom:4px;" id="compare-state-row">
             <select id="compareStateSelect" onchange="updateCalc()">
-              <option value="AVG" data-i18n="state.AVG">평균 주세 (예시, 8%)</option>
+              <option value="AVG" data-i18n="state.AVG">평균 주세 (50개 주+DC, 약 4.7%)</option>
               <option value="AL" data-i18n="state.AL">앨라배마 (5%)</option>
               <option value="AK" data-i18n="state.AK">알래스카 (0%)</option>
               <option value="AZ" data-i18n="state.AZ">애리조나 (2.5%)</option>
@@ -621,7 +624,7 @@
               <option value="KY" data-i18n="state.KY">켄터키 (3.5%)</option>
               <option value="LA" data-i18n="state.LA">루이지애나 (3%)</option>
               <option value="ME" data-i18n="state.ME">메인 (7.15%)</option>
-              <option value="MD" data-i18n="state.MD">메릴랜드 (8.95%, 확인중)</option>
+              <option value="MD" data-i18n="state.MD">메릴랜드 (6.5%)</option>
               <option value="MA" data-i18n="state.MA">매사추세츠 (9%)</option>
               <option value="MI" data-i18n="state.MI">미시간 (4.25%)</option>
               <option value="MN" data-i18n="state.MN">미네소타 (9.85%)</option>
@@ -730,7 +733,7 @@
 
         <details class="panel odds-accordion">
           <summary class="panel-title-toggle" data-i18n="odds.historyTitle">📜 역대 잭팟 확인 기록</summary>
-          <p class="panel-desc" data-i18n="odds.historyDesc">체크한 날짜의 잭팟 금액과 한국·미국 실수령액을 기록했어요 (역대 최고 5건 포함)</p>
+          <p class="panel-desc" data-i18n="odds.historyDesc">체크한 날짜의 잭팟 금액과 국가별 실수령액을 기록했어요 (역대 최고 5건 포함)</p>
           <div id="jackpot-history-list" class="jackpot-history-list"></div>
           <a id="jackpot-history-full-link" class="annuity-info-link" href="biggest-jackpot-payouts.html" data-i18n="odds.historyFullLink">📄 역대 최고 잭팟 TOP 5 자세히 보기 →</a>
         </details>

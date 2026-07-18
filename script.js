@@ -108,7 +108,7 @@ const I18N = {
   'compare.callout':     { en: '💡 Same prize, but <b>your take-home rate can differ a lot depending on where you live.</b> Interesting, right?' },
   'compare.oddsHint':    { en: 'Curious? Try the <b>Odds Sense</b> menu too \u2192 it\u2019s pretty fun' , zh: '好奇的话，也可以试试<b>概率体验</b>菜单 → 也挺有意思的' },
   'compare.disclaimer':  { en: 'Built with reference to IRS and Korean NTS guidance (hope you get the chance to actually win!)' , zh: '参考IRS和韩国国税厅指引制作（希望你真的有机会中奖！）' },
-  'state.AVG': { en: 'Average (example, 8%)' , zh: '平均值（示例，8%）' },
+  'state.AVG': { en: 'Average (50 states + DC, ~4.7%)' , zh: '平均值（50州+特区，约4.7%）' },
   'state.AL': { en: 'Alabama (5%)' , zh: '阿拉巴马州（5%）' },
   'state.AK': { en: 'Alaska (0%)' , zh: '阿拉斯加州（0%）' },
   'state.AZ': { en: 'Arizona (2.5%)' , zh: '亚利桑那州（2.5%）' },
@@ -128,7 +128,7 @@ const I18N = {
   'state.KY': { en: 'Kentucky (3.5%)' , zh: '肯塔基州（3.5%）' },
   'state.LA': { en: 'Louisiana (3%)' , zh: '路易斯安那州（3%）' },
   'state.ME': { en: 'Maine (7.15%)' , zh: '缅因州（7.15%）' },
-  'state.MD': { en: 'Maryland (8.95%, unconfirmed)' , zh: '马里兰州（8.95%，待确认）' },
+  'state.MD': { en: 'Maryland (6.5%)' , zh: '马里兰州（6.5%）' },
   'state.MA': { en: 'Massachusetts (9%)' , zh: '马萨诸塞州（9%）' },
   'state.MI': { en: 'Michigan (4.25%)' , zh: '密歇根州（4.25%）' },
   'state.MN': { en: 'Minnesota (9.85%)' , zh: '明尼苏达州（9.85%）' },
@@ -175,7 +175,7 @@ const I18N = {
   'odds.winnersTitle': { en: '🏆 People really have won this much' , zh: '🏆 真的有人中过这么多钱' },
   'odds.winnersDesc':  { en: 'It does actually happen \u2014 here are some record-breaking real cases' , zh: '确实会发生 —— 这些是真实存在的历史级中奖案例' },
   'odds.historyTitle': { en: '📜 Past Jackpot Records' , zh: '📜 历史头奖查询记录' },
-  'odds.historyDesc':  { en: 'Jackpot amounts we\u2019ve checked, with estimated take-home for both Korean and US residents (including the top 5 all-time records)' , zh: '记录了查询当天的头奖金额，以及韩国·美国居民标准下的实得金额（含历史最高5笔纪录）' },
+  'odds.historyDesc':  { en: 'Jackpot amounts we\u2019ve checked, with estimated take-home by country (including the top 5 all-time records)' , zh: '记录了查询当天的头奖金额，以及各国标准下的实得金额（含历史最高5笔纪录）' },
   'odds.historyFullLink': { en: '📄 See the Top 5 all-time jackpots in detail →' , zh: '📄 查看历史最高头奖TOP5详情 →' },
   'odds.winner1Amt': { en: '$2.04 billion' , zh: '20.4亿美元' },
   'odds.winner1':    { en: 'November 2022, California \u2014 Edwin Castro, winner of the largest Powerball jackpot in history. He took the $997.6M lump sum and bought $25.5M and $47M houses back to back. Sued over a claim the ticket was stolen, he was confirmed the rightful owner in 2024, then in 2025 donated land to build homes for wildfire victims.' , zh: '2022年11月，加利福尼亚州——爱德温·卡斯特罗，历史最大强力球头奖得主。他选择一次性支付9.976亿美元，随后接连买下2550万和4700万美元的房子。曾被起诉称彩票是偷来的，但2024年被确认为合法所有者，2025年他还捐地为山火受灾者建房。' },
@@ -849,8 +849,8 @@ function formatWonEn(n){
 
 const TAX_MODEL = {
   us_resident: {
-    federal: 0.37,      // 연방세 최고구간 (실제: 24% 원천징수 후 최대 37% 정산 — 데모는 단순화해 37% 일괄 적용)
-    state_avg: 0.08      // 평균 주세 (예시치 — 실제 주 선택 시 STATE_TAX_RATES 값으로 대체됨)
+    federal: 0.37      // 연방세 최고구간 (실제: 24% 원천징수 후 최대 37% 정산 — 데모는 단순화해 37% 일괄 적용)
+    // 주세는 STATE_TAX_RATES[stateCode]에서 가져다 씀 (AVG 포함, 50개 주+DC 실측 세율 기반)
   },
   nonresident: {
     // 한국 거주자 등 미국 비거주 외국인. 한미 조세조약이 도박·복권 소득을 커버하지 않아
@@ -871,10 +871,12 @@ const TAX_MODEL = {
     base_rate: 0.30,
     // 여기에 항상 4% 교육·보건 세스(cess)가 추가로 붙음(세액 기준, 과세표준 기준 아님).
     cess: 0.04,
-    // 거액 당첨금(1천만 루피=1 crore 초과)에는 이 "우발소득(casual income)" 항목에 한해 서차지(surcharge)가
-    // 15%로 상한 적용됨(일반 개인소득 서차지는 최대 37%까지 가나, 복권 등 115BB 소득은 15% 캡 — 복수 출처 교차 확인).
-    // 현실적인 잭팟 규모(₩ 수백억 이상)는 항상 1 crore를 넘으므로 15% 캡을 기본 적용.
-    surcharge: 0.15
+    // 서차지(surcharge) 15% 상한은 배당소득·제111A/112/112A/115AD조 자본이득에만 적용되는 예외이고,
+    // 제115BB조(복권 등 우발소득)는 이 예외 목록에 없어 일반 개인 서차지 구간을 그대로 적용받음(Finance Act
+    // First Schedule 확인). 잭팟 규모(₩ 수백억대)는 총소득 5 crore 루피를 항상 넘으므로 최고 구간 적용.
+    // 신제도(New Regime, 2023년 예산안 이후 기본 적용)에서는 서차지 상한 자체가 25%로 낮아져 있어(구제도는
+    // 37%까지), 별도 공제가 없는 당첨소득만 있는 신고자에게는 신제도가 유리 — 25%를 기본값으로 사용.
+    surcharge: 0.25
     // 인도-미국 조세조약(DTAA)에 따라 FTC(외국납부세액공제)로 미국 원천징수분을 인도 세액 한도 내에서 상계 가능.
   }
 };
@@ -884,7 +886,7 @@ const TAX_MODEL = {
 // ⚠️ 매년 주별로 세율 개정이 있어(예: 2026년만 해도 인디애나·켄터키·미시시피·노스캐롤라이나·오하이오 등
 // 다수 인하) 실제 신고 전에는 반드시 해당 주 세무당국/복권위원회 공식 자료로 재확인 필요.
 const STATE_TAX_RATES = {
-  AVG:   { label: '평균 (예시)', labelEn: 'Average (example)', labelZh: '平均（示例）', rate: 0.08 },
+  AVG:   { label: '평균', labelEn: 'Average', labelZh: '平均', rate: 0 }, // rate는 아래에서 50개 주+DC 실측치로 다시 계산해서 덮어씀(하드코딩 아님)
   AL:  { label: '앨라배마', labelEn: 'Alabama', labelZh: '阿拉巴马', rate: 0.05 },
   AK:  { label: '알래스카', labelEn: 'Alaska', labelZh: '阿拉斯加', rate: 0.0 },
   AZ:  { label: '애리조나', labelEn: 'Arizona', labelZh: '亚利桑那', rate: 0.025 },
@@ -904,7 +906,7 @@ const STATE_TAX_RATES = {
   KY:  { label: '켄터키', labelEn: 'Kentucky', labelZh: '肯塔基', rate: 0.035 },
   LA:  { label: '루이지애나', labelEn: 'Louisiana', labelZh: '路易斯安那', rate: 0.03 },
   ME:  { label: '메인', labelEn: 'Maine', labelZh: '缅因', rate: 0.0715 },
-  MD:  { label: '메릴랜드 (확인중)', labelEn: 'Maryland (unconfirmed)', labelZh: '马里兰（待确认）', rate: 0.0895 }, // 공식 출처마다 8.75~9.5%로 상이 — 최신 수치 재확인 필요
+  MD:  { label: '메릴랜드', labelEn: 'Maryland', labelZh: '马里兰', rate: 0.065 }, // 2025년 신설 최고세율 6.5%($100만 초과 구간) — 지방(county) 세는 다른 주와 일관되게 미포함
   MA:  { label: '매사추세츠', labelEn: 'Massachusetts', labelZh: '马萨诸塞', rate: 0.09 },
   MI:  { label: '미시간', labelEn: 'Michigan', labelZh: '密歇根', rate: 0.0425 },
   MN:  { label: '미네소타', labelEn: 'Minnesota', labelZh: '明尼苏达', rate: 0.0985 },
@@ -937,6 +939,14 @@ const STATE_TAX_RATES = {
   WI:  { label: '위스콘신', labelEn: 'Wisconsin', labelZh: '威斯康星', rate: 0.0765 },
   WY:  { label: '와이오밍', labelEn: 'Wyoming', labelZh: '怀俄明', rate: 0.0 },
 };
+
+// AVG는 임의로 정한 예시치가 아니라, 위 50개 주 + DC의 세율을 단순 평균(가중치 없음 — 인구·복권판매량
+// 가중평균은 아님)해서 실제로 계산한 값. 위 표가 갱신되면 재계산 없이 자동으로 같이 따라감
+(function computeAvgStateTaxRate(){
+  const codes = Object.keys(STATE_TAX_RATES).filter(code => code !== 'AVG');
+  const sum = codes.reduce((total, code) => total + STATE_TAX_RATES[code].rate, 0);
+  STATE_TAX_RATES.AVG.rate = sum / codes.length;
+})();
 
 // 2026년 종합소득세 누진세율표 (국세청 기준, 8단계) — 원(KRW) 단위
 // 산출세액 = 과세표준 × 세율 - 누진공제액
@@ -976,15 +986,10 @@ function calcTakeHome(amount, country, stateCode){
     const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
     const afterUS = amount * (1 - TAX_MODEL.us_resident.federal);
     const final = afterUS * (1 - stateInfo.rate);
-    // stateInfo.label이 "평균 (예시)"처럼 이미 괄호를 포함하는 경우 "주세"를 그냥 붙이면
-    // "평균 (예시) 주세"처럼 어색해지므로, 괄호 설명은 떼어내고 순수 지역명만 사용
-    const cleanStateLabel = stateInfo.label.replace(/\s*\(예시\)|\s*\(예시,[^)]*\)/, '');
-    const cleanStateLabelEn = stateInfo.labelEn.replace(/\s*\(example\)|\s*\(example,[^)]*\)/i, '');
-    const cleanStateLabelZh = (stateInfo.labelZh || cleanStateLabel).replace(/\s*（示例）/, '');
     return {
       afterUS, final,
       label1: pickLang('미국 연방세', 'US Federal Tax', '美国联邦税'), val1: '-' + (TAX_MODEL.us_resident.federal * 100) + '%',
-      label2: pickLang(`${cleanStateLabel} 주세`, `${cleanStateLabelEn} State Tax`, `${cleanStateLabelZh}州税`),
+      label2: pickLang(`${stateInfo.label} 주세`, `${stateInfo.labelEn} State Tax`, `${stateInfo.labelZh}州税`),
       val2: '-' + (stateInfo.rate * 100).toFixed(stateInfo.rate * 100 % 1 === 0 ? 0 : 2) + '%',
       basisSuffix: pickLang('미국 거주자', 'US resident', '美国居民')
     };
@@ -1010,7 +1015,7 @@ function calcTakeHome(amount, country, stateCode){
     };
   } else if (country === 'in') {
     // 인도 소득세법 제115BB조(신법 제128조): 복권 당첨소득은 공제·면제 없이 30% 단일세율 + 4% 세스 +
-    // 거액(1 crore 초과) 서차지 15% 캡. 실효세율 = 30% × 1.15 × 1.04 ≈ 35.88%.
+    // 거액(총소득 5 crore 초과) 서차지 25%(신제도 최고 구간). 실효세율 = 30% × 1.25 × 1.04 = 39.00%.
     const wonAmount = amount * 100000000;
     const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
     const indiaEffectiveRate = TAX_MODEL.in_resident.base_rate * (1 + TAX_MODEL.in_resident.surcharge) * (1 + TAX_MODEL.in_resident.cess);
@@ -1530,13 +1535,16 @@ function renderJackpotHistory(){
   listEl.innerHTML = sorted.map(entry => {
     const cashUsd = entry.cashUsd || entry.amountUsd * CASH_VALUE_RATIO;
     const cashKrw = cashUsd * EXCHANGE_RATE;
-    const rKr = calcTakeHome(cashKrw / 100000000, 'kr');
-    const rUs = calcTakeHome(cashKrw / 100000000, 'us', entry.stateCode || 'AVG');
-    const krLabel = formatWon(rKr.final);
-    const usLabel = formatWon(rUs.final);
     const gameLabel = pickLang(gameNameKo[entry.game], gameNameEn[entry.game], gameNameZh[entry.game]);
     const note = pickLang(entry.noteKo, entry.noteEn, entry.noteZh);
     const noteHtml = note ? `<p class="jh-note">${note}</p>` : '';
+    // 나라 목록·주세 등은 COUNTRY_TAX_PROFILES 하나로 관리되므로, 여기서도 kr/us만 하드코딩하지
+    // 않고 구현된 나라 전체(현재 kr/us/cn/in)를 순회함 — 새 나라가 추가되면 자동으로 같이 늘어남
+    const amtItems = COUNTRY_TAX_PROFILES.filter(p => p.implemented).map(profile => {
+      const r = calcTakeHome(cashKrw / 100000000, profile.code, profile.needsState ? (entry.stateCode || 'AVG') : null);
+      const label = getProfileShortLabel(profile);
+      return `<span class="jh-amt-item"><span class="jh-amt-label">${label}</span><span class="jh-amt">${formatWon(r.final)}</span></span>`;
+    }).join('');
     return `<div class="jackpot-history-row">
       <div class="jh-top">
         <span class="jh-date">${entry.date}</span>
@@ -1544,8 +1552,7 @@ function renderJackpotHistory(){
       </div>
       ${noteHtml}
       <div class="jh-amounts">
-        <span class="jh-amt-item"><span class="jh-amt-label">${pickLang('한국 거주자', 'Korea resident', '韩国居民')}</span><span class="jh-amt">${krLabel}</span></span>
-        <span class="jh-amt-item"><span class="jh-amt-label">${pickLang('미국 거주자', 'US resident', '美国居民')}</span><span class="jh-amt">${usLabel}</span></span>
+        ${amtItems}
       </div>
     </div>`;
   }).join('');
@@ -1987,7 +1994,7 @@ const FAQ_TG2 = {
   },
   in: {
     title: () => pickLang('인도에서도 또 내요?', 'Do I also pay in India?', '在印度也要交税吗？'),
-    sub: () => pickLang('복권 당첨소득 30% 단일세율 + 서차지·세스 포함 실효 약 35.9% — 미국에서 낸 세금은 세액공제로 상계 가능', 'Flat 30% rate on lottery winnings plus surcharge/cess, ~35.9% effective — the US tax already paid can offset it via tax credit', '彩票中奖所得30%单一税率，加上附加税和税捐后实际约35.9% — 已在美国缴纳的税款可通过税收抵免抵消')
+    sub: () => pickLang('복권 당첨소득 30% 단일세율 + 서차지·세스 포함 실효 약 39% — 미국에서 낸 세금은 세액공제로 상계 가능', 'Flat 30% rate on lottery winnings plus surcharge/cess, ~39% effective — the US tax already paid can offset it via tax credit', '彩票中奖所得30%单一税率，加上附加税和税捐后实际约39% — 已在美国缴纳的税款可通过税收抵免抵消')
   }
 };
 
@@ -2544,6 +2551,14 @@ const COUNTRY_TAX_PROFILES = [
   { code: 'in', flagCode: 'IN', label: '인도 거주자 (실제 인도 거주 기준)', labelEn: 'India resident (living in India)', labelZh: '印度居民（实际住在印度）', implemented: true, needsState: false },
 ];
 
+// "(실제 OO 거주 기준)" 같은 부연설명 괄호를 뗀 짧은 라벨 — 좁은 카드/목록 칸에서 3~4줄로
+// 지저분하게 줄바꿈되는 걸 막기 위해 씀(비교 카드·잭팟 히스토리 국가별 금액 목록 등 공용).
+// 여백이 넉넉한 곳(breakdown 상세 섹션 등)에서는 원문 label을 그대로 써야 함
+function getProfileShortLabel(profile){
+  const full = pickLang(profile.label, profile.labelEn, profile.labelZh);
+  return full.replace(/\s*[（(][^）)]*[)）]\s*$/, '');
+}
+
 // "한국에 사는 OO 국적자" 안내 페이지 목록 — 실제 그 나라 세법이 아니라 한국 세법(위 kr 기준)을
 // 그대로 따르는 번역 콘텐츠라서, COUNTRY_TAX_PROFILES(진짜 다른 나라 세금 비교)와는 완전히 분리해서 관리함.
 // 새 언어 추가할 땐 이 배열에 한 줄만 추가하면 됨.
@@ -2592,11 +2607,14 @@ function updateSideBySide(eok, stateCode){
 
   COUNTRY_TAX_PROFILES.forEach(profile => {
     const baseLabelText = pickLang(profile.label, profile.labelEn, profile.labelZh);
+    // 카드 안 배지 라벨(side-card-flag)은 좁아서 짧은 라벨을 쓰고, 여백이 넉넉한 아래 breakdown
+    // 섹션(side-group-label)에서는 원문 label을 그대로 보여줌
+    const shortLabelText = getProfileShortLabel(profile);
     // labelText가 뒤에 (주 이름) 등 접미사가 붙을 수 있어서, 배지+본문 텍스트를 한번에 만들어주는
     // 헬퍼로 side-card-flag/side-group-label 양쪽에 그대로 재사용함
-    function buildLabelNode(suffix){
+    function buildLabelNode(suffix, useShort){
       const frag = document.createDocumentFragment();
-      frag.append(makeFlagBadge(profile.flagCode), document.createTextNode(' ' + baseLabelText + (suffix || '')));
+      frag.append(makeFlagBadge(profile.flagCode), document.createTextNode(' ' + (useShort ? shortLabelText : baseLabelText) + (suffix || '')));
       return frag;
     }
 
@@ -2608,7 +2626,7 @@ function updateSideBySide(eok, stateCode){
       amtEl.className = 'side-card-amt';
       amtEl.style.cssText = 'color:var(--text-muted); font-size:16px;';
       amtEl.textContent = pickLang('준비 중', 'Coming soon', '准备中');
-      const flagP = document.createElement('p'); flagP.className = 'side-card-flag'; flagP.appendChild(buildLabelNode());
+      const flagP = document.createElement('p'); flagP.className = 'side-card-flag'; flagP.appendChild(buildLabelNode(null, true));
       card.appendChild(flagP);
       card.appendChild(amtEl);
       grid.appendChild(card);
@@ -2620,14 +2638,12 @@ function updateSideBySide(eok, stateCode){
     let stateSuffix = '';
     if (profile.needsState) {
       const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
-      const stateLabelRaw = pickLang(stateInfo.label, stateInfo.labelEn, stateInfo.labelZh);
-      const stateLabel = stateLabelRaw.replace(/\s*\(예시\)|\s*\(example\)/i, '').replace(/\s*（示例）/, '');
-      stateSuffix = ` (${stateLabel})`;
+      stateSuffix = ` (${pickLang(stateInfo.label, stateInfo.labelEn, stateInfo.labelZh)})`;
     }
 
     const card = document.createElement('div');
     card.className = 'side-card';
-    const flagEl = document.createElement('p'); flagEl.className = 'side-card-flag'; flagEl.appendChild(buildLabelNode(stateSuffix));
+    const flagEl = document.createElement('p'); flagEl.className = 'side-card-flag'; flagEl.appendChild(buildLabelNode(stateSuffix, true));
     const amtEl = document.createElement('p'); amtEl.className = 'side-card-amt'; amtEl.textContent = formatWon(result.final);
     const rateEl = document.createElement('p'); rateEl.className = 'side-card-rate';
     rateEl.textContent = pickLang('실수령률 약 ', 'Take-home rate about ', '实得比例约') + pct.toFixed(1) + '%';
