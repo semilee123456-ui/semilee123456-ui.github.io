@@ -287,7 +287,7 @@
           <button class="site-notice-close" onclick="document.getElementById('site-notice').style.display='none';" aria-label="닫기" data-i18n-aria-label="common.close">✕</button>
         </div>
 
-        <details class="panel odds-accordion" id="introPersonaAccordion" style="margin:14px 0;">
+        <details class="panel odds-accordion" id="introPersonaAccordion" style="margin:14px 0;" open>
           <summary class="panel-title-toggle" data-i18n="intro.panelTitle">👋 나는 어떤 경우일까요?</summary>
           <div class="intro-persona-list">
             <a class="intro-persona-row is-clickable" href="#" onclick="goToCalculatorInput(); return false;">
@@ -312,6 +312,7 @@
               <div class="intro-lang-btns">
                 <button type="button" class="intro-lang-btn" onclick="goToRealAbroad('us','en')"><span class="flag-badge">US</span> English</button>
                 <button type="button" class="intro-lang-btn" onclick="goToRealAbroad('cn','zh')"><span class="flag-badge">CN</span> 中文</button>
+                <button type="button" class="intro-lang-btn" onclick="goToRealAbroad('in','en')"><span class="flag-badge">IN</span> English</button>
               </div>
               <a class="intro-persona-action is-link" href="#" onclick="go('compare'); return false;" style="display:block; margin-top:8px;" data-i18n="intro.realAbroadAction">국가별 비교 보기 →</a>
             </div>
@@ -450,7 +451,7 @@
             <span id="tax-impact-after" style="display:none;"></span>
             <div class="detail-note-box" style="background:var(--bg); border-radius:10px; padding:12px 14px; margin-top:10px;">
               <p class="flow-explain" style="margin:0;" data-i18n-html="home.flowExplain1">💡 뉴스에 나온 <b>발표 잭팟(연금 기준) 금액</b>은 실제로 받는 돈이 아니에요. 일시불로 받으면 그 약 45~60% 수준의 <b>현재가치(세전)</b>를 받고, 이 계산기는 그 세전 금액을 기준으로 계산해요.</p>
-              <button type="button" class="annuity-info-link" style="margin-top:8px; padding:0;" onclick="goToAnnuityInfo()" data-i18n="home.annuityInfoLink">📅 연금으로 받으면 어떻게 다른가요? →</button>
+              <button type="button" class="annuity-info-link" style="margin-top:8px;" onclick="goToAnnuityInfo()" data-i18n="home.annuityInfoLink">📅 연금으로 받으면 어떻게 다른가요? →</button>
             </div>
             <p class="result-hero-basis" id="home-final-basis" style="margin-top:14px; text-align:center; font-weight:700;">1,503억원 당첨 기준 · 한국 거주자</p>
             <div class="result-grid" style="margin-top:8px; grid-template-columns:1fr 1fr;">
@@ -871,7 +872,7 @@
           <div class="faq-chip-row">
             <button class="faq-chip active" onclick="setFaqCategory('all', this)" data-i18n="faq.catAll">전체</button>
             <button class="faq-chip" onclick="setFaqCategory('tax', this)" data-i18n="faq.catTax">세금·이중과세</button>
-            <button class="faq-chip" onclick="setFaqCategory('life', this)" data-i18n="faq.catLife">건강보험·연금·증여</button>
+            <button class="faq-chip" onclick="setFaqCategory('life', this)" data-i18n="faq.catLife">건강보험·연금·증여·사기주의</button>
             <button class="faq-chip" onclick="setFaqCategory('refund', this)" data-i18n="faq.catRefund">환급·청구기한</button>
             <button class="faq-chip" onclick="setFaqCategory('purchase', this)" data-i18n="faq.catPurchase">구매·절차</button>
             <button class="faq-chip" onclick="setFaqCategory('game', this)" data-i18n="faq.catGame">게임 정보</button>

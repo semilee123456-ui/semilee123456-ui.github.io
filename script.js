@@ -227,7 +227,7 @@ const I18N = {
   'faq.searchPlaceholder': { en: '🔍 Search (e.g. tax, citizenship, Powerball)' , zh: '🔍 搜索（如：税金、国籍、强力球）' },
   'faq.catAll':      { en: 'All' , zh: '全部' },
   'faq.catTax':      { en: 'Tax & Double Taxation' , zh: '税金·双重征税' },
-  'faq.catLife':     { en: 'Health, Pension & Gift Tax' , zh: '健康保险·年金·赠与税' },
+  'faq.catLife':     { en: 'Health, Pension, Gift Tax & Scams' , zh: '健康保险·年金·赠与税·防诈骗' },
   'faq.catRefund':   { en: 'Refunds & Deadlines' , zh: '退税·申领期限' },
   'faq.catPurchase': { en: 'Purchasing & Process' , zh: '购买·流程' },
   'faq.catGame':     { en: 'Game Info' , zh: '游戏信息' },
@@ -2132,10 +2132,13 @@ async function shareResult(){
     ? pickLang('미국 거주자', 'US resident', '美国居民')
     : homeCountryVal === 'cn'
     ? pickLang('중국 거주자', 'China resident', '中国居民')
+    : homeCountryVal === 'in'
+    ? pickLang('인도 거주자', 'India resident', '印度居民')
     : pickLang('한국 거주자', 'Korea resident', '韩国居民');
+  const article = homeCountryVal === 'in' ? 'an' : 'a'; // "an India resident" vs "a US/China/Korea resident"
   const shareText = pickLang(
     `미국 복권(${amountText} Million USD) 당첨되면 ${country} 기준 실수령액이 약 ${finalAmt}이래요. 세금 떼고 나면 실제로 얼마 남는지 참택스에서 계산해보세요! (참고용 시뮬레이션 결과예요)`,
-    `If I won the US lottery (${amountText} Million USD), my take-home as a ${country} would be about ${finalAmt}. See how much you'd actually keep after tax on ChamTax! (This is a reference simulation)`,
+    `If I won the US lottery (${amountText} Million USD), my take-home as ${article} ${country} would be about ${finalAmt}. See how much you'd actually keep after tax on ChamTax! (This is a reference simulation)`,
     `如果中了美国彩票（${amountText} Million USD），按${country}计算实得金额大约是${finalAmt}。来ChamTax算算你扣税后实际能拿到多少吧！（仅供参考的模拟计算）`
   );
   const shareUrl = location.href;
