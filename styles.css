@@ -161,6 +161,27 @@
   details.odds-accordion[open]{ border-color:var(--teal); }
   details.odds-accordion[open] > .panel-title-toggle::after{ transform:translateY(-50%) rotate(180deg); }
 
+  /* The persona-picker banner ("나는 어떤 경우일까요?") was inheriting plain .panel
+     styling, so it looked like just another neutral info box and got skipped by
+     first-time visitors even though it's the main routing entry point for non-KR-resident
+     personas. Give it the same teal-tinted treatment as .result-hero so it visually reads
+     as "start here" instead of blending into the page. */
+  #introPersonaAccordion{
+    background:linear-gradient(135deg, #EAF3EE 0%, #FBFAF4 65%, #FFFEF9 100%);
+    border:1.5px solid rgba(21,84,69,0.3);
+    animation:intro-persona-glow 2.2s ease-out 0.4s 1;
+  }
+  #introPersonaAccordion[open]{ border-color:var(--teal); }
+  #introPersonaAccordion > .panel-title-toggle{ color:var(--teal); }
+  @keyframes intro-persona-glow{
+    0%{ box-shadow:0 0 0 0 rgba(21,84,69,0); }
+    30%{ box-shadow:0 0 0 6px rgba(21,84,69,0.12); }
+    100%{ box-shadow:0 0 0 0 rgba(21,84,69,0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    #introPersonaAccordion{ animation:none; }
+  }
+
   .input-row{ display:flex; gap:8px; margin-bottom:14px; }
   .input-row select{
     height:38px; border:1px solid var(--border); border-radius:8px; padding:0 28px 0 12px;
@@ -197,9 +218,9 @@
   .million-unit{ font-size:16px; color:var(--text-muted); font-weight:700; white-space:nowrap; padding-right:4px; flex-shrink:0; }
   .unit-short{ display:none; }
   .input-card-headline{ font-size:18px; font-weight:800; color:var(--text-dark); margin:0 0 4px; }
-  .country-toggle{ display:flex; gap:8px; margin:8px 0 14px; }
+  .country-toggle{ display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 14px; }
   .country-toggle-btn{
-    flex:1; min-height:46px; border-radius:11px; border:2px solid var(--border); background:var(--card);
+    flex:1 1 calc(50% - 4px); min-height:46px; border-radius:11px; border:2px solid var(--border); background:var(--card);
     color:var(--text-dark); font-family:inherit; font-size:16px; font-weight:800; cursor:pointer;
     transition:border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
     display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0 4px;
@@ -586,6 +607,12 @@
   .jp-card:hover{ transform:none; box-shadow:none; }
   .tg-card{ background:var(--bg); border:none; padding:12px; }
   .tg-card:hover{ transform:none; box-shadow:none; }
+  /* .feature-sub is display:flex for the jackpot d-day badge usage (game name + badge span
+     side by side), but here it's plain wrapping text with no child elements — as a flex
+     container its own text becomes an anonymous flex item that refuses to wrap, causing
+     text to run off the right edge instead of breaking to a new line (seen on real devices
+     via KakaoTalk in-app browser screenshots). Reset to block so it wraps normally. */
+  .tg-card .feature-sub{ display:block; }
   .section-divider-toggle{
     position:relative; display:flex; justify-content:flex-start; align-items:baseline; flex-wrap:wrap; row-gap:2px;
     text-align:left; font-size:var(--fs-note); font-weight:700; color:var(--text-dark); cursor:pointer;

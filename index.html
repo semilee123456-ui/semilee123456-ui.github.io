@@ -292,7 +292,7 @@
           <div class="intro-persona-list">
             <a class="intro-persona-row is-clickable" href="#" onclick="goToCalculatorInput(); return false;">
               <p class="intro-persona-label"><span class="flag-badge">KR</span> <span data-i18n="intro.krLabel">한국에 살아요</span></p>
-              <p class="intro-persona-action is-link" data-i18n="intro.krAction">바로 계산하러 가기 →</p>
+              <p class="intro-persona-action is-link" data-i18n="intro.krAction">계산하러 가기 →</p>
             </a>
             <a class="intro-persona-row is-clickable" href="korean_abroad_us_lottery_tax_ko.html" id="introAbroadLink">
               <p class="intro-persona-label" data-i18n="intro.abroadLabel">✈️ 해외에 살지만 한국 국적이에요</p>
@@ -313,7 +313,7 @@
                 <button type="button" class="intro-lang-btn" onclick="goToRealAbroad('us','en')"><span class="flag-badge">US</span> English</button>
                 <button type="button" class="intro-lang-btn" onclick="goToRealAbroad('cn','zh')"><span class="flag-badge">CN</span> 中文</button>
               </div>
-              <a class="intro-persona-action is-link" href="#" onclick="go('compare'); return false;" style="display:block; margin-top:8px;" data-i18n="intro.realAbroadAction">또는 국가별 전체 비교 보기 →</a>
+              <a class="intro-persona-action is-link" href="#" onclick="go('compare'); return false;" style="display:block; margin-top:8px;" data-i18n="intro.realAbroadAction">국가별 비교 보기 →</a>
             </div>
           </div>
         </details>
@@ -332,6 +332,7 @@
             <span class="milestone-burst" id="milestone-burst"></span>
             <p class="usd-actual-note" id="home-usd-note" style="display:none; margin-top:4px;"></p>
             <p class="usd-actual-note" id="home-cny-note" style="display:none; margin-top:4px;"></p>
+            <p class="usd-actual-note" id="home-inr-note" style="display:none; margin-top:4px;"></p>
             <div class="result-meta-group">
               <p class="result-hero-basis-mini" id="home-final-basis-mini">100M USD 당첨 · 한국 거주자</p>
               <p class="foot-note" id="home-trust-line">환율 -</p>
@@ -340,7 +341,7 @@
 
           <div class="input-card">
             <p class="input-card-headline" data-i18n="home.inputHint">당첨금을 직접 입력해보세요</p>
-            <p class="krw-hint" style="margin-bottom:10px;" data-i18n="input.krwHintFull">뉴스 속 잭팟 금액이 아니라, 일시불로 받는 실제 금액(약 45~60%)을 넣어요</p>
+            <p class="krw-hint" style="margin-bottom:10px;" data-i18n="input.krwHintFull">일시불 실제 수령액(발표액의 약 45~60%)을 입력하세요</p>
             <div class="jackpot-quickfill-row" style="margin-bottom:16px;">
               <button type="button" class="jackpot-quickfill-btn" onclick="fillHomeAmountFromJackpot('powerball')">
                 <span data-i18n="home.quickfillPowerball">파워볼 최근 잭팟</span>
@@ -365,8 +366,9 @@
               <button type="button" class="country-toggle-btn active" data-country="kr" onclick="setHomeCountry('kr')"><span class="flag-badge">KR</span> <span data-i18n="input.optKorea">한국 기준</span></button>
               <button type="button" class="country-toggle-btn" data-country="us" onclick="setHomeCountry('us')"><span class="flag-badge">US</span> <span data-i18n="input.optUS">미국 기준</span></button>
               <button type="button" class="country-toggle-btn" data-country="cn" onclick="setHomeCountry('cn')"><span class="flag-badge">CN</span> <span data-i18n="input.optChina">중국 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="in" onclick="setHomeCountry('in')"><span class="flag-badge">IN</span> <span data-i18n="input.optIndia">인도 기준</span></button>
             </div>
-            <p class="krw-hint" style="margin:-6px 0 14px;" data-i18n="input.basisHint">💡 실제로 세금을 내야 하는 나라 기준으로 골라주세요 — 한국에 사신다면 그대로 두시면 돼요</p>
+            <p class="krw-hint" style="margin:-6px 0 14px;" data-i18n="input.basisHint">💡 실제 납세 국가 기준으로 골라주세요 (한국 거주자는 그대로 두면 돼요)</p>
 
             <p class="filing-label" id="home-state-label" style="display:none;"><span class="flag-badge">US</span> <span data-i18n-html="compare.stateLabel">미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9%로 크게 달라요)</span></span></p>
             <div class="input-row" style="margin-bottom:4px;" id="home-state-row">
@@ -432,7 +434,7 @@
             <p class="krw-hint" style="margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);">≈ <span id="home-krw-amt">1,503억원</span> · <span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="home-rate-input" value="1,503.4" inputmode="decimal" oninput="onHomeRateChanged()"><span data-i18n="common.won">원</span></p>
 
             <div class="live-result-mini" id="live-result-mini" onclick="startEditMiniResult()">
-              <span data-i18n="home.miniResultLabel">✏️ 반대로, 원하는 실수령액부터 입력해볼까요?</span>
+              <span data-i18n="home.miniResultLabel">✏️ 원하는 실수령액부터 입력해볼까요?</span>
               <span class="live-result-mini-display" id="live-result-mini-display">
                 <span class="live-result-mini-amt" id="live-result-mini-amt">805억원</span>
               </span>
@@ -682,7 +684,7 @@
 
         <details class="panel odds-accordion" open>
           <summary class="panel-title-toggle" data-i18n="odds.panelTitle">이 확률, 솔직히 감이 안 오시죠?</summary>
-          <p class="panel-desc" data-i18n="odds.panelDesc">1/2억 9,200만이라는 숫자, 사실 와닿지 않잖아요. 그래서 비교해봤어요.</p>
+          <p class="panel-desc" data-i18n="odds.panelDesc">1/2억 9,200만, 사실 와닿지 않아서 비교해봤어요.</p>
 
           <div class="bar-row">
             <span class="bar-label" data-i18n="odds.barPowerball">파워볼 1등</span>
@@ -727,7 +729,7 @@
 
         <details class="panel odds-accordion">
           <summary class="panel-title-toggle" data-i18n="odds.historyTitle">📜 역대 잭팟 확인 기록</summary>
-          <p class="panel-desc" data-i18n="odds.historyDesc">체크했던 날짜의 잭팟 금액과 한국·미국 거주자 기준 실수령액을 기록해뒀어요 (역대 최고 기록 5건 포함)</p>
+          <p class="panel-desc" data-i18n="odds.historyDesc">체크한 날짜의 잭팟 금액과 한국·미국 실수령액을 기록했어요 (역대 최고 5건 포함)</p>
           <div id="jackpot-history-list" class="jackpot-history-list"></div>
           <a id="jackpot-history-full-link" class="annuity-info-link" href="biggest-jackpot-payouts.html" data-i18n="odds.historyFullLink">📄 역대 최고 잭팟 TOP 5 자세히 보기 →</a>
         </details>

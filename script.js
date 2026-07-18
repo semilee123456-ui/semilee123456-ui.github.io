@@ -26,14 +26,14 @@ const I18N = {
   'hero.title':    { en: 'how much would<br>you actually take home?' , zh: '我的账户里<br>实际能拿到多少？' },
   'intro.panelTitle': { en: '👋 Which one am I?' , zh: '👋 我是哪种情况？' },
   'intro.krLabel': { en: 'I live in Korea' , zh: '我住在韩国' },
-  'intro.krAction': { en: 'Go straight to the calculator →' , zh: '直接去计算 →' },
+  'intro.krAction': { en: 'Go to calculator →' , zh: '去计算 →' },
   'intro.abroadLabel': { en: '✈️ I live abroad but I’m a Korean citizen' , zh: '✈️ 我住在国外，但持有韩国国籍' },
   'intro.abroadAction': { en: 'See your Korea tax duty →' , zh: '了解韩国纳税义务 →' },
   'intro.foreignerLabel': { en: '🌏 I’m a foreigner living in Korea' , zh: '🌏 我是住在韩国的外国人' },
   'intro.foreignerHint': { en: 'View in this language' , zh: '直接用这个语言查看' },
   'intro.realAbroadLabel': { en: '🌐 I live outside Korea (US, China, etc.)' , zh: '🌐 我住在韩国以外的国家（美国、中国等）' },
   'intro.realAbroadHint': { en: 'See it in my own country’s terms' , zh: '直接按我自己国家的标准查看' },
-  'intro.realAbroadAction': { en: 'Or see the full country comparison →' , zh: '或查看完整的国家对比 →' },
+  'intro.realAbroadAction': { en: 'See country comparison →' , zh: '查看国家对比 →' },
   'result.label':      { en: '💰 Estimated take-home amount' , zh: '💰 预计实得金额' },
   'result.trustBadge': { en: 'Based on official IRS · Korea NTS data' , zh: '基于美国IRS·韩国国税厅官方数据' },
   'result.share':      { en: '📤 Share this result' , zh: '📤 分享这个结果' },
@@ -44,14 +44,15 @@ const I18N = {
   'input.orManualLabel': { en: 'Or enter an amount directly' , zh: '或直接输入金额' },
   'input.basisLabel':  { en: 'Tax basis' , zh: '计税基准' },
   'input.krwHint':     { en: '💡 The advertised jackpot isn\u2019t what you actually receive —' , zh: '💡 新闻里公布的奖金金额并不是你实际收到的——' },
-  'input.krwHintFull': { en: 'Enter the actual lump-sum amount (about 45–60%) — not the jackpot number from the news' , zh: '请输入实际的一次性金额（约45~60%）——而不是新闻里的头奖金额' },
+  'input.krwHintFull': { en: 'Enter the actual lump-sum amount (about 45–60% of the announced jackpot)' , zh: '请输入实际一次性金额（约为公布金额的45~60%）' },
   'home.inputHint': { en: 'Enter your winnings directly' , zh: '请直接输入奖金金额' },
   'home.quickfillPowerball': { en: 'Powerball recent jackpot' , zh: '强力球最近头奖' },
   'home.quickfillMega': { en: 'Mega Millions recent jackpot' , zh: '超级百万最近头奖' },
   'input.optKorea':    { en: 'Korea basis' , zh: '韩国标准' },
   'input.optUS':       { en: 'US basis' , zh: '美国标准' },
   'input.optChina':    { en: 'China basis' , zh: '中国标准' },
-  'input.basisHint':   { en: '💡 Pick the country whose tax law actually applies to you — if you live in Korea, just leave this as is' , zh: '💡 请按照实际需要缴税的国家选择 — 如果您住在韩国，保持默认即可' },
+  'input.optIndia':    { en: 'India basis' , zh: '印度标准' },
+  'input.basisHint':   { en: '💡 Pick the country whose tax law applies to you (Korea residents: leave as is)' , zh: '💡 按实际纳税国家选择（韩国居民保持默认即可）' },
   'common.seeMore':    { en: 'See more' , zh: '查看更多' },
   'explore.title':      { en: '🧭 Curious about more?' , zh: '🧭 还想了解更多？' },
   'explore.compareLabel': { en: 'Country Compare' , zh: '国家比较' },
@@ -161,7 +162,7 @@ const I18N = {
   'state.WY': { en: 'Wyoming (0%)' , zh: '怀俄明州（0%）' },
   'odds.breadcrumb':  { en: 'Odds Sense Tool' },
   'odds.panelTitle':  { en: 'This probability doesn\u2019t really register, does it?' , zh: '这个概率，说实话没什么感觉吧？' },
-  'odds.panelDesc':   { en: '1 in 292 million doesn\u2019t feel real. So we compared it to things that do.' , zh: '1/2.92亿这个数字，说实话没什么真实感。所以我们拿它跟一些更有真实感的东西比较了一下。' },
+  'odds.panelDesc':   { en: '1 in 292 million doesn\u2019t feel real. So we compared it to things that do.' , zh: '1/2.92亿，说实话没什么真实感，所以拿来做了对比。' },
   'odds.barPowerball': { en: 'Powerball Jackpot' , zh: '强力球头奖' },
   'odds.barLightning': { en: 'Struck by lightning' , zh: '被闪电击中的概率' },
   'odds.barPlane':     { en: 'Plane crash' , zh: '飞机事故' },
@@ -490,7 +491,7 @@ const I18N = {
   'home.taxBefore': { en: 'Announced' , zh: '公布金额' },
   'home.taxAfter':  { en: 'Take-home' , zh: '实得金额' },
   'home.taxDiff':   { en: 'Taxes' , zh: '税金' },
-  'home.miniResultLabel': { en: '✏️ Or, want to start from your desired take-home amount?' , zh: '✏️ 或者，想从希望的实得金额开始计算？' },
+  'home.miniResultLabel': { en: '✏️ Want to start from your desired take-home amount?' , zh: '✏️ 想从希望的实得金额开始计算？' },
   'home.reverseUnit':     { en: '(×₩100M)' , zh: '（×1亿韩元）' },
   'home.sliderMin': { en: '$10M' , zh: '$1000万' },
   'home.sliderMax': { en: '$2B' , zh: '$20亿' },
@@ -634,6 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let EXCHANGE_RATE = 1503.40; // 기본값(fallback). 중앙은행 고시 기반 기준환율(2026-07-13 확인) — 페이지 로드 시 실시간 환율로 자동 갱신을 시도함. 이 기본값은 주기적으로 수동 업데이트 필요
 let EXCHANGE_RATE_CNY = 6.77; // 기본값(fallback), USD/CNY (2026-07-17 확인). 중국 거주자 기준 결과에서 위안화 참고 환산용 — KRW와 마찬가지로 실시간 조회 시도, 실패하면 이 기본값 사용
+let EXCHANGE_RATE_INR = 87.0; // 기본값(fallback), USD/INR (2026-07-18 확인). 인도 거주자 기준 결과에서 루피 참고 환산용 — KRW와 마찬가지로 실시간 조회 시도, 실패하면 이 기본값 사용
 
 // 환율 입력창(표시값)을 실제 계산에 쓰이는 EXCHANGE_RATE와 강제로 맞춰줌.
 // 이게 없으면 HTML에 하드코딩된 옛 기본값이 입력창에 남아있는 채로, 실제 계산은
@@ -658,11 +660,11 @@ function fetchWithTimeout(url, ms){
 }
 
 // 환율 API 후보 목록 — 중앙은행 고시 기반 기준환율(재현성·출처가 명확함)을 우선으로 하고,
-// 막히거나(지역 차단) 타임아웃 나면 순서대로 다음 걸 시도. 응답 형식이 달라서 각자 getRate로 KRW/CNY 환율을 뽑아냄
-// (두 API 모두 한 번의 응답에 여러 통화 환율을 같이 내려주므로, 별도 API 호출 없이 CNY도 같이 얻을 수 있음)
+// 막히거나(지역 차단) 타임아웃 나면 순서대로 다음 걸 시도. 응답 형식이 달라서 각자 getRate로 KRW/CNY/INR 환율을 뽑아냄
+// (두 API 모두 한 번의 응답에 여러 통화 환율을 같이 내려주므로, 별도 API 호출 없이 CNY·INR도 같이 얻을 수 있음)
 const EXCHANGE_RATE_SOURCES = [
-  { url: 'https://api.frankfurter.app/latest?from=USD&to=KRW,CNY', getRate: (data) => data && data.rates && data.rates.KRW, getRateCny: (data) => data && data.rates && data.rates.CNY, name: 'Frankfurter (중앙은행 기준환율)', nameEn: 'Frankfurter (central bank reference rate)' },
-  { url: 'https://open.er-api.com/v6/latest/USD', getRate: (data) => data && data.rates && data.rates.KRW, getRateCny: (data) => data && data.rates && data.rates.CNY, name: 'open.er-api.com', nameEn: 'open.er-api.com' },
+  { url: 'https://api.frankfurter.app/latest?from=USD&to=KRW,CNY,INR', getRate: (data) => data && data.rates && data.rates.KRW, getRateCny: (data) => data && data.rates && data.rates.CNY, getRateInr: (data) => data && data.rates && data.rates.INR, name: 'Frankfurter (중앙은행 기준환율)', nameEn: 'Frankfurter (central bank reference rate)' },
+  { url: 'https://open.er-api.com/v6/latest/USD', getRate: (data) => data && data.rates && data.rates.KRW, getRateCny: (data) => data && data.rates && data.rates.CNY, getRateInr: (data) => data && data.rates && data.rates.INR, name: 'open.er-api.com', nameEn: 'open.er-api.com' },
 ];
 
 async function fetchLiveExchangeRate(force){
@@ -683,6 +685,8 @@ async function fetchLiveExchangeRate(force){
         EXCHANGE_RATE = Math.round(rate * 100) / 100; // 소수점 둘째자리까지 유지 (기준환율은 보통 소수점 단위로 고시됨)
         const rateCny = source.getRateCny(data);
         if (rateCny) EXCHANGE_RATE_CNY = Math.round(rateCny * 10000) / 10000; // CNY는 소수점 넷째자리까지(보통 6.xx대라 소수점 둘째자리로는 정밀도 부족)
+        const rateInr = source.getRateInr(data);
+        if (rateInr) EXCHANGE_RATE_INR = Math.round(rateInr * 100) / 100; // INR은 보통 80~90대라 KRW와 마찬가지로 소수점 둘째자리면 충분
         exchangeRateSourceName = source;
         exchangeRateIsLive = true;
         exchangeRateFetchFailed = false;
@@ -762,10 +766,17 @@ function updateExchangeRateBadges(failed){
 let sharedAmountUsd = 100000000; // 기본 $100M
 let sharedCountry = 'kr';
 let sharedState = 'AVG';
+// 입력창은 처음엔 비워두고 회색 placeholder("예: 100")만 보여주기로 한 디자인 의도가 있는데,
+// syncHomeFromShared()가 탭 이동/실시간 환율 갱신 때마다 무조건 sharedAmountUsd(기본값 100)를
+// 입력창에 채워 넣어서, 로드 직후(환율 fetch가 끝나자마자) placeholder가 진짜 값 "100"으로
+// 바로 덮어써지는 문제가 있었음 — 사용자가 실제로 입력/조작한 적이 있을 때만 채워 넣도록 구분
+let isAmountManuallyEdited = false;
 
 function syncHomeFromShared(){
   const millions = sharedAmountUsd / 1000000;
-  document.getElementById('homeAmountInput').value = millions;
+  // 사용자가 아직 아무 것도 입력/조작하지 않았다면 입력창은 비워둔 채(placeholder만 표시) 유지 —
+  // 슬라이더·계산 결과는 계속 sharedAmountUsd 기준으로 정상 동기화됨
+  if (isAmountManuallyEdited) document.getElementById('homeAmountInput').value = millions;
   const slider = document.getElementById('homeAmountSlider');
   slider.max = Math.max(2000, millions);
   slider.step = (millions % 10 === 0) ? 10 : 1; // 10의 배수가 아니면 step을 풀어줘야 value가 반올림 없이 정확히 반영됨
@@ -853,6 +864,18 @@ const TAX_MODEL = {
     // 경내 종합소득과 합산하지 않고 별도 계산 — 한국의 누진세율 같은 구간 구조가 없음.
     incidental_income_rate: 0.20
     // FTC(경외세액공제)는 한도 내 상계, 초과분은 5년 이월 가능(국가세무총국 공고) — 여기 계산은 당해년도 상계분만 반영
+  },
+  in_resident: {
+    // 인도 소득세법(Income Tax Act 1961) 제115BB조(2026-04-01 시행 신법 ITA 2025 기준 제128조로 이동):
+    // 복권·도박·베팅 당첨소득은 공제·면제 전혀 없이 30% 단일세율(flat rate, no deductions/exemptions).
+    base_rate: 0.30,
+    // 여기에 항상 4% 교육·보건 세스(cess)가 추가로 붙음(세액 기준, 과세표준 기준 아님).
+    cess: 0.04,
+    // 거액 당첨금(1천만 루피=1 crore 초과)에는 이 "우발소득(casual income)" 항목에 한해 서차지(surcharge)가
+    // 15%로 상한 적용됨(일반 개인소득 서차지는 최대 37%까지 가나, 복권 등 115BB 소득은 15% 캡 — 복수 출처 교차 확인).
+    // 현실적인 잭팟 규모(₩ 수백억 이상)는 항상 1 crore를 넘으므로 15% 캡을 기본 적용.
+    surcharge: 0.15
+    // 인도-미국 조세조약(DTAA)에 따라 FTC(외국납부세액공제)로 미국 원천징수분을 인도 세액 한도 내에서 상계 가능.
   }
 };
 
@@ -940,6 +963,7 @@ function calcKoreaProgressiveTaxWon(wonAmount){
 // 처음부터 리서치해서 완전히 새로운 계산 분기를 만들어야 함. 실제 세법 데이터 없이 구조부터 짜면
 // 잘못된 형태로 미리 만들 위험이 있어 데이터가 확정되기 전까진 손대지 않기로 결정함 (2026년 7월).
 // 'cn' 분기는 이 원칙대로 공식 자료(개인소득세법 제3조·실시조례 제20조 등) 확인 후 추가함 (2026년 7월).
+// 'in' 분기도 동일 원칙대로 공식 자료(소득세법 제115BB조/신법 제128조, 서차지 캡 등) 확인 후 추가함 (2026년 7월).
 // currentLang에 따라 ko/en/zh 중 하나를 고름. zh가 없으면(2단계 미번역 구간) ko로 폴백.
 function pickLang(ko, en, zh){
   if (currentLang === 'zh') return zh || ko;
@@ -983,6 +1007,27 @@ function calcTakeHome(amount, country, stateCode){
       label2: pickLang('중국 추가 납부 (FTC 적용)', 'China additional tax (FTC applied)', '中国追加缴税（已抵免FTC）'),
       val2: chinaAdditionalTaxWon > 0 ? '-' + chinaEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）'),
       basisSuffix: pickLang('중국 거주자', 'China resident', '中国居民')
+    };
+  } else if (country === 'in') {
+    // 인도 소득세법 제115BB조(신법 제128조): 복권 당첨소득은 공제·면제 없이 30% 단일세율 + 4% 세스 +
+    // 거액(1 crore 초과) 서차지 15% 캡. 실효세율 = 30% × 1.15 × 1.04 ≈ 35.88%.
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const indiaEffectiveRate = TAX_MODEL.in_resident.base_rate * (1 + TAX_MODEL.in_resident.surcharge) * (1 + TAX_MODEL.in_resident.cess);
+    const indiaCalculatedTaxWon = wonAmount * indiaEffectiveRate;
+    const ftcCreditWon = Math.min(usWithholdingWon, indiaCalculatedTaxWon); // FTC 공제액(DTAA 기준, 한도 내 상계)
+    const indiaAdditionalTaxWon = Math.max(indiaCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (indiaAdditionalTaxWon / 100000000);
+    const indiaEffectivePct = wonAmount > 0 ? (indiaAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）'), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('인도 추가 납부 (FTC 적용)', 'India additional tax (FTC applied)', '印度追加缴税（已抵免FTC）'),
+      val2: indiaAdditionalTaxWon > 0 ? '-' + indiaEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）'),
+      basisSuffix: pickLang('인도 거주자', 'India resident', '印度居民')
     };
   } else {
     // 2026-07 국세청 인터넷 상담 답변 기준: 미국 복권은 「복권 및 복권기금법」상 복권이 아니라
@@ -1543,6 +1588,7 @@ function initJackpotCardAmt(){
 }
 
 function fillHomeAmountFromJackpot(game){
+  isAmountManuallyEdited = true;
   const amountUsd = JACKPOT_DATA[game].amountUsd;
   const cashUsd = amountUsd * CASH_VALUE_RATIO;
   const millions = Math.round(cashUsd / 1000000);
@@ -1801,6 +1847,7 @@ function parseRateInput(str){
 
 function onHomeAmountTyped(){
   const rawValue = document.getElementById('homeAmountInput').value;
+  if (rawValue.trim() !== '') isAmountManuallyEdited = true;
   const millions = parseMillionsInput(rawValue);
   const slider = document.getElementById('homeAmountSlider');
   slider.max = Math.max(2000, millions); // 기본 상한(2000=$2B)을 넘는 값을 입력하면 슬라이더 상한도 같이 늘려서 롤백 방지
@@ -1826,6 +1873,7 @@ function updateSliderFill(slider){
 
 let _prevSliderUsdM = null; // 5억 달러 문턱 통과 감지용 (진동 피드백이 방향 전환마다 한 번만 울리게)
 function onHomeSliderMoved(){
+  isAmountManuallyEdited = true;
   const slider = document.getElementById('homeAmountSlider');
   slider.step = 10; // 유저가 슬라이더를 직접 조작하면 원래대로 10단위 스냅 복원
   const usdMillions = Number(slider.value);
@@ -1885,6 +1933,13 @@ const FLEX_REF = {
     apt:    { currency: 'cny', price: 30000000, label: () => pickLang('상하이 고급 아파트 (3천만 위안 기준)', 'Shanghai luxury apartment (based on ¥30M)', '上海高档公寓（按3000万元计算）') },
     car:    { currency: 'cny', price: 2760000,  label: () => pickLang('페라리 로마 (276만 위안 기준)', 'Ferrari Roma (based on ¥2.76M)', '法拉利Roma（按276万元计算）') },
     coffee: { currency: 'cny', price: 30,       label: () => pickLang('스타벅스 아메리카노 (30위안)', 'Starbucks Americano (¥30)', '星巴克美式咖啡（30元）') }
+  },
+  // 인도는 수입차에 100%가 넘는 관세가 붙어서 페라리 로마 실거래가가 미국 정가의 두 배 이상임 —
+  // 아래 가격은 참고용 대략치(위 kr/us/cn과 동일하게 정확한 출처 표기 없는 재미 콘텐츠)
+  in: {
+    apt:    { currency: 'inr', price: 200000000, label: () => pickLang('뭄바이 고급 아파트 (2억 루피 기준)', 'Mumbai luxury apartment (based on ₹20 crore)', '孟买豪华公寓（按2亿卢比计算）') },
+    car:    { currency: 'inr', price: 65000000,  label: () => pickLang('페라리 로마 (6,500만 루피 기준)', 'Ferrari Roma (based on ₹6.5 crore)', '法拉利Roma（按6500万卢比计算）') },
+    coffee: { currency: 'inr', price: 300,       label: () => pickLang('스타벅스 아메리카노 (300루피)', 'Starbucks Americano (₹300)', '星巴克美式咖啡（300卢比）') }
   }
 };
 
@@ -1893,7 +1948,8 @@ function updateFlexBox(finalEok, country){
   const wonAmount = finalEok * 100000000;
   const usdAmount = wonAmount / EXCHANGE_RATE;
   const cnyAmount = usdAmount * EXCHANGE_RATE_CNY;
-  const amountByCurrency = { krw: wonAmount, usd: usdAmount, cny: cnyAmount };
+  const inrAmount = usdAmount * EXCHANGE_RATE_INR;
+  const amountByCurrency = { krw: wonAmount, usd: usdAmount, cny: cnyAmount, inr: inrAmount };
   const ref = FLEX_REF[country] || FLEX_REF.kr;
   const localeStr = currentLang === 'en' ? 'en-US' : (currentLang === 'zh' ? 'zh-CN' : 'ko-KR');
 
@@ -1928,6 +1984,10 @@ const FAQ_TG2 = {
   cn: {
     title: () => pickLang('중국에서도 또 내요?', 'Do I also pay in China?', '在中国也要交税吗？'),
     sub: () => pickLang('우연소득 20% 단일세율 — 미국에서 낸 세금은 세액공제로 상계 가능', 'Flat 20% rate on incidental income — the US tax already paid can offset it via tax credit', '偶然所得20%单一税率 — 已在美国缴纳的税款可通过税收抵免抵消')
+  },
+  in: {
+    title: () => pickLang('인도에서도 또 내요?', 'Do I also pay in India?', '在印度也要交税吗？'),
+    sub: () => pickLang('복권 당첨소득 30% 단일세율 + 서차지·세스 포함 실효 약 35.9% — 미국에서 낸 세금은 세액공제로 상계 가능', 'Flat 30% rate on lottery winnings plus surcharge/cess, ~35.9% effective — the US tax already paid can offset it via tax credit', '彩票中奖所得30%单一税率，加上附加税和税捐后实际约35.9% — 已在美国缴纳的税款可通过税收抵免抵消')
   }
 };
 
@@ -1937,7 +1997,8 @@ const FAQ_TG2 = {
 const FAQ_PANEL_DESC = {
   kr: () => pickLang('검색하다 오신 분들이 자주 물어보는 질문 모았어요 · 국세청 상담 기준으로 확인된 정보예요', 'Common questions from people who searched their way here · Confirmed based on Korea’s National Tax Service consultations', '搜索到这里的朋友们经常问的问题 · 已通过韩国国税厅咨询确认'),
   us: () => pickLang('검색하다 오신 분들이 자주 물어보는 질문 모았어요 · IRS 공식 자료 기준으로 확인된 정보예요', 'Common questions from people who searched their way here · Confirmed based on official IRS sources', '搜索到这里的朋友们经常问的问题 · 已根据美国国税局（IRS）官方资料确认'),
-  cn: () => pickLang('검색하다 오신 분들이 자주 물어보는 질문 모았어요 · 중국 국가세무총국 공고 기준으로 확인된 정보예요', 'Common questions from people who searched their way here · Confirmed based on China’s State Taxation Administration notices', '搜索到这里的朋友们经常问的问题 · 已根据中国国家税务总局公告确认')
+  cn: () => pickLang('검색하다 오신 분들이 자주 물어보는 질문 모았어요 · 중국 국가세무총국 공고 기준으로 확인된 정보예요', 'Common questions from people who searched their way here · Confirmed based on China’s State Taxation Administration notices', '搜索到这里的朋友们经常问的问题 · 已根据中国国家税务总局公告确认'),
+  in: () => pickLang('검색하다 오신 분들이 자주 물어보는 질문 모았어요 · 인도 소득세청 자료 기준으로 확인된 정보예요', 'Common questions from people who searched their way here · Confirmed based on India’s Income Tax Department sources', '搜索到这里的朋友们经常问的问题 · 已根据印度所得税局资料确认')
 };
 
 function updateFaqPanelDesc(){
@@ -2268,6 +2329,8 @@ function updateHomeCalc(usdOverride){
     // 근거인 것처럼 표기하면 사실과 다르므로, 국가에 맞는 과세당국만 표기함
     const authorityText = (country === 'cn')
       ? pickLang('중국 국가세무총국·IRS', 'China State Taxation Administration/IRS', '中国国家税务总局·IRS')
+      : (country === 'in')
+      ? pickLang('인도 소득세청·IRS', 'India Income Tax Department/IRS', '印度所得税局·IRS')
       : (country === 'us')
       ? pickLang('IRS', 'IRS', 'IRS')
       : pickLang('국세청·IRS', 'IRS/NTS', 'IRS·韩国国税厅');
@@ -2340,8 +2403,9 @@ function updateHomeCalc(usdOverride){
 
   const usdNote = document.getElementById('home-usd-note');
   const cnyNote = document.getElementById('home-cny-note');
-  if (country === 'us' || country === 'cn') {
-    // 미국·중국 거주자 모두 실제로는 달러(USD)로 그대로 받고, 자국 세법상 세액도 원래는
+  const inrNote = document.getElementById('home-inr-note');
+  if (country === 'us' || country === 'cn' || country === 'in') {
+    // 미국·중국·인도 거주자 모두 실제로는 달러(USD)로 그대로 받고, 자국 세법상 세액도 원래는
     // 그 나라 통화 기준으로 계산됨 — 여기 보이는 원화 금액은 한국 기준과 비교하기 위한 표시일 뿐이라
     // 실수령률(final/억)을 그대로 USD 원금에 곱해서 실제 달러 수령액을 구함 (국가별 세율 하드코딩 없이 공통 처리)
     const finalUsd = Math.round(usd * (final / 억));
@@ -2365,9 +2429,23 @@ function updateHomeCalc(usdOverride){
     } else {
       cnyNote.style.display = 'none';
     }
+
+    // 인도 거주자도 마찬가지로 실제 생활 통화가 루피라, 루피 참고 환산액을 같이 보여줌
+    if (country === 'in') {
+      const finalInr = Math.round(finalUsd * EXCHANGE_RATE_INR);
+      inrNote.textContent = pickLang(
+        `🇮🇳 루피로는 대략 ₹${finalInr.toLocaleString('en-IN')}루피예요 (참고용 환율)`,
+        `🇮🇳 That's roughly ₹${finalInr.toLocaleString('en-IN')} INR (reference exchange rate)`,
+        `🇮🇳 折合印度卢比约₹${finalInr.toLocaleString('en-IN')}（仅供参考的汇率）`
+      );
+      inrNote.style.display = 'block';
+    } else {
+      inrNote.style.display = 'none';
+    }
   } else {
     usdNote.style.display = 'none';
     cnyNote.style.display = 'none';
+    inrNote.style.display = 'none';
   }
 
   const showFiling = (country === 'us');
@@ -2384,6 +2462,12 @@ function updateHomeCalc(usdOverride){
           '💡 China residents face the same 30% US non-resident withholding regardless of which state they won in — no need to factor in state tax.',
           '💡 中国税收居民无论在哪个州中奖，都统一适用美国非居民30%预扣税——不需要另外考虑州税'
         )
+      : (country === 'in')
+      ? pickLang(
+          '💡 인도 거주자는 어느 주(State)에서 당첨되든 미국 비거주자 원천징수(30%)가 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.',
+          '💡 India residents face the same 30% US non-resident withholding regardless of which state they won in — no need to factor in state tax.',
+          '💡 印度税收居民无论在哪个州中奖，都统一适用美国非居民30%预扣税——不需要另外考虑州税'
+        )
       : pickLang(
           '💡 한국 거주자는 어느 주(State)에서 당첨되든 미국 비거주자 원천징수(30%)가 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.',
           '💡 Korean residents face the same 30% US non-resident withholding regardless of which state they won in — no need to factor in state tax.',
@@ -2396,6 +2480,7 @@ function updateHomeCalc(usdOverride){
 
 function onCompareAmountTyped(){
   const rawValue = document.getElementById('amountInput').value;
+  if (rawValue.trim() !== '') isAmountManuallyEdited = true;
   const millions = parseMillionsInput(rawValue);
   const slider = document.getElementById('compareAmountSlider');
   slider.max = Math.max(2000, millions);
@@ -2407,6 +2492,7 @@ function onCompareAmountTyped(){
 }
 
 function onCompareSliderMoved(){
+  isAmountManuallyEdited = true;
   const slider = document.getElementById('compareAmountSlider');
   slider.step = 10;
   const usdMillions = Number(slider.value);
@@ -2452,6 +2538,7 @@ const COUNTRY_TAX_PROFILES = [
   { code: 'us', flagCode: 'US', label: '미국 거주자', labelEn: 'US resident', labelZh: '美国居民', implemented: true, needsState: true },
   { code: 'vn', flagCode: 'VN', label: '베트남 거주자 (실제 베트남 거주 기준)', labelEn: 'Vietnam resident (living in Vietnam)', labelZh: '越南居民（实际住在越南）', implemented: false, needsState: false },
   { code: 'cn', flagCode: 'CN', label: '중국 거주자 (실제 중국 거주 기준)', labelEn: 'China resident (living in China)', labelZh: '中国居民（实际住在中国）', implemented: true, needsState: false, detailPage: 'china-resident-us-lottery-tax.html', detailLabel: '中文详情 →' },
+  { code: 'in', flagCode: 'IN', label: '인도 거주자 (실제 인도 거주 기준)', labelEn: 'India resident (living in India)', labelZh: '印度居民（实际住在印度）', implemented: true, needsState: false },
 ];
 
 // "한국에 사는 OO 국적자" 안내 페이지 목록 — 실제 그 나라 세법이 아니라 한국 세법(위 kr 기준)을
@@ -2460,6 +2547,8 @@ const COUNTRY_TAX_PROFILES = [
 const LANGUAGE_CONTENT_PAGES = [
   { flagCode: 'VN', label: '한국에 사는 베트남분이라면', labelEn: 'Living in Korea as a Vietnamese national', labelZh: '住在韩国的越南人', contentPage: 'vietnamese-in-korea-lottery-tax.html', contentLabel: 'Tiếng Việt →' },
   { flagCode: 'CN', label: '한국에 사는 중국분이라면', labelEn: 'Living in Korea as a Chinese national', labelZh: '住在韩国的中国人', contentPage: 'china_in_korea_lottery_tax.html', contentLabel: '中文 →' },
+  { flagCode: 'TH', label: '한국에 사는 태국분이라면', labelEn: 'Living in Korea as a Thai national', labelZh: '住在韩国的泰国人', contentPage: 'thai_in_korea_lottery_tax.html', contentLabel: 'ภาษาไทย →' },
+  { flagCode: 'PH', label: '한국에 사는 필리핀분이라면', labelEn: 'Living in Korea as a Filipino national', labelZh: '住在韩国的菲律宾人', contentPage: 'philippines_in_korea_lottery_tax.html', contentLabel: 'Tagalog →' },
 ];
 
 // 국기 이모지(regional indicator 시퀀스)는 기기·브라우저에 따라 실제 국기 대신 "KR" 같은
