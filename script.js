@@ -17,43 +17,45 @@
 // 실제 언어가 확정되기 전엔 구조를 미리 넓히지 않기로 결정함 (2026년 7월) — 근거 없이
 // 짐작한 구조가 실제 필요와 안 맞을 위험이 구조를 안 짜두는 비용보다 크다고 판단.
 let currentLang = 'ko';
+// 언어 코드 -> Intl 로케일 문자열(숫자 포맷 toLocaleString 등에 공용으로 씀)
+const LOCALE_MAP = { ko: 'ko-KR', en: 'en-US', zh: 'zh-CN', vi: 'vi-VN', th: 'th-TH', ru: 'ru-RU' };
 
 const I18N = {
-  'nav.compare':   { en: 'Compare' , zh: '比较' },
-  'nav.odds':      { en: 'Odds' , zh: '概率' },
-  'nav.faq':       { en: 'FAQ' , zh: '常见问题' },
-  'hero.tag':      { en: '🧮 US Lottery Tax Calculator' , zh: '🧮 美国彩票税金计算器' },
-  'hero.title':    { en: 'how much would<br>you actually take home?' , zh: '我的账户里<br>实际能拿到多少？' },
-  'intro.panelTitle': { en: '👋 Which one am I?' , zh: '👋 我是哪种情况？' },
-  'intro.krLabel': { en: 'I live in Korea' , zh: '我住在韩国' },
-  'intro.krAction': { en: 'Go to calculator →' , zh: '去计算 →' },
-  'intro.abroadLabel': { en: '✈️ I live abroad but I’m a Korean citizen' , zh: '✈️ 我住在国外，但持有韩国国籍' },
-  'intro.abroadAction': { en: 'See your Korea tax duty →' , zh: '了解韩国纳税义务 →' },
-  'intro.foreignerLabel': { en: '🌏 I’m a foreigner living in Korea' , zh: '🌏 我是住在韩国的外国人' },
-  'intro.foreignerHint': { en: 'View in this language' , zh: '直接用这个语言查看' },
-  'intro.realAbroadLabel': { en: '🌐 I live outside Korea (US, China, etc.)' , zh: '🌐 我住在韩国以外的国家（美国、中国等）' },
-  'intro.realAbroadHint': { en: 'See it in my own country’s terms' , zh: '直接按我自己国家的标准查看' },
-  'intro.realAbroadAction': { en: 'See country comparison →' , zh: '查看国家对比 →' },
-  'result.label':      { en: '💰 Estimated take-home amount' , zh: '💰 预计实得金额' },
-  'result.trustBadge': { en: 'Based on official IRS · Korea NTS data' , zh: '基于美国IRS·韩国国税厅官方数据' },
-  'result.share':      { en: '📤 Share this result' , zh: '📤 分享这个结果' },
-  'input.amountLabel': { en: 'Enter prize amount' , zh: '输入奖金金额' },
-  'input.amountLabelFull': { en: 'Prize amount (pre-tax lump sum)' , zh: '奖金金额（税前一次性金额）' },
-  'input.amountPlaceholder': { en: 'e.g. 100' , zh: '例：100' },
-  'input.bridge': { en: '👇 The amount above is just an example — try entering your own' , zh: '👇 上面的金额只是示例——试着输入你自己的金额' },
-  'input.orManualLabel': { en: 'Or enter an amount directly' , zh: '或直接输入金额' },
-  'input.basisLabel':  { en: 'Tax basis' , zh: '计税基准' },
-  'input.krwHint':     { en: '💡 The advertised jackpot isn\u2019t what you actually receive —' , zh: '💡 新闻里公布的奖金金额并不是你实际收到的——' },
-  'input.krwHintFull': { en: 'Enter the actual lump-sum amount (about 45–60% of the announced jackpot)' , zh: '请输入实际一次性金额（约为公布金额的45~60%）' },
-  'home.inputHint': { en: 'Enter your winnings directly' , zh: '请直接输入奖金金额' },
-  'home.quickfillPowerball': { en: 'Powerball recent jackpot' , zh: '强力球最近头奖' },
-  'home.quickfillMega': { en: 'Mega Millions recent jackpot' , zh: '超级百万最近头奖' },
-  'input.optKorea':    { en: 'Korea basis' , zh: '韩国标准' },
-  'input.optUS':       { en: 'US basis' , zh: '美国标准' },
-  'input.optChina':    { en: 'China basis' , zh: '中国标准' },
-  'input.optIndia':    { en: 'India basis' , zh: '印度标准' },
-  'input.basisHint':   { en: '💡 Pick the country whose tax law applies to you (Korea residents: leave as is)' , zh: '💡 按实际纳税国家选择（韩国居民保持默认即可）' },
-  'common.seeMore':    { en: 'See more' , zh: '查看更多' },
+  'nav.compare':   { en: 'Compare' , zh: '比较', vi: "So sánh", th: "เปรียบเทียบ", ru: "Сравнить" },
+  'nav.odds':      { en: 'Odds' , zh: '概率', vi: "Xác suất", th: "โอกาสถูกรางวัล", ru: "Шансы" },
+  'nav.faq':       { en: 'FAQ' , zh: '常见问题', vi: "Hỏi đáp", th: "คำถามที่พบบ่อย", ru: "Вопросы" },
+  'hero.tag':      { en: '🧮 US Lottery Tax Calculator' , zh: '🧮 美国彩票税金计算器', vi: "🧮 Máy tính thuế xổ số Mỹ", th: "🧮 เครื่องคำนวณภาษีลอตเตอรี่สหรัฐฯ", ru: "🧮 Калькулятор налога на американскую лотерею" },
+  'hero.title':    { en: 'how much would<br>you actually take home?' , zh: '我的账户里<br>实际能拿到多少？', vi: "thực tế bạn sẽ<br>nhận được bao nhiêu?", th: "คุณจะได้รับเงิน<br>จริงเท่าไหร่?", ru: "сколько вы реально<br>получите на руки?" },
+  'intro.panelTitle': { en: '👋 Which one am I?' , zh: '👋 我是哪种情况？', vi: "👋 Tôi thuộc trường hợp nào?", th: "👋 ฉันอยู่ในกรณีไหน?", ru: "👋 Какой у меня случай?" },
+  'intro.krLabel': { en: 'I live in Korea' , zh: '我住在韩国', vi: "Tôi sống ở Hàn Quốc", th: "ฉันอาศัยอยู่ในเกาหลี", ru: "Я живу в Корее" },
+  'intro.krAction': { en: 'Go to calculator →' , zh: '去计算 →', vi: "Đi đến máy tính →", th: "ไปที่เครื่องคำนวณ →", ru: "Перейти к калькулятору →" },
+  'intro.abroadLabel': { en: '✈️ I live abroad but I’m a Korean citizen' , zh: '✈️ 我住在国外，但持有韩国国籍', vi: "✈️ Tôi sống ở nước ngoài nhưng mang quốc tịch Hàn Quốc", th: "✈️ ฉันอาศัยอยู่ต่างประเทศแต่ถือสัญชาติเกาหลี", ru: "✈️ Я живу за границей, но у меня корейское гражданство" },
+  'intro.abroadAction': { en: 'See your Korea tax duty →' , zh: '了解韩国纳税义务 →', vi: "Xem nghĩa vụ thuế tại Hàn Quốc →", th: "ดูภาระภาษีในเกาหลี →", ru: "Узнать о налоговых обязательствах в Корее →" },
+  'intro.foreignerLabel': { en: '🌏 I’m a foreigner living in Korea' , zh: '🌏 我是住在韩国的外国人', vi: "🌏 Tôi là người nước ngoài sống ở Hàn Quốc", th: "🌏 ฉันเป็นชาวต่างชาติที่อาศัยอยู่ในเกาหลี", ru: "🌏 Я иностранец, живущий в Корее" },
+  'intro.foreignerHint': { en: 'View in this language' , zh: '直接用这个语言查看', vi: "Xem bằng ngôn ngữ này", th: "ดูเป็นภาษานี้", ru: "Смотреть на этом языке" },
+  'intro.realAbroadLabel': { en: '🌐 I live outside Korea (US, China, etc.)' , zh: '🌐 我住在韩国以外的国家（美国、中国等）', vi: "🌐 Tôi sống ngoài Hàn Quốc (Mỹ, Trung Quốc, v.v.)", th: "🌐 ฉันอาศัยอยู่นอกประเทศเกาหลี (สหรัฐฯ จีน ฯลฯ)", ru: "🌐 Я живу вне Кореи (США, Китай и т.д.)" },
+  'intro.realAbroadHint': { en: 'See it in my own country’s terms' , zh: '直接按我自己国家的标准查看', vi: "Xem theo tiêu chuẩn nước tôi", th: "ดูตามมาตรฐานประเทศของฉัน", ru: "Посмотреть по правилам моей страны" },
+  'intro.realAbroadAction': { en: 'See country comparison →' , zh: '查看国家对比 →', vi: "Xem so sánh giữa các nước →", th: "ดูการเปรียบเทียบระหว่างประเทศ →", ru: "Сравнить страны →" },
+  'result.label':      { en: '💰 Estimated take-home amount' , zh: '💰 预计实得金额', vi: "💰 Số tiền thực nhận ước tính", th: "💰 จำนวนเงินที่คาดว่าจะได้รับจริง", ru: "💰 Расчётная сумма на руки" },
+  'result.trustBadge': { en: 'Based on official IRS · Korea NTS data' , zh: '基于美国IRS·韩国国税厅官方数据', vi: "Dựa trên dữ liệu chính thức của IRS · Cơ quan Thuế Hàn Quốc", th: "อ้างอิงข้อมูลทางการจาก IRS และกรมสรรพากรเกาหลี", ru: "На основе официальных данных IRS и налоговой службы Кореи" },
+  'result.share':      { en: '📤 Share this result' , zh: '📤 分享这个结果', vi: "📤 Chia sẻ kết quả này", th: "📤 แชร์ผลลัพธ์นี้", ru: "📤 Поделиться результатом" },
+  'input.amountLabel': { en: 'Enter prize amount' , zh: '输入奖金金额', vi: "Nhập số tiền giải thưởng", th: "กรอกจำนวนเงินรางวัล", ru: "Введите сумму выигрыша" },
+  'input.amountLabelFull': { en: 'Prize amount (pre-tax lump sum)' , zh: '奖金金额（税前一次性金额）', vi: "Số tiền giải thưởng (trả một lần, trước thuế)", th: "จำนวนเงินรางวัล (จ่ายครั้งเดียว ก่อนหักภาษี)", ru: "Сумма выигрыша (единовременная выплата, до налогов)" },
+  'input.amountPlaceholder': { en: 'e.g. 100' , zh: '例：100', vi: "VD: 100", th: "เช่น 100", ru: "напр. 100" },
+  'input.bridge': { en: '👇 The amount above is just an example — try entering your own' , zh: '👇 上面的金额只是示例——试着输入你自己的金额', vi: "👇 Số tiền trên chỉ là ví dụ — hãy thử nhập số tiền của bạn", th: "👇 จำนวนด้านบนเป็นเพียงตัวอย่าง — ลองกรอกจำนวนของคุณเอง", ru: "👇 Сумма выше — просто пример, попробуйте ввести свою" },
+  'input.orManualLabel': { en: 'Or enter an amount directly' , zh: '或直接输入金额', vi: "Hoặc nhập số tiền trực tiếp", th: "หรือกรอกจำนวนเงินโดยตรง", ru: "Или введите сумму вручную" },
+  'input.basisLabel':  { en: 'Tax basis' , zh: '计税基准', vi: "Cơ sở tính thuế", th: "เกณฑ์การคำนวณภาษี", ru: "Налоговая база" },
+  'input.krwHint':     { en: '💡 The advertised jackpot isn\u2019t what you actually receive —' , zh: '💡 新闻里公布的奖金金额并不是你实际收到的——', vi: "💡 Số tiền giải thưởng công bố không phải là số tiền bạn thực nhận —", th: "💡 จำนวนเงินรางวัลที่ประกาศไม่ใช่จำนวนที่คุณจะได้รับจริง —", ru: "💡 Объявленный джекпот — не то, что вы получите на самом деле —" },
+  'input.krwHintFull': { en: 'Enter the actual lump-sum amount (about 45–60% of the announced jackpot)' , zh: '请输入实际一次性金额（约为公布金额的45~60%）', vi: "Hãy nhập số tiền trả một lần thực tế (khoảng 45–60% số tiền công bố)", th: "กรอกจำนวนเงินที่จ่ายครั้งเดียวจริง (ประมาณ 45–60% ของจำนวนที่ประกาศ)", ru: "Введите реальную единовременную сумму (около 45–60% от объявленного джекпота)" },
+  'home.inputHint': { en: 'Enter your winnings directly' , zh: '请直接输入奖金金额', vi: "Nhập trực tiếp số tiền thắng của bạn", th: "กรอกจำนวนเงินรางวัลของคุณโดยตรง", ru: "Введите сумму выигрыша напрямую" },
+  'home.quickfillPowerball': { en: 'Powerball recent jackpot' , zh: '强力球最近头奖', vi: "Jackpot Powerball gần đây", th: "แจ็คพอตพาวเวอร์บอลล่าสุด", ru: "Недавний джекпот Powerball" },
+  'home.quickfillMega': { en: 'Mega Millions recent jackpot' , zh: '超级百万最近头奖', vi: "Jackpot Mega Millions gần đây", th: "แจ็คพอตเมกะมิลเลียนล่าสุด", ru: "Недавний джекпот Mega Millions" },
+  'input.optKorea':    { en: 'Korea basis' , zh: '韩国标准', vi: "Theo tiêu chuẩn Hàn Quốc", th: "เกณฑ์เกาหลี", ru: "По корейским правилам" },
+  'input.optUS':       { en: 'US basis' , zh: '美国标准', vi: "Theo tiêu chuẩn Mỹ", th: "เกณฑ์สหรัฐฯ", ru: "По правилам США" },
+  'input.optChina':    { en: 'China basis' , zh: '中国标准', vi: "Theo tiêu chuẩn Trung Quốc", th: "เกณฑ์จีน", ru: "По правилам Китая" },
+  'input.optIndia':    { en: 'India basis' , zh: '印度标准', vi: "Theo tiêu chuẩn Ấn Độ", th: "เกณฑ์อินเดีย", ru: "По правилам Индии" },
+  'input.basisHint':   { en: '💡 Pick the country whose tax law applies to you (Korea residents: leave as is)' , zh: '💡 按实际纳税国家选择（韩国居民保持默认即可）', vi: "💡 Chọn quốc gia áp dụng luật thuế cho bạn (người sống ở Hàn Quốc: giữ nguyên mặc định)", th: "💡 เลือกประเทศที่กฎหมายภาษีใช้กับคุณ (ผู้ที่อาศัยในเกาหลี: ใช้ค่าเริ่มต้นได้เลย)", ru: "💡 Выберите страну, чьи налоговые правила к вам применяются (для резидентов Кореи: оставьте по умолчанию)" },
+  'common.seeMore':    { en: 'See more' , zh: '查看更多', vi: "Xem thêm", th: "ดูเพิ่มเติม", ru: "Подробнее" },
   'explore.title':      { en: '🧭 Curious about more?' , zh: '🧭 还想了解更多？' },
   'explore.compareLabel': { en: 'Country Compare' , zh: '国家比较' },
   'explore.compareSub':   { en: 'Where\u2019s better to live' , zh: '哪里生活更划算' },
@@ -61,13 +63,13 @@ const I18N = {
   'explore.oddsSub':      { en: 'Get a feel for the 1-in-292M odds' , zh: '感受一下1/2.92亿的概率' },
   'explore.faqLabel':     { en: 'FAQ' , zh: '常见问题' },
   'explore.faqSub':       { en: 'Taxes, refunds & more' , zh: '税金、退税等更多内容' },
-  'common.backHome':   { en: '← Back to Home' , zh: '← 返回首页' },
-  'common.home':       { en: 'Home' , zh: '首页' },
-  'common.exchangeRate': { en: 'Rate' , zh: '汇率' },
-  'common.won':        { en: 'KRW' , zh: '韩元' },
-  'common.close':      { en: 'Close' , zh: '关闭' },
-  'common.refreshRate': { en: 'Refresh exchange rate' , zh: '刷新汇率' },
-  'common.adSlot':     { en: 'Ad Space (Google AdSense)' , zh: '广告位（Google AdSense）' },
+  'common.backHome':   { en: '← Back to Home' , zh: '← 返回首页', vi: "← Về trang chủ", th: "← กลับหน้าแรก", ru: "← На главную" },
+  'common.home':       { en: 'Home' , zh: '首页', vi: "Trang chủ", th: "หน้าแรก", ru: "Главная" },
+  'common.exchangeRate': { en: 'Rate' , zh: '汇率', vi: "Tỷ giá", th: "อัตราแลกเปลี่ยน", ru: "Курс" },
+  'common.won':        { en: 'KRW' , zh: '韩元', vi: "KRW", th: "วอน", ru: "вон" },
+  'common.close':      { en: 'Close' , zh: '关闭', vi: "Đóng", th: "ปิด", ru: "Закрыть" },
+  'common.refreshRate': { en: 'Refresh exchange rate' , zh: '刷新汇率', vi: "Làm mới tỷ giá", th: "รีเฟรชอัตราแลกเปลี่ยน", ru: "Обновить курс" },
+  'common.adSlot':     { en: 'Ad Space (Google AdSense)' , zh: '广告位（Google AdSense）', vi: "Khu vực quảng cáo (Google AdSense)", th: "พื้นที่โฆษณา (Google AdSense)", ru: "Рекламный блок (Google AdSense)" },
   'compare.breadcrumb':  { en: 'Country Comparison' , zh: '国家比较' },
   'compare.panelTitle':  { en: 'Curious what actually lands in your pocket?' , zh: '好奇实际能揣进口袋多少钱？' },
   'compare.panelDesc':   { en: 'Type the prize amount or use the slider 👇' , zh: '输入奖金金额或拖动滑块 👇' },
@@ -454,14 +456,14 @@ const I18N = {
   'privacy.h3': { en: '3. Retention period' , zh: '3. 保留和使用期限' },
   'privacy.b3': { en: 'Retained for up to 1 year after the inquiry is resolved, then promptly destroyed.' , zh: '咨询处理完成后最多保留1年，此后将立即销毁。' },
   'privacy.h4': { en: '4. Sharing with third parties' , zh: '4. 向第三方提供' },
-  'privacy.b4': { en: 'We do not share collected personal information with third parties. However, ads displayed on the site (Google AdSense) may independently collect visit information via cookies through Google, which is handled under Google\u2019s privacy policy, not this site\u2019s.' , zh: '我们不会将收集的个人信息提供给第三方。但网站上展示的广告（Google AdSense）中，Google可能会通过自己的Cookie收集访问信息，这部分内容依据的是Google的隐私政策，而非本网站的政策。' },
+  'privacy.b4': { en: 'We do not share collected personal information with third parties. However, ads displayed on the site (Google AdSense) and visit analytics (Google Analytics) may independently collect visit information via cookies through Google, which is handled under Google\u2019s privacy policy, not this site\u2019s.' , zh: '我们不会将收集的个人信息提供给第三方。但网站上展示的广告（Google AdSense）及访问统计分析（Google Analytics）中，Google可能会通过自己的Cookie收集访问信息，这部分内容依据的是Google的隐私政策，而非本网站的政策。' },
   'privacy.h5': { en: '5. Use of cookies' , zh: '5. Cookie（网络跟踪工具）的使用' },
   'privacy.b5': { en: 'Cookies from third-party ad services such as Google may be used to serve ads. You can refuse or delete cookies in your browser settings, though this may limit ad personalization.' , zh: '为投放广告，可能会使用Google等第三方广告服务的Cookie。您可以在浏览器设置中拒绝保存或删除Cookie，这种情况下广告个性化功能可能会受到限制。' },
   'privacy.h6': { en: '6. User rights' , zh: '6. 用户的权利' },
   'privacy.b6': { en: 'You may request to view, correct, or delete any personal information you provided via inquiries at any time. Please contact us via the Contact page below.' , zh: '对于您通过咨询提供的个人信息，您可以随时要求查阅、更正或删除。请通过下方"联系我们"与我们联系。' },
   'privacy.h7': { en: '7. Privacy officer' , zh: '7. 个人信息保护负责人' },
-  'common.inquiry': { en: 'Contact' , zh: '咨询' },
-  'common.contactPageLink': { en: 'Please use the Contact page' , zh: '请使用"联系我们"页面' },
+  'common.inquiry': { en: 'Contact' , zh: '咨询', vi: "Liên hệ", th: "ติดต่อ", ru: "Связаться" },
+  'common.contactPageLink': { en: 'Please use the Contact page' , zh: '请使用"联系我们"页面', vi: "Vui lòng dùng trang Liên hệ", th: "กรุณาใช้หน้าติดต่อ", ru: "Пожалуйста, используйте страницу «Контакты»" },
   'disclaimer.breadcrumb': { en: 'Disclaimer' , zh: '免责声明' },
   'disclaimer.title':      { en: 'Disclaimer' , zh: '免责声明' },
   'disclaimer.h1': { en: '1. Purpose of information' , zh: '1. 信息提供目的' },
@@ -488,47 +490,47 @@ const I18N = {
   'contact.success': { en: '✓ Your message was sent, thank you!' , zh: '✓ 咨询已成功发送，谢谢！' },
   'contact.error':   { en: 'Something went wrong sending this \u2014 please try again shortly.' , zh: '发送失败，请稍后再试。' },
   'footer.copy': { en: 'This site is an informational simulator and does not act as an agent or broker for lottery purchases.' , zh: '本网站是信息提供性质的模拟计算工具，不代理或中介彩票购买。' },
-  'home.taxBefore': { en: 'Announced' , zh: '公布金额' },
-  'home.taxAfter':  { en: 'Take-home' , zh: '实得金额' },
-  'home.taxDiff':   { en: 'Taxes' , zh: '税金' },
-  'home.miniResultLabel': { en: '✏️ Want to start from your desired take-home amount?' , zh: '✏️ 想从希望的实得金额开始计算？' },
-  'home.reverseUnit':     { en: '(×₩100M)' , zh: '（×1亿韩元）' },
-  'home.sliderMin': { en: '$10M' , zh: '$1000万' },
-  'home.sliderMax': { en: '$2B' , zh: '$20亿' },
-  'home.detailSummary':   { en: '🔍 See the full breakdown' , zh: '🔍 查看详细明细' },
-  'home.flowExplain1':    { en: '💡 The <b>advertised jackpot (annuity basis)</b> shown in the news isn\u2019t what you actually receive. Taking the lump sum gets you roughly 45\u201360% of that as the <b>pre-tax cash value</b>, and this calculator is based on that pre-tax cash amount.' , zh: '💡 新闻里报道的<b>公布头奖金额（年金基准）</b>并不是你实际能拿到的金额。选择一次性支付的话，大约能拿到公布金额的45~60%作为<b>税前现金金额</b>，本计算器就是以这个税前现金金额为基准计算的。' },
-  'home.annuityInfoLink': { en: '\ud83d\udcc5 How is it different if you take the annuity? \u2192' , zh: '📅 如果选择年金支付会有什么不同？→' },
-  'home.calcBasisBox':    { en: '• Lump-sum basis (differs for installment payouts)' , zh: '• 以一次性支付为基准（分期支付另有不同）' },
-  'home.funMoneySummary': { en: '🤑 How much could you actually buy with this? (just for fun)' , zh: '🤑 这笔钱实际能买到什么？（纯属娱乐）' },
-  'home.groundingNote': { en: '🌱 But honestly, what you already have might be more than enough for a good day' , zh: '🌱 不过说真的，现在拥有的可能已经足够拥有美好的一天了' },
-  'home.dreamSummary': { en: '🎬 What would you do first if you won? (just for fun)' , zh: '🎬 如果中奖了，你会先做什么？（纯属娱乐）' },
-  'home.dreamIntro':   { en: 'What would you do first if you won?' , zh: '如果中奖了，你会先做什么？' },
-  'home.dreamFreedom': { en: '<span class="dream-emoji">🕊️</span> Hand in my resignation letter first' , zh: '<span class="dream-emoji">🕊️</span> 先递交辞职信' },
-  'home.dreamFamily':  { en: '<span class="dream-emoji">🏠</span> Buy a house for every family member' , zh: '<span class="dream-emoji">🏠</span> 给每位家人都买套房子' },
-  'home.dreamTravel':  { en: '<span class="dream-emoji">✈️</span> Leave on a world trip right away' , zh: '<span class="dream-emoji">✈️</span> 马上出发环游世界' },
-  'home.dreamCalm':    { en: '<span class="dream-emoji">💼</span> Just quietly check my bank balance' , zh: '<span class="dream-emoji">💼</span> 只是安静地看看银行余额' },
-  'home.shareDreamBtn': { en: '📤 Share this result' , zh: '📤 分享这个结果' },
-  'home.jackpotToggle': { en: '🎟️ Check the recent jackpot' , zh: '🎟️ 查看最近头奖' },
-  'home.powerballName': { en: 'Powerball' , zh: '强力球' },
-  'home.megaName':      { en: 'Mega Millions' , zh: '超级百万' },
-  'home.officialLink':  { en: '\ud83d\udd17 Check the official site' , zh: '🔗 查看官方网站' },
-  'home.oddsTeaserTitle': { en: 'The 1-in-292M odds don\u2019t really register, do they?' , zh: '1/2.92亿的概率没什么真实感对吧？' },
-  'home.oddsTeaserSub':   { en: 'Comparing it to things like lightning strikes makes it click' , zh: '和被闪电击中做个对比就更有感觉了' },
-  'home.oddsTeaserLink':  { en: 'See the odds \u2192' , zh: '查看概率 →' },
-  'home.faqTeaserTitle': { en: '❓ People usually wonder about this' , zh: '❓ 大家通常会好奇这些问题' },
-  'home.faqTeaserDesc':  { en: 'Tap for the answer right away' , zh: '点击立即查看答案' },
-  'home.faqTeaserLink':  { en: 'See more answers \u2192' , zh: '查看更多答案 →' },
-  'home.trustToggle': { en: '✓ Why can I trust this?' , zh: '✓ 为什么可以信任这个计算器？' },
-  'home.trust1Name': { en: 'Reliable info' , zh: '可靠的信息' },
-  'home.trust1Desc': { en: 'Based on IRS · Korea NTS' , zh: '基于IRS·韩国国税厅数据' },
-  'home.trust2Name': { en: 'Accurate calculations' , zh: '精准的计算' },
-  'home.trust2Desc': { en: 'Reflects current tax rates' , zh: '反映最新税率' },
-  'home.trust3Name': { en: 'No personal data' , zh: '不收集个人信息' },
-  'home.trust3Desc': { en: 'Calculates only, nothing stored' , zh: '仅用于计算，不做任何存储' },
-  'home.trust4Name': { en: 'No purchase/brokerage' , zh: '不代理购买' },
-  'home.trust4Desc': { en: 'No agency or connection service' , zh: '不提供代购或中介服务' },
-  'home.sourceLabel': { en: 'Sources:' , zh: '参考来源：' },
-  'home.ntsLink':      { en: 'Korea NTS Hometax' , zh: '韩国国税厅 Hometax' },
+  'home.taxBefore': { en: 'Announced' , zh: '公布金额', vi: "Số tiền công bố", th: "จำนวนที่ประกาศ", ru: "Объявлено" },
+  'home.taxAfter':  { en: 'Take-home' , zh: '实得金额', vi: "Số tiền thực nhận", th: "จำนวนที่ได้รับจริง", ru: "На руки" },
+  'home.taxDiff':   { en: 'Taxes' , zh: '税金', vi: "Thuế", th: "ภาษี", ru: "Налоги" },
+  'home.miniResultLabel': { en: '✏️ Want to start from your desired take-home amount?' , zh: '✏️ 想从希望的实得金额开始计算？', vi: "✏️ Muốn bắt đầu từ số tiền thực nhận mong muốn?", th: "✏️ อยากเริ่มจากจำนวนเงินที่ต้องการได้รับจริงไหม?", ru: "✏️ Хотите начать с желаемой суммы на руки?" },
+  'home.reverseUnit':     { en: '(×₩100M)' , zh: '（×1亿韩元）', vi: "(×100 triệu KRW)", th: "(×100 ล้านวอน)", ru: "(×100 млн вон)" },
+  'home.sliderMin': { en: '$10M' , zh: '$1000万', vi: "$10 triệu", th: "$10 ล้าน", ru: "$10 млн" },
+  'home.sliderMax': { en: '$2B' , zh: '$20亿', vi: "$2 tỷ", th: "$2 พันล้าน", ru: "$2 млрд" },
+  'home.detailSummary':   { en: '🔍 See the full breakdown' , zh: '🔍 查看详细明细', vi: "🔍 Xem chi tiết đầy đủ", th: "🔍 ดูรายละเอียดทั้งหมด", ru: "🔍 Смотреть полную разбивку" },
+  'home.flowExplain1':    { en: '💡 The <b>advertised jackpot (annuity basis)</b> shown in the news isn\u2019t what you actually receive. Taking the lump sum gets you roughly 45\u201360% of that as the <b>pre-tax cash value</b>, and this calculator is based on that pre-tax cash amount.' , zh: '💡 新闻里报道的<b>公布头奖金额（年金基准）</b>并不是你实际能拿到的金额。选择一次性支付的话，大约能拿到公布金额的45~60%作为<b>税前现金金额</b>，本计算器就是以这个税前现金金额为基准计算的。', vi: "💡 <b>Số tiền jackpot công bố (theo hình thức trả góp hàng năm)</b> trên tin tức không phải là số tiền bạn thực nhận. Nếu chọn nhận một lần, bạn sẽ nhận khoảng 45–60% số đó dưới dạng <b>giá trị tiền mặt trước thuế</b>, và máy tính này tính toán dựa trên số tiền mặt trước thuế đó.", th: "💡 <b>จำนวนแจ็คพอตที่ประกาศ (แบบเงินรายปี)</b> ที่เห็นในข่าวไม่ใช่จำนวนที่คุณจะได้รับจริง หากเลือกรับเงินก้อนครั้งเดียว คุณจะได้รับประมาณ 45–60% ของจำนวนนั้นเป็น<b>มูลค่าเงินสดก่อนหักภาษี</b> และเครื่องคำนวณนี้คำนวณจากมูลค่าเงินสดก่อนหักภาษีนั้น", ru: "💡 <b>Объявленный джекпот (в виде ежегодной ренты)</b>, который вы видите в новостях, — это не то, что вы получите на самом деле. При единовременной выплате вы получите примерно 45–60% от этой суммы в виде <b>денежной стоимости до налогов</b>, и этот калькулятор основан именно на этой сумме до налогов." },
+  'home.annuityInfoLink': { en: '\ud83d\udcc5 How is it different if you take the annuity? \u2192' , zh: '📅 如果选择年金支付会有什么不同？→', vi: "📅 Nếu nhận theo hình thức trả góp hàng năm thì khác thế nào? →", th: "📅 ถ้าเลือกรับแบบเงินรายปีจะแตกต่างกันอย่างไร? →", ru: "📅 Чем отличается получение ренты? →" },
+  'home.calcBasisBox':    { en: '• Lump-sum basis (differs for installment payouts)' , zh: '• 以一次性支付为基准（分期支付另有不同）', vi: "• Tính theo hình thức trả một lần (trả góp sẽ khác)", th: "• คำนวณจากการจ่ายครั้งเดียว (การจ่ายเป็นงวดจะแตกต่างออกไป)", ru: "• Расчёт по единовременной выплате (для рассрочки — иначе)" },
+  'home.funMoneySummary': { en: '🤑 How much could you actually buy with this? (just for fun)' , zh: '🤑 这笔钱实际能买到什么？（纯属娱乐）', vi: "🤑 Số tiền này thực sự mua được gì? (chỉ để vui thôi)", th: "🤑 เงินจำนวนนี้ซื้ออะไรได้บ้าง? (แค่สนุกๆ)", ru: "🤑 Что реально можно купить на эти деньги? (просто для развлечения)" },
+  'home.groundingNote': { en: '🌱 But honestly, what you already have might be more than enough for a good day' , zh: '🌱 不过说真的，现在拥有的可能已经足够拥有美好的一天了', vi: "🌱 Nhưng thật ra, những gì bạn đang có có thể đã đủ cho một ngày tốt đẹp rồi", th: "🌱 แต่จริงๆ แล้ว สิ่งที่คุณมีอยู่ตอนนี้อาจเพียงพอสำหรับวันที่ดีอยู่แล้ว", ru: "🌱 Но, честно говоря, того, что у вас уже есть, возможно, достаточно для хорошего дня" },
+  'home.dreamSummary': { en: '🎬 What would you do first if you won? (just for fun)' , zh: '🎬 如果中奖了，你会先做什么？（纯属娱乐）', vi: "🎬 Nếu trúng số, bạn sẽ làm gì đầu tiên? (chỉ để vui thôi)", th: "🎬 ถ้าถูกรางวัล คุณจะทำอะไรก่อน? (แค่สนุกๆ)", ru: "🎬 Что бы вы сделали в первую очередь, если бы выиграли? (просто для развлечения)" },
+  'home.dreamIntro':   { en: 'What would you do first if you won?' , zh: '如果中奖了，你会先做什么？', vi: "Nếu trúng số, bạn sẽ làm gì đầu tiên?", th: "ถ้าถูกรางวัล คุณจะทำอะไรก่อน?", ru: "Что бы вы сделали в первую очередь, если бы выиграли?" },
+  'home.dreamFreedom': { en: '<span class="dream-emoji">🕊️</span> Hand in my resignation letter first' , zh: '<span class="dream-emoji">🕊️</span> 先递交辞职信', vi: "<span class=\"dream-emoji\">🕊️</span> Nộp đơn xin nghỉ việc trước tiên", th: "<span class=\"dream-emoji\">🕊️</span> ยื่นใบลาออกก่อนเลย", ru: "<span class=\"dream-emoji\">🕊️</span> Сначала подам заявление об увольнении" },
+  'home.dreamFamily':  { en: '<span class="dream-emoji">🏠</span> Buy a house for every family member' , zh: '<span class="dream-emoji">🏠</span> 给每位家人都买套房子', vi: "<span class=\"dream-emoji\">🏠</span> Mua nhà cho tất cả người thân", th: "<span class=\"dream-emoji\">🏠</span> ซื้อบ้านให้สมาชิกครอบครัวทุกคน", ru: "<span class=\"dream-emoji\">🏠</span> Куплю дом каждому члену семьи" },
+  'home.dreamTravel':  { en: '<span class="dream-emoji">✈️</span> Leave on a world trip right away' , zh: '<span class="dream-emoji">✈️</span> 马上出发环游世界', vi: "<span class=\"dream-emoji\">✈️</span> Lên đường du lịch vòng quanh thế giới ngay", th: "<span class=\"dream-emoji\">✈️</span> ออกเดินทางรอบโลกทันที", ru: "<span class=\"dream-emoji\">✈️</span> Сразу отправлюсь в кругосветное путешествие" },
+  'home.dreamCalm':    { en: '<span class="dream-emoji">💼</span> Just quietly check my bank balance' , zh: '<span class="dream-emoji">💼</span> 只是安静地看看银行余额', vi: "<span class=\"dream-emoji\">💼</span> Chỉ lặng lẽ kiểm tra số dư ngân hàng", th: "<span class=\"dream-emoji\">💼</span> แค่เช็คยอดเงินในธนาคารเงียบๆ", ru: "<span class=\"dream-emoji\">💼</span> Просто тихо проверю баланс на счету" },
+  'home.shareDreamBtn': { en: '📤 Share this result' , zh: '📤 分享这个结果', vi: "📤 Chia sẻ kết quả này", th: "📤 แชร์ผลลัพธ์นี้", ru: "📤 Поделиться результатом" },
+  'home.jackpotToggle': { en: '🎟️ Check the recent jackpot' , zh: '🎟️ 查看最近头奖', vi: "🎟️ Xem jackpot gần đây", th: "🎟️ ดูแจ็คพอตล่าสุด", ru: "🎟️ Посмотреть недавний джекпот" },
+  'home.powerballName': { en: 'Powerball' , zh: '强力球', vi: "Powerball", th: "พาวเวอร์บอล", ru: "Powerball" },
+  'home.megaName':      { en: 'Mega Millions' , zh: '超级百万', vi: "Mega Millions", th: "เมกะมิลเลียน", ru: "Mega Millions" },
+  'home.officialLink':  { en: '\ud83d\udd17 Check the official site' , zh: '🔗 查看官方网站', vi: "🔗 Xem trang chính thức", th: "🔗 ดูเว็บไซต์ทางการ", ru: "🔗 Официальный сайт" },
+  'home.oddsTeaserTitle': { en: 'The 1-in-292M odds don\u2019t really register, do they?' , zh: '1/2.92亿的概率没什么真实感对吧？', vi: "Tỷ lệ 1/292 triệu nghe không thực tế lắm nhỉ?", th: "โอกาส 1 ใน 292 ล้าน ฟังดูไม่ค่อยจริงใช่ไหม?", ru: "Шанс 1 к 292 миллионам как-то не ощущается, правда?" },
+  'home.oddsTeaserSub':   { en: 'Comparing it to things like lightning strikes makes it click' , zh: '和被闪电击中做个对比就更有感觉了', vi: "So sánh với việc bị sét đánh sẽ dễ hình dung hơn", th: "เทียบกับการถูกฟ้าผ่าจะเห็นภาพชัดขึ้น", ru: "Сравнение с ударом молнии делает это понятнее" },
+  'home.oddsTeaserLink':  { en: 'See the odds \u2192' , zh: '查看概率 →', vi: "Xem xác suất →", th: "ดูโอกาส →", ru: "Посмотреть шансы →" },
+  'home.faqTeaserTitle': { en: '❓ People usually wonder about this' , zh: '❓ 大家通常会好奇这些问题', vi: "❓ Mọi người thường thắc mắc điều này", th: "❓ คำถามที่คนมักสงสัย", ru: "❓ Об этом обычно спрашивают" },
+  'home.faqTeaserDesc':  { en: 'Tap for the answer right away' , zh: '点击立即查看答案', vi: "Nhấn để xem câu trả lời ngay", th: "แตะเพื่อดูคำตอบทันที", ru: "Нажмите, чтобы увидеть ответ" },
+  'home.faqTeaserLink':  { en: 'See more answers \u2192' , zh: '查看更多答案 →', vi: "Xem thêm câu trả lời →", th: "ดูคำตอบเพิ่มเติม →", ru: "Больше ответов →" },
+  'home.trustToggle': { en: '✓ Why can I trust this?' , zh: '✓ 为什么可以信任这个计算器？', vi: "✓ Vì sao có thể tin tưởng cái này?", th: "✓ ทำไมถึงเชื่อถือได้?", ru: "✓ Почему можно доверять этим расчётам?" },
+  'home.trust1Name': { en: 'Reliable info' , zh: '可靠的信息', vi: "Thông tin đáng tin cậy", th: "ข้อมูลที่เชื่อถือได้", ru: "Надёжная информация" },
+  'home.trust1Desc': { en: 'Based on IRS · Korea NTS' , zh: '基于IRS·韩国国税厅数据', vi: "Dựa trên IRS · Cơ quan Thuế Hàn Quốc", th: "อ้างอิงจาก IRS และกรมสรรพากรเกาหลี", ru: "На основе данных IRS и налоговой службы Кореи" },
+  'home.trust2Name': { en: 'Accurate calculations' , zh: '精准的计算', vi: "Tính toán chính xác", th: "การคำนวณที่แม่นยำ", ru: "Точные расчёты" },
+  'home.trust2Desc': { en: 'Reflects current tax rates' , zh: '反映最新税率', vi: "Phản ánh mức thuế hiện hành", th: "สะท้อนอัตราภาษีปัจจุบัน", ru: "Отражает текущие налоговые ставки" },
+  'home.trust3Name': { en: 'No personal data' , zh: '不收集个人信息', vi: "Không thu thập dữ liệu cá nhân", th: "ไม่เก็บข้อมูลส่วนตัว", ru: "Без сбора личных данных" },
+  'home.trust3Desc': { en: 'Calculates only, nothing stored' , zh: '仅用于计算，不做任何存储', vi: "Chỉ tính toán, không lưu trữ gì cả", th: "ใช้คำนวณเท่านั้น ไม่มีการบันทึกใดๆ", ru: "Только расчёт, ничего не сохраняется" },
+  'home.trust4Name': { en: 'No purchase/brokerage' , zh: '不代理购买', vi: "Không mua hộ/môi giới", th: "ไม่มีการซื้อแทน/เป็นนายหน้า", ru: "Без покупки/посредничества" },
+  'home.trust4Desc': { en: 'No agency or connection service' , zh: '不提供代购或中介服务', vi: "Không cung cấp dịch vụ đại lý hay môi giới", th: "ไม่มีบริการตัวแทนหรือนายหน้าใดๆ", ru: "Нет агентских или посреднических услуг" },
+  'home.sourceLabel': { en: 'Sources:' , zh: '参考来源：', vi: "Nguồn tham khảo:", th: "แหล่งอ้างอิง:", ru: "Источники:" },
+  'home.ntsLink':      { en: 'Korea NTS Hometax' , zh: '韩国国税厅 Hometax', vi: "Cơ quan Thuế Hàn Quốc Hometax", th: "กรมสรรพากรเกาหลี Hometax", ru: "Налоговая служба Кореи Hometax" },
 };
 
 // 언어 드롭다운 선택(onchange) 및 ?lang= URL 파라미터에서 공통으로 사용.
@@ -543,6 +545,11 @@ function setLanguage(lang){
 function resolveI18n(entry){
   if (currentLang === 'zh' && entry.zh) return entry.zh;
   if (currentLang === 'en' && entry.en) return entry.en;
+  if (currentLang === 'vi' && entry.vi) return entry.vi;
+  if (currentLang === 'th' && entry.th) return entry.th;
+  if (currentLang === 'ru' && entry.ru) return entry.ru;
+  // vi/th/ru 번역이 아직 없는 항목은 영어로 폴백(한국어보다 국제 방문자에게 더 유용)
+  if ((currentLang === 'vi' || currentLang === 'th' || currentLang === 'ru') && entry.en) return entry.en;
   return undefined;
 }
 
@@ -592,7 +599,10 @@ function applyTranslations(){
   // (텍스트만 번역되고 href는 그대로 한국어 페이지를 가리키던 문제 수정)
   const jackpotFullLink = document.getElementById('jackpot-history-full-link');
   if (jackpotFullLink) {
-    jackpotFullLink.href = (currentLang === 'en') ? 'biggest-lottery-jackpots-after-tax.html' : 'biggest-jackpot-payouts.html';
+    // vi/th/ru 전용 잭팟 페이지는 없어서 영어 페이지로 폴백(한국어보다 국제 방문자에게 더 유용)
+    jackpotFullLink.href = (currentLang === 'ko') ? 'biggest-jackpot-payouts.html'
+      : (currentLang === 'zh') ? 'biggest_lottery_jackpots_after_tax_zh.html'
+      : 'biggest-lottery-jackpots-after-tax.html';
   }
 
   // "해외 거주 한국인" 배너 링크도 같은 이유로 언어별 페이지로 이어지게 함 — 이게 없으면
@@ -600,6 +610,7 @@ function applyTranslations(){
   // 전부 영어로 된 페이지로 넘어가버리는 문제가 있었음
   const introAbroadLink = document.getElementById('introAbroadLink');
   if (introAbroadLink) {
+    // vi/th/ru 전용 페이지는 없어서 영어 페이지로 폴백(한국어보다 국제 방문자에게 더 유용)
     introAbroadLink.href = (currentLang === 'ko') ? 'korean_abroad_us_lottery_tax_ko.html'
       : (currentLang === 'zh') ? 'korean_abroad_us_lottery_tax_zh.html'
       : 'korean-abroad-us-lottery-tax.html';
@@ -822,6 +833,10 @@ function formatWon(n){
   // 중국어도 억(亿)=10^8 단위 체계가 한국과 동일해서, 영어처럼 별도 million/billion 변환 없이
   // 접미사만 "亿韩元"으로 바꿔주면 됨
   if (typeof currentLang !== 'undefined' && currentLang === 'zh') return Math.round(n).toLocaleString('zh-CN') + '亿韩元';
+  // 베트남어·태국어·러시아어는 "억" 단위 체계가 없어서 영어처럼 million/billion 변환이 필요
+  if (typeof currentLang !== 'undefined' && currentLang === 'vi') return formatWonVi(n);
+  if (typeof currentLang !== 'undefined' && currentLang === 'th') return formatWonTh(n);
+  if (typeof currentLang !== 'undefined' && currentLang === 'ru') return formatWonRu(n);
   // 소수점 없이 정수(억원 단위)로 반올림해서 표시 — 읽기 쉽게 + 천단위 콤마
   const numStr = Math.round(n).toLocaleString('ko-KR');
   return numStr + '억원';
@@ -830,22 +845,28 @@ function formatWon(n){
 // 영어 화면에서는 "억"이라는 한국식 단위가 그대로 노출되면 안 되므로, 실제 원화 금액을
 // million/billion/trillion 단위의 표준 영어 표기(₩)로 환산해서 보여줌.
 // n은 "억" 단위 숫자(예: 6107.8 = 610,780,000,000원)
-function formatWonEn(n){
+// million/billion/trillion 단위 표기가 필요한 언어(en/vi/th/ru)가 공유하는 포맷터.
+// units는 [million, billion, trillion] 단위 이름, locale은 숫자 그룹핑(콤마 등)에 씀.
+function formatWonIntl(n, units, locale){
   const krw = n * 100000000; // 억 → 실제 원화
   const abs = Math.abs(krw);
   let numStr, unit;
   if (abs >= 1e12) {
-    numStr = (krw / 1e12).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-    unit = 'trillion';
+    numStr = (krw / 1e12).toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    unit = units[2];
   } else if (abs >= 1e9) {
-    numStr = (krw / 1e9).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-    unit = 'billion';
+    numStr = (krw / 1e9).toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    unit = units[1];
   } else {
-    numStr = (krw / 1e6).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
-    unit = 'million';
+    numStr = (krw / 1e6).toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+    unit = units[0];
   }
   return '₩ ' + numStr + ' ' + unit;
 }
+function formatWonEn(n){ return formatWonIntl(n, ['million', 'billion', 'trillion'], 'en-US'); }
+function formatWonVi(n){ return formatWonIntl(n, ['triệu', 'tỷ', 'nghìn tỷ'], 'vi-VN'); }
+function formatWonTh(n){ return formatWonIntl(n, ['ล้าน', 'พันล้าน', 'ล้านล้าน'], 'th-TH'); }
+function formatWonRu(n){ return formatWonIntl(n, ['млн', 'млрд', 'трлн'], 'ru-RU'); }
 
 const TAX_MODEL = {
   us_resident: {
@@ -975,9 +996,13 @@ function calcKoreaProgressiveTaxWon(wonAmount){
 // 'cn' 분기는 이 원칙대로 공식 자료(개인소득세법 제3조·실시조례 제20조 등) 확인 후 추가함 (2026년 7월).
 // 'in' 분기도 동일 원칙대로 공식 자료(소득세법 제115BB조/신법 제128조, 서차지 캡 등) 확인 후 추가함 (2026년 7월).
 // currentLang에 따라 ko/en/zh 중 하나를 고름. zh가 없으면(2단계 미번역 구간) ko로 폴백.
-function pickLang(ko, en, zh){
+function pickLang(ko, en, zh, vi, th, ru){
   if (currentLang === 'zh') return zh || ko;
   if (currentLang === 'en') return en || ko;
+  // vi/th/ru 번역이 아직 없는 호출부는 영어로 폴백(한국어보다 국제 방문자에게 더 유용)
+  if (currentLang === 'vi') return vi || en || ko;
+  if (currentLang === 'th') return th || en || ko;
+  if (currentLang === 'ru') return ru || en || ko;
   return ko;
 }
 
@@ -988,10 +1013,10 @@ function calcTakeHome(amount, country, stateCode){
     const final = afterUS * (1 - stateInfo.rate);
     return {
       afterUS, final,
-      label1: pickLang('미국 연방세', 'US Federal Tax', '美国联邦税'), val1: '-' + (TAX_MODEL.us_resident.federal * 100) + '%',
-      label2: pickLang(`${stateInfo.label} 주세`, `${stateInfo.labelEn} State Tax`, `${stateInfo.labelZh}州税`),
+      label1: pickLang('미국 연방세', 'US Federal Tax', '美国联邦税', 'Thuế liên bang Mỹ', 'ภาษีกลางสหรัฐฯ', 'Федеральный налог США'), val1: '-' + (TAX_MODEL.us_resident.federal * 100) + '%',
+      label2: pickLang(`${stateInfo.label} 주세`, `${stateInfo.labelEn} State Tax`, `${stateInfo.labelZh}州税`, `Thuế bang ${stateInfo.labelEn}`, `ภาษีมลรัฐ${stateInfo.labelEn}`, `Налог штата ${stateInfo.labelEn}`),
       val2: '-' + (stateInfo.rate * 100).toFixed(stateInfo.rate * 100 % 1 === 0 ? 0 : 2) + '%',
-      basisSuffix: pickLang('미국 거주자', 'US resident', '美国居民')
+      basisSuffix: pickLang('미국 거주자', 'US resident', '美国居民', 'Cư dân Mỹ', 'ผู้พำนักในสหรัฐฯ', 'Резидент США')
     };
   } else if (country === 'cn') {
     // 중국 개인소득세법 제3조: 복권 당첨(偶然所得)은 20% 단일세율. 실시조례 제20조 + 재정부세무총국공고
@@ -1008,10 +1033,10 @@ function calcTakeHome(amount, country, stateCode){
 
     return {
       afterUS, final,
-      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）'), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
-      label2: pickLang('중국 추가 납부 (FTC 적용)', 'China additional tax (FTC applied)', '中国追加缴税（已抵免FTC）'),
-      val2: chinaAdditionalTaxWon > 0 ? '-' + chinaEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）'),
-      basisSuffix: pickLang('중국 거주자', 'China resident', '中国居民')
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)'), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('중국 추가 납부 (FTC 적용)', 'China additional tax (FTC applied)', '中国追加缴税（已抵免FTC）', 'Thuế bổ sung tại Trung Quốc (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของจีน (ใช้ FTC แล้ว)', 'Дополнительный налог в Китае (с учётом FTC)'),
+      val2: chinaAdditionalTaxWon > 0 ? '-' + chinaEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)'),
+      basisSuffix: pickLang('중국 거주자', 'China resident', '中国居民', 'Cư dân Trung Quốc', 'ผู้พำนักในจีน', 'Резидент Китая')
     };
   } else if (country === 'in') {
     // 인도 소득세법 제115BB조(신법 제128조): 복권 당첨소득은 공제·면제 없이 30% 단일세율 + 4% 세스 +
@@ -1029,10 +1054,10 @@ function calcTakeHome(amount, country, stateCode){
 
     return {
       afterUS, final,
-      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）'), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
-      label2: pickLang('인도 추가 납부 (FTC 적용)', 'India additional tax (FTC applied)', '印度追加缴税（已抵免FTC）'),
-      val2: indiaAdditionalTaxWon > 0 ? '-' + indiaEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）'),
-      basisSuffix: pickLang('인도 거주자', 'India resident', '印度居民')
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)'), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('인도 추가 납부 (FTC 적용)', 'India additional tax (FTC applied)', '印度追加缴税（已抵免FTC）', 'Thuế bổ sung tại Ấn Độ (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของอินเดีย (ใช้ FTC แล้ว)', 'Дополнительный налог в Индии (с учётом FTC)'),
+      val2: indiaAdditionalTaxWon > 0 ? '-' + indiaEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)'),
+      basisSuffix: pickLang('인도 거주자', 'India resident', '印度居民', 'Cư dân Ấn Độ', 'ผู้พำนักในอินเดีย', 'Резидент Индии')
     };
   } else {
     // 2026-07 국세청 인터넷 상담 답변 기준: 미국 복권은 「복권 및 복권기금법」상 복권이 아니라
@@ -1052,10 +1077,10 @@ function calcTakeHome(amount, country, stateCode){
 
     return {
       afterUS, final,
-      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）'), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
-      label2: pickLang('한국 추가 납부 (FTC 적용)', 'Korea additional tax (FTC applied)', '韩国追加缴税（已抵免FTC）'),
-      val2: koreaAdditionalNationalTaxWon > 0 ? '-' + koreaEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）'),
-      basisSuffix: pickLang('한국 거주자', 'Korea resident', '韩国居民')
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)'), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('한국 추가 납부 (FTC 적용)', 'Korea additional tax (FTC applied)', '韩国追加缴税（已抵免FTC）', 'Thuế bổ sung tại Hàn Quốc (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของเกาหลี (ใช้ FTC แล้ว)', 'Дополнительный налог в Корее (с учётом FTC)'),
+      val2: koreaAdditionalNationalTaxWon > 0 ? '-' + koreaEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)'),
+      basisSuffix: pickLang('한국 거주자', 'Korea resident', '韩国居民', 'Cư dân Hàn Quốc', 'ผู้พำนักในเกาหลี', 'Резидент Кореи')
     };
   }
 }
@@ -1207,6 +1232,15 @@ function usdToKrwLabel(usd){
   const krw = usd * EXCHANGE_RATE;
   if (typeof currentLang !== 'undefined' && currentLang === 'en') {
     return '(≈ ' + formatWonEn(krw / 100000000) + ')';
+  }
+  if (typeof currentLang !== 'undefined' && currentLang === 'vi') {
+    return '(≈ ' + formatWonVi(krw / 100000000) + ')';
+  }
+  if (typeof currentLang !== 'undefined' && currentLang === 'th') {
+    return '(≈ ' + formatWonTh(krw / 100000000) + ')';
+  }
+  if (typeof currentLang !== 'undefined' && currentLang === 'ru') {
+    return '(≈ ' + formatWonRu(krw / 100000000) + ')';
   }
   // 억 단위로 먼저 반올림한 뒤 조/억을 나누면, "999.6억이 반올림되며 조 단위를 못 넘어가는" 이월 누락 문제가 안 생김
   const totalEok = Math.round(krw / 100000000);
@@ -1363,11 +1397,38 @@ function checkRefundPossibility(){
     VA: '\u5F17\u5409\u5C3C\u4E9A', WA: '\u534E\u76DB\u987F', DC: '\u534E\u76DB\u987F\u7279\u533A', WV: '\u897F\u5F17\u5409\u5C3C\u4E9A', WI: '\u5A01\u65AF\u5EB7\u661F',
     WY: '\u6021\u4FC4\u660E',
   };
+  // 베트남어는 미국 주 이름을 영문 표기 그대로 쓰는 게 관행이라 별도 표 없이 EN 표를 재사용
+  const STATE_DISPLAY_NAMES_TH = {
+    AL: 'แอละแบมา', AK: 'อะแลสกา', AZ: 'แอริโซนา', AR: 'อาร์คันซอ', CA: 'แคลิฟอร์เนีย',
+    CO: 'โคโลราโด', CT: 'คอนเนตทิคัต', DE: 'เดลาแวร์', FL: 'ฟลอริดา', GA: 'จอร์เจีย',
+    HI: 'ฮาวาย', ID: 'ไอดาโฮ', IL: 'อิลลินอยส์', IN: 'อินดีแอนา', IA: 'ไอโอวา',
+    KS: 'แคนซัส', KY: 'เคนตักกี', LA: 'หลุยเซียนา', ME: 'เมน', MD: 'แมริแลนด์',
+    MA: 'แมสซาชูเซตส์', MI: 'มิชิแกน', MN: 'มินนิโซตา', MS: 'มิสซิสซิปปี', MO: 'มิสซูรี',
+    MT: 'มอนแทนา', NE: 'เนแบรสกา', NV: 'เนวาดา', NH: 'นิวแฮมป์เชียร์', NJ: 'นิวเจอร์ซีย์',
+    NM: 'นิวเม็กซิโก', NY: 'นิวยอร์ก', NC: 'นอร์ทแคโรไลนา', ND: 'นอร์ทดาโคตา', OH: 'โอไฮโอ',
+    OK: 'โอคลาโฮมา', OR: 'ออริกอน', PA: 'เพนซิลเวเนีย', RI: 'โรดไอแลนด์', SC: 'เซาท์แคโรไลนา',
+    SD: 'เซาท์ดาโคตา', TN: 'เทนเนสซี', TX: 'เท็กซัส', UT: 'ยูทาห์', VT: 'เวอร์มอนต์',
+    VA: 'เวอร์จิเนีย', WA: 'วอชิงตัน', DC: 'วอชิงตัน ดี.ซี.', WV: 'เวสต์เวอร์จิเนีย', WI: 'วิสคอนซิน',
+    WY: 'ไวโอมิง',
+  };
+  const STATE_DISPLAY_NAMES_RU = {
+    AL: 'Алабама', AK: 'Аляска', AZ: 'Аризона', AR: 'Арканзас', CA: 'Калифорния',
+    CO: 'Колорадо', CT: 'Коннектикут', DE: 'Делавэр', FL: 'Флорида', GA: 'Джорджия',
+    HI: 'Гавайи', ID: 'Айдахо', IL: 'Иллинойс', IN: 'Индиана', IA: 'Айова',
+    KS: 'Канзас', KY: 'Кентукки', LA: 'Луизиана', ME: 'Мэн', MD: 'Мэриленд',
+    MA: 'Массачусетс', MI: 'Мичиган', MN: 'Миннесота', MS: 'Миссисипи', MO: 'Миссури',
+    MT: 'Монтана', NE: 'Небраска', NV: 'Невада', NH: 'Нью-Гэмпшир', NJ: 'Нью-Джерси',
+    NM: 'Нью-Мексико', NY: 'Нью-Йорк', NC: 'Северная Каролина', ND: 'Северная Дакота', OH: 'Огайо',
+    OK: 'Оклахома', OR: 'Орегон', PA: 'Пенсильвания', RI: 'Род-Айленд', SC: 'Южная Каролина',
+    SD: 'Южная Дакота', TN: 'Теннесси', TX: 'Техас', UT: 'Юта', VT: 'Вермонт',
+    VA: 'Вирджиния', WA: 'Вашингтон', DC: 'Вашингтон (округ Колумбия)', WV: 'Западная Вирджиния', WI: 'Висконсин',
+    WY: 'Вайоминг',
+  };
   const NO_TAX_STATES = ['AK', 'FL', 'NV', 'NH', 'SD', 'TN', 'TX', 'WA', 'WY'];
   const EXEMPT_STATES = ['CA'];
   const UNCERTAIN_STATES = ['MD'];
   const stateInfo = STATE_TAX_RATES[stateCode];
-  const stateName = pickLang(STATE_DISPLAY_NAMES[stateCode], STATE_DISPLAY_NAMES_EN[stateCode], STATE_DISPLAY_NAMES_ZH[stateCode]);
+  const stateName = pickLang(STATE_DISPLAY_NAMES[stateCode], STATE_DISPLAY_NAMES_EN[stateCode], STATE_DISPLAY_NAMES_ZH[stateCode], STATE_DISPLAY_NAMES_EN[stateCode], STATE_DISPLAY_NAMES_TH[stateCode], STATE_DISPLAY_NAMES_RU[stateCode]);
 
   let msg, cls;
   if (NO_TAX_STATES.includes(stateCode)) {
@@ -1567,13 +1628,9 @@ const CASH_VALUE_RATIO = 0.58; // 일시불(lump sum)은 발표된 연금 기준
 
 function initJackpotCardAmt(){
   const krw = getJackpotKRW();
-  const isEnCard = (typeof currentLang !== 'undefined' && currentLang === 'en');
-  const isZhCard = (typeof currentLang !== 'undefined' && currentLang === 'zh');
-  const 억 = isEnCard
-    ? (n) => formatWonEn(n / 100000000)
-    : (n) => Math.round(n / 100000000).toLocaleString(isZhCard ? 'zh-CN' : 'ko-KR') + (isZhCard ? '亿韩元' : '억원');
-  document.getElementById('jackpot-card-amt').textContent = pickLang('약 ', 'About ', '约') + 억(krw * CASH_VALUE_RATIO);
-  document.getElementById('jackpot-card-amt-note').textContent = pickLang('(일시불 세전)', '(lump-sum, pre-tax)', '(一次性支付，税前)');
+  // formatWon()이 이미 언어별(ko/en/zh/vi/th/ru) 단위 변환·표기를 전부 처리하므로 재사용
+  document.getElementById('jackpot-card-amt').textContent = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ') + formatWon((krw * CASH_VALUE_RATIO) / 100000000);
+  document.getElementById('jackpot-card-amt-note').textContent = pickLang('(일시불 세전)', '(lump-sum, pre-tax)', '(一次性支付，税前)', '(một lần, trước thuế)', '(จ่ายครั้งเดียว ก่อนหักภาษี)', '(единовременно, до налогов)');
 
   const pbUsd = Number(document.getElementById('jp-powerball').getAttribute('data-target'));
   const mgUsd = Number(document.getElementById('jp-mega').getAttribute('data-target'));
@@ -1584,11 +1641,13 @@ function initJackpotCardAmt(){
   // 오늘 실제 잭팟의 일시불 환산액을 버튼에 미리 보여주고 누르면 바로 채워지게 함.
   // 버튼에는 실제로 입력창에 채워질 값(M USD)과 그 원화 감(약 -억원)을 같이 보여줘서,
   // "버튼을 누르면 아래 M USD 칸에 정확히 이 숫자가 들어간다"는 걸 한눈에 알 수 있게 함
+  // ko/zh는 "M USD"만, 그 외(en/vi/th/ru)는 국제 독자에게 익숙한 "$" 접두사를 붙임
+  const showDollarSign = (typeof currentLang !== 'undefined' && currentLang !== 'ko' && currentLang !== 'zh');
   const quickfillLabel = (usd) => {
     const cashUsd = usd * CASH_VALUE_RATIO;
     const millions = Math.round(cashUsd / 1000000);
     const krwLabel = usdToKrwLabel(cashUsd).replace(/^\(|\)$/g, '');
-    return isEnCard ? `$${millions}M USD (${krwLabel})` : `${millions}M USD (${krwLabel})`;
+    return showDollarSign ? `$${millions}M USD (${krwLabel})` : `${millions}M USD (${krwLabel})`;
   };
   document.getElementById('quickfill-pb-amt').textContent = quickfillLabel(pbUsd);
   document.getElementById('quickfill-mm-amt').textContent = quickfillLabel(mgUsd);
@@ -1616,14 +1675,10 @@ function refreshJackpotDrawerIfOpen(){
     const announcedKrw = getJackpotKRW();
     const cashKrw = announcedKrw * CASH_VALUE_RATIO;
     const r = calcTakeHome(cashKrw / 100000000, 'kr');
-    const isEnJc = (typeof currentLang !== 'undefined' && currentLang === 'en');
-    const isZhJc = (typeof currentLang !== 'undefined' && currentLang === 'zh');
-    const 억 = isEnJc
-      ? (n) => formatWonEn(n / 100000000)
-      : (n) => Math.round(n / 100000000).toLocaleString(isZhJc ? 'zh-CN' : 'ko-KR') + (isZhJc ? '亿韩元' : '억원');
-    const about = pickLang('약 ', 'About ', '约');
-    document.getElementById('jc-jackpot').textContent = about + 억(announcedKrw);
-    document.getElementById('jc-cash').textContent = about + 억(cashKrw);
+    // formatWon()이 이미 언어별(ko/en/zh/vi/th/ru) 단위 변환·표기를 전부 처리하므로 재사용
+    const about = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ');
+    document.getElementById('jc-jackpot').textContent = about + formatWon(announcedKrw / 100000000);
+    document.getElementById('jc-cash').textContent = about + formatWon(cashKrw / 100000000);
     document.getElementById('jc-final').textContent = about + formatWon(r.final);
     document.getElementById('jc-note-basis').textContent = pickLang(
       `한국 거주자 기준 (미국 비거주자 원천징수 30% + 한국 종합소득세 누진세율/FTC 적용, 환율 약 ${EXCHANGE_RATE.toLocaleString('ko-KR')}원 적용)`,
@@ -1731,7 +1786,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(location.search);
   const lang = params.get('lang');
-  if (lang === 'en' || lang === 'zh') {
+  if (lang === 'en' || lang === 'zh' || lang === 'vi' || lang === 'th' || lang === 'ru') {
     setLanguage(lang);
     // 한 번 적용한 뒤엔 URL에서 ?lang= 을 지워야 함 — 남겨두면, 방문자가 이후 언어 토글로
     // 직접 다른 언어를 골라도 새로고침하는 순간 주소창에 남아있는 이 값이 다시 강제로
@@ -1958,7 +2013,7 @@ function updateFlexBox(finalEok, country){
   const inrAmount = usdAmount * EXCHANGE_RATE_INR;
   const amountByCurrency = { krw: wonAmount, usd: usdAmount, cny: cnyAmount, inr: inrAmount };
   const ref = FLEX_REF[country] || FLEX_REF.kr;
-  const localeStr = currentLang === 'en' ? 'en-US' : (currentLang === 'zh' ? 'zh-CN' : 'ko-KR');
+  const localeStr = LOCALE_MAP[currentLang] || 'ko-KR';
 
   const apt = Math.floor(amountByCurrency[ref.apt.currency] / ref.apt.price);
   const car = Math.floor(amountByCurrency[ref.car.currency] / ref.car.price);
@@ -2334,7 +2389,7 @@ function updateHomeCalc(usdOverride){
 
   const trustLine = document.getElementById('home-trust-line');
   if (trustLine) {
-    const rateStr = EXCHANGE_RATE.toLocaleString(currentLang === 'zh' ? 'zh-CN' : 'ko-KR');
+    const rateStr = EXCHANGE_RATE.toLocaleString(LOCALE_MAP[currentLang] || 'ko-KR');
     // 국가별로 실제 근거가 되는 과세당국이 다름 — 중국 거주자 시나리오에 한국 국세청 자료가
     // 근거인 것처럼 표기하면 사실과 다르므로, 국가에 맞는 과세당국만 표기함
     const authorityText = (country === 'cn')
@@ -2395,7 +2450,7 @@ function updateHomeCalc(usdOverride){
     formatWon(억) + ' prize basis · ' + basisSuffix,
     formatWon(억) + ' 中奖基准 · ' + basisSuffix
   );
-  const usdMillions = Math.round(usd / 1000000).toLocaleString(currentLang === 'en' ? 'en-US' : (currentLang === 'zh' ? 'zh-CN' : 'ko-KR'));
+  const usdMillions = Math.round(usd / 1000000).toLocaleString(LOCALE_MAP[currentLang] || 'ko-KR');
   document.getElementById('home-final-basis-mini').textContent = pickLang(
     `${usdMillions}M USD 당첨 · ${basisSuffix}`,
     `${usdMillions}M USD prize · ${basisSuffix}`,
