@@ -3096,17 +3096,16 @@ function renderLanguageContentLinks(){
   const container = document.getElementById('otherLanguagesList');
   if (!container) return;
   container.innerHTML = '';
+  // 26개 항목 전부 "한국에 사는 OO분이라면"을 통째로 반복하면 목록 하나가 화면 여러 장
+  // 분량으로 늘어져서, 국기 배지 + 언어명만 남기고 반복 문구는 뺌 — 위 아코디언 제목이
+  // 이미 "한국에 사는 다른 나라 분이라면"으로 맥락을 잡아주므로 각 줄에서 또 반복할 필요 없음.
+  // 전체 문장은 스크린리더용 aria-label로만 남겨서 접근성은 그대로 유지함
   LANGUAGE_CONTENT_PAGES.forEach(item => {
-    const row = document.createElement('div');
+    const row = document.createElement('a');
     row.className = 'other-lang-row';
-    const labelEl = document.createElement('span');
-    labelEl.className = 'other-lang-label';
-    labelEl.append(makeFlagBadge(item.flagCode), document.createTextNode(' ' + pickLang(item.label, item.labelEn, item.labelZh, item.labelVi, item.labelTh, item.labelRu)));
-    const linkEl = document.createElement('a');
-    linkEl.className = 'other-lang-link';
-    linkEl.href = item.contentPage;
-    linkEl.textContent = item.contentLabel;
-    row.append(labelEl, linkEl);
+    row.href = item.contentPage;
+    row.setAttribute('aria-label', pickLang(item.label, item.labelEn, item.labelZh, item.labelVi, item.labelTh, item.labelRu));
+    row.append(makeFlagBadge(item.flagCode), document.createTextNode(' ' + item.contentLabel));
     container.appendChild(row);
   });
 }
