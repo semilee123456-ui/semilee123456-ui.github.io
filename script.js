@@ -1287,6 +1287,9 @@ function usdToKrwLabel(usd){
   if (typeof currentLang !== 'undefined' && currentLang === 'ru') {
     return '(≈ ' + formatWonRu(krw / 100000000) + ')';
   }
+  if (typeof currentLang !== 'undefined' && currentLang === 'ja') {
+    return '(≈ ' + Math.round(krw / 100000000).toLocaleString('ja-JP') + '億ウォン)';
+  }
   // 억 단위로 먼저 반올림한 뒤 조/억을 나누면, "999.6억이 반올림되며 조 단위를 못 넘어가는" 이월 누락 문제가 안 생김
   const totalEok = Math.round(krw / 100000000);
   const 조 = Math.floor(totalEok / 10000);
@@ -1296,6 +1299,14 @@ function usdToKrwLabel(usd){
     if (조 > 0 && 억 === 0) return `(约${조}万亿韩元)`;
     if (조 > 0) return `(约${조}万亿${억.toLocaleString('zh-CN')}亿韩元)`;
     return `(约${억.toLocaleString('zh-CN')}亿韩元)`;
+  }
+  // formatWon()과 같은 원칙: 위에서 처리 안 된 나머지 모든 언어(크메르어·네팔어·우즈베크어·
+  // 몽골어·카자흐어·키르기스어·우르두어·벵골어·라오어·아랍어·힌디어·프랑스어·타갈로그어 등)는
+  // "억/조"라는 한국식 단위 대신 훨씬 널리 통하는 영어식 million/billion으로 통일함 —
+  // 이 함수(usdToKrwLabel)는 formatWon()과 별개라 그 수정이 안 들어가 있었고, 그 결과 이 언어들의
+  // 잭팟 퀵필 버튼에서만 "억원"이 그대로 노출되고 있었음
+  if (typeof currentLang !== 'undefined' && currentLang !== 'ko') {
+    return '(≈ ' + formatWonEn(krw / 100000000) + ')';
   }
   if (조 > 0 && 억 === 0) return `(약 ${조}조원)`;
   if (조 > 0) return `(약 ${조}조 ${억.toLocaleString('ko-KR')}억원)`;
