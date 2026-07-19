@@ -8198,8 +8198,8 @@
   "fr": "5. Utilisation des cookies"
  },
  "privacy.b5": {
-  "en": "Cookies from third-party ad services such as Google may be used to serve ads. You can refuse or delete cookies in your browser settings, though this may limit ad personalization.",
-  "zh": "为投放广告，可能会使用Google等第三方广告服务的Cookie。您可以在浏览器设置中拒绝保存或删除Cookie，这种情况下广告个性化功能可能会受到限制。",
+  "en": "Cookies from third-party ad services such as Google may be used to serve ads, and Google Analytics cookies are used to analyze visitor statistics. You can refuse or delete cookies in your browser settings, though this may limit ad personalization and analytics features.",
+  "zh": "为投放广告，可能会使用Google等第三方广告服务的Cookie，同时也会使用Google Analytics的Cookie来分析访客统计信息。您可以在浏览器设置中拒绝保存或删除Cookie，这种情况下广告个性化和统计功能可能会受到限制。",
   "vi": "Cookie từ các dịch vụ quảng cáo bên thứ ba như Google có thể được dùng để hiển thị quảng cáo. Bạn có thể từ chối hoặc xóa cookie trong cài đặt trình duyệt, dù điều này có thể hạn chế cá nhân hóa quảng cáo.",
   "th": "คุกกี้จากบริการโฆษณาบุคคลที่สามเช่น Google อาจถูกใช้เพื่อแสดงโฆษณา คุณสามารถปฏิเสธหรือลบคุกกี้ในการตั้งค่าเบราว์เซอร์ได้ แม้ว่าอาจจำกัดการปรับแต่งโฆษณาให้เหมาะกับคุณ",
   "ru": "Cookie от сторонних рекламных сервисов, таких как Google, могут использоваться для показа рекламы. Вы можете отклонить или удалить cookie в настройках браузера, хотя это может ограничить персонализацию рекламы.",
@@ -9673,5 +9673,67 @@
   "hi": "अन्य देश देखें",
   "fr": "Voir plus de pays",
   "tl": "Tingnan pa ang ibang bansa"
+ },
+ "odds.lightningPbBtn": {
+  "en": "🔴 Powerball",
+  "zh": "🔴 强力球",
+  "vi": "🔴 Powerball",
+  "th": "🔴 พาวเวอร์บอล",
+  "ru": "🔴 Powerball",
+  "km": "🔴 Powerball",
+  "ne": "🔴 Powerball",
+  "id": "🔴 Powerball",
+  "my": "🔴 Powerball",
+  "si": "🔴 Powerball",
+  "uz": "🔴 Powerball",
+  "mn": "🔴 Powerball",
+  "kk": "🔴 Powerball",
+  "ky": "🔴 Powerball",
+  "ur": "🔴 Powerball",
+  "bn": "🔴 Powerball",
+  "lo": "🔴 Powerball",
+  "ja": "🔴 Powerball",
+  "ar": "🔴 Powerball",
+  "hi": "🔴 Powerball",
+  "fr": "🔴 Powerball"
+ },
+ "odds.lightningMegaBtn": {
+  "en": "🟡 Mega Millions",
+  "zh": "🟡 超级百万",
+  "vi": "🟡 Mega Millions",
+  "th": "🟡 เมกะมิลเลียน",
+  "ru": "🟡 Mega Millions",
+  "km": "🟡 Mega Millions",
+  "ne": "🟡 Mega Millions",
+  "id": "🟡 Mega Millions",
+  "my": "🟡 Mega Millions",
+  "si": "🟡 Mega Millions",
+  "uz": "🟡 Mega Millions",
+  "mn": "🟡 Mega Millions",
+  "kk": "🟡 Mega Millions",
+  "ky": "🟡 Mega Millions",
+  "ur": "🟡 Mega Millions",
+  "bn": "🟡 Mega Millions",
+  "lo": "🟡 Mega Millions",
+  "ja": "🟡 Mega Millions",
+  "ar": "🟡 Mega Millions",
+  "hi": "🟡 Mega Millions",
+  "fr": "🟡 Mega Millions"
+ },
+ "faq.q7in": {
+  "en": "How much gift tax if I share with family? 👨‍👩‍👧",
+  "zh": "分给家人的话，赠与税要交多少？👨‍👩‍👧"
+ },
+ "faq.a7in": {
+  "en": "Gifts to specified relatives (spouse, parents, siblings, children, etc.) are tax-free regardless of amount. However, cash gifts or receipts exceeding ₹200,000 (about 2 lakh) can trigger a separate penalty under Section 269ST of the Income Tax Act, so it's safer to split large amounts via bank transfer.",
+  "zh": "赠与给配偶、父母、兄弟姐妹、子女等指定亲属的礼金，无论金额多少均免税。但如果以现金方式给付或收取超过20万卢比（约2 lakh）的金额，可能违反《所得税法》第269ST条而被单独处以罚款，因此大额款项建议分批通过银行转账进行。"
+ },
+ "faq.q19in": {
+  "en": "How do I actually file the tax return?",
+  "zh": "税务申报到底该怎么做？"
+ },
+ "faq.a19in": {
+  "en": "The US withholds 30% first. In India, you report this prize income under Schedule FSI (Foreign Source Income) of your income tax return (ITR). To claim a foreign tax credit for the US withholding, you must also file Form 67 (reorganized as Form 44 under the 2026 rules) by the ITR filing deadline, and the amount in it must exactly match Schedule FSI.",
+  "zh": "美国会先预扣30%。在印度，需要在所得税申报表（ITR）的附表FSI（境外来源所得）中申报这笔奖金收入。若要就美国预扣税申请外国税收抵免，必须在ITR申报截止日期前一并提交Form 67（根据2026年新规改为Form 44），且该表中的金额须与附表FSI的内容完全一致。"
  }
 }
