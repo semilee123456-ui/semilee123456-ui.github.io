@@ -484,14 +484,14 @@ const TAX_MODEL = {
     // 인도-미국 조세조약(DTAA)에 따라 FTC(외국납부세액공제)로 미국 원천징수분을 인도 세액 한도 내에서 상계 가능.
   },
   vn_resident: {
-    // 베트남 개인소득세법 시행규칙 Circular 111/2013/TT-BTC 제15조: 복권 등 상금(trúng thưởng) 소득은
-    // 1,000만동(VND, 약 40만원 수준) 초과분에 대해 10% 단일세율 원천징수. 잭팟 규모는 이 기준을 항상 훨씬 넘음.
+    // 베트남 개인소득세법 시행규칙 Circular 111/2013/TT-BTC 제15조: 복권 등 상금(trúng thưởng) 소득 10%
+    // 단일세율 원천징수. 2026-07-01 시행 신소득세법(Law No.109/2025/QH15)에서 면세 기준액이
+    // 1,000만동→2,000만동으로 상향됐지만(세율 10%는 그대로), 잭팟 규모는 이 기준을 항상 훨씬 넘음.
     prize_income_rate: 0.10
-    // ⚠️ 2026-07-19 정정: 미국-베트남 조세조약은 2015년 서명됐지만 아직 비준·발효되지 않은 상태임
-    // (미국 재무부가 2020년 세법 변경으로 조문 재협상 중, 베트남은 주요 미국 교역국 중 유일하게
-    // 발효된 조세조약이 없음). 게다가 베트남 국내법상 일방적 외국납부세액공제도 "근로소득"에만
-    // 명시돼 있고 복권 같은 다른 소득 유형에는 침묵하고 있어 확대 적용된다는 근거가 약함 —
-    // 아래 calcTakeHome의 FTC 상계를 제거해 더 안전한(높은) 세액으로 계산함.
+    // FTC(외국납부세액공제): 미국-베트남 조세조약 자체는 2015년 서명 후 아직 비준·발효 안 됐지만
+    // (베트남은 주요 미국 교역국 중 유일하게 발효된 조세조약이 없음), 그것과 별개로 같은
+    // Circular 111/2013/TT-BTC 제26조 제2항이 거주자의 해외 납부세액을 조세조약 여부와 무관하게
+    // 베트남 세액 한도 내에서 국내법상 일방적으로 공제해주는 걸 확인함 — FTC 상계 적용.
   },
   id_resident: {
     // 인도네시아 정부령(Peraturan Pemerintah) 132/2000 + 소득세법(PPh) 제4조 2항: 복권 당첨금(hadiah undian)은
@@ -509,9 +509,12 @@ const TAX_MODEL = {
   },
   th_resident: {
     // ⚠️ 태국은 자국 복권(정부복권판매처 GLO) 당첨금에는 별도 우대과세(0.5% 원천징수 + 인지세, 종합소득세
-    // 면제)가 있지만, 해외에서 받은 복권 당첨금을 태국 거주자가 어떻게 신고해야 하는지는 2024년 해외소득
-    // 송금 과세 개편(부분 시행) 이후로도 명확한 공식 가이드라인을 찾지 못함. 아래 수치는 태국 개인소득세
-    // 최고세율(35%)을 그대로 가져온 "추정치"이며, 실제 세율과 다를 수 있음 — UI에도 이 불확실성을 별도 표시함.
+    // 면제)가 있지만, 해외에서 받은 복권 당첨금을 태국 거주자가 어떻게 신고해야 하는지는 국세청 명령
+    // Paw.161/2566(2023-09-15, 태국 불기 2566년=서기 2023년 — 2024-01-01 이후 태국으로 송금하는
+    // 해외소득 전부를 그 해 종합소득에 합산 신고하도록 해석 변경, Paw.162/2566으로 2024-01-01 이전
+    // 취득분은 소급 적용 제외) 시행 이후로도 명확한 공식 가이드라인을 찾지 못함. 다만 "태국으로
+    // 가져오면 종합소득 합산"이라는 큰 틀은 확인됐으므로, 아래 수치는 태국 개인소득세 최고세율(35%,
+    // 순소득 500만 바트 초과 — 잭팟 규모는 항상 초과)을 그대로 가져온 "추정치"로 사용.
     unverified_approx_rate: 0.35
   },
   jp_resident: {
@@ -539,10 +542,14 @@ const TAX_MODEL = {
     windfall_rate: 0.25
   },
   lk_resident: {
-    // 스리랑카 국세법(Inland Revenue Act No.24 of 2017) — 복권·베팅·도박 당첨금은 "이익 및 수익"에
+    // ⚠️ 스리랑카 국세법(Inland Revenue Act No.24 of 2017) — 복권·베팅·도박 당첨금은 "이익 및 수익"에
     // 포함돼 일반 누진세율로 과세(자국 지급기관 대상 10% 원천징수(제157·158조)는 해외 지급에는
     // 적용 안 되고 그냥 누진세율로 직접 신고). 2025/26년 개인소득세 최고구간은 36%(과세표준
     // 430만 루피 초과) — 잭팟 규모는 항상 이 구간을 초과.
+    // 2025년 4월 세법 개정(Inland Revenue (Amendment) Act No.2 of 2025)으로 해외소득을 스리랑카
+    // 은행 계좌로 송금하면 15% 우대세율이 신설됐으나, 검색된 자료상 이 조항은 "해외 용역소득"
+    // (서비스 수출) 위주로 설명돼 있어 복권 같은 "우발이득"에도 적용되는지 불확실 — 확인 전까지는
+    // 더 안전한 기존 누진 최고세율(36%)을 그대로 유지함.
     top_bracket_rate: 0.36
   },
   uz_resident: {
@@ -577,15 +584,14 @@ const TAX_MODEL = {
     // (비신고자) 세율을 두지만, 이는 "파키스탄 내 지급기관이 원천징수"하는 걸 전제로 한 조항이라
     // 미국에서 직접 받는 당첨금에 그대로 적용되는지 불명확함. 이 계산기는 더 안전한 기본값으로
     // 일반 소득세 최고구간(35%)을 사용 — UI에도 이 불확실성을 별도 표시함.
-    unverified_approx_rate: 0.35,
-    // Super Tax(제4C조, 2025 Finance Act 기준): 과세소득 5억 루피 초과분에 10%(최고구간) —
-    // 복권 잭팟 규모(보통 10억원~수천억원, 루피 환산 시 항상 5억 루피를 훌쩍 넘음)라 이 계산기가
-    // 다루는 범위에서는 사실상 항상 최고구간(10%)이 적용된다고 봐도 안전함.
-    super_tax_top_rate: 0.10,
-    // 서차지: 연소득 1,000만 루피 초과 개인에게 "산출세액"(소득이 아니라 세액 기준) 10% 추가 부과.
-    // 급여소득자는 2026-27 회계연도(2026년 7월~)부터 이 서차지가 폐지됐지만, 복권 당첨금은
-    // 급여소득이 아니라 "기타소득"으로 분류돼 비급여소득자 기준(폐지 안 됨, 10%)이 적용됨.
-    surcharge_on_tax_rate: 0.10
+    // 추가로 확인된 두 가지 별개 조항(둘 다 35%에는 반영 안 함, 실제로는 더 높을 수 있음을 의미):
+    // (1) 비급여소득(non-salaried) 과세표준이 연 1억루피 초과 시 계산세액에 9% 서차지(surcharge) —
+    //     복권 당첨금이 이 대상 "비급여소득"인지 불명확.
+    // (2) 제4C조 "Super Tax" — 총소득이 (2026년 Finance Act 기준 대부분 업종 상향된) 5억루피를
+    //     초과하면 소득 자체에 최대 10%까지 별도 부과. 잭팟 규모(수백억원=수백억 루피)는 이 5억루피
+    //     기준을 압도적으로 초과하므로 이론상 적용 대상이지만, 일회성 우발소득에도 그대로 적용되는지는
+    //     확인 못 함. 즉 실제 파키스탄 실효세율은 35%보다 상당히 높을 가능성이 있음 — 세무 전문가 상담 권장.
+    unverified_approx_rate: 0.35
   },
   kh_resident: {
     // ⚠️ 캄보디아 세법(Law on Taxation)에는 급여·사업소득 외 개인의 복권·상금 소득을 과세하는
@@ -594,19 +600,20 @@ const TAX_MODEL = {
     unverified_rate: 0
   },
   mn_resident: {
-    // ⚠️ 몽골 개인소득세법의 "복권/퀴즈/도박 당첨금 40%" 조항 — 2025년 5월 몽골 내 베팅·도박업이
-    // 전면 금지되면서 이 도박 관련 조항이 개인소득세법에서 폐지됐다는 게 확인됨(국회 개정안 기준).
-    // 다만 폐지 후 "해외에서 합법적으로 받은 복권 당첨금"에 정확히 어떤 조항이 대신 적용되는지는
-    // 자료마다 결론이 엇갈림 — 일반 누진소득세율(10~25%)로 흡수된다는 해석도 있고, 폐지 이전 자료를
-    // 그대로 인용해 40%가 여전히 유효하다고 보는 자료도 있음(2026-07-19 GPT/Gemini 교차검증 포함).
-    // 확정 근거를 못 찾아 더 안전한 쪽(높은 세율)인 40%를 그대로 유지 — UI에도 이 불확실성을 표시함.
-    unverified_approx_rate: 0.40
+    // ⚠️ 몽골 개인소득세법의 베팅·도박성 당첨금 40% 조항은 2025년 국내 베팅·온라인도박·유료복권 전면
+    // 금지 입법(대통령령) 당시 관련 세법 조항까지 함께 폐지된 것으로 확인됨 — 즉 40%는 더 이상 유효한
+    // 근거가 아님. 그런데 그 자리를 대신할 "해외 복권 당첨금" 명시 조항을 찾지 못했고, GPT/Gemini
+    // 교차검증에서도 확정 근거를 못 찾음 — 근로/사업소득(제10조, 누진 10/15/25%)인지, 배당·이자·기타
+    // 소득(제15.1·16·17.1.2·17.1.3조, 단일 10%)인지, 별도 우발이득 조항이 있는지 법적 분류 자체가
+    // 미확인 상태. 10%는 "확정된 세율"이 아니라 여러 후보 중 가장 근접해 보이는 하나를 잠정적으로
+    // 쓰는 것 — UI에 불확실성 표시를 유지함.
+    unverified_approx_rate: 0.10
   },
   la_resident: {
-    // ⚠️ 라오스 신설 소득세법(No.88/NA, 2026년 7월 시행) — 복권 당첨소득(1천만 킵 초과분)에 5%
-    // 단일세율을 처음으로 도입. 시행된 지 얼마 안 돼 실제 적용 사례가 없고, 라오스는 미국과
-    // 조세조약이 없어 FTC(세액공제)도 적용 안 됨(미국 원천징수세에 이 5%가 그대로 추가됨).
-    // UI에도 이 불확실성을 별도 표시함.
+    // ⚠️ 라오스 신설 소득세법(No.88/NA, 2026-06-19 관보 게재·2026-07-01 시행 — 이전에 "No.67/NA"로
+    // 잘못 기재돼 있던 것 정정) — 복권 당첨소득(1천만 킵 초과분)에 5% 단일세율을 처음으로 도입.
+    // 시행된 지 얼마 안 돼 실제 적용 사례가 없고, 라오스는 미국과 조세조약이 없어 FTC(세액공제)도
+    // 적용 안 됨(미국 원천징수세에 이 5%가 그대로 추가됨). UI에도 이 불확실성을 별도 표시함.
     unverified_rate: 0.05,
     ftc_available: false
   }
@@ -636,7 +643,7 @@ const STATE_TAX_RATES = {
   KS:  { label: '캔자스', labelEn: 'Kansas', labelZh: '堪萨斯', rate: 0.0558 },
   KY:  { label: '켄터키', labelEn: 'Kentucky', labelZh: '肯塔基', rate: 0.035 },
   LA:  { label: '루이지애나', labelEn: 'Louisiana', labelZh: '路易斯安那', rate: 0.03 },
-  ME:  { label: '메인', labelEn: 'Maine', labelZh: '缅因', rate: 0.0915 }, // 2026년부터 소득 100만불(개인)·150만불(부부합산) 초과분에 2%p 밀리어네어 서차지 추가 시행(7.15%→9.15%)
+  ME:  { label: '메인', labelEn: 'Maine', labelZh: '缅因', rate: 0.0915 }, // 2026-01-01 시행 "밀리어네어 서차지"(LD 2212) — 소득 100만 달러 초과분에 2%p 추가되어 기존 7.15%→9.15%로 인상. 잭팟 규모는 항상 이 기준 초과.
   MD:  { label: '메릴랜드', labelEn: 'Maryland', labelZh: '马里兰', rate: 0.065 }, // 2025년 신설 최고세율 6.5%($100만 초과 구간) — 지방(county) 세는 다른 주와 일관되게 미포함
   MA:  { label: '매사추세츠', labelEn: 'Massachusetts', labelZh: '马萨诸塞', rate: 0.09 },
   MI:  { label: '미시간', labelEn: 'Michigan', labelZh: '密歇根', rate: 0.0425 },
@@ -727,7 +734,7 @@ function calcTakeHome(amount, country, stateCode){
   if (country === 'us') {
     const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
     const afterUS = amount * (1 - TAX_MODEL.us_resident.federal);
-    const final = afterUS * (1 - stateInfo.rate);
+    const final = amount * (1 - TAX_MODEL.us_resident.federal - stateInfo.rate);
     return {
       afterUS, final,
       label1: pickLang('미국 연방세', 'US Federal Tax', '美国联邦税', 'Thuế liên bang Mỹ', 'ภาษีกลางสหรัฐฯ', 'Федеральный налог США'), val1: '-' + (TAX_MODEL.us_resident.federal * 100) + '%',
@@ -778,12 +785,11 @@ function calcTakeHome(amount, country, stateCode){
     };
   } else if (country === 'vn') {
     // 베트남 개인소득세법 시행규칙 Circular 111/2013/TT-BTC 제15조: 복권 등 상금(trúng thưởng) 소득 10% 단일세율.
-    // ⚠️ 미국-베트남 조세조약이 발효되지 않았고(TAX_MODEL.vn_resident 주석 참고), 베트남 국내법상
-    // 일방적 세액공제도 근로소득에만 명시돼 있어 복권 소득에 FTC가 적용된다는 근거가 약함 —
-    // 더 안전한 쪽으로 FTC 상계 없이 10%를 미국 원천징수 위에 그대로 더함.
     const wonAmount = amount * 100000000;
     const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
-    const vnAdditionalTaxWon = wonAmount * TAX_MODEL.vn_resident.prize_income_rate;
+    const vnCalculatedTaxWon = wonAmount * TAX_MODEL.vn_resident.prize_income_rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, vnCalculatedTaxWon); // FTC 공제액(조세조약 아닌 Circular 111/2013 제26조 2항 국내법 기준, 한도 내 상계)
+    const vnAdditionalTaxWon = Math.max(vnCalculatedTaxWon - ftcCreditWon, 0);
 
     const afterUS = amount - (usWithholdingWon / 100000000);
     const final = afterUS - (vnAdditionalTaxWon / 100000000);
@@ -792,9 +798,9 @@ function calcTakeHome(amount, country, stateCode){
     return {
       afterUS, final,
       label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)'), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
-      label2: pickLang('베트남 추가 납부 (조세조약 미발효 ⚠️)', 'Vietnam additional tax (no tax treaty in force ⚠️)', '越南追加缴税（税收协定尚未生效⚠️）', 'Thuế bổ sung tại Việt Nam (hiệp định thuế chưa có hiệu lực ⚠️)', 'ภาษีเพิ่มเติมของเวียดนาม (สนธิสัญญาภาษียังไม่มีผลบังคับใช้ ⚠️)', 'Дополнительный налог во Вьетнаме (налоговый договор не вступил в силу ⚠️)'),
-      val2: '-' + vnEffectivePct.toFixed(1) + '%',
-      basisSuffix: pickLang('베트남 거주자 (조세조약 미발효 ⚠️)', 'Vietnam resident (no tax treaty in force ⚠️)', '越南居民（税收协定尚未生效⚠️）', 'Cư dân Việt Nam (hiệp định thuế chưa có hiệu lực ⚠️)', 'ผู้พำนักในเวียดนาม (สนธิสัญญาภาษียังไม่มีผลบังคับใช้ ⚠️)', 'Резидент Вьетнама (налоговый договор не вступил в силу ⚠️)')
+      label2: pickLang('베트남 추가 납부 (FTC 적용)', 'Vietnam additional tax (FTC applied)', '越南追加缴税（已抵免FTC）', 'Thuế bổ sung tại Việt Nam (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของเวียดนาม (ใช้ FTC แล้ว)', 'Дополнительный налог во Вьетнаме (с учётом FTC)'),
+      val2: vnAdditionalTaxWon > 0 ? '-' + vnEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)'),
+      basisSuffix: pickLang('베트남 거주자', 'Vietnam resident', '越南居民', 'Cư dân Việt Nam', 'ผู้พำนักในเวียดนาม', 'Резидент Вьетнама')
     };
   } else if (country === 'id') {
     // 인도네시아 정부령(PP) 132/2000 + 소득세법(PPh) 제4조 2항: 복권 당첨금(hadiah undian) 25% 단일 최종세율.
@@ -906,7 +912,8 @@ function calcTakeHome(amount, country, stateCode){
       basisSuffix: pickLang('네팔 거주자', 'Nepal resident', '尼泊尔居民', 'Cư dân Nepal', 'ผู้พำนักในเนปาล', 'Резидент Непала')
     };
   } else if (country === 'lk') {
-    // 스리랑카: 해외 복권 당첨금은 일반 누진세율(최고 36%)로 직접 신고.
+    // ⚠️ 스리랑카: 해외 복권 당첨금은 일반 누진세율(최고 36%)로 직접 신고 — 단, 2025년 신설된 해외소득
+    // 은행송금 15% 우대세율이 복권 같은 우발이득에도 적용되는지 불확실해 더 안전한 36%를 유지함.
     const wonAmount = amount * 100000000;
     const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
     const lkCalculatedTaxWon = wonAmount * TAX_MODEL.lk_resident.top_bracket_rate;
@@ -918,9 +925,9 @@ function calcTakeHome(amount, country, stateCode){
     return {
       afterUS, final,
       label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)'), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
-      label2: pickLang('스리랑카 추가 납부 (FTC 적용, 근사치)', 'Sri Lanka additional tax (FTC applied, approximate)', '斯里兰卡追加缴税（已抵免FTC，估算值）', 'Thuế bổ sung tại Sri Lanka (đã áp dụng FTC, ước tính)', 'ภาษีเพิ่มเติมของศรีลังกา (ใช้ FTC แล้ว, ค่าประมาณ)', 'Дополнительный налог в Шри-Ланке (с учётом FTC, приблизительно)'),
+      label2: pickLang('스리랑카 추가 납부 (FTC 적용, 추정치 ⚠️)', 'Sri Lanka additional tax (FTC applied, unverified estimate ⚠️)', '斯里兰卡追加缴税（已抵免FTC，估算值⚠️）', 'Thuế bổ sung tại Sri Lanka (đã áp dụng FTC, ước tính chưa xác minh ⚠️)', 'ภาษีเพิ่มเติมของศรีลังกา (ใช้ FTC แล้ว, ค่าประมาณที่ยังไม่ยืนยัน ⚠️)', 'Дополнительный налог в Шри-Ланке (с учётом FTC, неподтверждённая оценка ⚠️)'),
       val2: lkAdditionalTaxWon > 0 ? '-' + lkEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)'),
-      basisSuffix: pickLang('스리랑카 거주자', 'Sri Lanka resident', '斯里兰卡居民', 'Cư dân Sri Lanka', 'ผู้พำนักในศรีลังกา', 'Резидент Шри-Ланки')
+      basisSuffix: pickLang('스리랑카 거주자 (추정치 ⚠️)', 'Sri Lanka resident (estimate ⚠️)', '斯里兰卡居民（估算值⚠️）', 'Cư dân Sri Lanka (ước tính ⚠️)', 'ผู้พำนักในศรีลังกา (ค่าประมาณ ⚠️)', 'Резидент Шри-Ланки (оценка ⚠️)')
     };
   } else if (country === 'uz') {
     // 우즈베키스탄: 모든 개인소득에 단일 12% 세율.
@@ -1009,18 +1016,11 @@ function calcTakeHome(amount, country, stateCode){
     };
   } else if (country === 'pk') {
     // ⚠️ 파키스탄: 복권 원천징수 규정(20~40%)이 자국 지급기관 전제라 적용 여부 불명확 — 일반 소득세
-    // 최고구간(35%)으로 추정. 여기에 더해 Super Tax(제4C조, 소득 기준 10%)와 서차지(산출세액 기준
-    // 10%)가 이 계산기가 다루는 잭팟 규모에서는 사실상 항상 같이 적용됨 — GPT/Gemini 교차검증
-    // 결과 반영(2026-07-19). FTC(외국납부세액공제)는 미국 원천징수분을 기본세(35%)에서만
-    // 상계하고, Super Tax·서차지는 조세조약상 별도 국내세로 간주해 FTC 상계 대상에서 제외함
-    // (더 안전한 쪽으로 추정 — 실제로 상계 가능하다면 사용자가 실제 내는 세금은 이보다 적을 수 있음).
+    // 최고구간(35%)으로 추정.
     const wonAmount = amount * 100000000;
     const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
-    const pkBaseTaxWon = wonAmount * TAX_MODEL.pk_resident.unverified_approx_rate;
-    const pkSuperTaxWon = wonAmount * TAX_MODEL.pk_resident.super_tax_top_rate;
-    const pkSurchargeWon = pkBaseTaxWon * TAX_MODEL.pk_resident.surcharge_on_tax_rate;
-    const pkCalculatedTaxWon = pkBaseTaxWon + pkSuperTaxWon + pkSurchargeWon;
-    const ftcCreditWon = Math.min(usWithholdingWon, pkBaseTaxWon);
+    const pkCalculatedTaxWon = wonAmount * TAX_MODEL.pk_resident.unverified_approx_rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, pkCalculatedTaxWon);
     const pkAdditionalTaxWon = Math.max(pkCalculatedTaxWon - ftcCreditWon, 0);
     const afterUS = amount - (usWithholdingWon / 100000000);
     const final = afterUS - (pkAdditionalTaxWon / 100000000);
@@ -1050,7 +1050,8 @@ function calcTakeHome(amount, country, stateCode){
       basisSuffix: pickLang('캄보디아 거주자 (추정치 ⚠️)', 'Cambodia resident (estimate ⚠️)', '柬埔寨居民（估算值⚠️）', 'Cư dân Campuchia (ước tính ⚠️)', 'ผู้พำนักในกัมพูชา (ค่าประมาณ ⚠️)', 'Резидент Камбоджи (оценка ⚠️)')
     };
   } else if (country === 'mn') {
-    // ⚠️ 몽골: 베팅·도박성 당첨금 40% 조항은 있으나 2025년 국내 베팅업 전면 금지 후 적용 여부 불명확 — 그대로 추정 적용.
+    // ⚠️ 몽골: 예전 베팅·도박성 당첨금 40% 조항은 2025년 국내 베팅업 전면 금지 입법 때 함께 폐지됨 확인.
+    // 해외 복권 당첨금에 대한 명시 조항이 없어, 기타소득에 적용되는 일반 단일세율 10%를 추정치로 사용.
     const wonAmount = amount * 100000000;
     const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
     const mnCalculatedTaxWon = wonAmount * TAX_MODEL.mn_resident.unverified_approx_rate;
@@ -1208,6 +1209,28 @@ function goToRealAbroad(country, lang){
   setLanguage(lang, true);
   setHomeCountry(country);
   goToCalculatorInput();
+}
+
+// 언어/국가 버튼 그리드를 드롭다운으로 압축한 UI용 — 선택된 <option>의 value를 보고
+// 언어 전환(setLanguage) 또는 별도 페이지 이동(location.href) 중 하나로 분기
+function goWithLangSelect(selectId){
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const val = sel.value;
+  if (val.startsWith('href:')) {
+    location.href = val.slice(5);
+  } else {
+    setLanguage(val, true);
+    goToCalculatorInput();
+  }
+}
+
+// "다른 나라에 살아요" 드롭다운(국가|언어 값)을 goToRealAbroad로 연결
+function goRealAbroadFromSelect(selectId){
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const [country, lang] = sel.value.split('|');
+  goToRealAbroad(country, lang);
 }
 
 function formatAbbreviatedUsd(value){
@@ -2212,7 +2235,7 @@ const FAQ_TG2 = {
   },
   pk: {
     title: () => pickLang('파키스탄에서도 또 내요? (추정치 ⚠️)', 'Do I also pay in Pakistan? (estimate ⚠️)', '在巴基斯坦也要交税吗？（估算值⚠️）', 'Có phải đóng thuế ở Pakistan nữa không? (ước tính ⚠️)', 'ต้องเสียภาษีในปากีสถานด้วยไหม? (ค่าประมาณ ⚠️)', 'Нужно ли платить налог ещё и в Пакистане? (оценка ⚠️)'),
-    sub: () => pickLang('복권 원천징수 규정(20~40%)이 자국 지급기관 전제라 적용 여부 불명확해, 일반 소득세 최고구간(35%)으로 추정 계산했어요. 여기에 잭팟 규모 당첨금은 Super Tax(10%)와 서차지(세액의 10%)까지 더 붙어요 — 실제와 다를 수 있어요', 'Pakistan’s lottery withholding rule (20–40%) assumes a local payer, so it’s unclear if it applies here — we estimated using the top general income tax rate (35%) instead. A jackpot-sized win also triggers Pakistan’s Super Tax (10%) and a surcharge (10% of the tax amount); the real amount may differ', '巴基斯坦彩票预扣规定（20%~40%）以境内支付方为前提，是否适用尚不明确，故按一般所得税最高档（35%）估算。头奖规模的奖金还会额外产生Super Tax（10%）和附加税（税额的10%）— 可能与实际不同', 'Quy định khấu trừ xổ số của Pakistan (20–40%) giả định bên chi trả trong nước nên chưa rõ có áp dụng không — chúng tôi ước tính theo thuế suất thu nhập chung cao nhất (35%) thay thế. Với tiền thắng cỡ jackpot còn phát sinh thêm Super Tax (10%) và phụ thu (10% số thuế) — số tiền thực tế có thể khác', 'กฎการหักภาษี ณ ที่จ่ายลอตเตอรีของปากีสถาน (20–40%) อ้างอิงกรณีผู้จ่ายในประเทศ จึงยังไม่ชัดเจนว่าใช้ได้หรือไม่ เราจึงประมาณด้วยอัตราภาษีเงินได้ทั่วไปสูงสุด (35%) แทน เงินรางวัลระดับแจ็คพอตยังมี Super Tax (10%) และเงินเพิ่ม (10% ของภาษี) เพิ่มเข้ามาอีก — จำนวนจริงอาจแตกต่างออกไป', 'Пакистанское правило удержания налога с лотереи (20–40%) предполагает местного плательщика, поэтому неясно, применимо ли оно — мы использовали оценку по максимальной обычной ставке подоходного налога (35%). Для выигрыша джекпот-уровня также добавляются пакистанский Super Tax (10%) и надбавка (10% от суммы налога); реальная сумма может отличаться')
+    sub: () => pickLang('복권 원천징수 규정(20~40%)이 자국 지급기관 전제라 적용 여부 불명확해, 일반 소득세 최고구간(35%)으로 추정 계산했어요 — 실제와 다를 수 있어요', 'Pakistan’s lottery withholding rule (20–40%) assumes a local payer, so it’s unclear if it applies here — we estimated using the top general income tax rate (35%) instead; the real amount may differ', '巴基斯坦彩票预扣规定（20%~40%）以境内支付方为前提，是否适用尚不明确，故按一般所得税最高档（35%）估算 — 可能与实际不同', 'Quy định khấu trừ xổ số của Pakistan (20–40%) giả định bên chi trả trong nước nên chưa rõ có áp dụng không — chúng tôi ước tính theo thuế suất thu nhập chung cao nhất (35%) thay thế, số tiền thực tế có thể khác', 'กฎการหักภาษี ณ ที่จ่ายลอตเตอรีของปากีสถาน (20–40%) อ้างอิงกรณีผู้จ่ายในประเทศ จึงยังไม่ชัดเจนว่าใช้ได้หรือไม่ เราจึงประมาณด้วยอัตราภาษีเงินได้ทั่วไปสูงสุด (35%) แทน — จำนวนจริงอาจแตกต่างออกไป', 'Пакистанское правило удержания налога с лотереи (20–40%) предполагает местного плательщика, поэтому неясно, применимо ли оно — мы использовали оценку по максимальной обычной ставке подоходного налога (35%); реальная сумма может отличаться')
   },
   kh: {
     title: () => pickLang('캄보디아에서도 또 내요? (추정치 ⚠️)', 'Do I also pay in Cambodia? (estimate ⚠️)', '在柬埔寨也要交税吗？（估算值⚠️）', 'Có phải đóng thuế ở Campuchia nữa không? (ước tính ⚠️)', 'ต้องเสียภาษีในกัมพูชาด้วยไหม? (ค่าประมาณ ⚠️)', 'Нужно ли платить налог ещё и в Камбодже? (оценка ⚠️)'),
@@ -2636,12 +2659,12 @@ const COUNTRY_TAX_DISCLAIMERS = {
     '⚠️ В 2023 году Россия приостановила действие ключевых положений налогового соглашения с США (включая устранение двойного налогообложения). Сама ставка 22% хорошо подтверждена, но неясно, можно ли по-прежнему зачесть уже уплаченный в США налог в счёт российского — в худшем случае налог может оказаться выше показанного здесь. Уточните детали у российского налогового специалиста.'
   ),
   pk: () => pickLang(
-    '⚠️ 파키스탄은 복권 당첨금에 대한 법(20~40%)이 있지만, 이건 파키스탄 안에서 지급하는 경우를 전제로 한 규정이라 미국에서 직접 받는 당첨금에도 그대로 적용되는지 명확하지 않아요. 여기 나온 세금은 일반 소득세 최고세율(35%)로 추정한 참고치예요. 여기에 더해, 잭팟 규모 당첨금은 소득 5억 루피 초과분에 붙는 Super Tax(제4C조, 10%)와 세액 기준 서차지(10%)까지 함께 부과돼요. 정확한 처리는 파키스탄 국세청(FBR)이나 세무 전문가에게 확인하세요.',
-    '⚠️ Pakistan has a specific law for lottery prizes (20–40%), but it assumes the payer is based in Pakistan, so it’s unclear whether it applies to winnings paid directly from the US. The tax shown here is an estimate based on the top general income tax rate (35%). On top of that, a jackpot-sized win also triggers Pakistan’s Super Tax (Section 4C, 10% above PKR 500 million in taxable income) and a surcharge (10% of the tax amount). Please confirm with Pakistan’s Federal Board of Revenue (FBR) or a tax professional.',
-    '⚠️ 巴基斯坦对彩票奖金有专门规定（20%~40%），但该规定以巴基斯坦境内支付方为前提，是否适用于从美国直接领取的奖金尚不明确。这里显示的税额是按一般所得税最高税率（35%）估算的参考值。此外，头奖规模的奖金还会触发Super Tax（第4C条，应税所得超过5亿卢比部分10%）和按税额计算的附加税（10%）。请务必向巴基斯坦联邦税务局（FBR）或税务专家确认。',
-    '⚠️ Pakistan có luật riêng cho tiền thưởng xổ số (20–40%), nhưng luật này giả định bên chi trả ở Pakistan, nên chưa rõ có áp dụng cho tiền thắng nhận trực tiếp từ Mỹ hay không. Số thuế hiển thị ở đây là ước tính theo thuế suất thu nhập chung cao nhất (35%). Ngoài ra, tiền thắng cỡ jackpot còn phát sinh Super Tax (Điều 4C, 10% trên phần thu nhập chịu thuế vượt 500 triệu Rupee) và phụ thu 10% tính trên số thuế. Vui lòng xác nhận với Cục Thuế Liên bang Pakistan (FBR) hoặc chuyên gia thuế.',
-    '⚠️ ปากีสถานมีกฎหมายเฉพาะสำหรับเงินรางวัลลอตเตอรี (20–40%) แต่กฎหมายนี้อ้างอิงกรณีผู้จ่ายอยู่ในปากีสถาน จึงยังไม่ชัดเจนว่าจะใช้กับเงินรางวัลที่ได้รับโดยตรงจากสหรัฐฯ หรือไม่ ภาษีที่แสดงนี้เป็นค่าประมาณจากอัตราภาษีเงินได้ทั่วไปสูงสุด (35%) นอกจากนี้ เงินรางวัลระดับแจ็คพอตยังมี Super Tax (มาตรา 4C, 10% ของรายได้ที่ต้องเสียภาษีส่วนที่เกิน 500 ล้านรูปี) และเงินเพิ่ม 10% ของภาษีอีกด้วย กรุณายืนยันกับคณะกรรมการรายได้กลางปากีสถาน (FBR) หรือผู้เชี่ยวชาญด้านภาษี',
-    '⚠️ В Пакистане есть отдельный закон о лотерейных призах (20–40%), но он рассчитан на случай, когда плательщик находится в Пакистане, поэтому неясно, применяется ли он к выигрышу, полученному напрямую из США. Показанный здесь налог — оценка по максимальной обычной ставке подоходного налога (35%). Вдобавок, выигрыш джекпот-уровня также подпадает под пакистанский Super Tax (статья 4C, 10% с облагаемого дохода свыше 500 млн рупий) и надбавку (10% от суммы налога). Уточните детали в Федеральном налоговом управлении Пакистана (FBR) или у налогового специалиста.'
+    '⚠️ 파키스탄은 복권 당첨금에 대한 법(20~40%)이 있지만, 이건 파키스탄 안에서 지급하는 경우를 전제로 한 규정이라 미국에서 직접 받는 당첨금에도 그대로 적용되는지 명확하지 않아요. 여기 나온 세금은 일반 소득세 최고세율(35%)로 추정한 참고치예요. 정확한 처리는 파키스탄 국세청(FBR)이나 세무 전문가에게 확인하세요.',
+    '⚠️ Pakistan has a specific law for lottery prizes (20–40%), but it assumes the payer is based in Pakistan, so it’s unclear whether it applies to winnings paid directly from the US. The tax shown here is an estimate based on the top general income tax rate (35%). Please confirm with Pakistan’s Federal Board of Revenue (FBR) or a tax professional.',
+    '⚠️ 巴基斯坦对彩票奖金有专门规定（20%~40%），但该规定以巴基斯坦境内支付方为前提，是否适用于从美国直接领取的奖金尚不明确。这里显示的税额是按一般所得税最高税率（35%）估算的参考值。请务必向巴基斯坦联邦税务局（FBR）或税务专家确认。',
+    '⚠️ Pakistan có luật riêng cho tiền thưởng xổ số (20–40%), nhưng luật này giả định bên chi trả ở Pakistan, nên chưa rõ có áp dụng cho tiền thắng nhận trực tiếp từ Mỹ hay không. Số thuế hiển thị ở đây là ước tính theo thuế suất thu nhập chung cao nhất (35%). Vui lòng xác nhận với Cục Thuế Liên bang Pakistan (FBR) hoặc chuyên gia thuế.',
+    '⚠️ ปากีสถานมีกฎหมายเฉพาะสำหรับเงินรางวัลลอตเตอรี (20–40%) แต่กฎหมายนี้อ้างอิงกรณีผู้จ่ายอยู่ในปากีสถาน จึงยังไม่ชัดเจนว่าจะใช้กับเงินรางวัลที่ได้รับโดยตรงจากสหรัฐฯ หรือไม่ ภาษีที่แสดงนี้เป็นค่าประมาณจากอัตราภาษีเงินได้ทั่วไปสูงสุด (35%) กรุณายืนยันกับคณะกรรมการรายได้กลางปากีสถาน (FBR) หรือผู้เชี่ยวชาญด้านภาษี',
+    '⚠️ В Пакистане есть отдельный закон о лотерейных призах (20–40%), но он рассчитан на случай, когда плательщик находится в Пакистане, поэтому неясно, применяется ли он к выигрышу, полученному напрямую из США. Показанный здесь налог — оценка по максимальной обычной ставке подоходного налога (35%). Уточните детали в Федеральном налоговом управлении Пакистана (FBR) или у налогового специалиста.'
   ),
   kh: () => pickLang(
     '⚠️ 캄보디아 세법에서는 복권 당첨 같은 개인 소득에 매기는 명확한 조항을 찾지 못했어요. 그래서 이 계산기는 캄보디아 추가 세금을 0원으로 가정하고 있는데, 실제로는 세금이 부과될 수도 있어요. 정확한 처리는 캄보디아 국세청(GDT)이나 세무 전문가에게 반드시 확인하세요.',
@@ -3002,7 +3025,7 @@ const COUNTRY_TAX_PROFILES = [
   { code: 'jp', flagCode: 'JP', label: '일본 거주자 (실제 일본 거주 기준)', labelEn: 'Japan resident (living in Japan)', labelZh: '日本居民（实际住在日本）', labelVi: 'Cư dân Nhật Bản (sống thực tế tại Nhật Bản)', labelTh: 'ผู้พำนักในญี่ปุ่น (อาศัยอยู่จริงในญี่ปุ่น)', labelRu: 'Резидент Японии (проживающий в Японии)', implemented: true, needsState: false },
   { code: 'ru', flagCode: 'RU', label: '러시아 거주자 (실제 러시아 거주 기준, 조약 정지 ⚠️)', labelEn: 'Russia resident (living in Russia, treaty suspended ⚠️)', labelZh: '俄罗斯居民（实际住在俄罗斯，条约暂停⚠️）', labelVi: 'Cư dân Nga (sống thực tế tại Nga, hiệp định bị đình chỉ ⚠️)', labelTh: 'ผู้พำนักในรัสเซีย (อาศัยอยู่จริงในรัสเซีย, สนธิสัญญาระงับ ⚠️)', labelRu: 'Резидент России (проживающий в России, договор приостановлен ⚠️)', implemented: true, needsState: false },
   { code: 'np', flagCode: 'NP', label: '네팔 거주자 (실제 네팔 거주 기준)', labelEn: 'Nepal resident (living in Nepal)', labelZh: '尼泊尔居民（实际住在尼泊尔）', labelVi: 'Cư dân Nepal (sống thực tế tại Nepal)', labelTh: 'ผู้พำนักในเนปาล (อาศัยอยู่จริงในเนปาล)', labelRu: 'Резидент Непала (проживающий в Непале)', implemented: true, needsState: false },
-  { code: 'lk', flagCode: 'LK', label: '스리랑카 거주자 (실제 스리랑카 거주 기준, 근사치)', labelEn: 'Sri Lanka resident (living in Sri Lanka, approximate)', labelZh: '斯里兰卡居民（实际住在斯里兰卡，估算值）', labelVi: 'Cư dân Sri Lanka (sống thực tế tại Sri Lanka, ước tính)', labelTh: 'ผู้พำนักในศรีลังกา (อาศัยอยู่จริงในศรีลังกา, ค่าประมาณ)', labelRu: 'Резидент Шри-Ланки (проживающий в Шри-Ланке, приблизительно)', implemented: true, needsState: false },
+  { code: 'lk', flagCode: 'LK', label: '스리랑카 거주자 (실제 스리랑카 거주 기준, 추정치 ⚠️)', labelEn: 'Sri Lanka resident (living in Sri Lanka, unverified estimate ⚠️)', labelZh: '斯里兰卡居民（实际住在斯里兰卡，估算值⚠️）', labelVi: 'Cư dân Sri Lanka (sống thực tế tại Sri Lanka, ước tính ⚠️)', labelTh: 'ผู้พำนักในศรีลังกา (อาศัยอยู่จริงในศรีลังกา, ค่าประมาณ ⚠️)', labelRu: 'Резидент Шри-Ланки (проживающий в Шри-Ланке, оценка ⚠️)', implemented: true, needsState: false },
   { code: 'uz', flagCode: 'UZ', label: '우즈베키스탄 거주자 (실제 우즈베키스탄 거주 기준)', labelEn: 'Uzbekistan resident (living in Uzbekistan)', labelZh: '乌兹别克斯坦居民（实际住在乌兹别克斯坦）', labelVi: 'Cư dân Uzbekistan (sống thực tế tại Uzbekistan)', labelTh: 'ผู้พำนักในอุซเบกิสถาน (อาศัยอยู่จริงในอุซเบกิสถาน)', labelRu: 'Резидент Узбекистана (проживающий в Узбекистане)', implemented: true, needsState: false },
   { code: 'kz', flagCode: 'KZ', label: '카자흐스탄 거주자 (실제 카자흐스탄 거주 기준)', labelEn: 'Kazakhstan resident (living in Kazakhstan)', labelZh: '哈萨克斯坦居民（实际住在哈萨克斯坦）', labelVi: 'Cư dân Kazakhstan (sống thực tế tại Kazakhstan)', labelTh: 'ผู้พำนักในคาซัคสถาน (อาศัยอยู่จริงในคาซัคสถาน)', labelRu: 'Резидент Казахстана (проживающий в Казахстане)', implemented: true, needsState: false },
   { code: 'kg', flagCode: 'KG', label: '키르기스스탄 거주자 (실제 키르기스스탄 거주 기준)', labelEn: 'Kyrgyzstan resident (living in Kyrgyzstan)', labelZh: '吉尔吉斯斯坦居民（实际住在吉尔吉斯斯坦）', labelVi: 'Cư dân Kyrgyzstan (sống thực tế tại Kyrgyzstan)', labelTh: 'ผู้พำนักในคีร์กีซสถาน (อาศัยอยู่จริงในคีร์กีซสถาน)', labelRu: 'Резидент Кыргызстана (проживающий в Кыргызстане)', implemented: true, needsState: false },
@@ -3047,6 +3070,11 @@ const LANGUAGE_CONTENT_PAGES = [
   { flagCode: "LK", label: "한국에 사는 스리랑카분이라면", labelEn: "Living in Korea as a Sri Lankan national", labelZh: "住在韩国的斯里兰卡人", labelVi: "Là công dân Sri Lanka sống ở Hàn Quốc", labelTh: "สำหรับชาวศรีลังกาที่อาศัยในเกาหลี", labelRu: "Для граждан Шри-Ланки, живущих в Корее", contentPage: "srilanka_in_korea_lottery_tax.html", contentLabel: "සිංහල →" },
   { flagCode: "PK", label: "한국에 사는 파키스탄분이라면", labelEn: "Living in Korea as a Pakistani national", labelZh: "住在韩国的巴基斯坦人", labelVi: "Là công dân Pakistan sống ở Hàn Quốc", labelTh: "สำหรับชาวปากีสถานที่อาศัยในเกาหลี", labelRu: "Для граждан Пакистана, живущих в Корее", contentPage: "urdu_in_korea_lottery_tax.html", contentLabel: "اردو →" },
   { flagCode: "UZ", label: "한국에 사는 우즈베키스탄분이라면", labelEn: "Living in Korea as an Uzbekistani national", labelZh: "住在韩国的乌兹别克斯坦人", labelVi: "Là công dân Uzbekistan sống ở Hàn Quốc", labelTh: "สำหรับชาวอุซเบกิสถานที่อาศัยในเกาหลี", labelRu: "Для граждан Узбекистана, живущих в Корее", contentPage: "uzbek_in_korea_lottery_tax.html", contentLabel: "O'zbek →" },
+  { flagCode: "ES", label: "한국에 사는 스페인어권 분이라면", labelEn: "Living in Korea and speak Spanish", labelZh: "住在韩国的西班牙语使用者", labelVi: "Nói tiếng Tây Ban Nha và sống ở Hàn Quốc", labelTh: "สำหรับผู้พูดภาษาสเปนที่อาศัยในเกาหลี", labelRu: "Для испаноговорящих, живущих в Корее", contentPage: "spanish_in_korea_lottery_tax.html", contentLabel: "Español →" },
+  { flagCode: "BR", label: "한국에 사는 포르투갈어권 분이라면", labelEn: "Living in Korea and speak Portuguese", labelZh: "住在韩国的葡萄牙语使用者", labelVi: "Nói tiếng Bồ Đào Nha và sống ở Hàn Quốc", labelTh: "สำหรับผู้พูดภาษาโปรตุเกสที่อาศัยในเกาหลี", labelRu: "Для португалоговорящих, живущих в Корее", contentPage: "portuguese_in_korea_lottery_tax.html", contentLabel: "Português →" },
+  { flagCode: "TW", label: "한국에 사는 대만·홍콩분이라면", labelEn: "Living in Korea as a Taiwanese or Hong Kong national", labelZh: "住在韩国的台湾人・香港人", labelVi: "Là người Đài Loan/Hồng Kông sống ở Hàn Quốc", labelTh: "สำหรับชาวไต้หวัน/ฮ่องกงที่อาศัยในเกาหลี", labelRu: "Для граждан Тайваня/Гонконга, живущих в Корее", contentPage: "taiwan_hk_in_korea_lottery_tax.html", contentLabel: "繁體中文 →" },
+  { flagCode: "TL", label: "한국에 사는 동티모르분이라면", labelEn: "Living in Korea as a Timorese national", labelZh: "住在韩国的东帝汶人", labelVi: "Là công dân Đông Timor sống ở Hàn Quốc", labelTh: "สำหรับชาวติมอร์-เลสเตที่อาศัยในเกาหลี", labelRu: "Для граждан Восточного Тимора, живущих в Корее", contentPage: "timor_in_korea_lottery_tax.html", contentLabel: "Tetun →" },
+  { flagCode: "UA", label: "한국에 사는 우크라이나분이라면", labelEn: "Living in Korea as a Ukrainian national", labelZh: "住在韩国的乌克兰人", labelVi: "Là công dân Ukraine sống ở Hàn Quốc", labelTh: "สำหรับชาวยูเครนที่อาศัยในเกาหลี", labelRu: "Для граждан Украины, живущих в Корее", contentPage: "ukrainian_in_korea_lottery_tax.html", contentLabel: "Українська →" },
 ];
 
 // 국기 이모지(regional indicator 시퀀스)는 기기·브라우저에 따라 실제 국기 대신 "KR" 같은
