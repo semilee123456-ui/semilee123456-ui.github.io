@@ -3684,5 +3684,41 @@ function updateSideBySide(eok, stateCode){
     grid.appendChild(card);
   });
 
+  // 모바일에서 카드 20개를 한 번에 쭉 나열하면 스크롤이 너무 길어져서, 처음엔 상위 6개(이미
+  // 실수령액 순 정렬됨)만 보여주고 나머지는 "더보기" 버튼으로 펼치게 함. 매번 다시 그릴 때마다
+  // 접힌 상태로 리셋 — eok/국가가 바뀌면 순위도 달라지므로 이전 펼침 상태를 유지할 이유가 없음
+  const SIDE_VISIBLE_COUNT = 6;
+  const allCards = Array.from(grid.children);
+  const showMoreBtn = document.getElementById('sideShowMoreBtn');
+  allCards.forEach((card, i) => { card.classList.toggle('side-card-hidden-extra', i >= SIDE_VISIBLE_COUNT); });
+  if (showMoreBtn) {
+    if (allCards.length > SIDE_VISIBLE_COUNT) {
+      showMoreBtn.style.display = 'block';
+      showMoreBtn.dataset.expanded = 'false';
+      const remaining = allCards.length - SIDE_VISIBLE_COUNT;
+      showMoreBtn.textContent = pickLang(`${remaining}개국 더 보기 ▾`, `Show ${remaining} more ▾`, `再显示${remaining}个国家 ▾`, `Xem thêm ${remaining} nước ▾`, `ดูเพิ่มอีก ${remaining} ประเทศ ▾`, `Показать ещё ${remaining} стран ▾`);
+    } else {
+      showMoreBtn.style.display = 'none';
+    }
+  }
+
   renderLanguageContentLinks();
+}
+
+function toggleSideShowMore(){
+  const grid = document.getElementById('sideByCountryGrid');
+  const btn = document.getElementById('sideShowMoreBtn');
+  if (!grid || !btn) return;
+  const expanded = btn.dataset.expanded === 'true';
+  if (!expanded) {
+    // 펼치기 전 "N개국 더 보기" 라벨을 저장해뒀다가, 다시 접을 때 그대로 복원함
+    btn.dataset.collapsedLabel = btn.textContent;
+    grid.querySelectorAll('.side-card-hidden-extra').forEach(card => { card.classList.remove('side-card-hidden-extra'); });
+    btn.dataset.expanded = 'true';
+    btn.textContent = pickLang('접기 ▴', 'Show less ▴', '收起 ▴', 'Thu gọn ▴', 'ย่อ ▴', 'Свернуть ▴');
+  } else {
+    Array.from(grid.children).slice(6).forEach(card => { card.classList.add('side-card-hidden-extra'); });
+    btn.dataset.expanded = 'false';
+    btn.textContent = btn.dataset.collapsedLabel || btn.textContent;
+  }
 }

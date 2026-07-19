@@ -740,16 +740,19 @@
         <div class="panel">
           <h2 class="panel-title" data-i18n="compare.sideTitle">나라별로 나란히 놓고 보면</h2>
           <div class="side-by-side-grid" id="sideByCountryGrid" role="status" aria-live="polite"></div>
+          <button type="button" class="side-showmore-btn" id="sideShowMoreBtn" onclick="toggleSideShowMore()" style="display:none;"></button>
 
-          <p class="side-breakdown-title" data-i18n="compare.sideBreakdownTitle">세금은 이렇게 빠져나가요</p>
-          <div id="sideBreakdownContainer"></div>
+          <details class="side-breakdown-accordion">
+            <summary class="side-breakdown-title" data-i18n="compare.sideBreakdownTitle">세금은 이렇게 빠져나가요</summary>
+            <div id="sideBreakdownContainer"></div>
+          </details>
           <p class="sim-note" data-i18n="compare.simNote">💡 종합소득세 누진세율과 외국납부세액공제(FTC)를 반영한 참고용 계산이에요 — 실제 세액은 개인 상황에 따라 달라질 수 있어 세무 전문가 상담을 권해요</p>
         </div>
 
-        <div class="panel" id="otherLanguagesPanel">
-          <h2 class="panel-title" data-i18n="compare.otherLangTitle">한국에 사는 다른 나라 분이라면</h2>
+        <details class="panel odds-accordion" id="otherLanguagesPanel">
+          <summary class="panel-title-toggle" data-i18n="compare.otherLangTitle">한국에 사는 다른 나라 분이라면</summary>
           <div id="otherLanguagesList" class="other-lang-list"></div>
-        </div>
+        </details>
 
         <div class="ad-slot" data-i18n="common.adSlot">광고 영역 (Google AdSense)</div>
 
