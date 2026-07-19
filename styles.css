@@ -340,17 +340,6 @@
   }
   .intro-persona-action{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; margin:0; }
   .intro-persona-action.is-link{ color:var(--teal); font-weight:800; text-decoration:none; display:inline-block; }
-  .intro-lang-btns{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
-  .intro-lang-btn{
-    flex:1; min-height:44px; border-radius:9px; border:1.5px solid var(--teal); background:var(--card);
-    color:var(--teal); font-family:inherit; font-size:var(--fs-small); font-weight:800; cursor:pointer;
-    transition:background 0.15s ease, color 0.15s ease;
-    display:flex; align-items:center; justify-content:center; text-align:center; line-height:1.25; padding:6px 4px;
-  }
-  .intro-lang-btn:active{ background:var(--teal); color:#fff; }
-  @media (hover: hover) {
-    .intro-lang-btn:hover{ background:var(--teal); color:#fff; }
-  }
   .intro-lang-select-row{ display:flex; gap:8px; margin-top:8px; }
   .intro-lang-select{
     flex:1; min-width:0; height:44px; border-radius:9px; border:1.5px solid var(--border);
