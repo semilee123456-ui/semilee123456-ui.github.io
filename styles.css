@@ -297,7 +297,10 @@
   .slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:16px; height:16px; border-radius:50%; background:var(--teal); cursor:pointer; }
 
   .result-grid{ display:grid; grid-template-columns:0.85fr 0.85fr 1.3fr; gap:10px; align-items:stretch; }
-  .side-by-side-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(105px, 1fr)); gap:10px; margin-top:14px; align-items:start; }
+  /* 국기 4개 이상 묶인 큰 그룹 카드는 .side-card-full로 자기 줄을 통째로 차지하게 분리했으니,
+     일반 카드끼리는 다시 기본값(stretch)으로 키를 맞춤 — align-items:start로 뒀더니 카드 내용
+     줄 수가 한 줄만 달라도(예: "인도 거주자" 1줄 vs "2개국 실수령액 동일" 2줄) 바닥이 들쭉날쭉해 보였음 */
+  .side-by-side-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(105px, 1fr)); gap:10px; margin-top:14px; }
   .side-card{ background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:16px; min-width:0; }
   .side-card-flag{ font-size:var(--fs-small); color:var(--text-muted); font-weight:700; margin:0 0 8px; }
   .side-card-amt{ font-size:19px; font-size:clamp(17px, 6vw, 22px); font-weight:800; color:var(--teal); margin:0 0 6px; font-variant-numeric:tabular-nums; overflow-wrap:break-word; }
@@ -314,6 +317,11 @@
   .side-card-hidden-extra{ display:none; }
   .side-card-flag-group{ display:flex; flex-wrap:wrap; gap:3px; margin:0 0 6px; }
   .side-card-group-note{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 8px; }
+  /* 국기가 많이 묶인 카드(예: 12개국)는 한 칸짜리 폭에서 국기가 여러 줄로 접혀서 카드가 세로로
+     길어지고, 옆 칸의 짧은 카드와 키 차이가 커서 빈 공간이 크게 남음 — 그리드 전체 폭을 차지하게
+     해서 국기를 가로로 넉넉히 펼치고, 옆에 어색한 빈칸이 생기지 않게 함 */
+  .side-card-full{ grid-column:1 / -1; }
+  .side-card-full .side-card-flag-group{ gap:5px; }
   .side-showmore-btn{
     display:block; width:100%; margin-top:14px; padding:12px; border-radius:12px;
     border:1px solid var(--border); background:var(--bg); color:var(--teal); font-weight:700;
