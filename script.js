@@ -166,6 +166,7 @@ function applyTranslations(){
   updateJcTapLabel();
   updateHiddenMoneyChannelsForLang();
   renderJackpotHistory();
+  updateLightningGameUi();
 }
 
 // 최초 로드 시, data-i18n 요소들의 원본 한국어를 저장해둠(다시 한국어로 돌아갈 때 쓰기 위함)
@@ -1599,11 +1600,52 @@ function filterFaq(){
   document.getElementById('faqNoResult').style.display = (visibleCount === 0) ? 'block' : 'none';
 }
 
+// 파워볼(흰 공 1~69 + 파워볼 1~26)/메가밀리언즈(흰 공 1~70 + 메가볼 1~24, 2025-04-08부터 적용된
+// 현행 규칙 — 이전엔 메가볼이 1~25였음) 번호 범위와 잭팟 당첨 확률을 한 곳에 모아둠
+const LIGHTNING_GAMES = {
+  powerball: {
+    mainMax: 69, specialMax: 26, specialClass: 'pb',
+    oddsText: () => pickLang('이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉', 'Your odds with these numbers are still 1 in 292 million — just for fun 😉', '用这些号码中奖的概率依然是1/2.92亿，纯属娱乐哦 😉', 'Xác suất trúng với những số này vẫn là 1/292 triệu — chỉ để vui thôi 😉', 'โอกาสถูกรางวัลด้วยเลขเหล่านี้ก็ยังคงเป็น 1 ใน 292 ล้าน — แค่สนุกๆ นะ 😉', 'Шанс выиграть с этими числами всё равно 1 к 292 миллионам — просто для развлечения 😉')
+  },
+  megamillions: {
+    mainMax: 70, specialMax: 24, specialClass: 'mega',
+    oddsText: () => pickLang('이 번호로 당첨될 확률은 여전히 1/2억 9,000만이지만, 재미로만 봐주세요 😉', 'Your odds with these numbers are still 1 in 290 million — just for fun 😉', '用这些号码中奖的概率依然是1/2.9亿，纯属娱乐哦 😉', 'Xác suất trúng với những số này vẫn là 1/290 triệu — chỉ để vui thôi 😉', 'โอกาสถูกรางวัลด้วยเลขเหล่านี้ก็ยังคงเป็น 1 ใน 290 ล้าน — แค่สนุกๆ นะ 😉', 'Шанс выиграть с этими числами всё равно 1 к 290 миллионам — просто для развлечения 😉')
+  }
+};
+let currentLightningGame = 'powerball';
+
+// 언어 전환 시에도 재사용해야 해서, 이미 뽑아둔 번호는 그대로 두고 문구·토글 상태만 새로 그림
+function updateLightningGameUi(){
+  const pbBtn = document.getElementById('lightning-game-pb');
+  const megaBtn = document.getElementById('lightning-game-mega');
+  const noteEl = document.getElementById('lightning-draw-note');
+  if (!pbBtn || !megaBtn || !noteEl) return;
+  pbBtn.classList.toggle('active', currentLightningGame === 'powerball');
+  megaBtn.classList.toggle('active', currentLightningGame === 'megamillions');
+  noteEl.textContent = LIGHTNING_GAMES[currentLightningGame].oddsText();
+}
+
+// 게임을 바꾸면 특별볼(파워볼/메가볼) 색상 표시와 숫자 범위가 달라지므로, 이미 뽑아둔 번호는
+// 새 게임 기준으로는 의미가 없어져서 "?"로 리셋함
+function setLightningGame(game){
+  if (game === currentLightningGame) return;
+  currentLightningGame = game;
+  const specialBall = document.getElementById('lightning-special-ball');
+  specialBall.classList.remove('pb', 'mega');
+  specialBall.classList.add(LIGHTNING_GAMES[game].specialClass);
+  document.querySelectorAll('#lightning-result .lightning-ball').forEach(b => {
+    b.textContent = '?';
+    b.classList.remove('drawn');
+  });
+  updateLightningGameUi();
+}
+
 function drawLightningNumbers(){
+  const config = LIGHTNING_GAMES[currentLightningGame];
   const nums = new Set();
-  while (nums.size < 5) nums.add(Math.floor(Math.random() * 69) + 1);
+  while (nums.size < 5) nums.add(Math.floor(Math.random() * config.mainMax) + 1);
   const sorted = [...nums].sort((a,b) => a-b);
-  const pb = Math.floor(Math.random() * 26) + 1;
+  const special = Math.floor(Math.random() * config.specialMax) + 1;
   const balls = document.querySelectorAll('#lightning-result .lightning-ball');
   sorted.forEach((n, i) => {
     balls[i].textContent = n;
@@ -1611,30 +1653,45 @@ function drawLightningNumbers(){
     void balls[i].offsetWidth;
     balls[i].classList.add('drawn');
   });
-  balls[5].textContent = pb;
+  balls[5].textContent = special;
   balls[5].classList.remove('drawn');
   void balls[5].offsetWidth;
   balls[5].classList.add('drawn');
 }
 
 function updateDrawCountdown(){
-  // 파워볼: 월(1)/수(3)/토(6), 메가밀리언즈: 화(2)/금(5)
+  // 파워볼: 월(1)/수(3)/토(6) 22:59 ET, 메가밀리언즈: 화(2)/금(5) 23:00 ET
   // 실제 추첨은 미국 동부시간 기준이라, 방문자가 어느 나라/시간대에서 접속하든
-  // 항상 미국 동부시간 기준 요일로 계산해야 정확함 (로컬 시간 기준이면 해외 접속 시 하루 오차 발생 가능)
-  function getUsEasternDayOfWeek(){
-    const now = new Date();
-    const easternStr = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
-    return new Date(easternStr).getDay();
+  // 항상 미국 동부시간 기준 요일·시각으로 계산해야 정확함 (로컬 시간 기준이면 해외 접속 시 오차 발생 가능).
+  // Intl로 "지금 이 순간의 동부시간 요일/시/분"만 읽어오면 되므로, 서머타임(EDT/EST) 오프셋을
+  // 직접 계산할 필요가 없어 미래 시각을 UTC로 역산하는 것보다 훨씬 단순하고 안전함
+  function getEasternNow(){
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false
+    }).formatToParts(new Date());
+    const map = {};
+    parts.forEach(p => { if (p.type !== 'literal') map[p.type] = p.value; });
+    const WEEKDAY_NUM = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    // 자정(00시)이 "24"로 나오는 로케일 표기 대응 — 24는 다음날 00시와 같음
+    return { dow: WEEKDAY_NUM[map.weekday], minutesOfDay: (Number(map.hour) % 24) * 60 + Number(map.minute) };
   }
-  function nextDrawInfo(drawDays){
-    const todayDow = getUsEasternDayOfWeek();
-    if (drawDays.includes(todayDow)) return 'D-0';
+  // 추첨 당일엔 "D-0"만으론 몇 시간 남았는지 감이 안 와서, 시:분까지 보여줌 —
+  // 이미 그 시각이 지났으면(방문자가 심야에 접속) 다음 추첨일로 자연스럽게 넘어감
+  function nextDrawInfo(drawDays, drawMinutesOfDay){
+    const { dow, minutesOfDay } = getEasternNow();
+    if (drawDays.includes(dow) && minutesOfDay < drawMinutesOfDay) {
+      const remain = drawMinutesOfDay - minutesOfDay;
+      const h = Math.floor(remain / 60);
+      const m = remain % 60;
+      if (h > 0) return pickLang(`오늘 ${h}시간 후`, `In ${h}h`, `今天${h}小时后`, `Còn ${h} giờ nữa`, `อีก ${h} ชม.`, `Через ${h} ч`);
+      return pickLang(`${m}분 후`, `In ${m}m`, `${m}分钟后`, `Còn ${m} phút nữa`, `อีก ${m} นาที`, `Через ${m} мин`);
+    }
     let diff = 1;
-    while (!drawDays.includes((todayDow + diff) % 7)) diff++;
+    while (!drawDays.includes((dow + diff) % 7)) diff++;
     return `D-${diff}`;
   }
-  document.getElementById('dday-powerball').textContent = nextDrawInfo([1,3,6]);
-  document.getElementById('dday-mega').textContent = nextDrawInfo([2,5]);
+  document.getElementById('dday-powerball').textContent = nextDrawInfo([1, 3, 6], 22 * 60 + 59);
+  document.getElementById('dday-mega').textContent = nextDrawInfo([2, 5], 23 * 60);
 }
 
 // ============================================================================
@@ -1784,7 +1841,7 @@ function refreshJackpotDrawerIfOpen(){
     const ANNUITY_PAYMENTS = 30;
     const perYearKrw = announcedKrw / ANNUITY_PAYMENTS;
     const rYear = calcTakeHome(perYearKrw / 100000000, 'kr');
-    document.getElementById('jc-annuity-year').textContent = about + 억(perYearKrw);
+    document.getElementById('jc-annuity-year').textContent = about + formatWon(perYearKrw / 100000000);
     document.getElementById('jc-annuity-year-net').textContent = about + formatWon(rYear.final);
     document.getElementById('jc-annuity-month-net').textContent = about + formatWon(rYear.final / 12);
   }
@@ -1861,7 +1918,7 @@ function setupRevealAnimation(){
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderJackpotHistory(); fetchLiveExchangeRate(); });
+document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderJackpotHistory(); fetchLiveExchangeRate(); updateLightningGameUi(); });
 
 // 다른 페이지(korea-resident-us-lottery-tax.html 등)에서 "index.html#faq"처럼 해시가 붙은 링크로
 // 들어왔을 때, 이 SPA는 해시를 안 보고 항상 홈 화면부터 그려서 그 링크가 사실상 무시되던 문제 수정.
@@ -1908,6 +1965,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 setInterval(() => { fetchLiveExchangeRate(); }, 60 * 60 * 1000); // 1시간마다 환율 자동 재조회 — 유저가 직접 수정한 경우는 fetchLiveExchangeRate 내부에서 자동으로 건너뜀
+setInterval(updateDrawCountdown, 60 * 1000); // 추첨 당일엔 "오늘 N시간 후"처럼 시간 단위로 보여주므로, 방문 중에도 값이 그대로 멈춰있지 않도록 1분마다 갱신
 
 // Pretendard 웹폰트는 렌더링 차단 없이 비동기로 로드되는데(느린 CDN 대비), 그 말은 즉
 // fitAmountFontSize()가 실행되는 시점엔 아직 대체 폰트(시스템 폰트) 기준으로 폭이 계산될 수 있다는 뜻.

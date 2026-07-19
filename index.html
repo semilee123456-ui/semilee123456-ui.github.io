@@ -997,11 +997,15 @@
         <details class="panel odds-accordion">
           <summary class="panel-title-toggle" data-i18n="odds.lightningTitle">⚡ 오늘의 번개 번호 뽑기</summary>
           <p class="panel-desc" data-i18n="odds.lightningDesc">오늘 당신이 번개에 맞을 그 기운으로, 재미 삼아 번호 6개를 뽑아드려요</p>
+          <div class="lightning-game-toggle" role="group">
+            <button type="button" class="lightning-game-btn active" id="lightning-game-pb" onclick="setLightningGame('powerball')" data-i18n="odds.lightningPbBtn">🔴 파워볼</button>
+            <button type="button" class="lightning-game-btn" id="lightning-game-mega" onclick="setLightningGame('megamillions')" data-i18n="odds.lightningMegaBtn">🟡 메가밀리언즈</button>
+          </div>
           <div class="lightning-result" id="lightning-result">
-            <span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball pb">?</span>
+            <span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball pb" id="lightning-special-ball">?</span>
           </div>
           <button class="cta-btn" onclick="drawLightningNumbers()" data-i18n="odds.drawBtn">⚡⚡⚡ 번호 뽑아보기</button>
-          <p class="foot-note" style="margin-top:10px; text-align:center;" data-i18n="odds.drawNote">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
+          <p class="foot-note" style="margin-top:10px; text-align:center;" id="lightning-draw-note">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
         </details>
 
         <p class="disclaimer" data-i18n="odds.disclaimer">확률 수치는 공식 발표 자료 기준이에요. 원화 환산은 참고용 환율 적용이라 실제와 다를 수 있어요.</p>

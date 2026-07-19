@@ -620,7 +620,14 @@
     transition:all 0.3s; flex-shrink:1;
   }
   .lightning-ball.pb{ background:rgba(38,36,32,0.12); border-color:var(--text-dark); color:var(--text-dark); }
+  .lightning-ball.mega{ background:rgba(148,103,22,0.12); border-color:var(--status-amber); color:var(--status-amber); }
   .lightning-ball.drawn{ animation:pop 0.3s ease; }
+  .lightning-game-toggle{ display:flex; justify-content:center; gap:8px; margin:4px 0 2px; }
+  .lightning-game-btn{
+    font-size:var(--fs-small); font-weight:700; color:var(--text-muted); background:var(--bg);
+    border:1.5px solid var(--border); border-radius:20px; padding:6px 14px; cursor:pointer;
+  }
+  .lightning-game-btn.active{ color:var(--teal); border-color:var(--teal); background:rgba(21,84,69,0.06); }
   @keyframes pop{ 0%{ transform:scale(0.5); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
 
   .prize-card{
