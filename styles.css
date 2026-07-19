@@ -351,6 +351,16 @@
   @media (hover: hover) {
     .intro-lang-btn:hover{ background:var(--teal); color:#fff; }
   }
+  .intro-lang-select-row{ display:flex; gap:8px; margin-top:8px; }
+  .intro-lang-select{
+    flex:1; min-width:0; height:44px; border-radius:9px; border:1.5px solid var(--border);
+    background:var(--card); color:var(--text-dark); font-family:inherit; font-size:var(--fs-small);
+    font-weight:600; padding:0 10px;
+  }
+  .intro-lang-go-btn{
+    flex-shrink:0; min-width:72px; min-height:44px; border-radius:9px; border:none;
+    background:var(--teal); color:#fff; font-family:inherit; font-size:var(--fs-small); font-weight:800; cursor:pointer;
+  }
   .side-flow-explain{ font-size:var(--fs-note); color:var(--text-muted); margin:0 0 14px; line-height:1.6; }
   .side-group-label{ font-size:var(--fs-body); font-weight:700; color:var(--text-dark); margin:14px 0 8px; }
   .side-breakdown-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }

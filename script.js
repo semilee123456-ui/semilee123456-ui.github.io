@@ -1187,6 +1187,28 @@ function goToRealAbroad(country, lang){
   goToCalculatorInput();
 }
 
+// 언어/국가 버튼 그리드를 드롭다운으로 압축한 UI용 — 선택된 <option>의 value를 보고
+// 언어 전환(setLanguage) 또는 별도 페이지 이동(location.href) 중 하나로 분기
+function goWithLangSelect(selectId){
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const val = sel.value;
+  if (val.startsWith('href:')) {
+    location.href = val.slice(5);
+  } else {
+    setLanguage(val, true);
+    goToCalculatorInput();
+  }
+}
+
+// "다른 나라에 살아요" 드롭다운(국가|언어 값)을 goToRealAbroad로 연결
+function goRealAbroadFromSelect(selectId){
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const [country, lang] = sel.value.split('|');
+  goToRealAbroad(country, lang);
+}
+
 function formatAbbreviatedUsd(value){
   if (value >= 1e9) return (value / 1e9).toFixed(1) + 'B';
   if (value >= 1e6) return (value / 1e6).toFixed(0) + 'M';
@@ -3024,6 +3046,7 @@ const LANGUAGE_CONTENT_PAGES = [
   { flagCode: "LK", label: "한국에 사는 스리랑카분이라면", labelEn: "Living in Korea as a Sri Lankan national", labelZh: "住在韩国的斯里兰卡人", labelVi: "Là công dân Sri Lanka sống ở Hàn Quốc", labelTh: "สำหรับชาวศรีลังกาที่อาศัยในเกาหลี", labelRu: "Для граждан Шри-Ланки, живущих в Корее", contentPage: "srilanka_in_korea_lottery_tax.html", contentLabel: "සිංහල →" },
   { flagCode: "PK", label: "한국에 사는 파키스탄분이라면", labelEn: "Living in Korea as a Pakistani national", labelZh: "住在韩国的巴基斯坦人", labelVi: "Là công dân Pakistan sống ở Hàn Quốc", labelTh: "สำหรับชาวปากีสถานที่อาศัยในเกาหลี", labelRu: "Для граждан Пакистана, живущих в Корее", contentPage: "urdu_in_korea_lottery_tax.html", contentLabel: "اردو →" },
   { flagCode: "UZ", label: "한국에 사는 우즈베키스탄분이라면", labelEn: "Living in Korea as an Uzbekistani national", labelZh: "住在韩国的乌兹别克斯坦人", labelVi: "Là công dân Uzbekistan sống ở Hàn Quốc", labelTh: "สำหรับชาวอุซเบกิสถานที่อาศัยในเกาหลี", labelRu: "Для граждан Узбекистана, живущих в Корее", contentPage: "uzbek_in_korea_lottery_tax.html", contentLabel: "O'zbek →" },
+  { flagCode: "ES", label: "한국에 사는 스페인어권 분이라면", labelEn: "Living in Korea and speak Spanish", labelZh: "住在韩国的西班牙语使用者", labelVi: "Nói tiếng Tây Ban Nha và sống ở Hàn Quốc", labelTh: "สำหรับผู้พูดภาษาสเปนที่อาศัยในเกาหลี", labelRu: "Для испаноговорящих, живущих в Корее", contentPage: "spanish_in_korea_lottery_tax.html", contentLabel: "Español →" },
 ];
 
 // 국기 이모지(regional indicator 시퀀스)는 기기·브라우저에 따라 실제 국기 대신 "KR" 같은
