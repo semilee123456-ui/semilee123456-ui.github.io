@@ -3577,7 +3577,21 @@ function updateSideBySide(eok, stateCode){
   grid.innerHTML = '';
   breakdownContainer.innerHTML = '';
 
+  // 실수령액이 큰 순서로 훑어볼 수 있게, 렌더링 전에 먼저 전부 계산해서 정렬함 —
+  // 예전엔 COUNTRY_TAX_PROFILES에 적힌 순서 그대로(딱히 의미 없는 순서) 나열돼서
+  // "어디가 제일 유리한지" 보려면 20개국을 하나하나 다 확인해야 했음
+  const implementedRows = [];
+  const pendingProfiles = [];
   COUNTRY_TAX_PROFILES.forEach(profile => {
+    if (!profile.implemented) { pendingProfiles.push(profile); return; }
+    const result = calcTakeHome(eok, profile.code, profile.needsState ? (stateCode || 'AVG') : null);
+    const pct = eok > 0 ? (result.final / eok * 100) : 0;
+    implementedRows.push({ profile, result, pct });
+  });
+  implementedRows.sort((a, b) => b.result.final - a.result.final);
+
+  implementedRows.forEach((row, i) => {
+    const { profile, result, pct } = row;
     const baseLabelText = pickLang(profile.label, profile.labelEn, profile.labelZh, profile.labelVi, profile.labelTh, profile.labelRu);
     // 카드 안 배지 라벨(side-card-flag)은 좁아서 짧은 라벨을 쓰고, 여백이 넉넉한 아래 breakdown
     // 섹션(side-group-label)에서는 원문 label을 그대로 보여줌
@@ -3590,23 +3604,6 @@ function updateSideBySide(eok, stateCode){
       return frag;
     }
 
-    if (!profile.implemented) {
-      // 데이터가 아직 준비 안 된 나라 — 카드만 "준비 중"으로 보여주고 breakdown은 생략
-      const card = document.createElement('div');
-      card.className = 'side-card';
-      const amtEl = document.createElement('p');
-      amtEl.className = 'side-card-amt';
-      amtEl.style.cssText = 'color:var(--text-muted); font-size:16px;';
-      amtEl.textContent = pickLang('준비 중', 'Coming soon', '准备中', 'Sắp có', 'เร็วๆ นี้', 'Скоро');
-      const flagP = document.createElement('p'); flagP.className = 'side-card-flag'; flagP.appendChild(buildLabelNode(null, true));
-      card.appendChild(flagP);
-      card.appendChild(amtEl);
-      grid.appendChild(card);
-      return;
-    }
-
-    const result = calcTakeHome(eok, profile.code, profile.needsState ? (stateCode || 'AVG') : null);
-    const pct = eok > 0 ? (result.final / eok * 100) : 0;
     let stateSuffix = '';
     if (profile.needsState) {
       const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
@@ -3615,11 +3612,18 @@ function updateSideBySide(eok, stateCode){
 
     const card = document.createElement('div');
     card.className = 'side-card';
+    if (i === 0) {
+      card.classList.add('side-card-best');
+      const bestBadge = document.createElement('p');
+      bestBadge.className = 'side-card-best-badge';
+      bestBadge.textContent = pickLang('👑 실수령액 1위', '👑 Highest take-home', '👑 实得金额第一', '👑 Thực nhận cao nhất', '👑 ได้รับจริงสูงสุด', '👑 Больше всех на руки');
+      card.appendChild(bestBadge);
+    }
     const flagEl = document.createElement('p'); flagEl.className = 'side-card-flag'; flagEl.appendChild(buildLabelNode(stateSuffix, true));
     const amtEl = document.createElement('p'); amtEl.className = 'side-card-amt'; amtEl.textContent = formatWon(result.final);
     const rateEl = document.createElement('p'); rateEl.className = 'side-card-rate';
     rateEl.textContent = pickLang('실수령률 약 ', 'Take-home rate about ', '实得比例约', 'Tỷ lệ thực nhận khoảng ', 'อัตราที่ได้รับจริงประมาณ ', 'Ставка на руки около ') + pct.toFixed(1) + '%';
-        // 홈 화면 결과 카드와 동일한 시각적 breakdown 막대를 국가별 카드에도 작게 적용 —
+    // 홈 화면 결과 카드와 동일한 시각적 breakdown 막대를 국가별 카드에도 작게 적용 —
     // 숫자(%)만으로는 나라 간 비교가 한눈에 안 들어와서, 막대 길이로 바로 비교되게 함
     const barEl = document.createElement('div'); barEl.className = 'side-card-bar';
     const barFillEl = document.createElement('div'); barFillEl.className = 'side-card-bar-fill';
@@ -3645,6 +3649,22 @@ function updateSideBySide(eok, stateCode){
       bGrid.appendChild(cell);
     });
     breakdownContainer.append(groupLabel, bGrid);
+  });
+
+  // 아직 데이터가 준비 안 된 나라들은 정렬 대상이 아니라서 뒤쪽에 그대로 이어붙임
+  pendingProfiles.forEach(profile => {
+    const shortLabelText = getProfileShortLabel(profile);
+    const card = document.createElement('div');
+    card.className = 'side-card';
+    const amtEl = document.createElement('p');
+    amtEl.className = 'side-card-amt';
+    amtEl.style.cssText = 'color:var(--text-muted); font-size:16px;';
+    amtEl.textContent = pickLang('준비 중', 'Coming soon', '准备中', 'Sắp có', 'เร็วๆ นี้', 'Скоро');
+    const flagP = document.createElement('p'); flagP.className = 'side-card-flag';
+    flagP.append(makeFlagBadge(profile.flagCode), document.createTextNode(' ' + shortLabelText));
+    card.appendChild(flagP);
+    card.appendChild(amtEl);
+    grid.appendChild(card);
   });
 
   renderLanguageContentLinks();

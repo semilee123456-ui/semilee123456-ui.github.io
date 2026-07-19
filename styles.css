@@ -293,6 +293,12 @@
   .side-card-rate{ font-size:var(--fs-small); color:var(--text-muted); margin:0; }
   .side-card-bar{ width:100%; height:6px; border-radius:4px; margin-top:8px; overflow:hidden; background:var(--status-red); opacity:0.8; }
   .side-card-bar-fill{ height:100%; background:var(--teal); border-radius:4px 0 0 4px; }
+  .side-card-best{ border:2px solid var(--teal); background:rgba(21,84,69,0.06); position:relative; }
+  .side-card-best-badge{
+    font-size:13px; font-weight:800; color:var(--teal); background:var(--card);
+    display:inline-block; padding:3px 10px; border-radius:20px; border:1px solid var(--teal);
+    margin:0 0 8px;
+  }
   .side-card-detail-link{ display:inline-block; margin-top:8px; font-size:var(--fs-small); font-weight:700; color:var(--teal); text-decoration:none; }
   .side-breakdown-title{ font-size:19px; font-weight:800; color:var(--text-dark); margin:22px 0 4px; }
   .other-lang-list{ display:flex; flex-direction:column; gap:10px; margin-top:12px; }
