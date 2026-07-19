@@ -260,13 +260,30 @@
           <button id="nav-compare" onclick="go('compare')" data-i18n="nav.compare">비교</button>
           <button id="nav-odds" onclick="go('odds')" data-i18n="nav.odds">확률</button>
           <button id="nav-faq" onclick="go('faq')" data-i18n="nav.faq">FAQ</button>
-          <select id="lang-toggle" class="lang-toggle" onchange="setLanguage(this.value)" aria-label="Language">
+          <select id="lang-toggle" class="lang-toggle" onchange="setLanguage(this.value, true)" aria-label="Language">
             <option value="ko">한국어</option>
             <option value="en">English</option>
             <option value="zh">中文</option>
             <option value="vi">Tiếng Việt</option>
             <option value="th">ภาษาไทย</option>
             <option value="ru">Русский</option>
+            <option value="km">ភាសាខ្មែរ</option>
+            <option value="ne">नेपाली</option>
+            <option value="id">Bahasa Indonesia</option>
+            <option value="my">မြန်မာ</option>
+            <option value="si">සිංහල</option>
+            <option value="uz">O'zbekcha</option>
+            <option value="mn">Монгол</option>
+            <option value="kk">Қазақша</option>
+            <option value="ky">Кыргызча</option>
+            <option value="ur">اردو</option>
+            <option value="bn">বাংলা</option>
+            <option value="lo">ພາສາລາວ</option>
+            <option value="ja">日本語</option>
+            <option value="ar">العربية</option>
+            <option value="hi">हिन्दी</option>
+            <option value="fr">Français</option>
+            <option value="tl">Tagalog</option>
           </select>
         </div>
       </div>
@@ -305,18 +322,18 @@
               <p class="intro-persona-label" data-i18n="intro.foreignerLabel">🌏 한국에 사는 외국인이에요</p>
               <p class="intro-persona-action" data-i18n="intro.foreignerHint">이 언어로 바로 보기</p>
               <div class="intro-lang-btns">
-                <button type="button" class="intro-lang-btn" onclick="setLanguage('en'); goToCalculatorInput();">English</button>
-                <button type="button" class="intro-lang-btn" onclick="setLanguage('zh'); goToCalculatorInput();">中文</button>
-                <button type="button" class="intro-lang-btn" onclick="setLanguage('vi'); goToCalculatorInput();">Tiếng Việt</button>
-                <button type="button" class="intro-lang-btn" onclick="setLanguage('th'); goToCalculatorInput();">ภาษาไทย</button>
-                <button type="button" class="intro-lang-btn" onclick="location.href='philippines_in_korea_lottery_tax.html'">Tagalog</button>
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('en', true); goToCalculatorInput();">English</button>
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('zh', true); goToCalculatorInput();">中文</button>
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('vi', true); goToCalculatorInput();">Tiếng Việt</button>
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('th', true); goToCalculatorInput();">ภาษาไทย</button>
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('tl', true); goToCalculatorInput();">Tagalog</button>
                 <button type="button" class="intro-lang-btn" onclick="location.href='uzbek_in_korea_lottery_tax.html'">O'zbekcha</button>
                 <button type="button" class="intro-lang-btn" onclick="location.href='indonesian_in_korea_lottery_tax.html'">Bahasa Indonesia</button>
                 <button type="button" class="intro-lang-btn" onclick="location.href='cambodian_in_korea_lottery_tax.html'">ភាសាខ្មែរ</button>
                 <button type="button" class="intro-lang-btn" onclick="location.href='nepali_in_korea_lottery_tax.html'">नेपाली</button>
                 <button type="button" class="intro-lang-btn" onclick="location.href='myanmar_in_korea_lottery_tax.html'">မြန်မာ</button>
                 <button type="button" class="intro-lang-btn" onclick="location.href='mongolian_in_korea_lottery_tax.html'">Монгол</button>
-                <button type="button" class="intro-lang-btn" onclick="setLanguage('ru'); goToCalculatorInput();">Русский</button>
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('ru', true); goToCalculatorInput();">Русский</button>
                 <button type="button" class="intro-lang-btn" onclick="location.href='srilanka_in_korea_lottery_tax.html'">සිංහල</button>
                 <button type="button" class="intro-lang-btn" onclick="location.href='bengali_in_korea_lottery_tax.html'">বাংলা</button>
                 <button type="button" class="intro-lang-btn" onclick="location.href='kazakh_in_korea_lottery_tax.html'">Қазақша</button>
@@ -336,6 +353,7 @@
                 <button type="button" class="intro-lang-btn" onclick="goToRealAbroad('us','en')"><span class="flag-badge">US</span> English</button>
                 <button type="button" class="intro-lang-btn" onclick="goToRealAbroad('cn','zh')"><span class="flag-badge">CN</span> 中文</button>
                 <button type="button" class="intro-lang-btn" onclick="goToRealAbroad('in','en')"><span class="flag-badge">IN</span> English</button>
+                <button type="button" class="intro-lang-btn" onclick="goToRealAbroad('ph','tl')"><span class="flag-badge">PH</span> Tagalog</button>
               </div>
               <a class="intro-persona-action is-link" href="#" onclick="go('compare'); return false;" style="display:block; margin-top:8px;" data-i18n="intro.realAbroadAction">국가별 비교 보기 →</a>
             </div>
@@ -345,18 +363,27 @@
         <div style="margin:16px 0; margin-top:0;">
           <div class="result-hero">
             <div class="result-seal-row"><span class="result-seal" aria-hidden="true">참</span></div>
-            <p class="result-hero-label" data-i18n="result.label">💰 예상 실수령액</p>
+            <h2 class="result-hero-label" data-i18n="result.label">💰 예상 실수령액</h2>
             <p class="result-hero-amt" id="home-final-amt" role="status" aria-live="polite">805억원</p>
             <div class="tax-impact-compact">
               <span class="tax-impact-before-line"><span class="tax-impact-strike" data-i18n="home.taxBefore">발표 금액</span> <span class="tax-impact-strike" id="tax-impact-before">-</span></span>
               <span class="tax-impact-arrow">→</span>
               <span class="tax-impact-diff-big" id="tax-impact-diff">-</span>
             </div>
+            <div class="result-visual-bar" id="result-visual-bar" role="img" aria-label="">
+              <div class="result-visual-bar-take" id="result-visual-take" style="width:60%"></div>
+            </div>
+            <p class="result-visual-bar-caption">
+              <span class="rvb-dot rvb-dot-take"></span><span id="result-visual-take-pct">60%</span> <span data-i18n="result.takeHomeLabel">실수령</span>
+              <span class="rvb-dot rvb-dot-tax"></span><span id="result-visual-tax-pct">40%</span> <span data-i18n="result.taxLabel">세금</span>
+            </p>
             <p class="milestone-badge" id="home-milestone" style="display:none;"></p>
             <span class="milestone-burst" id="milestone-burst"></span>
             <p class="usd-actual-note" id="home-usd-note" style="display:none; margin-top:4px;"></p>
             <p class="usd-actual-note" id="home-cny-note" style="display:none; margin-top:4px;"></p>
             <p class="usd-actual-note" id="home-inr-note" style="display:none; margin-top:4px;"></p>
+            <p class="usd-actual-note" id="home-other-note" style="display:none; margin-top:4px;"></p>
+            <p class="usd-actual-note" id="home-country-disclaimer" style="display:none; margin-top:8px; color:var(--status-amber); font-weight:600;"></p>
             <div class="result-meta-group">
               <p class="result-hero-basis-mini" id="home-final-basis-mini">100M USD 당첨 · 한국 거주자</p>
               <p class="foot-note" id="home-trust-line">환율 -</p>
@@ -376,6 +403,12 @@
                 <span class="jackpot-quickfill-amt" id="quickfill-mm-amt">-</span>
               </button>
             </div>
+            <p class="field-label-single" style="margin:0 0 6px;" data-i18n="input.announcedLabel">발표된 총액(연금 기준)만 아세요? 자동으로 계산해드려요</p>
+            <div class="million-input-wrap-secondary">
+              <input type="text" id="homeAnnouncedInput" class="dollar-input" inputmode="decimal" placeholder="예: 200" data-i18n-placeholder="input.amountPlaceholder" oninput="onHomeAnnouncedTyped()" onfocus="this.select()">
+              <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
+            </div>
+            <p class="krw-hint" style="margin:-6px 0 14px;" data-i18n="input.announcedHint">💡 발표 금액의 약 58%를 아래 일시불 칸에 자동으로 채워드려요</p>
             <p class="field-label-single" style="margin:0 0 6px;" data-i18n="input.orManualLabel">또는 직접 금액 입력</p>
             <div class="million-input-wrap">
               <input type="text" id="homeAmountInput" class="dollar-input" inputmode="decimal" placeholder="예: 100" data-i18n-placeholder="input.amountPlaceholder" oninput="onHomeAmountTyped()" onfocus="this.select()">
@@ -391,6 +424,23 @@
               <button type="button" class="country-toggle-btn" data-country="us" onclick="setHomeCountry('us')"><span class="flag-badge">US</span> <span data-i18n="input.optUS">미국 기준</span></button>
               <button type="button" class="country-toggle-btn" data-country="cn" onclick="setHomeCountry('cn')"><span class="flag-badge">CN</span> <span data-i18n="input.optChina">중국 기준</span></button>
               <button type="button" class="country-toggle-btn" data-country="in" onclick="setHomeCountry('in')"><span class="flag-badge">IN</span> <span data-i18n="input.optIndia">인도 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="vn" onclick="setHomeCountry('vn')"><span class="flag-badge">VN</span> <span data-i18n="input.optVietnam">베트남 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="id" onclick="setHomeCountry('id')"><span class="flag-badge">ID</span> <span data-i18n="input.optIndonesia">인도네시아 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="ph" onclick="setHomeCountry('ph')"><span class="flag-badge">PH</span> <span data-i18n="input.optPhilippines">필리핀 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="th" onclick="setHomeCountry('th')"><span class="flag-badge">TH</span> <span data-i18n="input.optThailand">태국 기준 ⚠️</span></button>
+              <button type="button" class="country-toggle-btn" data-country="jp" onclick="setHomeCountry('jp')"><span class="flag-badge">JP</span> <span data-i18n="input.optJapan">일본 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="ru" onclick="setHomeCountry('ru')"><span class="flag-badge">RU</span> <span data-i18n="input.optRussia">러시아 기준 ⚠️</span></button>
+              <button type="button" class="country-toggle-btn" data-country="np" onclick="setHomeCountry('np')"><span class="flag-badge">NP</span> <span data-i18n="input.optNepal">네팔 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="lk" onclick="setHomeCountry('lk')"><span class="flag-badge">LK</span> <span data-i18n="input.optSriLanka">스리랑카 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="uz" onclick="setHomeCountry('uz')"><span class="flag-badge">UZ</span> <span data-i18n="input.optUzbekistan">우즈베키스탄 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="kz" onclick="setHomeCountry('kz')"><span class="flag-badge">KZ</span> <span data-i18n="input.optKazakhstan">카자흐스탄 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="kg" onclick="setHomeCountry('kg')"><span class="flag-badge">KG</span> <span data-i18n="input.optKyrgyzstan">키르기스스탄 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="mm" onclick="setHomeCountry('mm')"><span class="flag-badge">MM</span> <span data-i18n="input.optMyanmar">미얀마 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="bd" onclick="setHomeCountry('bd')"><span class="flag-badge">BD</span> <span data-i18n="input.optBangladesh">방글라데시 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="pk" onclick="setHomeCountry('pk')"><span class="flag-badge">PK</span> <span data-i18n="input.optPakistan">파키스탄 기준 ⚠️</span></button>
+              <button type="button" class="country-toggle-btn" data-country="kh" onclick="setHomeCountry('kh')"><span class="flag-badge">KH</span> <span data-i18n="input.optCambodia">캄보디아 기준 ⚠️</span></button>
+              <button type="button" class="country-toggle-btn" data-country="mn" onclick="setHomeCountry('mn')"><span class="flag-badge">MN</span> <span data-i18n="input.optMongolia">몽골 기준 ⚠️</span></button>
+              <button type="button" class="country-toggle-btn" data-country="la" onclick="setHomeCountry('la')"><span class="flag-badge">LA</span> <span data-i18n="input.optLaos">라오스 기준 ⚠️</span></button>
             </div>
             <p class="krw-hint" style="margin:-6px 0 14px;" data-i18n="input.basisHint">💡 실제 납세 국가 기준으로 골라주세요 (한국 거주자는 그대로 두면 돼요)</p>
 
@@ -518,13 +568,13 @@
           <div class="cards-row" style="grid-template-columns:1fr 1fr; margin-bottom:0; gap:8px;">
             <div class="feature-card jp-card" style="cursor:default; padding:14px;">
               <p class="feature-sub" style="margin-bottom:2px; font-size:var(--fs-note);"><span data-i18n="home.powerballName">파워볼</span><span class="dday-badge" id="dday-powerball">-</span></p>
-              <p class="feature-title countup" id="jp-powerball" style="font-size:var(--fs-emphasis);" data-target="1200000000">$0</p>
+              <p class="feature-title countup" id="jp-powerball" style="font-size:var(--fs-emphasis);" data-target="526000000">$0</p>
               <p class="jp-krw" id="jp-powerball-krw">-</p>
               <a class="jp-official-link" href="https://www.powerball.com" target="_blank" rel="noopener noreferrer" data-i18n="home.officialLink">🔗 공식 사이트에서 확인</a>
             </div>
             <div class="feature-card jp-card" style="cursor:default; padding:14px;">
               <p class="feature-sub" style="margin-bottom:2px; font-size:var(--fs-note);"><span data-i18n="home.megaName">메가밀리언즈</span><span class="dday-badge" id="dday-mega">-</span></p>
-              <p class="feature-title countup" id="jp-mega" style="font-size:var(--fs-emphasis);" data-target="450000000">$0</p>
+              <p class="feature-title countup" id="jp-mega" style="font-size:var(--fs-emphasis);" data-target="707000000">$0</p>
               <p class="jp-krw" id="jp-mega-krw">-</p>
               <a class="jp-official-link" href="https://www.megamillions.com" target="_blank" rel="noopener noreferrer" data-i18n="home.officialLink">🔗 공식 사이트에서 확인</a>
             </div>
@@ -609,7 +659,7 @@
         <button class="back-btn" onclick="go('home')" data-i18n="common.backHome">← 홈으로</button>
 
         <div class="panel">
-          <p class="panel-title" data-i18n="compare.panelTitle">내 손에 들어오는 진짜 돈, 계산해볼까요?</p>
+          <h2 class="panel-title" data-i18n="compare.panelTitle">내 손에 들어오는 진짜 돈, 계산해볼까요?</h2>
           <p class="panel-desc" data-i18n="compare.panelDesc">당첨금(달러)을 직접 입력하거나 슬라이더로 조절해보세요 👇</p>
 
           <p class="field-label-single" data-i18n="input.amountLabelFull">당첨금 (일시불 세전 기준)</p>
@@ -683,7 +733,7 @@
         </div>
 
         <div class="panel">
-          <p class="panel-title" data-i18n="compare.sideTitle">나라별로 나란히 놓고 보면</p>
+          <h2 class="panel-title" data-i18n="compare.sideTitle">나라별로 나란히 놓고 보면</h2>
           <div class="side-by-side-grid" id="sideByCountryGrid" role="status" aria-live="polite"></div>
 
           <p class="side-breakdown-title" data-i18n="compare.sideBreakdownTitle">세금은 이렇게 빠져나가요</p>
@@ -692,7 +742,7 @@
         </div>
 
         <div class="panel" id="otherLanguagesPanel">
-          <p class="panel-title" data-i18n="compare.otherLangTitle">한국에 사는 다른 나라 분이라면</p>
+          <h2 class="panel-title" data-i18n="compare.otherLangTitle">한국에 사는 다른 나라 분이라면</h2>
           <div id="otherLanguagesList" class="other-lang-list"></div>
         </div>
 
@@ -735,6 +785,20 @@
         </details>
 
         <details class="panel odds-accordion">
+          <summary class="panel-title-toggle" data-i18n="odds.numbersTitle">🔢 역대 가장 많이 나온 번호가 궁금하세요?</summary>
+          <p class="panel-desc" data-i18n="odds.numbersDesc">2015년 지금 방식으로 바뀐 뒤 실제 추첨 기록이에요</p>
+          <div class="howto-box">
+            <p class="howto-title" data-i18n="odds.numbersPbTitle">🔴 파워볼</p>
+            <p class="howto-text" data-i18n-html="odds.numbersPbText">일반번호는 <b>21·61·64·28·23</b>번이 자주 나왔고, 파워볼 번호는 <b>4·18·21·24</b>번이 자주 언급돼요</p>
+          </div>
+          <div class="howto-box" style="margin-top:10px;">
+            <p class="howto-title" data-i18n="odds.numbersMmTitle">🟡 메가밀리언즈</p>
+            <p class="howto-text" data-i18n-html="odds.numbersMmText">일반번호는 <b>31·17·10·48</b>번이 자주 나왔고, 메가볼은 <b>22</b>번이 가장 많이 나왔어요</p>
+          </div>
+          <div class="callout" data-i18n="odds.numbersCallout" style="margin-top:12px;">💡 매 추첨은 완전히 독립적이에요 — 예전에 많이 나왔다고 다음에 또 나올 확률이 높아지진 않아요. 재미로만 봐주세요!</div>
+        </details>
+
+        <details class="panel odds-accordion">
           <summary class="panel-title-toggle" data-i18n="odds.winnersTitle">🏆 실제로 이만큼 당첨된 사람들도 있어요</summary>
           <p class="panel-desc" data-i18n="odds.winnersDesc">그래도 정말 당첨되긴 해요 — 실제 있었던 역대급 사례들이에요</p>
           <div class="winner-story">
@@ -748,6 +812,27 @@
           <div class="winner-story">
             <span class="ws-amt-alt" data-i18n="odds.winner3Amt">🍀 익명 다수</span>
             <span class="ws-desc" data-i18n="odds.winner3">주(state)에 따라 당첨자 신원을 비공개할 수 있어요 (플로리다·텍사스·델라웨어 등). 카스트로나 완칙처럼 되고 싶지 않다면, 많은 고액 당첨자들이 이 방법을 택해요.</span>
+          </div>
+        </details>
+
+        <details class="panel odds-accordion">
+          <summary class="panel-title-toggle" data-i18n="odds.lifeTitle">💫 당첨 전후, 진짜 삶은 어떻게 달라질까요?</summary>
+          <p class="panel-desc" data-i18n="odds.lifeDesc">소문 말고, 실제 연구로 확인된 것들이에요</p>
+          <div class="winner-story">
+            <span class="ws-amt-alt" data-i18n="odds.life1Tag">💸 "대부분 몇 년 안에 파산한다"?</span>
+            <span class="ws-desc" data-i18n="odds.life1">출처 없는 낭설이에요 — 그 "70% 파산설"을 냈다는 미국 금융교육재단(NEFE)도 그런 조사를 한 적 없다고 공식 부인했어요. 스웨덴에서 15년간 추적한 연구에서는 오히려 재산이 더 잘 유지됐어요.</span>
+          </div>
+          <div class="winner-story">
+            <span class="ws-amt-alt" data-i18n="odds.life2Tag">💔 "이혼율이 폭등한다"?</span>
+            <span class="ws-desc" data-i18n="odds.life2">실제로는 약 3%p 정도만 올라요, 소문만큼 극적이진 않아요. 오히려 결혼보다 우정이 더 크게 흔들린다는 게 흥미로운 점이에요.</span>
+          </div>
+          <div class="winner-story">
+            <span class="ws-amt-alt" data-i18n="odds.life3Tag">🏢 "당첨되면 바로 퇴사한다"?</span>
+            <span class="ws-desc" data-i18n="odds.life3">금액에 따라 달라요 — 1,000만 달러 넘는 거액 당첨자는 대부분 그만두지만, 그보다 적으면 절반 정도는 계속 일해요.</span>
+          </div>
+          <div class="winner-story">
+            <span class="ws-amt-alt" data-i18n="odds.life4Tag">😊 그래서, 더 행복해질까요?</span>
+            <span class="ws-desc" data-i18n="odds.life4">매일의 기분이 확 좋아지진 않지만, "삶에 만족한다"는 느낌은 10년 넘게 유지돼요. 진짜 어려운 건 돈 관리가 아니라 가족·지인의 기대를 다루는 거예요.</span>
           </div>
         </details>
 
@@ -888,7 +973,7 @@
         <button class="back-btn" onclick="go('home')" data-i18n="common.backHome">← 홈으로</button>
 
         <div class="panel">
-          <p class="panel-title" data-i18n="faq.panelTitle">다들 이런 거 궁금해하시더라고요</p>
+          <h2 class="panel-title" data-i18n="faq.panelTitle">다들 이런 거 궁금해하시더라고요</h2>
           <p class="panel-desc" id="faq-panel-desc">검색하다 오신 분들이 자주 물어보는 질문 모았어요 · 국세청 상담 기준으로 확인된 정보예요</p>
           <p class="krw-hint" style="margin-bottom:10px;" data-i18n="faq.basisNote">💡 홈 화면에서 고르신 세금 계산 기준(한국·미국·중국)에 맞는 질문만 보여드려요</p>
           <input type="text" class="faq-search" id="faqSearch" placeholder="🔍 궁금한 거 검색해보세요 (예: 세금, 시민권, 파워볼)" oninput="filterFaq()" data-i18n-placeholder="faq.searchPlaceholder">
@@ -1312,7 +1397,7 @@
       <div class="view" id="view-privacy">
         <button class="back-btn" onclick="go('home')" data-i18n="common.backHome">← 홈으로</button>
         <div class="panel">
-          <p class="panel-title" data-i18n="privacy.title">개인정보처리방침</p>
+          <h2 class="panel-title" data-i18n="privacy.title">개인정보처리방침</h2>
           <p class="panel-desc" data-i18n="privacy.effectiveDate">시행일자: 2026년 7월 9일</p>
 
           <div class="legal-section">
@@ -1358,7 +1443,7 @@
       <div class="view" id="view-disclaimer">
         <button class="back-btn" onclick="go('home')" data-i18n="common.backHome">← 홈으로</button>
         <div class="panel">
-          <p class="panel-title" data-i18n="disclaimer.title">면책조항</p>
+          <h2 class="panel-title" data-i18n="disclaimer.title">면책조항</h2>
           <p class="panel-desc" data-i18n="disclaimer.effectiveDate">시행일자: 2026년 7월 9일</p>
 
           <div class="legal-section">
@@ -1404,10 +1489,10 @@
       <div class="view" id="view-contact">
         <button class="back-btn" onclick="go('home')" data-i18n="common.backHome">← 홈으로</button>
         <div class="panel">
-          <p class="panel-title" data-i18n="contact.title">궁금한 거나 이상한 거 있으면 알려주세요</p>
+          <h2 class="panel-title" data-i18n="contact.title">궁금한 거나 이상한 거 있으면 알려주세요</h2>
           <p class="panel-desc" data-i18n="contact.desc">계산이 이상하거나 궁금한 게 있으면 편하게 남겨주세요 :)</p>
           <form id="contactForm" action="https://formspree.io/f/xdarrloj" method="POST" onsubmit="return submitContactForm(event)">
-            <p style="position:absolute; left:-9999px;" aria-hidden="true">
+            <p style="position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;" aria-hidden="true">
               <label><span data-i18n="contact.leaveEmpty">이 칸은 비워두세요</span> <input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
             </p>
             <div class="input-row contact-field-row">

@@ -32,7 +32,7 @@
     --shadow-card: 0 1px 0 rgba(38,36,32,0.06);
     --shadow-btn: 0 6px 14px rgba(21,84,69,0.22);
     --status-red:#C0392B;
-    --status-amber:#B8862E;
+    --status-amber:#946716; /* 원래 #B8862E는 명암비 3.00:1로 경고 문구(16px bold) WCAG AA(4.5:1) 미달 — 톤 유지하며 더 진하게 조정 */
   }
   *{box-sizing:border-box;}
   /* iOS 사파리는 button/input/select에 기본 시스템 폰트·여백을 강제로 적용해서,
@@ -114,6 +114,21 @@
   .tax-impact-before-line{ display:inline-flex; gap:4px; }
   .tax-impact-arrow{ color:var(--text-muted); }
   .tax-impact-diff-big{ font-weight:800; color:var(--status-red); font-size:18px; }
+  .result-visual-bar{
+    width:100%; height:10px; border-radius:6px; margin:14px 0 8px; overflow:hidden;
+    background:var(--status-red); opacity:0.85;
+  }
+  .result-visual-bar-take{
+    height:100%; background:var(--teal); border-radius:6px 0 0 6px;
+    transition:width 0.5s ease;
+  }
+  .result-visual-bar-caption{
+    display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap;
+    font-size:13px; color:var(--text-muted); margin:0;
+  }
+  .rvb-dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:-2px; }
+  .rvb-dot-take{ background:var(--teal); }
+  .rvb-dot-tax{ background:var(--status-red); margin-left:10px; }
   .hero-amount{ font-size:var(--fs-h1); font-weight:800; color:var(--navy); margin:0; letter-spacing:-0.02em; line-height:1.4; }
   .hero-sub{ font-size:16px; color:var(--text-muted); margin:8px 0 0; }
 
@@ -216,6 +231,18 @@
     border:none; padding:8px 0; height:auto; flex:1; min-width:0; width:auto;
     font-size:clamp(26px, 10vw, 38px); font-weight:800; color:var(--teal);
   }
+  .million-input-wrap-secondary{
+    display:flex; align-items:center; gap:10px; flex:1.5; border:1.5px solid var(--border);
+    border-radius:12px; padding:6px 8px 6px 14px; height:auto; background:var(--card);
+    min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden; transition:border-color 0.15s ease;
+  }
+  .million-input-wrap-secondary:focus-within{ border-color:var(--teal); }
+  .million-input-wrap-secondary .dollar-input{
+    border:none; padding:6px 0; height:auto; flex:1; min-width:0; width:auto;
+    font-size:20px; font-weight:700; color:var(--text-dark);
+  }
+  @keyframes field-autofill-flash{ 0%{ box-shadow:0 0 0 4px rgba(21,84,69,0.28); } 100%{ box-shadow:0 0 0 0 rgba(21,84,69,0); } }
+  .field-autofill-flash{ animation:field-autofill-flash 700ms ease-out; }
   .million-unit{ font-size:16px; color:var(--text-muted); font-weight:700; white-space:nowrap; padding-right:4px; flex-shrink:0; }
   .unit-short{ display:none; }
   .input-card-headline{ font-size:18px; font-weight:800; color:var(--text-dark); margin:0 0 4px; }
@@ -264,6 +291,8 @@
   .side-card-flag{ font-size:var(--fs-small); color:var(--text-muted); font-weight:700; margin:0 0 8px; }
   .side-card-amt{ font-size:clamp(17px, 6vw, 22px); font-weight:800; color:var(--teal); margin:0 0 6px; font-variant-numeric:tabular-nums; overflow-wrap:break-word; }
   .side-card-rate{ font-size:var(--fs-small); color:var(--text-muted); margin:0; }
+  .side-card-bar{ width:100%; height:6px; border-radius:4px; margin-top:8px; overflow:hidden; background:var(--status-red); opacity:0.8; }
+  .side-card-bar-fill{ height:100%; background:var(--teal); border-radius:4px 0 0 4px; }
   .side-card-detail-link{ display:inline-block; margin-top:8px; font-size:var(--fs-small); font-weight:700; color:var(--teal); text-decoration:none; }
   .side-breakdown-title{ font-size:19px; font-weight:800; color:var(--text-dark); margin:22px 0 4px; }
   .other-lang-list{ display:flex; flex-direction:column; gap:10px; margin-top:12px; }
@@ -511,7 +540,7 @@
     cursor:pointer; transition:border-color 0.15s ease;
   }
   .live-result-mini:hover{ border-color:var(--teal); }
-  .live-result-mini span:first-child{ font-size:var(--fs-note); color:var(--text-muted); font-weight:600; }
+  .live-result-mini span:first-child{ font-size:var(--fs-note); color:var(--text-muted); font-weight:600; min-width:0; overflow-wrap:break-word; }
   #home-final-basis{ display:none; }
   .live-result-mini-display{ display:inline-flex; align-items:center; gap:6px; }
   .live-result-mini-amt{ white-space:nowrap; font-size:var(--fs-emphasis); font-weight:800; color:var(--teal); font-variant-numeric:tabular-nums; }
@@ -520,7 +549,7 @@
     width:110px; height:44px; border:1.5px solid var(--teal); border-radius:8px; padding:0 10px;
     font-size:16px; font-weight:800; font-family:inherit; color:var(--teal); text-align:right;
   }
-  .mini-result-edit-input:focus{ outline:none; }
+  .mini-result-edit-input:focus{ outline:none; box-shadow:0 2px 0 0 var(--teal); }
   .mini-result-edit-unit{ font-size:var(--fs-note); color:var(--text-muted); flex-shrink:0; }
   .dday-badge{
     display:inline-block; background:rgba(38,36,32,0.12); color:var(--text-dark); font-size:var(--fs-small); font-weight:800;
@@ -533,7 +562,11 @@
   .faq-search:focus{ outline:none; border-color:var(--teal); }
   .faq-chip-row{ display:flex; flex-wrap:wrap; gap:6px; padding:2px 0 10px; }
   .faq-chip{
-    flex-shrink:0; font-family:inherit; font-size:var(--fs-small); font-weight:700; white-space:nowrap;
+    /* white-space는 nowrap이었는데, 카테고리 중 하나("건강보험·연금·증여·사기주의")가 여러 개념을
+       합친 긴 라벨이라 번역이 길어지는 언어(러시아어·카자흐어·키르기스어 등)에서 뷰포트보다
+       넓은 한 줄이 되어 화면 밖으로 잘려나가는 문제가 있었음 — 줄바꿈을 허용해 알약(pill) 안에서
+       2줄로 접히게 함(짧은 칩들은 어차피 한 줄에 들어가서 모양이 그대로 유지됨) */
+    max-width:100%; font-family:inherit; font-size:var(--fs-small); font-weight:700; white-space:normal;
     padding:12px 14px; min-height:44px; border-radius:20px; border:none; background:#F1EDE0; color:var(--text-muted); cursor:pointer;
   }
   .faq-chip.active{ background:var(--teal); color:#fff; }
@@ -596,7 +629,9 @@
   .explore-title{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); margin:0 0 10px; text-align:center; }
   .explore-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
   .explore-card{
-    display:flex; flex-direction:column; align-items:center; gap:4px;
+    /* min-width:0이 없으면 그리드 트랙이 내용(긴 번역 텍스트)만큼 억지로 넓어지는 "그리드 blowout"
+       현상이 생겨, 카자흐어·키르기스어처럼 라벨이 긴 언어에서 카드가 화면 밖으로 삐져나갔음 */
+    display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0;
     background:var(--card); border:1.5px solid var(--border); border-radius:12px; padding:14px 8px;
     cursor:pointer; font-family:inherit; text-align:center;
     transition:border-color 0.15s ease, transform 0.1s ease;
@@ -606,8 +641,8 @@
     .explore-card:hover{ border-color:var(--teal); }
   }
   .explore-icon{ font-size:22px; }
-  .explore-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); }
-  .explore-sub{ font-size:16px; color:var(--text-muted); line-height:1.3; }
+  .explore-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); overflow-wrap:break-word; }
+  .explore-sub{ font-size:16px; color:var(--text-muted); line-height:1.3; overflow-wrap:break-word; }
   .more-details-toggle{ margin-top:16px; }
   .jp-panel-content{ padding-top:14px; margin-top:14px; border-top:1px solid var(--border); }
   .jp-card{ background:var(--bg); border:none; }
@@ -764,9 +799,9 @@
   }
   .check-method b{ color:var(--text-dark); }
   .payout-compare{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
-  .payout-col{ background:var(--bg); border-radius:8px; padding:10px 12px; }
-  .payout-col-title{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 4px; }
-  .payout-col-detail{ font-size:var(--fs-small); color:var(--text-muted); line-height:1.5; margin:0; }
+  .payout-col{ background:var(--bg); border-radius:8px; padding:10px 12px; min-width:0; }
+  .payout-col-title{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 4px; overflow-wrap:break-word; }
+  .payout-col-detail{ font-size:var(--fs-small); color:var(--text-muted); line-height:1.5; margin:0; overflow-wrap:break-word; }
   .payout-col-detail b{ color:var(--text-dark); }
   .playslip-box{ background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-top:10px; }
   .playslip-summary{
@@ -882,14 +917,16 @@
 
   .trust-panel{ text-align:center; }
   .trust-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-  .trust-item{ display:flex; flex-direction:column; align-items:center; }
+  /* min-width:0 없이는 그리드 트랙이 긴 번역 텍스트(일본어 "購入・仲介なし" 등) 폭만큼 억지로
+     넓어지는 "그리드 blowout" 현상이 생겨 카드가 화면 밖으로 삐져나갔음 */
+  .trust-item{ display:flex; flex-direction:column; align-items:center; min-width:0; }
   .trust-icon{
     width:44px; height:44px; border-radius:50%; background:rgba(21,84,69,0.1);
     display:flex; align-items:center; justify-content:center; color:var(--teal); margin-bottom:8px;
     font-size:18px;
   }
-  .trust-name{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0 0 4px; }
-  .trust-desc{ font-size:var(--fs-small); color:var(--text-muted); margin:0; line-height:1.5; }
+  .trust-name{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0 0 4px; overflow-wrap:break-word; }
+  .trust-desc{ font-size:var(--fs-small); color:var(--text-muted); margin:0; line-height:1.5; overflow-wrap:break-word; }
 
   .faq-item{ border-bottom:1px solid var(--border); padding:14px 0; margin-bottom:4px; }
   .faq-item:last-child{ border-bottom:none; }
@@ -1020,7 +1057,11 @@
   /* nav(로고+메뉴)는 훨씬 넓은 범위(480px 이하)에서 미리 축소 — 390px·393px·412px 같은
      실제로 흔히 쓰이는 폰 폭에서도 로고+메뉴가 한 줄에 안 들어가 줄바꿈되는 걸 방지 */
   @media (max-width: 480px) {
-    .menu{ gap:11px; }
+    /* 러시아어·카자흐어·키르기스어 등 번역 라벨이 긴 언어에서는 nav 버튼 3개 + 언어
+       드롭다운이 이 폭에서 한 줄에 다 안 들어가는 경우가 있음 — .page의 overflow:hidden에
+       가려서 화면 밖 스크롤은 안 생기지만 대신 글자가 그냥 잘려서 안 보이는 문제가 있었음.
+       .menu 자체도 줄바꿈되게 해서 안 들어가면 2번째 줄로 넘어가게 함(잘리는 대신) */
+    .menu{ gap:11px; flex-wrap:wrap; justify-content:flex-end; }
     .logo{ gap:4px; }
     .logo .mascot-mark{ width:26px; height:26px; }
     .bar-label{ width:104px; }
