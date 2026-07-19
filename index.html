@@ -326,50 +326,39 @@
             <div class="intro-persona-row">
               <p class="intro-persona-label" data-i18n="intro.foreignerLabel">🌏 한국에 사는 외국인이에요</p>
               <p class="intro-persona-action" data-i18n="intro.foreignerHint">이 언어로 바로 보기</p>
-              <div class="intro-lang-select-row">
-                <select class="intro-lang-select" id="foreignerLangSelect" aria-label="언어 선택">
-                  <option value="en">English</option>
-                  <option value="zh">中文</option>
-                  <option value="vi">Tiếng Việt</option>
-                  <option value="th">ภาษาไทย</option>
-                  <option value="tl">Tagalog</option>
-                  <option value="href:uzbek_in_korea_lottery_tax.html">O'zbekcha</option>
-                  <option value="href:indonesian_in_korea_lottery_tax.html">Bahasa Indonesia</option>
-                  <option value="href:cambodian_in_korea_lottery_tax.html">ភាសាខ្មែរ</option>
-                  <option value="href:nepali_in_korea_lottery_tax.html">नेपाली</option>
-                  <option value="href:myanmar_in_korea_lottery_tax.html">မြန်မာ</option>
-                  <option value="href:mongolian_in_korea_lottery_tax.html">Монгол</option>
-                  <option value="ru">Русский</option>
-                  <option value="href:srilanka_in_korea_lottery_tax.html">සිංහල</option>
-                  <option value="href:bengali_in_korea_lottery_tax.html">বাংলা</option>
-                  <option value="href:kazakh_in_korea_lottery_tax.html">Қазақша</option>
-                  <option value="href:kyrgyz_in_korea_lottery_tax.html">Кыргызча</option>
-                  <option value="href:urdu_in_korea_lottery_tax.html">اردو</option>
-                  <option value="href:lao_in_korea_lottery_tax.html">ພາສາລາວ</option>
-                  <option value="href:japanese_in_korea_lottery_tax.html">日本語</option>
-                  <option value="href:arabic_in_korea_lottery_tax.html">العربية</option>
-                  <option value="href:hindi_in_korea_lottery_tax.html">हिन्दी</option>
-                  <option value="href:french_in_korea_lottery_tax.html">Français</option>
-                  <option value="href:spanish_in_korea_lottery_tax.html">Español</option>
-                  <option value="href:portuguese_in_korea_lottery_tax.html">Português</option>
-                  <option value="href:taiwan_hk_in_korea_lottery_tax.html">繁體中文</option>
-                  <option value="href:timor_in_korea_lottery_tax.html">Tetun</option>
-                  <option value="href:ukrainian_in_korea_lottery_tax.html">Українська</option>
-                </select>
-                <button type="button" class="intro-lang-go-btn" onclick="goWithLangSelect('foreignerLangSelect')" data-i18n="intro.goBtn">이동</button>
+              <div class="intro-lang-btns">
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('en', true); goToCalculatorInput();">English</button>
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('zh', true); goToCalculatorInput();">中文</button>
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('vi', true); goToCalculatorInput();">Tiếng Việt</button>
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('th', true); goToCalculatorInput();">ภาษาไทย</button>
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('tl', true); goToCalculatorInput();">Tagalog</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='uzbek_in_korea_lottery_tax.html'">O'zbekcha</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='indonesian_in_korea_lottery_tax.html'">Bahasa Indonesia</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='cambodian_in_korea_lottery_tax.html'">ភាសាខ្មែរ</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='nepali_in_korea_lottery_tax.html'">नेपाली</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='myanmar_in_korea_lottery_tax.html'">မြန်မာ</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='mongolian_in_korea_lottery_tax.html'">Монгол</button>
+                <button type="button" class="intro-lang-btn" onclick="setLanguage('ru', true); goToCalculatorInput();">Русский</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='srilanka_in_korea_lottery_tax.html'">සිංහල</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='bengali_in_korea_lottery_tax.html'">বাংলা</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='kazakh_in_korea_lottery_tax.html'">Қазақша</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='kyrgyz_in_korea_lottery_tax.html'">Кыргызча</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='urdu_in_korea_lottery_tax.html'">اردو</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='lao_in_korea_lottery_tax.html'">ພາສາລາວ</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='japanese_in_korea_lottery_tax.html'">日本語</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='arabic_in_korea_lottery_tax.html'">العربية</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='hindi_in_korea_lottery_tax.html'">हिन्दी</button>
+                <button type="button" class="intro-lang-btn" onclick="location.href='french_in_korea_lottery_tax.html'">Français</button>
               </div>
             </div>
             <div class="intro-persona-row">
               <p class="intro-persona-label" data-i18n="intro.realAbroadLabel">🌐 한국이 아닌 다른 나라에 살아요 (미국·중국 등)</p>
               <p class="intro-persona-action" data-i18n="intro.realAbroadHint">내 나라 기준으로 바로 보기</p>
-              <div class="intro-lang-select-row">
-                <select class="intro-lang-select" id="realAbroadSelect" aria-label="국가 선택">
-                  <option value="us|en">US · English</option>
-                  <option value="cn|zh">CN · 中文</option>
-                  <option value="in|en">IN · English</option>
-                  <option value="ph|tl">PH · Tagalog</option>
-                </select>
-                <button type="button" class="intro-lang-go-btn" onclick="goRealAbroadFromSelect('realAbroadSelect')" data-i18n="intro.goBtn">이동</button>
+              <div class="intro-lang-btns">
+                <button type="button" class="intro-lang-btn" onclick="goToRealAbroad('us','en')"><span class="flag-badge">US</span> English</button>
+                <button type="button" class="intro-lang-btn" onclick="goToRealAbroad('cn','zh')"><span class="flag-badge">CN</span> 中文</button>
+                <button type="button" class="intro-lang-btn" onclick="goToRealAbroad('in','en')"><span class="flag-badge">IN</span> English</button>
+                <button type="button" class="intro-lang-btn" onclick="goToRealAbroad('ph','tl')"><span class="flag-badge">PH</span> Tagalog</button>
               </div>
               <a class="intro-persona-action is-link" href="#" onclick="go('compare'); return false;" style="display:block; margin-top:8px;" data-i18n="intro.realAbroadAction">국가별 비교 보기 →</a>
             </div>
@@ -482,7 +471,7 @@
                 <option value="KS" data-i18n="state.KS">캔자스 (5.58%)</option>
                 <option value="KY" data-i18n="state.KY">켄터키 (3.5%)</option>
                 <option value="LA" data-i18n="state.LA">루이지애나 (3%)</option>
-                <option value="ME" data-i18n="state.ME">메인 (7.15%)</option>
+                <option value="ME" data-i18n="state.ME">메인 (9.15%)</option>
                 <option value="MD" data-i18n="state.MD">메릴랜드 (6.5%)</option>
                 <option value="MA" data-i18n="state.MA">매사추세츠 (9%)</option>
                 <option value="MI" data-i18n="state.MI">미시간 (4.25%)</option>
@@ -709,7 +698,7 @@
               <option value="KS" data-i18n="state.KS">캔자스 (5.58%)</option>
               <option value="KY" data-i18n="state.KY">켄터키 (3.5%)</option>
               <option value="LA" data-i18n="state.LA">루이지애나 (3%)</option>
-              <option value="ME" data-i18n="state.ME">메인 (7.15%)</option>
+              <option value="ME" data-i18n="state.ME">메인 (9.15%)</option>
               <option value="MD" data-i18n="state.MD">메릴랜드 (6.5%)</option>
               <option value="MA" data-i18n="state.MA">매사추세츠 (9%)</option>
               <option value="MI" data-i18n="state.MI">미시간 (4.25%)</option>
@@ -1441,7 +1430,7 @@
 
           <div class="legal-section">
             <p class="legal-h" data-i18n="privacy.h5">5. 쿠키(Cookie) 사용</p>
-            <p class="legal-body" data-i18n="privacy.b5">광고 게재를 위해 Google 등 제3자 광고 서비스의 쿠키가 사용될 수 있으며, 방문자 통계 분석을 위해 Google Analytics 쿠키도 사용됩니다. 브라우저 설정에서 쿠키 저장을 거부하거나 삭제할 수 있으며, 이 경우 광고 개인화 및 통계 분석 기능이 제한될 수 있습니다.</p>
+            <p class="legal-body" data-i18n="privacy.b5">광고 게재를 위해 Google 등 제3자 광고 서비스의 쿠키가 사용될 수 있습니다. 브라우저 설정에서 쿠키 저장을 거부하거나 삭제할 수 있으며, 이 경우 광고 개인화 기능이 제한될 수 있습니다.</p>
           </div>
 
           <div class="legal-section">
