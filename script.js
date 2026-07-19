@@ -712,7 +712,7 @@ function calcTakeHome(amount, country, stateCode){
   if (country === 'us') {
     const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
     const afterUS = amount * (1 - TAX_MODEL.us_resident.federal);
-    const final = afterUS * (1 - stateInfo.rate);
+    const final = amount * (1 - TAX_MODEL.us_resident.federal - stateInfo.rate);
     return {
       afterUS, final,
       label1: pickLang('미국 연방세', 'US Federal Tax', '美国联邦税', 'Thuế liên bang Mỹ', 'ภาษีกลางสหรัฐฯ', 'Федеральный налог США'), val1: '-' + (TAX_MODEL.us_resident.federal * 100) + '%',

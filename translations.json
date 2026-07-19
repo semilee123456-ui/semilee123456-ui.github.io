@@ -8198,8 +8198,8 @@
   "fr": "5. Utilisation des cookies"
  },
  "privacy.b5": {
-  "en": "Cookies from third-party ad services such as Google may be used to serve ads. You can refuse or delete cookies in your browser settings, though this may limit ad personalization.",
-  "zh": "为投放广告，可能会使用Google等第三方广告服务的Cookie。您可以在浏览器设置中拒绝保存或删除Cookie，这种情况下广告个性化功能可能会受到限制。",
+  "en": "Cookies from third-party ad services such as Google may be used to serve ads, and Google Analytics cookies are used to analyze visitor statistics. You can refuse or delete cookies in your browser settings, though this may limit ad personalization and analytics features.",
+  "zh": "为投放广告，可能会使用Google等第三方广告服务的Cookie，同时也会使用Google Analytics的Cookie来分析访客统计信息。您可以在浏览器设置中拒绝保存或删除Cookie，这种情况下广告个性化和统计功能可能会受到限制。",
   "vi": "Cookie từ các dịch vụ quảng cáo bên thứ ba như Google có thể được dùng để hiển thị quảng cáo. Bạn có thể từ chối hoặc xóa cookie trong cài đặt trình duyệt, dù điều này có thể hạn chế cá nhân hóa quảng cáo.",
   "th": "คุกกี้จากบริการโฆษณาบุคคลที่สามเช่น Google อาจถูกใช้เพื่อแสดงโฆษณา คุณสามารถปฏิเสธหรือลบคุกกี้ในการตั้งค่าเบราว์เซอร์ได้ แม้ว่าอาจจำกัดการปรับแต่งโฆษณาให้เหมาะกับคุณ",
   "ru": "Cookie от сторонних рекламных сервисов, таких как Google, могут использоваться для показа рекламы. Вы можете отклонить или удалить cookie в настройках браузера, хотя это может ограничить персонализацию рекламы.",
