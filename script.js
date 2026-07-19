@@ -3050,6 +3050,7 @@ const LANGUAGE_CONTENT_PAGES = [
   { flagCode: "BR", label: "한국에 사는 포르투갈어권 분이라면", labelEn: "Living in Korea and speak Portuguese", labelZh: "住在韩国的葡萄牙语使用者", labelVi: "Nói tiếng Bồ Đào Nha và sống ở Hàn Quốc", labelTh: "สำหรับผู้พูดภาษาโปรตุเกสที่อาศัยในเกาหลี", labelRu: "Для португалоговорящих, живущих в Корее", contentPage: "portuguese_in_korea_lottery_tax.html", contentLabel: "Português →" },
   { flagCode: "TW", label: "한국에 사는 대만·홍콩분이라면", labelEn: "Living in Korea as a Taiwanese or Hong Kong national", labelZh: "住在韩国的台湾人・香港人", labelVi: "Là người Đài Loan/Hồng Kông sống ở Hàn Quốc", labelTh: "สำหรับชาวไต้หวัน/ฮ่องกงที่อาศัยในเกาหลี", labelRu: "Для граждан Тайваня/Гонконга, живущих в Корее", contentPage: "taiwan_hk_in_korea_lottery_tax.html", contentLabel: "繁體中文 →" },
   { flagCode: "TL", label: "한국에 사는 동티모르분이라면", labelEn: "Living in Korea as a Timorese national", labelZh: "住在韩国的东帝汶人", labelVi: "Là công dân Đông Timor sống ở Hàn Quốc", labelTh: "สำหรับชาวติมอร์-เลสเตที่อาศัยในเกาหลี", labelRu: "Для граждан Восточного Тимора, живущих в Корее", contentPage: "timor_in_korea_lottery_tax.html", contentLabel: "Tetun →" },
+  { flagCode: "UA", label: "한국에 사는 우크라이나분이라면", labelEn: "Living in Korea as a Ukrainian national", labelZh: "住在韩国的乌克兰人", labelVi: "Là công dân Ukraine sống ở Hàn Quốc", labelTh: "สำหรับชาวยูเครนที่อาศัยในเกาหลี", labelRu: "Для граждан Украины, живущих в Корее", contentPage: "ukrainian_in_korea_lottery_tax.html", contentLabel: "Українська →" },
 ];
 
 // 국기 이모지(regional indicator 시퀀스)는 기기·브라우저에 따라 실제 국기 대신 "KR" 같은
