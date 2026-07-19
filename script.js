@@ -1921,7 +1921,12 @@ window.addEventListener('resize', () => {
   // 창 크기 조절이 "멈춘 뒤" 0.2초 후 딱 한 번만 재계산하도록 디바운스 적용
   clearTimeout(_resizeDebounceTimer);
   _resizeDebounceTimer = setTimeout(() => {
-    requestAnimationFrame(() => { fitAmountFontSize(document.getElementById('home-final-amt')); });
+    requestAnimationFrame(() => {
+      fitAmountFontSize(document.getElementById('home-final-amt'));
+      // auto-fit 그리드는 창 너비에 따라 열 수가 바뀌므로, 리사이즈 후에도 마지막 줄
+      // 혼자 남은 카드가 있는지 다시 판단해야 함
+      fixSideCardOrphanRow();
+    });
   }, 200);
 });
 
@@ -3126,36 +3131,52 @@ function updateSideBySide(eok, stateCode){
   });
   implementedRows.sort((a, b) => b.result.final - a.result.final);
 
-  implementedRows.forEach((row, i) => {
-    const { profile, result, pct } = row;
-    const baseLabelText = pickLang(profile.label, profile.labelEn, profile.labelZh, profile.labelVi, profile.labelTh, profile.labelRu);
-    // 카드 안 배지 라벨(side-card-flag)은 좁아서 짧은 라벨을 쓰고, 여백이 넉넉한 아래 breakdown
-    // 섹션(side-group-label)에서는 원문 label을 그대로 보여줌
-    const shortLabelText = getProfileShortLabel(profile);
-    // labelText가 뒤에 (주 이름) 등 접미사가 붙을 수 있어서, 배지+본문 텍스트를 한번에 만들어주는
-    // 헬퍼로 side-card-flag/side-group-label 양쪽에 그대로 재사용함
-    function buildLabelNode(suffix, useShort){
-      const frag = document.createDocumentFragment();
-      frag.append(makeFlagBadge(profile.flagCode), document.createTextNode(' ' + (useShort ? shortLabelText : baseLabelText) + (suffix || '')));
-      return frag;
+  // 고액 구간에서는 여러 나라가 원천징수 상한에 걸려 실수령액이 완전히 같아지는 경우가 흔함
+  // (예: 미국 비거주 30%에 걸리는 나라 여럿) — 그럴 땐 카드를 나라 수만큼 반복하지 않고
+  // 실수령액(억 단위 반올림)이 같은 나라끼리 한 카드로 묶어서 보여줌.
+  // formatWon()의 표시 문자열로는 묶지 않음 — en/zh/ja 등은 billion/million 단위를
+  // 소수점 1자리로 뭉뚱그려 보여주므로, 실제로는 세율 구조가 전혀 다른 나라들의 값이 그저
+  // 반올림상 같은 문자열로 겹쳐 보이는 경우까지 "결과가 같다"고 잘못 묶어버릴 수 있음.
+  // 억 단위 반올림 값은 언어와 무관하게 일정한 정밀도라서 안전한 그룹핑 기준이 됨
+  const groups = [];
+  implementedRows.forEach(row => {
+    const key = Math.round(row.result.final);
+    const last = groups[groups.length - 1];
+    if (last && last.key === key) {
+      last.rows.push(row);
+    } else {
+      groups.push({ key, rows: [row] });
     }
+  });
 
-    let stateSuffix = '';
-    if (profile.needsState) {
-      const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
-      stateSuffix = ` (${pickLang(stateInfo.label, stateInfo.labelEn, stateInfo.labelZh, stateInfo.labelEn, stateInfo.labelEn, stateInfo.labelEn)})`;
-    }
+  function buildStateSuffix(profile){
+    if (!profile.needsState) return '';
+    const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
+    return ` (${pickLang(stateInfo.label, stateInfo.labelEn, stateInfo.labelZh, stateInfo.labelEn, stateInfo.labelEn, stateInfo.labelEn)})`;
+  }
+
+  groups.forEach((group, gi) => {
+    const { rows } = group;
+    const { result, pct } = rows[0];
 
     const card = document.createElement('div');
     card.className = 'side-card';
-    if (i === 0) {
+    card.dataset.countryCount = String(rows.length);
+    if (gi === 0) {
       card.classList.add('side-card-best');
       const bestBadge = document.createElement('p');
       bestBadge.className = 'side-card-best-badge';
       bestBadge.textContent = pickLang('👑 실수령액 1위', '👑 Highest take-home', '👑 实得金额第一', '👑 Thực nhận cao nhất', '👑 ได้รับจริงสูงสุด', '👑 Больше всех на руки');
       card.appendChild(bestBadge);
     }
-    const flagEl = document.createElement('p'); flagEl.className = 'side-card-flag'; flagEl.appendChild(buildLabelNode(stateSuffix, true));
+    // 묶인 나라가 여럿이면 국기 배지를 나란히 다 보여줘서 "이 나라들은 결과가 같다"는
+    // 사실 자체가 한눈에 드러나게 함 (라벨은 짧은 버전만 — 배지 여러 개면 공간이 빠듯함)
+    const flagEl = document.createElement('p'); flagEl.className = 'side-card-flag';
+    rows.forEach(row => {
+      const shortLabelText = getProfileShortLabel(row.profile);
+      flagEl.appendChild(makeFlagBadge(row.profile.flagCode));
+      flagEl.appendChild(document.createTextNode(' ' + shortLabelText + buildStateSuffix(row.profile)));
+    });
     const amtEl = document.createElement('p'); amtEl.className = 'side-card-amt'; amtEl.textContent = formatWon(result.final);
     const rateEl = document.createElement('p'); rateEl.className = 'side-card-rate';
     rateEl.textContent = pickLang('실수령률 약 ', 'Take-home rate about ', '实得比例约', 'Tỷ lệ thực nhận khoảng ', 'อัตราที่ได้รับจริงประมาณ ', 'Ставка на руки около ') + pct.toFixed(1) + '%';
@@ -3166,25 +3187,32 @@ function updateSideBySide(eok, stateCode){
     barFillEl.style.width = Math.max(0, Math.min(100, pct)) + '%';
     barEl.appendChild(barFillEl);
     card.append(flagEl, amtEl, rateEl, barEl);
-    if (profile.detailPage) {
+    // 나라가 하나뿐일 때만 그 나라 전용 상세 링크를 보여줌 — 여러 나라가 묶인 카드에
+    // 하나의 detailPage만 노출하면 나머지 나라 얘기인 것처럼 오인될 수 있어서 생략함
+    if (rows.length === 1 && rows[0].profile.detailPage) {
       const detailEl = document.createElement('a');
       detailEl.className = 'side-card-detail-link';
-      detailEl.href = profile.detailPage;
-      detailEl.textContent = profile.detailLabel;
+      detailEl.href = rows[0].profile.detailPage;
+      detailEl.textContent = rows[0].profile.detailLabel;
       card.appendChild(detailEl);
     }
     grid.appendChild(card);
 
-    const groupLabel = document.createElement('p'); groupLabel.className = 'side-group-label'; groupLabel.appendChild(buildLabelNode(stateSuffix));
-    const bGrid = document.createElement('div'); bGrid.className = 'side-breakdown-grid';
-    [[result.label1, result.val1], [result.label2, result.val2]].forEach(([label, val]) => {
-      const cell = document.createElement('div'); cell.className = 'side-breakdown-cell';
-      const l = document.createElement('p'); l.className = 'side-breakdown-label'; l.textContent = label;
-      const v = document.createElement('p'); v.className = 'side-breakdown-val'; v.textContent = val;
-      cell.append(l, v);
-      bGrid.appendChild(cell);
+    rows.forEach(row => {
+      const { profile, result: rowResult } = row;
+      const baseLabelText = pickLang(profile.label, profile.labelEn, profile.labelZh, profile.labelVi, profile.labelTh, profile.labelRu);
+      const groupLabel = document.createElement('p'); groupLabel.className = 'side-group-label';
+      groupLabel.append(makeFlagBadge(profile.flagCode), document.createTextNode(' ' + baseLabelText + buildStateSuffix(profile)));
+      const bGrid = document.createElement('div'); bGrid.className = 'side-breakdown-grid';
+      [[rowResult.label1, rowResult.val1], [rowResult.label2, rowResult.val2]].forEach(([label, val]) => {
+        const cell = document.createElement('div'); cell.className = 'side-breakdown-cell';
+        const l = document.createElement('p'); l.className = 'side-breakdown-label'; l.textContent = label;
+        const v = document.createElement('p'); v.className = 'side-breakdown-val'; v.textContent = val;
+        cell.append(l, v);
+        bGrid.appendChild(cell);
+      });
+      breakdownContainer.append(groupLabel, bGrid);
     });
-    breakdownContainer.append(groupLabel, bGrid);
   });
 
   // 아직 데이터가 준비 안 된 나라들은 정렬 대상이 아니라서 뒤쪽에 그대로 이어붙임
@@ -3192,6 +3220,7 @@ function updateSideBySide(eok, stateCode){
     const shortLabelText = getProfileShortLabel(profile);
     const card = document.createElement('div');
     card.className = 'side-card';
+    card.dataset.countryCount = '1';
     const amtEl = document.createElement('p');
     amtEl.className = 'side-card-amt';
     amtEl.style.cssText = 'color:var(--text-muted); font-size:16px;';
@@ -3203,7 +3232,7 @@ function updateSideBySide(eok, stateCode){
     grid.appendChild(card);
   });
 
-  // 모바일에서 카드 20개를 한 번에 쭉 나열하면 스크롤이 너무 길어져서, 처음엔 상위 6개(이미
+  // 모바일에서 카드를 한 번에 쭉 나열하면 스크롤이 너무 길어져서, 처음엔 상위 6개(이미
   // 실수령액 순 정렬됨)만 보여주고 나머지는 "더보기" 버튼으로 펼치게 함. 매번 다시 그릴 때마다
   // 접힌 상태로 리셋 — eok/국가가 바뀌면 순위도 달라지므로 이전 펼침 상태를 유지할 이유가 없음
   const SIDE_VISIBLE_COUNT = 6;
@@ -3214,14 +3243,35 @@ function updateSideBySide(eok, stateCode){
     if (allCards.length > SIDE_VISIBLE_COUNT) {
       showMoreBtn.style.display = 'block';
       showMoreBtn.dataset.expanded = 'false';
-      const remaining = allCards.length - SIDE_VISIBLE_COUNT;
+      // 카드 수가 아니라 그 안에 묶인 나라 수 합계로 세어줌 — 카드 하나가 여러 나라를
+      // 대표할 수 있어서, 카드 개수로 세면 "더보기"가 실제 남은 나라 수보다 적게 나옴
+      const remaining = allCards.slice(SIDE_VISIBLE_COUNT).reduce((sum, c) => sum + (parseInt(c.dataset.countryCount, 10) || 1), 0);
       showMoreBtn.textContent = pickLang(`${remaining}개국 더 보기 ▾`, `Show ${remaining} more ▾`, `再显示${remaining}个国家 ▾`, `Xem thêm ${remaining} nước ▾`, `ดูเพิ่มอีก ${remaining} ประเทศ ▾`, `Показать ещё ${remaining} стран ▾`);
     } else {
       showMoreBtn.style.display = 'none';
     }
   }
 
+  fixSideCardOrphanRow();
   renderLanguageContentLinks();
+}
+
+// 카드 그리드가 auto-fit(가변 열 수)라서 마지막 줄에 카드 하나만 혼자 남으면 옆에 큰 여백이
+// 생김 — 예전엔 CSS만으로(:last-child:nth-child(odd)) 처리하려 했지만, "더보기"로 접힌
+// 카드도 DOM에는 여전히 남아있어서(display:none) :last-child가 항상 숨겨진 맨 마지막 카드를
+// 가리키는 바람에 실제로는 한 번도 작동하지 않던 규칙이었음. 화면에 보이는 카드만 기준으로
+// 실제 렌더링된 줄바꿈 위치(offsetTop 비교)를 봐야 정확해서 JS로 판단함
+function fixSideCardOrphanRow(){
+  const grid = document.getElementById('sideByCountryGrid');
+  if (!grid) return;
+  const visible = Array.from(grid.children).filter(c => !c.classList.contains('side-card-hidden-extra'));
+  visible.forEach(c => c.classList.remove('side-card-span-full'));
+  if (visible.length < 2) return;
+  const last = visible[visible.length - 1];
+  const prev = visible[visible.length - 2];
+  if (last.offsetTop > prev.offsetTop) {
+    last.classList.add('side-card-span-full');
+  }
 }
 
 function toggleSideShowMore(){
@@ -3240,4 +3290,5 @@ function toggleSideShowMore(){
     btn.dataset.expanded = 'false';
     btn.textContent = btn.dataset.collapsedLabel || btn.textContent;
   }
+  fixSideCardOrphanRow();
 }

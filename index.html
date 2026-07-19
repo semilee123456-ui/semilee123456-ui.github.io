@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9743479262743239" crossorigin="anonymous"></script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-52R7SSXXNB"></script>
 <script>
@@ -365,9 +366,25 @@
               <div class="intro-lang-select-row">
                 <select class="intro-lang-select" id="realAbroadSelect" aria-label="국가 선택">
                   <option value="us|en">US · English</option>
+                  <option value="vn|vi">VN · Tiếng Việt</option>
                   <option value="cn|zh">CN · 中文</option>
                   <option value="in|en">IN · English</option>
+                  <option value="id|id">ID · Bahasa Indonesia</option>
                   <option value="ph|tl">PH · Tagalog</option>
+                  <option value="th|th">TH · ภาษาไทย</option>
+                  <option value="jp|ja">JP · 日本語</option>
+                  <option value="ru|ru">RU · Русский</option>
+                  <option value="np|ne">NP · नेपाली</option>
+                  <option value="lk|si">LK · සිංහල</option>
+                  <option value="uz|uz">UZ · O'zbek</option>
+                  <option value="kz|kk">KZ · Қазақша</option>
+                  <option value="kg|ky">KG · Кыргызча</option>
+                  <option value="mm|my">MM · မြန်မာ</option>
+                  <option value="bd|bn">BD · বাংলা</option>
+                  <option value="pk|ur">PK · اردو</option>
+                  <option value="kh|km">KH · ខ្មែរ</option>
+                  <option value="mn|mn">MN · Монгол</option>
+                  <option value="la|lo">LA · ລາວ</option>
                 </select>
                 <button type="button" class="intro-lang-go-btn" onclick="goRealAbroadFromSelect('realAbroadSelect')" data-i18n="intro.goBtn">이동</button>
               </div>
@@ -419,13 +436,15 @@
                 <span class="jackpot-quickfill-amt" id="quickfill-mm-amt">-</span>
               </button>
             </div>
-            <p class="field-label-single" style="margin:0 0 6px;" data-i18n="input.announcedLabel">발표된 총액(연금 기준)만 아세요? 자동으로 계산해드려요</p>
-            <div class="million-input-wrap-secondary">
-              <input type="text" id="homeAnnouncedInput" class="dollar-input" inputmode="decimal" placeholder="예: 200" data-i18n-placeholder="input.amountPlaceholder" oninput="onHomeAnnouncedTyped()" onfocus="this.select()">
-              <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
-            </div>
-            <p class="krw-hint" style="margin:-6px 0 14px;" data-i18n="input.announcedHint">💡 발표 금액의 약 58%를 아래 일시불 칸에 자동으로 채워드려요</p>
-            <p class="field-label-single" style="margin:0 0 6px;" data-i18n="input.orManualLabel">또는 직접 금액 입력</p>
+            <details class="announced-amount-toggle">
+              <summary class="announced-amount-summary" data-i18n="input.announcedLabel">발표 총액(연금 기준)만 아세요?</summary>
+              <div class="million-input-wrap-secondary">
+                <input type="text" id="homeAnnouncedInput" class="dollar-input" inputmode="decimal" placeholder="예: 200" data-i18n-placeholder="input.amountPlaceholder" oninput="onHomeAnnouncedTyped()" onfocus="this.select()">
+                <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
+              </div>
+              <p class="krw-hint" style="margin:6px 0 0;" data-i18n="input.announcedHint">💡 발표 금액의 약 58%를 아래 일시불 칸에 자동으로 채워드려요</p>
+            </details>
+            <p class="field-label-single" style="margin:14px 0 6px;" data-i18n="input.orManualLabel">또는 직접 금액 입력</p>
             <div class="million-input-wrap">
               <input type="text" id="homeAmountInput" class="dollar-input" inputmode="decimal" placeholder="예: 100" data-i18n-placeholder="input.amountPlaceholder" oninput="onHomeAmountTyped()" onfocus="this.select()">
               <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
