@@ -607,7 +607,7 @@
 
   .prize-card{
     display:flex; justify-content:space-between; align-items:center;
-    background:var(--bg); border-radius:10px; padding:10px 16px; margin-bottom:6px;
+    background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 16px; margin-bottom:8px;
   }
   .prize-card:last-child{ margin-bottom:0; }
   .prize-card.jackpot{ background:rgba(38,36,32,0.1); border:1.5px solid rgba(38,36,32,0.35); padding:14px 16px; }
@@ -651,12 +651,12 @@
   }
   .explore-section{ margin-top:20px; }
   .explore-title{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); margin:0 0 10px; text-align:center; }
-  .explore-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+  .explore-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
   .explore-card{
     /* min-width:0이 없으면 그리드 트랙이 내용(긴 번역 텍스트)만큼 억지로 넓어지는 "그리드 blowout"
        현상이 생겨, 카자흐어·키르기스어처럼 라벨이 긴 언어에서 카드가 화면 밖으로 삐져나갔음 */
     display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0;
-    background:var(--card); border:1.5px solid var(--border); border-radius:12px; padding:14px 8px;
+    background:var(--card); border:1.5px solid var(--border); border-radius:12px; padding:14px 10px;
     cursor:pointer; font-family:inherit; text-align:center;
     transition:border-color 0.15s ease, transform 0.1s ease;
   }
@@ -793,6 +793,10 @@
   .jh-amt-item{ display:flex; flex-direction:column; gap:1px; }
   .jh-amt-label{ font-size:var(--fs-small); color:var(--text-muted); }
   .jh-amt{ font-size:var(--fs-note); font-weight:800; color:var(--teal); }
+  .jh-more{ margin-top:8px; }
+  .jh-more-summary{ font-size:var(--fs-small); color:var(--teal); font-weight:700; cursor:pointer; list-style:none; }
+  .jh-more-summary::-webkit-details-marker{ display:none; }
+  .jh-more .jh-amounts{ margin-top:8px; }
   .jackpot-history-empty{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; padding:12px 0; }
   .filing-static-note{
     background:var(--bg); border-radius:8px; padding:10px 12px; font-size:var(--fs-note);
@@ -807,7 +811,7 @@
   .ticket-mock-row{ text-align:center; margin-bottom:6px; }
   .ticket-mock-numbers{ display:inline-flex; flex-wrap:wrap; justify-content:center; gap:0; max-width:100%; }
   .tm-ball{
-    display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
     border-radius:50%; background:var(--navy); color:#fff; font-size:var(--fs-note); font-weight:800; margin:2px;
   }
   .tm-ball.pb{ background:#C0392B; }
@@ -875,7 +879,7 @@
   .jc-step{ display:flex; gap:12px; position:relative; padding-bottom:20px; }
   .jc-step:last-child{ padding-bottom:0; }
   .jc-step-num{
-    flex-shrink:0; width:26px; height:26px; border-radius:50%; background:rgba(38,36,32,0.1); color:var(--text-dark);
+    flex-shrink:0; width:30px; height:30px; border-radius:50%; background:rgba(38,36,32,0.1); color:var(--text-dark);
     font-size:16px; font-weight:800; display:flex; align-items:center; justify-content:center; position:relative; z-index:1;
   }
   .jc-step-body{ flex:1; min-width:0; padding-top:1px; }
