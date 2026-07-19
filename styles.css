@@ -257,7 +257,7 @@
   .announced-amount-toggle{ margin:0 0 14px; }
   .announced-amount-summary{
     font-size:var(--fs-small); color:var(--teal); font-weight:700; cursor:pointer; list-style:none;
-    padding:10px 0; text-align:center;
+    padding:10px 0; text-align:left;
   }
   .announced-amount-summary::-webkit-details-marker{ display:none; }
   .announced-amount-summary::after{ content:' ▾'; }
