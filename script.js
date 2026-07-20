@@ -3032,6 +3032,9 @@ function updateHomeCalc(usdOverride){
   document.getElementById('tax-impact-before').textContent = formatWon(억);
   document.getElementById('tax-impact-after').textContent = formatWon(final);
   document.getElementById('tax-impact-diff').textContent = '-' + formatWon(억 - final) + ` (${taxImpactPct}%)`;
+  document.getElementById('home-tax-total-line').textContent =
+    pickLang('합계 ', 'Total ', '合计 ', 'Tổng ', 'รวม ', 'Итого ', { km:'សរុប ', ne:'जम्मा ', id:'Total ', my:'စုစုပေါင်း ', si:'එකතුව ', uz:'Jami ', mn:'Нийт ', kk:'Барлығы ', ky:'Баары ', ur:'کل ', bn:'মোট ', lo:'ລວມ ', ja:'合計 ', ar:'الإجمالي ', hi:'कुल ', fr:'Total ', tl:'Kabuuan ' })
+    + '-' + taxImpactPct + '%';
 
   // 실수령/세금 비율을 숫자로만 보여주는 대신 막대그래프로도 한눈에 보이게 함 —
   // 다른 복권 세금 계산기들(infinitycalculator 등)에 공통으로 있는 시각적 breakdown 패턴 참고

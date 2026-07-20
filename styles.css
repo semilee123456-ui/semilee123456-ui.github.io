@@ -520,6 +520,7 @@
   .live-badge.manual{ background:rgba(38,36,32,0.06); color:var(--text-muted); }
   .live-badge.manual .live-dot{ background:var(--text-muted); }
   .jp-krw{ font-size:16px; color:var(--text-muted); opacity:0.85; font-weight:400; margin:2px 0 0; }
+  .jp-est-note{ font-size:12px; color:var(--text-muted); opacity:0.7; font-weight:400; margin:1px 0 0; }
   .foot-note{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; line-height:1.4; }
 
   .result-hero{
