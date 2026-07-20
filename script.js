@@ -1730,28 +1730,44 @@ function updateDrawCountdown(){
   // 직접 계산할 필요가 없어 미래 시각을 UTC로 역산하는 것보다 훨씬 단순하고 안전함
   function getEasternNow(){
     const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/New_York', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false
+      timeZone: 'America/New_York', weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
     }).formatToParts(new Date());
     const map = {};
     parts.forEach(p => { if (p.type !== 'literal') map[p.type] = p.value; });
     const WEEKDAY_NUM = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
     // 자정(00시)이 "24"로 나오는 로케일 표기 대응 — 24는 다음날 00시와 같음
-    return { dow: WEEKDAY_NUM[map.weekday], minutesOfDay: (Number(map.hour) % 24) * 60 + Number(map.minute) };
+    return {
+      dow: WEEKDAY_NUM[map.weekday], minutesOfDay: (Number(map.hour) % 24) * 60 + Number(map.minute),
+      year: Number(map.year), month: Number(map.month), day: Number(map.day)
+    };
+  }
+  // D-day 배지 문구("오늘 N시간 후", "D-1")는 스크린샷을 나중에 다시 보거나 남에게 카톡으로
+  // 전달하면 그 시점 기준으로는 더 이상 안 맞아서 헷갈림(사용자가 직접 지적) — 실제 날짜(월/일)를
+  // 괄호로 같이 보여줘서, 상대적 표현이 낡아도 실제 추첨일은 항상 알 수 있게 함
+  function formatDrawDate(year, month, day, diffDays){
+    // UTC 기준으로 계산해서 로컬 타임존의 서머타임 경계 등으로 인한 날짜 이월 오차를 피함
+    const d = new Date(Date.UTC(year, month - 1, day + diffDays));
+    return new Intl.DateTimeFormat(LOCALE_MAP[currentLang] || 'ko-KR', { month: 'numeric', day: 'numeric', timeZone: 'UTC' }).format(d);
   }
   // 추첨 당일엔 "D-0"만으론 몇 시간 남았는지 감이 안 와서, 시:분까지 보여줌 —
   // 이미 그 시각이 지났으면(방문자가 심야에 접속) 다음 추첨일로 자연스럽게 넘어감
   function nextDrawInfo(drawDays, drawMinutesOfDay){
-    const { dow, minutesOfDay } = getEasternNow();
+    const { dow, minutesOfDay, year, month, day } = getEasternNow();
     if (drawDays.includes(dow) && minutesOfDay < drawMinutesOfDay) {
       const remain = drawMinutesOfDay - minutesOfDay;
       const h = Math.floor(remain / 60);
       const m = remain % 60;
-      if (h > 0) return pickLang(`오늘 ${h}시간 후`, `In ${h}h`, `今天${h}小时后`, `Còn ${h} giờ nữa`, `อีก ${h} ชม.`, `Через ${h} ч`);
-      return pickLang(`${m}분 후`, `In ${m}m`, `${m}分钟后`, `Còn ${m} phút nữa`, `อีก ${m} นาที`, `Через ${m} мин`);
+      const dateStr = formatDrawDate(year, month, day, 0);
+      if (h > 0) return pickLang(`오늘 ${h}시간 후`, `In ${h}h`, `今天${h}小时后`, `Còn ${h} giờ nữa`, `อีก ${h} ชม.`, `Через ${h} ч`, {
+        km: `ក្នុង ${h} ម៉ោង`, ne: `${h} घण्टामा`, id: `${h} jam lagi`, my: `${h} နာရီအတွင်း`, si: `පැය ${h}කින්`, uz: `${h} soatdan keyin`, mn: `${h} цагийн дараа`, kk: `${h} сағаттан кейін`, ky: `${h} сааттан кийин`, ur: `${h} گھنٹے میں`, bn: `${h} ঘণ্টার মধ্যে`, lo: `ອີກ ${h} ຊົ່ວໂມງ`, ja: `今日あと${h}時間`, ar: `خلال ${h} ساعة`, hi: `${h} घंटे में`, fr: `Dans ${h}h`, tl: `Sa loob ng ${h} oras`
+      }) + ` (${dateStr})`;
+      return pickLang(`${m}분 후`, `In ${m}m`, `${m}分钟后`, `Còn ${m} phút nữa`, `อีก ${m} นาที`, `Через ${m} мин`, {
+        km: `ក្នុង ${m} នាទី`, ne: `${m} मिनेटमा`, id: `${m} menit lagi`, my: `${m} မိနစ်အတွင်း`, si: `මිනිත්තු ${m}කින්`, uz: `${m} daqiqadan keyin`, mn: `${m} минутын дараа`, kk: `${m} минуттан кейін`, ky: `${m} мүнөттөн кийин`, ur: `${m} منٹ میں`, bn: `${m} মিনিটের মধ্যে`, lo: `ອີກ ${m} ນາທີ`, ja: `あと${m}分`, ar: `خلال ${m} دقيقة`, hi: `${m} मिनट में`, fr: `Dans ${m}min`, tl: `Sa loob ng ${m} min`
+      }) + ` (${dateStr})`;
     }
     let diff = 1;
     while (!drawDays.includes((dow + diff) % 7)) diff++;
-    return `D-${diff}`;
+    return `D-${diff} (${formatDrawDate(year, month, day, diff)})`;
   }
   document.getElementById('dday-powerball').textContent = nextDrawInfo([1, 3, 6], 22 * 60 + 59);
   document.getElementById('dday-mega').textContent = nextDrawInfo([2, 5], 23 * 60);
@@ -2064,14 +2080,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (savedLang === 'ko' || SUPPORTED_LANGS.includes(savedLang)) {
     setLanguage(savedLang);
-  } else if (SUPPORTED_LANGS.includes(urlLang)) {
+  } else if (urlLang === 'ko' || SUPPORTED_LANGS.includes(urlLang)) {
+    // 'ko'는 언어 파일이 따로 없는 기본값이라 SUPPORTED_LANGS 목록엔 없는데, 그 때문에
+    // "?lang=ko"로 명시적으로 들어온 링크가 이 분기를 못 타고 그 아래 브라우저 자동감지로
+    // 새서, 한국어가 아닌 브라우저에서 열면 링크가 지정한 한국어 대신 엉뚱한 언어로 뜨는
+    // 버그였음(현재는 이 링크를 실제로 쓰는 페이지가 없어 드러나진 않았지만 잠재 버그였음)
     setLanguage(urlLang);
   } else {
     const detected = detectBrowserLanguage();
     if (detected) setLanguage(detected);
   }
 
-  if (SUPPORTED_LANGS.includes(urlLang)) {
+  if (urlLang === 'ko' || SUPPORTED_LANGS.includes(urlLang)) {
     // 한 번 적용한 뒤엔 URL에서 ?lang= 을 지워야 함 — 남겨두면, 방문자가 이후 언어 토글로
     // 직접 다른 언어를 골라도 새로고침하는 순간 주소창에 남아있는 이 값이 다시 강제로
     // 적용되면서 "내가 방금 고른 언어가 마음대로 바뀌는" 것처럼 보이는 문제가 있었음

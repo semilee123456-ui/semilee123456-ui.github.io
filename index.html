@@ -162,7 +162,7 @@
       "name": "한 번에 받는 게 나아요, 나눠 받는 게 나아요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "발표된 잭팟은 사실 연금(annuity) 기준 금액이에요 — 일시불로 받으면 그 금액의 약 45~60%밖에 안 돼요 (나머지는 29년에 걸쳐 나눠 받는 걸 '한 번에' 받는 대가로 할인되는 셈). 대신 세금 관점에서는 일시불이 그 해에 세율이 확 올라가고, 연금은 매년 나눠 받아서 부담이 분산돼요. 실제로는 대부분의 당첨자가 일시불을 선택해요. 청구 후 보통 60일 안에 결정해야 하고, 한 번 고르면 되돌릴 수 없어서 이건 꼭 재정 전문가와 상의 후 정하는 게 좋아요."
+        "text": "미국 로또는 두 가지로 받을 수 있어요 — ① 연금: 29년에 걸쳐 30번 나눠서 총액을 다 받는 방식, ② 일시불: 한 번에 받는 대신 그 금액의 약 45~60%로 할인되는 방식. 뉴스에 나오는 발표 잭팟 금액은 ①번 연금 기준이에요. 세금 관점에서는 일시불이 그 해에 세율이 확 올라가고, 연금은 매년 나눠 받아서 부담이 분산돼요. 실제로는 대부분의 당첨자가 일시불을 선택해요. 청구 후 보통 60일 안에 결정해야 하고, 한 번 고르면 되돌릴 수 없어서 이건 꼭 재정 전문가와 상의 후 정하는 게 좋아요."
       }
     },
     {
@@ -428,11 +428,11 @@
             <p class="krw-hint" style="margin-bottom:10px;" data-i18n="input.krwHintFull">일시불 실제 수령액(발표액의 약 45~60%)을 입력하세요</p>
             <div class="jackpot-quickfill-row" style="margin-bottom:16px;">
               <button type="button" class="jackpot-quickfill-btn" onclick="fillHomeAmountFromJackpot('powerball')">
-                <span data-i18n="home.quickfillPowerball">파워볼 최근 잭팟</span>
+                <span data-i18n="home.quickfillPowerball">파워볼 최근 잭팟 (일시불)</span>
                 <span class="jackpot-quickfill-amt" id="quickfill-pb-amt">-</span>
               </button>
               <button type="button" class="jackpot-quickfill-btn" onclick="fillHomeAmountFromJackpot('megamillions')">
-                <span data-i18n="home.quickfillMega">메가밀리언즈 최근 잭팟</span>
+                <span data-i18n="home.quickfillMega">메가밀리언즈 최근 잭팟 (일시불)</span>
                 <span class="jackpot-quickfill-amt" id="quickfill-mm-amt">-</span>
               </button>
             </div>
@@ -444,7 +444,7 @@
               </div>
               <p class="krw-hint" style="margin:6px 0 0;" data-i18n="input.announcedHint">💡 발표 금액의 약 58%를 아래 일시불 칸에 자동으로 채워드려요</p>
             </details>
-            <p class="field-label-single" style="margin:14px 0 6px;" data-i18n="input.orManualLabel">또는 직접 금액 입력</p>
+            <p class="field-label-single" style="margin:14px 0 6px;" data-i18n="input.orManualLabel">또는 직접 금액 입력 (일시불 기준)</p>
             <div class="million-input-wrap">
               <input type="text" id="homeAmountInput" class="dollar-input" inputmode="decimal" placeholder="예: 100" data-i18n-placeholder="input.amountPlaceholder" oninput="onHomeAmountTyped()" onfocus="this.select()">
               <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
@@ -563,8 +563,8 @@
             <summary class="calc-detail-summary" data-i18n="home.detailSummary">🔍 결과 더 자세히 보기</summary>
             <span id="tax-impact-after" style="display:none;"></span>
             <div class="detail-note-box" style="background:var(--bg); border-radius:10px; padding:12px 14px; margin-top:10px;">
-              <p class="flow-explain" style="margin:0;" data-i18n-html="home.flowExplain1">💡 뉴스에 나온 <b>발표 잭팟(연금 기준) 금액</b>은 실제로 받는 돈이 아니에요. 일시불로 받으면 그 약 45~60% 수준의 <b>현재가치(세전)</b>를 받고, 이 계산기는 그 세전 금액을 기준으로 계산해요.</p>
-              <button type="button" class="annuity-info-link" style="margin-top:8px;" onclick="goToAnnuityInfo()" data-i18n="home.annuityInfoLink">📅 연금으로 받으면 어떻게 다른가요? →</button>
+              <p class="flow-explain" style="margin:0;" data-i18n-html="home.flowExplain1">💡 미국 로또는 두 가지로 받을 수 있어요 — <b>① 연금</b>: 29년 나눠서 총액 다 받기, <b>② 일시불</b>: 한 번에 받는 대신 금액이 줄어요(약 45~60%). 뉴스에 나오는 발표 잭팟 금액은 ①번 기준이고, 이 계산기는 대부분의 당첨자가 선택하는 <b>②번 일시불의 세전 금액</b>으로 계산해요.</p>
+              <button type="button" class="annuity-info-link" style="margin-top:8px;" onclick="goToAnnuityInfo()" data-i18n="home.annuityInfoLink">📅 그럼 ①번 연금을 선택하면 얼마나 다른지 볼까요? →</button>
             </div>
             <p class="result-hero-basis" id="home-final-basis" style="margin-top:14px; text-align:center; font-weight:700;">1,503억원 당첨 기준 · 한국 거주자</p>
             <div class="result-grid" style="margin-top:8px; grid-template-columns:1fr 1fr;">
@@ -1190,7 +1190,7 @@
           </div>
           <details class="faq-item" data-cat="tax">
             <summary class="faq-q" data-i18n="faq.q11">한 번에 받는 게 나아요, 나눠 받는 게 나아요?</summary>
-            <p class="faq-a" data-i18n-html="faq.a11">발표된 잭팟은 연금(annuity) 기준이라, 일시불로 받으면 그 금액의 약 45~60%예요. 대부분의 당첨자가 일시불을 선택해요 — 자세한 비교는 <button type="button" class="inline-link-btn" onclick="goToAnnuityInfo()">확률체감 메뉴의 잭팟 계산기</button>에서 확인해보세요.</p>
+            <p class="faq-a" data-i18n-html="faq.a11">미국 로또는 <b>① 연금</b>(29년 나눠 받기)과 <b>② 일시불</b>(한 번에 받는 대신 약 45~60%로 줄어듦), 두 가지 방식으로 받을 수 있어요. 뉴스에 나오는 발표 금액은 ①번 기준이고, 대부분의 당첨자는 ②번 일시불을 선택해요 — 자세한 비교는 <button type="button" class="inline-link-btn" onclick="goToAnnuityInfo()">확률체감 메뉴의 잭팟 계산기</button>에서 확인해보세요.</p>
           </details>
           <details class="faq-item" data-cat="purchase">
             <summary class="faq-q" data-i18n="faq.q12">미국 복권은 어디서 살 수 있어요?</summary>
