@@ -259,6 +259,15 @@
   }
   .country-toggle-more-summary::-webkit-details-marker{ display:none; }
   .country-toggle-more-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px; }
+  .announced-amount-toggle{ margin:0 0 14px; }
+  .announced-amount-summary{
+    font-size:var(--fs-small); color:var(--teal); font-weight:700; cursor:pointer; list-style:none;
+    padding:10px 0; text-align:left;
+  }
+  .announced-amount-summary::-webkit-details-marker{ display:none; }
+  .announced-amount-summary::after{ content:' ▾'; }
+  .announced-amount-toggle[open] .announced-amount-summary::after{ content:' ▴'; }
+  .announced-amount-toggle[open] .announced-amount-summary{ margin-bottom:4px; }
   .country-toggle-btn{
     flex:1 1 calc(50% - 4px); min-height:46px; border-radius:11px; border:2px solid var(--border); background:var(--card);
     color:var(--text-dark); font-family:inherit; font-size:16px; font-weight:800; cursor:pointer;
@@ -302,6 +311,7 @@
      줄 수가 한 줄만 달라도(예: "인도 거주자" 1줄 vs "2개국 실수령액 동일" 2줄) 바닥이 들쭉날쭉해 보였음 */
   .side-by-side-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(105px, 1fr)); gap:10px; margin-top:14px; }
   .side-card{ background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:16px; min-width:0; }
+  .side-card-span-full{ grid-column:1 / -1; }
   .side-card-flag{ font-size:var(--fs-small); color:var(--text-muted); font-weight:700; margin:0 0 8px; }
   .side-card-amt{ font-size:19px; font-size:clamp(17px, 6vw, 22px); font-weight:800; color:var(--teal); margin:0 0 6px; font-variant-numeric:tabular-nums; overflow-wrap:break-word; }
   .side-card-rate{ font-size:var(--fs-small); color:var(--text-muted); margin:0; }
@@ -340,10 +350,13 @@
     transform:translateY(-50%); transition:transform 0.2s ease;
   }
   details.side-breakdown-accordion[open] > .side-breakdown-title::after{ transform:translateY(-50%) rotate(180deg); }
-  .other-lang-list{ display:flex; flex-direction:column; gap:10px; margin-top:12px; }
-  .other-lang-row{ display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:6px 12px; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:12px 14px; }
-  .other-lang-label{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; min-width:0; flex:1 1 auto; }
-  .other-lang-link{ font-size:var(--fs-small); font-weight:800; color:var(--teal); text-decoration:none; flex-shrink:0; }
+  .other-lang-list{ display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+  .other-lang-row{
+    display:flex; align-items:center; gap:8px; background:var(--bg); border:1px solid var(--border);
+    border-radius:10px; padding:11px 14px; font-size:var(--fs-small); font-weight:700; color:var(--teal);
+    text-decoration:none;
+  }
+  .other-lang-row:hover{ border-color:var(--teal); }
   .intro-persona-list{ display:flex; flex-direction:column; gap:10px; margin-top:8px; }
   .intro-persona-row{
     display:block; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:12px 14px;
@@ -361,7 +374,6 @@
   }
   .intro-persona-action{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; margin:0; }
   .intro-persona-action.is-link{ color:var(--teal); font-weight:800; text-decoration:none; display:inline-block; }
-  .intro-lang-btns{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
   .intro-lang-select-row{ display:flex; gap:8px; margin-top:8px; }
   .intro-lang-select{
     flex:1; min-width:0; height:44px; border-radius:9px; border:1.5px solid var(--border);
@@ -371,16 +383,6 @@
   .intro-lang-go-btn{
     flex-shrink:0; min-width:72px; min-height:44px; border-radius:9px; border:none;
     background:var(--teal); color:#fff; font-family:inherit; font-size:var(--fs-small); font-weight:800; cursor:pointer;
-  }
-  .intro-lang-btn{
-    flex:1; min-height:44px; border-radius:9px; border:1.5px solid var(--teal); background:var(--card);
-    color:var(--teal); font-family:inherit; font-size:var(--fs-small); font-weight:800; cursor:pointer;
-    transition:background 0.15s ease, color 0.15s ease;
-    display:flex; align-items:center; justify-content:center; text-align:center; line-height:1.25; padding:6px 4px;
-  }
-  .intro-lang-btn:active{ background:var(--teal); color:#fff; }
-  @media (hover: hover) {
-    .intro-lang-btn:hover{ background:var(--teal); color:#fff; }
   }
   .side-flow-explain{ font-size:var(--fs-note); color:var(--text-muted); margin:0 0 14px; line-height:1.6; }
   .side-group-label{ font-size:var(--fs-body); font-weight:700; color:var(--text-dark); margin:14px 0 8px; }
@@ -633,7 +635,14 @@
     transition:all 0.3s; flex-shrink:1;
   }
   .lightning-ball.pb{ background:rgba(38,36,32,0.12); border-color:var(--text-dark); color:var(--text-dark); }
+  .lightning-ball.mega{ background:rgba(148,103,22,0.12); border-color:var(--status-amber); color:var(--status-amber); }
   .lightning-ball.drawn{ animation:pop 0.3s ease; }
+  .lightning-game-toggle{ display:flex; justify-content:center; gap:8px; margin:4px 0 2px; }
+  .lightning-game-btn{
+    font-size:var(--fs-small); font-weight:700; color:var(--text-muted); background:var(--bg);
+    border:1.5px solid var(--border); border-radius:20px; padding:6px 14px; cursor:pointer;
+  }
+  .lightning-game-btn.active{ color:var(--teal); border-color:var(--teal); background:rgba(21,84,69,0.06); }
   @keyframes pop{ 0%{ transform:scale(0.5); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
 
   .prize-card{
