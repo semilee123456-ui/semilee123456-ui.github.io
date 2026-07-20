@@ -447,11 +447,12 @@
                 <span class="jackpot-quickfill-amt" id="quickfill-mm-amt">-</span>
               </button>
             </div>
-            <div class="amount-input-tabs" role="tablist">
+            <div class="amount-input-tabs" id="amountInputTabs" role="tablist" style="display:none;">
               <button type="button" class="amount-tab-btn active" data-tab="lump" onclick="switchAmountTab('lump')" data-i18n="input.tabLump">일시불로 입력</button>
               <button type="button" class="amount-tab-btn" data-tab="announced" onclick="switchAmountTab('announced')" data-i18n="input.tabAnnounced">연금 발표액으로</button>
               <button type="button" class="amount-tab-btn" data-tab="reverse" onclick="switchAmountTab('reverse')" data-i18n="input.tabReverse">원하는 실수령액으로</button>
             </div>
+            <button type="button" class="amount-tab-reveal-link" id="amountTabRevealLink" onclick="revealAmountTabs()">💡 <span data-i18n="input.tabRevealLink">연금 발표액이나 원하는 실수령액으로도 입력할 수 있어요</span> →</button>
 
             <div class="amount-tab-panel" id="amountTabLump">
               <div class="million-input-wrap">
@@ -581,17 +582,6 @@
             <p class="filing-note" id="home-filing-note" style="display:none; margin-top:8px;">💡 한국 거주자는 어느 주(State)에서 당첨되든 미국 비거주자 원천징수(30%)가 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.</p>
 
             <p class="krw-hint" style="margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);">≈ <span id="home-krw-amt">1,503억원</span> · <span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="home-rate-input" value="1,503.4" inputmode="decimal" oninput="onHomeRateChanged()"><span data-i18n="common.won">원</span></p>
-
-            <div class="live-result-mini" id="live-result-mini" onclick="startEditMiniResult()">
-              <span data-i18n="home.miniResultLabel">✏️ 원하는 실수령액부터 입력해볼까요?</span>
-              <span class="live-result-mini-display" id="live-result-mini-display">
-                <span class="live-result-mini-amt" id="live-result-mini-amt">805억원</span>
-              </span>
-              <span class="live-result-mini-edit" id="live-result-mini-edit" style="display:none;">
-                <input type="text" id="miniResultEditInput" class="mini-result-edit-input" inputmode="decimal" onclick="event.stopPropagation()">
-                <span class="mini-result-edit-unit" data-i18n="home.reverseUnit">억원</span>
-              </span>
-            </div>
           </div>
 
           <details class="calc-detail-toggle">
@@ -821,8 +811,7 @@
         </div>
 
         <div class="panel">
-          <h2 class="panel-title" data-i18n="compare.sideTitle">나라별로 나란히 놓고 보면</h2>
-          <p class="panel-desc" id="compare-side-amt-note"></p>
+          <h2 class="panel-title"><span class="panel-title-amt" id="compare-side-title-amt"></span><span data-i18n="compare.sideTitle">나라별로 나란히 놓고 보면</span></h2>
           <div class="side-by-side-grid" id="sideByCountryGrid" role="status" aria-live="polite"></div>
           <button type="button" class="side-showmore-btn" id="sideShowMoreBtn" onclick="toggleSideShowMore()" style="display:none;"></button>
 

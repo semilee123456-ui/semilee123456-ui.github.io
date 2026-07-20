@@ -1914,7 +1914,29 @@ function initJackpotCardAmt(){
   const krw = getJackpotKRW();
   // formatWon()이 이미 언어별(ko/en/zh/vi/th/ru) 단위 변환·표기를 전부 처리하므로 재사용
   document.getElementById('jackpot-card-amt').textContent = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ') + formatWon((krw * CASH_VALUE_RATIO) / 100000000);
-  document.getElementById('jackpot-card-amt-note').textContent = pickLang('(일시불 세전)', '(lump-sum, pre-tax)', '(一次性支付，税前)', '(một lần, trước thuế)', '(จ่ายครั้งเดียว ก่อนหักภาษี)', '(единовременно, до налогов)');
+  // "일시불 세전"이라고만 하면 아래 펼쳤을 때 나오는 1단계(발표액)와 헷갈린다는 지적이 있어서,
+  // 2단계 문구("일시불 선택 시")랑 표현을 맞춰서 "이 숫자는 일시불을 고를 때의 금액"이라는 걸 명확히 함
+  document.getElementById('jackpot-card-amt-note').textContent = pickLang(
+    '(일시불 선택 시, 세전)', '(lump-sum option, pre-tax)', '(选择一次性支付时，税前)', '(nếu chọn trả một lần, trước thuế)', '(หากเลือกจ่ายครั้งเดียว ก่อนหักภาษี)', '(при единовременной выплате, до налогов)',
+    {
+      km: '(ប្រសិនបើជ្រើសរើសទទួលជាដុំតែម្តង មុនបង់ពន្ធ)',
+      ne: '(एकमुष्ट रोज्दा, कर अघि)',
+      id: '(jika pilih sekaligus, sebelum pajak)',
+      my: '(တစ်ကြိမ်တည်းရွေးလျှင်၊ အခွန်မတိုင်မီ)',
+      si: '(එකවර තෝරාගතහොත්, බදු පෙර)',
+      uz: '(bir martalik tanlansa, soliqqacha)',
+      mn: '(нэг удаа сонговол, татвараас өмнө)',
+      kk: '(бір реттік таңдалса, салыққа дейін)',
+      ky: '(бир жолку тандалса, салыкка чейин)',
+      ur: '(یکمشت منتخب کرنے پر، ٹیکس سے پہلے)',
+      bn: '(একবারে বেছে নিলে, কর-পূর্ব)',
+      lo: '(ຫາກເລືອກຈ່າຍເທື່ອດຽວ, ກ່ອນຫັກພາສີ)',
+      ja: '(一括受取を選んだ場合、税引前)',
+      ar: '(عند اختيار الدفعة الواحدة، قبل الضريبة)',
+      hi: '(एकमुश्त चुनने पर, कर-पूर्व)',
+      fr: '(si versement unique, avant impôt)',
+    }
+  );
 
   const pbUsd = Number(document.getElementById('jp-powerball').getAttribute('data-target'));
   const mgUsd = Number(document.getElementById('jp-mega').getAttribute('data-target'));
@@ -2312,6 +2334,13 @@ function switchAmountTab(tab){
   document.getElementById('amountTabLump').style.display = tab === 'lump' ? 'block' : 'none';
   document.getElementById('amountTabAnnounced').style.display = tab === 'announced' ? 'block' : 'none';
   document.getElementById('amountTabReverse').style.display = tab === 'reverse' ? 'block' : 'none';
+}
+
+// 탭 버튼 3개가 항상 보이면 (퀵필 버튼과 합쳐) 첫 화면에 누를 게 너무 많다는 지적이 있어서,
+// 기본값(일시불 입력)만 먼저 보여주고 다른 입력 방식은 이 링크를 눌러야 펼쳐지게 함
+function revealAmountTabs(){
+  document.getElementById('amountTabRevealLink').style.display = 'none';
+  document.getElementById('amountInputTabs').style.display = 'flex';
 }
 
 function hideAnnouncedConvertNote(){
@@ -3379,35 +3408,11 @@ function updateCalc(usdOverride){
   document.getElementById('compare-krw-amt').textContent = formatWon(억);
 
   // "나라별로 나란히 놓고 보면" 표가 위 입력창이랑 연결돼 보이지 않는다는 지적(사용자가 직접
-  // 스크린샷으로 지적) — 지금 입력한 금액을 표 제목 바로 밑에 다시 한번 보여줘서 같은 기준임을 명확히 함
+  // 스크린샷으로 지적) — 제목 아래 별도 문장 대신, 제목 자체에 금액을 붙여서 굵은 제목만 훑어도
+  // 바로 기준이 보이게 함("100M USD 당첨 · 한국 거주자"처럼 이미 쓰는 "금액 · 라벨" 표기 재사용,
+  // 언어별 문장을 새로 안 만들어도 됨)
   const usdMillionsForNote = Math.round(usd / 1000000).toLocaleString(LOCALE_MAP[currentLang] || 'ko-KR');
-  document.getElementById('compare-side-amt-note').textContent = pickLang(
-    `위에서 입력하신 ${formatWon(억)}(${usdMillionsForNote}M USD) 기준으로 비교했어요`,
-    `Compared based on the ${formatWon(억)} (${usdMillionsForNote}M USD) you entered above`,
-    `按您上面输入的${formatWon(억)}（${usdMillionsForNote}M USD）为基准进行比较`,
-    `So sánh dựa trên ${formatWon(억)} (${usdMillionsForNote}M USD) bạn đã nhập ở trên`,
-    `เปรียบเทียบจากจำนวน ${formatWon(억)} (${usdMillionsForNote}M USD) ที่คุณกรอกไว้ด้านบน`,
-    `Сравнение на основе ${formatWon(억)} (${usdMillionsForNote}M USD), введённых выше`,
-    {
-      km: `ប្រៀបធៀបដោយផ្អែកលើ ${formatWon(억)} (${usdMillionsForNote}M USD) ដែលអ្នកបានបញ្ចូលខាងលើ`,
-      ne: `माथि तपाईंले हाल्नुभएको ${formatWon(억)} (${usdMillionsForNote}M USD) को आधारमा तुलना गरियो`,
-      id: `Dibandingkan berdasarkan ${formatWon(억)} (${usdMillionsForNote}M USD) yang Anda masukkan di atas`,
-      my: `အထက်တွင်သင်ထည့်သွင်းခဲ့သော ${formatWon(억)} (${usdMillionsForNote}M USD) ကိုအခြေခံ၍နှိုင်းယှဉ်ထားသည်`,
-      si: `ඉහත ඔබ ඇතුළත් කළ ${formatWon(억)} (${usdMillionsForNote}M USD) මත පදනම්ව සංසන්දනය කෙරිණි`,
-      uz: `Yuqorida kiritgan ${formatWon(억)} (${usdMillionsForNote}M USD) asosida solishtirildi`,
-      mn: `Дээр таны оруулсан ${formatWon(억)} (${usdMillionsForNote}M USD) дүн дээр үндэслэн харьцуулав`,
-      kk: `Жоғарыда сіз енгізген ${formatWon(억)} (${usdMillionsForNote}M USD) негізінде салыстырылды`,
-      ky: `Жогоруда сиз киргизген ${formatWon(억)} (${usdMillionsForNote}M USD) негизинде салыштырылды`,
-      ur: `اوپر آپ کی درج کردہ ${formatWon(억)} (${usdMillionsForNote}M USD) کی بنیاد پر موازنہ کیا گیا`,
-      bn: `উপরে আপনার দেওয়া ${formatWon(억)} (${usdMillionsForNote}M USD) এর ভিত্তিতে তুলনা করা হয়েছে`,
-      lo: `ປຽບທຽບໂດຍອີງໃສ່ ${formatWon(억)} (${usdMillionsForNote}M USD) ທີ່ທ່ານປ້ອນໄວ້ຂ້າງເທິງ`,
-      ja: `上で入力した${formatWon(억)}（${usdMillionsForNote}M USD）を基準に比較しました`,
-      ar: `تمت المقارنة بناءً على ${formatWon(억)} (${usdMillionsForNote}M USD) التي أدخلتها أعلاه`,
-      hi: `ऊपर आपके द्वारा दर्ज ${formatWon(억)} (${usdMillionsForNote}M USD) के आधार पर तुलना की गई`,
-      fr: `Comparé sur la base de ${formatWon(억)} (${usdMillionsForNote}M USD) saisi ci-dessus`,
-      tl: `Inihambing batay sa ${formatWon(억)} (${usdMillionsForNote}M USD) na inilagay mo sa itaas`,
-    }
-  );
+  document.getElementById('compare-side-title-amt').textContent = usdMillionsForNote + 'M USD · ';
 
   updateSideBySide(억, stateCode);
 }
