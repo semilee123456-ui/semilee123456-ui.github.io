@@ -408,8 +408,8 @@ function formatWon(n){
   if (typeof currentLang !== 'undefined' && currentLang === 'en') return formatWonEn(n);
   // 중국어·일본어는 억/亿/億=10^8 단위 체계가 한국과 같아서, 영어처럼 별도 million/billion
   // 변환 없이 접미사만 그 언어 한자로 바꿔주면 됨(중국어·일본어 화자는 이 단위를 그대로 이해함)
-  if (typeof currentLang !== 'undefined' && currentLang === 'zh') return Math.round(n).toLocaleString('zh-CN') + '亿韩元';
-  if (typeof currentLang !== 'undefined' && currentLang === 'ja') return Math.round(n).toLocaleString('ja-JP') + '億ウォン';
+  if (typeof currentLang !== 'undefined' && currentLang === 'zh') return formatWonZh(n);
+  if (typeof currentLang !== 'undefined' && currentLang === 'ja') return formatWonJa(n);
   // 베트남어·태국어·러시아어는 "억" 단위 체계가 없어서 영어처럼 million/billion 변환이 필요
   if (typeof currentLang !== 'undefined' && currentLang === 'vi') return formatWonVi(n);
   if (typeof currentLang !== 'undefined' && currentLang === 'th') return formatWonTh(n);
@@ -421,6 +421,16 @@ function formatWon(n){
   // 완벽한 현지 단위(예: 힌디·벵골어의 lakh/crore)까지 만들진 못했지만, 최소한 "억"보다는
   // 훨씬 널리 통하는 영어식 million/billion 표기로 통일해서 최소한의 가독성을 보장함
   if (typeof currentLang !== 'undefined' && currentLang !== 'ko') return formatWonEn(n);
+  // "11,218억원"처럼 억 단위 숫자를 3자리 콤마로만 묶으면, 한국어 화자도 조 단위로 넘어갔는지
+  // 확인하려면 4자리씩(만/억/조) 다시 끊어 읽어야 해서 한눈에 안 들어옴(사용자가 스크린샷으로 직접
+  // 지적) — 1조(=10,000억) 이상이면 뉴스 표기처럼 "1조 1,218억원" 형태로 조 단위를 앞에 분리해서 보여줌
+  if (Math.abs(n) >= 10000) {
+    const rounded = Math.round(n);
+    const jo = Math.trunc(rounded / 10000);
+    const eok = rounded - jo * 10000;
+    if (eok === 0) return jo.toLocaleString('ko-KR') + '조원';
+    return jo.toLocaleString('ko-KR') + '조 ' + eok.toLocaleString('ko-KR') + '억원';
+  }
   // 소수점 없이 정수(억원 단위)로 반올림해서 표시 — 읽기 쉽게 + 천단위 콤마
   const numStr = Math.round(n).toLocaleString('ko-KR');
   return numStr + '억원';
@@ -451,6 +461,29 @@ function formatWonEn(n){ return formatWonIntl(n, ['million', 'billion', 'trillio
 function formatWonVi(n){ return formatWonIntl(n, ['triệu', 'tỷ', 'nghìn tỷ'], 'vi-VN'); }
 function formatWonTh(n){ return formatWonIntl(n, ['ล้าน', 'พันล้าน', 'ล้านล้าน'], 'th-TH'); }
 function formatWonRu(n){ return formatWonIntl(n, ['млн', 'млрд', 'трлн'], 'ru-RU'); }
+// 중국어·일본어도 한국어와 같은 이유(억 단위 숫자를 3자리 콤마로만 묶으면 万亿/兆 단위를 넘었는지
+// 한눈에 안 들어옴)로 1조(=10,000억) 이상이면 상위 단위를 앞에 분리해서 보여줌 — usdToKrwLabel()의
+// 잭팟 퀵필 라벨에 이미 있던 "N万亿M亿" 표기 방식과 통일함(소수점 근사 대신 정확한 값을 그대로 보여줌)
+function formatWonZh(n){
+  if (Math.abs(n) >= 10000) {
+    const rounded = Math.round(n);
+    const zhao = Math.trunc(rounded / 10000);
+    const yi = rounded - zhao * 10000;
+    if (yi === 0) return zhao.toLocaleString('zh-CN') + '万亿韩元';
+    return zhao.toLocaleString('zh-CN') + '万亿' + yi.toLocaleString('zh-CN') + '亿韩元';
+  }
+  return Math.round(n).toLocaleString('zh-CN') + '亿韩元';
+}
+function formatWonJa(n){
+  if (Math.abs(n) >= 10000) {
+    const rounded = Math.round(n);
+    const cho = Math.trunc(rounded / 10000);
+    const oku = rounded - cho * 10000;
+    if (oku === 0) return cho.toLocaleString('ja-JP') + '兆ウォン';
+    return cho.toLocaleString('ja-JP') + '兆' + oku.toLocaleString('ja-JP') + '億ウォン';
+  }
+  return Math.round(n).toLocaleString('ja-JP') + '億ウォン';
+}
 
 const TAX_MODEL = {
   us_resident: {
@@ -1206,7 +1239,14 @@ function go(view){
     // 항상 현재 언어로 보이도록 재적용 (언어 전환 시점에 홈 화면이 아니면 안 갱신되던 문제)
     applyJackpotData();
     updateDrawCountdown();
-  } else if (view === 'compare') {
+    setupStickyResultBadge();
+  } else {
+    // 홈이 아닌 다른 탭으로 이동하면, IntersectionObserver 콜백이 아직 안 돌았어도
+    // 즉시 숨겨서 다른 화면에 실수령액 배지가 잠깐이라도 겹쳐 보이지 않게 함
+    const badge = document.getElementById('sticky-result-badge');
+    if (badge) badge.classList.remove('is-visible');
+  }
+  if (view === 'compare') {
     syncCompareFromShared();
   } else if (view === 'faq') {
     // 국가 토글을 한 번도 안 건드린 상태로 FAQ 탭을 바로 누르면 filterFaq()가 아직 한 번도
@@ -1312,7 +1352,7 @@ function usdToKrwLabel(usd){
     return '(≈ ' + formatWonRu(krw / 100000000) + ')';
   }
   if (typeof currentLang !== 'undefined' && currentLang === 'ja') {
-    return '(≈ ' + Math.round(krw / 100000000).toLocaleString('ja-JP') + '億ウォン)';
+    return '(≈ ' + formatWonJa(krw / 100000000) + ')';
   }
   // 억 단위로 먼저 반올림한 뒤 조/억을 나누면, "999.6억이 반올림되며 조 단위를 못 넘어가는" 이월 누락 문제가 안 생김
   const totalEok = Math.round(krw / 100000000);
@@ -1769,12 +1809,36 @@ function renderJackpotHistory(){
       const label = getProfileShortLabel(profile);
       return { label, final: r.final };
     }).sort((a, b) => b.final - a.final);
+    // 미국 원천징수(30%)보다 자국세가 낮은 나라는 FTC로 완전히 상계돼서 여러 나라가 정확히 같은
+    // 금액으로 나오는 경우가 흔함 — 예전엔 나라마다 같은 금액을 그대로 반복해서 나열해서 글자만
+    // 많고 눈에 잘 안 들어왔음(사용자가 스크린샷으로 직접 지적). 비교 탭 카드 그룹핑과 같은 방식
+    // (억 단위 반올림 값 기준, 표시 문자열 아닌 원시값으로 비교)으로 같은 금액끼리 묶어서 한 줄로 보여줌
+    const amtGroups = [];
+    amtResults.forEach(item => {
+      const key = Math.round(item.final);
+      const last = amtGroups[amtGroups.length - 1];
+      if (last && last.key === key) {
+        last.items.push(item);
+      } else {
+        amtGroups.push({ key, items: [item] });
+      }
+    });
     const JH_VISIBLE_COUNT = 4;
-    const toAmtItem = (item) => `<span class="jh-amt-item"><span class="jh-amt-label">${item.label}</span><span class="jh-amt">${formatWon(item.final)}</span></span>`;
-    const visibleItems = amtResults.slice(0, JH_VISIBLE_COUNT).map(toAmtItem).join('');
-    const hiddenItems = amtResults.slice(JH_VISIBLE_COUNT);
-    const hiddenHtml = hiddenItems.length
-      ? `<details class="jh-more"><summary class="jh-more-summary">${pickLang(`나머지 ${hiddenItems.length}개국 더보기`, `${hiddenItems.length} more countries`, `其他${hiddenItems.length}个国家`, `Xem thêm ${hiddenItems.length} nước`, `ดูอีก ${hiddenItems.length} ประเทศ`, `Ещё ${hiddenItems.length} стран`)}</summary><div class="jh-amounts">${hiddenItems.map(toAmtItem).join('')}</div></details>`
+    const toAmtItem = (group) => {
+      const label = group.items.length === 1
+        ? group.items[0].label
+        : pickLang(`${group.items.length}개국 동일`, `Same for ${group.items.length} countries`, `${group.items.length}个国家相同`, `Giống nhau ở ${group.items.length} nước`, `เท่ากันใน ${group.items.length} ประเทศ`, `Одинаково для ${group.items.length} стран`, buildSameCountMore(group.items.length));
+      return `<span class="jh-amt-item"><span class="jh-amt-label">${label}</span><span class="jh-amt">${formatWon(group.items[0].final)}</span></span>`;
+    };
+    let shown = 0, visibleGroups = [], hiddenGroups = [];
+    amtGroups.forEach(group => {
+      if (shown < JH_VISIBLE_COUNT) { visibleGroups.push(group); shown += group.items.length; }
+      else hiddenGroups.push(group);
+    });
+    const visibleItems = visibleGroups.map(toAmtItem).join('');
+    const hiddenCountryCount = hiddenGroups.reduce((sum, g) => sum + g.items.length, 0);
+    const hiddenHtml = hiddenGroups.length
+      ? `<details class="jh-more"><summary class="jh-more-summary">${pickLang(`나머지 ${hiddenCountryCount}개국 더보기`, `${hiddenCountryCount} more countries`, `其他${hiddenCountryCount}个国家`, `Xem thêm ${hiddenCountryCount} nước`, `ดูอีก ${hiddenCountryCount} ประเทศ`, `Ещё ${hiddenCountryCount} стран`)}</summary><div class="jh-amounts">${hiddenGroups.map(toAmtItem).join('')}</div></details>`
       : '';
     return `<div class="jackpot-history-row">
       <div class="jh-top">
@@ -1941,7 +2005,36 @@ function setupRevealAnimation(){
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderJackpotHistory(); fetchLiveExchangeRate(); updateLightningGameUi(); });
+// 입력창·슬라이더는 메인 결과 카드보다 화면 아래쪽에 있어서, 모바일에서 스크롤해서 금액을
+// 바꾸면 결과가 바뀌는 게 화면 밖이라 안 보임(사용자가 직접 지적) — 메인 결과 카드가 뷰포트
+// 밖으로 나갔을 때만 하단에 작은 배지로 지금 값을 계속 보여줌. MutationObserver로
+// home-final-amt 텍스트를 그대로 미러링해서, formatWon() 결과를 쓰는 기존 갱신 코드
+// 여러 곳(연금 뷰 제외 계산 관련 전부)을 하나도 안 건드려도 값이 항상 같이 갱신됨
+let _stickyResultObserver = null;
+function setupStickyResultBadge(){
+  const target = document.getElementById('home-final-amt');
+  const badge = document.getElementById('sticky-result-badge');
+  const amtEl = document.getElementById('sticky-result-amt');
+  if (!target || !badge || !amtEl || badge.dataset.bound) return;
+  badge.dataset.bound = '1';
+
+  _stickyResultObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const isHomeActive = document.getElementById('view-home').classList.contains('on');
+      badge.classList.toggle('is-visible', isHomeActive && !entry.isIntersecting);
+    });
+  }, { threshold: 0 });
+  _stickyResultObserver.observe(target);
+
+  new MutationObserver(() => { amtEl.textContent = target.textContent; }).observe(target, { childList: true, characterData: true, subtree: true });
+  amtEl.textContent = target.textContent;
+}
+function scrollToMainResult(){
+  const target = document.getElementById('home-final-amt');
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderJackpotHistory(); fetchLiveExchangeRate(); updateLightningGameUi(); setupStickyResultBadge(); });
 
 // 다른 페이지(korea-resident-us-lottery-tax.html 등)에서 "index.html#faq"처럼 해시가 붙은 링크로
 // 들어왔을 때, 이 SPA는 해시를 안 보고 항상 홈 화면부터 그려서 그 링크가 사실상 무시되던 문제 수정.
