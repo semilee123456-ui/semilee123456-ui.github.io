@@ -1939,6 +1939,7 @@ function initJackpotCardAmt(){
 
 function fillHomeAmountFromJackpot(game){
   hideAnnouncedConvertNote();
+  switchAmountTab('lump'); // 퀵필은 일시불 칸을 채우므로, 다른 탭이 열려있으면 안 보이는 문제 방지
   isAmountManuallyEdited = true;
   const amountUsd = JACKPOT_DATA[game].amountUsd;
   const cashUsd = amountUsd * CASH_VALUE_RATIO;
@@ -1966,12 +1967,31 @@ function refreshJackpotDrawerIfOpen(){
     document.getElementById('jc-cash').textContent = about + formatWon(cashKrw / 100000000);
     document.getElementById('jc-final').textContent = about + formatWon(r.final);
     document.getElementById('jc-note-basis').textContent = pickLang(
-      `한국 거주자 기준 (미국 비거주자 원천징수 30% + 한국 종합소득세 누진세율/FTC 적용, 환율 약 ${EXCHANGE_RATE.toLocaleString('ko-KR')}원 적용)`,
-      `Korea resident basis (30% US non-resident withholding + Korean progressive income tax/FTC, ~${EXCHANGE_RATE.toLocaleString('en-US')} KRW/USD)`,
-      `以韩国居民为基准（美国非居民预扣30% + 韩国累进所得税/FTC 抵免，汇率约${EXCHANGE_RATE.toLocaleString('zh-CN')}韩元/美元）`,
-      `Theo tiêu chuẩn cư dân Hàn Quốc (khấu trừ 30% cho người không cư trú tại Mỹ + thuế thu nhập lũy tiến Hàn Quốc/FTC, tỷ giá khoảng ${EXCHANGE_RATE.toLocaleString('vi-VN')} KRW/USD)`,
-      `เกณฑ์ผู้พำนักในเกาหลี (หัก ณ ที่จ่าย 30% สำหรับผู้ไม่มีถิ่นพำนักในสหรัฐฯ + ภาษีเงินได้แบบก้าวหน้าของเกาหลี/FTC อัตราแลกเปลี่ยนประมาณ ${EXCHANGE_RATE.toLocaleString('th-TH')} วอน/ดอลลาร์)`,
-      `По правилам резидента Кореи (30% удержание для нерезидентов США + прогрессивный подоходный налог Кореи/FTC, курс около ${EXCHANGE_RATE.toLocaleString('ru-RU')} вон/долл.)`
+      `한국 거주자 기준 (미국 원천징수 30% + 한국 세금 적용, 환율 약 ${EXCHANGE_RATE.toLocaleString('ko-KR')}원 반영)`,
+      `Korea resident basis (30% US withholding + Korean tax, ~${EXCHANGE_RATE.toLocaleString('en-US')} KRW/USD)`,
+      `以韩国居民为基准（美国预扣30% + 韩国税金，汇率约${EXCHANGE_RATE.toLocaleString('zh-CN')}韩元/美元）`,
+      `Theo tiêu chuẩn cư dân Hàn Quốc (khấu trừ Mỹ 30% + thuế Hàn Quốc, tỷ giá khoảng ${EXCHANGE_RATE.toLocaleString('vi-VN')} KRW/USD)`,
+      `เกณฑ์ผู้พำนักในเกาหลี (หักภาษีสหรัฐฯ 30% + ภาษีเกาหลี, อัตราแลกเปลี่ยนประมาณ ${EXCHANGE_RATE.toLocaleString('th-TH')} วอน/ดอลลาร์)`,
+      `По правилам резидента Кореи (30% удержание в США + налог Кореи, курс около ${EXCHANGE_RATE.toLocaleString('ru-RU')} вон/долл.)`,
+      {
+        km: `តាមមូលដ្ឋានអ្នករស់នៅកូរ៉េ (កាត់ពន្ធអាមេរិក ៣០% + ពន្ធកូរ៉េ, អត្រាប្តូរប្រាក់ប្រហែល ${EXCHANGE_RATE.toLocaleString('en-US')} វុន/ដុល្លារ)`,
+        ne: `कोरिया बासिन्दा आधार (अमेरिकी कर कटौती ३०% + कोरियाली कर, विनिमय दर लगभग ${EXCHANGE_RATE.toLocaleString('en-US')} वोन/डलर)`,
+        id: `Basis penduduk Korea (pemotongan AS 30% + pajak Korea, kurs sekitar ${EXCHANGE_RATE.toLocaleString('en-US')} KRW/USD)`,
+        my: `ကိုရီးယားနေထိုင်သူအခြေခံ (အမေရိကန်နှုတ်ငွေ ၃၀% + ကိုရီးယားအခွန်, ငွေလဲနှုန်း ${EXCHANGE_RATE.toLocaleString('en-US')} ဝမ်/ဒေါ်လာခန့်)`,
+        si: `කොරියානු පදිංචිකරු පදනම (ඇමරිකානු බදු අඩුකිරීම 30% + කොරියානු බද්ද, විනිමය අනුපාතය ආසන්න වශයෙන් ${EXCHANGE_RATE.toLocaleString('en-US')} වොන්/ඩොලර්)`,
+        uz: `Koreya rezidenti asosida (AQSh ushlab qolishi 30% + Koreya solig'i, kurs taxminan ${EXCHANGE_RATE.toLocaleString('en-US')} von/dollar)`,
+        mn: `Солонгос оршин суугчийн үндэслэлээр (АНУ-ын суутгал 30% + Солонгосын татвар, ханш ойролцоогоор ${EXCHANGE_RATE.toLocaleString('en-US')} вон/доллар)`,
+        kk: `Корея резиденті негізінде (АҚШ ұстауы 30% + Корея салығы, бағам шамамен ${EXCHANGE_RATE.toLocaleString('en-US')} вон/доллар)`,
+        ky: `Корея резиденти негизинде (АКШнын кармап калуусу 30% + Корея салыгы, курс болжол менен ${EXCHANGE_RATE.toLocaleString('en-US')} вон/доллар)`,
+        ur: `کوریا رہائشی بنیاد پر (امریکی کٹوتی 30% + کوریائی ٹیکس، شرح تبادلہ تقریباً ${EXCHANGE_RATE.toLocaleString('en-US')} وون/ڈالر)`,
+        bn: `কোরিয়া বাসিন্দা ভিত্তিতে (মার্কিন কর্তন 30% + কোরিয়ান কর, বিনিময় হার প্রায় ${EXCHANGE_RATE.toLocaleString('en-US')} ওন/ডলার)`,
+        lo: `ອີງໃສ່ຜູ້ອາໄສຢູ່ເກົາຫຼີ (ອາເມຣິກາຫັກ 30% + ພາສີເກົາຫຼີ, ອັດຕາແລກປ່ຽນປະມານ ${EXCHANGE_RATE.toLocaleString('en-US')} ວອນ/ໂດລາ)`,
+        ja: `韓国居住者基準（米国源泉徴収30%＋韓国税金、為替レート約${EXCHANGE_RATE.toLocaleString('en-US')}ウォン/ドル）`,
+        ar: `على أساس مقيم كوريا (اقتطاع أمريكي 30% + ضريبة كورية، سعر الصرف حوالي ${EXCHANGE_RATE.toLocaleString('en-US')} وون/دولار)`,
+        hi: `कोरिया निवासी आधार (अमेरिकी कटौती 30% + कोरियाई कर, विनिमय दर लगभग ${EXCHANGE_RATE.toLocaleString('en-US')} वोन/डॉलर)`,
+        fr: `Base résident coréen (retenue américaine 30 % + impôt coréen, taux de change environ ${EXCHANGE_RATE.toLocaleString('en-US')} KRW/USD)`,
+        tl: `Batay sa residente ng Korea (30% na Amerikanong withholding + buwis sa Korea, palitan humigit-kumulang ${EXCHANGE_RATE.toLocaleString('en-US')} won/dolyar)`,
+      }
     );
 
     // 연금(annuity) 선택 시 — 발표 잭팟 총액을 30회로 단순 평균해 희망적인 그림도 함께 보여줌
@@ -2282,6 +2302,16 @@ function parseRateInput(str){
   // 원/달러 환율은 현대사에서 대체로 700~2000원 사이였음 — 이 범위를 크게 벗어나면
   // 입력 실수(자릿수 오타 등)일 가능성이 높아 직전 값을 그대로 유지함
   return isNaN(n) || n < 500 || n > 3000 ? EXCHANGE_RATE : n;
+}
+
+// 연금 발표액 입력 / 일시불 직접 입력 / 원하는 실수령액 역산 — 원래 3군데 흩어져 있어서
+// 지저분하다는 지적을 받고, 하나의 탭 그룹으로 합침. 각 패널의 기존 로직(onHomeAmountTyped 등)은
+// 그대로 두고 보이는 패널만 전환함
+function switchAmountTab(tab){
+  document.querySelectorAll('.amount-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.getElementById('amountTabLump').style.display = tab === 'lump' ? 'block' : 'none';
+  document.getElementById('amountTabAnnounced').style.display = tab === 'announced' ? 'block' : 'none';
+  document.getElementById('amountTabReverse').style.display = tab === 'reverse' ? 'block' : 'none';
 }
 
 function hideAnnouncedConvertNote(){
@@ -3347,6 +3377,37 @@ function updateCalc(usdOverride){
   const 억 = (usd * EXCHANGE_RATE) / 100000000;
 
   document.getElementById('compare-krw-amt').textContent = formatWon(억);
+
+  // "나라별로 나란히 놓고 보면" 표가 위 입력창이랑 연결돼 보이지 않는다는 지적(사용자가 직접
+  // 스크린샷으로 지적) — 지금 입력한 금액을 표 제목 바로 밑에 다시 한번 보여줘서 같은 기준임을 명확히 함
+  const usdMillionsForNote = Math.round(usd / 1000000).toLocaleString(LOCALE_MAP[currentLang] || 'ko-KR');
+  document.getElementById('compare-side-amt-note').textContent = pickLang(
+    `위에서 입력하신 ${formatWon(억)}(${usdMillionsForNote}M USD) 기준으로 비교했어요`,
+    `Compared based on the ${formatWon(억)} (${usdMillionsForNote}M USD) you entered above`,
+    `按您上面输入的${formatWon(억)}（${usdMillionsForNote}M USD）为基准进行比较`,
+    `So sánh dựa trên ${formatWon(억)} (${usdMillionsForNote}M USD) bạn đã nhập ở trên`,
+    `เปรียบเทียบจากจำนวน ${formatWon(억)} (${usdMillionsForNote}M USD) ที่คุณกรอกไว้ด้านบน`,
+    `Сравнение на основе ${formatWon(억)} (${usdMillionsForNote}M USD), введённых выше`,
+    {
+      km: `ប្រៀបធៀបដោយផ្អែកលើ ${formatWon(억)} (${usdMillionsForNote}M USD) ដែលអ្នកបានបញ្ចូលខាងលើ`,
+      ne: `माथि तपाईंले हाल्नुभएको ${formatWon(억)} (${usdMillionsForNote}M USD) को आधारमा तुलना गरियो`,
+      id: `Dibandingkan berdasarkan ${formatWon(억)} (${usdMillionsForNote}M USD) yang Anda masukkan di atas`,
+      my: `အထက်တွင်သင်ထည့်သွင်းခဲ့သော ${formatWon(억)} (${usdMillionsForNote}M USD) ကိုအခြေခံ၍နှိုင်းယှဉ်ထားသည်`,
+      si: `ඉහත ඔබ ඇතුළත් කළ ${formatWon(억)} (${usdMillionsForNote}M USD) මත පදනම්ව සංසන්දනය කෙරිණි`,
+      uz: `Yuqorida kiritgan ${formatWon(억)} (${usdMillionsForNote}M USD) asosida solishtirildi`,
+      mn: `Дээр таны оруулсан ${formatWon(억)} (${usdMillionsForNote}M USD) дүн дээр үндэслэн харьцуулав`,
+      kk: `Жоғарыда сіз енгізген ${formatWon(억)} (${usdMillionsForNote}M USD) негізінде салыстырылды`,
+      ky: `Жогоруда сиз киргизген ${formatWon(억)} (${usdMillionsForNote}M USD) негизинде салыштырылды`,
+      ur: `اوپر آپ کی درج کردہ ${formatWon(억)} (${usdMillionsForNote}M USD) کی بنیاد پر موازنہ کیا گیا`,
+      bn: `উপরে আপনার দেওয়া ${formatWon(억)} (${usdMillionsForNote}M USD) এর ভিত্তিতে তুলনা করা হয়েছে`,
+      lo: `ປຽບທຽບໂດຍອີງໃສ່ ${formatWon(억)} (${usdMillionsForNote}M USD) ທີ່ທ່ານປ້ອນໄວ້ຂ້າງເທິງ`,
+      ja: `上で入力した${formatWon(억)}（${usdMillionsForNote}M USD）を基準に比較しました`,
+      ar: `تمت المقارنة بناءً على ${formatWon(억)} (${usdMillionsForNote}M USD) التي أدخلتها أعلاه`,
+      hi: `ऊपर आपके द्वारा दर्ज ${formatWon(억)} (${usdMillionsForNote}M USD) के आधार पर तुलना की गई`,
+      fr: `Comparé sur la base de ${formatWon(억)} (${usdMillionsForNote}M USD) saisi ci-dessus`,
+      tl: `Inihambing batay sa ${formatWon(억)} (${usdMillionsForNote}M USD) na inilagay mo sa itaas`,
+    }
+  );
 
   updateSideBySide(억, stateCode);
 }
