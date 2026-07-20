@@ -555,6 +555,7 @@
     background:rgba(156,111,30,0.05); flex-shrink:0;
   }
   .result-hero-label{ position:relative; font-size:var(--fs-h3); color:var(--text-muted); font-weight:600; margin:0 0 8px; overflow-wrap:normal; }
+  .announced-convert-note{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 6px; font-variant-numeric:tabular-nums; }
   .result-trust-badge{
     font-size:var(--fs-note); color:var(--teal); font-weight:600; text-align:center; margin:8px 0 0;
   }
@@ -701,11 +702,25 @@
     text-align:center; font-size:var(--fs-note); color:var(--teal); font-weight:700; margin:-2px 0 10px; cursor:pointer;
   }
   .flow-explain{ font-size:var(--fs-small); color:var(--text-muted); text-align:left; margin:0 0 4px; }
+  .flow-explain-title{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0 0 6px; }
+  .flow-explain-list{ margin:0 0 8px; padding-left:20px; font-size:var(--fs-small); color:var(--text-dark); }
+  .flow-explain-list li{ margin:3px 0; }
+  .flow-explain-note{ font-size:var(--fs-small); color:var(--text-muted); margin:0; }
   .select-hint{ font-size:var(--fs-small); color:var(--text-muted); margin:-4px 0 10px 2px; }
   .filing-note{
     font-size:var(--fs-small); color:var(--text-muted); line-height:1.55; margin:10px 0;
   }
   .filing-note b{ color:var(--text-dark); font-weight:700; }
+  .us-state-compare-toggle{ margin:8px 0; }
+  .us-state-compare-summary{ font-size:var(--fs-small); color:var(--teal); font-weight:700; cursor:pointer; list-style:none; padding:6px 0; }
+  .us-state-compare-summary::-webkit-details-marker{ display:none; }
+  .us-state-compare-table{ max-height:320px; overflow-y:auto; margin-top:4px; border:1px solid var(--border); border-radius:10px; padding:2px 10px; background:var(--bg); }
+  .us-state-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:7px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-small); }
+  .us-state-row:last-child{ border-bottom:none; }
+  .us-state-row-name{ color:var(--text-dark); }
+  .us-state-row-rate{ color:var(--text-muted); }
+  .us-state-row-amt{ font-weight:700; color:var(--teal); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .us-state-row.is-current{ background:rgba(21,84,69,0.1); border-radius:6px; padding-left:6px; padding-right:6px; margin:0 -6px; }
   .filing-label{ font-size:var(--fs-small); font-weight:600; color:var(--text-muted); margin:0 0 6px; }
   .filing-label span{ font-weight:400; color:var(--text-muted); }
   .filing-note-small{ font-size:var(--fs-small); color:var(--text-muted); margin:-4px 0 10px; line-height:1.5; }

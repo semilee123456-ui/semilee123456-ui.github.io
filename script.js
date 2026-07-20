@@ -654,10 +654,12 @@ const TAX_MODEL = {
     unverified_approx_rate: 0.10
   },
   la_resident: {
-    // ⚠️ 라오스 신설 소득세법(No.88/NA, 2026-06-19 관보 게재·2026-07-01 시행 — 이전에 "No.67/NA"로
-    // 잘못 기재돼 있던 것 정정) — 복권 당첨소득(1천만 킵 초과분)에 5% 단일세율을 처음으로 도입.
-    // 시행된 지 얼마 안 돼 실제 적용 사례가 없고, 라오스는 미국과 조세조약이 없어 FTC(세액공제)도
-    // 적용 안 됨(미국 원천징수세에 이 5%가 그대로 추가됨). UI에도 이 불확실성을 별도 표시함.
+    // ⚠️ 라오스 신설 소득세법(No.88/NA, 2026-06-19 관보 게재·2026-07-01 시행) — 복권 당첨소득 5%
+    // 단일세율은 이전 법에도 이미 있었고(신규 도입 아님, 2026-07-20 후속 검증에서 정정), 이번 개정으로
+    // 달라진 건 "1천만 킵 이하는 비과세"라는 면제 기준이 새로 생긴 것뿐(이전엔 전액 과세). 잭팟
+    // 규모 당첨금은 이 기준을 항상 넘기 때문에 계산 결과(5%)에는 영향 없음. 라오스는 미국과
+    // 조세조약이 없어 FTC(세액공제)도 적용 안 됨(미국 원천징수세에 이 5%가 그대로 추가됨,
+    // 2026-07-20 후속 검증에서 재확인). UI에도 이 불확실성을 별도 표시함.
     unverified_rate: 0.05,
     ftc_available: false
   }
@@ -772,6 +774,32 @@ function pickLang(ko, en, zh, vi, th, ru, more){
     return en || ko;
   }
   return ko;
+}
+
+// USA Mega 같은 미국 세금 계산기 사이트의 "50개 주 전체 비교표" 벤치마킹 — 지금까지는
+// 주(State)를 하나씩 골라야만 세율을 알 수 있었는데, 한 번에 나란히 비교할 수 있게 함.
+// 접었을 때는 렌더링 안 해서(펼쳤을 때만 계산) 평소엔 화면이 지저분해지지 않게 함
+function getStateLabel(code){
+  return resolveI18n('state.name.' + code) || STATE_TAX_RATES[code].label;
+}
+
+function renderUsStateCompareTable(amountEok){
+  const toggle = document.getElementById('usStateCompareToggle');
+  const container = document.getElementById('usStateCompareTable');
+  if (!toggle || !container || !toggle.open) return;
+  const eok = amountEok !== undefined ? amountEok : ((sharedAmountUsd * EXCHANGE_RATE) / 100000000);
+  const currentState = document.getElementById('homeStateSelect').value;
+  const rows = Object.keys(STATE_TAX_RATES)
+    .filter(code => code !== 'AVG')
+    .map(code => {
+      const r = calcTakeHome(eok, 'us', code);
+      return { code, label: getStateLabel(code), rate: STATE_TAX_RATES[code].rate, final: r.final };
+    })
+    .sort((a, b) => b.final - a.final);
+  container.innerHTML = rows.map(row => {
+    const ratePct = (row.rate * 100).toFixed(row.rate * 100 % 1 === 0 ? 0 : 2);
+    return `<div class="us-state-row${row.code === currentState ? ' is-current' : ''}"><span class="us-state-row-name">${row.label} <span class="us-state-row-rate">(${ratePct}%)</span></span><span class="us-state-row-amt">${formatWon(row.final)}</span></div>`;
+  }).join('');
 }
 
 function calcTakeHome(amount, country, stateCode){
@@ -1910,6 +1938,7 @@ function initJackpotCardAmt(){
 }
 
 function fillHomeAmountFromJackpot(game){
+  hideAnnouncedConvertNote();
   isAmountManuallyEdited = true;
   const amountUsd = JACKPOT_DATA[game].amountUsd;
   const cashUsd = amountUsd * CASH_VALUE_RATIO;
@@ -2255,7 +2284,13 @@ function parseRateInput(str){
   return isNaN(n) || n < 500 || n > 3000 ? EXCHANGE_RATE : n;
 }
 
+function hideAnnouncedConvertNote(){
+  const note = document.getElementById('home-announced-convert-note');
+  if (note) note.style.display = 'none';
+}
+
 function onHomeAmountTyped(){
+  hideAnnouncedConvertNote(); // 일시불 칸을 직접 고치면 더는 연금 환산값과 일치한다고 보장 못하므로 안내 숨김
   const rawValue = document.getElementById('homeAmountInput').value;
   if (rawValue.trim() !== '') isAmountManuallyEdited = true;
   const millions = parseMillionsInput(rawValue);
@@ -2295,6 +2330,40 @@ function onHomeAnnouncedTyped(){
     void wrap.offsetWidth; // 애니메이션 재시작(연속 타이핑 시에도 매번 반짝이도록 강제 리플로우)
     wrap.classList.add('field-autofill-flash');
   }
+
+  // 연금 발표액을 입력했는데 결과엔 "일시불"이라고만 나오면 왜 다른 숫자인지 헷갈릴 수 있어서
+  // (사용자가 직접 지적) 결과 위쪽에 "연금 X → 일시불 환산 Y" 환산 과정을 짧게 보여줌
+  const note = document.getElementById('home-announced-convert-note');
+  if (note) {
+    note.textContent = pickLang(
+      `연금 발표 $${announcedMillions}M → 일시불 환산 $${lumpMillions}M 기준`,
+      `Announced (annuity) $${announcedMillions}M → converted to lump sum $${lumpMillions}M`,
+      `年金公布 $${announcedMillions}M → 换算为一次性支付 $${lumpMillions}M`,
+      `Công bố (trả góp) $${announcedMillions}M → quy đổi sang nhận một lần $${lumpMillions}M`,
+      `ประกาศ (รายปี) $${announcedMillions}M → แปลงเป็นเงินก้อน $${lumpMillions}M`,
+      `Объявлено (рента) $${announcedMillions}M → пересчитано в единовременную выплату $${lumpMillions}M`,
+      {
+        km: `ប្រកាស (ប្រាក់រំលឹក) $${announcedMillions}M → បម្លែងទៅជាដុំតែម្តង $${lumpMillions}M`,
+        ne: `घोषित (वार्षिकी) $${announcedMillions}M → एकमुष्टमा रूपान्तरण $${lumpMillions}M`,
+        id: `Diumumkan (anuitas) $${announcedMillions}M → dikonversi ke sekaligus $${lumpMillions}M`,
+        my: `ကြေညာ (annuity) $${announcedMillions}M → တစ်ကြိမ်တည်းသို့ ပြောင်းလဲ $${lumpMillions}M`,
+        si: `ප්‍රකාශිත (annuity) $${announcedMillions}M → එකවර ගෙවීමට පරිවර්තනය $${lumpMillions}M`,
+        uz: `E'lon qilingan (annuitet) $${announcedMillions}M → bir martalik to'lovga aylantirildi $${lumpMillions}M`,
+        mn: `Зарлагдсан (жилийн төлбөр) $${announcedMillions}M → нэг удаагийн төлбөр рүү хөрвүүлсэн $${lumpMillions}M`,
+        kk: `Жарияланған (аннуитет) $${announcedMillions}M → бір реттік төлемге ауыстырылды $${lumpMillions}M`,
+        ky: `Жарыяланган (аннуитет) $${announcedMillions}M → бир жолку төлөмгө айландырылды $${lumpMillions}M`,
+        ur: `اعلان کردہ (سالانہ اقساط) $${announcedMillions}M → یکمشت میں تبدیل $${lumpMillions}M`,
+        bn: `ঘোষিত (বার্ষিক কিস্তি) $${announcedMillions}M → একবারে প্রদানে রূপান্তরিত $${lumpMillions}M`,
+        lo: `ປະກາດ (ລາຍປີ) $${announcedMillions}M → ແປງເປັນຈ່າຍເທື່ອດຽວ $${lumpMillions}M`,
+        ja: `発表額（年金）$${announcedMillions}M → 一括受取に換算 $${lumpMillions}M`,
+        ar: `المعلن (سنوي) $${announcedMillions}M ← يُحوَّل إلى دفعة واحدة $${lumpMillions}M`,
+        hi: `घोषित (वार्षिकी) $${announcedMillions}M → एकमुश्त में परिवर्तित $${lumpMillions}M`,
+        fr: `Annoncé (rente) $${announcedMillions}M → converti en versement unique $${lumpMillions}M`,
+        tl: `Inanunsyo (annuity) $${announcedMillions}M → na-convert sa lump sum $${lumpMillions}M`,
+      }
+    );
+    note.style.display = 'block';
+  }
 }
 
 // -webkit-appearance:none으로 네이티브 트랙을 지운 뒤라 Chrome/Safari는 진행 정도를 색으로
@@ -2310,6 +2379,7 @@ function updateSliderFill(slider){
 
 let _prevSliderUsdM = null; // 5억 달러 문턱 통과 감지용 (진동 피드백이 방향 전환마다 한 번만 울리게)
 function onHomeSliderMoved(){
+  hideAnnouncedConvertNote();
   isAmountManuallyEdited = true;
   const slider = document.getElementById('homeAmountSlider');
   slider.step = 10; // 유저가 슬라이더를 직접 조작하면 원래대로 10단위 스냅 복원
@@ -3169,6 +3239,10 @@ function updateHomeCalc(usdOverride){
   const showFiling = (country === 'us');
   document.getElementById('home-state-row').style.display = showFiling ? 'flex' : 'none';
   document.getElementById('home-state-label').style.display = showFiling ? 'block' : 'none';
+  const stateCompareToggle = document.getElementById('usStateCompareToggle');
+  stateCompareToggle.style.display = showFiling ? 'block' : 'none';
+  if (showFiling) renderUsStateCompareTable(억);
+  else stateCompareToggle.open = false;
   updateFlexBox(final, country);
   document.getElementById('home-filing-label').style.display = showFiling ? 'block' : 'none';
   document.getElementById('home-filing-small').style.display = showFiling ? 'block' : 'none';
