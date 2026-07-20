@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9743479262743239" crossorigin="anonymous"></script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-52R7SSXXNB"></script>
 <script>
@@ -350,6 +351,11 @@
                   <option value="href:arabic_in_korea_lottery_tax.html">العربية</option>
                   <option value="href:hindi_in_korea_lottery_tax.html">हिन्दी</option>
                   <option value="href:french_in_korea_lottery_tax.html">Français</option>
+                  <option value="href:spanish_in_korea_lottery_tax.html">Español</option>
+                  <option value="href:portuguese_in_korea_lottery_tax.html">Português</option>
+                  <option value="href:taiwan_hk_in_korea_lottery_tax.html">繁體中文</option>
+                  <option value="href:timor_in_korea_lottery_tax.html">Tetun</option>
+                  <option value="href:ukrainian_in_korea_lottery_tax.html">Українська</option>
                 </select>
                 <button type="button" class="intro-lang-go-btn" onclick="goWithLangSelect('foreignerLangSelect')" data-i18n="intro.goBtn">이동</button>
               </div>
@@ -360,9 +366,25 @@
               <div class="intro-lang-select-row">
                 <select class="intro-lang-select" id="realAbroadSelect" aria-label="국가 선택">
                   <option value="us|en">US · English</option>
+                  <option value="vn|vi">VN · Tiếng Việt</option>
                   <option value="cn|zh">CN · 中文</option>
                   <option value="in|en">IN · English</option>
+                  <option value="id|id">ID · Bahasa Indonesia</option>
                   <option value="ph|tl">PH · Tagalog</option>
+                  <option value="th|th">TH · ภาษาไทย</option>
+                  <option value="jp|ja">JP · 日本語</option>
+                  <option value="ru|ru">RU · Русский</option>
+                  <option value="np|ne">NP · नेपाली</option>
+                  <option value="lk|si">LK · සිංහල</option>
+                  <option value="uz|uz">UZ · O'zbek</option>
+                  <option value="kz|kk">KZ · Қазақша</option>
+                  <option value="kg|ky">KG · Кыргызча</option>
+                  <option value="mm|my">MM · မြန်မာ</option>
+                  <option value="bd|bn">BD · বাংলা</option>
+                  <option value="pk|ur">PK · اردو</option>
+                  <option value="kh|km">KH · ខ្មែរ</option>
+                  <option value="mn|mn">MN · Монгол</option>
+                  <option value="la|lo">LA · ລາວ</option>
                 </select>
                 <button type="button" class="intro-lang-go-btn" onclick="goRealAbroadFromSelect('realAbroadSelect')" data-i18n="intro.goBtn">이동</button>
               </div>
@@ -414,15 +436,13 @@
                 <span class="jackpot-quickfill-amt" id="quickfill-mm-amt">-</span>
               </button>
             </div>
-            <details class="announced-amount-toggle" style="margin-top:10px;">
-              <summary class="announced-amount-toggle-summary" data-i18n="input.announcedLabel">발표된 총액(연금 기준)만 아세요? 자동으로 계산해드려요</summary>
-              <div style="margin-top:10px;">
-                <div class="million-input-wrap-secondary">
-                  <input type="text" id="homeAnnouncedInput" class="dollar-input" inputmode="decimal" placeholder="예: 200" data-i18n-placeholder="input.amountPlaceholder" oninput="onHomeAnnouncedTyped()" onfocus="this.select()">
-                  <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
-                </div>
-                <p class="krw-hint" style="margin:6px 0 0;" data-i18n="input.announcedHint">💡 발표 금액의 약 58%를 아래 일시불 칸에 자동으로 채워드려요</p>
+            <details class="announced-amount-toggle">
+              <summary class="announced-amount-summary" data-i18n="input.announcedLabel">발표 총액(연금 기준)만 아세요?</summary>
+              <div class="million-input-wrap-secondary">
+                <input type="text" id="homeAnnouncedInput" class="dollar-input" inputmode="decimal" placeholder="예: 200" data-i18n-placeholder="input.amountPlaceholder" oninput="onHomeAnnouncedTyped()" onfocus="this.select()">
+                <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
               </div>
+              <p class="krw-hint" style="margin:6px 0 0;" data-i18n="input.announcedHint">💡 발표 금액의 약 58%를 아래 일시불 칸에 자동으로 채워드려요</p>
             </details>
             <p class="field-label-single" style="margin:14px 0 6px;" data-i18n="input.orManualLabel">또는 직접 금액 입력</p>
             <div class="million-input-wrap">
@@ -977,11 +997,15 @@
         <details class="panel odds-accordion">
           <summary class="panel-title-toggle" data-i18n="odds.lightningTitle">⚡ 오늘의 번개 번호 뽑기</summary>
           <p class="panel-desc" data-i18n="odds.lightningDesc">오늘 당신이 번개에 맞을 그 기운으로, 재미 삼아 번호 6개를 뽑아드려요</p>
+          <div class="lightning-game-toggle" role="group">
+            <button type="button" class="lightning-game-btn active" id="lightning-game-pb" onclick="setLightningGame('powerball')" data-i18n="odds.lightningPbBtn">🔴 파워볼</button>
+            <button type="button" class="lightning-game-btn" id="lightning-game-mega" onclick="setLightningGame('megamillions')" data-i18n="odds.lightningMegaBtn">🟡 메가밀리언즈</button>
+          </div>
           <div class="lightning-result" id="lightning-result">
-            <span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball pb">?</span>
+            <span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball pb" id="lightning-special-ball">?</span>
           </div>
           <button class="cta-btn" onclick="drawLightningNumbers()" data-i18n="odds.drawBtn">⚡⚡⚡ 번호 뽑아보기</button>
-          <p class="foot-note" style="margin-top:10px; text-align:center;" data-i18n="odds.drawNote">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
+          <p class="foot-note" style="margin-top:10px; text-align:center;" id="lightning-draw-note">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
         </details>
 
         <p class="disclaimer" data-i18n="odds.disclaimer">확률 수치는 공식 발표 자료 기준이에요. 원화 환산은 참고용 환율 적용이라 실제와 다를 수 있어요.</p>
@@ -1445,7 +1469,7 @@
 
           <div class="legal-section">
             <p class="legal-h" data-i18n="privacy.h5">5. 쿠키(Cookie) 사용</p>
-            <p class="legal-body" data-i18n="privacy.b5">광고 게재를 위해 Google 등 제3자 광고 서비스의 쿠키가 사용될 수 있습니다. 브라우저 설정에서 쿠키 저장을 거부하거나 삭제할 수 있으며, 이 경우 광고 개인화 기능이 제한될 수 있습니다.</p>
+            <p class="legal-body" data-i18n="privacy.b5">광고 게재를 위해 Google 등 제3자 광고 서비스의 쿠키가 사용될 수 있으며, 방문자 통계 분석을 위해 Google Analytics 쿠키도 사용됩니다. 브라우저 설정에서 쿠키 저장을 거부하거나 삭제할 수 있으며, 이 경우 광고 개인화 및 통계 분석 기능이 제한될 수 있습니다.</p>
           </div>
 
           <div class="legal-section">
@@ -1535,7 +1559,7 @@
           <button onclick="go('contact')" data-i18n="contact.breadcrumb">문의하기</button>
           <button onclick="go('privacy')" data-i18n="privacy.breadcrumb">개인정보처리방침</button>
           <button onclick="go('disclaimer')" data-i18n="disclaimer.breadcrumb">면책조항</button>
-          <button onclick="go('faq')">FAQ</button>
+          <button onclick="go('faq')" data-i18n="nav.faq">FAQ</button>
         </div>
         <p class="footer-copy" data-i18n="footer.copy">본 사이트는 정보 제공 목적의 시뮬레이터이며, 복권 구매를 대행·중개하지 않습니다.</p>
       </div>
