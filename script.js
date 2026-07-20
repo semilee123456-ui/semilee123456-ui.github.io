@@ -1928,21 +1928,31 @@ window.addEventListener('resize', () => {
   }, 200);
 });
 
+// fitAmountFontSize()의 예전 구현은 "1px씩 줄이고 scrollWidth 다시 읽기"를 최대 30번 반복했는데,
+// scrollWidth를 읽을 때마다 브라우저가 강제로 레이아웃을 다시 계산해야 해서(강제 리플로우) 최악의
+// 경우 호출 한 번에 리플로우가 30번 발생했음. 폰트 로딩이 끝나는 시점에 비교 탭의 카드(.side-card-amt)
+// 전부에 대해 한꺼번에 이 함수가 돌면(아래 document.fonts.ready 핸들러), 카드가 8~20개만 있어도
+// 리플로우가 수백 번 몰려서 그 순간 화면이 눈에 띄게 멈칫하는 원인이 됨 — 캔버스로 텍스트 폭을
+// 재는 방식은 레이아웃을 건드리지 않아서(강제 리플로우 없음) 같은 계산을 사실상 공짜로 함
+let _measureCanvasCtx = null;
 function fitAmountFontSize(el){
   if (!el) return;
   const container = el.parentElement;
   if (!container) return;
   el.style.fontSize = ''; // CSS clamp 기본값으로 리셋
-  let fontSize = parseFloat(getComputedStyle(el).fontSize);
+  const computed = getComputedStyle(el);
+  const fontSize = parseFloat(computed.fontSize);
   const minFontSize = 20; // 아무리 길어도 이 밑으로는 안 줄임 (그 이하는 가독성 문제)
   const safetyMargin = 22; // 기기별 폰트 렌더링(서브픽셀 anti-aliasing, 폰트 로딩 전/후 폭 차이 등) 오차를 감안한 여유폭.
   // 이전엔 14px였는데, 딱 안 넘치는 수준이라 "билл" 등 긴 단위가 붙으면 폭을 꽉 채워 답답해 보인다는
   // 피드백이 있어서 시각적 여유를 더 확보하도록 확대함
-  let guard = 0;
-  while (el.scrollWidth > container.clientWidth - safetyMargin && fontSize > minFontSize && guard < 30) {
-    fontSize -= 1;
-    el.style.fontSize = fontSize + 'px';
-    guard++;
+  const availableWidth = container.clientWidth - safetyMargin; // 읽기 1회(불가피한 리플로우 1회)
+  if (!_measureCanvasCtx) _measureCanvasCtx = document.createElement('canvas').getContext('2d');
+  _measureCanvasCtx.font = `${computed.fontWeight} ${fontSize}px ${computed.fontFamily}`;
+  const textWidth = _measureCanvasCtx.measureText(el.textContent).width;
+  if (textWidth > availableWidth) {
+    const scaled = Math.floor(fontSize * (availableWidth / textWidth));
+    el.style.fontSize = Math.max(minFontSize, scaled) + 'px'; // 쓰기 1회(불가피한 리플로우 1회)
   }
 }
 
@@ -3267,6 +3277,10 @@ function updateSideBySide(eok, stateCode){
         var pendingDetailLink = { href: profile.detailPage, text: profile.detailLabel };
       }
     } else {
+      // 국기 3개까지는 카드 한 칸 폭에 한 줄로 들어가서 그대로 둬도 되지만, 그보다 많으면
+      // 여러 줄로 접히면서 카드가 세로로 길어져 옆 칸 카드와 키 차이가 커짐 — 그리드 전체
+      // 폭을 쓰게 해서 국기를 가로로 펼치고 옆에 어색한 빈 공간이 남지 않게 함
+      if (rows.length > 3) card.classList.add('side-card-full');
       const flagGroupEl = document.createElement('p'); flagGroupEl.className = 'side-card-flag-group';
       rows.forEach(row => { flagGroupEl.appendChild(makeFlagBadge(row.profile.flagCode)); });
       card.appendChild(flagGroupEl);
