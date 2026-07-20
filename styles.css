@@ -80,6 +80,7 @@
   .logo-text{ white-space:nowrap; }
   .logo span{ color:var(--teal); }
   .menu{ display:flex; gap:14px; align-items:center; margin-left:auto; }
+  .menu-links{ display:flex; gap:14px; align-items:center; }
   .menu button{
     font-size:16px; color:var(--text-muted); font-weight:500; background:none; border:none;
     cursor:pointer; font-family:inherit; padding:0; position:relative;
@@ -96,7 +97,11 @@
   }
 
   .view{ display:none; }
-  .view.on{ display:block; }
+  .view.on{ display:block; animation:view-fade-in 0.25s ease; }
+  @keyframes view-fade-in{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){
+    .view.on{ animation:none; }
+  }
 
   .hero{ text-align:center; padding:16px 0 24px; }
   .site-notice{
@@ -632,6 +637,7 @@
   }
   .mini-result-edit-input:focus{ outline:none; box-shadow:0 2px 0 0 var(--teal); }
   .mini-result-edit-unit{ font-size:var(--fs-note); color:var(--text-muted); flex-shrink:0; }
+  .jp-drawdays{ color:var(--text-muted); font-weight:400; opacity:0.8; }
   .dday-badge{
     display:inline-block; background:rgba(38,36,32,0.12); color:var(--text-dark); font-size:var(--fs-small); font-weight:800;
     padding:1px 6px; border-radius:8px; margin-left:5px; vertical-align:middle;
@@ -806,7 +812,7 @@
   .flex-row{ display:flex; align-items:center; flex-wrap:wrap; row-gap:2px; gap:8px; padding:5px 0; font-size:var(--fs-small); }
   .flex-icon{ flex-shrink:0; font-size:15px; }
   .flex-label{ flex:1; min-width:120px; color:var(--text-dark); }
-  .flex-val{ font-weight:800; color:var(--text-dark); white-space:nowrap; }
+  .flex-val{ font-weight:800; color:var(--text-dark); white-space:normal; text-align:right; margin-left:auto; }
   .grounding-note{
     font-size:var(--fs-small); color:var(--text-muted); text-align:center; margin:8px 0 0; font-style:italic;
   }
@@ -857,6 +863,8 @@
   .jh-amt-item{ display:flex; flex-direction:column; gap:1px; }
   .jh-amt-label{ font-size:var(--fs-small); color:var(--text-muted); }
   .jh-amt{ font-size:var(--fs-note); font-weight:800; color:var(--teal); }
+  button.jh-amt-group-toggle{ font-family:inherit; background:none; border:none; padding:0; text-align:left; cursor:pointer; text-decoration:underline; text-decoration-style:dotted; }
+  .jh-amt-group-list{ font-size:var(--fs-small); color:var(--text-muted); max-width:220px; }
   .jh-more{ margin-top:8px; }
   .jh-more-summary{ font-size:var(--fs-small); color:var(--teal); font-weight:700; cursor:pointer; list-style:none; }
   .jh-more-summary::-webkit-details-marker{ display:none; }
@@ -1154,11 +1162,14 @@
        가려서 화면 밖 스크롤은 안 생기지만 대신 글자가 그냥 잘려서 안 보이는 문제가 있었음.
        .menu 자체도 줄바꿈되게 해서 안 들어가면 2번째 줄로 넘어가게 함(잘리는 대신) */
     .menu{ gap:11px; flex-wrap:wrap; justify-content:flex-end; }
+    .menu-links{ gap:11px; }
     /* nav-compare/odds/faq 버튼 3개가 이 폭에서 다 안 들어가면 그중 일부(주로 faq)만 줄바꿈되면서
        언어 드롭다운과 한 줄에 어색하게 같이 걸리는 경우가 있었음(키르기스어 등에서 사용자가 직접
-       스크린샷으로 발견) — 드롭다운은 항상 자기 혼자 새 줄을 쓰게 분리해서, 어떤 언어든 버튼이
-       몇 개가 줄바꿈되든 드롭다운이 남은 버튼과 뒤섞여 보이지 않게 함 */
-    .menu .lang-toggle{ flex-basis:100%; }
+       스크린샷으로 발견) — 버튼 3개를 .menu-links 하나로 묶어서 통째로 한 flex 아이템이 되게 하면,
+       안 들어갈 때 항상 드롭다운 전체가 새 줄로 넘어가지(버튼 중 일부만 넘어가지) 않음. 예전엔
+       .lang-toggle에 flex-basis:100%를 줘서 강제로 새 줄+풀폭으로 만들었는데, 그러면 "한국어"처럼
+       짧은 글자에도 상자가 필요 이상으로 길어 보이는 문제가 있어서(사용자 지적) 지금은 내용 길이에
+       맞게 줄어들고 오른쪽 정렬만 되게 함 */
     .logo{ gap:4px; }
     .logo .mascot-mark{ width:26px; height:26px; }
     .bar-label{ width:104px; }
@@ -1182,6 +1193,4 @@
     .result-seal{ width:34px; height:34px; font-size:10px; }
     .calc-detail-toggle, .fun-toggle{ padding-left:10px; padding-right:10px; }
     .calc-detail-summary{ margin:0 -10px; padding:12px 10px; }
-    .flex-row{ flex-wrap:wrap; }
-    .flex-val{ white-space:normal; text-align:right; }
   }

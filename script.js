@@ -1741,33 +1741,22 @@ function updateDrawCountdown(){
       year: Number(map.year), month: Number(map.month), day: Number(map.day)
     };
   }
-  // D-day 배지 문구("오늘 N시간 후", "D-1")는 스크린샷을 나중에 다시 보거나 남에게 카톡으로
-  // 전달하면 그 시점 기준으로는 더 이상 안 맞아서 헷갈림(사용자가 직접 지적) — 실제 날짜(월/일)를
-  // 괄호로 같이 보여줘서, 상대적 표현이 낡아도 실제 추첨일은 항상 알 수 있게 함
-  function formatDrawDate(year, month, day, diffDays){
+  // D-day 배지는 요일까지만 보여줌 — 스크린샷을 나중에 다시 보거나 남에게 카톡으로 전달해도
+  // "화" 같은 요일 표기는 날짜(7.20.)보다 한눈에 들어오고, "오늘 N시간 후"처럼 시시각각 낡는
+  // 표현 대신 D-N 형식으로 통일해서 언제 봐도 무슨 뜻인지 바로 알 수 있게 함(사용자 피드백 반영)
+  function formatDrawWeekday(year, month, day, diffDays){
     // UTC 기준으로 계산해서 로컬 타임존의 서머타임 경계 등으로 인한 날짜 이월 오차를 피함
     const d = new Date(Date.UTC(year, month - 1, day + diffDays));
-    return new Intl.DateTimeFormat(LOCALE_MAP[currentLang] || 'ko-KR', { month: 'numeric', day: 'numeric', timeZone: 'UTC' }).format(d);
+    return new Intl.DateTimeFormat(LOCALE_MAP[currentLang] || 'ko-KR', { weekday: 'short', timeZone: 'UTC' }).format(d);
   }
-  // 추첨 당일엔 "D-0"만으론 몇 시간 남았는지 감이 안 와서, 시:분까지 보여줌 —
-  // 이미 그 시각이 지났으면(방문자가 심야에 접속) 다음 추첨일로 자연스럽게 넘어감
   function nextDrawInfo(drawDays, drawMinutesOfDay){
     const { dow, minutesOfDay, year, month, day } = getEasternNow();
     if (drawDays.includes(dow) && minutesOfDay < drawMinutesOfDay) {
-      const remain = drawMinutesOfDay - minutesOfDay;
-      const h = Math.floor(remain / 60);
-      const m = remain % 60;
-      const dateStr = formatDrawDate(year, month, day, 0);
-      if (h > 0) return pickLang(`오늘 ${h}시간 후`, `In ${h}h`, `今天${h}小时后`, `Còn ${h} giờ nữa`, `อีก ${h} ชม.`, `Через ${h} ч`, {
-        km: `ក្នុង ${h} ម៉ោង`, ne: `${h} घण्टामा`, id: `${h} jam lagi`, my: `${h} နာရီအတွင်း`, si: `පැය ${h}කින්`, uz: `${h} soatdan keyin`, mn: `${h} цагийн дараа`, kk: `${h} сағаттан кейін`, ky: `${h} сааттан кийин`, ur: `${h} گھنٹے میں`, bn: `${h} ঘণ্টার মধ্যে`, lo: `ອີກ ${h} ຊົ່ວໂມງ`, ja: `今日あと${h}時間`, ar: `خلال ${h} ساعة`, hi: `${h} घंटे में`, fr: `Dans ${h}h`, tl: `Sa loob ng ${h} oras`
-      }) + ` (${dateStr})`;
-      return pickLang(`${m}분 후`, `In ${m}m`, `${m}分钟后`, `Còn ${m} phút nữa`, `อีก ${m} นาที`, `Через ${m} мин`, {
-        km: `ក្នុង ${m} នាទី`, ne: `${m} मिनेटमा`, id: `${m} menit lagi`, my: `${m} မိနစ်အတွင်း`, si: `මිනිත්තු ${m}කින්`, uz: `${m} daqiqadan keyin`, mn: `${m} минутын дараа`, kk: `${m} минуттан кейін`, ky: `${m} мүнөттөн кийин`, ur: `${m} منٹ میں`, bn: `${m} মিনিটের মধ্যে`, lo: `ອີກ ${m} ນາທີ`, ja: `あと${m}分`, ar: `خلال ${m} دقيقة`, hi: `${m} मिनट में`, fr: `Dans ${m}min`, tl: `Sa loob ng ${m} min`
-      }) + ` (${dateStr})`;
+      return `D-DAY (${formatDrawWeekday(year, month, day, 0)})`;
     }
     let diff = 1;
     while (!drawDays.includes((dow + diff) % 7)) diff++;
-    return `D-${diff} (${formatDrawDate(year, month, day, diff)})`;
+    return `D-${diff} (${formatDrawWeekday(year, month, day, diff)})`;
   }
   document.getElementById('dday-powerball').textContent = nextDrawInfo([1, 3, 6], 22 * 60 + 59);
   document.getElementById('dday-mega').textContent = nextDrawInfo([2, 5], 23 * 60);
@@ -1798,6 +1787,12 @@ const JACKPOT_HISTORY = [
   { date: '2026-07-19', game: 'megamillions', amountUsd: 707000000 },
 ];
 
+function toggleJhGroupList(id){
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
 function renderJackpotHistory(){
   const listEl = document.getElementById('jackpot-history-list');
   if (!listEl) return;
@@ -1812,6 +1807,7 @@ function renderJackpotHistory(){
   const gameNameTh = { powerball: 'พาวเวอร์บอล', megamillions: 'เมกะมิลเลียน' };
   const gameNameRu = { powerball: 'Powerball', megamillions: 'Mega Millions' };
   const sorted = [...JACKPOT_HISTORY].sort((a, b) => b.date.localeCompare(a.date));
+  let jhGroupCounter = 0;
   listEl.innerHTML = sorted.map(entry => {
     const cashUsd = entry.cashUsd || entry.amountUsd * CASH_VALUE_RATIO;
     const cashKrw = cashUsd * EXCHANGE_RATE;
@@ -1840,11 +1836,20 @@ function renderJackpotHistory(){
       }
     });
     const JH_VISIBLE_COUNT = 4;
+    // "13개국 동일"만 있으면 어느 나라들인지 알 수 없어서 답답함(사용자가 직접 지적) —
+    // 라벨을 눌러서 펼치면 그룹에 묶인 나라 이름 전체를 보여주도록 탭-토글 방식 추가
     const toAmtItem = (group) => {
-      const label = group.items.length === 1
-        ? group.items[0].label
-        : pickLang(`${group.items.length}개국 동일`, `Same for ${group.items.length} countries`, `${group.items.length}个国家相同`, `Giống nhau ở ${group.items.length} nước`, `เท่ากันใน ${group.items.length} ประเทศ`, `Одинаково для ${group.items.length} стран`, buildSameCountMore(group.items.length));
-      return `<span class="jh-amt-item"><span class="jh-amt-label">${label}</span><span class="jh-amt">${formatWon(group.items[0].final)}</span></span>`;
+      if (group.items.length === 1) {
+        return `<span class="jh-amt-item"><span class="jh-amt-label">${group.items[0].label}</span><span class="jh-amt">${formatWon(group.items[0].final)}</span></span>`;
+      }
+      const groupLabel = pickLang(`${group.items.length}개국 동일`, `Same for ${group.items.length} countries`, `${group.items.length}个国家相同`, `Giống nhau ở ${group.items.length} nước`, `เท่ากันใน ${group.items.length} ประเทศ`, `Одинаково для ${group.items.length} стран`, buildSameCountMore(group.items.length));
+      const listId = `jh-grp-${jhGroupCounter++}`;
+      const countryNames = group.items.map(i => i.label).join(', ');
+      return `<span class="jh-amt-item">
+        <button type="button" class="jh-amt-label jh-amt-group-toggle" onclick="toggleJhGroupList('${listId}')">${groupLabel} ▾</button>
+        <span class="jh-amt">${formatWon(group.items[0].final)}</span>
+        <span class="jh-amt-group-list" id="${listId}" style="display:none;">${countryNames}</span>
+      </span>`;
     };
     let shown = 0, visibleGroups = [], hiddenGroups = [];
     amtGroups.forEach(group => {
@@ -1989,6 +1994,12 @@ function toggleJackpotCalc(){
 // 홈 화면 계산기는 일시불(lump sum) 기준으로만 계산함 — 연금(annuity) 세금은 30년에 걸쳐
 // 매년 다른 세율 구간이 적용되는 완전히 별도의 계산이라 여기에 중복으로 넣지 않고,
 // 이미 만들어둔 확률체감 페이지의 잭팟 계산기(연금 단계 포함)로 안내만 함
+function toggleTaxTermInfo(){
+  const box = document.getElementById('tax-term-box');
+  if (!box) return;
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
 function goToAnnuityInfo(){
   go('odds');
   const box = document.getElementById('jackpot-calc-box');
@@ -2029,18 +2040,35 @@ function setupRevealAnimation(){
 let _stickyResultObserver = null;
 function setupStickyResultBadge(){
   const target = document.getElementById('home-final-amt');
+  // 결과 카드 밑에 입력창·슬라이더·세금 상세까지가 "관련 구간"이고, 그 밑 탐색 카드부터는
+  // 배지랑 상관없는 콘텐츠임 — 이 구간을 완전히 지나쳐 스크롤하면(잭팟 이력·탐색 카드 등이
+  // 보일 때) 배지가 그 위에 계속 떠서 글자를 가리는 문제가 있었음(사용자가 스크린샷으로 지적) —
+  // .calc-detail-toggle이 화면 위로 완전히 넘어가면 배지도 같이 숨김
+  const zoneEnd = document.querySelector('.calc-detail-toggle');
   const badge = document.getElementById('sticky-result-badge');
   const amtEl = document.getElementById('sticky-result-amt');
   if (!target || !badge || !amtEl || badge.dataset.bound) return;
   badge.dataset.bound = '1';
 
+  let resultOutOfView = false;
+  let pastRelevantZone = false;
+  const updateVisibility = () => {
+    const isHomeActive = document.getElementById('view-home').classList.contains('on');
+    badge.classList.toggle('is-visible', isHomeActive && resultOutOfView && !pastRelevantZone);
+  };
+
   _stickyResultObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      const isHomeActive = document.getElementById('view-home').classList.contains('on');
-      badge.classList.toggle('is-visible', isHomeActive && !entry.isIntersecting);
+      if (entry.target === target) {
+        resultOutOfView = !entry.isIntersecting;
+      } else if (entry.target === zoneEnd) {
+        pastRelevantZone = entry.boundingClientRect.bottom < 0;
+      }
     });
+    updateVisibility();
   }, { threshold: 0 });
   _stickyResultObserver.observe(target);
+  if (zoneEnd) _stickyResultObserver.observe(zoneEnd);
 
   new MutationObserver(() => { amtEl.textContent = target.textContent; }).observe(target, { childList: true, characterData: true, subtree: true });
   amtEl.textContent = target.textContent;
@@ -2889,12 +2917,12 @@ const COUNTRY_TAX_DISCLAIMERS = {
     '⚠️ Мы не смогли найти чёткого официального правила о том, как Таиланд облагает налогом иностранные лотерейные выигрыши. Показанный здесь налог — это оценка на основе максимальной ставки подоходного налога Таиланда (35%), которая может отличаться от реальной суммы. Уточните точную сумму в налоговом управлении Таиланда или у налогового специалиста.'
   ),
   ru: () => pickLang(
-    '⚠️ 러시아는 2023년에 미국과의 조세조약 핵심 조항(이중과세 조정 포함)의 효력을 정지시켰어요. 세율(22%) 자체는 확인된 정보지만, 미국에서 이미 낸 세금을 러시아 세금에서 빼주는 게 지금도 되는지는 불확실해요 — 최악의 경우 여기 나온 것보다 세금을 더 낼 수도 있어요. 정확한 처리는 러시아 세무 전문가에게 확인하세요.',
-    '⚠️ In 2023, Russia suspended key parts of its US tax treaty (including double-taxation relief). The 22% rate itself is well documented, but whether tax already paid in the US can still offset Russian tax is uncertain — in the worst case you could owe more than shown here. Please confirm the details with a Russian tax professional.',
-    '⚠️ 俄罗斯于2023年暂停了与美国税收协定核心条款（含避免双重征税条款）的效力。22%这个税率本身有据可查，但已在美国缴纳的税款能否抵免俄罗斯税额尚不确定——最坏情况下实际要交的税可能比这里显示的更多。请务必向俄罗斯税务专家确认。',
-    '⚠️ Năm 2023, Nga đã đình chỉ các điều khoản cốt lõi trong hiệp định thuế với Mỹ (bao gồm điều khoản tránh đánh thuế hai lần). Mức thuế 22% được xác nhận rõ ràng, nhưng liệu thuế đã nộp ở Mỹ có còn được khấu trừ vào thuế Nga hay không thì chưa chắc chắn — trường hợp xấu nhất bạn có thể phải nộp nhiều hơn số hiển thị ở đây. Vui lòng xác nhận với chuyên gia thuế Nga.',
-    '⚠️ ในปี 2023 รัสเซียได้ระงับข้อกำหนดหลักของสนธิสัญญาภาษีกับสหรัฐฯ (รวมถึงข้อกำหนดป้องกันการเก็บภาษีซ้อน) อัตราภาษี 22% นี้มีข้อมูลยืนยันชัดเจน แต่ยังไม่แน่ชัดว่าภาษีที่จ่ายในสหรัฐฯ แล้วจะยังนำมาหักลบภาษีรัสเซียได้หรือไม่ — กรณีเลวร้ายที่สุดคุณอาจต้องจ่ายภาษีมากกว่าที่แสดงไว้นี้ กรุณายืนยันกับผู้เชี่ยวชาญด้านภาษีของรัสเซีย',
-    '⚠️ В 2023 году Россия приостановила действие ключевых положений налогового соглашения с США (включая устранение двойного налогообложения). Сама ставка 22% хорошо подтверждена, но неясно, можно ли по-прежнему зачесть уже уплаченный в США налог в счёт российского — в худшем случае налог может оказаться выше показанного здесь. Уточните детали у российского налогового специалиста.'
+    '⚠️ 러시아는 2023년에 미국과의 조세조약 핵심 조항(이중과세 조정 포함)의 효력을 정지시켰어요. 세율(22%) 자체는 확인된 정보예요. 러시아 세법상으로는 개인의 세금 감면 권리가 인정되지만, 양국 간 조약이 공식 정지된 상태라 실제로 러시아 국세청에서 감면받을 때는 세무 처리상 불확실성이 남아있어요 — 최악의 경우 여기 나온 것보다 세금을 더 낼 수도 있어요. 정확한 처리는 러시아 세무 전문가에게 확인하세요.',
+    '⚠️ In 2023, Russia suspended key parts of its US tax treaty (including double-taxation relief). The 22% rate itself is well documented. Russian tax law recognizes individuals\' right to a tax reduction, but since the treaty between the two countries is officially suspended, there\'s still uncertainty in how Russia\'s tax authority handles this in practice. In the worst case you could owe more than shown here. Please confirm the details with a Russian tax professional.',
+    '⚠️ 俄罗斯于2023年暂停了与美国税收协定核心条款（含避免双重征税条款）的效力。22%这个税率本身有据可查。俄罗斯税法承认个人的减税权利，但由于两国间的条约已正式暂停，俄罗斯税务机关在实际操作中如何处理仍存在不确定性——最坏情况下实际要交的税可能比这里显示的更多。请务必向俄罗斯税务专家确认。',
+    '⚠️ Năm 2023, Nga đã đình chỉ các điều khoản cốt lõi trong hiệp định thuế với Mỹ (bao gồm điều khoản tránh đánh thuế hai lần). Mức thuế 22% được xác nhận rõ ràng. Luật thuế Nga công nhận quyền giảm thuế của cá nhân, nhưng vì hiệp định giữa hai nước đã chính thức bị đình chỉ nên vẫn còn sự không chắc chắn về cách cơ quan thuế Nga xử lý việc này trên thực tế. Trường hợp xấu nhất bạn có thể phải nộp nhiều hơn số hiển thị ở đây. Vui lòng xác nhận với chuyên gia thuế Nga.',
+    '⚠️ ในปี 2023 รัสเซียได้ระงับข้อกำหนดหลักของสนธิสัญญาภาษีกับสหรัฐฯ (รวมถึงข้อกำหนดป้องกันการเก็บภาษีซ้อน) อัตราภาษี 22% นี้มีข้อมูลยืนยันชัดเจน กฎหมายภาษีรัสเซียยอมรับสิทธิ์ลดหย่อนภาษีของบุคคล แต่เนื่องจากสนธิสัญญาระหว่างสองประเทศถูกระงับอย่างเป็นทางการ จึงยังมีความไม่แน่นอนว่ากรมสรรพากรรัสเซียจะดำเนินการอย่างไรในทางปฏิบัติ — กรณีเลวร้ายที่สุดคุณอาจต้องจ่ายภาษีมากกว่าที่แสดงไว้นี้ กรุณายืนยันกับผู้เชี่ยวชาญด้านภาษีของรัสเซีย',
+    '⚠️ В 2023 году Россия приостановила действие ключевых положений налогового соглашения с США (включая устранение двойного налогообложения). Сама ставка 22% хорошо подтверждена. Российское налоговое законодательство признаёт право физлиц на снижение налога, но поскольку соглашение между странами официально приостановлено, остаётся неясным, как это будет применяться на практике налоговой службой России. В худшем случае налог может оказаться выше показанного здесь. Уточните детали у российского налогового специалиста.'
   ),
   pk: () => pickLang(
     '⚠️ 파키스탄은 복권 당첨금에 대한 법(20~40%)이 있지만, 이건 파키스탄 안에서 지급하는 경우를 전제로 한 규정이라 미국에서 직접 받는 당첨금에도 그대로 적용되는지 명확하지 않아요. 여기 나온 세금은 일반 소득세 최고세율(35%)로 추정한 참고치예요. 여기에 더해, 잭팟 규모 당첨금은 소득 5억 루피 초과분에 붙는 Super Tax(제4C조, 2026-07 Finance Act 기준 8%)와 세액 기준 서차지(10%)까지 함께 부과돼요. 정확한 처리는 파키스탄 국세청(FBR)이나 세무 전문가에게 확인하세요.',
