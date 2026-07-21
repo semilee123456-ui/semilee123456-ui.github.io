@@ -4378,20 +4378,26 @@ function updateSideBySide(eok, stateCode){
     }
 
     const amtEl = document.createElement('p'); amtEl.className = 'side-card-amt'; amtEl.textContent = formatWon(result.final);
-    const rateEl = document.createElement('p'); rateEl.className = 'side-card-rate';
-    rateEl.textContent = pickLang('실수령률 약 ', 'Take-home rate about ', '实得比例约', 'Tỷ lệ thực nhận khoảng ', 'อัตราที่ได้รับจริงประมาณ ', 'Ставка на руки около ', {
-      ar:'نسبة الصافي حوالي ', bn:'প্রকৃত হার প্রায় ', fr:'Taux net environ ', hi:'वास्तविक दर लगभग ', id:'Tingkat take-home sekitar ', ja:'手取り率 約', kk:'Қолға тию мөлшерлемесі шамамен ', km:'អត្រាទទួលបានប្រហែល ', ky:'Кол алдырма чени болжол менен ', lo:'ອັດຕາທີ່ໄດ້ຮັບຈິງປະມານ ', mn:'Гарт орох хувь ойролцоогоор ', my:'လက်ခံရရှိမှု နှုန်း ခန့်မှန်း ', ne:'वास्तविक दर लगभग ', si:'අත් ලාභ අනුපාතය ආසන්න වශයෙන් ', tl:'Take-home rate humigit-kumulang ', ur:'حقیقی شرح تقریباً ', uz:'Qoʻlga tegadigan foiz taxminan '
-    }) + pct.toFixed(1) + '%';
-    // 홈 화면 결과 카드와 동일한 시각적 breakdown 막대를 국가별 카드에도 작게 적용 —
-    // 숫자(%)만으로는 나라 간 비교가 한눈에 안 들어와서, 막대 길이로 바로 비교되게 함
-    const barEl = document.createElement('div'); barEl.className = 'side-card-bar';
-    const barFillEl = document.createElement('div'); barFillEl.className = 'side-card-bar-fill';
-    barFillEl.style.width = Math.max(0, Math.min(100, pct)) + '%';
-    barEl.appendChild(barFillEl);
-    // 1위 카드는 목업처럼 금액+비율을 한 줄에 나란히(baseline 정렬) 배치해서 공간을 아낌
-    const amtRowEl = document.createElement('div'); amtRowEl.className = 'side-card-amt-row';
-    amtRowEl.append(amtEl, rateEl);
-    card.append(amtRowEl, barEl);
+    if (gi === 0) {
+      // 실수령률 %와 breakdown 막대는 목업상 1위 카드에서만 보여주는 강조 요소 — 나머지
+      // 카드는 금액만 담백하게 표시해서 1위 카드와의 시각적 위계 차이를 분명히 함
+      const rateEl = document.createElement('p'); rateEl.className = 'side-card-rate';
+      rateEl.textContent = pickLang('실수령률 약 ', 'Take-home rate about ', '实得比例约', 'Tỷ lệ thực nhận khoảng ', 'อัตราที่ได้รับจริงประมาณ ', 'Ставка на руки около ', {
+        ar:'نسبة الصافي حوالي ', bn:'প্রকৃত হার প্রায় ', fr:'Taux net environ ', hi:'वास्तविक दर लगभग ', id:'Tingkat take-home sekitar ', ja:'手取り率 約', kk:'Қолға тию мөлшерлемесі шамамен ', km:'អត្រាទទួលបានប្រហែល ', ky:'Кол алдырма чени болжол менен ', lo:'ອັດຕາທີ່ໄດ້ຮັບຈິງປະມານ ', mn:'Гарт орох хувь ойролцоогоор ', my:'လက်ခံရရှိမှု နှုန်း ခန့်မှန်း ', ne:'वास्तविक दर लगभग ', si:'අත් ලාභ අනුපාතය ආසන්න වශයෙන් ', tl:'Take-home rate humigit-kumulang ', ur:'حقیقی شرح تقریباً ', uz:'Qoʻlga tegadigan foiz taxminan '
+      }) + pct.toFixed(1) + '%';
+      // 홈 화면 결과 카드와 동일한 시각적 breakdown 막대를 국가별 카드에도 작게 적용 —
+      // 숫자(%)만으로는 나라 간 비교가 한눈에 안 들어와서, 막대 길이로 바로 비교되게 함
+      const barEl = document.createElement('div'); barEl.className = 'side-card-bar';
+      const barFillEl = document.createElement('div'); barFillEl.className = 'side-card-bar-fill';
+      barFillEl.style.width = Math.max(0, Math.min(100, pct)) + '%';
+      barEl.appendChild(barFillEl);
+      // 1위 카드는 목업처럼 금액+비율을 한 줄에 나란히(baseline 정렬) 배치해서 공간을 아낌
+      const amtRowEl = document.createElement('div'); amtRowEl.className = 'side-card-amt-row';
+      amtRowEl.append(amtEl, rateEl);
+      card.append(amtRowEl, barEl);
+    } else {
+      card.append(amtEl);
+    }
     if (typeof pendingDetailLink !== 'undefined' && pendingDetailLink) {
       const detailEl = document.createElement('a');
       detailEl.className = 'side-card-detail-link';
