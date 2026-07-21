@@ -29,12 +29,54 @@
 
     --grad-soft: linear-gradient(150deg, #EAF3EE 0%, #FCFBF6 55%, #FFFEF9 100%);
     --grad-amber: linear-gradient(150deg, #FBF1DE 0%, #FFFDF9 100%);
-    --shadow-card: 0 1px 0 rgba(38,36,32,0.06);
+    --shadow-card: 0 1px 0 rgba(var(--ink-rgb),0.06);
     --shadow-btn: 0 6px 14px rgba(21,84,69,0.22);
     --status-red:#C0392B;
     --status-amber:#946716; /* 원래 #B8862E는 명암비 3.00:1로 경고 문구(16px bold) WCAG AA(4.5:1) 미달 — 톤 유지하며 더 진하게 조정 */
+
+    /* 다크모드에서 반전이 필요한 "잉크 워시"류 값들 — rgba(var(--ink-rgb),X)를 곳곳에서 호버/배경
+       틴트로 직접 썼던 걸 변수화함(다크모드 미디어쿼리에서 밝은 색으로 뒤집어줘야 호버 피드백이
+       사라지지 않음). 나머지(카드 표면색 등)는 아래 별도 시맨틱 변수로 분리 */
+    --ink-rgb: 38,36,32;
+    --navyblue-rgb: 11,37,69;
+    --body-bg:#F0ECE0;
+    --select-bg:#FDFBF5;
+    --chip-bg:#F1EDE0;
+    --input-card-bg:#F9F5EB;
+    --btn-hover-teal:#0F4238;
+    --alert-red-bg:#FBEEEC;
+    --game-pb-bg:#FDF0EF; --game-pb-border:#E8B4AF;
+    --game-mm-bg:#FDF8E8; --game-mm-border:#E8D9A8;
+    --refund-step-bg:#F8F4EA;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --navy:#EDE8DA; --teal:#3AA98A; --seafoam:#3AA98A; --mint:#4CC2A0; --indigo:#7C9BD1; --gold:#D6AC55;
+      --bg:#1B1917; --card:#242220; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#3D3A34;
+      --grad-soft: linear-gradient(150deg, #1E2622 0%, #201E1A 55%, #201E1A 100%);
+      --grad-amber: linear-gradient(150deg, #2A2318 0%, #201E1A 100%);
+      --shadow-card: 0 1px 0 rgba(0,0,0,0.3);
+      --shadow-btn: 0 6px 14px rgba(58,169,138,0.28);
+      --status-red:#E2776C;
+      --status-amber:#D6AC55;
+      --ink-rgb: 237,232,218;
+      --navyblue-rgb: 124,155,209;
+      --body-bg:#161412;
+      --select-bg:#2A2723;
+      --chip-bg:#2E2B26;
+      --input-card-bg:#221F1B;
+      --btn-hover-teal:#4CC2A0;
+      --alert-red-bg:#2E211F;
+      --game-pb-bg:#2A211F; --game-pb-border:#5A3A35;
+      --game-mm-bg:#292619; --game-mm-border:#5A5136;
+      --refund-step-bg:#242119;
+    }
   }
   *{box-sizing:border-box;}
+  /* 키보드로 탭 이동할 때(스크린리더·저시력 사용자 포함) 지금 포커스가 어디 있는지 브랜드 색으로
+     또렷하게 보여줌 — 마우스로 클릭했을 때는 안 뜨고 키보드 탐색일 때만 뜸(:focus-visible).
+     이미 자체 포커스 스타일이 있는 요소(.dollar-input 등)는 각자 규칙이 나중에 나와서 그대로 유지됨 */
+  :focus-visible{ outline:2.5px solid var(--teal); outline-offset:2px; border-radius:4px; }
   /* iOS 사파리는 button/input/select에 기본 시스템 폰트·여백을 강제로 적용해서,
      안드로이드 크롬 계열(삼성 인터넷·카카오톡 인앱 포함)과 글씨 정렬이 미묘하게 달라 보일 수 있음.
      전 요소에 폰트를 명시적으로 맞추고, 버튼의 기본 외형을 지워서 브라우저 간 렌더링을 통일함 */
@@ -43,7 +85,7 @@
   body{
     margin:0;
     font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;
-    background:#F0ECE0;
+    background:var(--body-bg);
     color:var(--text-dark);
     padding:36px 16px 80px;
     display:flex;
@@ -66,8 +108,8 @@
 
   .page{
     background:var(--bg); padding:28px 28px 36px; min-height:200px;
-    width:100%; max-width:760px; margin:0 auto; border-radius:14px; overflow:hidden;
-    box-shadow:0 1px 3px rgba(38,36,32,0.08), 0 8px 24px rgba(38,36,32,0.06);
+    width:100%; max-width:900px; margin:0 auto; border-radius:14px; overflow:hidden;
+    box-shadow:0 1px 3px rgba(var(--ink-rgb),0.08), 0 8px 24px rgba(var(--ink-rgb),0.06);
   }
 
   .nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; row-gap:8px; column-gap:10px; }
@@ -141,7 +183,6 @@
   .rvb-dot-take{ background:var(--teal); }
   .rvb-dot-tax{ background:var(--status-red); margin-left:10px; }
   .hero-amount{ font-size:var(--fs-h1); font-weight:800; color:var(--navy); margin:0; letter-spacing:-0.02em; line-height:1.4; }
-  .hero-sub{ font-size:16px; color:var(--text-muted); margin:8px 0 0; }
 
   .cards-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:8px; }
   .feature-card{
@@ -153,24 +194,22 @@
   .cta-btn{ transition:transform 0.1s ease, background 0.15s ease; }
   .cta-btn:active{ transform:scale(0.98); }
   .panel{ transition:box-shadow 0.15s ease; }
-  .feature-icon{ width:34px;height:34px;border-radius:9px;background:rgba(38,36,32,0.1); display:flex;align-items:center;justify-content:center;margin-bottom:10px; font-size:16px; }
   @media (hover: hover) {
-  .feature-card:hover{ border-color:var(--teal); transform:translateY(-3px); box-shadow:0 6px 16px rgba(38,36,32,0.12); }
-  .rate-live-badge:hover{ border-color:var(--teal); background:rgba(38,36,32,0.16); }
-  .flow-tag:hover{ background:rgba(38,36,32,0.2); text-decoration:underline; }
-  .official-links a:hover{ border-color:var(--teal); background:rgba(38,36,32,0.06); }
+  .feature-card:hover{ border-color:var(--teal); transform:translateY(-3px); box-shadow:0 6px 16px rgba(var(--ink-rgb),0.12); }
+  .rate-live-badge:hover{ border-color:var(--teal); background:rgba(var(--ink-rgb),0.16); }
+  .flow-tag:hover{ background:rgba(var(--ink-rgb),0.2); text-decoration:underline; }
+  .official-links a:hover{ border-color:var(--teal); background:rgba(var(--ink-rgb),0.06); }
   .jp-official-link:hover{ text-decoration:underline; }
   .source-links a:hover{ text-decoration:underline; }
   .back-btn:hover{ background:var(--bg); border-color:var(--teal); }
-  .cta-btn:hover{ background:#0F4238; }
-  .share-btn:hover{ background:rgba(38,36,32,0.08); }
-  .refund-link-btn:hover{ background:rgba(38,36,32,0.08); }
+  .cta-btn:hover{ background:var(--btn-hover-teal); }
+  .share-btn:hover{ background:rgba(var(--ink-rgb),0.08); }
+  .refund-link-btn:hover{ background:rgba(var(--ink-rgb),0.08); }
   .footer-links button:hover{ text-decoration:underline; }
 }
   .feature-title{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 2px; }
   .feature-sub{ display:flex; flex-wrap:wrap; align-items:center; gap:4px; font-size:var(--fs-small); color:var(--text-muted); margin:0 0 10px; }
   .feature-card{ min-width:0; }
-  .feature-link{ font-size:var(--fs-small); color:var(--teal); font-weight:600; margin:0; }
 
   .panel{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px 16px; margin-bottom:18px; }
   .panel-title{ font-size:var(--fs-h2); font-weight:700; color:var(--text-dark); margin:0 0 4px; }
@@ -213,7 +252,7 @@
   .input-row{ display:flex; gap:8px; margin-bottom:14px; }
   .input-row select{
     height:44px; border:1px solid var(--border); border-radius:8px; padding:0 28px 0 12px;
-    font-size:var(--fs-body); font-family:inherit; color:var(--text-dark); background:#FDFBF5; flex:1;
+    font-size:var(--fs-body); font-family:inherit; color:var(--text-dark); background:var(--select-bg); flex:1;
     min-width:0; max-width:100%;
     -webkit-appearance:none; -moz-appearance:none; appearance:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23262420' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -233,11 +272,6 @@
   }
   .jackpot-quickfill-btn:active{ background:rgba(21,84,69,0.16); }
   .jackpot-quickfill-amt{ font-size:16px; font-weight:800; color:var(--teal); }
-  .announced-amount-toggle{ border-top:1px dashed var(--border); padding-top:10px; margin-bottom:6px; }
-  .announced-amount-toggle-summary{
-    font-size:var(--fs-small); color:var(--teal); font-weight:700; cursor:pointer; list-style:none;
-  }
-  .announced-amount-toggle-summary::-webkit-details-marker{ display:none; }
   .million-input-wrap{
     display:flex; align-items:center; gap:10px; flex:1.5; border:2px solid var(--teal);
     border-radius:14px; padding:8px 10px 8px 18px; height:auto; background:var(--card);
@@ -271,15 +305,6 @@
   }
   .country-toggle-more-summary::-webkit-details-marker{ display:none; }
   .country-toggle-more-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px; }
-  .announced-amount-toggle{ margin:0 0 14px; }
-  .announced-amount-summary{
-    font-size:var(--fs-small); color:var(--teal); font-weight:700; cursor:pointer; list-style:none;
-    padding:10px 0; text-align:left;
-  }
-  .announced-amount-summary::-webkit-details-marker{ display:none; }
-  .announced-amount-summary::after{ content:' ▾'; }
-  .announced-amount-toggle[open] .announced-amount-summary::after{ content:' ▴'; }
-  .announced-amount-toggle[open] .announced-amount-summary{ margin-bottom:4px; }
   .country-toggle-btn{
     flex:1 1 calc(50% - 4px); min-height:46px; border-radius:11px; border:2px solid var(--border); background:var(--card);
     color:var(--text-dark); font-family:inherit; font-size:16px; font-weight:800; cursor:pointer;
@@ -295,7 +320,7 @@
   .rate-input:focus{ outline:none; border-bottom-style:solid; }
   .rate-live-badge{
     display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
-    margin-left:4px; cursor:pointer; background:rgba(38,36,32,0.05); border:1px solid var(--border);
+    margin-left:4px; cursor:pointer; background:rgba(var(--ink-rgb),0.05); border:1px solid var(--border);
     border-radius:50%; padding:0; font-size:12px; line-height:1; font-family:inherit; flex-shrink:0;
     position:relative;
   }
@@ -304,7 +329,7 @@
      the same technique already used for .menu button rather than visibly bloating the icon */
   .rate-live-badge::after{ content:''; position:absolute; top:50%; left:50%; width:44px; height:44px; transform:translate(-50%,-50%); }
 
-  .rate-live-badge.is-live{ background:rgba(38,36,32,0.14); border-color:rgba(38,36,32,0.4); }
+  .rate-live-badge.is-live{ background:rgba(var(--ink-rgb),0.14); border-color:rgba(var(--ink-rgb),0.4); }
   .rate-live-badge.is-fail{ background:rgba(192,57,43,0.1); border-color:rgba(192,57,43,0.35); }
   .rate-live-badge:disabled{ cursor:default; opacity:0.6; }
   @keyframes badge-flash{ 0%{ transform:scale(1); } 35%{ transform:scale(1.35); } 100%{ transform:scale(1); } }
@@ -396,7 +421,6 @@
     flex-shrink:0; min-width:72px; min-height:44px; border-radius:9px; border:none;
     background:var(--teal); color:#fff; font-family:inherit; font-size:var(--fs-small); font-weight:800; cursor:pointer;
   }
-  .side-flow-explain{ font-size:var(--fs-note); color:var(--text-muted); margin:0 0 14px; line-height:1.6; }
   .side-group-label{ font-size:var(--fs-body); font-weight:700; color:var(--text-dark); margin:14px 0 8px; }
   .side-breakdown-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .side-breakdown-cell{ background:var(--bg); border-radius:10px; padding:12px; min-width:0; }
@@ -421,16 +445,12 @@
   .bar-track{ flex:1; height:10px; background:var(--bg); border-radius:5px; overflow:hidden; }
   .bar-fill{ height:100%; border-radius:5px; }
   .bar-fill.accent{ background:var(--teal); }
-  .bar-fill.muted{ background:#D9D3C3; }
   .bar-value{ font-size:var(--fs-note); color:var(--text-muted); width:132px; text-align:right; flex-shrink:0; }
 
-  .callout{ background:rgba(38,36,32,0.08); border:1px solid rgba(38,36,32,0.15); border-radius:10px; padding:14px 16px; margin-top:16px; font-size:var(--fs-small); color:var(--text-muted); line-height:1.6; }
+  .callout{ background:rgba(var(--ink-rgb),0.08); border:1px solid rgba(var(--ink-rgb),0.15); border-radius:10px; padding:14px 16px; margin-top:16px; font-size:var(--fs-small); color:var(--text-muted); line-height:1.6; }
   .callout b{ color:var(--text-dark); }
 
   .disclaimer{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; line-height:1.7; margin-top:4px; }
-  .breadcrumb{ font-size:var(--fs-small); color:var(--text-muted); margin-bottom:16px; }
-  .breadcrumb button{ background:none;border:none;font-family:inherit;font-size:var(--fs-small);color:var(--text-muted);cursor:pointer;padding:0; }
-  .breadcrumb .cur{ color:var(--text-dark); font-weight:600; }
 
   /* 스크롤 진입 시 섹션이 살짝 떠오르며 나타나는 효과 — 모바일에서 긴 목록을 스크롤할 때
      구간이 바뀌는 걸 시각적으로 짚어주기 위함. 모션에 민감한 사용자를 위해 prefers-reduced-motion에서 비활성화 */
@@ -457,7 +477,7 @@
   .hint b{ color:var(--text-dark); }
 
   .gate-box{
-    background:#FBEEEC; border:2px solid #C0392B; border-radius:12px;
+    background:var(--alert-red-bg); border:2px solid #C0392B; border-radius:12px;
     padding:16px 18px; margin-bottom:16px; text-align:center;
   }
   .gate-label{ font-size:var(--fs-small); font-weight:800; color:#C0392B; letter-spacing:0.05em; margin:0 0 6px; }
@@ -477,7 +497,7 @@
   .flow-detail{ font-size:var(--fs-body); color:var(--text-muted); margin:0; line-height:1.6; }
   .flow-detail b{ color:var(--text-dark); }
   .flow-tag{
-    display:inline-block; background:rgba(38,36,32,0.1); color:var(--text-dark); font-size:var(--fs-small); font-weight:700;
+    display:inline-block; background:rgba(var(--ink-rgb),0.1); color:var(--text-dark); font-size:var(--fs-small); font-weight:700;
     padding:2px 7px; border-radius:6px; margin-top:6px; margin-right:4px;
     text-decoration:none; cursor:pointer;
   }
@@ -519,12 +539,9 @@
   .qty-a b{ color:var(--text-dark); }
 
   .live-badge{
-    display:inline-flex; align-items:center; gap:4px; background:rgba(38,36,32,0.12); color:var(--seafoam);
+    display:inline-flex; align-items:center; gap:4px; background:rgba(var(--ink-rgb),0.12); color:var(--seafoam);
     font-size:var(--fs-small); font-weight:800; padding:2px 8px; border-radius:10px; margin-left:6px; vertical-align:middle;
   }
-  .live-dot{ width:5px; height:5px; border-radius:50%; background:var(--seafoam); }
-  .live-badge.manual{ background:rgba(38,36,32,0.06); color:var(--text-muted); }
-  .live-badge.manual .live-dot{ background:var(--text-muted); }
   .jp-krw{ font-size:16px; color:var(--text-muted); opacity:0.85; font-weight:400; margin:2px 0 0; }
   .jp-est-note{ font-size:12px; color:var(--text-muted); opacity:0.7; font-weight:400; margin:1px 0 0; }
   .foot-note{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; line-height:1.4; }
@@ -557,9 +574,6 @@
   }
   .result-hero-label{ position:relative; font-size:var(--fs-h3); color:var(--text-muted); font-weight:600; margin:0 0 8px; overflow-wrap:normal; }
   .announced-convert-note{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 6px; font-variant-numeric:tabular-nums; }
-  .result-trust-badge{
-    font-size:var(--fs-note); color:var(--teal); font-weight:600; text-align:center; margin:8px 0 0;
-  }
   /* 영어는 단어 단위로 줄바꿈되면서 한국어보다 여러 줄이 되는 경우가 많아서, 버튼·제목·설명문류에
      넉넉한 줄 간격을 별도로 적용함 (한국어는 word-break:keep-all이라 상대적으로 덜 꺾임) */
   html[lang="en"] .cta-btn,
@@ -583,16 +597,12 @@
     color:var(--teal); text-shadow:none; line-height:1.25;
   }
   .result-hero-basis{ font-size:var(--fs-note); color:var(--text-muted); margin:4px 0 0; }
-  .result-meta-group{ margin-top:16px; padding-top:10px; border-top:1px dashed rgba(38,36,32,0.12); display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .result-meta-group{ margin-top:16px; padding-top:10px; border-top:1px dashed rgba(var(--ink-rgb),0.12); display:flex; flex-direction:column; align-items:center; gap:2px; }
   .result-hero-basis-mini{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; }
-  .calc-basis-box{
-    display:flex; flex-wrap:wrap; justify-content:center; gap:4px 10px; margin-top:8px;
-    font-size:var(--fs-small); color:var(--text-muted);
-  }
   .sim-note{ font-size:var(--fs-small); color:var(--text-muted); text-align:left; margin:6px 0 0; line-height:1.5; }
   .usd-actual-note{
     font-size:var(--fs-small); color:var(--navy); font-weight:700; text-align:center; margin:4px 0 0;
-    background:rgba(11,37,69,0.06); border-radius:8px; padding:8px 10px; line-height:1.5;
+    background:rgba(var(--navyblue-rgb),0.06); border-radius:8px; padding:8px 10px; line-height:1.5;
   }
   .usd-actual-note span{ font-weight:400; color:var(--text-muted); }
   .result-hero .usd-actual-note{
@@ -635,13 +645,13 @@
   }
   .mini-result-edit-input{
     width:110px; height:44px; border:1.5px solid var(--teal); border-radius:8px; padding:0 10px;
-    font-size:16px; font-weight:800; font-family:inherit; color:var(--teal); text-align:right;
+    font-size:16px; font-weight:800; font-family:inherit; color:var(--teal); text-align:right; background:var(--card);
   }
   .mini-result-edit-input:focus{ outline:none; box-shadow:0 2px 0 0 var(--teal); }
   .mini-result-edit-unit{ font-size:var(--fs-note); color:var(--text-muted); flex-shrink:0; }
   .jp-drawdays{ color:var(--text-muted); font-weight:400; opacity:0.8; }
   .dday-badge{
-    display:inline-block; background:rgba(38,36,32,0.12); color:var(--text-dark); font-size:var(--fs-small); font-weight:800;
+    display:inline-block; background:rgba(var(--ink-rgb),0.12); color:var(--text-dark); font-size:var(--fs-small); font-weight:800;
     padding:1px 6px; border-radius:8px; margin-left:5px; vertical-align:middle;
   }
   .faq-search{
@@ -656,7 +666,7 @@
        넓은 한 줄이 되어 화면 밖으로 잘려나가는 문제가 있었음 — 줄바꿈을 허용해 알약(pill) 안에서
        2줄로 접히게 함(짧은 칩들은 어차피 한 줄에 들어가서 모양이 그대로 유지됨) */
     max-width:100%; font-family:inherit; font-size:var(--fs-small); font-weight:700; white-space:normal;
-    padding:12px 14px; min-height:44px; border-radius:20px; border:none; background:#F1EDE0; color:var(--text-muted); cursor:pointer;
+    padding:12px 14px; min-height:44px; border-radius:20px; border:none; background:var(--chip-bg); color:var(--text-muted); cursor:pointer;
   }
   .faq-chip.active{ background:var(--teal); color:#fff; }
   .faq-no-result{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); padding:16px 0; }
@@ -666,7 +676,7 @@
     display:flex; align-items:center; justify-content:center; font-weight:800; font-size:var(--fs-body); color:var(--navy);
     transition:all 0.3s; flex-shrink:1;
   }
-  .lightning-ball.pb{ background:rgba(38,36,32,0.12); border-color:var(--text-dark); color:var(--text-dark); }
+  .lightning-ball.pb{ background:rgba(var(--ink-rgb),0.12); border-color:var(--text-dark); color:var(--text-dark); }
   .lightning-ball.mega{ background:rgba(148,103,22,0.12); border-color:var(--status-amber); color:var(--status-amber); }
   .lightning-ball.drawn{ animation:pop 0.3s ease; }
   .lightning-game-toggle{ display:flex; justify-content:center; gap:8px; margin:4px 0 2px; }
@@ -682,7 +692,7 @@
     background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 16px; margin-bottom:8px;
   }
   .prize-card:last-child{ margin-bottom:0; }
-  .prize-card.jackpot{ background:rgba(38,36,32,0.1); border:1.5px solid rgba(38,36,32,0.35); padding:14px 16px; }
+  .prize-card.jackpot{ background:rgba(var(--ink-rgb),0.1); border:1.5px solid rgba(var(--ink-rgb),0.35); padding:14px 16px; }
   .prize-tag{ font-size:var(--fs-small); font-weight:800; color:var(--text-dark); margin:0 0 2px; }
   .prize-match{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0; }
   .prize-right{ text-align:right; }
@@ -707,7 +717,6 @@
   .flow-explain-list{ margin:0 0 8px; padding-left:20px; font-size:var(--fs-small); color:var(--text-dark); }
   .flow-explain-list li{ margin:3px 0; }
   .flow-explain-note{ font-size:var(--fs-small); color:var(--text-muted); margin:0; }
-  .select-hint{ font-size:var(--fs-small); color:var(--text-muted); margin:-4px 0 10px 2px; }
   .filing-note{
     font-size:var(--fs-small); color:var(--text-muted); line-height:1.55; margin:10px 0;
   }
@@ -725,11 +734,7 @@
   .filing-label{ font-size:var(--fs-small); font-weight:600; color:var(--text-muted); margin:0 0 6px; }
   .filing-label span{ font-weight:400; color:var(--text-muted); }
   .filing-note-small{ font-size:var(--fs-small); color:var(--text-muted); margin:-4px 0 10px; line-height:1.5; }
-  .input-bridge{
-    font-size:var(--fs-note); color:var(--indigo); font-weight:700; text-align:center;
-    margin:14px 0 0; padding:0 4px;
-  }
-  .input-card{ position:relative; background:#F9F5EB; border:2.5px solid var(--teal); border-radius:12px; padding:14px 16px 16px; margin-top:22px; }
+  .input-card{ position:relative; background:var(--input-card-bg); border:2.5px solid var(--teal); border-radius:12px; padding:14px 16px 16px; margin-top:22px; }
   .amount-input-tabs{ display:flex; gap:6px; margin-bottom:10px; }
   .amount-tab-btn{
     flex:1; min-width:0; min-height:44px; border-radius:10px; border:2px solid var(--border); background:var(--card);
@@ -797,7 +802,7 @@
   .more-details-toggle[open] > .section-divider-toggle::after{ transform:rotate(180deg); }
   .more-details-toggle > .panel:first-of-type{ margin-top:14px; }
   .panel-accordion{
-    background:var(--card); border-radius:16px; padding:20px; margin-top:14px; box-shadow:0 1px 3px rgba(11,37,69,0.06);
+    background:var(--card); border-radius:16px; padding:20px; margin-top:14px; box-shadow:0 1px 3px rgba(var(--navyblue-rgb),0.06);
   }
   .panel-accordion-title{
     font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); cursor:pointer; list-style:none;
@@ -836,7 +841,7 @@
     margin-top:12px !important; padding-top:12px; border-top:1px solid var(--border);
   }
   .flex-box{
-    margin-top:14px; background:linear-gradient(135deg, rgba(38,36,32,0.08), rgba(38,36,32,0.08));
+    margin-top:14px; background:linear-gradient(135deg, rgba(var(--ink-rgb),0.08), rgba(var(--ink-rgb),0.08));
     border-radius:12px; padding:14px 16px;
   }
   .flex-row{ display:flex; align-items:center; flex-wrap:wrap; row-gap:2px; gap:8px; padding:5px 0; font-size:var(--fs-small); }
@@ -900,10 +905,6 @@
   .jh-more-summary::-webkit-details-marker{ display:none; }
   .jh-more .jh-amounts{ margin-top:8px; }
   .jackpot-history-empty{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; padding:12px 0; }
-  .filing-static-note{
-    background:var(--bg); border-radius:8px; padding:10px 12px; font-size:var(--fs-note);
-    color:var(--text-muted); margin-bottom:4px; text-align:center;
-  }
   .ticket-mock{ margin-top:10px; }
   .ticket-mock-title{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 6px; }
   .ticket-mock-card{
@@ -924,7 +925,7 @@
   .check-method > span:last-child{ min-width:0; flex:1; }
   .check-method:last-child{ margin-bottom:0; }
   .cm-num{
-    flex-shrink:0; width:18px; height:18px; border-radius:50%; background:rgba(38,36,32,0.12); color:var(--text-dark);
+    flex-shrink:0; width:18px; height:18px; border-radius:50%; background:rgba(var(--ink-rgb),0.12); color:var(--text-dark);
     font-size:var(--fs-small); font-weight:800; display:flex; align-items:center; justify-content:center; margin-top:1px;
   }
   .check-method b{ color:var(--text-dark); }
@@ -981,7 +982,7 @@
   .jc-step{ display:flex; gap:12px; position:relative; padding-bottom:20px; }
   .jc-step:last-child{ padding-bottom:0; }
   .jc-step-num{
-    flex-shrink:0; width:30px; height:30px; border-radius:50%; background:rgba(38,36,32,0.1); color:var(--text-dark);
+    flex-shrink:0; width:30px; height:30px; border-radius:50%; background:rgba(var(--ink-rgb),0.1); color:var(--text-dark);
     font-size:16px; font-weight:800; display:flex; align-items:center; justify-content:center; position:relative; z-index:1;
   }
   .jc-step-body{ flex:1; min-width:0; padding-top:1px; }
@@ -1001,15 +1002,15 @@
 
   .game-compare{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .game-card{ border-radius:12px; padding:16px; border:2px solid var(--border); }
-  .game-card.powerball{ background:#FDF0EF; border-color:#E8B4AF; }
-  .game-card.megamillions{ background:#FDF8E8; border-color:#E8D9A8; }
+  .game-card.powerball{ background:var(--game-pb-bg); border-color:var(--game-pb-border); }
+  .game-card.megamillions{ background:var(--game-mm-bg); border-color:var(--game-mm-border); }
   .game-name{ font-size:var(--fs-note); font-weight:800; color:var(--text-dark); margin:0 0 12px; text-align:center; }
-  .game-row{ display:flex; flex-direction:column; gap:2px; padding:8px 0; border-top:1px solid rgba(38,36,32,0.06); }
+  .game-row{ display:flex; flex-direction:column; gap:2px; padding:8px 0; border-top:1px solid rgba(var(--ink-rgb),0.06); }
   .game-row:first-of-type{ border-top:none; }
   .game-label{ font-size:var(--fs-small); color:var(--text-muted); font-weight:400; }
   .game-val{ font-size:var(--fs-small); color:var(--text-dark); font-weight:700; line-height:1.4; }
   .same-place-box{
-    background:rgba(38,36,32,0.06); border:1.5px dashed var(--seafoam); border-radius:10px;
+    background:rgba(var(--ink-rgb),0.06); border:1.5px dashed var(--seafoam); border-radius:10px;
     padding:10px 14px; text-align:center; font-size:var(--fs-small); font-weight:700; color:var(--seafoam); margin-top:12px;
   }
 
@@ -1023,11 +1024,11 @@
   .contact-field-row{ margin-bottom:10px; }
   .contact-input{
     flex:1; min-width:0; height:44px; border:1px solid var(--border); border-radius:8px; padding:0 12px;
-    font-size:16px; font-family:inherit;
+    font-size:16px; font-family:inherit; background:var(--card); color:var(--text-dark);
   }
   .contact-textarea{
     width:100%; height:80px; border:1px solid var(--border); border-radius:8px; padding:10px 12px;
-    font-size:16px; font-family:inherit; resize:none; margin-bottom:10px;
+    font-size:16px; font-family:inherit; resize:none; margin-bottom:10px; background:var(--card); color:var(--text-dark);
   }
   .contact-submit-btn{ margin-top:0; }
   .contact-status-msg{
@@ -1078,10 +1079,10 @@
     border-radius:6px; padding:2px 8px; margin-left:8px; vertical-align:middle;
   }
 
-  .refund-step-card{ background:#F8F4EA; border:1px solid var(--border); border-radius:14px; padding:14px 16px; margin:8px 0; }
+  .refund-step-card{ background:var(--refund-step-bg); border:1px solid var(--border); border-radius:14px; padding:14px 16px; margin:8px 0; }
   .refund-step-tag{
     display:inline-block; font-size:16px; font-weight:800; letter-spacing:0.04em; color:var(--text-dark);
-    background:rgba(38,36,32,0.1); border-radius:6px; padding:2px 8px; margin:0 0 8px;
+    background:rgba(var(--ink-rgb),0.1); border-radius:6px; padding:2px 8px; margin:0 0 8px;
   }
   .refund-step-title{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); margin:0 0 10px; }
   .refund-step-card select{
@@ -1095,7 +1096,6 @@
   .refund-wizard-result.tag-none{ border-left-color:#C0392B; }
   .refund-wizard-result.tag-maybe{ border-left-color:var(--status-amber); }
   .refund-wizard-result.tag-check{ border-left-color:var(--teal); }
-  .refund-wizard-result.tag-hit{ border-left-color:var(--teal); }
 
   .refund-check-row{
     display:flex; align-items:flex-start; gap:8px; font-size:var(--fs-note); color:var(--text-dark);
@@ -1110,7 +1110,7 @@
   .refund-link-buttons{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
   .refund-link-btn{
     display:flex; flex-direction:column; align-items:center; text-align:center; gap:4px; padding:12px 6px; border-radius:12px;
-    background:var(--card); border:1px solid rgba(38,36,32,0.25); text-decoration:none; min-width:0;
+    background:var(--card); border:1px solid rgba(var(--ink-rgb),0.25); text-decoration:none; min-width:0;
   }
   
   .refund-link-btn-icon{ font-size:18px; }
@@ -1124,7 +1124,6 @@
   .refund-link-btn.recommended{ border-color:var(--teal); border-width:2px; background:rgba(21,84,69,0.06); order:-1; }
   .refund-link-btn.recommended .refund-link-btn-badge{ display:inline-block; }
   .refund-link-btn.dimmed{ opacity:0.5; }
-  .faq-q-static{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 6px; }
 
   .ad-slot{
     background:var(--bg);
@@ -1223,4 +1222,33 @@
     .result-seal{ width:34px; height:34px; font-size:10px; }
     .calc-detail-toggle, .fun-toggle{ padding-left:10px; padding-right:10px; }
     .calc-detail-summary{ margin:0 -10px; padding:12px 10px; }
+  }
+
+  /* 아랍어·우르두어(RTL)에서 "79.7 billion ₩"처럼 숫자+영단어 조합이 브라우저의 기본 양방향(bidi)
+     텍스트 알고리즘 때문에 "billion 79.7 ₩"으로 순서가 뒤집혀 보이는 문제 — 원본 문자열 자체는
+     항상 올바른 순서(예: "79.7 billion")로 만들어지는데, 그 텍스트가 RTL 문단 안에 그냥 놓이면
+     브라우저가 시각적으로 재배열해버림. unicode-bidi:plaintext를 주면 각 텍스트 노드가 자기 안의
+     첫 "강한" 방향 문자 기준으로 독립적으로 방향을 판단해서, 원래 순서 그대로 보이게 됨 */
+  html[dir="rtl"] .result-hero-amt, html[dir="rtl"] .result-hero-basis, html[dir="rtl"] .result-hero-basis-mini,
+  html[dir="rtl"] .tax-impact-before-line, html[dir="rtl"] .tax-impact-diff-big, html[dir="rtl"] #tax-impact-before,
+  html[dir="rtl"] #tax-impact-after, html[dir="rtl"] #sticky-result-amt,
+  html[dir="rtl"] .jc-step-val, html[dir="rtl"] .jc-step-val-big, html[dir="rtl"] .jc-note,
+  html[dir="rtl"] .jackpot-quickfill-amt, html[dir="rtl"] .live-result-mini-amt, html[dir="rtl"] .mini-result-edit-input,
+  html[dir="rtl"] .us-state-row-amt, html[dir="rtl"] .side-card-amt, html[dir="rtl"] .prize-amt,
+  html[dir="rtl"] #jackpot-card-amt, html[dir="rtl"] #jp-powerball-krw, html[dir="rtl"] #jp-mega-krw,
+  html[dir="rtl"] #home-krw-amt, html[dir="rtl"] #compare-krw-amt, html[dir="rtl"] .usd-actual-note,
+  html[dir="rtl"] .result-visual-bar-caption, html[dir="rtl"] .foot-note{
+    unicode-bidi: plaintext;
+  }
+
+  /* select 드롭다운 화살표가 data URI SVG에 색을 하드코딩해뒀어서(--text-dark/--teal 변수를 못 씀),
+     다크모드에서 어두운 배경 위에 어두운 화살표(또는 어두운 초록)라 안 보이는 문제 — 밝은 색
+     SVG로 따로 교체함 */
+  @media (prefers-color-scheme: dark){
+    .menu .lang-toggle{
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%233AA98A' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    }
+    .input-row select, .refund-step-card select{
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23EDE8DA' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    }
   }
