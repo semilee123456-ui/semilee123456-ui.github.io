@@ -106,9 +106,13 @@
      태국어 화면 스크린샷으로 사용자가 직접 발견). 한국어에만 필요한 규칙이므로 범위를 좁힘 */
   html[lang="ko"] body{ word-break:keep-all; }
 
+  /* 브라우저 기본 텍스트 선택 색(진한 파랑)은 사이트 팔레트에 아예 없는 색이라, 입력칸 숫자를
+     길게 눌러 선택했을 때 디자인이 완전히 깨진 것처럼 보임 — 톤을 청록 계열로 맞춤 */
+  ::selection{ background:rgba(21,84,69,0.25); color:var(--text-dark); }
+
   .page{
     background:var(--bg); padding:28px 28px 36px; min-height:200px;
-    width:100%; max-width:900px; margin:0 auto; border-radius:14px; overflow:hidden;
+    width:100%; max-width:1100px; margin:0 auto; border-radius:14px; overflow:hidden;
     box-shadow:0 1px 3px rgba(var(--ink-rgb),0.08), 0 8px 24px rgba(var(--ink-rgb),0.06);
   }
 
@@ -266,12 +270,20 @@
   .dollar-input:focus{ outline:none; border-color:var(--teal); }
   .jackpot-quickfill-row{ display:flex; gap:8px; margin:0 0 10px; flex-wrap:wrap; }
   .jackpot-quickfill-btn{
-    flex:1; min-width:140px; min-height:44px; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:2px; font-family:inherit; font-size:16px; font-weight:700; color:var(--teal); background:rgba(21,84,69,0.08);
-    border:1.5px solid rgba(21,84,69,0.25); border-radius:12px; padding:8px 10px; cursor:pointer; text-align:center;
+    flex:1; min-width:140px; min-height:44px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
+    gap:4px; font-family:inherit; cursor:pointer; text-align:left;
+    border-radius:12px; padding:10px 12px;
   }
-  .jackpot-quickfill-btn:active{ background:rgba(21,84,69,0.16); }
-  .jackpot-quickfill-amt{ font-size:16px; font-weight:800; color:var(--teal); }
+  /* 디자인 3차 개선: 두 버튼을 같은 청록색 톤으로 뭉뚱그리지 않고, 게임별 색(빨강=파워볼/
+     호박색=메가밀리언즈)을 입혀서 어느 버튼이 어느 게임인지 한눈에 구분되게 함 */
+  .jackpot-quickfill-btn-pb{ background:var(--game-pb-bg); border:1.5px solid var(--game-pb-border); }
+  .jackpot-quickfill-btn-mm{ background:var(--game-mm-bg); border:1.5px solid var(--game-mm-border); }
+  .jackpot-quickfill-btn:active{ filter:brightness(0.97); }
+  .jackpot-quickfill-label{ font-size:12px; font-weight:800; letter-spacing:0.02em; }
+  .jackpot-quickfill-btn-pb .jackpot-quickfill-label{ color:var(--status-red); }
+  .jackpot-quickfill-btn-mm .jackpot-quickfill-label{ color:var(--status-amber); }
+  .jackpot-quickfill-amt{ font-size:15px; font-weight:800; color:var(--text-dark); }
+  .jackpot-quickfill-usd{ font-size:12px; font-weight:600; color:var(--text-muted); }
   .million-input-wrap{
     display:flex; align-items:center; gap:10px; flex:1.5; border:2px solid var(--teal);
     border-radius:14px; padding:8px 10px 8px 18px; height:auto; background:var(--card);
@@ -352,9 +364,19 @@
   .side-card-flag{ font-size:var(--fs-small); color:var(--text-muted); font-weight:700; margin:0 0 8px; }
   .side-card-amt{ font-size:19px; font-size:clamp(17px, 6vw, 22px); font-weight:800; color:var(--teal); margin:0 0 6px; font-variant-numeric:tabular-nums; overflow-wrap:break-word; }
   .side-card-rate{ font-size:var(--fs-small); color:var(--text-muted); margin:0; }
+  /* 1위 카드는 목업처럼 금액+비율을 한 줄에 나란히(baseline) 배치 — 단, 영어 등 문구가 길어지는 언어에서
+     한 줄에 다 안 들어가면 겹치거나 잘리지 않고 자연스럽게 2줄로 내려가도록 flex-wrap 허용 */
+  .side-card-amt-row{ display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:2px 8px; margin-bottom:8px; }
+  .side-card-amt-row .side-card-amt{ margin:0; }
   .side-card-bar{ width:100%; height:6px; border-radius:4px; margin-top:8px; overflow:hidden; background:var(--status-red); opacity:0.8; }
   .side-card-bar-fill{ height:100%; background:var(--teal); border-radius:4px 0 0 4px; }
-  .side-card-best{ border:2px solid var(--teal); background:rgba(21,84,69,0.06); position:relative; }
+  .side-card-best{ border:1.5px solid rgba(21,84,69,0.3); background:var(--grad-soft); border-radius:16px; position:relative; }
+  .side-card-best .side-card-amt{ font-size:27px; }
+  .side-card-best .side-card-bar{ height:8px; }
+  /* 국기 배지는 사이트 전역 .flag-badge(진한 청록 채움)를 그대로 쓰면 비교 카드에서 너무 무거워 보여서,
+     이 카드 안에서만 옅은 틴트 스타일로 오버라이드(기본 클래스 자체는 다른 곳에 영향 없이 그대로 둠) */
+  .side-card .flag-badge{ background:rgba(38,36,32,0.08); color:var(--text-muted); font-size:11px; font-weight:800; border-radius:5px; padding:2px 6px; }
+  .side-card-best .flag-badge{ background:rgba(21,84,69,0.1); color:var(--teal); }
   .side-card-best-badge{
     font-size:13px; font-weight:800; color:var(--teal); background:var(--card);
     display:inline-block; padding:3px 10px; border-radius:20px; border:1px solid var(--teal);
@@ -362,8 +384,12 @@
   }
   .side-card-detail-link{ display:inline-block; margin-top:8px; font-size:var(--fs-small); font-weight:700; color:var(--teal); text-decoration:none; }
   .side-card-hidden-extra{ display:none; }
-  .side-card-flag-group{ display:flex; flex-wrap:wrap; gap:3px; margin:0 0 6px; }
-  .side-card-group-note{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 8px; }
+  .side-card-flags-row{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 8px; }
+  .side-card-flag-group{ display:flex; flex-wrap:wrap; gap:3px; margin:0; }
+  .side-card-group-note{
+    font-size:12px; font-weight:600; color:var(--text-muted); margin:0;
+    background:var(--card); border:1px dashed var(--border); border-radius:20px; padding:2px 10px;
+  }
   /* 국기가 많이 묶인 카드(예: 12개국)는 한 칸짜리 폭에서 국기가 여러 줄로 접혀서 카드가 세로로
      길어지고, 옆 칸의 짧은 카드와 키 차이가 커서 빈 공간이 크게 남음 — 그리드 전체 폭을 차지하게
      해서 국기를 가로로 넉넉히 펼치고, 옆에 어색한 빈칸이 생기지 않게 함 */
@@ -428,7 +454,6 @@
   .side-breakdown-val{ font-size:18px; font-weight:700; color:var(--text-dark); margin:0; font-variant-numeric:tabular-nums; }
   @media (max-width:340px){
     .side-by-side-grid, .side-breakdown-grid{ grid-template-columns:1fr; }
-    .jh-amounts{ flex-wrap:wrap; row-gap:4px; }
   }
   .result-cell{ background:var(--bg); border-radius:8px; padding:12px; }
   .result-label{ font-size:var(--fs-note); color:var(--text-muted); margin:0 0 4px; font-weight:400; }
@@ -695,20 +720,38 @@
     border:1.5px solid var(--border); border-radius:20px; padding:6px 14px; cursor:pointer;
   }
   .lightning-game-btn.active{ color:var(--teal); border-color:var(--teal); background:rgba(21,84,69,0.06); }
+  /* 확률체감 페이지엔 파워볼/메가밀리언즈 토글이 두 곳(등수표용·번개 번호용)에 있어서, 서로
+     다른 기능임을 구분할 수 있게 등수표 쪽만 세그먼트 필 스타일로 다르게 표시함(디자인 3차 개선) */
+  .odds-toggle-eyebrow{ font-size:12px; font-weight:700; color:var(--text-muted); text-align:center; margin:0 0 6px; }
+  .lightning-game-toggle.is-context{
+    display:flex; gap:4px; justify-content:stretch; background:var(--chip-bg); border-radius:12px; padding:4px; margin:0 0 2px;
+  }
+  .lightning-game-toggle.is-context .lightning-game-btn{
+    flex:1; border:none; border-radius:9px; background:transparent; padding:8px 6px;
+  }
+  .lightning-game-toggle.is-context .lightning-game-btn.active{
+    background:var(--card); box-shadow:0 1px 2px rgba(var(--ink-rgb),0.12);
+  }
   @keyframes pop{ 0%{ transform:scale(0.5); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
 
   .prize-card{
-    display:flex; justify-content:space-between; align-items:center;
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
     background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 16px; margin-bottom:8px;
   }
   .prize-card:last-child{ margin-bottom:0; }
   .prize-card.jackpot{ background:rgba(var(--ink-rgb),0.1); border:1.5px solid rgba(var(--ink-rgb),0.35); padding:14px 16px; }
   .prize-tag{ font-size:var(--fs-small); font-weight:800; color:var(--text-dark); margin:0 0 2px; }
   .prize-match{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0; }
-  .prize-right{ text-align:right; }
+  .prize-left, .prize-right{ min-width:0; }
+  .prize-right{ text-align:right; overflow-wrap:break-word; }
   .prize-amt{ font-size:var(--fs-body); font-weight:800; color:var(--text-dark); margin:0; }
   .prize-amt-note{ font-size:var(--fs-small); font-weight:500; color:var(--text-muted); margin:2px 0 0; }
   .prize-card.jackpot .prize-amt{ color:var(--teal); font-size:var(--fs-emphasis); }
+  .odds-game-note:not(:empty){
+    display:block; background:var(--grad-amber); border-left:4px solid var(--status-amber);
+    border-radius:8px; padding:12px 14px; margin:0 0 16px;
+    font-size:var(--fs-small); font-weight:600; color:var(--text-dark); text-align:left;
+  }
   .prize-odds{ font-size:var(--fs-small); color:var(--text-muted); margin:2px 0 0; }
 
   .howto-box{ background:var(--bg); border-radius:10px; padding:12px 16px; margin-bottom:14px; }
@@ -745,20 +788,17 @@
   .filing-label span{ font-weight:400; color:var(--text-muted); }
   .filing-note-small{ font-size:var(--fs-small); color:var(--text-muted); margin:-4px 0 10px; line-height:1.5; }
   .input-card{ position:relative; background:var(--input-card-bg); border:2.5px solid var(--teal); border-radius:12px; padding:14px 16px 16px; margin-top:22px; }
-  .amount-input-tabs{ display:flex; gap:6px; margin-bottom:10px; }
+  .amount-input-tabs{
+    display:flex; gap:4px; background:var(--chip-bg); border-radius:12px; padding:4px; margin-bottom:14px;
+  }
   .amount-tab-btn{
-    flex:1; min-width:0; min-height:44px; border-radius:10px; border:2px solid var(--border); background:var(--card);
+    flex:1; min-width:0; min-height:44px; border-radius:9px; border:none; background:transparent;
     color:var(--text-muted); font-family:inherit; font-size:var(--fs-small); font-weight:700; cursor:pointer;
-    transition:border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
-    padding:6px 4px; line-height:1.25; overflow-wrap:break-word; word-break:break-word;
+    transition:background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    padding:9px 6px; line-height:1.3; overflow-wrap:break-word; word-break:keep-all;
   }
-  .amount-tab-btn.active{ border-color:var(--teal); background:rgba(21,84,69,0.08); color:var(--teal); }
+  .amount-tab-btn.active{ color:var(--teal); font-weight:800; background:var(--card); box-shadow:0 1px 2px rgba(var(--ink-rgb),0.12); }
   .amount-tab-panel{ margin-bottom:6px; }
-  .amount-tab-reveal-link{
-    display:block; width:100%; text-align:left; background:none; border:none; padding:0;
-    margin:8px 0 0; font-size:var(--fs-small); color:var(--teal); font-weight:700; cursor:pointer;
-  }
-  .amount-tab-reveal-link:hover{ text-decoration:underline; }
   .field-label-single{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; margin:0 0 4px; }
   .section-divider{
     text-align:center; font-size:var(--fs-small); font-weight:700; color:var(--text-muted);
@@ -898,22 +938,40 @@
   .ws-amt{ font-size:var(--fs-body); font-weight:800; color:var(--teal); }
   .ws-amt-alt{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); }
   .ws-desc{ font-size:var(--fs-note); color:var(--text-muted); line-height:1.6; }
-  .jackpot-history-row{ padding:12px 0; border-bottom:1px solid var(--border); }
-  .jackpot-history-row:last-child{ border-bottom:none; }
+  .jackpot-history-row{ display:flex; gap:12px; padding:0; }
+  .jh-timeline{ display:flex; flex-direction:column; align-items:center; flex:0 0 auto; padding-top:6px; }
+  .jh-timeline-dot{ width:10px; height:10px; border-radius:50%; flex:0 0 auto; }
+  .jh-timeline-dot.pb{ background:var(--status-red); }
+  .jh-timeline-dot.mm{ background:var(--status-amber); }
+  .jh-timeline-line{ flex:1; width:1.5px; background:var(--border); margin-top:4px; min-height:16px; }
+  .jackpot-history-row:last-child .jh-timeline-line{ display:none; }
+  .jh-content{
+    flex:1; min-width:0; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px 14px;
+  }
+  .jackpot-history-row{ margin-bottom:12px; }
+  .jackpot-history-row:last-child{ margin-bottom:0; }
   .jh-top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
   .jh-date{ font-size:var(--fs-small); color:var(--text-muted); flex:0 0 auto; }
-  .jh-game{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); }
+  .jh-game-tag{ display:inline-block; font-size:11px; font-weight:800; border-radius:6px; padding:2px 7px; }
+  .jh-game-tag.pb{ background:var(--game-pb-bg); border:1px solid var(--game-pb-border); color:var(--status-red); }
+  .jh-game-tag.mm{ background:var(--game-mm-bg); border:1px solid var(--game-mm-border); color:var(--status-amber); }
   .jh-note{ font-size:var(--fs-small); color:var(--text-muted); margin:2px 0 0; }
-  .jh-amounts{ display:flex; flex-wrap:wrap; gap:12px 16px; margin-top:6px; }
-  .jh-amt-item{ display:flex; flex-direction:column; gap:1px; }
+  .jh-primary-group{ background:rgba(21,84,69,0.06); border-radius:10px; padding:10px 12px; margin:0 0 6px; }
+  .jh-primary-group .jh-amt-item{ flex-direction:row; justify-content:space-between; align-items:baseline; gap:8px; }
+  .jh-primary-group .jh-amt-label{ font-size:12px; font-weight:600; }
+  .jh-primary-group .jh-amt{ font-size:17px; }
+  .jh-amounts-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px; }
+  .jh-amt-chip{ background:var(--input-card-bg); border-radius:8px; padding:7px 10px; min-width:0; }
+  .jh-amt-chip .jh-amt-label{ font-size:11px; }
+  .jh-amt-chip .jh-amt{ font-size:13px; color:var(--text-dark); }
+  .jh-amt-item{ display:flex; flex-direction:column; gap:1px; min-width:0; }
   .jh-amt-label{ font-size:var(--fs-small); color:var(--text-muted); }
   .jh-amt{ font-size:var(--fs-note); font-weight:800; color:var(--teal); }
-  button.jh-amt-group-toggle{ font-family:inherit; background:none; border:none; padding:0; text-align:left; cursor:pointer; text-decoration:underline; text-decoration-style:dotted; }
+  button.jh-amt-group-toggle{ font-family:inherit; background:none; border:none; padding:0; text-align:left; cursor:pointer; text-decoration:underline; text-decoration-style:dotted; color:inherit; }
   .jh-amt-group-list{ font-size:var(--fs-small); color:var(--text-muted); max-width:220px; }
   .jh-more{ margin-top:8px; }
   .jh-more-summary{ font-size:var(--fs-small); color:var(--teal); font-weight:700; cursor:pointer; list-style:none; }
   .jh-more-summary::-webkit-details-marker{ display:none; }
-  .jh-more .jh-amounts{ margin-top:8px; }
   .jackpot-history-empty{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; padding:12px 0; }
   .ticket-mock{ margin-top:10px; }
   .ticket-mock-title{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 6px; }
@@ -987,6 +1045,15 @@
   .jc-row.jc-final .jc-val{ color:var(--teal); }
   .jc-note{ font-size:var(--fs-small); color:var(--text-muted); margin:8px 0 0; }
   .jc-annuity-box{ margin-top:6px; background:var(--bg); border-radius:8px; padding:10px 12px; }
+  .annuity-schedule-wrap{ margin-top:8px; }
+  .annuity-schedule-row{
+    display:grid; grid-template-columns:38px 1fr 1fr; gap:4px 8px; align-items:baseline;
+    font-size:12px; color:var(--text-dark); padding:5px 0; border-bottom:1px solid var(--border);
+  }
+  .annuity-schedule-header{ font-weight:700; color:var(--text-muted); border-bottom:1.5px solid var(--border); }
+  .annuity-schedule-list{ max-height:260px; overflow-y:auto; }
+  .annuity-schedule-list .annuity-schedule-row:last-child{ border-bottom:none; }
+  .annuity-schedule-net{ font-weight:700; color:var(--teal); }
 
   .jc-stepper{ margin-top:8px; text-align:left; }
   .jc-step{ display:flex; gap:12px; position:relative; padding-bottom:20px; }
@@ -999,9 +1066,26 @@
   .jc-step-label{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 3px; }
   .jc-step-val{ font-size:var(--fs-body); font-weight:700; color:var(--text-dark); margin:0; }
   .jc-step-highlight .jc-step-num{ background:var(--teal); color:#fff; }
-  .jc-step-highlight .jc-step-body{ background:rgba(21,84,69,0.06); border-radius:8px; padding:14px; }
   .jc-step-highlight .jc-step-label{ color:var(--text-dark); font-weight:600; }
   .jc-step-val-big{ font-size:var(--fs-h1); font-weight:800; color:var(--teal); margin:2px 0 6px; font-variant-numeric:tabular-nums; }
+  /* 디자인 3차 개선: 1·2단계는 참고용 정보로 나란히 축소하고, 제일 중요한 3단계(세후 실수령액)만
+     그라데이션 카드로 확실히 승격 — 4단계(연금 옵션)는 궁금한 사람만 펼쳐보는 아코디언으로 분리 */
+  .jc-step-row-12{ display:flex; gap:10px; margin-bottom:8px; }
+  .jc-step-row-12 .jc-step{
+    flex:1; min-width:0; background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:10px 12px; padding-bottom:10px;
+  }
+  .jc-step-row-12 .jc-step-num{ width:18px; height:18px; font-size:11px; }
+  .jc-step-row-12 .jc-step-label{ font-size:12px; }
+  .jc-step-row-12 .jc-step-val{ font-size:15px; }
+  .jc-step-arrow{ text-align:center; color:var(--teal); font-size:16px; margin:2px 0; }
+  .jc-step-highlight{
+    flex-direction:column; align-items:center; text-align:center; padding-bottom:0;
+    background:var(--grad-soft); border:1.5px solid rgba(21,84,69,0.3); border-radius:16px; padding:20px 18px;
+  }
+  .jc-step-highlight .jc-step-num{ width:32px; height:32px; margin:0 auto 10px; }
+  .jc-step-highlight .jc-step-val-big{ font-size:38px; }
+  .jc-stepper > .calc-detail-toggle{ margin-top:14px; }
 
   .back-btn{
     display:inline-flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--border);

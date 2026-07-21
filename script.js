@@ -36,7 +36,7 @@ let I18N_LOAD_PROMISE = null;
 
 function loadI18nLanguage(lang){
   if (lang === "ko" || I18N_CACHE[lang]) return Promise.resolve();
-  return fetch(`i18n/${lang}.json?v=20260719`)
+  return fetch(`i18n/${lang}.json?v=20260721`)
     .then(res => { if (!res.ok) throw new Error("i18n fetch failed: " + res.status); return res.json(); })
     .then(data => { I18N_CACHE[lang] = data; })
     .catch(err => { console.error("[i18n] failed to load", lang, err); });
@@ -167,6 +167,7 @@ function applyTranslations(){
   updateHiddenMoneyChannelsForLang();
   renderJackpotHistory();
   renderLatestDraw();
+  renderPrizeTiers();
   updateLightningGameUi();
 }
 
@@ -1718,6 +1719,112 @@ const LIGHTNING_GAMES = {
     oddsText: () => pickLang('이 번호로 당첨될 확률은 여전히 1/2억 9,000만이지만, 재미로만 봐주세요 😉', 'Your odds with these numbers are still 1 in 290 million — just for fun 😉', '用这些号码中奖的概率依然是1/2.9亿，纯属娱乐哦 😉', 'Xác suất trúng với những số này vẫn là 1/290 triệu — chỉ để vui thôi 😉', 'โอกาสถูกรางวัลด้วยเลขเหล่านี้ก็ยังคงเป็น 1 ใน 290 ล้าน — แค่สนุกๆ นะ 😉', 'Шанс выиграть с этими числами всё равно 1 к 290 миллионам — просто для развлечения 😉')
   }
 };
+
+// 등수별 당첨 확률표 — 공식 상금 구조 기준 고정값(잭팟 크기와 무관하게 항상 동일, 조합론으로
+// 검증한 값). 메가밀리언즈는 2025-04-08 개정 규칙(LIGHTNING_GAMES 주석 참고)으로 잭팟 제외 모든
+// 등수에 2~10배 무작위 배수가 티켓마다 필수 적용됨(파워볼 Power Play처럼 선택이 아님) — 아래
+// 금액은 배수 적용 전 기본값. 각 항목은 [ko, en, zh, vi, th, ru] 튜플 — 새로 추가하는 콘텐츠라
+// 기존 5개 등수(odds.match5 등, 22개 언어 완역 보유)와 달리 6개 핵심 언어만 우선 지원함
+const PRIZE_TIERS = {
+  powerball: [
+    { match: ['숫자 5개 맞춤','Match 5 (no Powerball)','中5个号码（未中强力球）','Trúng 5 số (trật Powerball)','ถูก 5 ตัวเลข (พาวเวอร์บอลไม่ถูก)','Совпадение 5 чисел (без Powerball)'], explain: true, usd: 1000000, krw: '약 15억원', odds: '1 / 1,169만', pct: '0.0000086%' },
+    { match: ['숫자 4개 + 파워볼 맞춤','Match 4 + Powerball','中4个号码+强力球','Trúng 4 số + Powerball','ถูก 4 ตัวเลข + พาวเวอร์บอล','Совпадение 4 чисел + Powerball'], explain: false, usd: 50000, krw: '약 7,500만원', odds: '1 / 91만', pct: '0.00011%' },
+    { match: ['숫자 4개 맞춤','Match 4 (no Powerball)','中4个号码（未中强力球）','Trúng 4 số (trật Powerball)','ถูก 4 ตัวเลข (พาวเวอร์บอลไม่ถูก)','Совпадение 4 чисел (без Powerball)'], explain: true, usd: 100, krw: '약 15만원', odds: '1 / 3만 6,525', pct: '0.27%' },
+    { match: ['숫자 3개 + 파워볼 맞춤','Match 3 + Powerball','中3个号码+强力球','Trúng 3 số + Powerball','ถูก 3 ตัวเลข + พาวเวอร์บอล','Совпадение 3 чисел + Powerball'], explain: false, usd: 100, krw: '약 15만원', odds: '1 / 1만 4,494', pct: '0.69%' },
+    { match: ['숫자 3개 맞춤','Match 3 (no Powerball)','中3个号码（未中强力球）','Trúng 3 số (trật Powerball)','ถูก 3 ตัวเลข (พาวเวอร์บอลไม่ถูก)','Совпадение 3 чисел (без Powerball)'], explain: true, usd: 7, krw: '약 1만원', odds: '1 / 580', pct: '0.17%' },
+    { match: ['숫자 2개 + 파워볼 맞춤','Match 2 + Powerball','中2个号码+强力球','Trúng 2 số + Powerball','ถูก 2 ตัวเลข + พาวเวอร์บอล','Совпадение 2 чисел + Powerball'], explain: false, usd: 7, krw: '약 1만원', odds: '1 / 701', pct: '0.14%' },
+    { match: ['숫자 1개 + 파워볼 맞춤','Match 1 + Powerball','中1个号码+强力球','Trúng 1 số + Powerball','ถูก 1 ตัวเลข + พาวเวอร์บอล','Совпадение 1 числа + Powerball'], explain: false, usd: 4, krw: '약 6,000원', odds: '1 / 92', pct: '1.09%' },
+    { match: ['파워볼 번호만 맞춤','Powerball number only','仅中强力球号码','Chỉ trúng số Powerball','ถูกเฉพาะเลขพาวเวอร์บอล','Совпал только Powerball'], explain: false, usd: 4, krw: '약 6,000원', odds: '1 / 38', pct: '2.63%' },
+  ],
+  megamillions: [
+    { match: ['숫자 5개 맞춤','Match 5 (no Mega Ball)','中5个号码（未中超级百万球）','Trúng 5 số (trật Mega Ball)','ถูก 5 ตัวเลข (เมกะบอลไม่ถูก)','Совпадение 5 чисел (без Mega Ball)'], explain: true, usd: 1000000, krw: '약 15억원', odds: '1 / 1,263만', pct: '0.0000079%' },
+    { match: ['숫자 4개 + 메가볼 맞춤','Match 4 + Mega Ball','中4个号码+超级百万球','Trúng 4 số + Mega Ball','ถูก 4 ตัวเลข + เมกะบอล','Совпадение 4 чисел + Mega Ball'], explain: false, usd: 10000, krw: '약 1,490만원', odds: '1 / 89만', pct: '0.00011%' },
+    { match: ['숫자 4개 맞춤','Match 4 (no Mega Ball)','中4个号码（未中超级百万球）','Trúng 4 số (trật Mega Ball)','ถูก 4 ตัวเลข (เมกะบอลไม่ถูก)','Совпадение 4 чисел (без Mega Ball)'], explain: true, usd: 500, krw: '약 74만원', odds: '1 / 3만 8,859', pct: '0.0026%' },
+    { match: ['숫자 3개 + 메가볼 맞춤','Match 3 + Mega Ball','中3个号码+超级百万球','Trúng 3 số + Mega Ball','ถูก 3 ตัวเลข + เมกะบอล','Совпадение 3 чисел + Mega Ball'], explain: false, usd: 200, krw: '약 30만원', odds: '1 / 1만 3,965', pct: '0.0072%' },
+    { match: ['숫자 3개 맞춤','Match 3 (no Mega Ball)','中3个号码（未中超级百万球）','Trúng 3 số (trật Mega Ball)','ถูก 3 ตัวเลข (เมกะบอลไม่ถูก)','Совпадение 3 чисел (без Mega Ball)'], explain: true, usd: 10, krw: '약 1만 5,000원', odds: '1 / 607', pct: '0.16%' },
+    { match: ['숫자 2개 + 메가볼 맞춤','Match 2 + Mega Ball','中2个号码+超级百万球','Trúng 2 số + Mega Ball','ถูก 2 ตัวเลข + เมกะบอล','Совпадение 2 чисел + Mega Ball'], explain: false, usd: 10, krw: '약 1만 5,000원', odds: '1 / 665', pct: '0.15%' },
+    { match: ['숫자 1개 + 메가볼 맞춤','Match 1 + Mega Ball','中1个号码+超级百万球','Trúng 1 số + Mega Ball','ถูก 1 ตัวเลข + เมกะบอล','Совпадение 1 числа + Mega Ball'], explain: false, usd: 10, krw: '약 1만 5,000원', odds: '1 / 86', pct: '1.17%' },
+    { match: ['메가볼 번호만 맞춤','Mega Ball number only','仅中超级百万球号码','Chỉ trúng số Mega Ball','ถูกเฉพาะเลขเมกะบอล','Совпал только Mega Ball'], explain: false, usd: 5, krw: '약 7,400원', odds: '1 / 35', pct: '2.84%' },
+  ]
+};
+const SPECIAL_MISSED_LABEL = {
+  powerball: ['파워볼은 틀림','Powerball missed','未中强力球','Trật Powerball','พาวเวอร์บอลไม่ถูก','Powerball не совпал'],
+  megamillions: ['메가볼은 틀림','Mega Ball missed','未中超级百万球','Trật Mega Ball','เมกะบอลไม่ถูก','Mega Ball не совпал'],
+};
+const HOWTO_TEXT_MEGA = ['메가밀리언즈는 일반번호 5개(1~70 중에서) + 메가볼 1개(1~24 중에서), 총 6개 숫자를 맞히는 게임이에요. 일반번호를 몇 개 맞혔는지 + 메가볼까지 맞혔는지에 따라 상금이 달라지고, 잭팟을 제외한 모든 상금엔 2~10배 무작위 배수가 자동으로 붙어요.',
+  'Mega Millions is a game of matching 5 main numbers (from 1–70) plus 1 Mega Ball (from 1–24) — 6 numbers total. The prize depends on how many main numbers you match plus whether you also match the Mega Ball, and every non-jackpot prize automatically gets a random 2x–10x multiplier.',
+  '超级百万是从1~70中选5个普通号码 + 从1~24中选1个超级百万球，共6个数字的游戏。奖金取决于普通号码命中数量以及是否命中超级百万球，除头奖外所有奖金都会自动附加2~10倍随机倍数。',
+  'Mega Millions là trò chơi chọn trúng 5 số chính (từ 1–70) cùng 1 số Mega Ball (từ 1–24), tổng cộng 6 số. Tiền thưởng tùy vào số lượng số chính trúng cộng với việc có trúng Mega Ball hay không, và mọi giải thưởng ngoại trừ jackpot đều tự động nhân ngẫu nhiên 2–10 lần.',
+  'เมกะมิลเลียนคือเกมที่ต้องทายเลขหลัก 5 ตัว (จาก 1-70) บวกเลขเมกะบอล 1 ตัว (จาก 1-24) รวม 6 ตัวเลข เงินรางวัลขึ้นอยู่กับจำนวนเลขหลักที่ถูกบวกกับว่าถูกเมกะบอลด้วยหรือไม่ และทุกรางวัลยกเว้นแจ็คพอตจะถูกคูณด้วยตัวคูณสุ่ม 2-10 เท่าโดยอัตโนมัติ',
+  'Mega Millions — это игра, в которой нужно угадать 5 основных чисел (от 1 до 70) плюс 1 число Mega Ball (от 1 до 24), всего 6 чисел. Приз зависит от того, сколько основных чисел вы угадали и угадали ли Mega Ball, а каждый приз, кроме джекпота, автоматически умножается на случайный множитель 2–10.'];
+const HOWTO_TEXT_PB = ['파워볼은 일반번호 5개 (1~69 중에서) + 파워볼 번호 1개 (1~26 중에서), 총 6개 숫자를 맞히는 게임이에요. 일반번호를 몇 개 맞혔는지 + 파워볼까지 맞혔는지에 따라 상금이 달라져요.',
+  'Powerball is a game of matching 5 main numbers (from 1–69) plus 1 Powerball number (from 1–26) — 6 numbers total. The prize depends on how many main numbers you match plus whether you also match the Powerball.',
+  '强力球是从1~69中选5个普通号码 + 从1~26中选1个强力球号码，共6个数字的游戏。奖金取决于普通号码命中数量以及是否命中强力球。',
+  'Powerball là trò chơi chọn trúng 5 số chính (từ 1–69) cùng 1 số Powerball (từ 1–26), tổng cộng 6 số. Tiền thưởng tùy vào số lượng số chính trúng cộng với việc có trúng Powerball hay không.',
+  'พาวเวอร์บอลคือเกมที่ต้องทายเลขหลัก 5 ตัว (จาก 1-69) บวกเลขพาวเวอร์บอล 1 ตัว (จาก 1-26) รวม 6 ตัวเลข เงินรางวัลขึ้นอยู่กับจำนวนเลขหลักที่ถูกบวกกับว่าถูกพาวเวอร์บอลด้วยหรือไม่',
+  'Powerball — это игра, в которой нужно угадать 5 основных чисел (от 1 до 69) плюс 1 число Powerball (от 1 до 26), всего 6 чисел. Приз зависит от того, сколько основных чисел вы угадали и угадали ли Powerball.'];
+const ODDS_GAME_NOTE_MEGA = ['💡 위 잭팟 카드는 파워볼 기준이에요. 메가밀리언즈는 잭팟 제외 모든 상금에 2~10배 무작위 배수가 자동으로 붙어요 — 아래 금액은 배수 적용 전 기본값이에요',
+  '💡 The jackpot card above is Powerball’s. For Mega Millions, every non-jackpot prize automatically gets a random 2x–10x multiplier — the amounts below are the base value before that.',
+  '💡 上方的头奖卡片是强力球的。超级百万除头奖外的所有奖金都会自动附加2~10倍随机倍数 — 以下金额为倍数应用前的基础值',
+  '💡 Thẻ jackpot ở trên là của Powerball. Với Mega Millions, mọi giải thưởng ngoại trừ jackpot đều tự động nhân ngẫu nhiên 2–10 lần — số tiền dưới đây là giá trị gốc trước khi nhân',
+  '💡 การ์ดแจ็คพอตด้านบนเป็นของพาวเวอร์บอล สำหรับเมกะมิลเลียน ทุกรางวัลยกเว้นแจ็คพอตจะถูกคูณด้วยตัวคูณสุ่ม 2-10 เท่าโดยอัตโนมัติ — จำนวนด้านล่างเป็นค่าพื้นฐานก่อนคูณ',
+  '💡 Карточка джекпота выше — от Powerball. В Mega Millions каждый приз, кроме джекпота, автоматически умножается на случайный множитель 2–10 — суммы ниже указаны без учёта этого умножения'];
+
+// usdToKrwLabel()은 억/조 단위 잭팟급 금액 전용(내부적으로 1억으로 나눠서 million/billion 표기를
+// 계산하므로, $4~$500처럼 작은 상금엔 그대로 못 씀) — 등수별 상금은 액수 종류가 한정적이라
+// USD 금액을 key로 하는 별도 소액용 표를 둠
+const SMALL_KRW_LABEL = {
+  1000000: ['약 15억원','About ₩1.5B','约15亿韩元','Khoảng 1,5 tỷ KRW','ประมาณ 1.5 พันล้านวอน','Около 1,5 млрд вон'],
+  50000:   ['약 7,500만원','About ₩75M','约7500万韩元','Khoảng 75 triệu KRW','ประมาณ 75 ล้านวอน','Около 75 млн вон'],
+  10000:   ['약 1,490만원','About ₩14.9M','约1490万韩元','Khoảng 14,9 triệu KRW','ประมาณ 14.9 ล้านวอน','Около 14,9 млн вон'],
+  500:     ['약 74만원','About ₩740K','约74万韩元','Khoảng 740 nghìn KRW','ประมาณ 740,000 วอน','Около 740 тыс. вон'],
+  200:     ['약 30만원','About ₩300K','约30万韩元','Khoảng 300 nghìn KRW','ประมาณ 300,000 วอน','Около 300 тыс. вон'],
+  100:     ['약 15만원','About ₩150K','约15万韩元','Khoảng 150 nghìn KRW','ประมาณ 150,000 วอน','Около 150 тыс. вон'],
+  10:      ['약 1만 5,000원','About ₩15K','约1.5万韩元','Khoảng 15 nghìn KRW','ประมาณ 15,000 วอน','Около 15 тыс. вон'],
+  7:       ['약 1만원','About ₩10K','约1万韩元','Khoảng 10 nghìn KRW','ประมาณ 10,000 วอน','Около 10 тыс. вон'],
+  5:       ['약 7,400원','About ₩7.4K','约7400韩元','Khoảng 7.400 KRW','ประมาณ 7,400 วอน','Около 7 400 вон'],
+  4:       ['약 6,000원','About ₩6K','约6000韩元','Khoảng 6.000 KRW','ประมาณ 6,000 วอน','Около 6 000 вон'],
+};
+
+function renderPrizeTiers(){
+  const container = document.getElementById('odds-prize-tiers');
+  if (!container) return;
+  const tiers = PRIZE_TIERS[currentOddsGame];
+  container.innerHTML = tiers.map(t => {
+    const matchLabel = pickLang(...t.match);
+    const explainHtml = t.explain ? `<p class="prize-explain">${pickLang(...SPECIAL_MISSED_LABEL[currentOddsGame])}</p>` : '';
+    const krwLabel = pickLang(...SMALL_KRW_LABEL[t.usd]);
+    return `<div class="prize-card">
+      <div class="prize-left">
+        <p class="prize-match">${matchLabel}</p>
+        ${explainHtml}
+      </div>
+      <div class="prize-right">
+        <p class="prize-amt">${krwLabel} <span class="prize-usd">($${t.usd.toLocaleString('en-US')})</span></p>
+        <p class="prize-odds">${t.odds} <span class="prize-pct">(${t.pct})</span></p>
+      </div>
+    </div>`;
+  }).join('');
+
+  const howtoEl = document.getElementById('howto-text');
+  if (howtoEl) {
+    howtoEl.innerHTML = currentOddsGame === 'powerball'
+      ? (resolveI18n('odds.howtoText') || pickLang(...HOWTO_TEXT_PB))
+      : pickLang(...HOWTO_TEXT_MEGA);
+  }
+  const noteEl = document.getElementById('odds-game-note');
+  if (noteEl) noteEl.textContent = currentOddsGame === 'megamillions' ? pickLang(...ODDS_GAME_NOTE_MEGA) : '';
+}
+
+let currentOddsGame = 'powerball';
+function setOddsGame(game){
+  if (currentOddsGame === game) return;
+  currentOddsGame = game;
+  document.getElementById('odds-game-pb').classList.toggle('active', game === 'powerball');
+  document.getElementById('odds-game-mega').classList.toggle('active', game === 'megamillions');
+  renderPrizeTiers();
+}
+
 let currentLightningGame = 'powerball';
 
 // 언어 전환 시에도 재사용해야 해서, 이미 뽑아둔 번호는 그대로 두고 문구·토글 상태만 새로 그림
@@ -1860,6 +1967,149 @@ function renderLatestDraw(){
   });
 }
 
+// ============================================================================
+// 🖼️ 공유용 결과 카드 이미지 — 카톡 등에 링크만 보내면 사이트 고정 미리보기(OG 태그)만 뜨고
+// 정작 공유한 내용(구체적 금액 등)은 안 보인다는 지적이 있어서, 텍스트 대신 그 순간의 실제
+// 결과를 캔버스로 그린 이미지로 공유함 — 받는 사람이 링크를 눌러 들어가지 않아도 채팅창에서
+// 바로 내용이 보임. 파일 공유(navigator.canShare({files}))를 지원 안 하는 환경(주로 PC
+// 브라우저)에서는 아래 각 share 함수의 기존 텍스트+링크 공유로 자동 대체됨.
+// ============================================================================
+const SHARE_CARD_FONT = "'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
+
+function canvasRoundRectPath(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+// 캔버스는 자동 줄바꿈이 없어서 직접 구현 — 태국어·크메르어처럼 띄어쓰기 없는 스크립트도 있어
+// 단어 단위 대신 글자 단위로 잘라서 어떤 언어든 안전하게 폭을 넘기지 않게 함
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
+  const chars = Array.from(String(text));
+  let line = '';
+  let curY = y;
+  let lines = 0;
+  for (const ch of chars) {
+    const testLine = line + ch;
+    if (ctx.measureText(testLine).width > maxWidth && line) {
+      ctx.fillText(line, x, curY);
+      line = ch;
+      curY += lineHeight;
+      lines++;
+      if (maxLines && lines >= maxLines) { line = ''; break; }
+    } else {
+      line = testLine;
+    }
+  }
+  if (line) ctx.fillText(line, x, curY);
+  return curY + lineHeight;
+}
+
+function drawShareBall(ctx, cx, cy, r, num, bg, fg, border){
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = bg;
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = border;
+  ctx.stroke();
+  ctx.fillStyle = fg;
+  ctx.font = `800 30px ${SHARE_CARD_FONT}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(String(num), cx, cy + 2);
+  ctx.restore();
+}
+
+// label/bigText/subText/footerText/balls를 받아 브랜드 톤에 맞는 정사각형 공유 카드 이미지를 그려서 반환
+function buildShareCard({ label, bigText, subText, footerText, balls }){
+  const W = 1000, H = 760, pad = 48;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#FAF6EC';
+  ctx.fillRect(0, 0, W, H);
+
+  canvasRoundRectPath(ctx, pad, pad, W - pad * 2, H - pad * 2, 32);
+  ctx.fillStyle = '#FFFEF9';
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#E8E2D3';
+  ctx.stroke();
+
+  const cx = pad + 56;
+  const cw = W - (pad + 56) * 2;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  let y = pad + 108;
+
+  ctx.fillStyle = '#155445';
+  ctx.font = `800 40px ${SHARE_CARD_FONT}`;
+  ctx.fillText('🐻 참택스 · ChamTax', cx, y);
+  y += 76;
+
+  ctx.fillStyle = '#544E42';
+  ctx.font = `700 30px ${SHARE_CARD_FONT}`;
+  y = wrapCanvasText(ctx, label, cx, y, cw, 40, 2) + 24;
+
+  if (bigText) {
+    ctx.fillStyle = '#155445';
+    ctx.font = `800 68px ${SHARE_CARD_FONT}`;
+    y = wrapCanvasText(ctx, bigText, cx, y, cw, 80, 3) + 20;
+  }
+
+  if (balls) {
+    const r = 42, gap = 98;
+    const by = y + r;
+    let bx = cx + r;
+    balls.numbers.forEach(n => {
+      drawShareBall(ctx, bx, by, r, n, '#FFFEF9', '#262420', '#E8E2D3');
+      bx += gap;
+    });
+    drawShareBall(ctx, bx, by, r, balls.special, balls.specialColor, '#FFFFFF', balls.specialColor);
+    y = by + r + 36;
+  }
+
+  if (subText) {
+    ctx.fillStyle = '#262420';
+    ctx.font = `500 30px ${SHARE_CARD_FONT}`;
+    y = wrapCanvasText(ctx, subText, cx, y, cw, 42, 3) + 10;
+  }
+
+  ctx.fillStyle = '#155445';
+  ctx.font = `700 28px ${SHARE_CARD_FONT}`;
+  ctx.fillText(footerText, cx, H - pad - 62);
+  ctx.fillStyle = '#544E42';
+  ctx.font = `500 24px ${SHARE_CARD_FONT}`;
+  ctx.fillText('semilee123456-ui.github.io', cx, H - pad - 28);
+
+  return canvas;
+}
+
+// 이미지 공유가 가능하면(navigator.canShare({files})) 이미지로 공유하고 true를 반환, 아니면 false를
+// 반환해 호출 쪽에서 기존 텍스트+링크 공유로 대체하게 함. 사용자가 공유 시트를 취소한 경우(AbortError)는
+// 실패가 아니라 "이미 처리됨"으로 보고 true를 반환해 텍스트 폴백으로 이어지지 않게 함
+async function tryShareCardImage(canvas, shareTitle, shareText){
+  if (!navigator.canShare) return false;
+  try {
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) return false;
+    const file = new File([blob], 'chamtax-result.png', { type: 'image/png' });
+    if (!navigator.canShare({ files: [file] })) return false;
+    await navigator.share({ files: [file], title: shareTitle, text: shareText });
+    return true;
+  } catch (e) {
+    if (e && e.name === 'AbortError') return true;
+    return false;
+  }
+}
+
 async function shareLatestDraw(game){
   const draw = LATEST_DRAW[game];
   const jackpotMillions = Math.round(JACKPOT_DATA[game].amountUsd / 1000000);
@@ -1882,6 +2132,22 @@ async function shareLatestDraw(game){
     `🎱 Последние номера ${gameLabel}: ${numbersText} + ${specialLabel} ${draw.special} / Следующий джекпот $${jackpotMillions}M! Смотрите на ChamTax`
   );
   const shareUrl = location.href;
+
+  const specialColor = game === 'powerball' ? '#C0392B' : '#9C6F1E';
+  const cardLabel = pickLang(
+    `🎱 최근 ${gameLabel} 당첨번호`, `🎱 Latest ${gameLabel} numbers`, `🎱 最新${gameLabel}开奖号码`,
+    `🎱 Số trúng ${gameLabel} gần nhất`, `🎱 เลข ${gameLabel} ล่าสุด`, `🎱 Последние номера ${gameLabel}`
+  );
+  const cardSub = pickLang(
+    `다음 추첨 잭팟은 $${jackpotMillions}M!`, `Next jackpot is $${jackpotMillions}M!`, `下期奖金 $${jackpotMillions}M！`,
+    `Jackpot kỳ tới là $${jackpotMillions}M!`, `แจ็คพอตงวดหน้า $${jackpotMillions}M!`, `Следующий джекпот $${jackpotMillions}M!`
+  );
+  const cardFooter = pickLang(
+    '👉 참택스에서 실수령액 계산해보기', '👉 Calculate your take-home on ChamTax', '👉 到ChamTax算算实得金额',
+    '👉 Tính số tiền thực nhận trên ChamTax', '👉 คำนวณเงินที่ได้รับจริงที่ ChamTax', '👉 Посчитайте сумму на руки на ChamTax'
+  );
+  const canvas = buildShareCard({ label: cardLabel, subText: cardSub, footerText: cardFooter, balls: { numbers: draw.numbers, special: draw.special, specialColor } });
+  if (await tryShareCardImage(canvas, gameLabel, shareText)) return;
 
   if (navigator.share) {
     try {
@@ -1950,14 +2216,17 @@ function renderJackpotHistory(){
     const JH_VISIBLE_COUNT = 4;
     // "13개국 동일"만 있으면 어느 나라들인지 알 수 없어서 답답함(사용자가 직접 지적) —
     // 라벨을 눌러서 펼치면 그룹에 묶인 나라 이름 전체를 보여주도록 탭-토글 방식 추가
-    const toAmtItem = (group) => {
+    // isPrimary: 디자인 3차 개선 — 대표 금액(보통 가장 많은 나라가 묶인 1위 그룹)은 강조 박스로,
+    // 나머지는 2열 그리드 칩으로 구분해서 "제일 중요한 숫자가 뭔지" 한눈에 보이게 함
+    const toAmtItem = (group, isPrimary) => {
+      const wrapCls = isPrimary ? 'jh-amt-item jh-primary-item' : 'jh-amt-item jh-amt-chip';
       if (group.items.length === 1) {
-        return `<span class="jh-amt-item"><span class="jh-amt-label">${group.items[0].label}</span><span class="jh-amt">${formatWon(group.items[0].final)}</span></span>`;
+        return `<span class="${wrapCls}"><span class="jh-amt-label">${group.items[0].label}</span><span class="jh-amt">${formatWon(group.items[0].final)}</span></span>`;
       }
       const groupLabel = pickLang(`${group.items.length}개국 동일`, `Same for ${group.items.length} countries`, `${group.items.length}个国家相同`, `Giống nhau ở ${group.items.length} nước`, `เท่ากันใน ${group.items.length} ประเทศ`, `Одинаково для ${group.items.length} стран`, buildSameCountMore(group.items.length));
       const listId = `jh-grp-${jhGroupCounter++}`;
       const countryNames = group.items.map(i => i.label).join(', ');
-      return `<span class="jh-amt-item">
+      return `<span class="${wrapCls}">
         <button type="button" class="jh-amt-label jh-amt-group-toggle" onclick="toggleJhGroupList('${listId}')">${groupLabel} ▾</button>
         <span class="jh-amt">${formatWon(group.items[0].final)}</span>
         <span class="jh-amt-group-list" id="${listId}" style="display:none;">${countryNames}</span>
@@ -1968,21 +2237,30 @@ function renderJackpotHistory(){
       if (shown < JH_VISIBLE_COUNT) { visibleGroups.push(group); shown += group.items.length; }
       else hiddenGroups.push(group);
     });
-    const visibleItems = visibleGroups.map(toAmtItem).join('');
+    const [primaryGroup, ...restVisibleGroups] = visibleGroups;
+    const primaryHtml = primaryGroup ? `<div class="jh-primary-group">${toAmtItem(primaryGroup, true)}</div>` : '';
+    const restHtml = restVisibleGroups.length ? `<div class="jh-amounts-grid">${restVisibleGroups.map(g => toAmtItem(g, false)).join('')}</div>` : '';
     const hiddenCountryCount = hiddenGroups.reduce((sum, g) => sum + g.items.length, 0);
     const hiddenHtml = hiddenGroups.length
-      ? `<details class="jh-more"><summary class="jh-more-summary">${pickLang(`나머지 ${hiddenCountryCount}개국 더보기`, `${hiddenCountryCount} more countries`, `其他${hiddenCountryCount}个国家`, `Xem thêm ${hiddenCountryCount} nước`, `ดูอีก ${hiddenCountryCount} ประเทศ`, `Ещё ${hiddenCountryCount} стран`)}</summary><div class="jh-amounts">${hiddenGroups.map(toAmtItem).join('')}</div></details>`
+      ? `<details class="jh-more"><summary class="jh-more-summary">${pickLang(`나머지 ${hiddenCountryCount}개국 더보기`, `${hiddenCountryCount} more countries`, `其他${hiddenCountryCount}个国家`, `Xem thêm ${hiddenCountryCount} nước`, `ดูอีก ${hiddenCountryCount} ประเทศ`, `Ещё ${hiddenCountryCount} стран`)}</summary><div class="jh-amounts-grid">${hiddenGroups.map(g => toAmtItem(g, false)).join('')}</div></details>`
       : '';
+    const gameTagClass = entry.game === 'powerball' ? 'pb' : 'mm';
+    const gameTagEmoji = entry.game === 'powerball' ? '🔴' : '🟡';
     return `<div class="jackpot-history-row">
-      <div class="jh-top">
-        <span class="jh-date">${entry.date}</span>
-        <span class="jh-game">${gameLabel}</span>
+      <div class="jh-timeline">
+        <span class="jh-timeline-dot ${gameTagClass}"></span>
+        <span class="jh-timeline-line"></span>
       </div>
-      ${noteHtml}
-      <div class="jh-amounts">
-        ${visibleItems}
+      <div class="jh-content">
+        <div class="jh-top">
+          <span class="jh-date">${entry.date}</span>
+          <span class="jh-game-tag ${gameTagClass}">${gameTagEmoji} ${gameLabel}</span>
+        </div>
+        ${noteHtml}
+        ${primaryHtml}
+        ${restHtml}
+        ${hiddenHtml}
       </div>
-      ${hiddenHtml}
     </div>`;
   }).join('');
 }
@@ -2029,18 +2307,26 @@ function initJackpotCardAmt(){
 
   // "million/billion 감이 안 온다"는 사용자에게 숫자를 직접 타이핑하게 하는 대신,
   // 오늘 실제 잭팟의 일시불 환산액을 버튼에 미리 보여주고 누르면 바로 채워지게 함.
-  // 버튼에는 실제로 입력창에 채워질 값(M USD)과 그 원화 감(약 -억원)을 같이 보여줘서,
-  // "버튼을 누르면 아래 M USD 칸에 정확히 이 숫자가 들어간다"는 걸 한눈에 알 수 있게 함
-  // ko/zh는 "M USD"만, 그 외(en/vi/th/ru)는 국제 독자에게 익숙한 "$" 접두사를 붙임
-  const showDollarSign = (typeof currentLang !== 'undefined' && currentLang !== 'ko' && currentLang !== 'zh');
-  const quickfillLabel = (usd) => {
+  // 버튼에는 실제로 입력창에 채워질 값(M USD)과 그 원화 감(약 -억원)을 같이 보여줌
+  // 디자인 3차 개선: 버튼 안에서 원화 금액을 큰 글씨 주역으로, USD는 참고용 보조 문구로 분리
+  // (이전엔 "M USD (원화)" 한 줄로 합쳐서 어느 게 중요한 숫자인지 안 와닿는다는 지적)
+  const quickfillMainLabel = (usd) => {
+    const cashUsd = usd * CASH_VALUE_RATIO;
+    return formatWon((cashUsd * EXCHANGE_RATE) / 100000000);
+  };
+  // 디자인 시안의 보조 문구 예시("$316M · 일시불")를 그대로 따름 — 기존 "ko/zh는 $ 생략" 규칙은
+  // 이전의 "M USD가 주역인 한 줄 표기" 맥락에서 나온 것이라, 원화가 주역이 된 이 새 보조 캡션에는
+  // 적용하지 않고 모든 언어에서 $ 기호를 붙임(디자인 3차 개선)
+  const quickfillSubLabel = (usd) => {
     const cashUsd = usd * CASH_VALUE_RATIO;
     const millions = Math.round(cashUsd / 1000000);
-    const krwLabel = usdToKrwLabel(cashUsd).replace(/^\(|\)$/g, '');
-    return showDollarSign ? `$${millions}M USD (${krwLabel})` : `${millions}M USD (${krwLabel})`;
+    const lumpSumWord = pickLang('일시불', 'lump-sum', '一次性', 'trả một lần', 'จ่ายครั้งเดียว', 'единовременно');
+    return `($${millions}M · ${lumpSumWord})`;
   };
-  document.getElementById('quickfill-pb-amt').textContent = quickfillLabel(pbUsd);
-  document.getElementById('quickfill-mm-amt').textContent = quickfillLabel(mgUsd);
+  document.getElementById('quickfill-pb-amt').textContent = quickfillMainLabel(pbUsd);
+  document.getElementById('quickfill-pb-usd').textContent = quickfillSubLabel(pbUsd);
+  document.getElementById('quickfill-mm-amt').textContent = quickfillMainLabel(mgUsd);
+  document.getElementById('quickfill-mm-usd').textContent = quickfillSubLabel(mgUsd);
 }
 
 function fillHomeAmountFromJackpot(game){
@@ -2107,7 +2393,36 @@ function refreshJackpotDrawerIfOpen(){
     document.getElementById('jc-annuity-year').textContent = about + formatWon(perYearKrw / 100000000);
     document.getElementById('jc-annuity-year-net').textContent = about + formatWon(rYear.final);
     document.getElementById('jc-annuity-month-net').textContent = about + formatWon(rYear.final / 12);
+    renderAnnuitySchedule(announcedKrw);
   }
+}
+
+// 연금은 "단순 평균"이 아니라 실제로는 첫 회가 가장 적고 매년 5%씩 늘어나는 등비수열로 지급됨
+// (30회 총합 = 발표된 잭팟 총액). 등비수열 합 공식으로 첫 회 금액을 역산: 총액 = P0*(r^30-1)/(r-1)
+function buildAnnuitySchedule(announcedKrw){
+  const N = 30, GROWTH = 1.05;
+  const p0 = announcedKrw * (GROWTH - 1) / (Math.pow(GROWTH, N) - 1);
+  const rows = [];
+  for (let i = 0; i < N; i++) {
+    rows.push({ year: i + 1, grossKrw: p0 * Math.pow(GROWTH, i) });
+  }
+  return rows;
+}
+
+function renderAnnuitySchedule(announcedKrw){
+  const listEl = document.getElementById('annuity-schedule-list');
+  if (!listEl) return;
+  const rows = buildAnnuitySchedule(announcedKrw);
+  // 회차별로 금액이 달라 한국 종합소득세 누진세율 구간도 회차마다 달라짐 — 그래서 평균이 아니라
+  // 회차별로 calcTakeHome()을 각각 다시 계산해야 실제와 맞음(초반 회차는 낮은 세율, 후반은 높은 세율)
+  listEl.innerHTML = rows.map(row => {
+    const r = calcTakeHome(row.grossKrw / 100000000, 'kr');
+    return `<div class="annuity-schedule-row">
+      <span>${row.year}</span>
+      <span>${formatWon(row.grossKrw / 100000000)}</span>
+      <span class="annuity-schedule-net">${formatWon(r.final)}</span>
+    </div>`;
+  }).join('');
 }
 
 // jc-tap-cta 한 줄짜리 문구를 열림/닫힘 상태·현재 언어에 맞게 다시 그려줌
@@ -2219,7 +2534,7 @@ function scrollToMainResult(){
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderJackpotHistory(); renderLatestDraw(); fetchLiveExchangeRate(); updateLightningGameUi(); setupStickyResultBadge(); });
+document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderJackpotHistory(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); setupStickyResultBadge(); });
 
 // 다른 페이지(korea-resident-us-lottery-tax.html 등)에서 "index.html#faq"처럼 해시가 붙은 링크로
 // 들어왔을 때, 이 SPA는 해시를 안 보고 항상 홈 화면부터 그려서 그 링크가 사실상 무시되던 문제 수정.
@@ -2408,13 +2723,6 @@ function switchAmountTab(tab){
   document.getElementById('amountTabLump').style.display = tab === 'lump' ? 'block' : 'none';
   document.getElementById('amountTabAnnounced').style.display = tab === 'announced' ? 'block' : 'none';
   document.getElementById('amountTabReverse').style.display = tab === 'reverse' ? 'block' : 'none';
-}
-
-// 탭 버튼 3개가 항상 보이면 (퀵필 버튼과 합쳐) 첫 화면에 누를 게 너무 많다는 지적이 있어서,
-// 기본값(일시불 입력)만 먼저 보여주고 다른 입력 방식은 이 링크를 눌러야 펼쳐지게 함
-function revealAmountTabs(){
-  document.getElementById('amountTabRevealLink').style.display = 'none';
-  document.getElementById('amountInputTabs').style.display = 'flex';
 }
 
 function hideAnnouncedConvertNote(){
@@ -3035,10 +3343,16 @@ async function shareDreamResult(){
     `Я [${title}]! ${amt}. Что бы вы сделали в первую очередь, если бы выиграли?`
   );
   const shareUrl = location.href;
+  const shareTitle = pickLang('당첨되면 나는?', 'What would I do if I won?', '如果中奖了，我会……', 'Nếu trúng số tôi sẽ?', 'ถ้าถูกรางวัลฉันจะ?', 'Что бы я сделал, если бы выиграл?');
+
+  const cardSub = pickLang('너는 당첨되면 뭐부터 할래?', 'What would you do first if you won?', '如果你中奖了，会先做什么？', 'Bạn sẽ làm gì đầu tiên nếu trúng số?', 'คุณจะทำอะไรก่อนถ้าถูกรางวัล?', 'Что бы вы сделали в первую очередь, если бы выиграли?');
+  const cardFooter = pickLang('👉 참택스에서 나도 골라보기', '👉 Pick yours on ChamTax', '👉 到ChamTax也选一个', '👉 Chọn của bạn trên ChamTax', '👉 เลือกของคุณที่ ChamTax', '👉 Выберите своё на ChamTax');
+  const canvas = buildShareCard({ label: title, bigText: amt, subText: cardSub, footerText: cardFooter });
+  if (await tryShareCardImage(canvas, shareTitle, shareText)) return;
 
   if (navigator.share) {
     try {
-      await navigator.share({ title: pickLang('당첨되면 나는?', 'What would I do if I won?', '如果中奖了，我会……', 'Nếu trúng số tôi sẽ?', 'ถ้าถูกรางวัลฉันจะ?', 'Что бы я сделал, если бы выиграл?'), text: shareText, url: shareUrl });
+      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return;
@@ -3073,10 +3387,17 @@ async function shareResult(){
     `Если бы я выиграл в американскую лотерею (${amountText} Million USD), моя сумма на руки как ${country} составила бы около ${finalAmt}. Узнайте, сколько реально останется после налогов на ChamTax! (Это справочное моделирование)`
   );
   const shareUrl = location.href;
+  const shareTitle = pickLang('미국 복권 세금 계산기 - 참택스', 'US Lottery Tax Calculator - ChamTax', '美国彩票税金计算器 - ChamTax', 'Máy tính thuế xổ số Mỹ - ChamTax', 'เครื่องคำนวณภาษีลอตเตอรีสหรัฐฯ - ChamTax', 'Калькулятор налога на американскую лотерею - ChamTax');
+
+  const cardLabel = pickLang('💰 예상 실수령액 (일시불 기준)', '💰 Estimated take-home (lump sum)', '💰 预计实得金额（一次性）', '💰 Số tiền thực nhận ước tính (trả một lần)', '💰 เงินที่คาดว่าจะได้รับจริง (จ่ายครั้งเดียว)', '💰 Ожидаемая сумма на руки (единовременно)');
+  const cardSub = pickLang(`${amountText} Million USD 당첨 시 · ${country} 기준`, `If you win $${amountText}M USD · as ${article} ${country}`, `如果中了${amountText} Million USD · 按${country}计算`, `Nếu trúng ${amountText} Million USD · theo ${country}`, `ถ้าถูก ${amountText} Million USD · ตาม${country}`, `Если выиграть ${amountText} Million USD · как ${country}`);
+  const cardFooter = pickLang('👉 참택스에서 직접 계산해보기', '👉 Calculate yours on ChamTax', '👉 到ChamTax自己算算看', '👉 Tự tính trên ChamTax', '👉 ลองคำนวณเองที่ ChamTax', '👉 Посчитайте своё на ChamTax');
+  const canvas = buildShareCard({ label: cardLabel, bigText: finalAmt, subText: cardSub, footerText: cardFooter });
+  if (await tryShareCardImage(canvas, shareTitle, shareText)) return;
 
   if (navigator.share) {
     try {
-      await navigator.share({ title: pickLang('미국 복권 세금 계산기 - 참택스', 'US Lottery Tax Calculator - ChamTax', '美国彩票税金计算器 - ChamTax', 'Máy tính thuế xổ số Mỹ - ChamTax', 'เครื่องคำนวณภาษีลอตเตอรีสหรัฐฯ - ChamTax', 'Калькулятор налога на американскую лотерею - ChamTax'), text: shareText, url: shareUrl });
+      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;
     } catch (e) {
       // 사용자가 공유 취소한 경우 등 — 조용히 무시
@@ -3111,17 +3432,25 @@ async function shareRefundChecklist(){
   );
   const shareUrl = location.href;
   const btn = document.getElementById('refund-share-btn');
+  const shareTitle = pickLang(
+    '나도 모르는 잠자는 내 돈 찾기 체크리스트',
+    'Find money you didn’t know you had — checklist',
+    '找出你不知道的沉睡资产 — 检查清单',
+    'Danh sách tìm tiền bạn không biết mình có',
+    'เช็คลิสต์ค้นหาเงินที่คุณไม่รู้ว่ามี',
+    'Чек-лист: найдите деньги, о которых не знали'
+  );
+
+  const cardLabel = pickLang('🔍 나도 모르게 놓친 돈이 있을까?', '🔍 Did I miss money I didn’t know about?', '🔍 我是不是漏掉了什么钱？', '🔍 Mình có bỏ sót khoản tiền nào không?', '🔍 ฉันพลาดเงินที่ไม่รู้ว่ามีไหม?', '🔍 Не упустил ли я деньги, о которых не знал?');
+  const cardBig = pickLang('10분 체크리스트', '10-min checklist', '10分钟清单', 'Danh sách 10 phút', 'เช็คลิสต์ 10 นาที', '10-минутный чек-лист');
+  const cardSub = pickLang('국세환급금, 5년 지나면 국고로 귀속돼요', 'Unclaimed refunds revert to the treasury after 5 years', '未领取的退税5年后归入国库', 'Tiền hoàn thuế chưa nhận sẽ thuộc về ngân khố sau 5 năm', 'เงินคืนภาษีที่ไม่มีใครรับจะตกเป็นของคลังหลัง 5 ปี', 'Невостребованный возврат налога переходит в казну через 5 лет');
+  const cardFooter = pickLang('👉 참택스 FAQ에서 확인하기', '👉 Check it on the ChamTax FAQ', '👉 到ChamTax常见问题确认', '👉 Kiểm tra trên FAQ của ChamTax', '👉 ตรวจสอบที่ FAQ ของ ChamTax', '👉 Проверьте в FAQ ChamTax');
+  const canvas = buildShareCard({ label: cardLabel, bigText: cardBig, subText: cardSub, footerText: cardFooter });
+  if (await tryShareCardImage(canvas, shareTitle, shareText)) return;
 
   if (navigator.share) {
     try {
-      await navigator.share({ title: pickLang(
-        '나도 모르는 잠자는 내 돈 찾기 체크리스트',
-        'Find money you didn’t know you had — checklist',
-        '找出你不知道的沉睡资产 — 检查清单',
-        'Danh sách tìm tiền bạn không biết mình có',
-        'เช็คลิสต์ค้นหาเงินที่คุณไม่รู้ว่ามี',
-        'Чек-лист: найдите деньги, о которых не знали'
-      ), text: shareText, url: shareUrl });
+      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return;
@@ -4013,8 +4342,8 @@ function updateSideBySide(eok, stateCode){
       card.classList.add('side-card-best');
       const bestBadge = document.createElement('p');
       bestBadge.className = 'side-card-best-badge';
-      bestBadge.textContent = pickLang('👑 실수령액 1위', '👑 Highest take-home', '👑 实得金额第一', '👑 Thực nhận cao nhất', '👑 ได้รับจริงสูงสุด', '👑 Больше всех на руки', {
-        ar:'👑 أعلى صافي دخل', bn:'👑 সর্বোচ্চ প্রকৃত আয়', fr:'👑 Revenu net le plus élevé', hi:'👑 सबसे ज़्यादा हाथ में आने वाली राशि', id:'👑 Take-home tertinggi', ja:'👑 手取り額1位', kk:'👑 Ең жоғары қолға тиетін сома', km:'👑 ចំណូលសុទ្ធខ្ពស់បំផុត', ky:'👑 Эң жогорку кол алдырма акча', lo:'👑 ໄດ້ຮັບຈິງສູງສຸດ', mn:'👑 Гарт орох хамгийн их дүн', my:'👑 လက်ခံရရှိမှု အများဆုံး', ne:'👑 सबैभन्दा बढी हातमा पर्ने रकम', si:'👑 වැඩිම අත් ලාභය', tl:'👑 Pinakamataas na take-home', ur:'👑 سب سے زیادہ ہاتھ میں آنے والی رقم', uz:'👑 Eng yuqori qoʻlga tegadigan summa'
+      bestBadge.textContent = pickLang('🔥 실수령액 1위', '🔥 Highest take-home', '🔥 实得金额第一', '🔥 Thực nhận cao nhất', '🔥 ได้รับจริงสูงสุด', '🔥 Больше всех на руки', {
+        ar:'🔥 أعلى صافي دخل', bn:'🔥 সর্বোচ্চ প্রকৃত আয়', fr:'🔥 Revenu net le plus élevé', hi:'🔥 सबसे ज़्यादा हाथ में आने वाली राशि', id:'🔥 Take-home tertinggi', ja:'🔥 手取り額1位', kk:'🔥 Ең жоғары қолға тиетін сома', km:'🔥 ចំណូលសុទ្ធខ្ពស់បំផុត', ky:'🔥 Эң жогорку кол алдырма акча', lo:'🔥 ໄດ້ຮັບຈິງສູງສຸດ', mn:'🔥 Гарт орох хамгийн их дүн', my:'🔥 လက်ခံရရှိမှု အများဆုံး', ne:'🔥 सबैभन्दा बढी हातमा पर्ने रकम', si:'🔥 වැඩිම අත් ලාභය', tl:'🔥 Pinakamataas na take-home', ur:'🔥 سب سے زیادہ ہاتھ میں آنے والی رقم', uz:'🔥 Eng yuqori qoʻlga tegadigan summa'
       });
       card.appendChild(bestBadge);
     }
@@ -4038,12 +4367,14 @@ function updateSideBySide(eok, stateCode){
       // 여러 줄로 접히면서 카드가 세로로 길어져 옆 칸 카드와 키 차이가 커짐 — 그리드 전체
       // 폭을 쓰게 해서 국기를 가로로 펼치고 옆에 어색한 빈 공간이 남지 않게 함
       if (rows.length > 3) card.classList.add('side-card-full');
+      const flagsRowEl = document.createElement('div'); flagsRowEl.className = 'side-card-flags-row';
       const flagGroupEl = document.createElement('p'); flagGroupEl.className = 'side-card-flag-group';
       rows.forEach(row => { flagGroupEl.appendChild(makeFlagBadge(row.profile.flagCode)); });
-      card.appendChild(flagGroupEl);
+      flagsRowEl.appendChild(flagGroupEl);
       const noteEl = document.createElement('p'); noteEl.className = 'side-card-group-note';
       noteEl.textContent = pickLang(`${rows.length}개국 실수령액 동일`, `Same for these ${rows.length} countries`, `${rows.length}个国家实得金额相同`, `Giống nhau ở ${rows.length} nước`, `เท่ากันใน ${rows.length} ประเทศ`, `Одинаково для ${rows.length} стран`, buildSameCountMore(rows.length));
-      card.appendChild(noteEl);
+      flagsRowEl.appendChild(noteEl);
+      card.appendChild(flagsRowEl);
     }
 
     const amtEl = document.createElement('p'); amtEl.className = 'side-card-amt'; amtEl.textContent = formatWon(result.final);
@@ -4057,7 +4388,10 @@ function updateSideBySide(eok, stateCode){
     const barFillEl = document.createElement('div'); barFillEl.className = 'side-card-bar-fill';
     barFillEl.style.width = Math.max(0, Math.min(100, pct)) + '%';
     barEl.appendChild(barFillEl);
-    card.append(amtEl, rateEl, barEl);
+    // 1위 카드는 목업처럼 금액+비율을 한 줄에 나란히(baseline 정렬) 배치해서 공간을 아낌
+    const amtRowEl = document.createElement('div'); amtRowEl.className = 'side-card-amt-row';
+    amtRowEl.append(amtEl, rateEl);
+    card.append(amtRowEl, barEl);
     if (typeof pendingDetailLink !== 'undefined' && pendingDetailLink) {
       const detailEl = document.createElement('a');
       detailEl.className = 'side-card-detail-link';
