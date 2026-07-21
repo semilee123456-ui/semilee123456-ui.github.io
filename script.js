@@ -166,6 +166,7 @@ function applyTranslations(){
   updateJcTapLabel();
   updateHiddenMoneyChannelsForLang();
   renderJackpotHistory();
+  renderLatestDraw();
   updateLightningGameUi();
 }
 
@@ -1831,6 +1832,73 @@ const JACKPOT_HISTORY = [
   { date: '2026-07-21', game: 'megamillions', amountUsd: 707000000 },
 ];
 
+// 🎱 최신 추첨 당첨번호 — 잭팟 확인할 때 공식 사이트(powerball.com/megamillions.com) 보고 같이 갱신.
+// 재미 요소 + 공유 유도용(사용자 피드백: "사이트가 너무 교과서 같다") — 세금 계산기 본질은 그대로 두고
+// 잭팟 카드 안에 양념처럼 추가한 것이라, 갱신을 깜빡해도 계산기 기능엔 영향 없음.
+const LATEST_DRAW = {
+  powerball:    { date: '2026-07-18', numbers: [9, 14, 44, 50, 56], special: 3 },
+  megamillions: { date: '2026-07-17', numbers: [22, 34, 45, 48, 55], special: 14 },
+};
+
+function renderLatestDraw(){
+  Object.keys(LATEST_DRAW).forEach(game => {
+    const draw = LATEST_DRAW[game];
+    const dateEl = document.getElementById(`draw-date-${game}`);
+    const ballsEl = document.getElementById(`draw-balls-${game}`);
+    if (!dateEl || !ballsEl) return;
+    const [, m, d] = draw.date.split('-');
+    dateEl.textContent = pickLang(
+      `🎱 최근 당첨번호 (${m}.${d})`,
+      `🎱 Latest numbers (${m}/${d})`,
+      `🎱 最新开奖号码 (${m}.${d})`,
+      `🎱 Số trúng gần nhất (${d}/${m})`,
+      `🎱 เลขล่าสุด (${d}/${m})`,
+      `🎱 Последние номера (${d}.${m})`
+    );
+    ballsEl.innerHTML = draw.numbers.map(n => `<span class="draw-ball">${n}</span>`).join('')
+      + `<span class="draw-ball draw-ball-special draw-ball-${game}">${draw.special}</span>`;
+  });
+}
+
+async function shareLatestDraw(game){
+  const draw = LATEST_DRAW[game];
+  const jackpotMillions = Math.round(JACKPOT_DATA[game].amountUsd / 1000000);
+  const gameLabel = pickLang(
+    game === 'powerball' ? '파워볼' : '메가밀리언즈',
+    game === 'powerball' ? 'Powerball' : 'Mega Millions',
+    game === 'powerball' ? '强力球' : '超级百万',
+    game === 'powerball' ? 'Powerball' : 'Mega Millions',
+    game === 'powerball' ? 'พาวเวอร์บอล' : 'เมกะมิลเลียน',
+    game === 'powerball' ? 'Powerball' : 'Mega Millions'
+  );
+  const specialLabel = game === 'powerball' ? 'PB' : 'MB';
+  const numbersText = draw.numbers.join('-');
+  const shareText = pickLang(
+    `🎱 최근 ${gameLabel} 당첨번호: ${numbersText} + ${specialLabel} ${draw.special} / 다음 추첨 잭팟은 $${jackpotMillions}M! 참택스에서 확인해보세요`,
+    `🎱 Latest ${gameLabel} numbers: ${numbersText} + ${specialLabel} ${draw.special} / Next jackpot is $${jackpotMillions}M! Check it out on ChamTax`,
+    `🎱 最新${gameLabel}开奖号码：${numbersText} + ${specialLabel} ${draw.special} / 下期奖金 $${jackpotMillions}M！来ChamTax看看吧`,
+    `🎱 Số trúng ${gameLabel} gần nhất: ${numbersText} + ${specialLabel} ${draw.special} / Jackpot kỳ tới là $${jackpotMillions}M! Xem trên ChamTax`,
+    `🎱 เลข ${gameLabel} ล่าสุด: ${numbersText} + ${specialLabel} ${draw.special} / แจ็คพอตงวดหน้า $${jackpotMillions}M! ดูที่ ChamTax`,
+    `🎱 Последние номера ${gameLabel}: ${numbersText} + ${specialLabel} ${draw.special} / Следующий джекпот $${jackpotMillions}M! Смотрите на ChamTax`
+  );
+  const shareUrl = location.href;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: gameLabel, text: shareText, url: shareUrl });
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    alert(pickLang('복사됐어요! 카톡에 붙여넣기 해보세요 :)', 'Copied! Paste it anywhere you like :)', '已复制！粘贴到任何地方分享吧 :)', 'Đã sao chép! Dán vào bất cứ đâu bạn muốn :)', 'คัดลอกแล้ว! วางที่ไหนก็ได้ที่คุณต้องการ :)', 'Скопировано! Вставьте куда угодно :)'));
+  } catch (e) {
+    window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь'), `${shareText} ${shareUrl}`);
+  }
+}
+
 function toggleJhGroupList(id){
   const el = document.getElementById(id);
   if (!el) return;
@@ -2151,7 +2219,7 @@ function scrollToMainResult(){
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderJackpotHistory(); fetchLiveExchangeRate(); updateLightningGameUi(); setupStickyResultBadge(); });
+document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderJackpotHistory(); renderLatestDraw(); fetchLiveExchangeRate(); updateLightningGameUi(); setupStickyResultBadge(); });
 
 // 다른 페이지(korea-resident-us-lottery-tax.html 등)에서 "index.html#faq"처럼 해시가 붙은 링크로
 // 들어왔을 때, 이 SPA는 해시를 안 보고 항상 홈 화면부터 그려서 그 링크가 사실상 무시되던 문제 수정.
