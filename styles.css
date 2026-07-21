@@ -32,7 +32,13 @@
     --shadow-card: 0 1px 0 rgba(var(--ink-rgb),0.06);
     --shadow-btn: 0 6px 14px rgba(21,84,69,0.22);
     --status-red:#C0392B;
+    --status-red-rgb: 192,57,43;
     --status-amber:#946716; /* 원래 #B8862E는 명암비 3.00:1로 경고 문구(16px bold) WCAG AA(4.5:1) 미달 — 톤 유지하며 더 진하게 조정 */
+    /* teal/navy/status-red/gold는 "어두운 배경 위의 글자색"으로 쓰일 걸 기준으로 다크모드에서
+       밝게 조정된 색인데, 반대로 이 색을 "배경"으로 쓰고 그 위에 흰 글자를 얹는 배지·버튼류가
+       많아서(예: .cta-btn, .flag-badge) 다크모드에서 명암비가 1.2~2.9:1까지 떨어지는 문제가
+       있었음 — 그런 곳엔 color:#fff 대신 이 변수를 씀 */
+    --on-accent:#fff;
 
     /* 다크모드에서 반전이 필요한 "잉크 워시"류 값들 — rgba(var(--ink-rgb),X)를 곳곳에서 호버/배경
        틴트로 직접 썼던 걸 변수화함(다크모드 미디어쿼리에서 밝은 색으로 뒤집어줘야 호버 피드백이
@@ -49,8 +55,10 @@
     --game-mm-bg:#FDF8E8; --game-mm-border:#E8D9A8;
     --refund-step-bg:#F8F4EA;
   }
-  @media (prefers-color-scheme: dark){
-    :root{
+  /* 다크모드는 더 이상 기기의 prefers-color-scheme을 자동으로 따라가지 않고, 우상단 토글
+     버튼(toggleTheme(), script.js)으로만 켜짐 — 켠 상태는 localStorage에 저장되어 다음
+     방문에도 유지됨. 기본값은 항상 라이트모드 */
+  :root[data-theme="dark"]{
       --navy:#EDE8DA; --teal:#3AA98A; --seafoam:#3AA98A; --mint:#4CC2A0; --indigo:#7C9BD1; --gold:#D6AC55;
       --bg:#1B1917; --card:#242220; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#3D3A34;
       --grad-soft: linear-gradient(150deg, #1E2622 0%, #201E1A 55%, #201E1A 100%);
@@ -58,7 +66,9 @@
       --shadow-card: 0 1px 0 rgba(0,0,0,0.3);
       --shadow-btn: 0 6px 14px rgba(58,169,138,0.28);
       --status-red:#E2776C;
+      --status-red-rgb: 226,119,108;
       --status-amber:#D6AC55;
+      --on-accent:#1B1917;
       --ink-rgb: 237,232,218;
       --navyblue-rgb: 124,155,209;
       --body-bg:#161412;
@@ -70,7 +80,6 @@
       --game-pb-bg:#2A211F; --game-pb-border:#5A3A35;
       --game-mm-bg:#292619; --game-mm-border:#5A5136;
       --refund-step-bg:#242119;
-    }
   }
   *{box-sizing:border-box;}
   /* 키보드로 탭 이동할 때(스크린리더·저시력 사용자 포함) 지금 포커스가 어디 있는지 브랜드 색으로
@@ -82,6 +91,10 @@
      전 요소에 폰트를 명시적으로 맞추고, 버튼의 기본 외형을 지워서 브라우저 간 렌더링을 통일함 */
   button, input, select, textarea{ font-family:inherit; }
   button{ -webkit-appearance:none; appearance:none; line-height:normal; }
+  .sr-only{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+    clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
   body{
     margin:0;
     font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;
@@ -112,7 +125,7 @@
 
   .page{
     background:var(--bg); padding:28px 28px 36px; min-height:200px;
-    width:100%; max-width:1100px; margin:0 auto; border-radius:14px; overflow:hidden;
+    width:100%; max-width:1200px; margin:0 auto; border-radius:14px; overflow:hidden;
     box-shadow:0 1px 3px rgba(var(--ink-rgb),0.08), 0 8px 24px rgba(var(--ink-rgb),0.06);
   }
 
@@ -127,6 +140,9 @@
   .logo span{ color:var(--teal); }
   .menu{ display:flex; gap:14px; align-items:center; margin-left:auto; }
   .menu-links{ display:flex; gap:14px; align-items:center; }
+  /* lang-toggle와 theme-toggle을 하나의 묶음으로 감싸서, 좁은 화면에서 .menu가 줄바꿈될 때
+     이 둘이 서로 떨어져 theme-toggle만 혼자 다음 줄로 밀려나는 일이 없게 함 */
+  .menu-controls{ display:flex; gap:8px; align-items:center; }
   .menu button{
     font-size:16px; color:var(--text-muted); font-weight:500; background:none; border:none;
     cursor:pointer; font-family:inherit; padding:0; position:relative;
@@ -141,6 +157,13 @@
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23155445' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat:no-repeat; background-position:right 8px center; background-size:10px;
   }
+  .theme-toggle{
+    width:40px; height:40px; min-height:40px; flex:0 0 auto; border-radius:50%;
+    border:1px solid rgba(21,84,69,0.25); background:rgba(21,84,69,0.08);
+    font-size:17px; line-height:1; cursor:pointer; font-family:inherit;
+    display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  :root[data-theme="dark"] .theme-toggle{ border-color:var(--border); background:var(--chip-bg); }
 
   .view{ display:none; }
   .view.on{ display:block; animation:view-fade-in 0.25s ease; }
@@ -258,6 +281,10 @@
     height:44px; border:1px solid var(--border); border-radius:8px; padding:0 28px 0 12px;
     font-size:var(--fs-body); font-family:inherit; color:var(--text-dark); background:var(--select-bg); flex:1;
     min-width:0; max-width:100%;
+    /* 주(State) 이름은 번역 안 되고 항상 영문+숫자라서, RTL 언어(아랍어/우르두어) 화면에서 이
+       select에 방향을 안 정해주면 브라우저가 텍스트를 "앞부분"부터 잘라서(예: "Average..."가
+       "...age"로) 핵심 단어가 사라짐 — 옵션 내용 자체가 항상 LTR이므로 명시적으로 고정 */
+    direction:ltr;
     -webkit-appearance:none; -moz-appearance:none; appearance:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23262420' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat:no-repeat; background-position:right 10px center; background-size:11px 7px;
@@ -279,10 +306,10 @@
   .jackpot-quickfill-btn-pb{ background:var(--game-pb-bg); border:1.5px solid var(--game-pb-border); }
   .jackpot-quickfill-btn-mm{ background:var(--game-mm-bg); border:1.5px solid var(--game-mm-border); }
   .jackpot-quickfill-btn:active{ filter:brightness(0.97); }
-  .jackpot-quickfill-label{ font-size:12px; font-weight:800; letter-spacing:0.02em; }
+  .jackpot-quickfill-label{ font-size:var(--fs-small); font-weight:800; letter-spacing:0.02em; }
   .jackpot-quickfill-btn-pb .jackpot-quickfill-label{ color:var(--status-red); }
   .jackpot-quickfill-btn-mm .jackpot-quickfill-label{ color:var(--status-amber); }
-  .jackpot-quickfill-amt{ font-size:15px; font-weight:800; color:var(--text-dark); }
+  .jackpot-quickfill-amt{ font-size:var(--fs-small); font-weight:800; color:var(--text-dark); }
   .jackpot-quickfill-usd{ font-size:12px; font-weight:600; color:var(--text-muted); }
   .million-input-wrap{
     display:flex; align-items:center; gap:10px; flex:1.5; border:2px solid var(--teal);
@@ -294,15 +321,17 @@
     border:none; padding:8px 0; height:auto; flex:1; min-width:0; width:auto;
     font-size:32px; font-size:clamp(26px, 10vw, 38px); font-weight:800; color:var(--teal);
   }
+  /* 탭 3개(일시불/연금발표액/목표실수령액)를 오갈 때 입력칸 크기가 서로 달라 카드가 들쭉날쭉해
+     보인다는 지적 — 연금발표액 칸을 일시불 칸과 동일한 테두리·크기·글자 크기로 통일함 */
   .million-input-wrap-secondary{
-    display:flex; align-items:center; gap:10px; flex:1.5; border:1.5px solid var(--border);
-    border-radius:12px; padding:6px 8px 6px 14px; height:auto; background:var(--card);
-    min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden; transition:border-color 0.15s ease;
+    display:flex; align-items:center; gap:10px; flex:1.5; border:2px solid var(--teal);
+    border-radius:14px; padding:8px 10px 8px 18px; height:auto; background:var(--card);
+    min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden; transition:box-shadow 0.15s ease;
   }
-  .million-input-wrap-secondary:focus-within{ border-color:var(--teal); }
+  .million-input-wrap-secondary:focus-within{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(21,84,69,0.14); }
   .million-input-wrap-secondary .dollar-input{
-    border:none; padding:6px 0; height:auto; flex:1; min-width:0; width:auto;
-    font-size:20px; font-weight:700; color:var(--text-dark);
+    border:none; padding:8px 0; height:auto; flex:1; min-width:0; width:auto;
+    font-size:32px; font-size:clamp(26px, 10vw, 38px); font-weight:800; color:var(--teal);
   }
   @keyframes field-autofill-flash{ 0%{ box-shadow:0 0 0 4px rgba(21,84,69,0.28); } 100%{ box-shadow:0 0 0 0 rgba(21,84,69,0); } }
   .field-autofill-flash{ animation:field-autofill-flash 700ms ease-out; }
@@ -360,6 +389,21 @@
   /* 국기 4개 이상 묶인 큰 그룹 카드는 .side-card-full로 자기 줄을 통째로 차지하게 분리했으니,
      일반 카드끼리는 다시 기본값(stretch)으로 키를 맞춤 — align-items:start로 뒀더니 카드 내용
      줄 수가 한 줄만 달라도(예: "인도 거주자" 1줄 vs "2개국 실수령액 동일" 2줄) 바닥이 들쭉날쭉해 보였음 */
+  /* 나라별 비교 카드가 텍스트/숫자로만 쭉 나열돼서 폰으로 보면 심심하다는 피드백 — 카드를
+     탭하면 이 지도 위 해당 국가 위치에 핀이 표시되게 함. 정확한 국경선 대신 대륙을 단순화한
+     장식용 모양이라, 실제 지리 정보로 오인되지 않게 새 창/공유 이미지에는 노출하지 않고
+     탭 상호작용 보조용으로만 씀 */
+  .country-map-wrap{ position:relative; margin-top:14px; border:1px solid var(--border); border-radius:14px; }
+  .country-map-svg{ display:block; width:100%; height:auto; border-radius:14px; overflow:hidden; }
+  .country-map-sea{ fill:var(--card); }
+  .country-map-land{ fill:rgba(var(--ink-rgb),0.1); stroke:rgba(var(--ink-rgb),0.18); stroke-width:1.5; }
+  .country-map-pin{ fill:var(--teal); stroke:var(--card); stroke-width:1.2; cursor:pointer; }
+  .country-map-pin.active{ fill:var(--status-red); }
+  .country-map-callout{
+    position:absolute; background:var(--navy); color:var(--on-accent); font-size:13px; font-weight:700;
+    padding:5px 10px; border-radius:8px; pointer-events:none; max-width:78%; text-align:center;
+    transform:translate(-50%,-130%); display:none; z-index:2;
+  }
   .side-by-side-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(105px, 1fr)); gap:10px; margin-top:14px; }
   .side-card{ background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:16px; min-width:0; }
   .side-card-span-full{ grid-column:1 / -1; }
@@ -434,7 +478,7 @@
   }
   .intro-persona-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0 0 4px; }
   .flag-badge{
-    display:inline-block; background:var(--teal); color:#fff; font-size:10px; font-weight:800;
+    display:inline-block; background:var(--teal); color:var(--on-accent); font-size:10px; font-weight:800;
     letter-spacing:0.02em; padding:2px 5px; border-radius:4px; vertical-align:middle; line-height:1.4;
   }
   .intro-persona-action{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; margin:0; }
@@ -447,7 +491,7 @@
   }
   .intro-lang-go-btn{
     flex-shrink:0; min-width:72px; min-height:44px; border-radius:9px; border:none;
-    background:var(--teal); color:#fff; font-family:inherit; font-size:var(--fs-small); font-weight:800; cursor:pointer;
+    background:var(--teal); color:var(--on-accent); font-family:inherit; font-size:var(--fs-small); font-weight:800; cursor:pointer;
   }
   .side-group-label{ font-size:var(--fs-body); font-weight:700; color:var(--text-dark); margin:14px 0 8px; }
   .side-breakdown-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
@@ -504,10 +548,10 @@
   .hint b{ color:var(--text-dark); }
 
   .gate-box{
-    background:var(--alert-red-bg); border:2px solid #C0392B; border-radius:12px;
+    background:var(--alert-red-bg); border:2px solid var(--status-red); border-radius:12px;
     padding:16px 18px; margin-bottom:16px; text-align:center;
   }
-  .gate-label{ font-size:var(--fs-small); font-weight:800; color:#C0392B; letter-spacing:0.05em; margin:0 0 6px; }
+  .gate-label{ font-size:var(--fs-small); font-weight:800; color:var(--status-red); letter-spacing:0.05em; margin:0 0 6px; }
   .gate-text{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); margin:0; line-height:1.5; }
   .gate-sub{ font-size:var(--fs-small); color:var(--text-muted); margin:6px 0 0; }
 
@@ -518,7 +562,7 @@
   .purchase-flow > .flow-body{ counter-increment:flow-step; }
   .purchase-flow > .flow-body .flow-title::before{
     content:counter(flow-step); position:absolute; left:0; top:0; width:26px; height:26px; border-radius:50%;
-    background:var(--teal); color:#fff; font-size:var(--fs-note); font-weight:800;
+    background:var(--teal); color:var(--on-accent); font-size:var(--fs-note); font-weight:800;
     display:flex; align-items:center; justify-content:center;
   }
   .flow-detail{ font-size:var(--fs-body); color:var(--text-muted); margin:0; line-height:1.6; }
@@ -529,7 +573,7 @@
     text-decoration:none; cursor:pointer;
   }
   
-  .flow-tag.no{ background:rgba(192,57,43,0.1); color:#C0392B; }
+  .flow-tag.no{ background:rgba(var(--status-red-rgb),0.1); color:var(--status-red); }
   .official-links{ display:flex; flex-direction:column; gap:6px; margin-top:8px; }
   .official-links a{
     display:block; background:var(--card); border:1px solid var(--border); border-radius:8px;
@@ -569,9 +613,13 @@
     display:inline-flex; align-items:center; gap:4px; background:rgba(var(--ink-rgb),0.12); color:var(--seafoam);
     font-size:var(--fs-small); font-weight:800; padding:2px 8px; border-radius:10px; margin-left:6px; vertical-align:middle;
   }
-  .jp-krw{ font-size:16px; color:var(--text-muted); opacity:0.85; font-weight:400; margin:2px 0 0; }
-  .jp-est-note{ font-size:12px; color:var(--text-muted); opacity:0.7; font-weight:400; margin:1px 0 0; }
-  .draw-date-label{ font-size:12px; color:var(--text-muted); font-weight:700; margin:10px 0 4px; padding-top:8px; border-top:1px dashed var(--border); }
+  .jp-krw-row{ display:flex; flex-wrap:wrap; align-items:baseline; gap:0 6px; margin:2px 0 0; }
+  .jp-krw{ font-size:16px; color:var(--text-dark); opacity:0.75; font-weight:700; margin:0; }
+  .jp-est-note{ font-size:11px; color:var(--text-muted); opacity:0.6; font-weight:400; margin:0; }
+  .draw-date-label{ font-size:12px; color:var(--text-muted); font-weight:700; margin:10px 0 4px; }
+  .jp-actions-row{ margin-top:8px; }
+  .jp-actions-row .share-btn{ margin-top:0; }
+  .jp-actions-row .jp-official-link{ display:inline-block; margin-top:8px; padding-top:0; border-top:none; }
   .draw-balls{ display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
   .draw-ball{
     display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
@@ -579,8 +627,8 @@
     background:var(--card); color:var(--text-dark); border:1.5px solid var(--border);
     font-variant-numeric:tabular-nums;
   }
-  .draw-ball-special.draw-ball-powerball{ background:var(--status-red); color:#fff; border-color:var(--status-red); }
-  .draw-ball-special.draw-ball-megamillions{ background:var(--gold); color:#fff; border-color:var(--gold); }
+  .draw-ball-special.draw-ball-powerball{ background:var(--status-red); color:var(--on-accent); border-color:var(--status-red); }
+  .draw-ball-special.draw-ball-megamillions{ background:var(--gold); color:var(--on-accent); border-color:var(--gold); }
   .foot-note{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; line-height:1.4; }
 
   .result-hero{
@@ -653,10 +701,11 @@
   }
   .slider-range-label{ display:flex; justify-content:space-between; font-size:var(--fs-small); color:var(--text-muted); margin-top:2px; }
   .live-result-mini{
-    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; row-gap:4px; margin-top:14px; padding:12px 14px;
-    background:var(--card); border:1.5px solid rgba(21,84,69,0.25); border-radius:10px;
-    cursor:pointer; transition:border-color 0.15s ease;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; row-gap:4px; margin-top:0; padding:14px 18px;
+    background:var(--card); border:2px solid var(--teal); border-radius:14px;
+    cursor:pointer; transition:box-shadow 0.15s ease;
   }
+  .live-result-mini:hover, .live-result-mini:focus-within{ box-shadow:0 0 0 3px rgba(21,84,69,0.14); }
   .live-result-mini:hover{ border-color:var(--teal); }
   .live-result-mini span:first-child{ font-size:var(--fs-note); color:var(--text-muted); font-weight:600; min-width:0; overflow-wrap:break-word; }
   #home-final-basis{ display:none; }
@@ -691,6 +740,7 @@
     display:inline-block; background:rgba(var(--ink-rgb),0.12); color:var(--text-dark); font-size:var(--fs-small); font-weight:800;
     padding:1px 6px; border-radius:8px; margin-left:5px; vertical-align:middle;
   }
+  .dday-badge.today{ background:var(--status-red); color:var(--on-accent); }
   .faq-search{
     width:100%; height:40px; border:1.5px solid var(--border); border-radius:10px; padding:0 14px;
     font-size:16px; font-family:inherit; color:var(--text-dark); background:var(--bg); margin:12px 0 6px;
@@ -705,7 +755,7 @@
     max-width:100%; font-family:inherit; font-size:var(--fs-small); font-weight:700; white-space:normal;
     padding:12px 14px; min-height:44px; border-radius:20px; border:none; background:var(--chip-bg); color:var(--text-muted); cursor:pointer;
   }
-  .faq-chip.active{ background:var(--teal); color:#fff; }
+  .faq-chip.active{ background:var(--teal); color:var(--on-accent); }
   .faq-no-result{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); padding:16px 0; }
   .lightning-result{ display:flex; justify-content:center; gap:8px; margin:16px 0; flex-wrap:nowrap; }
   .lightning-ball{
@@ -716,6 +766,10 @@
   .lightning-ball.pb{ background:rgba(var(--ink-rgb),0.12); border-color:var(--text-dark); color:var(--text-dark); }
   .lightning-ball.mega{ background:rgba(148,103,22,0.12); border-color:var(--status-amber); color:var(--status-amber); }
   .lightning-ball.drawn{ animation:pop 0.3s ease; }
+  .lightning-ball.spinning{ animation:lightning-spin-pulse 0.15s linear infinite; }
+  @keyframes lightning-spin-pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.5; } }
+  .lightning-result.celebrate{ animation:lightning-celebrate 0.4s ease; }
+  @keyframes lightning-celebrate{ 0%{ transform:scale(1); } 40%{ transform:scale(1.06); } 100%{ transform:scale(1); } }
   .lightning-game-toggle{ display:flex; justify-content:center; gap:8px; margin:4px 0 2px; }
   .lightning-game-btn{
     font-size:var(--fs-small); font-weight:700; color:var(--text-muted); background:var(--bg);
@@ -787,6 +841,9 @@
   .us-state-row-amt{ font-weight:700; color:var(--teal); font-variant-numeric:tabular-nums; white-space:nowrap; }
   .us-state-row.is-current{ background:rgba(21,84,69,0.1); border-radius:6px; padding-left:6px; padding-right:6px; margin:0 -6px; }
   .filing-label{ font-size:var(--fs-small); font-weight:600; color:var(--text-muted); margin:0 0 6px; }
+  /* 이 US 배지는 선택 가능한 토글이 아니라 "이 항목은 미국 기준이에요"라는 정보성 라벨이라,
+     과세기준 토글의 활성 색(청록)을 그대로 쓰면 마치 선택된 버튼처럼 보여 헷갈림 — 중립 톤으로 */
+  .filing-label .flag-badge{ background:var(--text-dark); }
   .filing-label span{ font-weight:400; color:var(--text-muted); }
   .filing-note-small{ font-size:var(--fs-small); color:var(--text-muted); margin:-4px 0 10px; line-height:1.5; }
   .input-card{ position:relative; background:var(--input-card-bg); border:2.5px solid var(--teal); border-radius:12px; padding:14px 16px 16px; margin-top:22px; }
@@ -806,6 +863,9 @@
     text-align:center; font-size:var(--fs-small); font-weight:700; color:var(--text-muted);
     margin:20px 0 12px; padding-top:16px; border-top:1px dashed var(--border);
   }
+  /* FAQ 화면에서 검색창+카테고리 칩(도구 영역)과 그 아래 질문 아코디언 목록(콘텐츠 영역)이
+     같은 톤으로 바로 붙어서 어디부터 FAQ 목록인지 애매하다는 지적 — 라벨 없이 얇은 구분선만 추가 */
+  .faq-list-divider{ border-top:1px dashed var(--border); margin:18px 0 4px; }
   .explore-section{ margin-top:20px; }
   .explore-title{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); margin:0 0 10px; text-align:center; }
   .explore-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
@@ -970,7 +1030,7 @@
   .jh-amt-label{ font-size:var(--fs-small); color:var(--text-muted); }
   .jh-amt{ font-size:var(--fs-note); font-weight:800; color:var(--teal); }
   button.jh-amt-group-toggle{ font-family:inherit; background:none; border:none; padding:0; text-align:left; cursor:pointer; text-decoration:underline; text-decoration-style:dotted; color:inherit; }
-  .jh-amt-group-list{ font-size:var(--fs-small); color:var(--text-muted); max-width:220px; }
+  .jh-amt-group-list{ flex-wrap:wrap; gap:4px; margin-top:6px; max-width:100%; }
   .jh-more{ margin-top:8px; }
   .jh-more-summary{
     display:flex; align-items:center; justify-content:center; gap:4px;
@@ -990,9 +1050,9 @@
   .ticket-mock-numbers{ display:inline-flex; flex-wrap:wrap; justify-content:center; gap:0; max-width:100%; }
   .tm-ball{
     display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
-    border-radius:50%; background:var(--navy); color:#fff; font-size:var(--fs-note); font-weight:800; margin:2px;
+    border-radius:50%; background:var(--navy); color:var(--on-accent); font-size:var(--fs-note); font-weight:800; margin:2px;
   }
-  .tm-ball.pb{ background:#C0392B; }
+  .tm-ball.pb{ background:var(--status-red); }
   .ticket-mock-meta{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); margin:6px 0; }
   .ticket-mock-barcode{ text-align:center; font-size:var(--fs-body); letter-spacing:1px; color:var(--text-dark); margin-top:4px; }
   .check-methods{ margin-top:6px; }
@@ -1030,7 +1090,7 @@
     font-style:normal;
   }
   .ps-b.filled{ border-color:var(--navy); background:radial-gradient(circle, var(--navy) 40%, transparent 41%); }
-  .ps-b.filled.pb{ border-color:#C0392B; background:radial-gradient(circle, #C0392B 40%, transparent 41%); }
+  .ps-b.filled.pb{ border-color:var(--status-red); background:radial-gradient(circle, var(--status-red) 40%, transparent 41%); }
   .ps-b.qp{
     width:auto; height:14px; border-radius:4px; font-size:9px; font-weight:800; color:var(--text-muted);
     border-color:var(--border); display:inline-flex; align-items:center; justify-content:center; padding:0 3px;
@@ -1050,8 +1110,12 @@
   .jc-val{ font-weight:800; }
   .jc-row.jc-final{ font-weight:800; color:var(--teal); }
   .jc-row.jc-final .jc-val{ color:var(--teal); }
-  .jc-note{ font-size:var(--fs-small); color:var(--text-muted); margin:8px 0 0; }
+  .jc-note{ font-size:var(--fs-small); color:var(--text-muted); margin:10px 0 0; line-height:1.6; }
+  .jc-note b{ color:var(--text-dark); }
   .jc-annuity-box{ margin-top:6px; background:var(--bg); border-radius:8px; padding:10px 12px; }
+  .jc-annuity-box .jc-row{ border-bottom:1px solid var(--border); padding:8px 0; }
+  .jc-annuity-box .jc-row:last-of-type{ border-bottom:none; }
+  .jc-annuity-box .jc-row.jc-final{ background:rgba(21,84,69,0.06); margin:2px -8px; padding:8px 8px; border-radius:8px; border-bottom:none; }
   .annuity-schedule-wrap{ margin-top:8px; }
   .annuity-schedule-row{
     display:grid; grid-template-columns:38px 1fr 1fr; gap:4px 8px; align-items:baseline;
@@ -1072,7 +1136,7 @@
   .jc-step-body{ flex:1; min-width:0; padding-top:1px; }
   .jc-step-label{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 3px; }
   .jc-step-val{ font-size:var(--fs-body); font-weight:700; color:var(--text-dark); margin:0; }
-  .jc-step-highlight .jc-step-num{ background:var(--teal); color:#fff; }
+  .jc-step-highlight .jc-step-num{ background:var(--teal); color:var(--on-accent); }
   .jc-step-highlight .jc-step-label{ color:var(--text-dark); font-weight:600; }
   .jc-step-val-big{ font-size:var(--fs-h1); font-weight:800; color:var(--teal); margin:2px 0 6px; font-variant-numeric:tabular-nums; }
   /* 디자인 3차 개선: 1·2단계는 참고용 정보로 나란히 축소하고, 제일 중요한 3단계(세후 실수령액)만
@@ -1117,7 +1181,7 @@
 
   .cta-btn{
     display:block; width:100%; text-align:center;
-    background:var(--teal); color:#fff;
+    background:var(--teal); color:var(--on-accent);
     font-family:inherit; font-size:var(--fs-note); font-weight:700; padding:13px; border:none; border-radius:12px;
     cursor:pointer; margin-top:14px;
   }
@@ -1140,12 +1204,12 @@
 
   .share-btn{
     display:flex; align-items:center; justify-content:center; gap:6px; width:100%; text-align:center;
-    background:transparent; color:var(--teal); border:1.5px solid rgba(21,84,69,0.35);
+    background:rgba(21,84,69,0.08); color:var(--teal); border:1.5px solid transparent;
     font-family:inherit; font-size:var(--fs-note); font-weight:700; padding:11px; border-radius:12px;
     cursor:pointer; margin-top:8px; transition:background 0.15s ease;
   }
   
-  .share-btn.copied{ background:var(--teal); color:#fff; border-color:var(--teal); }
+  .share-btn.copied{ background:var(--teal); color:var(--on-accent); border-color:var(--teal); }
 
   .trust-panel{ text-align:center; }
   .trust-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
@@ -1176,7 +1240,7 @@
   details[open] > .faq-q{ margin-bottom:8px; }
   .faq-a{ font-size:var(--fs-body); color:var(--text-muted); margin:0; line-height:1.6; }
   .faq-deadline-badge{
-    display:inline-block; font-size:16px; font-weight:800; color:#fff; background:var(--status-red);
+    display:inline-block; font-size:16px; font-weight:800; color:var(--on-accent); background:var(--status-red);
     border-radius:6px; padding:2px 8px; margin-left:8px; vertical-align:middle;
   }
 
@@ -1189,12 +1253,13 @@
   .refund-step-card select{
     width:100%; padding:9px 28px 9px 10px; border:1px solid var(--border); border-radius:8px;
     font-family:inherit; font-size:16px; color:var(--text-dark); background-color:var(--card);
+    direction:ltr;
     -webkit-appearance:none; -moz-appearance:none; appearance:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23262420' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat:no-repeat; background-position:right 10px center; background-size:11px 7px;
   }
   .refund-wizard-result{ font-size:var(--fs-note); color:var(--text-muted); margin:10px 0 0; line-height:1.55; padding-left:4px; border-left:3px solid var(--border); }
-  .refund-wizard-result.tag-none{ border-left-color:#C0392B; }
+  .refund-wizard-result.tag-none{ border-left-color:var(--status-red); }
   .refund-wizard-result.tag-maybe{ border-left-color:var(--status-amber); }
   .refund-wizard-result.tag-check{ border-left-color:var(--teal); }
 
@@ -1220,7 +1285,7 @@
   .refund-link-btn{ position:relative; }
   .refund-link-btn-badge{
     display:none; position:absolute; top:-11px; left:50%; transform:translateX(-50%);
-    font-size:16px; font-weight:800; color:#fff; background:var(--teal); border-radius:8px; padding:1px 8px; white-space:nowrap;
+    font-size:16px; font-weight:800; color:var(--on-accent); background:var(--teal); border-radius:8px; padding:1px 8px; white-space:nowrap;
   }
   .refund-link-btn.recommended{ border-color:var(--teal); border-width:2px; background:rgba(21,84,69,0.06); order:-1; }
   .refund-link-btn.recommended .refund-link-btn-badge{ display:inline-block; }
@@ -1291,7 +1356,7 @@
        드롭다운이 이 폭에서 한 줄에 다 안 들어가는 경우가 있음 — .page의 overflow:hidden에
        가려서 화면 밖 스크롤은 안 생기지만 대신 글자가 그냥 잘려서 안 보이는 문제가 있었음.
        .menu 자체도 줄바꿈되게 해서 안 들어가면 2번째 줄로 넘어가게 함(잘리는 대신) */
-    .menu{ gap:11px; flex-wrap:wrap; justify-content:flex-end; }
+    .menu{ row-gap:8px; column-gap:11px; flex-wrap:wrap; justify-content:flex-end; }
     .menu-links{ gap:11px; }
     /* nav-compare/odds/faq 버튼 3개가 이 폭에서 다 안 들어가면 그중 일부(주로 faq)만 줄바꿈되면서
        언어 드롭다운과 한 줄에 어색하게 같이 걸리는 경우가 있었음(키르기스어 등에서 사용자가 직접
@@ -1345,11 +1410,17 @@
   /* select 드롭다운 화살표가 data URI SVG에 색을 하드코딩해뒀어서(--text-dark/--teal 변수를 못 씀),
      다크모드에서 어두운 배경 위에 어두운 화살표(또는 어두운 초록)라 안 보이는 문제 — 밝은 색
      SVG로 따로 교체함 */
-  @media (prefers-color-scheme: dark){
-    .menu .lang-toggle{
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%233AA98A' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    }
-    .input-row select, .refund-step-card select{
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23EDE8DA' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    }
+  :root[data-theme="dark"] .menu .lang-toggle{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%233AA98A' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+  :root[data-theme="dark"] .input-row select, :root[data-theme="dark"] .refund-step-card select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23EDE8DA' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+
+  /* .result-hero와 #introPersonaAccordion은 --grad-soft 변수 대신 자기만의 밝은 그라데이션을
+     하드코딩해뒀어서, 다크모드에서도 밝은 크림색 배경이 그대로 남아 튀는 문제 — 다크모드에서만
+     이미 다크 대응이 되어 있는 --grad-soft로 덮어씀 (라이트모드 디자인은 그대로 유지) */
+  :root[data-theme="dark"] .result-hero,
+  :root[data-theme="dark"] #introPersonaAccordion{
+    background:var(--grad-soft);
   }

@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script>
+  try{ if(localStorage.getItem('theme')==='dark'){ document.documentElement.setAttribute('data-theme','dark'); } }catch(e){}
+</script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9743479262743239" crossorigin="anonymous"></script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-52R7SSXXNB"></script>
@@ -89,14 +92,19 @@
   :root{
     --teal:#155445; --bg:#FAF6EC; --card:#FFFEF9; --text-dark:#262420; --text-muted:#544E42; --border:#E8E2D3;
     --status-red:#C0392B; --status-amber:#946716;
-    --fs-hero:36px; --fs-h1:26px; --fs-h2:20px; --fs-h3:18px; --fs-body:16px; --fs-note:14px; --fs-small:13px;
+    --fs-hero:36px; --fs-h1:26px; --fs-h2:20px; --fs-h3:18px; --fs-body:16px; --fs-note:16px; --fs-small:16px;
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --teal:#3AA98A; --bg:#1B1917; --card:#242220; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#3D3A34;
-      --status-red:#E2776C; --status-amber:#D6AC55;
-    }
+  :root[data-theme="dark"]{
+    --teal:#3AA98A; --bg:#1B1917; --card:#242220; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#3D3A34;
+    --status-red:#E2776C; --status-amber:#D6AC55;
   }
+  .theme-toggle{
+    width:36px; height:36px; min-height:36px; flex:0 0 auto; border-radius:50%;
+    border:1px solid rgba(21,84,69,0.25); background:rgba(21,84,69,0.08);
+    font-size:16px; line-height:1; cursor:pointer; font-family:inherit;
+    display:inline-flex; align-items:center; justify-content:center; padding:0; margin-left:10px;
+  }
+  :root[data-theme="dark"] .theme-toggle{ border-color:var(--border); background:var(--card); }
   *{box-sizing:border-box;}
   body{ margin:0; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg); color:var(--text-dark); line-height:1.6; }
   .wrap{ max-width:640px; margin:0 auto; padding:20px 20px 60px; }
@@ -129,7 +137,10 @@
 
   <div class="nav">
     <a class="logo" href="index.html">참<span>택스</span></a>
-    <a class="back" href="index.html">← 계산기로 바로가기</a>
+    <span style="display:flex; align-items:center;">
+      <a class="back" href="index.html">← 계산기로 바로가기</a>
+      <button type="button" id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" aria-label="다크모드 전환">🌙</button>
+    </span>
   </div>
 
   <h1>메가밀리언즈 당첨금, 실제로 얼마 받을까?</h1>
@@ -184,5 +195,18 @@
 
   <p class="disclaimer">이 페이지는 정보 제공 목적의 시뮬레이터이며, 복권 구매를 대행·중개하지 않습니다. 실제 세무 처리는 세무 전문가와 상담하세요.</p>
 </div>
+<script>
+  function syncThemeToggleIcon(){
+    var btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+  }
+  function toggleTheme(){
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) { document.documentElement.removeAttribute('data-theme'); try{ localStorage.setItem('theme','light'); }catch(e){} }
+    else { document.documentElement.setAttribute('data-theme','dark'); try{ localStorage.setItem('theme','dark'); }catch(e){} }
+    syncThemeToggleIcon();
+  }
+  document.addEventListener('DOMContentLoaded', syncThemeToggleIcon);
+</script>
 </body>
 </html>
