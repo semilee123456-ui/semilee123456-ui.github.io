@@ -61,12 +61,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.css?v=20260721">
+<link rel="stylesheet" href="styles.css?v=20260722">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.js?v=20260721" defer></script>
+<script src="script.js?v=20260722" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -463,12 +463,12 @@
             <p class="input-card-headline" data-i18n="home.inputHint">당첨금을 직접 입력해보세요</p>
             <p class="krw-hint" style="margin-bottom:10px;" data-i18n="input.krwHintFull">일시불 실제 수령액(발표액의 약 45~60%)을 입력하세요</p>
             <div class="jackpot-quickfill-row" style="margin-bottom:16px;">
-              <button type="button" class="jackpot-quickfill-btn jackpot-quickfill-btn-pb" onclick="fillHomeAmountFromJackpot('powerball')">
+              <button type="button" class="jackpot-quickfill-btn jackpot-quickfill-btn-pb" onclick="fillHomeAmountFromJackpot('powerball', this)">
                 <span class="jackpot-quickfill-label">🔴 <span data-i18n="home.quickfillPowerball">파워볼 최근 잭팟 (일시불)</span></span>
                 <span class="jackpot-quickfill-amt" id="quickfill-pb-amt">-</span>
                 <span class="jackpot-quickfill-usd" id="quickfill-pb-usd"></span>
               </button>
-              <button type="button" class="jackpot-quickfill-btn jackpot-quickfill-btn-mm" onclick="fillHomeAmountFromJackpot('megamillions')">
+              <button type="button" class="jackpot-quickfill-btn jackpot-quickfill-btn-mm" onclick="fillHomeAmountFromJackpot('megamillions', this)">
                 <span class="jackpot-quickfill-label">🟡 <span data-i18n="home.quickfillMega">메가밀리언즈 최근 잭팟 (일시불)</span></span>
                 <span class="jackpot-quickfill-amt" id="quickfill-mm-amt">-</span>
                 <span class="jackpot-quickfill-usd" id="quickfill-mm-usd"></span>
@@ -916,23 +916,27 @@
           <p class="panel-desc" data-i18n="odds.panelDesc">1/2억 9,200만, 사실 와닿지 않아서 비교해봤어요.</p>
 
           <div class="bar-row">
+            <span class="bar-icon" aria-hidden="true">🎟️</span>
             <span class="bar-label" data-i18n="odds.barPowerball">파워볼 1등</span>
-            <div class="bar-track"><div class="bar-fill accent" style="width:2%;"></div></div>
+            <div class="bar-track"><div class="bar-fill" style="width:2%;"></div></div>
             <span class="bar-value" data-i18n="odds.oddsPowerball">1 / 2억 9,200만</span>
           </div>
           <div class="bar-row">
+            <span class="bar-icon" aria-hidden="true">⚡</span>
             <span class="bar-label" data-i18n="odds.barLightning">번개 맞을 확률</span>
-            <div class="bar-track"><div class="bar-fill accent" style="width:35%;"></div></div>
+            <div class="bar-track"><div class="bar-fill bar-fill-lightning" style="width:35%;"></div></div>
             <span class="bar-value" data-i18n="odds.oddsLightning">1 / 1만 5,000</span>
           </div>
           <div class="bar-row">
+            <span class="bar-icon" aria-hidden="true">✈️</span>
             <span class="bar-label" data-i18n="odds.barPlane">비행기 사고</span>
-            <div class="bar-track"><div class="bar-fill accent" style="width:60%;"></div></div>
+            <div class="bar-track"><div class="bar-fill bar-fill-plane" style="width:60%;"></div></div>
             <span class="bar-value" data-i18n="odds.oddsPlane">1 / 1,100만</span>
           </div>
           <div class="bar-row">
+            <span class="bar-icon" aria-hidden="true">🦈</span>
             <span class="bar-label" data-i18n="odds.barShark">상어에 물릴 확률</span>
-            <div class="bar-track"><div class="bar-fill accent" style="width:78%;"></div></div>
+            <div class="bar-track"><div class="bar-fill bar-fill-shark" style="width:78%;"></div></div>
             <span class="bar-value" data-i18n="odds.oddsShark">1 / 375만</span>
           </div>
 
@@ -992,6 +996,16 @@
 
           <p class="panel-title-toggle" style="cursor:default; padding-right:0; margin-top:22px; padding-top:16px; border-top:1px dashed var(--border);" data-i18n="odds.historyTitle">📜 역대 잭팟 확인 기록</p>
           <p class="panel-desc" id="jackpot-history-desc">체크한 날짜의 잭팟 금액과 국가별 실수령액을 기록했어요 (역대 최고 5건 포함)</p>
+
+          <!-- 📅 날짜로 당첨번호 찾아보기 — 예전엔 별도 섹션으로 떨어져 있었는데, 같은 "날짜별
+               잭팟/당첨번호" 주제라 사용자 피드백으로 이 목록 바로 위로 옮겨서 하나의 섹션으로
+               합침(2026-07-22). 문구는 script.js가 pickLang()으로 채움 -->
+          <p class="dl-inline-label" id="dl-desc">날짜를 골라보세요 — 파워볼은 월·수·토, 메가밀리언즈는 화·금에 추첨해요</p>
+          <div class="dl-input-row">
+            <input type="date" id="dl-date-input" class="dl-date-input">
+          </div>
+          <div id="dl-result"></div>
+
           <div id="jackpot-history-list" class="jackpot-history-list"></div>
           <a id="jackpot-history-full-link" class="annuity-info-link" href="biggest-jackpot-payouts.html" data-i18n="odds.historyFullLink">📄 역대 최고 잭팟 TOP 5 자세히 보기 →</a>
 
@@ -999,14 +1013,6 @@
           <p class="panel-title-toggle" style="cursor:default; padding-right:0; margin-top:22px; padding-top:16px; border-top:1px dashed var(--border);" id="jh-rank-title">🏆 발표 금액 말고, 실제로 손에 쥐는 돈 기준으로 다시 줄 세우면?</p>
           <p class="panel-desc" id="jh-rank-desc">발표 잭팟(연금) 순위가 아니라, 한국 거주자가 오늘 세율로 실제 받는 금액 기준 TOP 10이에요</p>
           <div id="jh-rank-list" class="jh-rank-list"></div>
-
-          <!-- 📅 날짜로 당첨번호 찾아보기 — 이 섹션 문구도 script.js가 pickLang()으로 채움 -->
-          <p class="panel-title-toggle" style="cursor:default; padding-right:0; margin-top:22px; padding-top:16px; border-top:1px dashed var(--border);" id="dl-title">📅 그날 당첨번호가 궁금하세요?</p>
-          <p class="panel-desc" id="dl-desc">날짜를 골라보세요 — 파워볼은 월·수·토, 메가밀리언즈는 화·금에 추첨해요</p>
-          <div class="dl-input-row">
-            <input type="date" id="dl-date-input" class="dl-date-input">
-          </div>
-          <div id="dl-result"></div>
 
           <!-- 🎯 내 번호 vs 역대급 당첨번호 비교 위젯 — 이 섹션의 문구는 전부 script.js의
                updateMyNumbersUi()가 pickLang()으로 채움(신규 인터랙션 콘텐츠 관례를 따름).
