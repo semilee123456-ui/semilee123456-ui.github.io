@@ -1470,6 +1470,10 @@
   .refund-wizard-result.tag-none{ border-left-color:var(--status-red); }
   .refund-wizard-result.tag-maybe{ border-left-color:var(--status-amber); }
   .refund-wizard-result.tag-check{ border-left-color:var(--teal); }
+  .filing-dday{
+    font-size:var(--fs-note); color:var(--teal); font-weight:700; margin:12px 0 0;
+    padding:8px 10px; background:rgba(21,84,69,0.08); border-radius:8px; text-align:center;
+  }
 
   .refund-check-row{
     display:flex; align-items:flex-start; gap:8px; font-size:var(--fs-note); color:var(--text-dark);

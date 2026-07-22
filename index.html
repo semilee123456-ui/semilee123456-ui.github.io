@@ -1372,6 +1372,16 @@
             <summary class="faq-q" data-i18n="faq.q20">외국납부세액공제(FTC)는 어떻게 받아요? 필요한 서류가 있어요?</summary>
             <p class="faq-a" data-i18n-html="faq.a20">미국에서 낸 세금(30% 원천징수)을 한국 종합소득세 신고 시 상계받으려면, 국세청 인터넷 상담(2026년 7월) 기준으로 다음 서류가 필요해요 — <b>외국정부(미국)가 발행한 납세사실증명, 납부영수증, 원천징수영수증, 당첨 사실을 증명하는 서류</b>.<br><br>이때 적용하는 환율은 당첨금을 <b>실제로 지급받은 날 기준</b>이에요(소득세법 시행령 제50조).<br><br>다만 이 답변은 정식 유권해석이 아닌 상담 답변이라, 실제 신고 전에 세무사와 서류 목록을 다시 확인하시길 권해요.</p>
           </details>
+          <div class="refund-step-card" data-basis="kr">
+            <p class="refund-step-tag" data-i18n="faq.step">STEP</p>
+            <p class="refund-step-title" data-i18n="faq.ftcChecklistTitle">FTC 신청 전, 이 서류들 챙기셨나요?</p>
+            <label class="refund-check-row"><input type="checkbox" onchange="checkFtcDocs()"> <span data-i18n="faq.ftcDoc1">외국정부(미국)가 발행한 납세사실증명</span></label>
+            <label class="refund-check-row"><input type="checkbox" onchange="checkFtcDocs()"> <span data-i18n="faq.ftcDoc2">납부영수증</span></label>
+            <label class="refund-check-row"><input type="checkbox" onchange="checkFtcDocs()"> <span data-i18n="faq.ftcDoc3">원천징수영수증</span></label>
+            <label class="refund-check-row"><input type="checkbox" onchange="checkFtcDocs()"> <span data-i18n="faq.ftcDoc4">당첨 사실을 증명하는 서류</span></label>
+            <p class="refund-wizard-result" id="ftcDocsResult" data-i18n="faq.ftcDocsDefault">체크하면서 신고 준비가 얼마나 됐는지 확인해보세요</p>
+            <p class="filing-dday" id="faq-filing-dday"></p>
+          </div>
           <details class="faq-item" data-cat="tax" data-basis="kr">
             <summary class="faq-q" data-i18n="faq.q21">한국에 온 지 얼마 안 됐는데도 한국 세금을 내야 해요? ⚠️</summary>
             <p class="faq-a" data-i18n-html="faq.a21">간단히 예/아니오로 답하기 어려운 질문이에요. <b>소득세법 제3조 단서</b>에 따르면, 최근 10년 중 국내 거주 기간이 <b>5년 이하인 거주자</b>(국적이 아니라 <b>거주 기간</b> 기준이에요)는 해외 소득을 실제로 한국에 송금했거나 국내에서 받은 경우에만 한국 세금을 내는 특례가 있어요.<br><br>다만 이 특례가 외국인 노동자(E-9 등) 상황에도 그대로 적용되는지는 <b>사례마다 해석이 갈릴 수 있어요</b> — 이미 한국에 생활 기반을 두고 계속 근무 중이라면 국세청이 다르게 볼 수도 있어요.<br><br><b>"송금 안 하면 무조건 세금 안 낸다"고 미리 단정하지 마시고</b>, 실제로 당첨되면 바로 세무사와 상담해서 본인 상황에 맞는 정확한 답을 확인하세요.</p>

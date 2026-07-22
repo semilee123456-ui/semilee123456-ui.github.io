@@ -17,6 +17,7 @@
 // 실제 언어가 확정되기 전엔 구조를 미리 넓히지 않기로 결정함 (2026년 7월) — 근거 없이
 // 짐작한 구조가 실제 필요와 안 맞을 위험이 구조를 안 짜두는 비용보다 크다고 판단.
 let currentLang = 'ko';
+let resultBarAnimatedIn = false; // 홈 실수령/세금 비율 막대가 최초 1회만 0%→목표값 애니메이션되도록 하는 플래그
 // 언어 코드 -> Intl 로케일 문자열(숫자 포맷 toLocaleString 등에 공용으로 씀)
 const LOCALE_MAP = {
   ko: 'ko-KR', en: 'en-US', zh: 'zh-CN', vi: 'vi-VN', th: 'th-TH', ru: 'ru-RU',
@@ -159,6 +160,7 @@ function applyTranslations(){
   updateCalc(); // 국가별 비교 화면(나라별 카드·다른 언어로 보기 패널)도 같은 이유로 뷰와 무관하게 항상 갱신 —
                 // 이게 빠져있어서 "비교 화면에 머문 채로 언어를 바꾸면 카드는 그대로 예전 언어로 남는" 버그가 있었음
   updateFaqTg2Card(); // FAQ "세금 가이드" 요약 카드도 언어만 바뀌는 경우까지 커버(기준 변경 시엔 filterFaq()에서 이미 호출됨)
+  renderFilingDday(); // D-day 문구도 pickLang() 기반이라 언어 전환 시 다시 그려야 함
   applyJackpotData();
   updateDrawCountdown();
   initJackpotCardAmt();
@@ -1716,6 +1718,122 @@ function checkHiddenMoney(){
       btn.classList.add('dimmed');
     }
   });
+}
+
+// FTC(외국납부세액공제) 신청 서류 체크리스트 — checkHiddenMoney()와 같은 패턴(체크만 되고
+// 서버 저장은 안 함, 새로고침하면 초기화됨). 서류 자체를 대신 발급해주는 게 아니라 "내가 뭘
+// 챙겼는지" 스스로 확인하는 용도라 이 정도면 충분하다고 판단
+function checkFtcDocs(){
+  const checks = document.querySelectorAll('#faq-doc-checklist input[type="checkbox"], .refund-step-card input[type="checkbox"][onchange="checkFtcDocs()"]');
+  checks.forEach(c => {
+    const row = c.closest('.refund-check-row');
+    if (row) row.classList.toggle('checked', c.checked);
+  });
+  const total = checks.length;
+  const checkedCount = Array.from(checks).filter(c => c.checked).length;
+  const resultEl = document.getElementById('ftcDocsResult');
+  if (!resultEl) return;
+  if (checkedCount === 0) {
+    resultEl.textContent = resultEl.getAttribute('data-i18n-ko') || resultEl.textContent;
+  } else if (checkedCount === total) {
+    resultEl.textContent = pickLang(
+      '서류 다 챙기셨네요! 이제 신고만 남았어요 🎉',
+      "You've got everything! Just the filing left 🎉",
+      '文件都齐了！只剩申报了 🎉',
+      'Bạn đã chuẩn bị đủ giấy tờ rồi! Chỉ còn khai thuế thôi 🎉',
+      'เอกสารครบแล้ว! เหลือแค่ยื่นภาษี 🎉',
+      'Все документы готовы! Осталось только подать декларацию 🎉',
+      {
+        ar: 'لقد جهزت كل الأوراق! تبقى فقط تقديم الإقرار 🎉',
+        bn: 'সব কাগজপত্র প্রস্তুত! এখন শুধু ফাইল করা বাকি 🎉',
+        fr: 'Vous avez tous les documents ! Il ne reste plus qu’à déclarer 🎉',
+        hi: 'सारे दस्तावेज़ तैयार हैं! अब बस फाइलिंग बाकी है 🎉',
+        id: 'Semua dokumen sudah siap! Tinggal lapor pajak saja 🎉',
+        ja: '書類は全部揃いました！あとは申告だけです 🎉',
+        kk: 'Барлық құжаттар дайын! Тек декларация тапсыру ғана қалды 🎉',
+        km: 'អ្នកបានរៀបចំឯកសារគ្រប់គ្រាន់ហើយ! នៅសល់តែការដាក់ពន្ធ 🎉',
+        ky: 'Бардык документтер даяр! Декларация тапшыруу гана калды 🎉',
+        lo: 'ເອກະສານພ້ອມໝົດແລ້ວ! ເຫຼືອແຕ່ຍື່ນພາສີ 🎉',
+        mn: 'Бүх бичиг баримт бэлэн боллоо! Зөвхөн татварын мэдүүлэг үлдлээ 🎉',
+        my: 'စာရွက်စာတမ်းအားလုံး ပြင်ဆင်ပြီးပါပြီ! အခွန်တင်ရန်သာ ကျန်တော့သည် 🎉',
+        ne: 'सबै कागजात तयार भयो! अब कर विवरण बाँकी छ 🎉',
+        si: 'ලේඛන සියල්ල සූදානම්! ඉතිරිව ඇත්තේ බදු ගොනු කිරීම පමණයි 🎉',
+        tl: 'Kumpleto na ang mga dokumento! Ang natitira na lang ay ang pag-file 🎉',
+        ur: 'تمام دستاویزات تیار ہیں! صرف فائلنگ باقی ہے 🎉',
+        uz: 'Barcha hujjatlar tayyor! Faqat deklaratsiya topshirish qoldi 🎉',
+      }
+    );
+  } else {
+    resultEl.textContent = pickLang(
+      `${checkedCount}/${total}개 챙겼어요 — 나머지도 확인해보세요`,
+      `${checkedCount}/${total} ready — check off the rest`,
+      `已备齐 ${checkedCount}/${total} 项 — 请确认剩下的`,
+      `Đã chuẩn bị ${checkedCount}/${total} — kiểm tra phần còn lại`,
+      `พร้อมแล้ว ${checkedCount}/${total} รายการ — ตรวจสอบที่เหลือด้วย`,
+      `Готово ${checkedCount}/${total} — проверьте остальное`,
+      {
+        ar: `جهزت ${checkedCount}/${total} — تحقق من الباقي`,
+        bn: `${checkedCount}/${total}টি প্রস্তুত — বাকিগুলো দেখুন`,
+        fr: `${checkedCount}/${total} prêts — vérifiez le reste`,
+        hi: `${checkedCount}/${total} तैयार — बाकी भी जांच लें`,
+        id: `${checkedCount}/${total} siap — cek sisanya`,
+        ja: `${checkedCount}/${total}個準備できました — 残りも確認してください`,
+        kk: `${checkedCount}/${total} дайын — қалғанын тексеріңіз`,
+        km: `${checkedCount}/${total} បានរៀបចំ — សូមពិនិត្យមើលផ្នែកដែលនៅសល់`,
+        ky: `${checkedCount}/${total} даяр — калганын текшериңиз`,
+        lo: `ພ້ອມແລ້ວ ${checkedCount}/${total} — ກວດສອບສ່ວນທີ່ເຫຼືອ`,
+        mn: `${checkedCount}/${total} бэлэн боллоо — үлдсэнийг шалгана уу`,
+        my: `${checkedCount}/${total} ပြင်ဆင်ပြီးပါပြီ — ကျန်တာလည်း စစ်ဆေးပါ`,
+        ne: `${checkedCount}/${total} तयार — बाँकी पनि जाँच्नुहोस्`,
+        si: `${checkedCount}/${total} සූදානම් — ඉතිරිය ද පරීක්ෂා කරන්න`,
+        tl: `${checkedCount}/${total} handa na — tingnan din ang natitira`,
+        ur: `${checkedCount}/${total} تیار ہیں — باقی بھی چیک کریں`,
+        uz: `${checkedCount}/${total} tayyor — qolganini ham tekshiring`,
+      }
+    );
+  }
+}
+
+// FTC 체크리스트 카드 아래에 종합소득세 신고 마감일(다음 해 5/31)까지 D-day를 보여줌 —
+// FAQ 텍스트(a19/a20)로만 읽고 지나치던 정보를, 실제로 언제까지 해야 하는지 숫자로 체감하게 함
+function renderFilingDday(){
+  const el = document.getElementById('faq-filing-dday');
+  if (!el) return;
+  const now = new Date();
+  const year = now.getFullYear();
+  // 5/31 자정(다음날 0시) 기준으로 지났으면 내년으로
+  const thisYearDeadline = new Date(year, 4, 31);
+  const deadline = now <= thisYearDeadline ? thisYearDeadline : new Date(year + 1, 4, 31);
+  const diffDays = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+  const dateStr = `${deadline.getFullYear()}.${String(deadline.getMonth() + 1).padStart(2, '0')}.${String(deadline.getDate()).padStart(2, '0')}`;
+  const label = pickLang(
+    `⏰ 종합소득세 신고 마감까지 D-${diffDays} (${dateStr})`,
+    `⏰ D-${diffDays} until the filing deadline (${dateStr})`,
+    `⏰ 距综合所得税申报截止还有 D-${diffDays} 天 (${dateStr})`,
+    `⏰ Còn D-${diffDays} ngày đến hạn khai thuế (${dateStr})`,
+    `⏰ เหลืออีก D-${diffDays} วันถึงกำหนดยื่นภาษี (${dateStr})`,
+    `⏰ Осталось D-${diffDays} дней до срока подачи декларации (${dateStr})`,
+    {
+      ar: `⏰ D-${diffDays} يوم حتى موعد تقديم الإقرار (${dateStr})`,
+      bn: `⏰ কর ফাইলিং শেষ হতে D-${diffDays} দিন বাকি (${dateStr})`,
+      fr: `⏰ D-${diffDays} jours avant la date limite de déclaration (${dateStr})`,
+      hi: `⏰ फाइलिंग की समय सीमा तक D-${diffDays} दिन (${dateStr})`,
+      id: `⏰ D-${diffDays} hari menuju batas waktu lapor pajak (${dateStr})`,
+      ja: `⏰ 申告期限まで D-${diffDays}日 (${dateStr})`,
+      kk: `⏰ Декларация тапсыру мерзіміне дейін D-${diffDays} күн (${dateStr})`,
+      km: `⏰ D-${diffDays} ថ្ងៃទៀតដល់កាលកំណត់ដាក់ពន្ធ (${dateStr})`,
+      ky: `⏰ Декларация мөөнөтүнө чейин D-${diffDays} күн (${dateStr})`,
+      lo: `⏰ ອີກ D-${diffDays} ວັນຈະຮອດກຳນົດຍື່ນພາສີ (${dateStr})`,
+      mn: `⏰ Татварын мэдүүлгийн эцсийн хугацаанд D-${diffDays} өдөр үлдлээ (${dateStr})`,
+      my: `⏰ အခွန်တင်ရမည့်နောက်ဆုံးရက်အထိ D-${diffDays} ရက် (${dateStr})`,
+      ne: `⏰ कर विवरण बुझाउने अन्तिम मितिसम्म D-${diffDays} दिन (${dateStr})`,
+      si: `⏰ බදු ගොනු කිරීමේ අවසන් දිනයට D-${diffDays} දින (${dateStr})`,
+      tl: `⏰ D-${diffDays} araw hanggang sa deadline ng pag-file (${dateStr})`,
+      ur: `⏰ فائلنگ کی آخری تاریخ تک D-${diffDays} دن (${dateStr})`,
+      uz: `⏰ Deklaratsiya topshirish muddatigacha D-${diffDays} kun qoldi (${dateStr})`,
+    }
+  );
+  el.textContent = label;
 }
 
 function checkRefundPossibility(){
@@ -4177,7 +4295,7 @@ function scrollToMainResult(){
 // renderJackpotHistory()/renderJackpotTakeHomeRanking()/renderNumberFrequencyStats()는 확률체감
 // 탭 전용 데이터(odds-data.js)가 필요해서 여기서 안 부름 — go('odds')가 처음 호출될 때 지연 로드
 // 후 그려짐(renderOddsTabDataWhenReady, 2026-07-22 성능 개선)
-document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); updateDateLookupUi(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); });
+document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); updateDateLookupUi(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); renderFilingDday(); });
 
 // 다른 페이지(korea-resident-us-lottery-tax.html 등)에서 "index.html#faq"처럼 해시가 붙은 링크로
 // 들어왔을 때, 이 SPA는 해시를 안 보고 항상 홈 화면부터 그려서 그 링크가 사실상 무시되던 문제 수정.
@@ -6128,7 +6246,15 @@ function updateHomeCalc(usdOverride){
   // 실수령/세금 비율을 숫자로만 보여주는 대신 막대그래프로도 한눈에 보이게 함 —
   // 다른 복권 세금 계산기들(infinitycalculator 등)에 공통으로 있는 시각적 breakdown 패턴 참고
   const takeHomePct = Math.max(0, Math.min(100, 100 - taxImpactPct));
-  document.getElementById('result-visual-take').style.width = takeHomePct + '%';
+  const takeBar = document.getElementById('result-visual-take');
+  // 페이지를 막 열었을 때 첫 렌더링에서만 0%→목표값으로 차오르는 걸 보여줌(그 뒤 슬라이더 조작 시
+  // 값이 바뀌는 건 CSS transition(styles.css .result-visual-bar-take)으로 이미 자연스럽게
+  // 움직이므로 매번 다시 재생하면 오히려 과함) — animateBarsIn()과 같은 Element.animate() 방식
+  if (!resultBarAnimatedIn && typeof takeBar.animate === 'function') {
+    resultBarAnimatedIn = true;
+    takeBar.animate([{ width: '0%' }, { width: takeHomePct + '%' }], { duration: 900, easing: 'cubic-bezier(0.16,1,0.3,1)' });
+  }
+  takeBar.style.width = takeHomePct + '%';
   document.getElementById('result-visual-take-pct').textContent = takeHomePct + '%';
   document.getElementById('result-visual-tax-pct').textContent = taxImpactPct + '%';
 
