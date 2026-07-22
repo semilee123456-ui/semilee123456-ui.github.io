@@ -2372,24 +2372,23 @@ function renderLatestDraw(){
     const dateEl = document.getElementById(`draw-date-${game}`);
     const ballsEl = document.getElementById(`draw-balls-${game}`);
     if (!dateEl || !ballsEl) return;
-    const [, m, d] = draw.date.split('-');
     dateEl.textContent = pickLang(
-      `🎱 최근 당첨번호 (${m}.${d})`,
-      `🎱 Latest numbers (${m}/${d})`,
-      `🎱 最新开奖号码 (${m}.${d})`,
-      `🎱 Số trúng gần nhất (${d}/${m})`,
-      `🎱 เลขล่าสุด (${d}/${m})`,
-      `🎱 Последние номера (${d}.${m})`,
+      `🎱 최근 당첨번호`,
+      `🎱 Latest numbers`,
+      `🎱 最新开奖号码`,
+      `🎱 Số trúng gần nhất`,
+      `🎱 เลขล่าสุด`,
+      `🎱 Последние номера`,
       {
-        ar: `🎱 آخر الأرقام الفائزة (${d}/${m})`, bn: `🎱 সাম্প্রতিক বিজয়ী নম্বর (${d}/${m})`,
-        fr: `🎱 Derniers numéros gagnants (${d}/${m})`, hi: `🎱 नवीनतम विजेता नंबर (${d}/${m})`,
-        id: `🎱 Nomor terbaru (${d}/${m})`, ja: `🎱 最新の当選番号 (${m}.${d})`,
-        kk: `🎱 Соңғы ұтыс сандары (${d}/${m})`, km: `🎱 លេខឈ្នះថ្មីៗ (${d}/${m})`,
-        ky: `🎱 Акыркы утуш сандары (${d}/${m})`, lo: `🎱 ເລກຖືກລ່າສຸດ (${d}/${m})`,
-        mn: `🎱 Сүүлийн ялсан дугаарууд (${d}/${m})`, my: `🎱 နောက်ဆုံးထွက်ဂဏန်းများ (${d}/${m})`,
-        ne: `🎱 पछिल्लो विजेता नम्बर (${d}/${m})`, si: `🎱 මෑත ජයග්‍රාහී අංක (${d}/${m})`,
-        tl: `🎱 Kamakailang panalong numero (${d}/${m})`, ur: `🎱 حالیہ جیتنے والے نمبر (${d}/${m})`,
-        uz: `🎱 Songgi g'olib raqamlar (${d}/${m})`,
+        ar: `🎱 آخر الأرقام الفائزة`, bn: `🎱 সাম্প্রতিক বিজয়ী নম্বর`,
+        fr: `🎱 Derniers numéros gagnants`, hi: `🎱 नवीनतम विजेता नंबर`,
+        id: `🎱 Nomor terbaru`, ja: `🎱 最新の当選番号`,
+        kk: `🎱 Соңғы ұтыс сандары`, km: `🎱 លេខឈ្នះថ្មីៗ`,
+        ky: `🎱 Акыркы утуш сандары`, lo: `🎱 ເລກຖືກລ່າສຸດ`,
+        mn: `🎱 Сүүлийн ялсан дугаарууд`, my: `🎱 နောက်ဆုံးထွက်ဂဏန်းများ`,
+        ne: `🎱 पछिल्लो विजेता नम्बर`, si: `🎱 මෑත ජයග්‍රාහී අංක`,
+        tl: `🎱 Kamakailang panalong numero`, ur: `🎱 حالیہ جیتنے والے نمبر`,
+        uz: `🎱 Songgi g'olib raqamlar`,
       }
     );
     ballsEl.innerHTML = draw.numbers.map(n => `<span class="draw-ball">${n}</span>`).join('')
@@ -5592,31 +5591,55 @@ function getProfileShortLabel(profile){
   return full.replace(/\s*[（(][^）)]*[)）]\s*$/, '');
 }
 
+// 실수령액이 같은 나라끼리 묶은 카드/지도 라벨 — 국기 배지만 있고 나라 이름이 아예 안 보이면
+// (특히 국기만 봐서는 못 알아보는 나라가 섞였을 때) 어느 나라들인지 알 길이 없어서, 3개국까지는
+// 이름을 그대로 나열하고, 그보다 많아지면(카드 레이아웃도 이 기준으로 나뉨) "N개국 동일"로 축약함
+function getGroupSameLabel(rows){
+  if (rows.length <= 3) {
+    return rows.map(row => getProfileShortLabel(row.profile)).join(' · ');
+  }
+  return pickLang(`${rows.length}개국 동일`, `Same for ${rows.length} countries`, `${rows.length}个国家相同`, `Giống nhau ở ${rows.length} nước`, `เท่ากันใน ${rows.length} ประเทศ`, `Одинаково для ${rows.length} стран`, buildSameCountMore(rows.length));
+}
+
+// breakdown 상세 섹션처럼 원문 label을 그대로 쓰는 곳은 "OO 거주자 (실제 OO 거주 기준)"처럼
+// 괄호 안에 공백이 여러 개 있어서, 좁은 화면(아이폰 등)에서 줄바꿈이 괄호 중간("(실제"에서
+// 뚝 끊기고 "우즈베키스탄 거주 기준)"이 다음 줄로 밀림)에 걸리는 문제가 있었음. 괄호 절 안의
+// 공백을 줄바꿈 없는 공백(nbsp)으로 바꿔서 평소엔 절 전체가 붙어 다니게 하되, white-space:nowrap
+// 처럼 완전히 줄바꿈을 막아버리진 않음 — 아주 좁은 화면에서 절 전체도 안 들어갈 만큼 길면
+// (예: ", 근사치)"까지 붙는 경우) overflow-wrap:break-word 폴백으로 넘치지 않고 그냥 깨져서
+// 들어가게 함(카드 밖으로 튀어나오는 것보단 나음)
+function appendLabelWithNowrapParen(el, text){
+  const parenStart = text.search(/[（(]/);
+  if (parenStart === -1) { el.append(document.createTextNode(text)); return; }
+  el.append(document.createTextNode(text.slice(0, parenStart)));
+  el.append(document.createTextNode(text.slice(parenStart).replace(/ /g, ' ')));
+}
+
 // "한국에 사는 OO 국적자" 안내 페이지 목록 — 실제 그 나라 세법이 아니라 한국 세법(위 kr 기준)을
 // 그대로 따르는 번역 콘텐츠라서, COUNTRY_TAX_PROFILES(진짜 다른 나라 세금 비교)와는 완전히 분리해서 관리함.
 // 새 언어 추가할 땐 이 배열에 한 줄만 추가하면 됨.
 const LANGUAGE_CONTENT_PAGES = [
-  { flagCode: 'VN', label: '한국에 사는 베트남분이라면', labelEn: 'Living in Korea as a Vietnamese national', labelZh: '住在韩国的越南人', labelVi: 'Là công dân Việt Nam sống ở Hàn Quốc', labelTh: 'สำหรับชาวเวียดนามที่อาศัยในเกาหลี', labelRu: 'Для граждан Вьетнама, живущих в Корее', contentPage: 'vietnamese-in-korea-lottery-tax.html', contentLabel: 'Tiếng Việt →' },
-  { flagCode: 'CN', label: '한국에 사는 중국분이라면', labelEn: 'Living in Korea as a Chinese national', labelZh: '住在韩国的中国人', labelVi: 'Là công dân Trung Quốc sống ở Hàn Quốc', labelTh: 'สำหรับชาวจีนที่อาศัยในเกาหลี', labelRu: 'Для граждан Китая, живущих в Корее', contentPage: 'china_in_korea_lottery_tax.html', contentLabel: '中文 →' },
-  { flagCode: 'TH', label: '한국에 사는 태국분이라면', labelEn: 'Living in Korea as a Thai national', labelZh: '住在韩国的泰国人', labelVi: 'Là công dân Thái Lan sống ở Hàn Quốc', labelTh: 'สำหรับชาวไทยที่อาศัยในเกาหลี', labelRu: 'Для граждан Таиланда, живущих в Корее', contentPage: 'thai_in_korea_lottery_tax.html', contentLabel: 'ภาษาไทย →' },
-  { flagCode: 'PH', label: '한국에 사는 필리핀분이라면', labelEn: 'Living in Korea as a Filipino national', labelZh: '住在韩国的菲律宾人', labelVi: 'Là công dân Philippines sống ở Hàn Quốc', labelTh: 'สำหรับชาวฟิลิปปินส์ที่อาศัยในเกาหลี', labelRu: 'Для граждан Филиппин, живущих в Корее', contentPage: 'philippines_in_korea_lottery_tax.html', contentLabel: 'Tagalog →' },
+  { flagCode: 'VN', label: '한국에 사는 베트남분이라면', labelEn: 'Living in Korea as a Vietnamese national', labelZh: '住在韩国的越南人', labelVi: 'Là công dân Việt Nam sống ở Hàn Quốc', labelTh: 'สำหรับชาวเวียดนามที่อาศัยในเกาหลี', labelRu: 'Для граждан Вьетнама, живущих в Корее', contentPage: 'vietnamese-in-korea-lottery-tax.html', contentLabel: 'Tiếng Việt →', more: buildCountryMore('vn') },
+  { flagCode: 'CN', label: '한국에 사는 중국분이라면', labelEn: 'Living in Korea as a Chinese national', labelZh: '住在韩国的中国人', labelVi: 'Là công dân Trung Quốc sống ở Hàn Quốc', labelTh: 'สำหรับชาวจีนที่อาศัยในเกาหลี', labelRu: 'Для граждан Китая, живущих в Корее', contentPage: 'china_in_korea_lottery_tax.html', contentLabel: '中文 →', more: buildCountryMore('cn') },
+  { flagCode: 'TH', label: '한국에 사는 태국분이라면', labelEn: 'Living in Korea as a Thai national', labelZh: '住在韩国的泰国人', labelVi: 'Là công dân Thái Lan sống ở Hàn Quốc', labelTh: 'สำหรับชาวไทยที่อาศัยในเกาหลี', labelRu: 'Для граждан Таиланда, живущих в Корее', contentPage: 'thai_in_korea_lottery_tax.html', contentLabel: 'ภาษาไทย →', more: buildCountryMore('th') },
+  { flagCode: 'PH', label: '한국에 사는 필리핀분이라면', labelEn: 'Living in Korea as a Filipino national', labelZh: '住在韩国的菲律宾人', labelVi: 'Là công dân Philippines sống ở Hàn Quốc', labelTh: 'สำหรับชาวฟิลิปปินส์ที่อาศัยในเกาหลี', labelRu: 'Для граждан Филиппин, живущих в Корее', contentPage: 'philippines_in_korea_lottery_tax.html', contentLabel: 'Tagalog →', more: buildCountryMore('ph') },
   { flagCode: "AR", label: "한국에 사는 아랍어권 분이라면", labelEn: "Living in Korea and speak Arabic", labelZh: "住在韩国的阿拉伯语使用者", labelVi: "Nói tiếng Ả Rập và sống ở Hàn Quốc", labelTh: "สำหรับผู้พูดภาษาอาหรับที่อาศัยในเกาหลี", labelRu: "Для арабоговорящих, живущих в Корее", contentPage: "arabic_in_korea_lottery_tax.html", contentLabel: "العربية →" },
-  { flagCode: "BD", label: "한국에 사는 방글라데시분이라면", labelEn: "Living in Korea as a Bangladeshi national", labelZh: "住在韩国的孟加拉国人", labelVi: "Là công dân Bangladesh sống ở Hàn Quốc", labelTh: "สำหรับชาวบังกลาเทศที่อาศัยในเกาหลี", labelRu: "Для граждан Бангладеш, живущих в Корее", contentPage: "bengali_in_korea_lottery_tax.html", contentLabel: "বাংলা →" },
-  { flagCode: "KH", label: "한국에 사는 캄보디아분이라면", labelEn: "Living in Korea as a Cambodian national", labelZh: "住在韩国的柬埔寨人", labelVi: "Là công dân Campuchia sống ở Hàn Quốc", labelTh: "สำหรับชาวกัมพูชาที่อาศัยในเกาหลี", labelRu: "Для граждан Камбоджи, живущих в Корее", contentPage: "cambodian_in_korea_lottery_tax.html", contentLabel: "ខ្មែរ →" },
+  { flagCode: "BD", label: "한국에 사는 방글라데시분이라면", labelEn: "Living in Korea as a Bangladeshi national", labelZh: "住在韩国的孟加拉国人", labelVi: "Là công dân Bangladesh sống ở Hàn Quốc", labelTh: "สำหรับชาวบังกลาเทศที่อาศัยในเกาหลี", labelRu: "Для граждан Бангладеш, живущих в Корее", contentPage: "bengali_in_korea_lottery_tax.html", contentLabel: "বাংলা →", more: buildCountryMore('bd') },
+  { flagCode: "KH", label: "한국에 사는 캄보디아분이라면", labelEn: "Living in Korea as a Cambodian national", labelZh: "住在韩国的柬埔寨人", labelVi: "Là công dân Campuchia sống ở Hàn Quốc", labelTh: "สำหรับชาวกัมพูชาที่อาศัยในเกาหลี", labelRu: "Для граждан Камбоджи, живущих в Корее", contentPage: "cambodian_in_korea_lottery_tax.html", contentLabel: "ខ្មែរ →", more: buildCountryMore('kh') },
   { flagCode: "FR", label: "한국에 사는 프랑스어권 분이라면", labelEn: "Living in Korea and speak French", labelZh: "住在韩国的法语使用者", labelVi: "Nói tiếng Pháp và sống ở Hàn Quốc", labelTh: "สำหรับผู้พูดภาษาฝรั่งเศสที่อาศัยในเกาหลี", labelRu: "Для франкоговорящих, живущих в Корее", contentPage: "french_in_korea_lottery_tax.html", contentLabel: "Français →" },
-  { flagCode: "IN", label: "한국에 사는 인도분이라면 (힌디어)", labelEn: "Living in Korea as an Indian national (Hindi)", labelZh: "住在韩国的印度人（印地语）", labelVi: "Là công dân Ấn Độ sống ở Hàn Quốc (tiếng Hindi)", labelTh: "สำหรับชาวอินเดียที่อาศัยในเกาหลี (ภาษาฮินดี)", labelRu: "Для граждан Индии, живущих в Корее (хинди)", contentPage: "hindi_in_korea_lottery_tax.html", contentLabel: "हिन्दी →" },
-  { flagCode: "ID", label: "한국에 사는 인도네시아분이라면", labelEn: "Living in Korea as an Indonesian national", labelZh: "住在韩国的印尼人", labelVi: "Là công dân Indonesia sống ở Hàn Quốc", labelTh: "สำหรับชาวอินโดนีเซียที่อาศัยในเกาหลี", labelRu: "Для граждан Индонезии, живущих в Корее", contentPage: "indonesian_in_korea_lottery_tax.html", contentLabel: "Bahasa Indonesia →" },
-  { flagCode: "JP", label: "한국에 사는 일본분이라면", labelEn: "Living in Korea as a Japanese national", labelZh: "住在韩国的日本人", labelVi: "Là công dân Nhật Bản sống ở Hàn Quốc", labelTh: "สำหรับชาวญี่ปุ่นที่อาศัยในเกาหลี", labelRu: "Для граждан Японии, живущих в Корее", contentPage: "japanese_in_korea_lottery_tax.html", contentLabel: "日本語 →" },
-  { flagCode: "KZ", label: "한국에 사는 카자흐스탄분이라면", labelEn: "Living in Korea as a Kazakhstani national", labelZh: "住在韩国的哈萨克斯坦人", labelVi: "Là công dân Kazakhstan sống ở Hàn Quốc", labelTh: "สำหรับชาวคาซัคสถานที่อาศัยในเกาหลี", labelRu: "Для граждан Казахстана, живущих в Корее", contentPage: "kazakh_in_korea_lottery_tax.html", contentLabel: "Қазақша →" },
-  { flagCode: "KG", label: "한국에 사는 키르기스스탄분이라면", labelEn: "Living in Korea as a Kyrgyzstani national", labelZh: "住在韩国的吉尔吉斯斯坦人", labelVi: "Là công dân Kyrgyzstan sống ở Hàn Quốc", labelTh: "สำหรับชาวคีร์กีซสถานที่อาศัยในเกาหลี", labelRu: "Для граждан Кыргызстана, живущих в Корее", contentPage: "kyrgyz_in_korea_lottery_tax.html", contentLabel: "Кыргызча →" },
-  { flagCode: "LA", label: "한국에 사는 라오스분이라면", labelEn: "Living in Korea as a Laotian national", labelZh: "住在韩国的老挝人", labelVi: "Là công dân Lào sống ở Hàn Quốc", labelTh: "สำหรับชาวลาวที่อาศัยในเกาหลี", labelRu: "Для граждан Лаоса, живущих в Корее", contentPage: "lao_in_korea_lottery_tax.html", contentLabel: "ລາວ →" },
-  { flagCode: "MN", label: "한국에 사는 몽골분이라면", labelEn: "Living in Korea as a Mongolian national", labelZh: "住在韩国的蒙古人", labelVi: "Là công dân Mông Cổ sống ở Hàn Quốc", labelTh: "สำหรับชาวมองโกเลียที่อาศัยในเกาหลี", labelRu: "Для граждан Монголии, живущих в Корее", contentPage: "mongolian_in_korea_lottery_tax.html", contentLabel: "Монгол →" },
-  { flagCode: "MM", label: "한국에 사는 미얀마분이라면", labelEn: "Living in Korea as a Myanmar national", labelZh: "住在韩国的缅甸人", labelVi: "Là công dân Myanmar sống ở Hàn Quốc", labelTh: "สำหรับชาวเมียนมาที่อาศัยในเกาหลี", labelRu: "Для граждан Мьянмы, живущих в Корее", contentPage: "myanmar_in_korea_lottery_tax.html", contentLabel: "မြန်မာ →" },
-  { flagCode: "NP", label: "한국에 사는 네팔분이라면", labelEn: "Living in Korea as a Nepali national", labelZh: "住在韩国的尼泊尔人", labelVi: "Là công dân Nepal sống ở Hàn Quốc", labelTh: "สำหรับชาวเนปาลที่อาศัยในเกาหลี", labelRu: "Для граждан Непала, живущих в Корее", contentPage: "nepali_in_korea_lottery_tax.html", contentLabel: "नेपाली →" },
-  { flagCode: "RU", label: "한국에 사는 러시아분이라면", labelEn: "Living in Korea as a Russian national", labelZh: "住在韩国的俄罗斯人", labelVi: "Là công dân Nga sống ở Hàn Quốc", labelTh: "สำหรับชาวรัสเซียที่อาศัยในเกาหลี", labelRu: "Для граждан России, живущих в Корее", contentPage: "russian_in_korea_lottery_tax.html", contentLabel: "Русский →" },
-  { flagCode: "LK", label: "한국에 사는 스리랑카분이라면", labelEn: "Living in Korea as a Sri Lankan national", labelZh: "住在韩国的斯里兰卡人", labelVi: "Là công dân Sri Lanka sống ở Hàn Quốc", labelTh: "สำหรับชาวศรีลังกาที่อาศัยในเกาหลี", labelRu: "Для граждан Шри-Ланки, живущих в Корее", contentPage: "srilanka_in_korea_lottery_tax.html", contentLabel: "සිංහල →" },
-  { flagCode: "PK", label: "한국에 사는 파키스탄분이라면", labelEn: "Living in Korea as a Pakistani national", labelZh: "住在韩国的巴基斯坦人", labelVi: "Là công dân Pakistan sống ở Hàn Quốc", labelTh: "สำหรับชาวปากีสถานที่อาศัยในเกาหลี", labelRu: "Для граждан Пакистана, живущих в Корее", contentPage: "urdu_in_korea_lottery_tax.html", contentLabel: "اردو →" },
-  { flagCode: "UZ", label: "한국에 사는 우즈베키스탄분이라면", labelEn: "Living in Korea as an Uzbekistani national", labelZh: "住在韩国的乌兹别克斯坦人", labelVi: "Là công dân Uzbekistan sống ở Hàn Quốc", labelTh: "สำหรับชาวอุซเบกิสถานที่อาศัยในเกาหลี", labelRu: "Для граждан Узбекистана, живущих в Корее", contentPage: "uzbek_in_korea_lottery_tax.html", contentLabel: "O'zbek →" },
+  { flagCode: "IN", label: "한국에 사는 인도분이라면 (힌디어)", labelEn: "Living in Korea as an Indian national (Hindi)", labelZh: "住在韩国的印度人（印地语）", labelVi: "Là công dân Ấn Độ sống ở Hàn Quốc (tiếng Hindi)", labelTh: "สำหรับชาวอินเดียที่อาศัยในเกาหลี (ภาษาฮินดี)", labelRu: "Для граждан Индии, живущих в Корее (хинди)", contentPage: "hindi_in_korea_lottery_tax.html", contentLabel: "हिन्दी →", more: buildCountryMore('in') },
+  { flagCode: "ID", label: "한국에 사는 인도네시아분이라면", labelEn: "Living in Korea as an Indonesian national", labelZh: "住在韩国的印尼人", labelVi: "Là công dân Indonesia sống ở Hàn Quốc", labelTh: "สำหรับชาวอินโดนีเซียที่อาศัยในเกาหลี", labelRu: "Для граждан Индонезии, живущих в Корее", contentPage: "indonesian_in_korea_lottery_tax.html", contentLabel: "Bahasa Indonesia →", more: buildCountryMore('id') },
+  { flagCode: "JP", label: "한국에 사는 일본분이라면", labelEn: "Living in Korea as a Japanese national", labelZh: "住在韩国的日本人", labelVi: "Là công dân Nhật Bản sống ở Hàn Quốc", labelTh: "สำหรับชาวญี่ปุ่นที่อาศัยในเกาหลี", labelRu: "Для граждан Японии, живущих в Корее", contentPage: "japanese_in_korea_lottery_tax.html", contentLabel: "日本語 →", more: buildCountryMore('jp') },
+  { flagCode: "KZ", label: "한국에 사는 카자흐스탄분이라면", labelEn: "Living in Korea as a Kazakhstani national", labelZh: "住在韩国的哈萨克斯坦人", labelVi: "Là công dân Kazakhstan sống ở Hàn Quốc", labelTh: "สำหรับชาวคาซัคสถานที่อาศัยในเกาหลี", labelRu: "Для граждан Казахстана, живущих в Корее", contentPage: "kazakh_in_korea_lottery_tax.html", contentLabel: "Қазақша →", more: buildCountryMore('kz') },
+  { flagCode: "KG", label: "한국에 사는 키르기스스탄분이라면", labelEn: "Living in Korea as a Kyrgyzstani national", labelZh: "住在韩国的吉尔吉斯斯坦人", labelVi: "Là công dân Kyrgyzstan sống ở Hàn Quốc", labelTh: "สำหรับชาวคีร์กีซสถานที่อาศัยในเกาหลี", labelRu: "Для граждан Кыргызстана, живущих в Корее", contentPage: "kyrgyz_in_korea_lottery_tax.html", contentLabel: "Кыргызча →", more: buildCountryMore('kg') },
+  { flagCode: "LA", label: "한국에 사는 라오스분이라면", labelEn: "Living in Korea as a Laotian national", labelZh: "住在韩国的老挝人", labelVi: "Là công dân Lào sống ở Hàn Quốc", labelTh: "สำหรับชาวลาวที่อาศัยในเกาหลี", labelRu: "Для граждан Лаоса, живущих в Корее", contentPage: "lao_in_korea_lottery_tax.html", contentLabel: "ລາວ →", more: buildCountryMore('la') },
+  { flagCode: "MN", label: "한국에 사는 몽골분이라면", labelEn: "Living in Korea as a Mongolian national", labelZh: "住在韩国的蒙古人", labelVi: "Là công dân Mông Cổ sống ở Hàn Quốc", labelTh: "สำหรับชาวมองโกเลียที่อาศัยในเกาหลี", labelRu: "Для граждан Монголии, живущих в Корее", contentPage: "mongolian_in_korea_lottery_tax.html", contentLabel: "Монгол →", more: buildCountryMore('mn') },
+  { flagCode: "MM", label: "한국에 사는 미얀마분이라면", labelEn: "Living in Korea as a Myanmar national", labelZh: "住在韩国的缅甸人", labelVi: "Là công dân Myanmar sống ở Hàn Quốc", labelTh: "สำหรับชาวเมียนมาที่อาศัยในเกาหลี", labelRu: "Для граждан Мьянмы, живущих в Корее", contentPage: "myanmar_in_korea_lottery_tax.html", contentLabel: "မြန်မာ →", more: buildCountryMore('mm') },
+  { flagCode: "NP", label: "한국에 사는 네팔분이라면", labelEn: "Living in Korea as a Nepali national", labelZh: "住在韩国的尼泊尔人", labelVi: "Là công dân Nepal sống ở Hàn Quốc", labelTh: "สำหรับชาวเนปาลที่อาศัยในเกาหลี", labelRu: "Для граждан Непала, живущих в Корее", contentPage: "nepali_in_korea_lottery_tax.html", contentLabel: "नेपाली →", more: buildCountryMore('np') },
+  { flagCode: "RU", label: "한국에 사는 러시아분이라면", labelEn: "Living in Korea as a Russian national", labelZh: "住在韩国的俄罗斯人", labelVi: "Là công dân Nga sống ở Hàn Quốc", labelTh: "สำหรับชาวรัสเซียที่อาศัยในเกาหลี", labelRu: "Для граждан России, живущих в Корее", contentPage: "russian_in_korea_lottery_tax.html", contentLabel: "Русский →", more: buildCountryMore('ru') },
+  { flagCode: "LK", label: "한국에 사는 스리랑카분이라면", labelEn: "Living in Korea as a Sri Lankan national", labelZh: "住在韩国的斯里兰卡人", labelVi: "Là công dân Sri Lanka sống ở Hàn Quốc", labelTh: "สำหรับชาวศรีลังกาที่อาศัยในเกาหลี", labelRu: "Для граждан Шри-Ланки, живущих в Корее", contentPage: "srilanka_in_korea_lottery_tax.html", contentLabel: "සිංහල →", more: buildCountryMore('lk') },
+  { flagCode: "PK", label: "한국에 사는 파키스탄분이라면", labelEn: "Living in Korea as a Pakistani national", labelZh: "住在韩国的巴基斯坦人", labelVi: "Là công dân Pakistan sống ở Hàn Quốc", labelTh: "สำหรับชาวปากีสถานที่อาศัยในเกาหลี", labelRu: "Для граждан Пакистана, живущих в Корее", contentPage: "urdu_in_korea_lottery_tax.html", contentLabel: "اردو →", more: buildCountryMore('pk') },
+  { flagCode: "UZ", label: "한국에 사는 우즈베키스탄분이라면", labelEn: "Living in Korea as an Uzbekistani national", labelZh: "住在韩国的乌兹别克斯坦人", labelVi: "Là công dân Uzbekistan sống ở Hàn Quốc", labelTh: "สำหรับชาวอุซเบกิสถานที่อาศัยในเกาหลี", labelRu: "Для граждан Узбекистана, живущих в Корее", contentPage: "uzbek_in_korea_lottery_tax.html", contentLabel: "O'zbek →", more: buildCountryMore('uz') },
   { flagCode: "ES", label: "한국에 사는 스페인어권 분이라면", labelEn: "Living in Korea and speak Spanish", labelZh: "住在韩国的西班牙语使用者", labelVi: "Nói tiếng Tây Ban Nha và sống ở Hàn Quốc", labelTh: "สำหรับผู้พูดภาษาสเปนที่อาศัยในเกาหลี", labelRu: "Для испаноговорящих, живущих в Корее", contentPage: "spanish_in_korea_lottery_tax.html", contentLabel: "Español →" },
   { flagCode: "BR", label: "한국에 사는 포르투갈어권 분이라면", labelEn: "Living in Korea and speak Portuguese", labelZh: "住在韩国的葡萄牙语使用者", labelVi: "Nói tiếng Bồ Đào Nha và sống ở Hàn Quốc", labelTh: "สำหรับผู้พูดภาษาโปรตุเกสที่อาศัยในเกาหลี", labelRu: "Для португалоговорящих, живущих в Корее", contentPage: "portuguese_in_korea_lottery_tax.html", contentLabel: "Português →" },
   { flagCode: "TW", label: "한국에 사는 대만·홍콩분이라면", labelEn: "Living in Korea as a Taiwanese or Hong Kong national", labelZh: "住在韩国的台湾人・香港人", labelVi: "Là người Đài Loan/Hồng Kông sống ở Hàn Quốc", labelTh: "สำหรับชาวไต้หวัน/ฮ่องกงที่อาศัยในเกาหลี", labelRu: "Для граждан Тайваня/Гонконга, живущих в Корее", contentPage: "taiwan_hk_in_korea_lottery_tax.html", contentLabel: "繁體中文 →" },
@@ -5646,7 +5669,7 @@ function renderLanguageContentLinks(){
     const row = document.createElement('a');
     row.className = 'other-lang-row';
     row.href = item.contentPage;
-    row.setAttribute('aria-label', pickLang(item.label, item.labelEn, item.labelZh, item.labelVi, item.labelTh, item.labelRu));
+    row.setAttribute('aria-label', pickLang(item.label, item.labelEn, item.labelZh, item.labelVi, item.labelTh, item.labelRu, item.more));
     row.append(makeFlagBadge(item.flagCode), document.createTextNode(' ' + item.contentLabel));
     container.appendChild(row);
   });
@@ -5725,14 +5748,17 @@ function updateSideBySide(eok, stateCode){
     } else {
       // 국기 3개까지는 카드 한 칸 폭에 한 줄로 들어가서 그대로 둬도 되지만, 그보다 많으면
       // 여러 줄로 접히면서 카드가 세로로 길어져 옆 칸 카드와 키 차이가 커짐 — 그리드 전체
-      // 폭을 쓰게 해서 국기를 가로로 펼치고 옆에 어색한 빈 공간이 남지 않게 함
-      if (rows.length > 3) card.classList.add('side-card-full');
+      // 폭을 쓰게 해서 국기를 가로로 펼치고 옆에 어색한 빈 공간이 남지 않게 함.
+      // 2~3개국은 국기는 한 줄에 들어가도 getGroupSameLabel()이 나라 이름을 그대로 풀어서
+      // 보여주므로(예: "필리핀 거주자 · 태국 거주자 · 라오스 거주자") 좁은 카드 폭에선 그
+      // 텍스트가 몇 줄로 접혀 옆 칸보다 길어짐 — 그룹 카드는 전부 전체 폭으로 통일함
+      if (rows.length > 1) card.classList.add('side-card-full');
       const flagsRowEl = document.createElement('div'); flagsRowEl.className = 'side-card-flags-row';
       const flagGroupEl = document.createElement('p'); flagGroupEl.className = 'side-card-flag-group';
       rows.forEach(row => { flagGroupEl.appendChild(makeFlagBadge(row.profile.flagCode)); });
       flagsRowEl.appendChild(flagGroupEl);
       const noteEl = document.createElement('p'); noteEl.className = 'side-card-group-note';
-      noteEl.textContent = pickLang(`${rows.length}개국 동일`, `Same for these ${rows.length} countries`, `${rows.length}个国家相同`, `Giống nhau ở ${rows.length} nước`, `เท่ากันใน ${rows.length} ประเทศ`, `Одинаково для ${rows.length} стран`, buildSameCountMore(rows.length));
+      noteEl.textContent = getGroupSameLabel(rows);
       flagsRowEl.appendChild(noteEl);
       card.appendChild(flagsRowEl);
     }
@@ -5770,9 +5796,7 @@ function updateSideBySide(eok, stateCode){
     // 카드를 탭하면 위쪽 지도에서 해당 국가(들) 위치에 핀이 표시되게 함 — 국기 배지도 같이
     // 눌리게 해서 좁은 카드 안에서도 탭 영역이 너무 작지 않게 함
     const mapFlagCodes = rows.map(r => r.profile.flagCode);
-    const mapLabel = rows.length === 1
-      ? getProfileShortLabel(rows[0].profile)
-      : pickLang(`${rows.length}개국 동일`, `Same for ${rows.length} countries`, `${rows.length}个国家相同`, `Giống nhau ở ${rows.length} nước`, `เท่ากันใน ${rows.length} ประเทศ`, `Одинаково для ${rows.length} стран`, buildSameCountMore(rows.length));
+    const mapLabel = getGroupSameLabel(rows);
     card.style.cursor = 'pointer';
     card.setAttribute('role', 'button');
     card.setAttribute('tabindex', '0');
@@ -5794,7 +5818,8 @@ function updateSideBySide(eok, stateCode){
       stateSuffix = ` (${pickLang(stateInfo.label, stateInfo.labelEn, stateInfo.labelZh, stateInfo.labelEn, stateInfo.labelEn, stateInfo.labelEn)})`;
     }
     const groupLabel = document.createElement('p'); groupLabel.className = 'side-group-label';
-    groupLabel.append(makeFlagBadge(profile.flagCode), document.createTextNode(' ' + baseLabelText + stateSuffix));
+    groupLabel.append(makeFlagBadge(profile.flagCode), document.createTextNode(' '));
+    appendLabelWithNowrapParen(groupLabel, baseLabelText + stateSuffix);
     const bGrid = document.createElement('div'); bGrid.className = 'side-breakdown-grid';
     [[result.label1, result.val1], [result.label2, result.val2]].forEach(([label, val]) => {
       const cell = document.createElement('div'); cell.className = 'side-breakdown-cell';
@@ -5829,14 +5854,17 @@ function updateSideBySide(eok, stateCode){
   const SIDE_VISIBLE_COUNT = 6;
   const allCards = Array.from(grid.children);
   const showMoreBtn = document.getElementById('sideShowMoreBtn');
-  allCards.forEach((card, i) => { card.classList.toggle('side-card-hidden-extra', i >= SIDE_VISIBLE_COUNT); });
+  // 카드 수가 아니라 그 안에 묶인 나라 수 합계로 세어줌 — 카드 하나가 여러 나라를
+  // 대표할 수 있어서, 카드 개수로 세면 "더보기"가 실제 남은 나라 수보다 적게 나옴
+  const remaining = allCards.slice(SIDE_VISIBLE_COUNT).reduce((sum, c) => sum + (parseInt(c.dataset.countryCount, 10) || 1), 0);
+  // 남은 나라가 1개뿐이면 버튼을 눌러야 겨우 1개 더 보는 셈이라 번거로우니 그냥 다 펼쳐서
+  // 보여줌 — 나중에 나라가 늘어 남는 수가 2개 이상이 되면 다시 자동으로 "더보기"가 나타남
+  const shouldCollapse = remaining > 1;
+  allCards.forEach((card, i) => { card.classList.toggle('side-card-hidden-extra', shouldCollapse && i >= SIDE_VISIBLE_COUNT); });
   if (showMoreBtn) {
-    if (allCards.length > SIDE_VISIBLE_COUNT) {
+    if (shouldCollapse) {
       showMoreBtn.style.display = 'block';
       showMoreBtn.dataset.expanded = 'false';
-      // 카드 수가 아니라 그 안에 묶인 나라 수 합계로 세어줌 — 카드 하나가 여러 나라를
-      // 대표할 수 있어서, 카드 개수로 세면 "더보기"가 실제 남은 나라 수보다 적게 나옴
-      const remaining = allCards.slice(SIDE_VISIBLE_COUNT).reduce((sum, c) => sum + (parseInt(c.dataset.countryCount, 10) || 1), 0);
       showMoreBtn.textContent = pickLang(`${remaining}개국 더 보기 ▾`, `Show ${remaining} more ▾`, `再显示${remaining}个国家 ▾`, `Xem thêm ${remaining} nước ▾`, `ดูเพิ่มอีก ${remaining} ประเทศ ▾`, `Показать ещё ${remaining} стран ▾`, buildShowMoreCountriesMore(remaining));
     } else {
       showMoreBtn.style.display = 'none';

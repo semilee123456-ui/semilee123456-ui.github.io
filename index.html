@@ -53,6 +53,10 @@
 <link rel="preconnect" href="https://formspree.io" crossorigin>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
 <link rel="stylesheet" href="styles.css?v=20260721">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
@@ -460,9 +464,9 @@
               </button>
             </div>
             <div class="amount-input-tabs" id="amountInputTabs" role="tablist">
-              <button type="button" class="amount-tab-btn active" role="tab" aria-selected="true" aria-controls="amountTabLump" data-tab="lump" onclick="switchAmountTab('lump')" data-i18n="input.tabLump">일시불로 입력</button>
-              <button type="button" class="amount-tab-btn" role="tab" aria-selected="false" aria-controls="amountTabAnnounced" data-tab="announced" onclick="switchAmountTab('announced')" data-i18n="input.tabAnnounced">연금 발표액으로</button>
-              <button type="button" class="amount-tab-btn" role="tab" aria-selected="false" aria-controls="amountTabReverse" data-tab="reverse" onclick="switchAmountTab('reverse')" data-i18n="input.tabReverse">원하는 실수령액으로</button>
+              <button type="button" class="amount-tab-btn active" role="tab" aria-selected="true" aria-controls="amountTabLump" data-tab="lump" onclick="switchAmountTab('lump')" data-i18n="input.tabLump">일시불</button>
+              <button type="button" class="amount-tab-btn" role="tab" aria-selected="false" aria-controls="amountTabAnnounced" data-tab="announced" onclick="switchAmountTab('announced')" data-i18n="input.tabAnnounced">연금액</button>
+              <button type="button" class="amount-tab-btn" role="tab" aria-selected="false" aria-controls="amountTabReverse" data-tab="reverse" onclick="switchAmountTab('reverse')" data-i18n="input.tabReverse">희망액</button>
             </div>
 
             <div class="amount-tab-panel" id="amountTabLump" role="tabpanel">
@@ -484,7 +488,7 @@
 
             <div class="amount-tab-panel" id="amountTabReverse" role="tabpanel" style="display:none;">
               <div class="live-result-mini" id="live-result-mini" onclick="startEditMiniResult()">
-                <span data-i18n="home.miniResultLabel">✏️ 원하는 실수령액부터 입력해볼까요?</span>
+                <span data-i18n="home.miniResultLabel">✏️ 원하는 금액 입력할까요?</span>
                 <span class="live-result-mini-display" id="live-result-mini-display">
                   <span class="live-result-mini-amt" id="live-result-mini-amt">805억원</span>
                 </span>
@@ -621,7 +625,7 @@
             <p class="result-total-line" id="home-tax-total-line" style="margin-top:8px; text-align:center; font-weight:700; color:var(--status-red);">합계 -39%</p>
             <button type="button" class="annuity-info-link" style="margin-top:2px;" onclick="toggleTaxTermInfo()" data-i18n="home.taxTermToggle">❓ 원천징수·FTC가 뭐예요? →</button>
             <div class="detail-note-box" id="tax-term-box" style="display:none; background:var(--bg); border-radius:10px; padding:12px 14px; margin-top:6px;">
-              <p style="margin:0;"><b data-i18n="home.taxTermWithholdingTitle">원천징수란?</b> <span data-i18n="home.taxTermWithholdingDesc">돈을 주는 쪽(미국)이 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 "일단 떼어가는 선불금"이라고 보시면 돼요.</span></p>
+              <p style="margin:0;"><b data-i18n="home.taxTermWithholdingTitle">원천징수란?</b> <span data-i18n="home.taxTermWithholdingDesc">돈을 주는 쪽(미국)이 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 "일단 떼어가는 선불금"이라고 보시면 돼요.</span></p>
               <p style="margin:10px 0 0;"><b data-i18n="home.taxTermFtcTitle">외국납부세액공제(FTC)란?</b> <span data-i18n="home.taxTermFtcDesc">미국에서 이미 낸 세금을, 거주국에서 세금을 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요.</span></p>
             </div>
             <p class="sim-note" style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);" data-i18n="compare.simNote">💡 종합소득세 누진세율과 외국납부세액공제(FTC)를 반영한 참고용 계산이에요 — 실제 세액은 개인 상황에 따라 달라질 수 있어 세무 전문가 상담을 권해요</p>
@@ -914,7 +918,7 @@
           <p class="panel-desc" data-i18n="odds.winnersDesc">그래도 정말 당첨되긴 해요 — 실제 있었던 역대급 사례들이에요</p>
           <div class="winner-story">
             <span class="ws-amt" data-i18n="odds.winner1Amt">$20억 4천만</span>
-            <span class="ws-desc" data-i18n="odds.winner1">2022년 11월, 캘리포니아 — 역대 최고액 파워볼 당첨자 에드윈 카스트로. 일시불 9억 9,760만 달러로 2,550만·4,700만 달러짜리 집을 연달아 샀어요. "티켓을 훔쳐 당첨된 거다"라는 소송에 2년 넘게 시달렸지만 2024년 정당한 주인으로 인정받았고, 2025년엔 산불 피해 지역에 집 지어줄 땅을 기부했대요.</span>
+            <span class="ws-desc" data-i18n="odds.winner1">2022년 11월, 캘리포니아 — 역대 최고액 파워볼 당첨자 에드윈 카스트로. 일시불 9억 9,760만 달러로 2,550만·4,700만 달러짜리 집을 연달아 샀어요. "티켓을 훔쳐 당첨된 거다"라는 소송에 2년 넘게 시달렸지만 2024년 정당한 주인으로 인정받았고, 2025년엔 산불 피해 지역에 집 지어줄 땅을 기부했대요.</span>
           </div>
           <div class="winner-story">
             <span class="ws-amt" data-i18n="odds.winner2Amt">$7억 5,870만</span>
@@ -929,7 +933,7 @@
           <p class="panel-desc" data-i18n="odds.lifeDesc">소문 말고, 실제 연구로 확인된 것들이에요</p>
           <div class="winner-story">
             <span class="ws-amt-alt" data-i18n="odds.life1Tag">💸 "대부분 몇 년 안에 파산한다"?</span>
-            <span class="ws-desc" data-i18n="odds.life1">출처 없는 낭설이에요 — 그 "70% 파산설"을 냈다는 미국 금융교육재단(NEFE)도 그런 조사를 한 적 없다고 공식 부인했어요. 스웨덴에서 15년간 추적한 연구에서는 오히려 재산이 더 잘 유지됐어요.</span>
+            <span class="ws-desc" data-i18n="odds.life1">출처 없는 낭설이에요 — 그 "70% 파산설"을 냈다는 미국 금융교육재단(NEFE)도 그런 조사를 한 적 없다고 공식 부인했어요. 스웨덴에서 15년간 추적한 연구에서는 오히려 재산이 더 잘 유지됐어요.</span>
           </div>
           <div class="winner-story">
             <span class="ws-amt-alt" data-i18n="odds.life2Tag">💔 "이혼율이 폭등한다"?</span>
@@ -941,7 +945,7 @@
           </div>
           <div class="winner-story">
             <span class="ws-amt-alt" data-i18n="odds.life4Tag">😊 그래서, 더 행복해질까요?</span>
-            <span class="ws-desc" data-i18n="odds.life4">매일의 기분이 확 좋아지진 않지만, "삶에 만족한다"는 느낌은 10년 넘게 유지돼요. 진짜 어려운 건 돈 관리가 아니라 가족·지인의 기대를 다루는 거예요.</span>
+            <span class="ws-desc" data-i18n="odds.life4">매일의 기분이 확 좋아지진 않지만, "삶에 만족한다"는 느낌은 10년 넘게 유지돼요. 진짜 어려운 건 돈 관리가 아니라 가족·지인의 기대를 다루는 거예요.</span>
           </div>
         </details>
 
@@ -1298,7 +1302,7 @@
           </details>
           <details class="faq-item" data-cat="tax" data-basis="kr">
             <summary class="faq-q" data-i18n="faq.q21">한국에 온 지 얼마 안 됐는데도 한국 세금을 내야 해요? ⚠️</summary>
-            <p class="faq-a" data-i18n-html="faq.a21">간단히 예/아니오로 답하기 어려운 질문이에요. <b>소득세법 제3조 단서</b>에 따르면, 최근 10년 중 국내 거주 기간이 <b>5년 이하인 거주자</b>(국적이 아니라 <b>거주 기간</b> 기준이에요)는 해외 소득을 실제로 한국에 송금했거나 국내에서 받은 경우에만 한국 세금을 내는 특례가 있어요.<br><br>다만 이 특례가 외국인 노동자(E-9 등) 상황에도 그대로 적용되는지는 <b>사례마다 해석이 갈릴 수 있어요</b> — 이미 한국에 생활 기반을 두고 계속 근무 중이라면 국세청이 다르게 볼 수도 있어요.<br><br><b>"송금 안 하면 무조건 세금 안 낸다"고 미리 단정하지 마시고</b>, 실제로 당첨되면 바로 세무사와 상담해서 본인 상황에 맞는 정확한 답을 확인하세요.</p>
+            <p class="faq-a" data-i18n-html="faq.a21">간단히 예/아니오로 답하기 어려운 질문이에요. <b>소득세법 제3조 단서</b>에 따르면, 최근 10년 중 국내 거주 기간이 <b>5년 이하인 거주자</b>(국적이 아니라 <b>거주 기간</b> 기준이에요)는 해외 소득을 실제로 한국에 송금했거나 국내에서 받은 경우에만 한국 세금을 내는 특례가 있어요.<br><br>다만 이 특례가 외국인 노동자(E-9 등) 상황에도 그대로 적용되는지는 <b>사례마다 해석이 갈릴 수 있어요</b> — 이미 한국에 생활 기반을 두고 계속 근무 중이라면 국세청이 다르게 볼 수도 있어요.<br><br><b>"송금 안 하면 무조건 세금 안 낸다"고 미리 단정하지 마시고</b>, 실제로 당첨되면 바로 세무사와 상담해서 본인 상황에 맞는 정확한 답을 확인하세요.</p>
           </details>
           <details class="faq-item" data-cat="tax" data-basis="us">
             <summary class="faq-q" data-i18n="faq.q19us">세금 신고는 진짜 어떻게 해야 돼요?</summary>
@@ -1580,7 +1584,7 @@
 
           <div class="legal-section">
             <p class="legal-h" data-i18n="disclaimer.h2">2. 계산 결과의 정확성</p>
-            <p class="legal-body" data-i18n="disclaimer.b2">계산기에 사용된 세율·환율 등은 세법을 단순화한 예시 기준이며, 실제 세액과 다를 수 있습니다. 한국 세법상 해외 복권 당첨금의 과세 방식은 2026년 7월 국세청 인터넷 상담을 통해 "종합소득세 합산, 외국납부세액공제 적용 가능"이라는 답변을 받아 계산기에 반영했으나, 이는 정식 유권해석이 아닌 상담 답변이며 실제 사실관계에 따라 달리 적용될 수 있습니다 (자세한 내용은 FAQ 참고).</p>
+            <p class="legal-body" data-i18n="disclaimer.b2">계산기에 사용된 세율·환율 등은 세법을 단순화한 예시 기준이며, 실제 세액과 다를 수 있습니다. 한국 세법상 해외 복권 당첨금의 과세 방식은 2026년 7월 국세청 인터넷 상담을 통해 "종합소득세 합산, 외국납부세액공제 적용 가능"이라는 답변을 받아 계산기에 반영했으나, 이는 정식 유권해석이 아닌 상담 답변이며 실제 사실관계에 따라 달리 적용될 수 있습니다 (자세한 내용은 FAQ 참고).</p>
           </div>
 
           <div class="legal-section">
@@ -1649,7 +1653,7 @@
     </div>
 
     <button type="button" class="sticky-result-badge" id="sticky-result-badge" onclick="scrollToMainResult()">
-      <span class="sticky-result-label" data-i18n="result.label">💰 일시불 예상 실수령액</span>
+      <span class="sticky-result-label" data-i18n="result.label">💰 예상 실수령액</span>
       <span class="sticky-result-amt" id="sticky-result-amt">-</span>
     </button>
 

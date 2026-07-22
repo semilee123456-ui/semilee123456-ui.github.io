@@ -119,13 +119,18 @@
      태국어 화면 스크린샷으로 사용자가 직접 발견). 한국어에만 필요한 규칙이므로 범위를 좁힘 */
   html[lang="ko"] body{ word-break:keep-all; }
 
+  /* 아랍어·우르두어는 Pretendard에 해당 문자가 없어서 그냥 sans-serif로 떨어짐 — 랜딩페이지들엔
+     이미 있던 폰트를 메인 앱에도 추가함(index.html에서 Google Fonts로 로드) */
+  html[lang="ar"] body{ font-family:'Pretendard','Noto Naskh Arabic',-apple-system,BlinkMacSystemFont,sans-serif; }
+  html[lang="ur"] body{ font-family:'Pretendard','Noto Nastaliq Urdu',-apple-system,BlinkMacSystemFont,sans-serif; }
+
   /* 브라우저 기본 텍스트 선택 색(진한 파랑)은 사이트 팔레트에 아예 없는 색이라, 입력칸 숫자를
      길게 눌러 선택했을 때 디자인이 완전히 깨진 것처럼 보임 — 톤을 청록 계열로 맞춤 */
   ::selection{ background:rgba(21,84,69,0.25); color:var(--text-dark); }
 
   .page{
     background:var(--bg); padding:28px 28px 36px; min-height:200px;
-    width:100%; max-width:1200px; margin:0 auto; border-radius:14px; overflow:hidden;
+    width:100%; max-width:1140px; margin:0 auto; border-radius:14px; overflow:hidden;
     box-shadow:0 1px 3px rgba(var(--ink-rgb),0.08), 0 8px 24px rgba(var(--ink-rgb),0.06);
   }
 
@@ -398,9 +403,18 @@
   .country-map-sea{ fill:var(--card); }
   .country-map-land{ fill:rgba(var(--ink-rgb),0.1); stroke:rgba(var(--ink-rgb),0.18); stroke-width:1.5; }
   .country-map-pin{ fill:var(--teal); stroke:var(--card); stroke-width:1.2; cursor:pointer; }
-  .country-map-pin.active{ fill:var(--status-red); }
+  .country-map-pin.active{ fill:var(--status-red); animation:countryMapPinPulse 1.6s ease-in-out infinite; transform-origin:center; transform-box:fill-box; }
+  /* 지도가 심심해 보인다는 피드백 — 선택된 핀이 은은하게 맥박치듯 커졌다 작아지게 해서
+     "여기 선택됐어요"가 색만으로 바뀔 때보다 눈에 잘 띄고 재미있게 보이도록 함 */
+  @keyframes countryMapPinPulse{
+    0%, 100%{ transform:scale(1); }
+    50%{ transform:scale(1.35); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .country-map-pin.active{ animation:none; }
+  }
   .country-map-callout{
-    position:absolute; background:var(--navy); color:var(--on-accent); font-size:13px; font-weight:700;
+    position:absolute; background:var(--navy); color:var(--on-accent); font-size:var(--fs-small); font-weight:700;
     padding:5px 10px; border-radius:8px; pointer-events:none; max-width:78%; text-align:center;
     transform:translate(-50%,-130%); display:none; z-index:2;
   }
@@ -433,8 +447,8 @@
   .side-card-flags-row{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 8px; }
   .side-card-flag-group{ display:flex; flex-wrap:wrap; gap:3px; margin:0; }
   .side-card-group-note{
-    font-size:12px; font-weight:600; color:var(--text-muted); margin:0;
-    background:var(--card); border:1px dashed var(--border); border-radius:20px; padding:2px 10px;
+    font-size:var(--fs-small); font-weight:600; color:var(--text-muted); margin:0;
+    background:var(--card); border:1px dashed rgba(21,84,69,0.35); border-radius:20px; padding:2px 10px;
   }
   /* 국기가 많이 묶인 카드(예: 12개국)는 한 칸짜리 폭에서 국기가 여러 줄로 접혀서 카드가 세로로
      길어지고, 옆 칸의 짧은 카드와 키 차이가 커서 빈 공간이 크게 남음 — 그리드 전체 폭을 차지하게
@@ -493,7 +507,7 @@
     flex-shrink:0; min-width:72px; min-height:44px; border-radius:9px; border:none;
     background:var(--teal); color:var(--on-accent); font-family:inherit; font-size:var(--fs-small); font-weight:800; cursor:pointer;
   }
-  .side-group-label{ font-size:var(--fs-body); font-weight:700; color:var(--text-dark); margin:14px 0 8px; }
+  .side-group-label{ font-size:var(--fs-body); font-weight:700; color:var(--text-dark); margin:14px 0 8px; overflow-wrap:break-word; }
   .side-breakdown-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .side-breakdown-cell{ background:var(--bg); border-radius:10px; padding:12px; min-width:0; }
   .side-breakdown-label{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 4px; font-weight:500; }
@@ -615,8 +629,8 @@
   }
   .jp-krw-row{ display:flex; flex-wrap:wrap; align-items:baseline; gap:0 6px; margin:2px 0 0; }
   .jp-krw{ font-size:16px; color:var(--text-dark); opacity:0.75; font-weight:700; margin:0; }
-  .jp-est-note{ font-size:11px; color:var(--text-muted); opacity:0.6; font-weight:400; margin:0; }
-  .draw-date-label{ font-size:12px; color:var(--text-muted); font-weight:700; margin:10px 0 4px; }
+  .jp-est-note{ font-size:var(--fs-small); color:var(--text-muted); opacity:0.6; font-weight:400; margin:0; }
+  .draw-date-label{ font-size:var(--fs-small); color:var(--text-muted); font-weight:700; margin:10px 0 4px; }
   .jp-actions-row{ margin-top:8px; }
   .jp-actions-row .share-btn{ margin-top:0; }
   .jp-actions-row .jp-official-link{ display:inline-block; margin-top:8px; padding-top:0; border-top:none; }
@@ -705,6 +719,14 @@
     background:var(--card); border:2px solid var(--teal); border-radius:14px;
     cursor:pointer; transition:box-shadow 0.15s ease;
   }
+  /* 좁은 화면에서는 label과 금액이 flex-wrap의 애매한 줄바꿈 판정에 맡겨지면(둘 다 한 줄에
+     넣으려다 label만 폭이 줄어들어 2줄로 접히고, 그러고도 결국 금액이 다음 줄로 밀려서 총
+     3줄이 되는 경우가 있었음) 어색하게 보여서, 좁은 화면에서는 아예 세로로 쌓아 label은
+     항상 한 줄에 다 들어가게 하고 금액은 그 아래 자기 줄을 갖게 함 */
+  @media (max-width: 480px) {
+    .live-result-mini{ flex-direction:column; align-items:flex-start; }
+    .live-result-mini span:first-child{ width:100%; }
+  }
   .live-result-mini:hover, .live-result-mini:focus-within{ box-shadow:0 0 0 3px rgba(21,84,69,0.14); }
   .live-result-mini:hover{ border-color:var(--teal); }
   .live-result-mini span:first-child{ font-size:var(--fs-note); color:var(--text-muted); font-weight:600; min-width:0; overflow-wrap:break-word; }
@@ -735,7 +757,7 @@
   }
   .mini-result-edit-input:focus{ outline:none; box-shadow:0 2px 0 0 var(--teal); }
   .mini-result-edit-unit{ font-size:var(--fs-note); color:var(--text-muted); flex-shrink:0; }
-  .jp-drawdays{ color:var(--text-muted); font-weight:400; opacity:0.8; }
+  .jp-drawdays{ color:var(--text-muted); font-weight:700; }
   .dday-badge{
     display:inline-block; background:rgba(var(--ink-rgb),0.12); color:var(--text-dark); font-size:var(--fs-small); font-weight:800;
     padding:1px 6px; border-radius:8px; margin-left:5px; vertical-align:middle;
@@ -778,7 +800,7 @@
   .lightning-game-btn.active{ color:var(--teal); border-color:var(--teal); background:rgba(21,84,69,0.06); }
   /* 확률체감 페이지엔 파워볼/메가밀리언즈 토글이 두 곳(등수표용·번개 번호용)에 있어서, 서로
      다른 기능임을 구분할 수 있게 등수표 쪽만 세그먼트 필 스타일로 다르게 표시함(디자인 3차 개선) */
-  .odds-toggle-eyebrow{ font-size:12px; font-weight:700; color:var(--text-muted); text-align:center; margin:0 0 6px; }
+  .odds-toggle-eyebrow{ font-size:var(--fs-small); font-weight:700; color:var(--text-muted); text-align:center; margin:0 0 6px; }
   .lightning-game-toggle.is-context{
     display:flex; gap:4px; justify-content:stretch; background:var(--chip-bg); border-radius:12px; padding:4px; margin:0 0 2px;
   }
@@ -999,7 +1021,7 @@
   .winner-story:last-child{ border-bottom:none; }
   .ws-amt{ font-size:var(--fs-body); font-weight:800; color:var(--teal); }
   .ws-amt-alt{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); }
-  .ws-desc{ font-size:var(--fs-note); color:var(--text-muted); line-height:1.6; }
+  .ws-desc{ font-size:var(--fs-note); color:var(--text-muted); line-height:1.6; overflow-wrap:break-word; }
   .jackpot-history-row{ display:flex; gap:12px; padding:0; }
   .jh-timeline{ display:flex; flex-direction:column; align-items:center; flex:0 0 auto; padding-top:6px; }
   .jh-timeline-dot{ width:10px; height:10px; border-radius:50%; flex:0 0 auto; }
@@ -1020,12 +1042,12 @@
   .jh-note{ font-size:var(--fs-small); color:var(--text-muted); margin:2px 0 0; }
   .jh-primary-group{ background:rgba(var(--ink-rgb),0.06); border-radius:10px; padding:10px 12px; margin:0 0 6px; }
   .jh-primary-group .jh-amt-item{ flex-direction:row; justify-content:space-between; align-items:baseline; gap:8px; }
-  .jh-primary-group .jh-amt-label{ font-size:12px; font-weight:600; }
+  .jh-primary-group .jh-amt-label{ font-size:var(--fs-small); font-weight:600; }
   .jh-primary-group .jh-amt{ font-size:17px; }
   .jh-amounts-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px; }
   .jh-amt-chip{ background:var(--input-card-bg); border-radius:8px; padding:7px 10px; min-width:0; }
-  .jh-amt-chip .jh-amt-label{ font-size:11px; }
-  .jh-amt-chip .jh-amt{ font-size:13px; color:var(--text-dark); }
+  .jh-amt-chip .jh-amt-label{ font-size:var(--fs-small); }
+  .jh-amt-chip .jh-amt{ font-size:var(--fs-small); color:var(--text-dark); }
   .jh-amt-item{ display:flex; flex-direction:column; gap:1px; min-width:0; }
   .jh-amt-label{ font-size:var(--fs-small); color:var(--text-muted); }
   .jh-amt{ font-size:var(--fs-note); font-weight:800; color:var(--teal); }
@@ -1098,7 +1120,7 @@
   .ps-steps{ margin-top:6px; }
   .legal-section{ margin-bottom:16px; }
   .legal-h{ font-size:var(--fs-h3); font-weight:800; color:var(--text-dark); margin:0 0 6px; }
-  .legal-body{ font-size:var(--fs-body); color:var(--text-muted); line-height:1.7; margin:0; }
+  .legal-body{ font-size:var(--fs-body); color:var(--text-muted); line-height:1.7; margin:0; overflow-wrap:break-word; }
   .legal-body b{ color:var(--text-dark); }
 
   .jackpot-calc{
@@ -1147,8 +1169,8 @@
     padding:10px 12px; padding-bottom:10px;
   }
   .jc-step-row-12 .jc-step-num{ width:18px; height:18px; font-size:11px; }
-  .jc-step-row-12 .jc-step-label{ font-size:12px; }
-  .jc-step-row-12 .jc-step-val{ font-size:15px; }
+  .jc-step-row-12 .jc-step-label{ font-size:var(--fs-small); }
+  .jc-step-row-12 .jc-step-val{ font-size:var(--fs-small); }
   .jc-step-arrow{ text-align:center; color:var(--teal); font-size:16px; margin:2px 0; }
   .jc-step-highlight{
     flex-direction:column; align-items:center; text-align:center; padding-bottom:0;
@@ -1238,7 +1260,7 @@
   }
   details[open] > .faq-q::after{ transform:translateY(-50%) rotate(180deg); }
   details[open] > .faq-q{ margin-bottom:8px; }
-  .faq-a{ font-size:var(--fs-body); color:var(--text-muted); margin:0; line-height:1.6; }
+  .faq-a{ font-size:var(--fs-body); color:var(--text-muted); margin:0; line-height:1.6; overflow-wrap:break-word; }
   .faq-deadline-badge{
     display:inline-block; font-size:16px; font-weight:800; color:var(--on-accent); background:var(--status-red);
     border-radius:6px; padding:2px 8px; margin-left:8px; vertical-align:middle;
