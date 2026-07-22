@@ -599,13 +599,8 @@
   .bar-row:last-child{ margin-bottom:0; }
   .bar-label{ font-size:var(--fs-small); color:var(--text-dark); width:132px; flex-shrink:0; font-weight:400; }
   .bar-track{ flex:1; height:10px; background:var(--bg); border-radius:5px; overflow:hidden; }
-  /* 기본 너비 0에서 시작해 실제 확률값(data-w, JS가 넣어줌)까지 채워지는 연출 —
-     처음 화면에 들어올 때 막대가 자라나는 느낌을 줘서 숫자 비교를 더 체감되게 함 */
-  .bar-fill{ height:100%; border-radius:5px; width:0; transition:width 0.8s cubic-bezier(0.22,0.9,0.32,1); }
+  .bar-fill{ height:100%; border-radius:5px; transition:width 0.9s cubic-bezier(0.16,1,0.3,1); }
   .bar-fill.accent{ background:var(--teal); }
-  @media (prefers-reduced-motion: reduce){
-    .bar-fill{ transition:none; }
-  }
   .bar-value{ font-size:var(--fs-note); color:var(--text-muted); width:132px; text-align:right; flex-shrink:0; }
 
   .callout{ background:rgba(var(--ink-rgb),0.08); border:1px solid rgba(var(--ink-rgb),0.15); border-radius:10px; padding:14px 16px; margin-top:16px; font-size:var(--fs-small); color:var(--text-muted); line-height:1.6; }
@@ -1180,7 +1175,6 @@
   .jh-more-summary::after{ content:'▾'; font-weight:400; transition:transform 0.2s ease; }
   .jh-more[open] > .jh-more-summary::after{ transform:rotate(180deg); }
   .jh-more-summary::-webkit-details-marker{ display:none; }
-  .jackpot-history-empty{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; padding:12px 0; }
   .jh-more-btn{
     display:block; width:100%; margin-top:12px; padding:10px; border-radius:10px; border:1px solid var(--border);
     background:var(--bg); color:var(--teal); font-family:inherit; font-size:var(--fs-small); font-weight:700; cursor:pointer;
@@ -1203,6 +1197,7 @@
   .dl-empty{ font-size:var(--fs-small); color:var(--text-muted); text-align:center; padding:14px 0; }
   .dl-amt, .dl-no-amt{ font-size:var(--fs-small); color:var(--text-muted); margin:6px 0 0; }
   .dl-amt{ font-weight:700; color:var(--teal); }
+  .jackpot-history-empty{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; padding:12px 0; }
   .ticket-mock{ margin-top:10px; }
   .ticket-mock-title{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 6px; }
   .ticket-mock-card{
