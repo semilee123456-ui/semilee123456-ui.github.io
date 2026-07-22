@@ -169,6 +169,7 @@ function applyTranslations(){
   renderLatestDraw();
   renderPrizeTiers();
   updateLightningGameUi();
+  updateMyNumbersUi();
 }
 
 // 최초 로드 시, data-i18n 요소들의 원본 한국어를 저장해둠(다시 한국어로 돌아갈 때 쓰기 위함)
@@ -182,7 +183,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // 실제 적용(FOUC 방지)은 head 맨 위 동기 스크립트가 이미 처리했고, 여기선 버튼 아이콘만 그 상태에 맞춤
 function syncThemeToggleIcon(){
   const btn = document.getElementById('theme-toggle');
-  if (btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+  const iconEl = btn && btn.querySelector('.settings-row-icon');
+  const icon = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+  if (iconEl) iconEl.textContent = icon; else if (btn) btn.textContent = icon;
 }
 function toggleTheme(){
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -191,6 +194,44 @@ function toggleTheme(){
   syncThemeToggleIcon();
 }
 document.addEventListener('DOMContentLoaded', syncThemeToggleIcon);
+
+// 글자 크게 보기: 다크모드와 완전히 동일한 구조(opt-in, localStorage 저장, FOUC 방지는 head 스크립트가 처리,
+// 여기선 버튼 아이콘만 상태에 맞춤) — 다크모드/고대비 모드와 독립적으로 동시에 켤 수 있음
+function syncTextSizeToggleIcon(){
+  const btn = document.getElementById('textsize-toggle');
+  const iconEl = btn && btn.querySelector('.settings-row-icon');
+  const icon = document.documentElement.getAttribute('data-textsize') === 'large' ? '가-' : '가+';
+  if (iconEl) iconEl.textContent = icon; else if (btn) btn.textContent = icon;
+}
+function toggleTextSize(){
+  const isLarge = document.documentElement.getAttribute('data-textsize') === 'large';
+  if (isLarge) { document.documentElement.removeAttribute('data-textsize'); try{ localStorage.setItem('textSize','normal'); }catch(e){} }
+  else { document.documentElement.setAttribute('data-textsize','large'); try{ localStorage.setItem('textSize','large'); }catch(e){} }
+  syncTextSizeToggleIcon();
+}
+document.addEventListener('DOMContentLoaded', syncTextSizeToggleIcon);
+
+// 고대비 모드: 라이트/다크 테마 위에 독립적으로 얹히는 토글(제3의 테마가 아님) — 구조는 위 두 토글과 동일
+function syncContrastToggleIcon(){
+  const btn = document.getElementById('contrast-toggle');
+  const iconEl = btn && btn.querySelector('.settings-row-icon');
+  const icon = document.documentElement.getAttribute('data-contrast') === 'high' ? '●' : '◐';
+  if (iconEl) iconEl.textContent = icon; else if (btn) btn.textContent = icon;
+}
+function toggleContrast(){
+  const isHigh = document.documentElement.getAttribute('data-contrast') === 'high';
+  if (isHigh) { document.documentElement.removeAttribute('data-contrast'); try{ localStorage.setItem('contrast','normal'); }catch(e){} }
+  else { document.documentElement.setAttribute('data-contrast','high'); try{ localStorage.setItem('contrast','high'); }catch(e){} }
+  syncContrastToggleIcon();
+}
+document.addEventListener('DOMContentLoaded', syncContrastToggleIcon);
+
+// 설정 패널(details)은 네이티브 열림/닫힘은 공짜로 되지만, 바깥을 눌러도 안 닫히는 건
+// 기본 동작이 아니라서 직접 처리 — 패널 안쪽 클릭(언어 선택 등)은 그대로 두고 바깥 클릭만 닫음
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('settingsMenu');
+  if (menu && menu.open && !menu.contains(e.target)) menu.open = false;
+});
 
 let EXCHANGE_RATE = 1487.73; // 기본값(fallback). 중앙은행 고시 기반 기준환율(2026-07-17 확인 — 한국은행 기준금리 인상으로 원화 강세 반영) — 페이지 로드 시 실시간 환율로 자동 갱신을 시도함. 이 기본값은 주기적으로 수동 업데이트 필요
 let EXCHANGE_RATE_CNY = 6.77; // 기본값(fallback), USD/CNY (2026-07-17 확인). 중국 거주자 기준 결과에서 위안화 참고 환산용 — KRW와 마찬가지로 실시간 조회 시도, 실패하면 이 기본값 사용
@@ -2295,9 +2336,12 @@ const GAME_NAME_MORE = {
 // cashUsd: 실제 당첨자가 받은 일시불 금액이 공식 확인된 경우 그 실제값(출처: powerball.com/megamillions.com
 // 공식 발표, CNN·CBS 등 언론 보도) — 없으면 렌더링 시 CASH_VALUE_RATIO(0.58)로 추정.
 // stateCode: 당첨 주(State) — 세율 있는 주로 단일 특정 가능한 경우만 표기, 복수 주 분할 당첨은 'AVG' 처리.
+// numbers/special: 실제 그 추첨의 당첨번호(일반번호 5개/파워볼·메가볼 1개) — "내 번호 vs 역대급 당첨번호"
+// 비교 위젯(myNumbersVsHistory)용. 출처가 확실한 5건만 채워둠 — 확인 안 된 값은 절대 채우지 말 것
+// (위젯은 numbers 필드가 없는 항목은 자동으로 건너뜀).
 const JACKPOT_HISTORY = [
   // 역대 최고액 기록 5건 (공식 발표·언론 보도로 확인된 실제 일시불 금액 기준)
-  { date: '2022-11-07', game: 'powerball', amountUsd: 2040000000, cashUsd: 997600000, stateCode: 'CA', noteKo: '역대 최고액 (캘리포니아, 1인)', noteEn: 'All-time record (California, single winner)', noteZh: '历史最高纪录（加利福尼亚，1人独得）', noteVi: 'Kỷ lục mọi thời đại (California, 1 người trúng)', noteTh: 'สถิติสูงสุดตลอดกาล (แคลิฟอร์เนีย ผู้ถูกรางวัลคนเดียว)', noteRu: 'Абсолютный рекорд (Калифорния, один победитель)', noteMore: {
+  { date: '2022-11-07', game: 'powerball', amountUsd: 2040000000, cashUsd: 997600000, stateCode: 'CA', numbers: [10, 33, 41, 47, 56], special: 10, noteKo: '역대 최고액 (캘리포니아, 1인)', noteEn: 'All-time record (California, single winner)', noteZh: '历史最高纪录（加利福尼亚，1人独得）', noteVi: 'Kỷ lục mọi thời đại (California, 1 người trúng)', noteTh: 'สถิติสูงสุดตลอดกาล (แคลิฟอร์เนีย ผู้ถูกรางวัลคนเดียว)', noteRu: 'Абсолютный рекорд (Калифорния, один победитель)', noteMore: {
     ar: 'الرقم القياسي على الإطلاق (كاليفورنيا، فائز واحد)', bn: 'সর্বকালের রেকর্ড (ক্যালিফোর্নিয়া, একক বিজয়ী)',
     fr: 'Record absolu (Californie, un seul gagnant)', hi: 'सर्वकालिक रिकॉर्ड (कैलिफ़ोर्निया, एकल विजेता)',
     id: 'Rekor sepanjang masa (California, 1 pemenang)', ja: '歴代最高額（カリフォルニア、1人が獲得）',
@@ -2308,7 +2352,7 @@ const JACKPOT_HISTORY = [
     tl: 'Pinakamataas kailanman (California, iisang nanalo)', ur: 'اب تک کا سب سے بڑا ریکارڈ (کیلیفورنیا، اکیلا فاتح)',
     uz: "Barcha davrlardagi rekord (Kaliforniya, yakka g'olib)",
   } },
-  { date: '2025-09-06', game: 'powerball', amountUsd: 1787000000, cashUsd: 820600000, stateCode: 'AVG', noteKo: '역대 2위 (미주리·텍사스 2인 분할)', noteEn: '2nd all-time (Missouri & Texas, split 2 ways)', noteZh: '历史第二（密苏里·得克萨斯 2人平分）', noteVi: 'Xếp thứ 2 mọi thời đại (Missouri & Texas, chia 2 người)', noteTh: 'อันดับ 2 ตลอดกาล (มิสซูรีและเท็กซัส แบ่ง 2 คน)', noteRu: '2-е место за всё время (Миссури и Техас, поделено на 2)', noteMore: {
+  { date: '2025-09-06', game: 'powerball', amountUsd: 1787000000, cashUsd: 820600000, stateCode: 'AVG', numbers: [11, 23, 44, 61, 62], special: 17, noteKo: '역대 2위 (미주리·텍사스 2인 분할)', noteEn: '2nd all-time (Missouri & Texas, split 2 ways)', noteZh: '历史第二（密苏里·得克萨斯 2人平分）', noteVi: 'Xếp thứ 2 mọi thời đại (Missouri & Texas, chia 2 người)', noteTh: 'อันดับ 2 ตลอดกาล (มิสซูรีและเท็กซัส แบ่ง 2 คน)', noteRu: '2-е место за всё время (Миссури и Техас, поделено на 2)', noteMore: {
     ar: 'ثاني أعلى رقم على الإطلاق (ميزوري وتكساس، تقاسمه فائزان)', bn: 'সর্বকালের ২য় সর্বোচ্চ (মিসৌরি ও টেক্সাস, ২ জনের মধ্যে ভাগ)',
     fr: '2e record absolu (Missouri et Texas, partagé à 2)', hi: 'सर्वकालिक दूसरा सबसे बड़ा (मिसौरी और टेक्सास, 2 लोगों में बंटा)',
     id: 'Terbesar ke-2 sepanjang masa (Missouri & Texas, dibagi 2 orang)', ja: '歴代2位（ミズーリ・テキサス、2人で分割）',
@@ -2319,7 +2363,7 @@ const JACKPOT_HISTORY = [
     tl: 'Ika-2 pinakamataas kailanman (Missouri at Texas, hinati ng 2 katao)', ur: 'اب تک کا دوسرا سب سے بڑا (مسوری اور ٹیکساس، 2 لوگوں میں تقسیم)',
     uz: "Barcha davrlarda 2-o'rin (Missuri va Texas, 2 kishiga bo'lingan)",
   } },
-  { date: '2016-01-13', game: 'powerball', amountUsd: 1586000000, cashUsd: 983400000, stateCode: 'AVG', noteKo: '캘리포니아·플로리다·테네시 3인 분할', noteEn: 'California, Florida & Tennessee, split 3 ways', noteZh: '加利福尼亚·佛罗里达·田纳西 3人平分', noteVi: 'California, Florida & Tennessee, chia 3 người', noteTh: 'แคลิฟอร์เนีย ฟลอริดา และเทนเนสซี แบ่ง 3 คน', noteRu: 'Калифорния, Флорида и Теннесси, поделено на 3', noteMore: {
+  { date: '2016-01-13', game: 'powerball', amountUsd: 1586000000, cashUsd: 983400000, stateCode: 'AVG', numbers: [4, 8, 19, 27, 34], special: 10, noteKo: '캘리포니아·플로리다·테네시 3인 분할', noteEn: 'California, Florida & Tennessee, split 3 ways', noteZh: '加利福尼亚·佛罗里达·田纳西 3人平分', noteVi: 'California, Florida & Tennessee, chia 3 người', noteTh: 'แคลิฟอร์เนีย ฟลอริดา และเทนเนสซี แบ่ง 3 คน', noteRu: 'Калифорния, Флорида и Теннесси, поделено на 3', noteMore: {
     ar: 'كاليفورنيا وفلوريدا وتينيسي، تقاسمه 3 فائزين', bn: 'ক্যালিফোর্নিয়া, ফ্লোরিডা ও টেনেসি, ৩ জনের মধ্যে ভাগ',
     fr: 'Californie, Floride et Tennessee, partagé à 3', hi: 'कैलिफ़ोर्निया, फ़्लोरिडा और टेनेसी, 3 लोगों में बंटा',
     id: 'California, Florida & Tennessee, dibagi 3 orang', ja: 'カリフォルニア・フロリダ・テネシー、3人で分割',
@@ -2330,7 +2374,7 @@ const JACKPOT_HISTORY = [
     tl: 'California, Florida at Tennessee, hinati ng 3 katao', ur: 'کیلیفورنیا، فلوریڈا اور ٹینیسی، 3 لوگوں میں تقسیم',
     uz: 'Kaliforniya, Florida va Tennessi, 3 kishiga bo\'lingan',
   } },
-  { date: '2023-10-11', game: 'powerball', amountUsd: 1765000000, cashUsd: 774100000, stateCode: 'CA', noteKo: '캘리포니아, 1인', noteEn: 'California, single winner', noteZh: '加利福尼亚，1人独得', noteVi: 'California, 1 người trúng', noteTh: 'แคลิฟอร์เนีย ผู้ถูกรางวัลคนเดียว', noteRu: 'Калифорния, один победитель', noteMore: {
+  { date: '2023-10-11', game: 'powerball', amountUsd: 1765000000, cashUsd: 774100000, stateCode: 'CA', numbers: [22, 24, 40, 52, 64], special: 10, noteKo: '캘리포니아, 1인', noteEn: 'California, single winner', noteZh: '加利福尼亚，1人独得', noteVi: 'California, 1 người trúng', noteTh: 'แคลิฟอร์เนีย ผู้ถูกรางวัลคนเดียว', noteRu: 'Калифорния, один победитель', noteMore: {
     ar: 'كاليفورنيا، فائز واحد', bn: 'ক্যালিফোর্নিয়া, একক বিজয়ী',
     fr: 'Californie, un seul gagnant', hi: 'कैलिफ़ोर्निया, एकल विजेता',
     id: 'California, 1 pemenang', ja: 'カリフォルニア、1人が獲得',
@@ -2341,7 +2385,7 @@ const JACKPOT_HISTORY = [
     tl: 'California, iisang nanalo', ur: 'کیلیفورنیا، اکیلا فاتح',
     uz: "Kaliforniya, yakka g'olib",
   } },
-  { date: '2023-08-08', game: 'megamillions', amountUsd: 1602000000, cashUsd: 794200000, stateCode: 'FL', noteKo: '역대 메가밀리언즈 최고액 (플로리다, 1인)', noteEn: 'Mega Millions all-time record (Florida, single winner)', noteZh: '超级百万历史最高纪录（佛罗里达，1人独得）', noteVi: 'Kỷ lục Mega Millions mọi thời đại (Florida, 1 người trúng)', noteTh: 'สถิติเมกะมิลเลียนสูงสุดตลอดกาล (ฟลอริดา ผู้ถูกรางวัลคนเดียว)', noteRu: 'Абсолютный рекорд Mega Millions (Флорида, один победитель)', noteMore: {
+  { date: '2023-08-08', game: 'megamillions', amountUsd: 1602000000, cashUsd: 794200000, stateCode: 'FL', numbers: [13, 19, 20, 32, 33], special: 14, noteKo: '역대 메가밀리언즈 최고액 (플로리다, 1인)', noteEn: 'Mega Millions all-time record (Florida, single winner)', noteZh: '超级百万历史最高纪录（佛罗里达，1人独得）', noteVi: 'Kỷ lục Mega Millions mọi thời đại (Florida, 1 người trúng)', noteTh: 'สถิติเมกะมิลเลียนสูงสุดตลอดกาล (ฟลอริดา ผู้ถูกรางวัลคนเดียว)', noteRu: 'Абсолютный рекорд Mega Millions (Флорида, один победитель)', noteMore: {
     ar: 'الرقم القياسي على الإطلاق لميغا ميليونز (فلوريدا، فائز واحد)', bn: 'মেগা মিলিয়নসের সর্বকালের রেকর্ড (ফ্লোরিডা, একক বিজয়ী)',
     fr: 'Record absolu de Mega Millions (Floride, un seul gagnant)', hi: 'मेगा मिलियंस का सर्वकालिक रिकॉर्ड (फ़्लोरिडा, एकल विजेता)',
     id: 'Rekor sepanjang masa Mega Millions (Florida, 1 pemenang)', ja: 'メガミリオンズ歴代最高額（フロリダ、1人が獲得）',
@@ -2747,6 +2791,352 @@ function renderJackpotHistory(){
   }).join('');
 }
 
+// ============================================================================
+// 🎯 내 번호 vs 역대급 당첨번호 비교 위젯 — "확률 감이 안 온다"는 위 패널들과 이어지는 재미 요소.
+// 세금 계산기 본질과 무관한 순수 novelty라, 실제 당첨 확인이 아니라는 걸 문구 곳곳에 명시함.
+// 이 섹션의 모든 문구는 JS에서 pickLang()으로 렌더링(신규 인터랙션 콘텐츠는 i18n/<lang>.json이
+// 아니라 여기서 17개 언어 more 객체까지 직접 갖는 게 이번 세션 관례 — JACKPOT_HISTORY의
+// noteMore, GAME_NAME_MORE 등과 동일한 패턴).
+// ============================================================================
+
+// 순서 인자(n번째 일반번호)가 들어가는 aria-label의 17개 언어 버전 — 매번 다시 만들지 않고
+// n만 바꿔 끼우면 되게 함수로 둠 (buildSameCountMore 등과 같은 패턴)
+function buildMainNumAriaMore(n){
+  return {
+    ar: `الرقم الرئيسي ${n}`, bn: `প্রধান সংখ্যা ${n}`, fr: `Numéro principal ${n}`, hi: `मुख्य नंबर ${n}`,
+    id: `Angka utama ${n}`, ja: `メイン数字${n}`, kk: `Негізгі сан ${n}`, km: `លេខចម្បង ${n}`,
+    ky: `Негизги сан ${n}`, lo: `ເລກຫຼັກ ${n}`, mn: `Үндсэн тоо ${n}`, my: `အဓိကဂဏန်း ${n}`,
+    ne: `मुख्य नम्बर ${n}`, si: `ප්‍රධාන අංකය ${n}`, tl: `Pangunahing numero ${n}`, ur: `مرکزی نمبر ${n}`,
+    uz: `Asosiy raqam ${n}`,
+  };
+}
+const MN_SPECIAL_ARIA_MORE = {
+  ar: 'رقم Powerball', bn: 'Powerball সংখ্যা', fr: 'Numéro Powerball', hi: 'Powerball नंबर',
+  id: 'Angka Powerball', ja: 'パワーボール番号', kk: 'Powerball саны', km: 'លេខ Powerball',
+  ky: 'Powerball саны', lo: 'ເລກ Powerball', mn: 'Powerball дугаар', my: 'Powerball ဂဏန်း',
+  ne: 'Powerball नम्बर', si: 'Powerball අංකය', tl: 'Numero ng Powerball', ur: 'Powerball نمبر',
+  uz: 'Powerball raqami',
+};
+
+const MN_TITLE_MORE = {
+  ar: '🎯 هل نقارن أرقامك بأرقام الجاكبوت الأسطورية؟', bn: '🎯 আপনার নম্বর কিংবদন্তি জ্যাকপটের সাথে মিলিয়ে দেখব?',
+  fr: '🎯 On compare vos numéros aux jackpots légendaires ?', hi: '🎯 अपने नंबरों की तुलना ऐतिहासिक जैकपॉट से करें?',
+  id: '🎯 Bandingkan nomor Anda dengan jackpot legendaris?', ja: '🎯 あなたの番号を伝説のジャックポットと比べてみる？',
+  kk: '🎯 Сандарыңызды аңызға айналған джекпоттармен салыстырайық па?', km: '🎯 តើប្រៀបធៀបលេខរបស់អ្នកជាមួយជេកផតដ៏ល្បីល្បាញទេ?',
+  ky: '🎯 Сандарыңызды атактуу джекпоттор менен салыштырып көрөлүбү?', lo: '🎯 ລອງທຽບເລກຂອງທ່ານກັບແຈັກພອດໃນຕຳນານບໍ?',
+  mn: '🎯 Тоогоо түүхэн жекпотуудтай харьцуулж үзэх үү?', my: '🎯 သင့်ဂဏန်းများကို ဒဏ္ဍာရီဆန်တဲ့ ဂျက်ပေါ့တွေနဲ့ နှိုင်းယှဉ်ကြည့်မလား?',
+  ne: '🎯 तपाईंको नम्बर ऐतिहासिक ज्याकपोटसँग तुलना गरौं?', si: '🎯 ඔබේ අංක සුප්‍රසිද්ධ ජැක්පොට් සමඟ සසඳමුද?',
+  tl: '🎯 Ikumpara ang mga numero mo sa mga alamat na jackpot?', ur: '🎯 اپنے نمبروں کا افسانوی جیک پاٹس سے موازنہ کریں؟',
+  uz: "🎯 Raqamlaringizni afsonaviy jekpotlar bilan solishtiramizmi?",
+};
+const MN_DESC_MORE = {
+  ar: 'أدخل أرقام Powerball التي تلعبها عادةً، وسنُظهر لك — للمتعة فقط — كم منها كان سيتطابق مع هذه السحوبات الأسطورية. هذا ليس فحصًا حقيقيًا للفوز، بل مجرد مقارنة افتراضية!',
+  bn: 'আপনি সাধারণত যে Powerball নম্বরগুলো খেলেন সেগুলো দিন, আমরা শুধু মজার জন্য দেখাব এগুলোর কতগুলো এই কিংবদন্তি জ্যাকপটের সাথে মিলত। এটা আসল পুরস্কার যাচাই নয়, নিছক "যদি হতো" তুলনা!',
+  fr: 'Saisissez les numéros Powerball que vous jouez habituellement, et nous vous montrerons — juste pour le plaisir — combien auraient correspondu à ces tirages légendaires. Ce n\'est pas une vraie vérification de gain, juste une comparaison hypothétique !',
+  hi: 'आप जो Powerball नंबर आमतौर पर खेलते हैं वो डालें, हम बस मज़े के लिए दिखाएंगे कि इनमें से कितने इन ऐतिहासिक जैकपॉट ड्रॉ से मेल खाते। यह असली इनाम जांच नहीं, बस "अगर होता तो" वाली तुलना है!',
+  id: 'Masukkan nomor Powerball yang biasa Anda mainkan, dan kami akan tunjukkan — sekadar untuk seru-seruan — berapa banyak yang cocok dengan undian jackpot legendaris ini. Ini bukan pengecekan hadiah sungguhan, cuma perbandingan "andai saja"!',
+  ja: 'いつも使うパワーボールの番号を入力すると、これらの伝説的なジャックポット抽選と何個一致したか、遊びとしてお見せします。これは実際の当選確認ではなく、単なる「もし」比較です！',
+  kk: 'Әдетте ойнайтын Powerball сандарыңызды енгізіңіз, біз тек көңіл көтеру үшін осы аңызға айналған джекпот тартылымдарымен қаншасы сәйкес келетінін көрсетеміз. Бұл нақты ұтыс тексерісі емес, жай ғана "егер" салыстыруы!',
+  km: 'បញ្ចូលលេខ Powerball ដែលអ្នកលេងជាធម្មតា ហើយយើងនឹងបង្ហាញអ្នក — សម្រាប់ភាពសប្បាយប៉ុណ្ណោះ — ថាតើប៉ុន្មានលេខត្រូវគ្នាជាមួយការទាញឆ្នោតជេកផតដ៏ល្បីល្បាញទាំងនេះ។ នេះមិនមែនជាការត្រួតពិនិត្យរង្វាន់ពិតប្រាកដទេ គ្រាន់តែជាការប្រៀបធៀបតាមសម្មតិកម្មប៉ុណ្ណោះ!',
+  ky: 'Адатта ойногон Powerball сандарыңызды киргизиңиз, биз жөн гана көңүл ачуу үчүн ушул атактуу джекпот тартылыштары менен канчасы дал келерин көрсөтөбүз. Бул чыныгы утуш текшерүү эмес, жөн гана "эгер" салыштыруусу!',
+  lo: 'ໃສ່ເລກ Powerball ທີ່ທ່ານມັກຫຼີ້ນ ແລ້ວພວກເຮົາຈະສະແດງໃຫ້ເຫັນ — ພຽງແຕ່ເພື່ອຄວາມມ່ວນ — ວ່າມີຈັກເລກທີ່ກົງກັບການອອກແຈັກພອດໃນຕຳນານເຫຼົ່ານີ້. ນີ້ບໍ່ແມ່ນການກວດສອບລາງວັນຈິງ, ພຽງແຕ່ການປຽບທຽບແບບ "ຖ້າສົມມຸດວ່າ" ເທົ່ານັ້ນ!',
+  mn: 'Ердийн тоглодог Powerball тоогоо оруулаарай, бид зөвхөн зугаа цэнгэлийн үүднээс эдгээр түүхэн жекпотын сугалаатай хэд нь таарахыг харуулна. Энэ бол бодит шагнал шалгах явдал биш, зүгээр л "хэрэв" гэсэн харьцуулалт!',
+  my: 'သင်ပုံမှန်ကစားလေ့ရှိတဲ့ Powerball ဂဏန်းများကို ထည့်လိုက်ရင်၊ ဒီဒဏ္ဍာရီဆန်တဲ့ ဂျက်ပေါ့ထွက်ဂဏန်းတွေနဲ့ ဘယ်နှလုံးကိုက်ညီမလဲဆိုတာကို ပျော်စရာအတွက်ပဲ ပြသပေးပါမယ်။ ဒါက တကယ့်ဆုစစ်ဆေးမှုမဟုတ်ပါဘူး၊ "ဆိုပါစို့" နှိုင်းယှဉ်မှုတစ်ခုပဲ ဖြစ်ပါတယ်!',
+  ne: 'तपाईंले सामान्यतया खेल्ने Powerball नम्बरहरू हाल्नुहोस्, हामी रमाइलोका लागि मात्र देखाउनेछौं यी ऐतिहासिक ज्याकपोट ड्रका साथ कतिवटा मिल्थ्यो। यो वास्तविक पुरस्कार जाँच होइन, केवल "यदि भइदिएको भए" भन्ने तुलना हो!',
+  si: 'ඔබ සාමාන්‍යයෙන් සෙල්ලම් කරන Powerball අංක ඇතුළත් කරන්න, අපි විනෝදයට පමණක් මෙම සුප්‍රසිද්ධ ජැක්පොට් දිනුම් ඇදීම් සමඟ කීයක් ගැලපෙනවාද යන්න පෙන්වන්නෙමු. මෙය සැබෑ ත්‍යාග පරීක්ෂාවක් නොව, හුදෙක් "එසේ නම්" සැසඳීමකි!',
+  tl: 'Ilagay ang mga Powerball number na karaniwan mong pinepermahan, at ipapakita namin — para lang sa saya — kung ilan ang tumugma sa mga alamat na jackpot draw na ito. Hindi ito totoong pagsusuri ng panalo, isang "paano kaya" na paghahambing lang ito!',
+  ur: 'وہ Powerball نمبر درج کریں جو آپ عام طور پر کھیلتے ہیں، اور ہم صرف تفریح کے لیے دکھائیں گے کہ ان میں سے کتنے ان افسانوی جیک پاٹ ڈرا سے میچ ہوتے۔ یہ اصل جیت کی جانچ نہیں، محض ایک "اگر ایسا ہوتا" موازنہ ہے!',
+  uz: "Odatda o'ynaydigan Powerball raqamlaringizni kiriting, biz shunchaki qiziqarli tarzda bu afsonaviy jekpot chekilishlariga nechtasi mos kelishini ko'rsatamiz. Bu haqiqiy yutuqni tekshirish emas, shunchaki \"agar bo'lganida\" taqqoslashi!",
+};
+const MN_MAIN_LABEL_MORE = {
+  ar: 'رقم أرقام رئيسية (1–69)', bn: '৫টি প্রধান সংখ্যা (১–৬৯)', fr: '5 numéros principaux (1–69)', hi: '5 मुख्य नंबर (1–69)',
+  id: '5 angka utama (1–69)', ja: 'メイン数字5個（1〜69）', kk: '5 негізгі сан (1–69)', km: 'លេខចម្បង ៥ (1–69)',
+  ky: '5 негизги сан (1–69)', lo: 'ເລກຫຼັກ 5 ຕົວ (1-69)', mn: '5 үндсэн тоо (1–69)', my: 'အဓိကဂဏန်း ၅ လုံး (၁ မှ ၆၉)',
+  ne: '५ मुख्य नम्बर (१–६९)', si: 'ප්‍රධාන අංක 5ක් (1–69)', tl: '5 pangunahing numero (1–69)', ur: '5 مرکزی نمبر (1–69)',
+  uz: "5 ta asosiy raqam (1–69)",
+};
+const MN_SPECIAL_LABEL_MORE = {
+  ar: 'رقم Powerball (1–26)', bn: 'Powerball সংখ্যা (১–২৬)', fr: 'Numéro Powerball (1–26)', hi: 'Powerball नंबर (1–26)',
+  id: 'Angka Powerball (1–26)', ja: 'パワーボール番号（1〜26）', kk: 'Powerball саны (1–26)', km: 'លេខ Powerball (1–26)',
+  ky: 'Powerball саны (1–26)', lo: 'ເລກ Powerball (1-26)', mn: 'Powerball дугаар (1–26)', my: 'Powerball ဂဏန်း (၁ မှ ၂၆)',
+  ne: 'Powerball नम्बर (१–२६)', si: 'Powerball අංකය (1–26)', tl: 'Numero ng Powerball (1–26)', ur: 'Powerball نمبر (1–26)',
+  uz: "Powerball raqami (1–26)",
+};
+const MN_BTN_MORE = {
+  ar: 'تحقق', bn: 'যাচাই করুন', fr: 'Vérifier', hi: 'जांचें', id: 'Cek sekarang', ja: '確認する', kk: 'Тексеру',
+  km: 'ពិនិត្យមើល', ky: 'Текшерүү', lo: 'ກວດສອບ', mn: 'Шалгах', my: 'စစ်ဆေးမည်', ne: 'जाँच गर्नुहोस्', si: 'පරීක්ෂා කරන්න',
+  tl: 'Suriin', ur: 'چیک کریں', uz: "Tekshirish",
+};
+const MN_DISCLAIMER_MORE = {
+  ar: 'مجرد مقارنة افتراضية للمتعة — ليست فحصًا حقيقيًا للفوز، ولا تشجيعًا على شراء تذاكر اليانصيب 🙂',
+  bn: 'নিছক মজার কাল্পনিক তুলনা — আসল পুরস্কার যাচাই নয়, লটারি টিকিট কেনার পরামর্শও নয় 🙂',
+  fr: 'Juste une comparaison hypothétique pour le plaisir — pas une vraie vérification de gain, et ce n\'est pas une incitation à acheter des billets de loterie 🙂',
+  hi: 'बस मज़े के लिए काल्पनिक तुलना है — असली इनाम जांच नहीं, और लॉटरी टिकट खरीदने की सलाह भी नहीं 🙂',
+  id: 'Cuma perbandingan hipotetis untuk seru-seruan — bukan pengecekan hadiah sungguhan, dan bukan ajakan membeli tiket lotre 🙂',
+  ja: '楽しみのための仮の比較です — 実際の当選確認ではなく、宝くじの購入を勧めるものでもありません 🙂',
+  kk: 'Бұл тек көңіл көтеру үшін болжамды салыстыру — нақты ұтыс тексерісі емес және лотерея билетін сатып алуға шақыру да емес 🙂',
+  km: 'គ្រាន់តែជាការប្រៀបធៀបតាមសម្មតិកម្មសម្រាប់ភាពសប្បាយប៉ុណ្ណោះ — មិនមែនជាការត្រួតពិនិត្យរង្វាន់ពិតប្រាកដ ហើយក៏មិនមែនជាការលើកទឹកចិត្តឱ្យទិញឆ្នោតដែរ 🙂',
+  ky: 'Бул жөн гана көңүл ачуу үчүн болжолдуу салыштыруу — чыныгы утуш текшерүү эмес жана лотерея билетин сатып алууга чакырык дагы эмес 🙂',
+  lo: 'ພຽງແຕ່ການປຽບທຽບສົມມຸດຕິຖານເພື່ອຄວາມມ່ວນເທົ່ານັ້ນ — ບໍ່ແມ່ນການກວດສອບລາງວັນຈິງ ແລະບໍ່ແມ່ນການຊັກຊວນໃຫ້ຊື້ຫວຍ 🙂',
+  mn: 'Энэ бол зөвхөн зугаа цэнгэлийн таамаглалын харьцуулалт — бодит шагнал шалгах явдал биш, мөн сугалааны тасалбар худалдаж авахыг уриалах явдал ч биш 🙂',
+  my: 'ဒါက ပျော်စရာအတွက်ပဲ စိတ်ကူးယဉ် နှိုင်းယှဉ်မှုတစ်ခုပါ — တကယ့်ဆုစစ်ဆေးမှုမဟုတ်ပါဘူး၊ ထီဝယ်ဖို့ တိုက်တွန်းမှုလည်း မဟုတ်ပါဘူး 🙂',
+  ne: 'यो रमाइलोका लागि मात्र काल्पनिक तुलना हो — वास्तविक पुरस्कार जाँच होइन, र लटरी टिकट किन्न सिफारिस पनि होइन 🙂',
+  si: 'මෙය විනෝදය සඳහා පමණක් උපකල්පිත සැසඳීමකි — සැබෑ ත්‍යාග පරීක්ෂාවක් නොව, ලොතරැයි ටිකට් මිලදී ගැනීමට දිරිගැන්වීමක් ද නොවේ 🙂',
+  tl: 'Isang haka-haka lang na paghahambing para sa saya — hindi totoong pagsusuri ng panalo, at hindi rin ito paghikayat na bumili ng lottery ticket 🙂',
+  ur: 'یہ محض تفریح کے لیے ایک فرضی موازنہ ہے — اصل جیت کی جانچ نہیں، اور نہ ہی لاٹری ٹکٹ خریدنے کی ترغیب ہے 🙂',
+  uz: "Bu shunchaki qiziqarli faraziy taqqoslash — haqiqiy yutuqni tekshirish emas va lotereya chiptasini sotib olishga chaqiriq ham emas 🙂",
+};
+const MN_ERROR_MORE = {
+  ar: 'يرجى إدخال 5 أرقام رئيسية مختلفة (1–69) ورقم Powerball (1–26)', bn: 'দয়া করে ৫টি ভিন্ন প্রধান সংখ্যা (১–৬৯) এবং Powerball সংখ্যা (১–২৬) দিন',
+  fr: 'Veuillez saisir 5 numéros principaux différents (1–69) et le numéro Powerball (1–26)', hi: 'कृपया 5 अलग-अलग मुख्य नंबर (1–69) और Powerball नंबर (1–26) डालें',
+  id: 'Mohon masukkan 5 angka utama yang berbeda (1–69) dan angka Powerball (1–26)', ja: '異なる5個のメイン数字（1〜69）とパワーボール番号（1〜26）をすべて入力してください',
+  kk: '5 түрлі негізгі санды (1–69) және Powerball санын (1–26) толығымен енгізіңіз', km: 'សូមបញ្ចូលលេខចម្បងខុសគ្នា ៥ (1–69) និងលេខ Powerball (1–26)',
+  ky: '5 ар түрдүү негизги санды (1–69) жана Powerball санын (1–26) толугу менен киргизиңиз', lo: 'ກະລຸນາໃສ່ເລກຫຼັກທີ່ແຕກຕ່າງກັນ 5 ຕົວ (1-69) ແລະເລກ Powerball (1-26) ໃຫ້ຄົບ',
+  mn: '5 өөр үндсэн тоог (1–69) болон Powerball дугаарыг (1–26) бүрэн оруулна уу', my: 'ကွဲပြားတဲ့ အဓိကဂဏန်း ၅ လုံး (၁ မှ ၆၉) နဲ့ Powerball ဂဏန်း (၁ မှ ၂၆) ကို အပြည့်ထည့်ပါ',
+  ne: 'कृपया ५ फरक-फरक मुख्य नम्बर (१–६९) र Powerball नम्बर (१–२६) पूरा भर्नुहोस्', si: 'කරුණාකර වෙනස් ප්‍රධාන අංක 5ක් (1–69) සහ Powerball අංකය (1–26) සම්පූර්ණයෙන් ඇතුළත් කරන්න',
+  tl: 'Pakilagay ang 5 magkakaibang pangunahing numero (1–69) at ang Powerball number (1–26) nang buo', ur: 'براہ کرم 5 مختلف مرکزی نمبر (1–69) اور Powerball نمبر (1–26) مکمل درج کریں',
+  uz: "Iltimos, 5 ta har xil asosiy raqam (1–69) va Powerball raqamini (1–26) to'liq kiriting",
+};
+const MN_LEGENDARY_TAG_MORE = {
+  ar: '🏆 جاكبوت أسطوري', bn: '🏆 কিংবদন্তি জ্যাকপট', fr: '🏆 Jackpot légendaire', hi: '🏆 ऐतिहासिक जैकपॉट',
+  id: '🏆 Jackpot legendaris', ja: '🏆 伝説のジャックポット', kk: '🏆 Аңызға айналған джекпот', km: '🏆 ជេកផតដ៏ល្បីល្បាញ',
+  ky: '🏆 Атактуу джекпот', lo: '🏆 ແຈັກພອດໃນຕຳນານ', mn: '🏆 Домогт жекпот', my: '🏆 ဒဏ္ဍာရီဆန်သော ဂျက်ပေါ့',
+  ne: '🏆 ऐतिहासिक ज्याकपोट', si: '🏆 සුප්‍රසිද්ධ ජැක්පොට්', tl: '🏆 Alamat na jackpot', ur: '🏆 افسانوی جیک پاٹ',
+  uz: "🏆 Afsonaviy jekpot",
+};
+const MN_LATEST_TAG_MORE = {
+  ar: '🎱 آخر سحب', bn: '🎱 সাম্প্রতিক ড্র', fr: '🎱 Dernier tirage', hi: '🎱 नवीनतम ड्रॉ', id: '🎱 Undian terbaru',
+  ja: '🎱 最新の抽選', kk: '🎱 Соңғы тарту', km: '🎱 ការទាញឆ្នោតថ្មីៗ', ky: '🎱 Акыркы тартылыш', lo: '🎱 ການອອກລ່າສຸດ',
+  mn: '🎱 Сүүлийн сугалаа', my: '🎱 နောက်ဆုံး ထီပေါက်စဉ်', ne: '🎱 पछिल्लो ड्र', si: '🎱 මෑත දිනුම් ඇදීම', tl: '🎱 Pinakabagong draw',
+  ur: '🎱 تازہ ترین ڈرا', uz: "🎱 So'nggi tortish",
+};
+
+// 매치 개수+파워볼 일치 여부에 따른 6단계 격려 문구 — buildMatchMore()와 같은 자리(1950행 근처)의
+// MATCH_LABEL_TEMPLATES_MORE 패턴과 별개로, 이건 "숫자 라벨"이 아니라 "감정 톤 한 줄"이라 새로
+// 정의함. score = 일반번호 일치 개수 + (파워볼 일치 시 +1), 최대 6
+const MN_TONE_TIERS = [
+  // score 0~1: 무난하게, 놀리지 않는 톤
+  ['다음 기회에 다시 도전해봐요 🍀', 'Next time might be the one — 🍀', '下次说不定就中了 🍀', 'Lần sau biết đâu trúng đấy 🍀', 'ครั้งหน้าอาจจะโดนก็ได้ 🍀', 'В следующий раз повезёт больше 🍀', {
+    ar: 'ربما تكون المرة القادمة هي الفرصة 🍀', bn: 'পরের বার হয়তো ভাগ্য খুলবে 🍀', fr: 'La prochaine fois sera peut-être la bonne 🍀', hi: 'अगली बार शायद किस्मत खुले 🍀',
+    id: 'Mungkin lain kali keberuntungan berpihak 🍀', ja: '次はいけるかも 🍀', kk: 'Келесі жолы сәттілік күтіп тұр шығар 🍀', km: 'លើកក្រោយប្រហែលជាសំណាងល្អ 🍀',
+    ky: 'Кийинки жолу ийгилик күтүп жатат 🍀', lo: 'ຄັ້ງໜ້າອາດຈະໂຊກດີ 🍀', mn: 'Дараагийн удаа азтай байж магадгүй 🍀', my: 'နောက်တစ်ကြိမ်မှာ ကံကောင်းနိုင်ပါတယ် 🍀',
+    ne: 'अर्को पटक भाग्य खुल्न सक्छ 🍀', si: 'ඊළඟ වතාවේ වාසනාව විවෘත වෙන්න පුළුවන් 🍀', tl: 'Baka sa susunod na pagkakataon na 🍀', ur: 'اگلی بار قسمت کھل سکتی ہے 🍀',
+    uz: "Keyingi safar omad kulib boqishi mumkin 🍀",
+  }],
+  // score 2
+  ['오, 나쁘지 않은데요? 😊', 'Oh, not bad at all! 😊', '哦，还不错嘛！😊', 'Ồ, không tệ đấy chứ! 😊', 'โอ้ ไม่เลวเลยนะ! 😊', 'О, совсем неплохо! 😊', {
+    ar: 'أوه، ليس سيئًا على الإطلاق! 😊', bn: 'বাহ, মন্দ না তো! 😊', fr: 'Oh, pas mal du tout ! 😊', hi: 'अरे वाह, बुरा नहीं है! 😊',
+    id: 'Wah, lumayan juga nih! 😊', ja: 'おっ、悪くないですね！😊', kk: 'Ой, жаман емес қой! 😊', km: 'អូ មិនអាក្រក់ទេ! 😊',
+    ky: 'Ой, жаман эмес экен! 😊', lo: 'ໂອ້, ບໍ່ເລວເລີຍ! 😊', mn: 'Өө, муу биш байна! 😊', my: 'အိုး၊ မဆိုးလှပါဘူးနော်! 😊',
+    ne: 'ओहो, नराम्रो त होइन! 😊', si: 'ඕහෝ, නරක නැහැනේ! 😊', tl: 'Oh, hindi naman masama! 😊', ur: 'واہ، برا نہیں ہے! 😊',
+    uz: "Voy, yomon emas-ku! 😊",
+  }],
+  // score 3
+  ['오, 꽤 가까웠는데요! 👀', 'Ooh, that was pretty close! 👀', '哦，还挺接近的呢！👀', 'Ồ, khá gần đấy! 👀', 'โอ้ ใกล้เคียงเลยนะ! 👀', 'О, это было довольно близко! 👀', {
+    ar: 'أوه، كانت قريبة جدًا! 👀', bn: 'বাহ, বেশ কাছাকাছি ছিল! 👀', fr: 'Oh, c’était plutôt proche ! 👀', hi: 'अरे, काफी करीब थे! 👀',
+    id: 'Wah, itu cukup dekat! 👀', ja: 'おっ、かなり近かったですね！👀', kk: 'Ой, бұл өте жақын болды! 👀', km: 'អូ នេះជិតណាស់! 👀',
+    ky: 'Ой, бул абдан жакын болду! 👀', lo: 'ໂອ້, ໃກ້ຫຼາຍເລີຍ! 👀', mn: 'Өө, нэлээд ойрхон байлаа! 👀', my: 'အိုး၊ တော်တော်နီးလိုက်တာနော်! 👀',
+    ne: 'ओहो, निकै नजिक थियो! 👀', si: 'ඕහෝ, හරිම ළඟයි! 👀', tl: 'Oh, medyo malapit na iyon! 👀', ur: 'واہ، کافی قریب تھا! 👀',
+    uz: "Voy, juda yaqin bo'ldi! 👀",
+  }],
+  // score 4 — "아깝게 놓쳤네요" (기획 문구 예시)
+  ['우와, 아깝게 놓쳤네요! 😲', 'Whoa, so close — you just missed it! 😲', '哇，差一点点就中了！😲', 'Ối, suýt nữa là trúng rồi! 😲', 'ว้าว เฉียดไปนิดเดียวเอง! 😲', 'Ого, чуть-чуть не хватило! 😲', {
+    ar: 'واو، لقد فاتتك بفارق ضئيل! 😲', bn: 'ওহো, একটুর জন্য মিস হয়ে গেল! 😲', fr: 'Waouh, c’est passé si près ! 😲', hi: 'वाह, बस थोड़े से चूक गए! 😲',
+    id: 'Wow, hampir saja meleset! 😲', ja: 'わあ、惜しくも逃しましたね！😲', kk: 'Уаһ, аз-ақ жетпей қалды! 😲', km: 'អូ ស្ទើរតែបានហើយ! 😲',
+    ky: 'Ва, аз калды! 😲', lo: 'ໂອ້ຍ, ພາດແບບໜ້າເສຍດາຍເລີຍ! 😲', mn: 'Вау, бага зэрэг дутуу байлаа! 😲', my: 'ဝိုး၊ အနည်းငယ်လွဲသွားတာနော်! 😲',
+    ne: 'ओहो, थोरैमा छुट्यो! 😲', si: 'අනේ, ටිකකින් මගහැරුනා! 😲', tl: 'Wow, sobrang lapit na — konti na lang! 😲', ur: 'واہ، تھوڑے سے رہ گیا! 😲',
+    uz: "Voy, sal-pal yetishmadi! 😲",
+  }],
+  // score 5
+  ['대박, 거의 다 맞았어요! (그래도 이건 가상 비교예요) 😄', 'Wow, you nearly matched almost everything! (still just a hypothetical comparison) 😄', '哇塞，几乎全中了！（不过这只是假设性比较哦）😄', 'Tuyệt vời, gần như trúng hết rồi! (nhưng đây chỉ là so sánh giả định thôi nhé) 😄', 'สุดยอด เกือบจะถูกหมดแล้ว! (แต่นี่เป็นแค่การเปรียบเทียบสมมติเท่านั้นนะ) 😄', 'Ого, вы почти всё угадали! (но это лишь гипотетическое сравнение) 😄', {
+    ar: 'رائع، لقد طابقت كل شيء تقريبًا! (لكن هذه مجرد مقارنة افتراضية) 😄', bn: 'দারুণ, প্রায় সবই মিলে গেছে! (তবে এটা নিছক কাল্পনিক তুলনা) 😄', fr: 'Incroyable, vous avez presque tout trouvé ! (mais ce n’est qu’une comparaison hypothétique) 😄', hi: 'शानदार, लगभग सब कुछ मैच हो गया! (लेकिन यह सिर्फ काल्पनिक तुलना है) 😄',
+    id: 'Wah, hampir semuanya cocok! (tapi ini cuma perbandingan hipotetis) 😄', ja: 'すごい、ほぼ全部一致しました！（でもこれはあくまで仮の比較です）😄', kk: 'Тамаша, барлығы дерлік сәйкес келді! (бірақ бұл тек болжамды салыстыру) 😄', km: 'អស្ចារ្យ ស្ទើរតែត្រូវទាំងអស់! (ប៉ុន្តែនេះគ្រាន់តែជាការប្រៀបធៀបសម្មតិកម្មប៉ុណ្ណោះ) 😄',
+    ky: 'Укмуш, дээрлик баары дал келди! (бирок бул жөн гана болжолдуу салыштыруу) 😄', lo: 'ສຸດຍອດ, ຖືກເກືອບໝົດເລີຍ! (ແຕ່ນີ້ພຽງແຕ່ການປຽບທຽບສົມມຸດຕິຖານເທົ່ານັ້ນ) 😄', mn: 'Гайхалтай, бараг бүгд таарлаа! (гэхдээ энэ бол зөвхөн таамаглалын харьцуулалт) 😄', my: 'အံ့သြစရာပဲ၊ အားလုံးနီးပါး ကိုက်ညီသွားတယ်! (ဒါပေမဲ့ ဒါက စိတ်ကူးယဉ် နှိုင်းယှဉ်မှုပဲ) 😄',
+    ne: 'कमाल, लगभग सबै मिल्यो! (तर यो त काल्पनिक तुलना मात्र हो) 😄', si: 'දැවැන්තයි, පාහේ සියල්ලම ගැලපුණා! (නමුත් මෙය හුදෙක් උපකල්පිත සැසඳීමක් පමණයි) 😄', tl: 'Wow, halos lahat ay tumugma! (pero ito ay isang haka-haka lang na paghahambing) 😄', ur: 'زبردست، تقریباً سب کچھ میچ ہو گیا! (لیکن یہ محض ایک فرضی موازنہ ہے) 😄',
+    uz: "Ajoyib, deyarli hammasi mos keldi! (lekin bu shunchaki faraziy taqqoslash) 😄",
+  }],
+  // score 6 (5개 + 파워볼 전부 일치) — "축하?!" (기획 문구 예시), 실제 당첨 아님을 재차 명시
+  ['축하?! 실제였다면 잭팟이었겠지만, 이건 그냥 재미로 해본 가상 비교예요 🎉😄', 'Congrats?! If this were real, that’d be the jackpot — but this is just a fun hypothetical comparison 🎉😄', '恭喜？！如果是真的那就是头奖了，不过这只是好玩的假设性比较而已 🎉😄', 'Chúc mừng?! Nếu là thật thì đã trúng jackpot rồi, nhưng đây chỉ là so sánh giả định cho vui thôi 🎉😄', 'ยินดีด้วยไหมนะ?! ถ้าเป็นเรื่องจริงนี่คือแจ็คพอตเลย แต่นี่เป็นแค่การเปรียบเทียบสมมติเพื่อความสนุกเท่านั้น 🎉😄', 'Поздравляем?! Будь это по-настоящему, это был бы джекпот — но это просто гипотетическое сравнение для развлечения 🎉😄', {
+    ar: 'مبروك؟! لو كان هذا حقيقيًا لكانت الجائزة الكبرى، لكنها مجرد مقارنة افتراضية للمتعة 🎉😄', bn: 'অভিনন্দন?! সত্যি হলে এটাই জ্যাকপট হতো, তবে এটা নিছক মজার কাল্পনিক তুলনা 🎉😄', fr: 'Félicitations ?! Si c’était réel, ce serait le jackpot — mais ce n’est qu’une comparaison fictive pour le plaisir 🎉😄', hi: 'बधाई हो?! अगर यह असली होता तो यही जैकपॉट होता, पर यह सिर्फ मज़े के लिए काल्पनिक तुलना है 🎉😄',
+    id: 'Selamat?! Kalau ini nyata, ini jackpot-nya — tapi ini cuma perbandingan hipotetis untuk seru-seruan 🎉😄', ja: 'おめでとう？！もし本当ならジャックポットでしたが、これは楽しみのための仮の比較です 🎉😄', kk: 'Құттықтаймыз ба?! Егер бұл шын болса, джекпот болар еді — бірақ бұл тек көңіл көтеру үшін болжамды салыстыру 🎉😄', km: 'អបអរសាទរ?! ប្រសិនបើវាពិត នេះនឹងជាជេកផត ប៉ុន្តែនេះគ្រាន់តែជាការប្រៀបធៀបសម្មតិកម្មសម្រាប់ភាពសប្បាយប៉ុណ្ណោះ 🎉😄',
+    ky: 'Куттуктайбызбы?! Эгер бул чын болсо, бул джекпот болмок — бирок бул жөн гана көңүл ачуу үчүн болжолдуу салыштыруу 🎉😄', lo: 'ຂໍສະແດງຄວາມຍິນດີບໍ?! ຖ້າເປັນເລື່ອງຈິງນີ້ຄືແຈັກພອດເລີຍ — ແຕ່ນີ້ພຽງແຕ່ການປຽບທຽບສົມມຸດຕິຖານເພື່ອຄວາມມ່ວນເທົ່ານັ້ນ 🎉😄', mn: 'Баяр хүргэе үү?! Хэрэв бодит байсан бол энэ жекпот байх байсан — гэхдээ энэ бол зөвхөн зугаа цэнгэлийн таамаглалын харьцуулалт 🎉😄', my: 'ဂုဏ်ယူပါတယ်ရယ်လား?! ဒါအမှန်ဆိုရင် ဂျက်ပေါ့ပဲ ဖြစ်ခဲ့မှာပါ — ဒါပေမဲ့ ဒါက ပျော်စရာအတွက် စိတ်ကူးယဉ် နှိုင်းယှဉ်မှုပဲ 🎉😄',
+    ne: 'बधाई छ?! यदि यो साँचो भएको भए यो त ज्याकपोट नै हुन्थ्यो — तर यो त रमाइलोका लागि मात्र काल्पनिक तुलना हो 🎉😄', si: 'සුබ පැතුම්ද?! මෙය සැබෑ නම් මෙය ජැක්පොට් වන්නට තිබුණි — නමුත් මෙය විනෝදය සඳහා පමණක් උපකල්පිත සැසඳීමකි 🎉😄', tl: 'Congrats kaya?! Kung totoo ito, iyan na sana ang jackpot — pero ito ay isang haka-haka lang na paghahambing para sa saya 🎉😄', ur: 'مبارک ہو؟! اگر یہ حقیقی ہوتا تو یہی جیک پاٹ ہوتا — لیکن یہ محض تفریح کے لیے ایک فرضی موازنہ ہے 🎉😄',
+    uz: "Tabriklaymizmi?! Agar bu haqiqiy bo'lsa, bu jekpot bo'lardi — lekin bu shunchaki qiziqarli faraziy taqqoslash 🎉😄",
+  }],
+];
+
+// score(0~6) -> 톤 문구. 배열 인덱스는 그대로 score(0,1은 같은 문구 공유하려고 인덱스 보정)
+function mnToneLine(score){
+  const idx = score <= 1 ? 0 : score - 1; // 0,1 -> 0번째 문구, 2->1번째, ... 6->5번째
+  return pickLang(...MN_TONE_TIERS[idx]);
+}
+
+// 언어 전환 시에도 다시 불러 정적 문구를 새로 그림 (updateLightningGameUi()와 같은 자리에서 호출)
+function updateMyNumbersUi(){
+  const titleEl = document.getElementById('mn-section-title');
+  const descEl = document.getElementById('mn-section-desc');
+  const mainLabelEl = document.getElementById('mn-main-label');
+  const specialLabelEl = document.getElementById('mn-special-label');
+  const btnEl = document.getElementById('mn-check-btn');
+  const disclaimerEl = document.getElementById('mn-disclaimer');
+  if (!titleEl || !descEl || !mainLabelEl || !specialLabelEl || !btnEl || !disclaimerEl) return;
+  titleEl.textContent = pickLang('🎯 내 번호, 역대급 잭팟 당첨번호와 비교해볼까요?', '🎯 Compare your numbers to legendary jackpot draws', '🎯 把你的号码和历代传奇头奖对比一下？', '🎯 So sánh số của bạn với các kỳ jackpot huyền thoại', '🎯 ลองเทียบเลขของคุณกับแจ็คพอตในตำนานไหม', '🎯 Сравните свои числа с легендарными джекпотами', MN_TITLE_MORE);
+  descEl.textContent = pickLang(
+    '평소 즐겨 쓰는 파워볼 번호를 넣으면, 역대 초대형 잭팟 당첨번호와 몇 개나 맞는지 재미로 보여드려요. 실제 당첨 확인이 아니라 순전히 "만약에" 비교예요!',
+    "Enter the Powerball numbers you usually play, and we'll show — just for fun — how many would've matched these legendary jackpot draws. This isn't a real prize check, just a 'what if' comparison!",
+    '输入你平常爱用的强力球号码，我们就会好玩地告诉你，这些号码和历代超级大奖号码能对上几个。这不是真的对奖，只是好玩的"假如"比较！',
+    "Nhập những số Powerball bạn thường chơi, chúng tôi sẽ cho bạn xem — chỉ để vui thôi — có bao nhiêu số trùng với các kỳ jackpot huyền thoại. Đây không phải kiểm tra trúng thưởng thật, chỉ là so sánh 'giả sử' thôi!",
+    "ใส่เลขพาวเวอร์บอลที่คุณเล่นประจำ แล้วเราจะโชว์ให้ดูเล่นๆ ว่าตรงกับเลขแจ็คพอตในตำนานกี่ตัว นี่ไม่ใช่การตรวจรางวัลจริง แค่การเปรียบเทียบแบบ 'ถ้าสมมติว่า' เท่านั้น!",
+    "Введите числа Powerball, которые вы обычно играете, и мы просто ради развлечения покажем, сколько из них совпало бы с легендарными джекпотами. Это не настоящая проверка выигрыша, а просто сравнение 'а что если'!",
+    MN_DESC_MORE
+  );
+  mainLabelEl.textContent = pickLang('일반번호 5개 (1~69)', '5 main numbers (1–69)', '5个普通号码（1~69）', '5 số chính (1–69)', 'เลขหลัก 5 ตัว (1-69)', '5 основных чисел (1–69)', MN_MAIN_LABEL_MORE);
+  specialLabelEl.textContent = pickLang('파워볼 번호 (1~26)', 'Powerball number (1–26)', '强力球号码（1~26）', 'Số Powerball (1–26)', 'เลขพาวเวอร์บอล (1-26)', 'Число Powerball (1–26)', MN_SPECIAL_LABEL_MORE);
+  btnEl.textContent = pickLang('확인하기', 'Check it', '查看结果', 'Kiểm tra', 'ตรวจสอบ', 'Проверить', MN_BTN_MORE);
+  disclaimerEl.textContent = pickLang(
+    '재미로 보는 가상 비교예요 — 실제 당첨 확인이 아니고, 복권 구매를 권하는 것도 아니에요 🙂',
+    'Just a fun hypothetical comparison — not a real prize check, and not an endorsement to buy lottery tickets 🙂',
+    '这只是好玩的假设性比较——不是真的对奖，也不是鼓励买彩票 🙂',
+    'Chỉ là so sánh giả định cho vui — không phải kiểm tra trúng thưởng thật, và không khuyến khích mua vé số 🙂',
+    'แค่การเปรียบเทียบสมมติเพื่อความสนุกเท่านั้น — ไม่ใช่การตรวจรางวัลจริง และไม่ได้ชักชวนให้ซื้อลอตเตอรี่ 🙂',
+    'Это просто гипотетическое сравнение для развлечения — не настоящая проверка выигрыша и не призыв покупать лотерейные билеты 🙂',
+    MN_DISCLAIMER_MORE
+  );
+  for (let i = 1; i <= 5; i++) {
+    const input = document.getElementById(`mn-main-${i}`);
+    if (input) input.setAttribute('aria-label', pickLang(`일반번호 ${i}`, `Main number ${i}`, `普通号码${i}`, `Số chính ${i}`, `เลขหลัก ${i}`, `Основное число ${i}`, buildMainNumAriaMore(i)));
+  }
+  const specialInput = document.getElementById('mn-special');
+  if (specialInput) specialInput.setAttribute('aria-label', pickLang('파워볼 번호', 'Powerball number', '强力球号码', 'Số Powerball', 'เลขพาวเวอร์บอล', 'Число Powerball', MN_SPECIAL_ARIA_MORE));
+
+  // 이미 확인한 번호가 있으면(예: 결과를 본 채로 언어를 바꾼 경우) 결과도 새 언어로 다시 그림
+  if (lastMyNumbersCheck) renderMyNumbersResult(lastMyNumbersCheck.mainNums, lastMyNumbersCheck.specialNum);
+}
+
+// JACKPOT_HISTORY(당첨번호 확인된 5건) + LATEST_DRAW(최신 추첨 2건)을 합쳐 비교 대상 목록을 만듦.
+// numbers/special 필드가 없는 JACKPOT_HISTORY 항목(대부분의 일반 기록)은 자동으로 제외됨
+function getMyNumbersComparableDraws(){
+  const fromHistory = JACKPOT_HISTORY.filter(e => e.numbers && e.special).map(e => ({
+    date: e.date, game: e.game, numbers: e.numbers, special: e.special, isLegendary: true,
+  }));
+  const fromLatest = Object.keys(LATEST_DRAW).map(game => ({
+    date: LATEST_DRAW[game].date, game, numbers: LATEST_DRAW[game].numbers, special: LATEST_DRAW[game].special, isLegendary: false,
+  }));
+  return [...fromHistory, ...fromLatest].sort((a, b) => b.date.localeCompare(a.date));
+}
+
+let lastMyNumbersCheck = null; // { mainNums, specialNum } — 언어 전환 시 결과 재렌더링용
+
+// 입력값 검증 + 결과 렌더링 트리거. 버튼 onclick에서 호출됨
+function checkMyNumbersVsHistory(){
+  const errorEl = document.getElementById('mn-error');
+  const mainNums = [];
+  for (let i = 1; i <= 5; i++) {
+    const raw = document.getElementById(`mn-main-${i}`).value;
+    mainNums.push(raw === '' ? NaN : Number(raw));
+  }
+  const specialNum = (() => {
+    const raw = document.getElementById('mn-special').value;
+    return raw === '' ? NaN : Number(raw);
+  })();
+
+  // 검증: 5개 모두 1~69 정수·서로 다른 값, 파워볼은 1~26 정수 — 실제 파워볼 규칙(중복 불가)과 맞춰야
+  // "이게 뭘 비교하는 거지" 하는 혼란이 없음
+  const mainValid = mainNums.every(n => Number.isInteger(n) && n >= 1 && n <= 69) && new Set(mainNums).size === 5;
+  const specialValid = Number.isInteger(specialNum) && specialNum >= 1 && specialNum <= 26;
+  if (!mainValid || !specialValid) {
+    errorEl.textContent = pickLang(
+      '일반번호 5개(1~69, 서로 다른 숫자)와 파워볼 번호(1~26)를 모두 입력해주세요',
+      'Please enter all 5 main numbers (1–69, all different) and the Powerball number (1–26)',
+      '请输入5个不同的普通号码（1~69）和1个强力球号码（1~26）',
+      'Vui lòng nhập đủ 5 số chính (1–69, khác nhau) và số Powerball (1–26)',
+      'กรุณากรอกเลขหลัก 5 ตัว (1-69 ต้องไม่ซ้ำกัน) และเลขพาวเวอร์บอล (1-26) ให้ครบ',
+      'Пожалуйста, введите все 5 основных чисел (1–69, разные) и число Powerball (1–26)',
+      MN_ERROR_MORE
+    );
+    return;
+  }
+  errorEl.textContent = '';
+  lastMyNumbersCheck = { mainNums, specialNum };
+  renderMyNumbersResult(mainNums, specialNum);
+}
+
+function renderMyNumbersResult(mainNums, specialNum){
+  const resultEl = document.getElementById('mn-result');
+  const announcerEl = document.getElementById('mn-announcer');
+  if (!resultEl) return;
+  const gameNameKo = { powerball: '파워볼', megamillions: '메가밀리언즈' };
+  const gameNameEn = { powerball: 'Powerball', megamillions: 'Mega Millions' };
+  const gameNameZh = { powerball: '强力球', megamillions: '超级百万' };
+  const gameNameVi = { powerball: 'Powerball', megamillions: 'Mega Millions' };
+  const gameNameTh = { powerball: 'พาวเวอร์บอล', megamillions: 'เมกะมิลเลียน' };
+  const gameNameRu = { powerball: 'Powerball', megamillions: 'Mega Millions' };
+
+  const draws = getMyNumbersComparableDraws();
+  const cardsHtml = draws.map(draw => {
+    const matchedMain = draw.numbers.filter(n => mainNums.includes(n)).length;
+    const matchedSpecial = draw.special === specialNum;
+    const score = matchedMain + (matchedSpecial ? 1 : 0);
+    const gameLabel = pickLang(gameNameKo[draw.game], gameNameEn[draw.game], gameNameZh[draw.game], gameNameVi[draw.game], gameNameTh[draw.game], gameNameRu[draw.game], GAME_NAME_MORE[draw.game]);
+    const tagEmoji = draw.game === 'powerball' ? '🔴' : '🟡';
+    const kindTag = draw.isLegendary
+      ? pickLang('🏆 역대급 잭팟', '🏆 Legendary jackpot', '🏆 历代传奇头奖', '🏆 Jackpot huyền thoại', '🏆 แจ็คพอตในตำนาน', '🏆 Легендарный джекпот', MN_LEGENDARY_TAG_MORE)
+      : pickLang('🎱 최신 추첨', '🎱 Latest draw', '🎱 最新开奖', '🎱 Kỳ quay gần nhất', '🎱 การออกรางวัลล่าสุด', '🎱 Последний розыгрыш', MN_LATEST_TAG_MORE);
+    const ballsHtml = draw.numbers.map(n => `<span class="mn-result-ball${mainNums.includes(n) ? ' hit' : ''}">${n}</span>`).join('')
+      + `<span class="mn-result-ball special${matchedSpecial ? ' hit' : ''}">${draw.special}</span>`;
+    // buildMatchMore()는 이미 PRIZE_TIERS 등에서 검증된 17개 언어 조각 조립 함수라 재사용 —
+    // ball 이름은 게임과 무관하게 언제나 "Powerball"로 고정(이 위젯 자체가 파워볼 형식 입력 기준이라)
+    const mode = matchedSpecial ? (matchedMain === 0 ? 'only' : 'plus') : 'no';
+    const matchMore = buildMatchMore(matchedMain, 'Powerball', mode);
+    const matchLabel = mode === 'only'
+      ? pickLang('파워볼 번호만 일치', 'Powerball number only', '仅强力球号码一致', 'Chỉ trúng số Powerball', 'ถูกเฉพาะเลขพาวเวอร์บอล', 'Совпал только Powerball', matchMore)
+      : pickLang(
+          `일반번호 ${matchedMain}개 일치 (파워볼 ${matchedSpecial ? '도 일치' : '불일치'})`,
+          `${matchedMain} main number${matchedMain === 1 ? '' : 's'} matched (${matchedSpecial ? '+ Powerball' : 'Powerball missed'})`,
+          `${matchedMain}个号码一致（${matchedSpecial ? '+强力球' : '未中强力球'}）`,
+          `Trúng ${matchedMain} số (${matchedSpecial ? '+ Powerball' : 'trật Powerball'})`,
+          `ถูก ${matchedMain} ตัวเลข (${matchedSpecial ? '+ พาวเวอร์บอล' : 'พาวเวอร์บอลไม่ถูก'})`,
+          `Совпадение ${matchedMain} чисел (${matchedSpecial ? '+ Powerball' : 'без Powerball'})`,
+          matchMore
+        );
+    const toneLine = mnToneLine(score);
+    return `<div class="mn-result-card">
+      <div class="mn-result-top">
+        <span class="mn-result-tag">${tagEmoji} ${gameLabel} · ${kindTag}</span>
+        <span class="mn-result-date">${draw.date}</span>
+      </div>
+      <div class="mn-result-balls">${ballsHtml}</div>
+      <p class="mn-result-match">${matchLabel}</p>
+      <p class="mn-result-tone">${toneLine}</p>
+    </div>`;
+  }).join('');
+
+  // reveal-up은 이미 다른 화면(카드 스크롤 등장 등)에서 prefers-reduced-motion까지 처리해둔
+  // 기존 트랜지션 클래스라, 새 keyframe/모션 코드를 추가하지 않고 그대로 재사용함
+  resultEl.innerHTML = `<div class="mn-result-wrap reveal-up">${cardsHtml}</div>`;
+  requestAnimationFrame(() => {
+    const wrap = resultEl.querySelector('.mn-result-wrap');
+    if (wrap) wrap.classList.add('is-in');
+  });
+
+  if (announcerEl) {
+    announcerEl.textContent = pickLang(
+      `${draws.length}개 추첨과 비교했어요`, `Compared against ${draws.length} draws`, `已与${draws.length}期开奖比较`,
+      `Đã so sánh với ${draws.length} kỳ quay`, `เทียบกับ ${draws.length} งวดแล้ว`, `Сравнено с ${draws.length} розыгрышами`,
+      buildDrawCountAnnounceMore(draws.length)
+    );
+  }
+}
+function buildDrawCountAnnounceMore(count){
+  return {
+    ar: `تمت المقارنة مع ${count} سحوبات`, bn: `${count}টি ড্রয়ের সাথে তুলনা করা হয়েছে`, fr: `Comparé à ${count} tirages`, hi: `${count} ड्रॉ से तुलना की गई`,
+    id: `Dibandingkan dengan ${count} undian`, ja: `${count}回の抽選と比較しました`, kk: `${count} тартылыммен салыстырылды`, km: `បានប្រៀបធៀបជាមួយការទាញឆ្នោត ${count}`,
+    ky: `${count} тартылыш менен салыштырылды`, lo: `ປຽບທຽບກັບການອອກ ${count} ຄັ້ງແລ້ວ`, mn: `${count} сугалаатай харьцуулав`, my: `ထီပေါက်စဉ် ${count} ခုနှင့် နှိုင်းယှဉ်ပြီးပါပြီ`,
+    ne: `${count} ड्रसँग तुलना गरियो`, si: `දිනුම් ඇදීම් ${count}ක් සමඟ සසඳන ලදී`, tl: `Naikumpara sa ${count} draw`, ur: `${count} ڈرا سے موازنہ کیا گیا`,
+    uz: `${count} ta tortish bilan solishtirildi`,
+  };
+}
+
 function applyJackpotData(){
   document.getElementById('jp-powerball').setAttribute('data-target', JACKPOT_DATA.powerball.amountUsd);
   document.getElementById('jp-mega').setAttribute('data-target', JACKPOT_DATA.megamillions.amountUsd);
@@ -3037,7 +3427,7 @@ function scrollToMainResult(){
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderJackpotHistory(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); setupStickyResultBadge(); });
+document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderJackpotHistory(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); });
 
 // 다른 페이지(korea-resident-us-lottery-tax.html 등)에서 "index.html#faq"처럼 해시가 붙은 링크로
 // 들어왔을 때, 이 SPA는 해시를 안 보고 항상 홈 화면부터 그려서 그 링크가 사실상 무시되던 문제 수정.

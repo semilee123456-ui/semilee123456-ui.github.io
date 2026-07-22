@@ -6,6 +6,10 @@
      이 스크립트를 defer 없이 head 맨 앞에 동기 실행시켜서, 다크모드를 켜둔 채 재방문한
      사용자가 라이트→다크로 순간 바뀌는 깜빡임(FOUC) 없이 바로 다크모드로 보이게 함 */
   try{ if(localStorage.getItem('theme')==='dark'){ document.documentElement.setAttribute('data-theme','dark'); } }catch(e){}
+  /* 글자 크게 보기/고대비 모드도 다크모드와 동일한 이유(FOUC 방지)로 head 맨 앞에서 동기 적용.
+     둘 다 opt-in 토글이며 기본은 항상 꺼짐(원래 크기/일반 명암) */
+  try{ if(localStorage.getItem('textSize')==='large'){ document.documentElement.setAttribute('data-textsize','large'); } }catch(e){}
+  try{ if(localStorage.getItem('contrast')==='high'){ document.documentElement.setAttribute('data-contrast','high'); } }catch(e){}
 </script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9743479262743239" crossorigin="anonymous"></script>
 <!-- Google tag (gtag.js) -->
@@ -287,32 +291,39 @@
             <button id="nav-faq" onclick="go('faq')" data-i18n="nav.faq">FAQ</button>
           </div>
           <div class="menu-controls">
-            <select id="lang-toggle" class="lang-toggle" onchange="setLanguage(this.value, true)" aria-label="Language">
-              <option value="ko">한국어</option>
-              <option value="en">English</option>
-              <option value="zh">中文</option>
-              <option value="vi">Tiếng Việt</option>
-              <option value="th">ภาษาไทย</option>
-              <option value="ru">Русский</option>
-              <option value="km">ភាសាខ្មែរ</option>
-              <option value="ne">नेपाली</option>
-              <option value="id">Bahasa Indonesia</option>
-              <option value="my">မြန်မာ</option>
-              <option value="si">සිංහල</option>
-              <option value="uz">O'zbekcha</option>
-              <option value="mn">Монгол</option>
-              <option value="kk">Қазақша</option>
-              <option value="ky">Кыргызча</option>
-              <option value="ur">اردو</option>
-              <option value="bn">বাংলা</option>
-              <option value="lo">ພາສາລາວ</option>
-              <option value="ja">日本語</option>
-              <option value="ar">العربية</option>
-              <option value="hi">हिन्दी</option>
-              <option value="fr">Français</option>
-              <option value="tl">Tagalog</option>
-            </select>
-            <button type="button" id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" aria-label="다크모드 전환" data-i18n-aria-label="a11y.themeToggle">🌙</button>
+            <details class="settings-menu" id="settingsMenu">
+              <summary class="settings-toggle" aria-label="설정" data-i18n-aria-label="a11y.settingsToggle">⚙️</summary>
+              <div class="settings-panel">
+                <select id="lang-toggle" class="lang-toggle" onchange="setLanguage(this.value, true)" aria-label="Language">
+                  <option value="ko">한국어</option>
+                  <option value="en">English</option>
+                  <option value="zh">中文</option>
+                  <option value="vi">Tiếng Việt</option>
+                  <option value="th">ภาษาไทย</option>
+                  <option value="ru">Русский</option>
+                  <option value="km">ភាសាខ្មែរ</option>
+                  <option value="ne">नेपाली</option>
+                  <option value="id">Bahasa Indonesia</option>
+                  <option value="my">မြန်မာ</option>
+                  <option value="si">සිංහල</option>
+                  <option value="uz">O'zbekcha</option>
+                  <option value="mn">Монгол</option>
+                  <option value="kk">Қазақша</option>
+                  <option value="ky">Кыргызча</option>
+                  <option value="ur">اردو</option>
+                  <option value="bn">বাংলা</option>
+                  <option value="lo">ພາສາລາວ</option>
+                  <option value="ja">日本語</option>
+                  <option value="ar">العربية</option>
+                  <option value="hi">हिन्दी</option>
+                  <option value="fr">Français</option>
+                  <option value="tl">Tagalog</option>
+                </select>
+                <button type="button" id="theme-toggle" class="settings-row-btn" onclick="toggleTheme()" aria-label="다크모드 전환" data-i18n-aria-label="a11y.themeToggle"><span class="settings-row-icon">🌙</span><span data-i18n="a11y.themeToggleLabel">다크모드</span></button>
+                <button type="button" id="textsize-toggle" class="settings-row-btn" onclick="toggleTextSize()" aria-label="글자 크게 보기 전환" data-i18n-aria-label="a11y.textSizeToggle"><span class="settings-row-icon">가+</span><span data-i18n="a11y.textSizeToggleLabel">글자 크게 보기</span></button>
+                <button type="button" id="contrast-toggle" class="settings-row-btn" onclick="toggleContrast()" aria-label="고대비 모드 전환" data-i18n-aria-label="a11y.contrastToggle"><span class="settings-row-icon">◐</span><span data-i18n="a11y.contrastToggleLabel">고대비 모드</span></button>
+              </div>
+            </details>
           </div>
         </div>
       </div>
@@ -658,7 +669,7 @@
         <div class="jp-panel-content" id="home-jackpot-panel">
           <div class="cards-row" style="grid-template-columns:1fr 1fr; margin-bottom:0; gap:8px;">
             <div class="feature-card jp-card" style="cursor:default; padding:14px;">
-              <p class="feature-sub" style="margin-bottom:2px; font-size:var(--fs-note);"><span data-i18n="home.powerballName">파워볼</span> <span class="jp-drawdays" data-i18n="faq.pbDrawDays">월·수·토</span><span class="dday-badge" id="dday-powerball">-</span></p>
+              <p class="feature-sub" style="margin-bottom:2px; font-size:var(--fs-note);"><span data-i18n="home.powerballName">파워볼</span><span class="dday-badge" id="dday-powerball">-</span></p>
               <p class="feature-title countup" id="jp-powerball" style="font-size:var(--fs-emphasis);" data-target="526000000">$0</p>
               <div class="jp-krw-row">
                 <p class="jp-krw" id="jp-powerball-krw">-</p>
@@ -672,7 +683,7 @@
               </div>
             </div>
             <div class="feature-card jp-card" style="cursor:default; padding:14px;">
-              <p class="feature-sub" style="margin-bottom:2px; font-size:var(--fs-note);"><span data-i18n="home.megaName">메가밀리언즈</span> <span class="jp-drawdays" data-i18n="faq.mgDrawDays">화·금</span><span class="dday-badge" id="dday-mega">-</span></p>
+              <p class="feature-sub" style="margin-bottom:2px; font-size:var(--fs-note);"><span data-i18n="home.megaName">메가밀리언즈</span><span class="dday-badge" id="dday-mega">-</span></p>
               <p class="feature-title countup" id="jp-mega" style="font-size:var(--fs-emphasis);" data-target="707000000">$0</p>
               <div class="jp-krw-row">
                 <p class="jp-krw" id="jp-mega-krw">-</p>
@@ -966,6 +977,31 @@
           <p class="panel-desc" data-i18n="odds.historyDesc">체크한 날짜의 잭팟 금액과 국가별 실수령액을 기록했어요 (역대 최고 5건 포함)</p>
           <div id="jackpot-history-list" class="jackpot-history-list"></div>
           <a id="jackpot-history-full-link" class="annuity-info-link" href="biggest-jackpot-payouts.html" data-i18n="odds.historyFullLink">📄 역대 최고 잭팟 TOP 5 자세히 보기 →</a>
+
+          <!-- 🎯 내 번호 vs 역대급 당첨번호 비교 위젯 — 이 섹션의 문구는 전부 script.js의
+               updateMyNumbersUi()가 pickLang()으로 채움(신규 인터랙션 콘텐츠 관례를 따름).
+               HTML의 한국어 텍스트는 JS 실행 전/실패 시 폴백용 기본값임 -->
+          <p class="panel-title-toggle" style="cursor:default; padding-right:0; margin-top:22px; padding-top:16px; border-top:1px dashed var(--border);" id="mn-section-title">🎯 내 번호, 역대급 잭팟 당첨번호와 비교해볼까요?</p>
+          <p class="panel-desc" id="mn-section-desc">평소 즐겨 쓰는 파워볼 번호를 넣으면, 역대 초대형 잭팟 당첨번호와 몇 개나 맞는지 재미로 보여드려요. 실제 당첨 확인이 아니라 순전히 "만약에" 비교예요!</p>
+          <div class="input-card mn-card">
+            <p class="mn-field-label" id="mn-main-label">일반번호 5개 (1~69)</p>
+            <div class="mn-input-row">
+              <input type="number" class="mn-num-input" id="mn-main-1" min="1" max="69" inputmode="numeric" autocomplete="off">
+              <input type="number" class="mn-num-input" id="mn-main-2" min="1" max="69" inputmode="numeric" autocomplete="off">
+              <input type="number" class="mn-num-input" id="mn-main-3" min="1" max="69" inputmode="numeric" autocomplete="off">
+              <input type="number" class="mn-num-input" id="mn-main-4" min="1" max="69" inputmode="numeric" autocomplete="off">
+              <input type="number" class="mn-num-input" id="mn-main-5" min="1" max="69" inputmode="numeric" autocomplete="off">
+            </div>
+            <p class="mn-field-label" id="mn-special-label">파워볼 번호 (1~26)</p>
+            <div class="mn-input-row mn-input-row-special">
+              <input type="number" class="mn-num-input mn-special-input" id="mn-special" min="1" max="26" inputmode="numeric" autocomplete="off">
+            </div>
+            <p class="mn-error" id="mn-error" role="alert"></p>
+            <button type="button" class="cta-btn mn-check-btn" id="mn-check-btn" onclick="checkMyNumbersVsHistory()">확인하기</button>
+            <p class="foot-note mn-disclaimer" id="mn-disclaimer" style="margin-top:10px; text-align:center;">재미로 보는 가상 비교예요 — 실제 당첨 확인이 아니고, 복권 구매를 권하는 것도 아니에요 🙂</p>
+          </div>
+          <p class="sr-only" id="mn-announcer" role="status" aria-live="polite"></p>
+          <div id="mn-result"></div>
         </details>
 
         <details class="panel odds-accordion" open>

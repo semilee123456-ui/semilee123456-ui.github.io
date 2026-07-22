@@ -12,7 +12,7 @@ const LANGS = ['ko', 'en'];
       page.on('pageerror', e => pageErrors.push(e.message));
       await page.goto('http://127.0.0.1:9000/index.html');
       await page.waitForTimeout(200);
-      if (lang === 'en') { await page.click('#lang-toggle'); await page.waitForTimeout(150); }
+      if (lang === 'en') { await page.evaluate(() => setLanguage('en')); await page.waitForTimeout(150); }
       await page.evaluate(() => { if (typeof go === 'function') go('faq'); });
       await page.waitForTimeout(200);
       await page.click('#view-faq .more-details-toggle summary');
