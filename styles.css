@@ -449,15 +449,18 @@
      일반 카드끼리는 다시 기본값(stretch)으로 키를 맞춤 — align-items:start로 뒀더니 카드 내용
      줄 수가 한 줄만 달라도(예: "인도 거주자" 1줄 vs "2개국 실수령액 동일" 2줄) 바닥이 들쭉날쭉해 보였음 */
   /* 나라별 비교 카드가 텍스트/숫자로만 쭉 나열돼서 폰으로 보면 심심하다는 피드백 — 카드를
-     탭하면 이 지도 위 해당 국가 위치에 핀이 표시되게 함. 정확한 국경선 대신 대륙을 단순화한
-     장식용 모양이라, 실제 지리 정보로 오인되지 않게 새 창/공유 이미지에는 노출하지 않고
-     탭 상호작용 보조용으로만 씀 */
+     탭하면 이 지도 위 해당 국가 위치에 핀이 표시되게 함. 실제 국경선(Natural Earth 기반)을
+     등장방형 도법으로 투영한 지도라, 탭 상호작용 보조 외에 지리 참고용으로도 무리 없음 */
   .country-map-wrap{ position:relative; margin-top:14px; border:1px solid var(--border); border-radius:14px; }
   .country-map-svg{ display:block; width:100%; height:auto; border-radius:14px; overflow:hidden; }
   .country-map-sea{ fill:var(--card); }
-  .country-map-land{ fill:rgba(var(--ink-rgb),0.1); stroke:rgba(var(--ink-rgb),0.18); stroke-width:1.5; }
-  /* 정확한 국경선 없이도 어느 땅덩어리가 어느 대륙인지 바로 알아보게 해주는 옅은 라벨 —
-     국가 코드(KR/US 등)와 같은 관례로 언어 설정과 무관하게 항상 영문 표기 */
+  .country-map-land{ fill:rgba(var(--ink-rgb),0.1); stroke:rgba(var(--ink-rgb),0.18); stroke-width:1.5; transition:fill 0.3s ease, stroke 0.3s ease; }
+  /* 국가 카드를 탭하면 핀뿐 아니라 실제 국경선 자체도 브랜드 색으로 옅게 채워져서,
+     그 나라가 지도 위 어디에 어떤 모양으로 있는지 바로 확인 가능 */
+  .country-map-land.active{ fill:rgba(21,84,69,0.35); stroke:var(--teal); stroke-width:2; }
+  :root[data-theme="dark"] .country-map-land.active{ fill:rgba(58,169,138,0.35); }
+  /* 미국 클러스터만 라벨을 남김 — 아시아 쪽은 나라 수가 많아 실제 국경선 모양만으로도
+     어디가 어디인지 충분히 구분되지만, 미국은 단독 대륙이라 시각적 맥락이 필요함 */
   .country-map-labels text{ fill:rgba(var(--ink-rgb),0.32); font-size:15px; font-weight:700; letter-spacing:0.5px; }
   .country-map-pin{ fill:var(--teal); stroke:var(--card); stroke-width:1.2; cursor:pointer; }
   .country-map-pin.active{ fill:var(--status-red); animation:countryMapPinPulse 1.6s ease-in-out infinite; transform-origin:center; transform-box:fill-box; }
@@ -714,6 +717,20 @@
   }
   .draw-ball-special.draw-ball-powerball{ background:var(--status-red); color:var(--on-accent); border-color:var(--status-red); }
   .draw-ball-special.draw-ball-megamillions{ background:var(--gold); color:var(--on-accent); border-color:var(--gold); }
+  /* "역대 가장 많이 나온 번호" 아코디언을 펼치면 공이 하나씩 순서대로 통통 튀며 나타남 —
+     popInNumberFrequencyBalls()가 animation-delay를 매겨서 순차 재생시킴 */
+  .freq-balls{ margin-top:8px; }
+  .freq-balls .draw-ball{ opacity:0; transform:scale(0.3); }
+  .freq-ball-pop{ animation:freqBallPop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+  @keyframes freqBallPop{
+    0%{ opacity:0; transform:scale(0.3); }
+    60%{ opacity:1; transform:scale(1.15); }
+    100%{ opacity:1; transform:scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .freq-balls .draw-ball{ opacity:1; transform:none; }
+    .freq-ball-pop{ animation:none; }
+  }
   .foot-note{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; line-height:1.4; }
 
   .result-hero{

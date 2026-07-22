@@ -2585,6 +2585,31 @@ function renderNumberFrequencyStats(){
     `Основные числа <b>${dot(mmFreq.topMain)}</b> выпадали чаще всего, а Mega Ball <b>${dot(mmFreq.topSpecial)}</b> выпадал чаще всего`,
     buildFreqTextMore(dot(mmFreq.topMain), dot(mmFreq.topSpecial), 'Mega Ball')
   );
+
+  // 숫자를 문장 속 텍스트로만 보여주니 심심하다는 피드백 — 홈 화면 최근 당첨번호와 같은
+  // draw-ball 모양으로 시각화해서, 아코디언을 펼치면 공이 하나씩 통통 튀며 나타나게 함
+  const renderFreqBalls = (container, freq, game) => {
+    if (!container) return;
+    container.innerHTML = freq.topMain.map(n => `<span class="draw-ball">${n}</span>`).join('')
+      + freq.topSpecial.map(n => `<span class="draw-ball draw-ball-special draw-ball-${game}">${n}</span>`).join('');
+  };
+  renderFreqBalls(document.getElementById('odds-numbers-pb-balls'), pbFreq, 'powerball');
+  renderFreqBalls(document.getElementById('odds-numbers-mm-balls'), mmFreq, 'megamillions');
+  // 언어를 바꾸면 innerHTML이 통째로 새로 그려지면서 이미 펼쳐둔 아코디언의 공들이 pop 클래스를
+  // 잃어 다시 투명해지므로, 이미 열려있는 상태라면 바로 다시 팝인시켜 사라진 것처럼 보이지 않게 함
+  const accordion = document.getElementById('oddsNumbersAccordion');
+  if (accordion && accordion.open) popInNumberFrequencyBalls();
+}
+
+// 이 아코디언은 처음엔 닫혀 있어서, 페이지 로드 시 공을 미리 그려놔도 펼치기 전까진 안 보임 —
+// 펼칠 때마다(여러 번 열어도 매번) 팝인 애니메이션이 다시 재생되도록 클래스를 지웠다 다시 붙임
+function popInNumberFrequencyBalls(){
+  document.querySelectorAll('#oddsNumbersAccordion .freq-balls .draw-ball').forEach((ball, i) => {
+    ball.classList.remove('freq-ball-pop');
+    void ball.offsetWidth;
+    ball.style.animationDelay = (i * 45) + 'ms';
+    ball.classList.add('freq-ball-pop');
+  });
 }
 function buildFreqDescMore(count){
   const c = count.toLocaleString('en-US');
@@ -5045,7 +5070,50 @@ async function shareDreamResult(){
   }
 }
 
+// 아직 금액을 입력/조작한 적 없는 기본 상태(입력칸은 placeholder만 있고 실제 값은 비어있음)에서
+// 공유하면, 계산해본 적도 없는 기본값(100M USD)이 마치 실제로 나온 결과인 것처럼 특정 금액이
+// 박힌 카드로 나가버리는 문제가 있었음 — isAmountManuallyEdited가 true일 때(사용자가 직접
+// 입력했거나 슬라이더/퀵필 버튼을 조작한 적 있을 때)만 결과 카드를 공유하고, 그 전에는 특정
+// 금액 없이 사이트 자체를 소개하는 일반 카드로 공유함
+async function shareGenericPromo(){
+  const shareTitle = document.querySelector('[data-i18n="hero.tag"]')?.textContent?.trim() || 'ChamTax';
+  const heroTitleEl = document.querySelector('[data-i18n-html="hero.title"]');
+  let heroTitleText = '';
+  if (heroTitleEl) {
+    // hero.title엔 줄바꿈용 <br>이 들어있는데 textContent는 <br>을 공백 없이 그냥 이어붙여서
+    // "wouldyou"처럼 단어가 붙어버림 — <br>을 실제 공백으로 바꾼 뒤 텍스트만 뽑음
+    const clone = heroTitleEl.cloneNode(true);
+    clone.querySelectorAll('br').forEach(br => br.replaceWith(' '));
+    heroTitleText = clone.textContent.replace(/\s+/g, ' ').trim();
+  }
+  const shareText = heroTitleText ? `${shareTitle} — ${heroTitleText}` : shareTitle;
+  const shareUrl = location.href;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+  }
+
+  const btn = document.getElementById('home-share-btn');
+  try {
+    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = pickLang('✅ 링크가 복사됐어요', '✅ Link copied', '✅ 链接已复制', '✅ Đã sao chép liên kết', '✅ คัดลอกลิงก์แล้ว', '✅ Ссылка скопирована', LINK_COPIED_MORE);
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
+    }
+  } catch (e) {
+    window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), `${shareText} ${shareUrl}`);
+  }
+}
+
 async function shareResult(){
+  if (!isAmountManuallyEdited) { await shareGenericPromo(); return; }
   const amountText = document.getElementById('homeAmountInput').value || '100';
   const finalAmt = document.getElementById('home-final-amt').textContent;
   const homeCountryVal = document.getElementById('homeCountrySelect').value;
@@ -6652,16 +6720,30 @@ const COUNTRY_TAX_PROFILES = [
 ];
 
 // 나라별 비교 카드가 텍스트/숫자로만 나열돼서 폰에서 심심하다는 피드백 — 카드를 탭하면 이
-// 지도 위 해당 국가 위치에 핀이 표시되게 함. 정확한 국경선이 아니라 장식용으로 단순화한
-// 대륙 모양 위에, 위도/경도를 등장방형 도법으로 환산한 x/y(%) 좌표로 핀만 정확히 찍음
+// 지도 위 해당 국가 위치에 핀이 표시되게 함. 실제 국경선 데이터(index.html의 country-map-land
+// path들)에서 각 나라 폴리곤의 무게중심을 계산해 나온 x/y(%) 좌표라, 핀이 실제 그 나라 위에 찍힘
 const COUNTRY_MAP_COORDS = {
-  KR: { x: 85.6, y: 30.4 }, US: { x: 22.8, y: 28.3 }, VN: { x: 80.0, y: 44.9 },
-  CN: { x: 79.2, y: 31.2 }, IN: { x: 71.7, y: 41.3 }, ID: { x: 82.8, y: 58.0 },
-  PH: { x: 83.9, y: 47.1 }, TH: { x: 78.1, y: 45.7 }, JP: { x: 88.3, y: 30.4 },
-  RU: { x: 63.9, y: 16.7 }, NP: { x: 73.3, y: 36.2 }, LK: { x: 72.5, y: 51.4 },
-  UZ: { x: 67.8, y: 26.8 }, KZ: { x: 68.9, y: 21.7 }, KG: { x: 70.6, y: 26.8 },
-  MM: { x: 76.7, y: 41.3 }, BD: { x: 75.0, y: 39.1 }, PK: { x: 69.4, y: 34.8 },
-  KH: { x: 79.2, y: 47.8 }, MN: { x: 78.9, y: 23.2 }, LA: { x: 78.6, y: 43.5 },
+  KR: { x: 90.1, y: 34.8 },
+  US: { x: 17.9, y: 37.5 },
+  VN: { x: 80.7, y: 54.1 },
+  CN: { x: 79.6, y: 34.6 },
+  IN: { x: 69.0, y: 48.0 },
+  ID: { x: 84.1, y: 70.6 },
+  PH: { x: 87.4, y: 55.0 },
+  TH: { x: 78.4, y: 55.7 },
+  JP: { x: 94.1, y: 35.2 },
+  RU: { x: 80.0, y: 19.5 },
+  NP: { x: 70.9, y: 42.8 },
+  LK: { x: 69.5, y: 62.8 },
+  UZ: { x: 61.8, y: 29.6 },
+  KZ: { x: 63.8, y: 23.4 },
+  KG: { x: 66.8, y: 29.9 },
+  MM: { x: 76.4, y: 49.8 },
+  BD: { x: 73.7, y: 47.1 },
+  PK: { x: 64.5, y: 41.1 },
+  KH: { x: 80.1, y: 58.0 },
+  MN: { x: 79.2, y: 24.7 },
+  LA: { x: 79.6, y: 52.4 },
 };
 
 let countryMapPinsRendered = false;
@@ -6709,13 +6791,16 @@ function highlightCountryOnMap(flagCodes, labelText){
   if (!wrap) return;
   wrap.querySelectorAll('.country-map-pin').forEach(p => p.classList.remove('active'));
   wrap.querySelectorAll('.country-map-pin-ring').forEach(r => r.classList.remove('active'));
+  wrap.querySelectorAll('.country-map-land').forEach(l => l.classList.remove('active'));
   let firstCoord = null;
   flagCodes.forEach(code => {
     const pin = wrap.querySelector(`.country-map-pin[data-flag-code="${code}"]`);
     const ring = wrap.querySelector(`.country-map-pin-ring[data-flag-code="${code}"]`);
+    const land = wrap.querySelector(`.country-map-land[data-flag-code="${code}"]`);
     if (pin) {
       pin.classList.add('active');
       if (ring) ring.classList.add('active');
+      if (land) land.classList.add('active');
       if (!firstCoord) firstCoord = COUNTRY_MAP_COORDS[code];
     }
   });
