@@ -292,7 +292,7 @@
           </div>
           <div class="menu-controls">
             <details class="settings-menu" id="settingsMenu">
-              <summary class="settings-toggle" aria-label="설정" data-i18n-aria-label="a11y.settingsToggle">⚙️</summary>
+              <summary class="settings-toggle" aria-label="설정" data-i18n-aria-label="a11y.settingsToggle">🌐</summary>
               <div class="settings-panel">
                 <select id="lang-toggle" class="lang-toggle" onchange="setLanguage(this.value, true)" aria-label="Language">
                   <option value="ko">한국어</option>
@@ -902,22 +902,22 @@
 
           <div class="bar-row">
             <span class="bar-label" data-i18n="odds.barPowerball">파워볼 1등</span>
-            <div class="bar-track"><div class="bar-fill accent" style="width:2%;"></div></div>
+            <div class="bar-track"><div class="bar-fill accent" data-w="2"></div></div>
             <span class="bar-value" data-i18n="odds.oddsPowerball">1 / 2억 9,200만</span>
           </div>
           <div class="bar-row">
             <span class="bar-label" data-i18n="odds.barLightning">번개 맞을 확률</span>
-            <div class="bar-track"><div class="bar-fill accent" style="width:35%;"></div></div>
+            <div class="bar-track"><div class="bar-fill accent" data-w="35"></div></div>
             <span class="bar-value" data-i18n="odds.oddsLightning">1 / 1만 5,000</span>
           </div>
           <div class="bar-row">
             <span class="bar-label" data-i18n="odds.barPlane">비행기 사고</span>
-            <div class="bar-track"><div class="bar-fill accent" style="width:60%;"></div></div>
+            <div class="bar-track"><div class="bar-fill accent" data-w="60"></div></div>
             <span class="bar-value" data-i18n="odds.oddsPlane">1 / 1,100만</span>
           </div>
           <div class="bar-row">
             <span class="bar-label" data-i18n="odds.barShark">상어에 물릴 확률</span>
-            <div class="bar-track"><div class="bar-fill accent" style="width:78%;"></div></div>
+            <div class="bar-track"><div class="bar-fill accent" data-w="78"></div></div>
             <span class="bar-value" data-i18n="odds.oddsShark">1 / 375만</span>
           </div>
 
@@ -962,14 +962,14 @@
 
         <details class="panel odds-accordion">
           <summary class="panel-title-toggle" data-i18n="odds.numbersTitle">🔢 역대 가장 많이 나온 번호가 궁금하세요?</summary>
-          <p class="panel-desc" data-i18n="odds.numbersDesc">2015년 지금 방식으로 바뀐 뒤 실제 추첨 기록이에요</p>
+          <p class="panel-desc" id="odds-numbers-desc">2015년 지금 방식으로 바뀐 뒤 실제 추첨 1,378회차를 계산했어요</p>
           <div class="howto-box">
             <p class="howto-title" data-i18n="odds.numbersPbTitle">🔴 파워볼</p>
-            <p class="howto-text" data-i18n-html="odds.numbersPbText">일반번호는 <b>21·61·64·28·23</b>번이 자주 나왔고, 파워볼 번호는 <b>4·18·21·24</b>번이 자주 언급돼요</p>
+            <p class="howto-text" id="odds-numbers-pb-text">일반번호는 <b>21·61·64·28·23</b>번이 자주 나왔고, 파워볼 번호는 <b>4·14·21</b>번이 자주 나왔어요</p>
           </div>
           <div class="howto-box" style="margin-top:10px;">
             <p class="howto-title" data-i18n="odds.numbersMmTitle">🟡 메가밀리언즈</p>
-            <p class="howto-text" data-i18n-html="odds.numbersMmText">일반번호는 <b>31·17·10·48</b>번이 자주 나왔고, 메가볼은 <b>22</b>번이 가장 많이 나왔어요</p>
+            <p class="howto-text" id="odds-numbers-mm-text">일반번호는 <b>10·17·31·3·14</b>번이 자주 나왔고, 메가볼은 <b>22·24·18</b>번이 자주 나왔어요</p>
           </div>
           <div class="callout" data-i18n="odds.numbersCallout" style="margin-top:12px;">💡 매 추첨은 완전히 독립적이에요 — 예전에 많이 나왔다고 다음에 또 나올 확률이 높아지진 않아요. 재미로만 봐주세요!</div>
 

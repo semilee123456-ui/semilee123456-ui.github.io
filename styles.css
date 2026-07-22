@@ -464,13 +464,27 @@
     0%, 100%{ transform:scale(1); }
     50%{ transform:scale(1.35); }
   }
+  /* 핀 아래 깔린 파문 링 — 선택되면 물결처럼 커지며 옅어지는 걸 반복해서, 지도에서
+     "여기예요"를 짚어주는 순간에 생동감을 더함(지도 자체의 톤·색은 그대로 유지) */
+  .country-map-pin-ring{ fill:none; stroke:var(--status-red); stroke-width:2; opacity:0; pointer-events:none; transform-origin:center; transform-box:fill-box; }
+  .country-map-pin-ring.active{ animation:countryMapPingRing 1.6s ease-out infinite; }
+  @keyframes countryMapPingRing{
+    0%{ transform:scale(1); opacity:0.55; }
+    100%{ transform:scale(2.8); opacity:0; }
+  }
   @media (prefers-reduced-motion: reduce){
     .country-map-pin.active{ animation:none; }
+    .country-map-pin-ring.active{ animation:none; opacity:0; }
   }
   .country-map-callout{
     position:absolute; background:var(--navy); color:var(--on-accent); font-size:var(--fs-small); font-weight:700;
     padding:5px 10px; border-radius:8px; pointer-events:none; max-width:78%; text-align:center;
-    transform:translate(-50%,-130%); display:none; z-index:2;
+    transform:translate(-50%,-130%) scale(0.85); opacity:0; z-index:2;
+    transition:opacity 0.2s ease, transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .country-map-callout.is-visible{ opacity:1; transform:translate(-50%,-130%) scale(1); }
+  @media (prefers-reduced-motion: reduce){
+    .country-map-callout{ transition:none; }
   }
   .side-by-side-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(105px, 1fr)); gap:10px; margin-top:14px; }
   .side-card{ background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:16px; min-width:0; }
@@ -582,8 +596,13 @@
   .bar-row:last-child{ margin-bottom:0; }
   .bar-label{ font-size:var(--fs-small); color:var(--text-dark); width:132px; flex-shrink:0; font-weight:400; }
   .bar-track{ flex:1; height:10px; background:var(--bg); border-radius:5px; overflow:hidden; }
-  .bar-fill{ height:100%; border-radius:5px; }
+  /* 기본 너비 0에서 시작해 실제 확률값(data-w, JS가 넣어줌)까지 채워지는 연출 —
+     처음 화면에 들어올 때 막대가 자라나는 느낌을 줘서 숫자 비교를 더 체감되게 함 */
+  .bar-fill{ height:100%; border-radius:5px; width:0; transition:width 0.8s cubic-bezier(0.22,0.9,0.32,1); }
   .bar-fill.accent{ background:var(--teal); }
+  @media (prefers-reduced-motion: reduce){
+    .bar-fill{ transition:none; }
+  }
   .bar-value{ font-size:var(--fs-note); color:var(--text-muted); width:132px; text-align:right; flex-shrink:0; }
 
   .callout{ background:rgba(var(--ink-rgb),0.08); border:1px solid rgba(var(--ink-rgb),0.15); border-radius:10px; padding:14px 16px; margin-top:16px; font-size:var(--fs-small); color:var(--text-muted); line-height:1.6; }
@@ -963,6 +982,9 @@
   .mn-result-ball.special.hit{ color:var(--on-accent); background:var(--status-red); }
   .mn-result-match{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0 0 2px; }
   .mn-result-tone{ font-size:var(--fs-small); font-weight:600; color:var(--teal); margin:2px 0 0; }
+  /* 역대급 잭팟 카드들과 "실제 회차 베스트 매치" 카드들을 나누는 구분선 겸 라벨 —
+     아카이브가 커지면서 두 그룹이 섞여 보이지 않게 함 */
+  .mn-section-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-muted); margin:8px 0 0; padding-top:12px; border-top:1px dashed var(--border); }
   .amount-input-tabs{
     display:flex; align-items:stretch; gap:4px; background:var(--chip-bg); border-radius:12px; padding:4px; margin-bottom:14px;
   }
