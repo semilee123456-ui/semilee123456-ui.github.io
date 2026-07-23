@@ -2522,6 +2522,29 @@ function updateDrawCountdown(){
     while (!drawDays.includes((dow + diff) % 7)) diff++;
     return `D-${diff} (${formatDrawWeekday(year, month, day, diff)})`;
   }
+  // 위 D-day 배지("D-2 (토)")는 "다음 특정 추첨일"을 보여주는 것이고, 이건 그와 별개로
+  // "이 게임은 매주 어느 요일에 추첨하는지"라는 고정된 배경 정보(예: "매주 월·수·토 추첨")를
+  // 보여줌. 요일 이름은 22개 언어로 직접 번역하는 대신(오타·오역 위험) 위 formatDrawWeekday와
+  // 같은 방식으로 Intl.DateTimeFormat에 임의의 기준일(2026-01-04는 UTC 기준 일요일=dow 0)을
+  // 넣어 그때그때 currentLang에 맞는 요일 이름을 뽑아내고 '·'로 이어붙임 — 실제 연도/날짜는
+  // 무의미하고 오직 요일 이름을 얻기 위한 도구로만 쓰임
+  function formatDrawDaysList(drawDays){
+    const locale = LOCALE_MAP[currentLang] || 'ko-KR';
+    const fmt = new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' });
+    return drawDays.map(dow => fmt.format(new Date(Date.UTC(2026, 0, 4 + dow)))).join('·');
+  }
+  function drawScheduleLabel(drawDays){
+    const days = formatDrawDaysList(drawDays);
+    return pickLang(
+      `매주 ${days} 추첨`,
+      `Drawn every ${days}`,
+      `每周${days}开奖`,
+      `Quay số mỗi ${days}`,
+      `ออกรางวัลทุก ${days}`,
+      `Розыгрыш каждые ${days}`,
+      buildDrawScheduleMore(days)
+    );
+  }
   const ddayPowerballInfo = nextDrawInfo([1, 3, 6], 22 * 60 + 59);
   const ddayMegaInfo = nextDrawInfo([2, 5], 23 * 60);
   const ddayPowerballEl = document.getElementById('dday-powerball');
@@ -2530,6 +2553,35 @@ function updateDrawCountdown(){
   ddayMegaEl.textContent = ddayMegaInfo;
   ddayPowerballEl.classList.toggle('today', ddayPowerballInfo.startsWith('D-DAY'));
   ddayMegaEl.classList.toggle('today', ddayMegaInfo.startsWith('D-DAY'));
+  const drawSchedulePowerballEl = document.getElementById('draw-schedule-powerball');
+  const drawScheduleMegaEl = document.getElementById('draw-schedule-megamillions');
+  if (drawSchedulePowerballEl) drawSchedulePowerballEl.textContent = drawScheduleLabel([1, 3, 6]);
+  if (drawScheduleMegaEl) drawScheduleMegaEl.textContent = drawScheduleLabel([2, 5]);
+}
+
+// "매주 {요일들} 추첨" 문구의 17개 추가 언어 버전 (GAME_NAME_MORE, buildFreqDescMore 등과
+// 동일한 패턴 — pickLang의 `more` 인자로 전달). {days}는 formatDrawDaysList()가 이미
+// Intl로 현지화해 만든 요일 목록 문자열이 그대로 들어옴.
+function buildDrawScheduleMore(days){
+  return {
+    ar: `تُسحب كل ${days}`,
+    bn: `প্রতি ${days} ড্র হয়`,
+    fr: `Tirage chaque ${days}`,
+    hi: `हर ${days} ड्रॉ होता है`,
+    id: `Diundi setiap ${days}`,
+    ja: `毎週${days}に抽選`,
+    kk: `Әр ${days} тартылады`,
+    km: `ទាញរាល់ ${days}`,
+    ky: `Ар ${days} тартылат`,
+    lo: `ອອກທຸກ ${days}`,
+    mn: `Долоо хоног бүр ${days} гаргадаг`,
+    my: `${days} တိုင်း မဲနှုတ်သည်`,
+    ne: `हरेक ${days} ड्र हुन्छ`,
+    si: `සෑම ${days} ඇදීමක් වේ`,
+    tl: `Nagdo-draw tuwing ${days}`,
+    ur: `ہر ${days} ڈرا ہوتا ہے`,
+    uz: `Har ${days} o'tkaziladi`,
+  };
 }
 
 // ============================================================================
@@ -6984,7 +7036,10 @@ function appendLabelWithNowrapParen(el, text){
   const parenStart = text.search(/[（(]/);
   if (parenStart === -1) { el.append(document.createTextNode(text)); return; }
   el.append(document.createTextNode(text.slice(0, parenStart)));
-  el.append(document.createTextNode(text.slice(parenStart).replace(/ /g, ' ')));
+  const tail = text.slice(parenStart);
+  const lastSpace = tail.lastIndexOf(' ');
+  const fixedTail = lastSpace === -1 ? tail : tail.slice(0, lastSpace) + ' ' + tail.slice(lastSpace + 1);
+  el.append(document.createTextNode(fixedTail));
 }
 
 // "한국에 사는 OO 국적자" 안내 페이지 목록 — 실제 그 나라 세법이 아니라 한국 세법(위 kr 기준)을

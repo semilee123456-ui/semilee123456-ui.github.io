@@ -731,6 +731,7 @@
   .jp-krw-row{ display:flex; flex-wrap:wrap; align-items:baseline; gap:0 6px; margin:2px 0 0; }
   .jp-krw{ font-size:16px; color:var(--text-dark); opacity:0.75; font-weight:700; margin:0; }
   .jp-est-note{ font-size:var(--fs-small); color:var(--text-muted); opacity:0.6; font-weight:400; margin:0; }
+  .draw-schedule-label{ font-size:var(--fs-small); color:var(--text-muted); opacity:0.6; font-weight:400; margin:6px 0 0; }
   .draw-date-label{ font-size:var(--fs-small); color:var(--text-muted); font-weight:700; margin:10px 0 4px; }
   .jp-actions-row{ margin-top:8px; }
   .jp-actions-row .share-btn{ margin-top:0; }
