@@ -914,6 +914,22 @@
   }
   .faq-float-btn:active{ transform:scale(0.96); }
   .faq-float-btn.is-hidden{ display:none; }
+  .faq-overlay-close-btn{ display:none; }
+  /* "궁금해요" 버튼으로 도움말을 열 때, go('faq')로 실제 탭 전환을 하면 사용자가 하던 화면(입력값,
+     스크롤 위치)에서 완전히 벗어나게 되고 "뒤로 가면 다시 보기 힘들다"는 피드백이 있었음 — 그래서
+     탭 전환 없이 #view-faq에 이 클래스만 붙여서 현재 화면 위에 통째로 덮어씌우는 오버레이로 띄움.
+     닫으면 클래스만 제거되고 원래 화면은 밑에서 손 안 댄 채 그대로 있음 */
+  .view#view-faq.faq-overlay-mode{
+    display:block; position:fixed; inset:0; z-index:2000; background:var(--bg);
+    overflow-y:auto; -webkit-overflow-scrolling:touch; padding:16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  .view#view-faq.faq-overlay-mode > *{ max-width:720px; margin-left:auto; margin-right:auto; }
+  .view#view-faq.faq-overlay-mode > .back-btn{ display:none; }
+  .view#view-faq.faq-overlay-mode > .faq-overlay-close-btn{
+    display:flex; align-items:center; gap:6px; position:sticky; top:0; z-index:1;
+    background:var(--bg); border:none; font-family:inherit; font-size:var(--fs-body); font-weight:700;
+    color:var(--teal); padding:4px 0 14px; cursor:pointer; margin-left:auto; margin-right:auto;
+  }
   @media (max-width: 420px) {
     .sticky-result-label{ max-width:38vw; }
   }

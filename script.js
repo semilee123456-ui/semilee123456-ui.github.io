@@ -2109,6 +2109,17 @@ function setFaqAudience(aud, btnEl){
   document.querySelectorAll('.faq-audience-chip').forEach(c => c.classList.remove('active'));
   if (btnEl) btnEl.classList.add('active');
   filterFaq();
+
+  // 이 필터는 실제로 딱 이 배지가 붙은 소수 질문에만 영향을 주고 나머지 질문은 그대로 다 보이는
+  // 채라서, 그 질문이 화면 아래 멀리 있으면 눌러도 아무 변화가 안 보임(사용자 피드백으로 발견) —
+  // 실제로 해당하는 질문이 있으면 그리로 스크롤하고 펼쳐서 클릭한 효과가 바로 보이게 함
+  if (aud !== 'all') {
+    const target = document.querySelector(`.faq-item[data-audience="${aud}"]`);
+    if (target && target.style.display !== 'none') {
+      target.open = true;
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
 }
 
 function filterFaq(){
@@ -2134,10 +2145,13 @@ function filterFaq(){
   });
 
   // 심화 콘텐츠(더 자세히 알아보기 — 플레이슬립, 티켓 생김새 등)도 검색 대상에 포함
-  // 단, 카테고리 칩이 '전체'가 아니면 심화 콘텐츠는 어느 카테고리에도 속하지 않으므로 숨김
+  // 검색어가 없고 카테고리 칩만 '전체'가 아니게 골랐을 때는 이 섹션이 어느 카테고리에도
+  // 속하지 않으므로 숨김. 단, 검색어가 있으면 카테고리와 무관하게 검색이 우선함 —
+  // 예전엔 카테고리가 '전체'가 아니면 검색어가 이 섹션 안의 내용과 맞아떨어져도 무조건 숨겨져서
+  // "여기 밑에 내용은 검색해도 안 나온다"는 버그가 있었음
   const moreToggle = document.querySelector('#view-faq .more-details-toggle');
   let moreMatch = false;
-  if (moreToggle && activeFaqCategory !== 'all') {
+  if (moreToggle && query === '' && activeFaqCategory !== 'all') {
     moreToggle.style.display = 'none';
     moreToggle.open = false;
   } else if (moreToggle) {
@@ -4413,18 +4427,31 @@ function scrollToMainResult(){
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-// 어느 화면에서든 뜨는 #faqFloatBtn용 — 도움말(FAQ) 탭으로 이동한 뒤, go()가 먼저 페이지
-// 맨 위로 스크롤하는 애니메이션과 겹치지 않도록 goToAnnuityInfo()와 같은 방식(짧은 지연 후
-// 목표 지점으로 재스크롤)으로 검색창까지 스크롤하고 바로 입력할 수 있게 포커스를 줌
+// 어느 화면에서든 뜨는 #faqFloatBtn용 — go('faq')로 실제 탭을 전환하면 사용자가 보던 화면
+// (입력값·스크롤 위치)에서 완전히 벗어나고, 닫은 뒤 다시 보기 힘들다는 피드백이 있었음. 그래서
+// 탭 전환 없이 #view-faq를 현재 화면 위에 덮어씌우는 오버레이로만 띄움 — 닫으면 클래스만
+// 제거되고 원래 화면은 그대로 밑에 남아있음
 function openFaqSearchFloat(){
-  go('faq');
+  const faqView = document.getElementById('view-faq');
+  if (!faqView) return;
+  filterFaq(); // 오버레이로 뜨기 전에 현재 세금 기준 기준으로 한 번 새로 걸러줌
+  faqView.classList.add('faq-overlay-mode');
   setTimeout(() => {
     const searchInput = document.getElementById('faqSearch');
     if (!searchInput) return;
-    searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    searchInput.scrollIntoView({ behavior: 'smooth', block: 'start' });
     searchInput.focus();
-  }, 400);
+  }, 50);
 }
+
+function closeFaqOverlay(){
+  const faqView = document.getElementById('view-faq');
+  if (faqView) faqView.classList.remove('faq-overlay-mode');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeFaqOverlay();
+});
 
 // renderJackpotHistory()/renderJackpotTakeHomeRanking()/renderNumberFrequencyStats()는 확률체감
 // 탭 전용 데이터(odds-data.js)가 필요해서 여기서 안 부름 — go('odds')가 처음 호출될 때 지연 로드
@@ -6928,8 +6955,6 @@ const STATE_TAX_TITLE_MORE = { ar:'كم تضيف ضريبة الولاية؟', b
 
 const COMING_SOON_MORE = { ar:'قريباً', bn:'শীঘ্রই আসছে', fr:'Bientôt disponible', hi:'जल्द आ रहा है', id:'Segera hadir', ja:'準備中', kk:'Жақында', km:'ឆាប់មកដល់', ky:'Жакында', lo:'ກຳລັງຈະມາ', mn:'Тун удахгүй', my:'မကြာမီလာမည်', ne:'चाँडै आउँदैछ', si:'ළඟදීම', tl:'Malapit nang dumating', ur:'جلد آ رہا ہے', uz:"Tez orada" };
 
-const SHOW_LESS_MORE = { ar:'عرض أقل ▴', bn:'কম দেখান ▴', fr:'Afficher moins ▴', hi:'कम दिखाएं ▴', id:'Tampilkan lebih sedikit ▴', ja:'閉じる ▴', kk:'Азырақ көрсету ▴', km:'បង្ហាញតិច ▴', ky:'Азыраак көрсөтүү ▴', lo:'ສະແດງໜ້ອຍລົງ ▴', mn:'Багасгаж харуулах ▴', my:'လျှော့ပြပါ ▴', ne:'कम देखाउनुहोस् ▴', si:'අඩුවෙන් පෙන්වන්න ▴', tl:'Ipakita ang mas kaunti ▴', ur:'کم دکھائیں ▴', uz:"Kamroq ko'rsatish ▴" };
-
 // "N개국 더 보기 ▾" 토글 버튼의 17개 언어 템플릿
 const SHOW_MORE_COUNTRIES_PHRASE_MORE = {
   ar: n => `عرض ${n} دولة أخرى ▾`,
@@ -7469,21 +7494,14 @@ function fixSideCardOrphanRow(){
   }
 }
 
+// 펼친 뒤 다시 접는 옵션은 실익이 적어서(펼친 김에 계속 보는 게 자연스러움) 없앰 —
+// 누르면 전부 펼쳐지고 버튼 자체가 사라짐. 어차피 국가/금액이 바뀌어 다시 그려지면
+// 접힌 상태로 리셋되니 "다시 접고 싶을 때"는 그때 해결됨
 function toggleSideShowMore(){
   const grid = document.getElementById('sideByCountryGrid');
   const btn = document.getElementById('sideShowMoreBtn');
   if (!grid || !btn) return;
-  const expanded = btn.dataset.expanded === 'true';
-  if (!expanded) {
-    // 펼치기 전 "N개국 더 보기" 라벨을 저장해뒀다가, 다시 접을 때 그대로 복원함
-    btn.dataset.collapsedLabel = btn.textContent;
-    grid.querySelectorAll('.side-card-hidden-extra').forEach(card => { card.classList.remove('side-card-hidden-extra'); });
-    btn.dataset.expanded = 'true';
-    btn.textContent = pickLang('접기 ▴', 'Show less ▴', '收起 ▴', 'Thu gọn ▴', 'ย่อ ▴', 'Свернуть ▴', SHOW_LESS_MORE);
-  } else {
-    Array.from(grid.children).slice(6).forEach(card => { card.classList.add('side-card-hidden-extra'); });
-    btn.dataset.expanded = 'false';
-    btn.textContent = btn.dataset.collapsedLabel || btn.textContent;
-  }
+  grid.querySelectorAll('.side-card-hidden-extra').forEach(card => { card.classList.remove('side-card-hidden-extra'); });
+  btn.style.display = 'none';
   fixSideCardOrphanRow();
 }
