@@ -1173,6 +1173,12 @@
           <p class="panel-desc" id="faq-panel-desc">검색하다 오신 분들이 자주 물어보는 질문 모았어요 · 국세청 상담 기준으로 확인된 정보예요</p>
           <p class="krw-hint" style="margin-bottom:10px;" data-i18n="faq.basisNote">💡 홈 화면에서 고르신 세금 계산 기준에 맞는 질문만 보여드려요</p>
           <input type="text" class="faq-search" id="faqSearch" placeholder="🔍 궁금한 거 검색해보세요 (예: 세금, 시민권, 파워볼)" oninput="filterFaq()" data-i18n-placeholder="faq.searchPlaceholder">
+          <p class="faq-audience-eyebrow" data-i18n="faq.audienceEyebrow">👤 나는 어떤 경우에 해당하나요?</p>
+          <div class="faq-audience-row">
+            <button class="faq-audience-chip active" onclick="setFaqAudience('all', this)" data-i18n="faq.audienceAll">전체</button>
+            <button class="faq-audience-chip" onclick="setFaqAudience('korean', this)" data-i18n-html="faq.audienceKorean">🇰🇷 저는 <span style="white-space:nowrap">재외국민(외국 거주 한국인)</span>이에요</button>
+            <button class="faq-audience-chip" onclick="setFaqAudience('foreigner', this)" data-i18n="faq.audienceForeigner">🌏 저는 한국 거주 외국인이에요</button>
+          </div>
           <div class="faq-chip-row">
             <button class="faq-chip active" onclick="setFaqCategory('all', this)" data-i18n="faq.catAll">전체</button>
             <button class="faq-chip" onclick="setFaqCategory('tax', this)" data-i18n="faq.catTax">세금·이중과세</button>
@@ -1375,7 +1381,7 @@
             <summary class="faq-q" data-i18n="faq.q15">미국 시민권이 없어도 당첨금을 받을 수 있어요?</summary>
             <p class="faq-a" data-i18n="faq.a15">네, 외국인도 합법 구매 시 수령 가능해요. 다만 비거주 외국인은 30% 원천징수가 적용돼요.</p>
           </details>
-          <details class="faq-item" data-cat="tax" data-basis="kr">
+          <details class="faq-item" data-cat="tax" data-basis="kr" data-audience="korean">
             <summary class="faq-q"><span data-i18n="faq.q16">저는 미국에 사는 한국인인데, 어떤 옵션을 골라야 하나요? (유학생·주재원·영주권자·시민권자)</span><span class="faq-audience-badge" data-i18n="faq.audienceAbroad">🌏 해외 거주 한국인 전용</span></summary>
             <p class="faq-a" data-i18n-html="faq.a16">'미국에 산다'와 '미국 세법상 거주자'는 다를 수 있어요. 영주권자·시민권자, 오래 거주한 주재원은 '미국'을 선택하면 되고, 유학생이나 파견 초기 주재원은 세법상 '비거주 외국인'으로 분류될 수 있어 '<span style="white-space:nowrap">한국(비거주자)</span>' 계산이 더 맞을 수 있어요. 판정 기준(Substantial Presence Test)이 복잡해서 애매하면 미국 세무 전문가와 상담을 추천해요.</p>
           </details>
@@ -1425,7 +1431,7 @@
             <p class="refund-wizard-result" id="ftcDocsResult" data-i18n="faq.ftcDocsDefault">체크하면서 신고 준비가 얼마나 됐는지 확인해보세요</p>
             <p class="filing-dday" id="faq-filing-dday"></p>
           </div>
-          <details class="faq-item" data-cat="tax" data-basis="kr">
+          <details class="faq-item" data-cat="tax" data-basis="kr" data-audience="foreigner">
             <summary class="faq-q" data-i18n="faq.q21">한국에 온 지 얼마 안 됐는데도 한국 세금을 내야 해요? ⚠️</summary>
             <p class="faq-a" data-i18n-html="faq.a21">간단히 예/아니오로 답하기 어려운 질문이에요. <b>소득세법 제3조 단서</b>에 따르면, 최근 10년 중 국내 거주 기간이 <b>5년 이하인 거주자</b>(국적이 아니라 <b>거주 기간</b> 기준이에요)는 해외 소득을 실제로 한국에 송금했거나 국내에서 받은 경우에만 한국 세금을 내는 특례가 있어요.<br><br>다만 이 특례가 외국인 <span style="white-space:nowrap">노동자(E-9 등)</span> 상황에도 그대로 적용되는지는 <b>사례마다 해석이 갈릴 수 있어요</b> — 이미 한국에 생활 기반을 두고 계속 근무 중이라면 국세청이 다르게 볼 수도 있어요.<br><br><b>"송금 안 하면 무조건 세금 안 낸다"고 미리 단정하지 마시고</b>, 실제로 당첨되면 바로 세무사와 상담해서 본인 상황에 맞는 정확한 답을 확인하세요.</p>
           </details>

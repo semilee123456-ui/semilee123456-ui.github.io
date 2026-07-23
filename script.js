@@ -2067,10 +2067,21 @@ function checkRefundPossibility(){
 }
 
 let activeFaqCategory = 'all';
+let activeFaqAudience = 'all';
 
 function setFaqCategory(cat, btnEl){
   activeFaqCategory = cat;
   document.querySelectorAll('.faq-chip').forEach(c => c.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  filterFaq();
+}
+
+// FAQ 탭 전용 두 번째 필터 축 — "누가 묻는 질문이냐"(재외국민 vs 한국 거주 외국인) 기준.
+// data-basis(어느 나라 세금 기준이냐)와는 완전히 다른 축이라 별도 상태로 관리하고,
+// filterFaq()에서 AND 조건으로 같이 걸러줌
+function setFaqAudience(aud, btnEl){
+  activeFaqAudience = aud;
+  document.querySelectorAll('.faq-audience-chip').forEach(c => c.classList.remove('active'));
   if (btnEl) btnEl.classList.add('active');
   filterFaq();
 }
@@ -2089,7 +2100,8 @@ function filterFaq(){
     const searchMatch = query === '' || text.includes(query);
     const catMatch = activeFaqCategory === 'all' || !item.dataset.cat || item.dataset.cat === activeFaqCategory;
     const basisMatch = !item.dataset.basis || item.dataset.basis.split(',').includes(currentBasis);
-    const match = searchMatch && catMatch && basisMatch;
+    const audienceMatch = activeFaqAudience === 'all' || !item.dataset.audience || item.dataset.audience === activeFaqAudience;
+    const match = searchMatch && catMatch && basisMatch && audienceMatch;
     item.style.display = match ? '' : 'none';
     if (match && item.classList.contains('faq-item')) visibleCount++;
     if (query !== '' && match && item.tagName === 'DETAILS') item.open = true;
@@ -3294,15 +3306,17 @@ function buildJhDescMore(count){
     uz: `Tekshirilgan jekpot summalari, mamlakatlar bo'yicha qo'lga tegadigan summa bilan (barcha davrlardagi eng yuqori 5 + o'tmishdagi haqiqiy ${c} ta tortish bilan)`,
   };
 }
-// 🏆 실수령액 재랭킹 — 발표된(연금) 잭팟 금액 순서가 아니라, 한국 거주자가 오늘 세율로 실제
-// 손에 쥐는 금액 기준으로 다시 줄 세움. 미국 세율만 다루는 다른 복권 통계 사이트들은 외국 거주자
-// 세금 계산 자체를 안 하니 만들 수 없는 조합 — getCombinedJackpotHistory()가 이미 모아둔
-// 1,000건+ 실제 잭팟 기록을 그대로 재사용
+// 🏆 실수령액 재랭킹 — 발표된(연금) 잭팟 금액 순서가 아니라, 실제로 선택된 세금 기준(sharedCountry/
+// sharedState — 홈/비교 화면에서 고른 나라)의 거주자가 오늘 세율로 실제 손에 쥐는 금액 기준으로
+// 다시 줄 세움. 표시 언어가 아니라 실제 세금 계산 기준을 따라야 함(FLEX_REF의 "이 돈이면 뭘 살 수
+// 있나"와 같은 원칙 — 중국 기준으로 계산했는데 한국 거주자 실수령액 랭킹이 나오면 앞뒤가 안 맞음).
+// 미국 세율만 다루는 다른 복권 통계 사이트들은 외국 거주자 세금 계산 자체를 안 하니 만들 수 없는
+// 조합 — getCombinedJackpotHistory()가 이미 모아둔 1,000건+ 실제 잭팟 기록을 그대로 재사용
 function getJackpotRealTakeHomeRanking(topN){
   return getCombinedJackpotHistory().map(entry => {
     const cashUsd = entry.cashUsd || entry.amountUsd * CASH_VALUE_RATIO;
     const cashKrw = cashUsd * EXCHANGE_RATE;
-    const takeHome = calcTakeHome(cashKrw / 100000000, 'kr', null).final;
+    const takeHome = calcTakeHome(cashKrw / 100000000, sharedCountry, sharedState).final;
     return { entry, announcedKrw: entry.amountUsd * EXCHANGE_RATE, takeHome };
   }).sort((a, b) => b.takeHome - a.takeHome).slice(0, topN);
 }
@@ -3321,14 +3335,20 @@ function renderJackpotTakeHomeRanking(){
     '🏆 А что если ранжировать по реальной сумме на руки, а не по объявленной?',
     JH_RANK_TITLE_MORE
   );
+  // 랭킹 자체(getJackpotRealTakeHomeRanking)뿐 아니라 이 설명 문구도 실제 선택된 세금 기준을
+  // 따라야 함 — calcTakeHome()이 나라별로 이미 22개 언어 전부 커버해 돌려주는 basisSuffix
+  // ("한국 거주자"/"China resident (living in China)" 등, pickLang으로 현재 언어에 맞게 이미
+  // 해석된 문자열)를 그대로 문장 끝에 덧붙임. amount 인자는 basisSuffix 값 자체에 영향을 주지
+  // 않으므로(나라별 분기 어디서도 금액에 따라 문구가 안 바뀜) 아무 값이나 넣어도 안전함
+  const basisSuffix = calcTakeHome(1, sharedCountry, sharedState).basisSuffix;
   if (descEl) descEl.textContent = pickLang(
-    '발표 잭팟(연금) 순위가 아니라, 한국 거주자가 오늘 세율로 실제 받는 금액 기준 TOP 10이에요',
-    'Not ranked by the announced (annuity) jackpot — this is the TOP 10 by what a Korea resident actually takes home under today\'s tax rates',
-    '不是按发布的（年金）头奖排名，而是按韩国居民在今天税率下实际到手金额排出的TOP 10',
-    'Không xếp theo jackpot công bố (trả góp) — đây là TOP 10 theo số tiền cư dân Hàn Quốc thực nhận theo thuế suất hôm nay',
-    'ไม่ได้จัดอันดับตามแจ็คพอตที่ประกาศ(แบบผ่อน) — นี่คือ TOP 10 ตามจำนวนเงินที่ผู้พำนักในเกาหลีได้รับจริงตามอัตราภาษีวันนี้',
-    'Ранжировано не по объявленному (аннуитетному) джекпоту — это ТОП-10 по сумме, которую резидент Кореи реально получает на руки по сегодняшним налоговым ставкам',
-    JH_RANK_DESC_MORE
+    `발표 잭팟(연금) 순위가 아니라, 오늘 세율로 실제 받는 금액 기준 TOP 10이에요 · ${basisSuffix}`,
+    `Not ranked by the announced (annuity) jackpot — this is the TOP 10 by what's actually taken home under today's tax rates · ${basisSuffix}`,
+    `不是按发布的（年金）头奖排名，而是按今天税率下实际到手金额排出的TOP 10 · ${basisSuffix}`,
+    `Không xếp theo jackpot công bố (trả góp) — đây là TOP 10 theo số tiền thực nhận theo thuế suất hôm nay · ${basisSuffix}`,
+    `ไม่ได้จัดอันดับตามแจ็คพอตที่ประกาศ(แบบผ่อน) — นี่คือ TOP 10 ตามจำนวนเงินที่ได้รับจริงตามอัตราภาษีวันนี้ · ${basisSuffix}`,
+    `Ранжировано не по объявленному (аннуитетному) джекпоту — это ТОП-10 по сумме, которую реально получают на руки по сегодняшним налоговым ставкам · ${basisSuffix}`,
+    buildRankDescMore(basisSuffix)
   );
 
   const gameNameKo = { powerball: '파워볼', megamillions: '메가밀리언즈' };
@@ -3382,25 +3402,32 @@ const JH_RANK_TITLE_MORE = {
   ur: '🏆 اگر اعلان شدہ رقم کے بجائے اصل میں ملنے والی رقم کی بنیاد پر درجہ بندی کریں تو؟',
   uz: "🏆 E'lon qilingan summa emas, haqiqatda qo'lga tegadigan summa bo'yicha saralasak-chi?",
 };
-const JH_RANK_DESC_MORE = {
-  ar: 'ليس مرتبًا حسب الجاكبوت المعلن (السنوي) — هذه قائمة أفضل 10 حسب ما يستلمه فعليًا مقيم في كوريا وفق معدلات الضريبة الحالية',
-  bn: 'ঘোষিত (বার্ষিক) জ্যাকপট অনুযায়ী নয় — এটি কোরিয়ার বাসিন্দা আজকের করহারে যা প্রকৃতপক্ষে পান তার ভিত্তিতে TOP 10',
-  fr: 'Non classé par le jackpot annoncé (rente) — voici le TOP 10 selon ce qu\'un résident coréen reçoit réellement aux taux d\'imposition actuels',
-  hi: 'घोषित (वार्षिकी) जैकपॉट के अनुसार नहीं — यह कोरिया के निवासी को आज की कर दरों पर वास्तव में मिलने वाली राशि के आधार पर TOP 10 है',
-  id: 'Bukan diurutkan berdasarkan jackpot yang diumumkan (anuitas) — ini TOP 10 berdasarkan jumlah yang benar-benar diterima warga Korea dengan tarif pajak hari ini',
-  ja: '発表された（年金形式の）ジャックポット順ではなく、韓国居住者が今日の税率で実際に受け取る金額でのTOP10です',
-  kk: 'Хабарланған (аннуитеттік) джекпот бойынша емес — бұл Корея резидентінің бүгінгі салық мөлшерлемесімен нақты алатын сомасы бойынша ТОП-10',
-  km: 'មិនតម្រៀបតាមចំនួនរង្វាន់ធំដែលប្រកាស(តាមរយៈពេល)ទេ — នេះជា TOP 10 តាមចំនួនដែលអ្នករស់នៅកូរ៉េទទួលបានពិតប្រាកដតាមអត្រាពន្ធថ្ងៃនេះ',
-  ky: 'Жарыяланган (аннуитеттик) джекпот боюнча эмес — бул Корея резидентинин бүгүнкү салык ставкасы менен чын эле алган суммасы боюнча ТОП-10',
-  lo: 'ບໍ່ໄດ້ຈັດອັນດັບຕາມແຈັກພອດທີ່ປະກາດ(ແບບຜ່ອນຊຳລະ) — ນີ້ແມ່ນ TOP 10 ຕາມຈຳນວນທີ່ຜູ້ອາໄສຢູ່ເກົາຫຼີໄດ້ຮັບຈິງຕາມອັດຕາພາສີມື້ນີ້',
-  mn: 'Зарласан (жилийн тэтгэвэрийн) жекпотоор биш — энэ бол Солонгосын оршин суугчийн өнөөдрийн татварын хувь хэмжээгээр бодит гарт орох дүнгээр ТОП 10',
-  my: 'ကြေညာထားသော (နှစ်ချီပေးငွေ) ဂျက်ကပေါ့အစဉ်အလိုက်မဟုတ်ပါ — ဤသည်မှာ ကိုရီးယားနေထိုင်သူတစ်ဦးက ယနေ့အခွန်နှုန်းဖြင့် အမှန်တကယ်ရရှိသောပမာဏအလိုက် ထိပ်တန်း ၁၀ ဖြစ်သည်',
-  ne: 'घोषित (वार्षिकी) ज्याकपोट अनुसार होइन — यो कोरियाली बासिन्दाले आजको कर दरमा वास्तवमा पाउने रकमको आधारमा शीर्ष १० हो',
-  si: 'නිවේදනය කළ (වාර්ෂික) ජැක්පොට් අනුව නොවේ — මෙය කොරියාවේ පදිංචිකරුවෙකුට අද බදු අනුපාත යටතේ සැබවින්ම ලැබෙන මුදල අනුව ඉහළම 10 වේ',
-  tl: 'Hindi ayon sa inanunsyong (annuity) jackpot — ito ang TOP 10 ayon sa aktwal na natatanggap ng residente ng Korea sa kasalukuyang buwis',
-  ur: 'اعلان شدہ (سالانہ) جیک پاٹ کے حساب سے نہیں — یہ کوریا کے رہائشی کو آج کی ٹیکس شرح پر واقعی ملنے والی رقم کی بنیاد پر ٹاپ 10 ہے',
-  uz: "E'lon qilingan (annuitet) jekpot bo'yicha emas — bu Koreya rezidenti bugungi soliq stavkalarida haqiqatda qo'lga kiritadigan summa bo'yicha TOP 10",
-};
+// 예전엔 이 설명 문구가 "한국 거주자가 오늘 세율로 실제 받는 금액" 식으로 나라 이름을 고정
+// 텍스트로 박아뒀었음(=버그: sharedCountry가 kr이 아니어도 항상 "Korea resident"라고 표시됨).
+// 이제는 calcTakeHome()의 basisSuffix(선택된 sharedCountry 기준으로 이미 22개 언어 다 커버됨)를
+// 문장 끝에 " · "로 덧붙이는 방식으로 바꿔서(다른 곳의 "금액 · 라벨" 표기 관례와 동일), 아래
+// 17개 언어 문장에서는 나라를 특정하는 부분만 지우고 그 자리를 basisSuffix가 대신하게 함
+function buildRankDescMore(basisSuffix){
+  return {
+  ar: `ليس مرتبًا حسب الجاكبوت المعلن (السنوي) — هذه قائمة أفضل 10 حسب ما يتم استلامه فعليًا وفق معدلات الضريبة الحالية · ${basisSuffix}`,
+  bn: `ঘোষিত (বার্ষিক) জ্যাকপট অনুযায়ী নয় — এটি আজকের করহারে প্রকৃতপক্ষে যা পাওয়া যায় তার ভিত্তিতে TOP 10 · ${basisSuffix}`,
+  fr: `Non classé par le jackpot annoncé (rente) — voici le TOP 10 selon ce qui est réellement reçu aux taux d'imposition actuels · ${basisSuffix}`,
+  hi: `घोषित (वार्षिकी) जैकपॉट के अनुसार नहीं — यह आज की कर दरों पर वास्तव में मिलने वाली राशि के आधार पर TOP 10 है · ${basisSuffix}`,
+  id: `Bukan diurutkan berdasarkan jackpot yang diumumkan (anuitas) — ini TOP 10 berdasarkan jumlah yang benar-benar diterima dengan tarif pajak hari ini · ${basisSuffix}`,
+  ja: `発表された（年金形式の）ジャックポット順ではなく、今日の税率で実際に受け取る金額でのTOP10です · ${basisSuffix}`,
+  kk: `Хабарланған (аннуитеттік) джекпот бойынша емес — бұл бүгінгі салық мөлшерлемесімен нақты алатын сома бойынша ТОП-10 · ${basisSuffix}`,
+  km: `មិនតម្រៀបតាមចំនួនរង្វាន់ធំដែលប្រកាស(តាមរយៈពេល)ទេ — នេះជា TOP 10 តាមចំនួនដែលទទួលបានពិតប្រាកដតាមអត្រាពន្ធថ្ងៃនេះ · ${basisSuffix}`,
+  ky: `Жарыяланган (аннуитеттик) джекпот боюнча эмес — бул бүгүнкү салык ставкасы менен чын эле алган сумма боюнча ТОП-10 · ${basisSuffix}`,
+  lo: `ບໍ່ໄດ້ຈັດອັນດັບຕາມແຈັກພອດທີ່ປະກາດ(ແບບຜ່ອນຊຳລະ) — ນີ້ແມ່ນ TOP 10 ຕາມຈຳນວນທີ່ໄດ້ຮັບຈິງຕາມອັດຕາພາສີມື້ນີ້ · ${basisSuffix}`,
+  mn: `Зарласан (жилийн тэтгэвэрийн) жекпотоор биш — энэ бол өнөөдрийн татварын хувь хэмжээгээр бодит гарт орох дүнгээр ТОП 10 · ${basisSuffix}`,
+  my: `ကြေညာထားသော (နှစ်ချီပေးငွေ) ဂျက်ကပေါ့အစဉ်အလိုက်မဟုတ်ပါ — ဤသည်မှာ ယနေ့အခွန်နှုန်းဖြင့် အမှန်တကယ်ရရှိသောပမာဏအလိုက် ထိပ်တန်း ၁၀ ဖြစ်သည် · ${basisSuffix}`,
+  ne: `घोषित (वार्षिकी) ज्याकपोट अनुसार होइन — यो आजको कर दरमा वास्तवमा पाउने रकमको आधारमा शीर्ष १० हो · ${basisSuffix}`,
+  si: `නිවේදනය කළ (වාර්ෂික) ජැක්පොට් අනුව නොවේ — මෙය අද බදු අනුපාත යටතේ සැබවින්ම ලැබෙන මුදල අනුව ඉහළම 10 වේ · ${basisSuffix}`,
+  tl: `Hindi ayon sa inanunsyong (annuity) jackpot — ito ang TOP 10 ayon sa aktwal na natatanggap sa kasalukuyang buwis · ${basisSuffix}`,
+  ur: `اعلان شدہ (سالانہ) جیک پاٹ کے حساب سے نہیں — یہ آج کی ٹیکس شرح پر واقعی ملنے والی رقم کی بنیاد پر ٹاپ 10 ہے · ${basisSuffix}`,
+  uz: `E'lon qilingan (annuitet) jekpot bo'yicha emas — bu bugungi soliq stavkalarida haqiqatda qo'lga kiritadigan summa bo'yicha TOP 10 · ${basisSuffix}`,
+  };
+}
 function buildAnnouncedLineMore(amt){
   return {
     ar: `المبلغ المعلن ${amt}`, bn: `ঘোষিত ${amt}`, fr: `Annoncé ${amt}`, hi: `घोषित ${amt}`,
@@ -3832,8 +3859,9 @@ function updateMyNumbersUi(){
 }
 
 // JACKPOT_HISTORY(당첨번호 확인된 역대급 5건, isLegendary=true) + POWERBALL_DRAW_ARCHIVE/
-// MEGAMILLIONS_DRAW_ARCHIVE(2015-10-07/2017-10-31 이후 실제 회차 전체, 2200건+)를 합쳐
-// 비교 대상 목록을 만듦. numbers/special 필드가 없는 JACKPOT_HISTORY 항목(대부분의 일반 기록)은
+// MEGAMILLIONS_DRAW_ARCHIVE(각각 1992-04-22/2002-05-17부터 최신 회차까지 전체, 6300건+ —
+// 2026-07-23 백필로 기존 2200건+에서 확장됨)를 합쳐 비교 대상 목록을 만듦. numbers/special
+// 필드가 없는 JACKPOT_HISTORY 항목(대부분의 일반 기록)은
 // 자동으로 제외됨. 아카이브가 이미 최신 회차까지 포함하므로 LATEST_DRAW는 여기서 더 안 합침
 // (그래도 홈 화면 "최신 당첨번호" 위젯에서는 LATEST_DRAW를 그대로 씀 — 그건 별개 용도)
 function getMyNumbersComparableDraws(){
@@ -6145,6 +6173,12 @@ function updateHomeCalc(usdOverride){
   sharedAmountUsd = usd;
   sharedCountry = country;
   sharedState = stateCode;
+  // 확률체감 탭이 이미 열려 있는 상태에서 여기서 세금 기준(국가/주)이 바뀌면, 그 탭으로
+  // 돌아가지 않아도(=go('odds') 재호출 없이도) "실수령액 TOP 10" 랭킹·문구가 곧바로 새
+  // sharedCountry/sharedState를 반영해야 함. renderJackpotTakeHomeRanking()은 리스트 DOM이
+  // 없으면(다른 탭에 있으면) 조용히 스킵하고, odds-data.js가 아직 로드 전이어도 안전하게
+  // 빈 목록을 그릴 뿐이라 언제 호출해도 안전함(setLanguage()도 이미 같은 방식으로 무조건 호출)
+  renderJackpotTakeHomeRanking();
   updateSliderFill(document.getElementById('homeAmountSlider'));
   const 억 = (usd * EXCHANGE_RATE) / 100000000;
   const r = calcTakeHome(억, country, stateCode);
@@ -6619,6 +6653,10 @@ function updateCalc(usdOverride){
   const stateCode = document.getElementById('compareStateSelect').value;
   sharedAmountUsd = usd;
   sharedState = stateCode;
+  // sharedCountry가 'us'일 때만 실제로 랭킹 계산에 영향을 주지만(calcTakeHome은 country !== 'us'면
+  // stateCode를 무시함), updateHomeCalc()와 동일하게 상태 변경 시마다 무조건 다시 그려서 확률체감
+  // 탭이 이미 열려 있어도 즉시 반영되게 함 — renderJackpotTakeHomeRanking()은 안전하게 스킵 가능
+  renderJackpotTakeHomeRanking();
   const 억 = (usd * EXCHANGE_RATE) / 100000000;
 
   document.getElementById('compare-krw-amt').textContent = formatWon(억);

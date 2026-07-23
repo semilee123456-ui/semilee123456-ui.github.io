@@ -884,6 +884,13 @@
     font-size:16px; font-family:inherit; color:var(--text-dark); background:var(--bg); margin:12px 0 6px;
   }
   .faq-search:focus{ outline:none; border-color:var(--teal); }
+  .faq-audience-eyebrow{ font-size:var(--fs-small); font-weight:700; color:var(--text-muted); margin:10px 0 6px; }
+  .faq-audience-row{ display:flex; flex-wrap:wrap; gap:6px; padding:2px 0 10px; }
+  .faq-audience-chip{
+    max-width:100%; font-family:inherit; font-size:var(--fs-small); font-weight:700; white-space:normal;
+    padding:12px 14px; min-height:44px; border-radius:20px; border:1.5px solid var(--border); background:var(--bg); color:var(--text-muted); cursor:pointer;
+  }
+  .faq-audience-chip.active{ background:var(--teal); border-color:var(--teal); color:var(--on-accent); }
   .faq-chip-row{ display:flex; flex-wrap:wrap; gap:6px; padding:2px 0 10px; }
   .faq-chip{
     /* white-space는 nowrap이었는데, 카테고리 중 하나("건강보험·연금·증여·사기주의")가 여러 개념을
