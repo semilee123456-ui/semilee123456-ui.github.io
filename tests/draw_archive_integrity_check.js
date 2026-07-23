@@ -116,7 +116,8 @@ checkArchive('MEGAMILLIONS_DRAW_ARCHIVE', mm, {
 const pb = extractArray('POWERBALL_DRAW_ARCHIVE');
 checkArchive('POWERBALL_DRAW_ARCHIVE', pb, {
   // 2026-07-23 3차 백필(제3자 GitHub 데이터셋) 이후 기준선: 1992-04-22 ~ 2026-07-20, 3,825건.
-  minCount: 3825,
+  // 2026-07-23 추가 보정: 누락 확인된 2014-06-28, 2017-06-10 토요일 추첨 2건 추가, 3,827건.
+  minCount: 3827,
   maxFirstDate: '1992-04-22',
 });
 

@@ -54,6 +54,11 @@
     --game-pb-bg:#FDF0EF; --game-pb-border:#E8B4AF;
     --game-mm-bg:#FDF8E8; --game-mm-border:#E8D9A8;
     --refund-step-bg:#F8F4EA;
+    /* FAQ의 두 필터 줄(누구인지/무슨 주제인지)이 둘 다 teal 색으로 "선택됨"을 표시해서
+       실사용자 테스트에서 나란히 놓인 두 "전체" 칩이 똑같아 보여 헷갈렸음 — 카테고리(주제) 줄만
+       --gold 계열로 바꿔서 두 필터가 서로 다른 그룹이라는 걸 색으로도 구분되게 함 */
+    --gold-chip-bg: rgba(156,111,30,0.07);
+    --gold-chip-border: rgba(156,111,30,0.4);
   }
   /* 다크모드는 더 이상 기기의 prefers-color-scheme을 자동으로 따라가지 않고, 우상단 토글
      버튼(toggleTheme(), script.js)으로만 켜짐 — 켠 상태는 localStorage에 저장되어 다음
@@ -80,6 +85,8 @@
       --game-pb-bg:#2A211F; --game-pb-border:#5A3A35;
       --game-mm-bg:#292619; --game-mm-border:#5A5136;
       --refund-step-bg:#242119;
+      --gold-chip-bg: rgba(214,172,85,0.14);
+      --gold-chip-border: rgba(214,172,85,0.5);
   }
   /* 글자 크게 보기: 다크모드와 동일하게 opt-in 토글(toggleTextSize(), script.js)로만 켜짐,
      localStorage에 저장되어 다음 방문에도 유지됨. 폰트 스케일 전체를 약 12~15% 확대하되
@@ -171,12 +178,20 @@
   /* lang-toggle와 theme-toggle을 하나의 묶음으로 감싸서, 좁은 화면에서 .menu가 줄바꿈될 때
      이 둘이 서로 떨어져 theme-toggle만 혼자 다음 줄로 밀려나는 일이 없게 함 */
   .menu-controls{ display:flex; gap:8px; align-items:center; }
-  .menu button{
-    font-size:16px; color:var(--text-muted); font-weight:500; background:none; border:none;
-    cursor:pointer; font-family:inherit; padding:0; position:relative;
+  /* 탭 이동 버튼(비교/확률/FAQ)이 예전엔 배경·테두리 없는 순수 텍스트라, 옆의 언어 전환
+     버튼(테두리+배경 있는 pill 모양)과 대비돼 "누를 수 있는 버튼"으로 안 읽히는 문제가
+     실사용자 테스트(고령층, 카카오톡 인앱 브라우저)에서 확인됨 — 클릭 가능해 보이도록
+     lang-toggle과 같은 pill 스타일(테두리+배경)로 통일함 */
+  .menu-links button{
+    font-size:16px; color:var(--text-muted); font-weight:600; font-family:inherit; cursor:pointer;
+    border:1px solid rgba(21,84,69,0.25); border-radius:14px; background:rgba(21,84,69,0.06);
+    padding:6px 16px; min-height:44px; display:inline-flex; align-items:center; position:relative;
   }
-  .menu button::after{ content:''; position:absolute; top:-12px; left:-8px; right:-8px; bottom:-12px; }
-  .menu button.active{ color:var(--text-dark); font-weight:700; text-decoration:underline; }
+  .menu-links button::after{ content:''; position:absolute; top:-6px; left:-4px; right:-4px; bottom:-6px; }
+  .menu-links button.active{
+    color:var(--on-accent); font-weight:700; text-decoration:none;
+    background:var(--teal); border-color:var(--teal);
+  }
   .menu .lang-toggle{
     border:1px solid rgba(21,84,69,0.25); border-radius:14px; padding:6px 22px 6px 10px; min-height:44px;
     font-size:16px; font-weight:700; color:var(--teal); background:rgba(21,84,69,0.08);
@@ -457,6 +472,28 @@
   .slider::-moz-range-track{ background:transparent; }
   .slider::-moz-range-progress{ background:var(--teal); height:4px; border-radius:2px; }
   .slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:16px; height:16px; border-radius:50%; background:var(--teal); cursor:pointer; }
+  /* 홈 슬라이더가 $10M~$2000M를 한 줄로만 보여줘서, 특정 금액($5억 등)이 트랙의 어디쯤인지
+     가늠할 방법이 없다는 실사용자 피드백(고령층) 반영 — 네이티브 <input type=range>는
+     datalist 눈금 렌더링이 브라우저마다(특히 iOS Safari) 달라서, 이 코드베이스가 슬라이더 채움
+     표시에 이미 쓰는 방식(updateSliderFill(), script.js — 네이티브 대신 직접 그리기)과 같은
+     원칙으로 트랙 위에 직접 그린 눈금+라벨을 절대좌표로 얹음. min=10,max=2000 기준
+     퍼센트 = (value-10)/1990*100 로 계산한 값을 그대로 각 span의 style="left:N%"에 사용함 */
+  .slider-track-wrap{ position:relative; margin-bottom:48px; }
+  .slider-track-wrap .slider{ margin-bottom:0; }
+  .slider-ticks{ position:absolute; left:0; right:0; top:16px; height:0; pointer-events:none; }
+  .slider-tick{
+    position:absolute; top:0; transform:translateX(-50%);
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+  }
+  .slider-tick-mark{ width:1.5px; height:6px; background:var(--border); display:block; }
+  .slider-tick-label{
+    font-size:var(--fs-small); font-weight:600; color:var(--text-muted); white-space:nowrap; line-height:1;
+  }
+  /* 5억/10억/15억 세 눈금이 좁은 화면(320px)에서 언어에 따라(예: 인도네시아어 "$500
+     Juta"/"$1 Miliar"/"$1,5 Miliar") 라벨끼리 가로로 겹치는 문제가 있었음 — 글자 크기를 시니어
+     최소 기준(--fs-small) 아래로 줄이는 대신, 가운데 눈금만 눈금선을 더 길게 빼서 라벨을 한 줄
+     아래로 내려 항상 겹치지 않게 함(양옆 두 눈금은 그대로 첫 줄에 남음) */
+  .slider-tick-mid .slider-tick-mark{ height:24px; }
 
   .result-grid{ display:grid; grid-template-columns:0.85fr 0.85fr 1.3fr; gap:10px; align-items:stretch; }
   /* 국기 4개 이상 묶인 큰 그룹 카드는 .side-card-full로 자기 줄을 통째로 차지하게 분리했으니,
@@ -864,6 +901,19 @@
   .sticky-result-badge.is-visible{ opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
   .sticky-result-label{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .sticky-result-amt{ font-size:var(--fs-note); font-weight:800; color:var(--teal); white-space:nowrap; font-variant-numeric:tabular-nums; }
+  /* 홈 화면 전용 #sticky-result-badge는 화면 하단 가운데(left:50%)에 뜨는데, 폭이 좁은 기기에서는
+     그 폭이 거의 화면 전체(max-width:calc(100% - 32px))까지 넓어질 수 있어서, 이 버튼을 단순히
+     반대쪽 구석에 두는 것만으로는 겹침을 완전히 피하기 어려움 — 그래서 badge보다 확실히 위쪽
+     (하단에서 충분히 띄운 높이)에 둬서 badge가 보이는 화면이든 아니든 항상 안 겹치게 함 */
+  .faq-float-btn{
+    position:fixed; right:16px; bottom:calc(84px + env(safe-area-inset-bottom, 0px));
+    display:inline-flex; align-items:center; gap:6px; min-height:44px;
+    background:var(--teal); color:var(--on-accent); border:none; border-radius:999px;
+    padding:10px 16px; font-family:inherit; font-size:var(--fs-small); font-weight:700; cursor:pointer;
+    box-shadow:0 6px 16px rgba(21,84,69,0.28); z-index:39; transition:transform 0.15s ease, opacity 0.15s ease;
+  }
+  .faq-float-btn:active{ transform:scale(0.96); }
+  .faq-float-btn.is-hidden{ display:none; }
   @media (max-width: 420px) {
     .sticky-result-label{ max-width:38vw; }
   }
@@ -891,16 +941,27 @@
     padding:12px 14px; min-height:44px; border-radius:20px; border:1.5px solid var(--border); background:var(--bg); color:var(--text-muted); cursor:pointer;
   }
   .faq-audience-chip.active{ background:var(--teal); border-color:var(--teal); color:var(--on-accent); }
+  /* 카테고리(주제) 필터 줄에도 "누가 묻는지" 줄과 똑같이 눈에 띄는 안내 문구를 둠 — 실사용자
+     테스트에서 이 줄에는 그런 안내가 없어서, 위의 "전체" 칩과 나란히 있는 이 줄의 "전체" 칩이
+     똑같은 걸 두 번 보여주는 고장난 UI처럼 보였음(서로 다른 두 필터라는 걸 몰랐음) */
+  .faq-category-eyebrow{
+    font-size:var(--fs-small); font-weight:700; color:var(--text-muted); margin:14px 0 6px;
+    padding-top:14px; border-top:1px dashed var(--border);
+  }
   .faq-chip-row{ display:flex; flex-wrap:wrap; gap:6px; padding:2px 0 10px; }
   .faq-chip{
     /* white-space는 nowrap이었는데, 카테고리 중 하나("건강보험·연금·증여·사기주의")가 여러 개념을
        합친 긴 라벨이라 번역이 길어지는 언어(러시아어·카자흐어·키르기스어 등)에서 뷰포트보다
        넓은 한 줄이 되어 화면 밖으로 잘려나가는 문제가 있었음 — 줄바꿈을 허용해 알약(pill) 안에서
        2줄로 접히게 함(짧은 칩들은 어차피 한 줄에 들어가서 모양이 그대로 유지됨) */
+    /* "누가 묻는지" 칩(위, teal)과 색을 다르게(gold 계열) 줘서 두 줄이 서로 다른, 독립된 필터라는
+       걸 쉬는 상태에서도(선택 안 한 상태여도) 한눈에 구분할 수 있게 함 — 예전엔 둘 다 회색 계열
+       쉬는 상태 + teal 선택 상태라 완전히 같은 색 체계였음 */
     max-width:100%; font-family:inherit; font-size:var(--fs-small); font-weight:700; white-space:normal;
-    padding:12px 14px; min-height:44px; border-radius:20px; border:none; background:var(--chip-bg); color:var(--text-muted); cursor:pointer;
+    padding:12px 14px; min-height:44px; border-radius:20px; border:1.5px solid var(--gold-chip-border);
+    background:var(--gold-chip-bg); color:var(--text-muted); cursor:pointer;
   }
-  .faq-chip.active{ background:var(--teal); color:var(--on-accent); }
+  .faq-chip.active{ background:var(--gold); border-color:var(--gold); color:var(--on-accent); }
   .faq-no-result{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); padding:16px 0; }
   .lightning-result{ display:flex; justify-content:center; gap:8px; margin:16px 0; flex-wrap:nowrap; }
   .lightning-ball{
@@ -1087,8 +1148,13 @@
   .section-divider-toggle{
     position:relative; display:flex; justify-content:flex-start; align-items:baseline; flex-wrap:wrap; row-gap:2px;
     text-align:left; font-size:var(--fs-note); font-weight:700; color:var(--text-dark); cursor:pointer;
-    list-style:none; padding:14px 34px 14px 16px; background:var(--card); border:1.5px solid var(--border);
-    border-radius:12px; transition:border-color 0.15s ease;
+    list-style:none; padding:14px 34px 14px 16px;
+    /* 예전엔 var(--card)/var(--border)라 주변 페이지 배경(--bg)과 명암 차이가 거의 없어서
+       "펼치는 버튼"이 아니라 그냥 텍스트 줄처럼 보였음(실사용자 테스트에서 FAQ의 "더 자세히
+       알아보기"를 통째로 놓침) — 탭 메뉴를 버튼처럼 보이게 고친 것(5a7d6ea)과 같은 teal 톤 배경을
+       줘서 "이건 누를 수 있다"는 신호를 강하게 함 */
+    background:rgba(21,84,69,0.06); border:1.5px solid rgba(21,84,69,0.3);
+    border-radius:12px; transition:border-color 0.15s ease, background 0.15s ease;
   }
   /* FAQ "더 자세히 알아보기"는 안에 .panel-accordion-title(20px) 자식들을 담고 있어서
      부모 토글이 자식보다 작아 보이지 않게 이 토글만 더 크게 키움 */
@@ -1226,7 +1292,9 @@
   .jh-more{ margin-top:8px; }
   .jh-more-summary{
     display:flex; align-items:center; justify-content:center; gap:4px;
-    font-size:13px; color:var(--teal); font-weight:700; text-align:center; cursor:pointer; list-style:none; margin-top:6px;
+    /* 13px는 이 코드베이스의 시니어 가독성 최소 기준(--fs-small:16px)에 못 미쳤던 값 — 다른
+       토글 요약과 같은 최소 크기로 맞춤(2026-07 접근성 감사) */
+    font-size:var(--fs-small); color:var(--teal); font-weight:700; text-align:center; cursor:pointer; list-style:none; margin-top:6px;
   }
   .jh-more-summary::after{ content:'▾'; font-weight:400; transition:transform 0.2s ease; }
   .jh-more[open] > .jh-more-summary::after{ transform:rotate(180deg); }
@@ -1668,4 +1736,43 @@
   :root[data-theme="dark"] .result-hero,
   :root[data-theme="dark"] #introPersonaAccordion{
     background:var(--grad-soft);
+  }
+
+  /* ===== 통일된 "여긴 펼쳐집니다" 신호 (2026-07 접근성 감사) =====
+     실사용자 테스트(고령층, 카카오톡 인앱 브라우저)에서 이 사이트 곳곳의 <details> 아코디언이
+     하나같이 아주 작은 화살표 글자(▾) 하나에만 의존해서 "여긴 눌러서 펼치는 곳"이라는 걸
+     못 알아챘음 — 특히 FAQ "더 자세히 알아보기" 섹션 전체를 완전히 놓쳐서, 그 안의
+     faq.qGameBasics 관련 내용을 찾아 헤맨 사례가 있었음(단, qGameBasics 자체는 이미 상시
+     노출 목록에 있고 이 접힌 섹션 안에 있던 건 아님 — 그래도 이 섹션 안의 다른 보충 설명들은
+     여전히 못 찾을 위험이 있었음). 상단 탭 메뉴를 텍스트에서 버튼처럼 보이게 고친 것(5a7d6ea)과
+     같은 원리로, 화살표를 작은 원형 배지 안에 넣어 시각적 무게감을 사이트 전체에서 통일함 —
+     같은 클래스를 공유하는 모든 <details>(홈의 "나는 어떤 경우일까요?"/"결과 더 자세히 보기",
+     확률체감의 각 아코디언, FAQ의 "더 자세히 알아보기"와 그 안의 하위 카드들, "다른 나라 기준
+     더보기", "50개 주 전체 비교표 보기" 등)에 자동으로 적용됨. 아래 두 곳은 의도적으로 제외:
+     - 설정 메뉴(⚙️, .settings-toggle) — 아이콘 하나로 이미 널리 통용되는 별개의 관례라 그대로 둠
+     - FAQ 개별 질문(.faq-q) — "질문을 누르면 답이 펼쳐진다"는 FAQ 목록 자체가 이미 보편적으로
+       익숙한 패턴이라 화살표 하나로도 충분하다고 판단, 40개 넘는 각 질문마다 배지를 붙이면
+       오히려 목록이 산만해짐 */
+  .panel-title-toggle::after,
+  .section-divider-toggle::after,
+  .panel-accordion-title::after,
+  .calc-detail-summary::after,
+  .jh-more-summary::after,
+  .playslip-summary::after,
+  .us-state-compare-summary::after,
+  .country-toggle-more-summary::after{
+    content:'▾'; display:inline-flex; align-items:center; justify-content:center;
+    width:22px; height:22px; min-width:22px; border-radius:50%;
+    background:rgba(21,84,69,0.16); color:var(--teal); font-size:13px; font-weight:800; line-height:1;
+  }
+  /* 이 둘은 원래 화살표 자체가 없이 글자 색만으로 "눌러진다"는 걸 표시했던 곳이라, 절대좌표가
+     아니라 텍스트 바로 뒤에 붙는 인라인 배지로 붙임(다른 곳들은 이미 위치가 잡혀있는 자기 자리
+     그대로 유지) */
+  .country-toggle-more-summary::after,
+  .us-state-compare-summary::after{
+    position:static; margin-left:6px; vertical-align:middle; transform:none; transition:transform 0.2s ease;
+  }
+  .country-toggle-more[open] > .country-toggle-more-summary::after,
+  .us-state-compare-toggle[open] > .us-state-compare-summary::after{
+    transform:rotate(180deg);
   }

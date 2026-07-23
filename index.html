@@ -101,10 +101,10 @@
     },
     {
       "@type": "Question",
-      "name": "원천징수·누진세율·FTC, 이 세금 용어들이 다 뭐예요? 📖",
+      "name": "원천징수·누진세율·FTC 등, 이 세금 용어들이 다 뭐예요? 📖",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "👉 원천징수: 돈을 주는 쪽(미국)이 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 일단 떼어가는 선불금이에요. 👉 누진세율: 소득이 클수록 세율 구간이 올라가는 방식이에요 — 미국 연방세는 최고 37%, 한국 종합소득세도 최고 45%까지 올라가요. 👉 외국납부세액공제(FTC): 미국에서 이미 낸 세금을 거주국에서 세금 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요."
+        "text": "👉 원천징수: 돈을 주는 쪽(미국)이 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 일단 떼어가는 선불금이에요. 👉 누진세율: 소득이 클수록 세율 구간이 올라가는 방식이에요 — 미국 연방세는 최고 37%, 한국 종합소득세도 최고 45%까지 올라가요. 👉 외국납부세액공제(FTC): 미국에서 이미 낸 세금을 거주국에서 세금 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요. 👉 조세조약: 두 나라가 같은 소득에 세금을 두 번 매기지 않기로 서로 약속한 협정이에요. 👉 세액공제: 이미 계산된 세금 자체에서 일정 금액을 그대로 빼주는 거예요. 👉 상계: 서로 주고받을 돈을 맞비교해서 차액만 남기는 거예요. 👉 서차지: 세금 위에 추가로 붙는 할증 같은 거예요 — 소득이 아주 클 때만 붙어요. 👉 이중과세: 같은 소득에 두 나라가 각각 세금을 매겨서 세금을 두 번 내게 되는 상황이에요. 👉 우발이득(우발소득): 복권·증여·상금처럼 뜻밖에 생긴 돈을 가리키는 말이에요. 👉 실효세율: 여러 공제·할증을 다 반영한 뒤 실제로 낸 세금을 전체 소득으로 나눈 진짜 세율이에요. 👉 과세표준: 세율을 곱하기 직전, 세금을 매기는 기준이 되는 금액이에요. 👉 분리과세: 다른 소득과 합치지 않고 그 소득만 따로 정해진 세율로 딱 떼고 끝내는 방식이에요. 👉 비과세: 아예 세금을 매기지 않는 거예요."
       }
     },
     {
@@ -288,7 +288,7 @@
           <div class="menu-links">
             <button id="nav-compare" onclick="go('compare')" data-i18n="nav.compare">비교</button>
             <button id="nav-odds" onclick="go('odds')" data-i18n="nav.odds">확률</button>
-            <button id="nav-faq" onclick="go('faq')" data-i18n="nav.faq">FAQ</button>
+            <button id="nav-faq" onclick="go('faq')" data-i18n="nav.faq">도움말</button>
           </div>
           <div class="menu-controls">
             <details class="settings-menu" id="settingsMenu">
@@ -506,7 +506,14 @@
                 <input type="text" id="homeAmountInput" class="dollar-input" inputmode="decimal" placeholder="예: 100" data-i18n-placeholder="input.amountPlaceholder" oninput="onHomeAmountTyped()" onfocus="this.select()">
                 <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
               </div>
-              <input type="range" class="slider" id="homeAmountSlider" min="10" max="2000" step="10" value="100" oninput="onHomeSliderMoved()">
+              <div class="slider-track-wrap">
+                <input type="range" class="slider" id="homeAmountSlider" min="10" max="2000" step="10" value="100" oninput="onHomeSliderMoved()">
+                <div class="slider-ticks" aria-hidden="true">
+                  <span class="slider-tick" style="left:24.62%"><span class="slider-tick-mark"></span><span class="slider-tick-label" data-i18n="home.sliderTick500">5억 달러</span></span>
+                  <span class="slider-tick slider-tick-mid" style="left:49.75%"><span class="slider-tick-mark"></span><span class="slider-tick-label" data-i18n="home.sliderTick1000">10억 달러</span></span>
+                  <span class="slider-tick" style="left:74.87%"><span class="slider-tick-mark"></span><span class="slider-tick-label" data-i18n="home.sliderTick1500">15억 달러</span></span>
+                </div>
+              </div>
               <div class="slider-range-label"><span data-i18n="home.sliderMin">1천만 달러</span><span data-i18n="home.sliderMax">20억 달러</span></div>
             </div>
 
@@ -655,9 +662,10 @@
               </div>
             </div>
             <p class="result-total-line" id="home-tax-total-line" style="margin-top:8px; text-align:center; font-weight:700; color:var(--status-red);">합계 -39%</p>
-            <button type="button" class="annuity-info-link" style="margin-top:2px;" onclick="toggleTaxTermInfo()" data-i18n="home.taxTermToggle">❓ 원천징수·FTC가 뭐예요? →</button>
+            <button type="button" class="annuity-info-link" style="margin-top:2px;" onclick="toggleInlineTermBox('tax-term-box')" data-i18n="home.taxTermToggle">❓ 원천징수·누진세율·FTC가 뭐예요? →</button>
             <div class="detail-note-box" id="tax-term-box" style="display:none; background:var(--bg); border-radius:10px; padding:12px 14px; margin-top:6px;">
               <p style="margin:0;"><b data-i18n="home.taxTermWithholdingTitle">원천징수란?</b> <span data-i18n-html="home.taxTermWithholdingDesc">돈을 주는 <span style="white-space:nowrap">쪽(미국)이</span> 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 "일단 떼어가는 선불금"이라고 보시면 돼요.</span></p>
+              <p style="margin:10px 0 0;"><b data-i18n="home.taxTermProgressiveTitle">누진세율이란?</b> <span data-i18n="home.taxTermProgressiveDesc">소득이 클수록 세율 구간이 올라가는 방식이에요 — 미국 연방세는 최고 37%, 한국 종합소득세도 최고 45%까지 올라가요.</span></p>
               <p style="margin:10px 0 0;"><b data-i18n-html="home.taxTermFtcTitle"><span style="white-space:nowrap">외국납부세액공제(FTC)란</span>?</b> <span data-i18n="home.taxTermFtcDesc">미국에서 이미 낸 세금을, 거주국에서 세금을 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요.</span></p>
             </div>
             <p class="sim-note" style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);" data-i18n-html="compare.simNote">💡 종합소득세 누진세율과 <span style="white-space:nowrap">외국납부세액공제(FTC)를</span> 반영한 참고용 계산이에요 — 실제 세액은 개인 상황에 따라 달라질 수 있어 세무 전문가 상담을 권해요</p>
@@ -801,7 +809,7 @@
 
         <div class="panel">
           <h2 class="panel-title" data-i18n="compare.panelTitle">내 손에 들어오는 진짜 돈, 계산해볼까요?</h2>
-          <p class="panel-desc" data-i18n="compare.panelDesc">당첨금(달러)을 직접 입력하거나 슬라이더로 조절해보세요 👇</p>
+          <p class="panel-desc" data-i18n-html="compare.panelDesc"><span style="white-space:nowrap">당첨금(달러)을</span> 직접 입력하거나 슬라이더로 조절해보세요 👇</p>
 
           <p class="field-label-single" data-i18n="input.amountLabelFull">당첨금 (일시불 세전 기준)</p>
           <div class="million-input-wrap">
@@ -917,6 +925,12 @@
             <div id="sideBreakdownContainer"></div>
           </details>
           <p class="sim-note" data-i18n-html="compare.simNote">💡 종합소득세 누진세율과 <span style="white-space:nowrap">외국납부세액공제(FTC)를</span> 반영한 참고용 계산이에요 — 실제 세액은 개인 상황에 따라 달라질 수 있어 세무 전문가 상담을 권해요</p>
+          <button type="button" class="annuity-info-link" style="margin-top:2px;" onclick="toggleInlineTermBox('compare-tax-term-box')" data-i18n="home.taxTermToggle">❓ 원천징수·누진세율·FTC가 뭐예요? →</button>
+          <div class="detail-note-box" id="compare-tax-term-box" style="display:none; background:var(--bg); border-radius:10px; padding:12px 14px; margin-top:6px;">
+            <p style="margin:0;"><b data-i18n="home.taxTermWithholdingTitle">원천징수란?</b> <span data-i18n-html="home.taxTermWithholdingDesc">돈을 주는 <span style="white-space:nowrap">쪽(미국)이</span> 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 "일단 떼어가는 선불금"이라고 보시면 돼요.</span></p>
+            <p style="margin:10px 0 0;"><b data-i18n="home.taxTermProgressiveTitle">누진세율이란?</b> <span data-i18n="home.taxTermProgressiveDesc">소득이 클수록 세율 구간이 올라가는 방식이에요 — 미국 연방세는 최고 37%, 한국 종합소득세도 최고 45%까지 올라가요.</span></p>
+            <p style="margin:10px 0 0;"><b data-i18n-html="home.taxTermFtcTitle"><span style="white-space:nowrap">외국납부세액공제(FTC)란</span>?</b> <span data-i18n="home.taxTermFtcDesc">미국에서 이미 낸 세금을, 거주국에서 세금을 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요.</span></p>
+          </div>
         </div>
 
         <details class="panel odds-accordion" id="otherLanguagesPanel">
@@ -986,7 +1000,7 @@
           <p class="panel-desc" data-i18n="odds.lifeDesc">소문 말고, 실제 연구로 확인된 것들이에요</p>
           <div class="winner-story">
             <span class="ws-amt-alt" data-i18n="odds.life1Tag">💸 "대부분 몇 년 안에 파산한다"?</span>
-            <span class="ws-desc" data-i18n="odds.life1">출처 없는 낭설이에요 — 그 "70% 파산설"을 냈다는 미국 금융교육재단(NEFE)도 그런 조사를 한 적 없다고 공식 부인했어요. 스웨덴에서 15년간 추적한 연구에서는 오히려 재산이 더 잘 유지됐어요.</span>
+            <span class="ws-desc" data-i18n-html="odds.life1">출처 없는 낭설이에요 — 그 "70% 파산설"을 냈다는 미국 <span style="white-space:nowrap">금융교육재단(NEFE)도</span> 그런 조사를 한 적 없다고 공식 부인했어요. 스웨덴에서 15년간 추적한 연구에서는 오히려 재산이 더 잘 유지됐어요.</span>
           </div>
           <div class="winner-story">
             <span class="ws-amt-alt" data-i18n="odds.life2Tag">💔 "이혼율이 폭등한다"?</span>
@@ -1111,6 +1125,12 @@
                   <p class="jc-step-label" data-i18n="odds.jcStep3">세금 떼고 실제로 손에 들어오는 돈</p>
                   <p class="jc-step-val-big" id="jc-final">-</p>
                   <p class="jc-note" id="jc-note-basis">한국 거주자 기준 (미국 비거주자 원천징수 30% + 한국 종합소득세 누진세율/FTC 적용, 환율 약 1,503원 적용)</p>
+                  <button type="button" class="annuity-info-link" style="margin-top:2px;" onclick="toggleInlineTermBox('jc-tax-term-box')" data-i18n="home.taxTermToggle">❓ 원천징수·누진세율·FTC가 뭐예요? →</button>
+                  <div class="detail-note-box" id="jc-tax-term-box" style="display:none; background:var(--bg); border-radius:10px; padding:12px 14px; margin-top:6px;">
+                    <p style="margin:0;"><b data-i18n="home.taxTermWithholdingTitle">원천징수란?</b> <span data-i18n-html="home.taxTermWithholdingDesc">돈을 주는 <span style="white-space:nowrap">쪽(미국)이</span> 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 "일단 떼어가는 선불금"이라고 보시면 돼요.</span></p>
+                    <p style="margin:10px 0 0;"><b data-i18n="home.taxTermProgressiveTitle">누진세율이란?</b> <span data-i18n="home.taxTermProgressiveDesc">소득이 클수록 세율 구간이 올라가는 방식이에요 — 미국 연방세는 최고 37%, 한국 종합소득세도 최고 45%까지 올라가요.</span></p>
+                    <p style="margin:10px 0 0;"><b data-i18n-html="home.taxTermFtcTitle"><span style="white-space:nowrap">외국납부세액공제(FTC)란</span>?</b> <span data-i18n="home.taxTermFtcDesc">미국에서 이미 낸 세금을, 거주국에서 세금을 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요.</span></p>
+                  </div>
                 </div>
               </div>
               <details class="calc-detail-toggle">
@@ -1179,6 +1199,7 @@
             <button class="faq-audience-chip" onclick="setFaqAudience('korean', this)" data-i18n-html="faq.audienceKorean">🇰🇷 저는 <span style="white-space:nowrap">재외국민(외국 거주 한국인)</span>이에요</button>
             <button class="faq-audience-chip" onclick="setFaqAudience('foreigner', this)" data-i18n="faq.audienceForeigner">🌏 저는 한국 거주 외국인이에요</button>
           </div>
+          <p class="faq-category-eyebrow" data-i18n="faq.categoryEyebrow">📂 무슨 내용이 궁금하세요?</p>
           <div class="faq-chip-row">
             <button class="faq-chip active" onclick="setFaqCategory('all', this)" data-i18n="faq.catAll">전체</button>
             <button class="faq-chip" onclick="setFaqCategory('tax', this)" data-i18n="faq.catTax">세금·이중과세</button>
@@ -1196,8 +1217,8 @@
             <p class="faq-a" data-i18n-html="faq.a1">👉 미국 거주자는 당첨 시 24%가 먼저 원천징수되고, 나중에 소득 신고할 때 최대 37%까지 정산돼요.<br><br>👉 한국 거주자를 포함한 미국 비거주자는 미국에서 30%가 먼저 원천징수되고, 이후 거주국 세금까지 더해지면 당첨금이 클수록 보통 전체의 40%가 넘게 세금으로 빠져나가요 — 정확한 금액은 위 계산기로 확인해보세요.</p>
           </details>
           <details class="faq-item" data-cat="tax">
-            <summary class="faq-q" data-i18n="faq.qTaxTerms">원천징수·누진세율·FTC, 이 세금 용어들이 다 뭐예요? 📖</summary>
-            <p class="faq-a" data-i18n-html="faq.aTaxTerms">👉 <b>원천징수</b>: 돈을 주는 <span style="white-space:nowrap">쪽(미국)이</span> 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 일단 떼어가는 선불금이에요.<br><br>👉 <b>누진세율</b>: 소득이 클수록 세율 구간이 올라가는 방식이에요 — 미국 연방세는 최고 37%, 한국 종합소득세도 최고 45%까지 올라가요.<br><br>👉 <b>외국납부세액공제(FTC)</b>: 미국에서 이미 낸 세금을 거주국에서 세금 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요.</p>
+            <summary class="faq-q" data-i18n="faq.qTaxTerms">원천징수·누진세율·FTC 등, 이 세금 용어들이 다 뭐예요? 📖</summary>
+            <p class="faq-a" data-i18n-html="faq.aTaxTerms">👉 <b>원천징수</b>: 돈을 주는 <span style="white-space:nowrap">쪽(미국)이</span> 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 일단 떼어가는 선불금이에요.<br><br>👉 <b>누진세율</b>: 소득이 클수록 세율 구간이 올라가는 방식이에요 — 미국 연방세는 최고 37%, 한국 종합소득세도 최고 45%까지 올라가요.<br><br>👉 <b>외국납부세액공제(FTC)</b>: 미국에서 이미 낸 세금을 거주국에서 세금 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요.<br><br>👉 <b>조세조약</b>: 두 나라가 같은 소득에 세금을 두 번 매기지 않기로 서로 약속한 협정이에요 — 있으면 세금 계산 방식이 조약 내용에 따라 달라질 수 있어요.<br><br>👉 <b>세액공제</b>: 이미 계산된 세금 자체에서 일정 금액을 그대로 빼주는 거예요 — 소득에서 빼주는 "소득공제"와 달리, 낸 세금을 되돌려주는 것에 더 가까워요.<br><br>👉 <b>상계</b>: 서로 주고받을 돈을 맞비교해서 차액만 남기는 거예요 — 미국에서 낸 세금만큼 한국에서 낼 세금을 깎아주는 것도 상계의 한 예예요.<br><br>👉 <b>서차지</b>: 세금 위에 추가로 붙는 할증 같은 거예요 — 소득이 아주 클 때만 붙고, 인도·파키스탄처럼 일부 나라에만 있는 제도예요.<br><br>👉 <b>이중과세</b>: 같은 소득에 두 나라가 각각 세금을 매겨서 세금을 두 번 내게 되는 상황이에요 — FTC 같은 제도가 이걸 막거나 줄여줘요.<br><br>👉 <b>우발이득(우발소득)</b>: 일하거나 벌려고 한 게 아니라 복권·증여·상금처럼 뜻밖에 생긴 돈을 가리키는 말이에요 — 나라에 따라 근로소득과는 다른 세율이 붙어요.<br><br>👉 <b>실효세율</b>: 여러 공제·할증을 다 반영한 뒤 "실제로 낸 세금 ÷ 전체 소득"으로 계산한 진짜 세율이에요 — 법에 적힌 세율보다 체감에 더 가까운 숫자예요.<br><br>👉 <b>과세표준</b>: 세율을 곱하기 직전, 세금을 매기는 기준이 되는 금액이에요 — 전체 소득에서 공제를 뺀 금액일 때가 많아서, 실제 받은 돈보다 작을 수 있어요.<br><br>👉 <b>분리과세</b>: 다른 소득과 합치지 않고 그 소득 하나만 따로 정해진 세율로 딱 떼고 끝내는 방식이에요 — 한국 로또는 분리과세지만, 미국 복권 당첨금은 종합소득세로 합산 신고해야 해요.<br><br>👉 <b>비과세</b>: 아예 세금을 매기지 않는 거예요 — 배우자에게 주는 증여 6억원까지처럼, 법으로 정한 한도 안에서는 세금이 붙지 않아요.</p>
           </details>
           <details class="faq-item" data-cat="tax" data-basis="kr">
             <summary class="faq-q" data-i18n="faq.q2">헐, 한국에서 세금 또 내요?</summary>
@@ -1350,7 +1371,7 @@
                 <span class="refund-link-btn-sub">Yeosin Finance</span>
               </a>
             </div>
-            <p class="qty-a" style="margin-top:10px;" data-i18n="faq.checklistFooter">저희가 직접 조회는 못 해드려요(주민등록번호 인증이 필요한 정부 시스템이라) — 대신 진짜 공식 채널로 바로 연결해드렸어요. 10분이면 확인 끝나요.</p>
+            <p class="qty-a" style="margin-top:10px;" data-i18n-html="faq.checklistFooter">저희가 직접 조회는 못 <span style="white-space:nowrap">해드려요(주민등록번호 인증이 필요한 정부 시스템이라)</span> — 대신 진짜 공식 채널로 바로 연결해드렸어요. 10분이면 확인 끝나요.</p>
             <button class="share-btn" id="refund-share-btn" style="margin-top:10px;" onclick="shareRefundChecklist()" data-i18n="faq.shareChecklist">📤 이거 친구한테 공유하기</button>
           </div>
           <details class="faq-item" data-cat="tax">
@@ -1386,7 +1407,7 @@
             <p class="faq-a" data-i18n-html="faq.a16">'미국에 산다'와 '미국 세법상 거주자'는 다를 수 있어요. 영주권자·시민권자, 오래 거주한 주재원은 '미국'을 선택하면 되고, 유학생이나 파견 초기 주재원은 세법상 '비거주 외국인'으로 분류될 수 있어 '<span style="white-space:nowrap">한국(비거주자)</span>' 계산이 더 맞을 수 있어요. 판정 기준(Substantial Presence Test)이 복잡해서 애매하면 미국 세무 전문가와 상담을 추천해요.</p>
           </details>
           <details class="faq-item" data-cat="tax" data-basis="us">
-            <summary class="faq-q" data-i18n="faq.q17">계산기에 나오는 '신고 상태(싱글/기혼)'가 뭐예요?</summary>
+            <summary class="faq-q" data-i18n-html="faq.q17">계산기에 나오는 '신고 <span style="white-space:nowrap">상태(싱글/기혼)'가</span> 뭐예요?</summary>
             <p class="faq-a" data-i18n-html="faq.a17">미국에서 세금 신고할 때 자격에 따라 세율 구간이 달라져요. 다만 복권 당첨금처럼 큰 금액에서는 이 차이가 거의 없어요 — 2026년 기준 최고세율(37%) 구간이 싱글은 약 64만 달러, 기혼 공동은 약 77만 달러부터라 그 차이는 반올림 오차 수준이에요.</p>
           </details>
           <details class="faq-item" data-cat="purchase">
@@ -1679,11 +1700,11 @@
 
           <div class="legal-section">
             <p class="legal-h" data-i18n="privacy.h4">4. 제3자 제공</p>
-            <p class="legal-body" data-i18n="privacy.b4">수집한 개인정보를 제3자에게 제공하지 않습니다. 단, 사이트에 게재되는 광고(Google AdSense) 및 방문 통계 분석(Google Analytics)은 Google이 자체적으로 쿠키를 통해 방문 정보를 수집할 수 있으며, 이는 본 사이트가 아닌 Google의 개인정보처리방침에 따라 처리됩니다.</p>
+            <p class="legal-body" data-i18n-html="privacy.b4">수집한 개인정보를 제3자에게 제공하지 않습니다. 단, 사이트에 게재되는 <span style="white-space:nowrap">광고(Google AdSense)</span> 및 방문 통계 <span style="white-space:nowrap">분석(Google Analytics)은</span> Google이 자체적으로 쿠키를 통해 방문 정보를 수집할 수 있으며, 이는 본 사이트가 아닌 Google의 개인정보처리방침에 따라 처리됩니다.</p>
           </div>
 
           <div class="legal-section">
-            <p class="legal-h" data-i18n="privacy.h5">5. 쿠키(Cookie) 사용</p>
+            <p class="legal-h" data-i18n-html="privacy.h5">5. <span style="white-space:nowrap">쿠키(Cookie)</span> 사용</p>
             <p class="legal-body" data-i18n="privacy.b5">광고 게재를 위해 Google 등 제3자 광고 서비스의 쿠키가 사용될 수 있으며, 방문자 통계 분석을 위해 Google Analytics 쿠키도 사용됩니다. 브라우저 설정에서 쿠키 저장을 거부하거나 삭제할 수 있으며, 이 경우 광고 개인화 및 통계 분석 기능이 제한될 수 있습니다.</p>
           </div>
 
@@ -1725,12 +1746,12 @@
 
           <div class="legal-section">
             <p class="legal-h" data-i18n="disclaimer.h4">4. 구매 대행·중개 금지</p>
-            <p class="legal-body" data-i18n="disclaimer.b4">본 사이트는 복권 구매를 대행하거나 중개하지 않으며, 어떠한 구매 경로도 안내하지 않습니다. 국내에서 해외 복권 구매를 대행하는 행위는 관련 법령(형법 제248조 등)에 따라 처벌 대상이 될 수 있습니다.</p>
+            <p class="legal-body" data-i18n-html="disclaimer.b4">본 사이트는 복권 구매를 대행하거나 중개하지 않으며, 어떠한 구매 경로도 안내하지 않습니다. 국내에서 해외 복권 구매를 대행하는 행위는 관련 <span style="white-space:nowrap">법령(형법 제248조 등)에</span> 따라 처벌 대상이 될 수 있습니다.</p>
           </div>
 
           <div class="legal-section">
             <p class="legal-h" data-i18n="disclaimer.h5">5. 상표 및 제3자 서비스</p>
-            <p class="legal-body" data-i18n="disclaimer.b5">Powerball®, Mega Millions® 등은 각 운영 기관(MUSL 등)의 등록상표이며, 본 사이트는 해당 기관과 어떠한 제휴·협력 관계도 없는 독립적인 정보 제공 사이트입니다.</p>
+            <p class="legal-body" data-i18n-html="disclaimer.b5">Powerball®, Mega Millions® 등은 각 <span style="white-space:nowrap">기관(MUSL 등)의</span> 등록상표이며, 본 사이트는 해당 기관과 어떠한 제휴·협력 관계도 없는 독립적인 정보 제공 사이트입니다.</p>
           </div>
 
           <div class="legal-section">
@@ -1776,7 +1797,7 @@
           <button onclick="go('contact')" data-i18n="contact.breadcrumb">문의하기</button>
           <button onclick="go('privacy')" data-i18n="privacy.breadcrumb">개인정보처리방침</button>
           <button onclick="go('disclaimer')" data-i18n="disclaimer.breadcrumb">면책조항</button>
-          <button onclick="go('faq')" data-i18n="nav.faq">FAQ</button>
+          <button onclick="go('faq')" data-i18n="nav.faq">도움말</button>
         </div>
         <p class="footer-copy" data-i18n="footer.copy">본 사이트는 정보 제공 목적의 시뮬레이터이며, 복권 구매를 대행·중개하지 않습니다.</p>
       </div>
@@ -1786,6 +1807,14 @@
     <button type="button" class="sticky-result-badge" id="sticky-result-badge" onclick="scrollToMainResult()">
       <span class="sticky-result-label" data-i18n="result.label">💰 예상 실수령액</span>
       <span class="sticky-result-amt" id="sticky-result-amt">-</span>
+    </button>
+
+    <!-- 홈/비교/확률체감 어디서든 늘 떠 있다가 누르면 도움말(FAQ) 검색으로 바로 이동하는 버튼.
+         "다른 화면·도움말이 있다"는 걸 상단 탭 스타일 개선(5a7d6ea)만으로는 놓칠 수 있어서 추가한
+         이중 안전장치 — 아이콘만 두면 똑같이 "눌러지는 것처럼 안 보이는" 문제가 재발할 수 있어
+         짧은 글자 라벨을 함께 둠. 도움말(FAQ) 화면 자체에서는 목적지에 이미 와 있으므로 숨김 -->
+    <button type="button" class="faq-float-btn" id="faqFloatBtn" onclick="openFaqSearchFloat()" aria-label="도움말 검색으로 이동" data-i18n-aria-label="a11y.faqFloatBtn">
+      <span aria-hidden="true">🔍</span><span data-i18n="nav.faqFloatLabel">궁금해요</span>
     </button>
 
 </body>

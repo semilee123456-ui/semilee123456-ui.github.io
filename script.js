@@ -652,17 +652,27 @@ const TAX_MODEL = {
     // 특별공제 50만엔) × 1/2, 이후 다른 소득과 합산해 누진세율로 과세. 잭팟 규모는 항상 최고구간을
     // 초과하므로, 특별공제(약 400만원 수준, 잭팟 대비 무시 가능)는 생략하고 1/2 포함 × 최고 실효세율로
     // 근사함. 최고 실효세율 = (국세 최고구간 45% × 부흥특별소득세 1.021배) + 지방주민세 10% = 55.945%
-    half_inclusion_top_rate: 0.279725 // = 0.55945 × 0.5
+    half_inclusion_top_rate: 0.279725, // = 0.55945 × 0.5
+    // 미국측 30% 원천징수(IRC 871(a))가 복권·도박 소득에 예외 없이 적용된다는 점은 이 계산기 전체의
+    // 기본 전제(한국 케이스와 동일 논리 — 한미 조세조약도 복권·도박 소득을 커버하지 않음). 일본도
+    // 마찬가지로 미-일 조세조약의 "기타소득" 조항이 복권 소득을 면제 대상으로 다루지 않는 것으로
+    // 파악돼(AI 교차검증 결과, 2026-07-23 — 확정된 법률 해석 아님), 30% 원천징수가 그대로 적용된다고
+    // 봄. (계산 자체는 원래부터 30%를 무조건 적용해왔고, 이번에 정리된 건 UI 문구뿐 — 계산 로직 변경 없음)
+    us_treaty_exemption_applies: false
   },
   ru_resident: {
     // 러시아 세법(Налоговый кодекс РФ) 제224조 1항: 해외 복권 당첨금은 국내 판촉성 경품에만 적용되는
     // 35% 특별세율(제224조 2항, 자체 판촉 추첨 한정)이 아니라 일반 누진 개인소득세율이 적용되며,
     // 원천징수 없이 본인이 3-NDFL로 직접 신고(제228조). 2025년 개편 기준 5단계 누진(13~22%), 잭팟
     // 규모는 항상 최고구간(연 5천만루블 초과)에 해당.
-    top_bracket_rate: 0.22
+    top_bracket_rate: 0.22,
     // ⚠️ 러시아는 2023년 8월 대통령령 585호로 미-러 조세조약 핵심 조항(이중과세 조정 포함)의 효력을
-    // 정지시켰고 미국도 2024년 8월 상호 인정함 — 미국 원천징수세를 러시아 세액에서 공제(FTC)받을 수
-    // 있는지 불확실해 UI에 별도 경고 표시함.
+    // 정지시켰고 미국도 2024년 8월 상호 인정함. 러시아 세법 제232조(이중과세 조정)는 FTC 적용에
+    // 상호 유효한 조세조약을 전제로 하는데 그 조약이 정지된 상태라 FTC를 받을 수 없는 것으로
+    // 파악됨(AI 교차검증 결과, 2026-07-23 — 확정된 법률 해석 아니며, 조약 정지의 세부 적용 범위는
+    // 여전히 불확실함). 이 계산기는 미국 원천징수(30%)에 러시아 자국세(22%)가 공제 없이 그대로
+    // 추가되는 것으로 계산함(전액 이중과세 가정).
+    ftc_available: false
   },
   np_resident: {
     // 네팔 소득세법(Income Tax Act 2058, 2002) 제88A조: 복권·증여·상금 등 "우발이득"(windfall gain)은
@@ -1072,6 +1082,9 @@ function calcTakeHome(amount, country, stateCode){
     };
   } else if (country === 'jp') {
     // 일본: 해외 복권은 「일시소득」으로 과세, 1/2 포함 후 최고 실효세율(55.945%)로 근사.
+    // AI 교차검증 결과(2026-07-23, 확정된 법률 해석 아님): 미-일 조세조약이 복권·도박 소득을 면제
+    // 대상으로 다루지 않는 것으로 파악돼, 미국측 30% 원천징수(계산은 원래부터 무조건 적용해왔음,
+    // 변경 없음)에 조약상 면제 가능성이 있다고 보지 않음.
     const wonAmount = amount * 100000000;
     const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
     const jpCalculatedTaxWon = wonAmount * TAX_MODEL.jp_resident.half_inclusion_top_rate;
@@ -1083,24 +1096,31 @@ function calcTakeHome(amount, country, stateCode){
     return {
       afterUS, final,
       label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
-      label2: pickLang('일본 추가 납부 (FTC 적용, 미국측 조약 면제 가능 ⚠️)', 'Japan additional tax (FTC applied, possible US treaty exemption ⚠️)', '日本追加缴税（已抵免FTC，美方或有条约免税 ⚠️）', 'Thuế bổ sung tại Nhật Bản (đã áp dụng FTC, có thể được miễn thuế Mỹ theo hiệp định ⚠️)', 'ภาษีเพิ่มเติมของญี่ปุ่น (ใช้ FTC แล้ว, ฝั่งสหรัฐฯ อาจได้รับยกเว้นตามสนธิสัญญา ⚠️)', 'Дополнительный налог в Японии (с учётом FTC, возможно освобождение от налога США по договору ⚠️)', buildAdditionalTaxMore('jp', 'treatyMayExempt')),
+      label2: pickLang('일본 추가 납부 (FTC 적용)', 'Japan additional tax (FTC applied)', '日本追加缴税（已抵免FTC）', 'Thuế bổ sung tại Nhật Bản (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของญี่ปุ่น (ใช้ FTC แล้ว)', 'Дополнительный налог в Японии (с учётом FTC)', buildAdditionalTaxMore('jp')),
       val2: jpAdditionalTaxWon > 0 ? '-' + jpEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
-      basisSuffix: pickLang('일본 거주자 (조약 면제 가능 ⚠️)', 'Japan resident (possible treaty exemption ⚠️)', '日本居民（或有条约免税 ⚠️）', 'Cư dân Nhật Bản (có thể được miễn theo hiệp định ⚠️)', 'ผู้พำนักในญี่ปุ่น (อาจได้รับยกเว้นตามสนธิสัญญา ⚠️)', 'Резидент Японии (возможно освобождение по договору ⚠️)', buildCountryMore('jp', 'treatyMayExempt'))
+      basisSuffix: pickLang('일본 거주자', 'Japan resident', '日本居民', 'Cư dân Nhật Bản', 'ผู้พำนักในญี่ปุ่น', 'Резидент Японии', buildCountryMore('jp'))
     };
   } else if (country === 'ru') {
     // 러시아: 해외 복권은 국내 판촉경품용 35% 특별세율이 아니라 일반 누진세 최고구간(22%) 적용.
+    // AI 교차검증 결과(2026-07-23, 확정된 법률 해석 아님): 미-러 조세조약 핵심 조항이 정지돼 FTC
+    // 근거가 없는 것으로 파악됨 — 러시아 세금을 미국 원천징수와 별개로 전액 추가 부담시킴(FTC 상계 없음).
     const wonAmount = amount * 100000000;
     const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
-    const ruCalculatedTaxWon = wonAmount * TAX_MODEL.ru_resident.top_bracket_rate;
-    const ftcCreditWon = Math.min(usWithholdingWon, ruCalculatedTaxWon);
-    const ruAdditionalTaxWon = Math.max(ruCalculatedTaxWon - ftcCreditWon, 0);
+    const ruAdditionalTaxWon = wonAmount * TAX_MODEL.ru_resident.top_bracket_rate; // FTC 없음 — 원천징수와 별개로 전액 추가
     const afterUS = amount - (usWithholdingWon / 100000000);
     const final = afterUS - (ruAdditionalTaxWon / 100000000);
     const ruEffectivePct = wonAmount > 0 ? (ruAdditionalTaxWon / wonAmount * 100) : 0;
     return {
       afterUS, final,
       label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
-      label2: pickLang('러시아 추가 납부 (FTC 적용, 조약 정지로 불확실 ⚠️)', 'Russia additional tax (FTC applied, uncertain due to suspended treaty ⚠️)', '俄罗斯追加缴税（已抵免FTC，条约暂停致不确定⚠️）', 'Thuế bổ sung tại Nga (đã áp dụng FTC, không chắc do hiệp định bị đình chỉ ⚠️)', 'ภาษีเพิ่มเติมของรัสเซีย (ใช้ FTC แล้ว, ไม่แน่นอนจากสนธิสัญญาที่ระงับ ⚠️)', 'Дополнительный налог в России (с учётом FTC, неопределённость из-за приостановки договора ⚠️)', buildAdditionalTaxMore('ru', 'treatySuspended')),
+      label2: pickLang('러시아 추가 납부 (FTC 미적용으로 파악됨, 조약 정지 ⚠️)', 'Russia additional tax (FTC believed unavailable, treaty suspended ⚠️)', '俄罗斯追加缴税（据信FTC不适用，条约暂停⚠️）', 'Thuế bổ sung tại Nga (được cho là không áp dụng FTC do hiệp định bị đình chỉ ⚠️)', 'ภาษีเพิ่มเติมของรัสเซีย (เชื่อว่าใช้ FTC ไม่ได้ เนื่องจากสนธิสัญญาระงับ ⚠️)', 'Дополнительный налог в России (предположительно без FTC, договор приостановлен ⚠️)', {
+        km: 'ពន្ធបន្ថែមនៅរុស្ស៊ី (គ្មាន FTC កិច្ចព្រមព្រៀងផ្អាក ⚠️)', ne: 'रुसमा थप कर (FTC छैन, सन्धि निलम्बित ⚠️)', id: 'Pajak tambahan di Rusia (tanpa FTC, perjanjian ditangguhkan ⚠️)',
+        my: 'ရုရှားတွင်ထပ်ဆောင်းအခွန် (FTC မရှိ၊ စာချုပ်ရပ်ဆိုင်း ⚠️)', si: 'රුසියාවේ අමතර බද්ද (FTC නැත, ගිවිසුම අත්හිටුවා ⚠️)', uz: "Rossiyada qo'shimcha soliq (FTC yo'q, shartnoma to'xtatilgan ⚠️)",
+        mn: 'Орост нэмэлт татвар (FTC байхгүй, гэрээ түдгэлзсэн ⚠️)', kk: 'Ресейде қосымша салық (FTC жоқ, келісім тоқтатылды ⚠️)', ky: 'Орусияда кошумча салык (FTC жок, келишим токтотулду ⚠️)',
+        ur: 'روس میں اضافی ٹیکس (کوئی FTC نہیں، معاہدہ معطل ⚠️)', bn: 'রাশিয়ায় অতিরিক্ত কর (FTC নেই, চুক্তি স্থগিত ⚠️)', lo: 'ພາສີເພີ່ມເຕີມໃນລັດເຊຍ (ບໍ່ມີ FTC, ສົນທິສັນຍາຢຸດ ⚠️)',
+        ja: 'ロシアでの追加納税（FTCなし、条約停止中 ⚠️）', ar: 'ضريبة إضافية في روسيا (بدون FTC، المعاهدة معلقة ⚠️)', hi: 'रूस में अतिरिक्त कर (कोई FTC नहीं, संधि निलंबित ⚠️)', fr: 'Taxe supplémentaire en Russie (sans FTC, traité suspendu ⚠️)',
+        tl: 'Karagdagang buwis sa Russia (walang FTC, nasuspinde ang tratado ⚠️)',
+      }),
       val2: ruAdditionalTaxWon > 0 ? '-' + ruEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
       basisSuffix: pickLang('러시아 거주자 (조약 정지 ⚠️)', 'Russia resident (treaty suspended ⚠️)', '俄罗斯居民（条约暂停⚠️）', 'Cư dân Nga (hiệp định bị đình chỉ ⚠️)', 'ผู้พำนักในรัสเซีย (สนธิสัญญาระงับ ⚠️)', 'Резидент России (договор приостановлен ⚠️)', buildCountryMore('ru', 'treatySuspended'))
     };
@@ -1390,6 +1410,11 @@ function go(view){
   document.getElementById('nav-odds').classList.toggle('active', view === 'odds');
   document.getElementById('nav-faq').classList.toggle('active', view === 'faq');
   applyCurrentViewTitle(view);
+
+  // 도움말(FAQ) 검색 플로팅 버튼은 이미 도착해있는 도움말 화면에서까지 떠 있을 필요가 없어서
+  // 그 화면에서만 숨김 (다른 모든 화면에서는 계속 떠 있음)
+  const faqFloatBtn = document.getElementById('faqFloatBtn');
+  if (faqFloatBtn) faqFloatBtn.classList.toggle('is-hidden', view === 'faq');
 
   // 홈 ↔ 국가비교 이동 시, 어느 쪽에서 왔든 상관없이 항상 공용 상태(sharedAmountUsd/sharedCountry/EXCHANGE_RATE)를
   // 기준으로 화면을 다시 그려서 입력값·환율이 끊기지 않게 함
@@ -4273,7 +4298,13 @@ function toggleJackpotCalc(){
 // 매년 다른 세율 구간이 적용되는 완전히 별도의 계산이라 여기에 중복으로 넣지 않고,
 // 이미 만들어둔 확률체감 페이지의 잭팟 계산기(연금 단계 포함)로 안내만 함
 function toggleTaxTermInfo(){
-  const box = document.getElementById('tax-term-box');
+  toggleInlineTermBox('tax-term-box');
+}
+
+// 홈 화면 히어로 결과뿐 아니라, 확률체감 탭 잭팟 계산기와 국가비교 화면의 세부내역 아래에도
+// 같은 "탭하면 용어 설명이 펼쳐지는" 박스를 재사용함 — id만 다르게 받아서 어디서든 토글 가능
+function toggleInlineTermBox(id){
+  const box = document.getElementById(id);
   if (!box) return;
   box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
@@ -4380,6 +4411,19 @@ function setupStickyResultBadge(){
 function scrollToMainResult(){
   const target = document.getElementById('home-final-amt');
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// 어느 화면에서든 뜨는 #faqFloatBtn용 — 도움말(FAQ) 탭으로 이동한 뒤, go()가 먼저 페이지
+// 맨 위로 스크롤하는 애니메이션과 겹치지 않도록 goToAnnuityInfo()와 같은 방식(짧은 지연 후
+// 목표 지점으로 재스크롤)으로 검색창까지 스크롤하고 바로 입력할 수 있게 포커스를 줌
+function openFaqSearchFloat(){
+  go('faq');
+  setTimeout(() => {
+    const searchInput = document.getElementById('faqSearch');
+    if (!searchInput) return;
+    searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    searchInput.focus();
+  }, 400);
 }
 
 // renderJackpotHistory()/renderJackpotTakeHomeRanking()/renderNumberFrequencyStats()는 확률체감
@@ -6750,10 +6794,8 @@ function buildSameCountMore(n){
 const QUALIFIER_WORDS_MORE = {
   estimate:        { ar:'تقديري ⚠️', bn:'আনুমানিক ⚠️', fr:'estimation ⚠️', hi:'अनुमानित ⚠️', id:'perkiraan ⚠️', ja:'推定 ⚠️', kk:'болжам ⚠️', km:'ប៉ាន់ស្មាន ⚠️', ky:'болжол ⚠️', lo:'ຄາດຄະເນ ⚠️', mn:'тооцоо ⚠️', my:'ခန့်မှန်း ⚠️', ne:'अनुमानित ⚠️', si:'ඇස්තමේන්තුගත ⚠️', tl:'tantiya ⚠️', ur:'تخمینی ⚠️', uz:'taxminiy ⚠️' },
   treatySuspended: { ar:'المعاهدة معلقة ⚠️', bn:'চুক্তি স্থগিত ⚠️', fr:'traité suspendu ⚠️', hi:'संधि निलंबित ⚠️', id:'perjanjian ditangguhkan ⚠️', ja:'条約停止中 ⚠️', kk:'келісім тоқтатылды ⚠️', km:'កិច្ចព្រមព្រៀងផ្អាក ⚠️', ky:'келишим токтотулду ⚠️', lo:'ສົນທິສັນຍາຢຸດ ⚠️', mn:'гэрээ түдгэлзсэн ⚠️', my:'စာချုပ်ရပ်ဆိုင်း ⚠️', ne:'सन्धि निलम्बित ⚠️', si:'ගිවිසුම අත්හිටුවා ⚠️', tl:'nasuspinde ang tratado ⚠️', ur:'معاہدہ معطل ⚠️', uz:'shartnoma toʻxtatilgan ⚠️' },
-  // 일본: 미-일 조세조약상 도박/복권 소득이 미국 과세 면제 목록에 포함된다는 근거를 찾았지만,
-  // 자동 적용이 아니라 W-8BEN 사전신청 또는 1040-NR 환급 청구가 필요해서 계산 자체는 30% 원천징수를
-  // 그대로 유지하고(실제로 대부분 일단 원천징수당하는 게 현실이라) 라벨에 경고만 덧붙임
-  treatyMayExempt: { ar:'قد يُعفى بموجب المعاهدة ⚠️', bn:'চুক্তির অধীনে ছাড় সম্ভব ⚠️', fr:'exonération possible par traité ⚠️', hi:'संधि के तहत छूट संभव ⚠️', id:'kemungkinan bebas pajak berdasarkan perjanjian ⚠️', ja:'条約により免除の可能性 ⚠️', kk:'келісім бойынша босатылуы мүмкін ⚠️', km:'អាចលើកលែងតាមកិច្ចព្រមព្រៀង ⚠️', ky:'келишим боюнча бошотулушу мүмкүн ⚠️', lo:'ອາດຍົກເວັ້ນຕາມສົນທິສັນຍາ ⚠️', mn:'гэрээгээр чөлөөлөгдөх боломжтой ⚠️', my:'စာချုပ်အရ ကင်းလွတ်နိုင်ခြေရှိ ⚠️', ne:'सन्धि अन्तर्गत छुट सम्भव ⚠️', si:'ගිවිසුම යටතේ නිදහස් විය හැක ⚠️', tl:'posibleng exempted sa kasunduan ⚠️', ur:'معاہدے کے تحت چھوٹ ممکن ⚠️', uz:"shartnoma bo'yicha ozod bo'lishi mumkin ⚠️" },
+  // (과거엔 일본용 treatyMayExempt 항목이 여기 있었으나, 2026-07-23 AI 교차검증 반영으로 일본의
+  // "조약 면제 가능" 라벨을 제거하면서 더 이상 쓰이지 않아 삭제함 — jp_resident 주석 참고)
   approx:          { ar:'تقريبي', bn:'আনুমানিক', fr:'approximatif', hi:'लगभग', id:'perkiraan', ja:'概算', kk:'шамамен', km:'ប្រហែល', ky:'болжол менен', lo:'ປະມານ', mn:'ойролцоогоор', my:'ခန့်မှန်း', ne:'लगभग', si:'ආසන්න වශයෙන්', tl:'humigit-kumulang', ur:'تقریباً', uz:'taxminan' },
 };
 
