@@ -2082,7 +2082,7 @@ function filterFaq(){
   // 한국 국민연금 질문)은 아예 숨김. data-basis가 없으면 어느 기준에서나 다 관련 있는
   // 공통 질문이라는 뜻이라 항상 보여줌
   const currentBasis = sharedCountry || 'kr';
-  const items = document.querySelectorAll('#view-faq .faq-item, #view-faq .refund-step-card[data-basis]');
+  const items = document.querySelectorAll('#view-faq .faq-item, #view-faq .refund-step-card[data-basis], #view-faq .jc-stepper[data-basis]');
   let visibleCount = 0;
   items.forEach(item => {
     const text = item.textContent.toLowerCase();
@@ -2287,12 +2287,12 @@ const HOWTO_TEXT_PB = ['파워볼은 일반번호 5개 (1~69 중에서) + 파워
     ur: 'Powerball ایک ایسا کھیل ہے جس میں 5 مرکزی نمبر (1–69 میں سے) اور 1 Powerball نمبر (1–26 میں سے) ملانا ہوتا ہے — کل 6 نمبر۔ انعام کا انحصار اس بات پر ہے کہ آپ نے کتنے مرکزی نمبر ملائے اور کیا آپ نے Powerball بھی ملایا۔',
     uz: "Powerball — 5 ta asosiy raqam (1–69 orasidan) va 1 ta Powerball raqami (1–26 orasidan), jami 6 ta raqamni topish o'yini. Yutuq miqdori nechta asosiy raqamni topganingizga va Powerball raqamini ham topganingizga bog'liq.",
   }];
-const ODDS_GAME_NOTE_MEGA = ['💡 위 잭팟 카드는 파워볼 기준이에요. 메가밀리언즈는 잭팟 제외 모든 상금에 2~10배 무작위 배수가 자동으로 붙어요 — 아래 금액은 배수 적용 전 기본값이에요',
-  '💡 The jackpot card above is Powerball’s. For Mega Millions, every non-jackpot prize automatically gets a random 2x–10x multiplier — the amounts below are the base value before that.',
-  '💡 上方的头奖卡片是强力球的。超级百万除头奖外的所有奖金都会自动附加2~10倍随机倍数 — 以下金额为倍数应用前的基础值',
-  '💡 Thẻ jackpot ở trên là của Powerball. Với Mega Millions, mọi giải thưởng ngoại trừ jackpot đều tự động nhân ngẫu nhiên 2–10 lần — số tiền dưới đây là giá trị gốc trước khi nhân',
-  '💡 การ์ดแจ็คพอตด้านบนเป็นของพาวเวอร์บอล สำหรับเมกะมิลเลียน ทุกรางวัลยกเว้นแจ็คพอตจะถูกคูณด้วยตัวคูณสุ่ม 2-10 เท่าโดยอัตโนมัติ — จำนวนด้านล่างเป็นค่าพื้นฐานก่อนคูณ',
-  '💡 Карточка джекпота выше — от Powerball. В Mega Millions каждый приз, кроме джекпота, автоматически умножается на случайный множитель 2–10 — суммы ниже указаны без учёта этого умножения',
+const ODDS_GAME_NOTE_MEGA = ['💡 위 잭팟 카드는 파워볼 기준이에요. 메가밀리언즈는 조금 달라요 — 잭팟이 아닌 상금을 받으면 추첨 때 2~10배 중 하나가 무작위로 정해져서 자동으로 곱해져요. 아래 금액은 그 배수를 곱하기 전, 원래 상금이에요',
+  '💡 The jackpot card above is for Powerball. Mega Millions works a bit differently — if you win any prize other than the jackpot, a random multiplier between 2x and 10x is picked at the drawing and automatically applied to it. The amounts below are the original prize, before that multiplier.',
+  '💡 上方的头奖卡片是强力球的数据。超级百万不太一样——如果中的不是头奖，开奖时会随机抽出一个2~10倍的倍数，自动乘到奖金上。下面的金额是乘倍数之前的原始奖金',
+  '💡 Thẻ jackpot ở trên là của Powerball. Mega Millions hoạt động hơi khác — nếu trúng giải nào đó không phải jackpot, một hệ số nhân ngẫu nhiên từ 2 đến 10 lần sẽ được chọn lúc quay số và tự động nhân vào giải thưởng đó. Số tiền dưới đây là giải thưởng gốc, trước khi nhân hệ số.',
+  '💡 การ์ดแจ็คพอตด้านบนเป็นของพาวเวอร์บอล เมกะมิลเลียนทำงานต่างออกไปเล็กน้อย — ถ้าคุณถูกรางวัลอื่นที่ไม่ใช่แจ็คพอต ตัวคูณแบบสุ่มระหว่าง 2 ถึง 10 เท่าจะถูกเลือกตอนออกรางวัลแล้วคูณเข้ากับรางวัลนั้นโดยอัตโนมัติ จำนวนเงินด้านล่างคือรางวัลเดิมก่อนคูณ',
+  '💡 Карточка джекпота выше — данные Powerball. В Mega Millions немного иначе — если вы выиграли любой приз, кроме джекпота, во время розыгрыша случайно выбирается множитель от 2 до 10, который автоматически применяется к призу. Суммы ниже — это исходный приз, до умножения.',
   {
     ar: '💡 بطاقة الجاكبوت أعلاه خاصة بـ Powerball. بالنسبة إلى Mega Millions، تحصل كل جائزة عدا الجاكبوت تلقائيًا على مضاعف عشوائي من 2 إلى 10 أضعاف — المبالغ أدناه هي القيمة الأساسية قبل ذلك',
     bn: '💡 উপরের জ্যাকপট কার্ডটি Powerball-এর ভিত্তিতে। Mega Millions-এ, জ্যাকপট বাদে প্রতিটি পুরস্কারে স্বয়ংক্রিয়ভাবে ২–১০ গুণ র‍্যান্ডম গুণক যুক্ত হয় — নিচের পরিমাণগুলো সেই গুণকের আগের মূল মান',
@@ -3156,7 +3156,7 @@ function renderJackpotHistory(){
   const combined = getCombinedJackpotHistory();
   const descEl = document.getElementById('jackpot-history-desc');
   if (descEl) descEl.textContent = pickLang(
-    `체크한 날짜의 잭팟 금액과 국가별 실수령액을 기록했어요 (역대 최고 5건 + 실제 과거 회차 ${combined.length.toLocaleString('ko-KR')}건 포함)`,
+    `체크한 날짜의 잭팟 금액과 국가별 실수령액을 기록했어요 (역대 최고 5건 + 실제 과거 회차 ${combined.length.toLocaleString('ko-KR')}건 포함)`,
     `Jackpot amounts we've checked, with estimated take-home by country (including the top 5 all-time records + ${combined.length.toLocaleString('en-US')} real past draws)`,
     `记录了查询当天的头奖金额，以及各国的实得金额（含历史最高5笔纪录 + 实际过往${combined.length}期）`,
     `Số tiền jackpot đã kiểm tra, cùng số tiền thực nhận theo từng nước (gồm TOP 5 kỷ lục mọi thời đại + ${combined.length.toLocaleString('en-US')} kỳ quay thật trong quá khứ)`,
@@ -3388,6 +3388,13 @@ function setupDateLookup(){
   if (!input || input.dataset.wired) return;
   input.dataset.wired = '1';
   input.addEventListener('change', () => renderDateLookupResult(input.value));
+  // 처음엔 빈 채로 두는 게 의도였는데, 아이폰 사파리는 빈 date input에 "mm/dd/yyyy" 같은
+  // 안내 텍스트조차 안 보여줘서 완전히 텅 빈 칸처럼 보이는 문제가 있었음(스크린샷으로 확인,
+  // 2026-07-22) — 오늘 날짜로 기본값을 채워서 처음부터 뭔가 보이게 하고, 그 날짜 결과도 바로 보여줌
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  input.value = todayStr;
+  renderDateLookupResult(todayStr);
 }
 
 function renderDateLookupResult(dateStr){
@@ -4038,7 +4045,10 @@ function fillHomeAmountFromJackpot(game, btn){
   slider.min = Math.min(10, millions);
   slider.value = millions;
   updateHomeCalc(millions * 1000000);
-  input.focus();
+  // 예전엔 여기서 input.focus()를 호출했는데, 모바일에서는 입력칸에 포커스가 가는 순간
+  // 숫자 키패드가 자동으로 올라와서 — 퀵필 버튼은 값을 이미 다 채워주는 건데 타이핑할
+  // 필요가 없는데도 키보드가 뜨는 게 어색했음(사용자 지적, 2026-07-22) — 삭제함.
+  // 값이 채워졌다는 시각적 피드백은 바로 아래 celebrateQuickFill() 반짝임 효과로 충분함
   // "실제 이 잭팟에 당첨되면?"을 상상해보는 순간이라 재미로 살짝 반짝임 효과를 줌
   // (사용자 요청 "이 사이트에 맞게, 과하지 않게 재밌는 요소" 반영, 2026-07-22)
   if (btn) celebrateQuickFill(btn);
@@ -4121,8 +4131,8 @@ function buildAnnuitySchedule(announcedKrw){
   return rows;
 }
 
-function renderAnnuitySchedule(announcedKrw){
-  const listEl = document.getElementById('annuity-schedule-list');
+function renderAnnuitySchedule(announcedKrw, targetId){
+  const listEl = document.getElementById(targetId || 'annuity-schedule-list');
   if (!listEl) return;
   const rows = buildAnnuitySchedule(announcedKrw);
   // 회차별로 금액이 달라 한국 종합소득세 누진세율 구간도 회차마다 달라짐 — 그래서 평균이 아니라
@@ -4706,7 +4716,7 @@ function updateFlexBox(finalEok, country){
 const FAQ_TG2 = {
   kr: {
     title: () => pickLang('한국에서도 또 내요?', 'Do I also pay in Korea?', '在韩国也要交税吗？', 'Có phải đóng thuế ở Hàn Quốc nữa không?', 'ต้องเสียภาษีในเกาหลีด้วยไหม?', 'Нужно ли платить налог ещё и в Корее?', buildAlsoPayMore('kr')),
-    sub: () => pickLang('종합소득세 누진세율(최고 45%), 외국납부세액공제(FTC)로 조정 — 참고용 계산', 'Progressive comprehensive income tax (up to 45%), adjusted by Foreign Tax Credit (FTC) — reference estimate', '综合所得税累进税率（最高45%），通过外国税收抵免（FTC）调整 — 仅供参考', 'Thuế thu nhập tổng hợp lũy tiến (tối đa 45%), điều chỉnh bằng Tín dụng thuế nước ngoài (FTC) — ước tính tham khảo', 'ภาษีเงินได้แบบก้าวหน้า (สูงสุด 45%) ปรับด้วยเครดิตภาษีต่างประเทศ (FTC) — ประมาณการอ้างอิง', 'Прогрессивный совокупный подоходный налог (до 45%), скорректированный иностранным налоговым кредитом (FTC) — справочная оценка', { km: "ពន្ធលើប្រាក់ចំណូលសរុបជាលំដាប់ (រហូតដល់ 45%) កែសម្រួលដោយឥណទានពន្ធបរទេស (FTC) — ការគណនាយោង", ne: "प्रगतिशील समग्र आयकर (अधिकतम ४५%), विदेशी कर क्रेडिट (FTC) द्वारा समायोजित — सन्दर्भ अनुमान", id: "Pajak penghasilan komprehensif progresif (hingga 45%), disesuaikan dengan Kredit Pajak Luar Negeri (FTC) — perkiraan referensi", my: "တိုးမြှင့်စနစ် ပေါင်းစည်းဝင်ငွေခွန် (အများဆုံး ၄၅%)၊ နိုင်ငံခြားအခွန်ခရက်ဒစ် (FTC) ဖြင့်ချိန်ညှိထား — ရည်ညွှန်းခန့်မှန်းချက်", si: "ප්‍රගතිශීලී සම්පූර්ණ ආදායම් බද්ද (උපරිම 45%), විදේශ බදු ණය (FTC) මගින් සකස් කර ඇත — යොමු ඇස්තමේන්තුව", uz: "Progressiv umumiy daromad solig'i (45%gacha), Xorijiy Soliq Krediti (FTC) bilan tuzatilgan — ma'lumot uchun taxminiy hisob", mn: "Даамжирсан бүх орлогын татвар (хамгийн ихдээ 45%), Гадаадын татварын хөнгөлөлт (FTC)-өөр тохируулсан — лавлагаа тооцоо", kk: "Прогрессивті жиынтық табыс салығы (ең көбі 45%), Шетелдік салық несиесімен (FTC) түзетілген — анықтамалық есеп", ky: "Прогрессивдүү жалпы киреше салыгы (эң көбү 45%), Чет өлкө салык кредити (FTC) менен туураланган — маалымдама эсеп", ur: "ترقی پذیر مجموعی انکم ٹیکس (زیادہ سے زیادہ 45%)، غیر ملکی ٹیکس کریڈٹ (FTC) سے ایڈجسٹ — حوالہ جاتی تخمینہ", bn: "প্রগতিশীল সামগ্রিক আয়কর (সর্বোচ্চ ৪৫%), বিদেশি কর ক্রেডিট (FTC) দ্বারা সমন্বিত — রেফারেন্স অনুমান", lo: "ພາສີລາຍໄດ້ລວມແບບກ້າວໜ້າ (ສູງສຸດ 45%) ປັບດ້ວຍເຄຣດິດພາສີຕ່າງປະເທດ (FTC) — ການຄາດຄະເນອ້າງອີງ", ja: "総合所得税累進税率（最高45%）、外国税額控除（FTC）で調整 — 参考計算", ar: "ضريبة الدخل الإجمالية التصاعدية (حتى 45%)، معدَّلة بائتمان الضريبة الأجنبية (FTC) — تقدير مرجعي", hi: "प्रगतिशील समग्र आयकर (अधिकतम 45%), विदेशी कर क्रेडिट (FTC) द्वारा समायोजित — संदर्भ अनुमान", fr: "Impôt sur le revenu global progressif (jusqu'à 45 %), ajusté par le crédit d'impôt étranger (FTC) — estimation de référence", tl: "Progresibong comprehensive income tax (hanggang 45%), naaayon sa Foreign Tax Credit (FTC) — pang-reperensyang pagtatantya" })
+    sub: () => pickLang('종합소득세 <span style="white-space:nowrap">누진세율(최고 45%)</span>, <span style="white-space:nowrap">외국납부세액공제(FTC)로</span> 조정 — 참고용 계산', 'Progressive comprehensive income tax (up to 45%), adjusted by Foreign Tax Credit (FTC) — reference estimate', '综合所得税累进税率（最高45%），通过外国税收抵免（FTC）调整 — 仅供参考', 'Thuế thu nhập tổng hợp lũy tiến (tối đa 45%), điều chỉnh bằng Tín dụng thuế nước ngoài (FTC) — ước tính tham khảo', 'ภาษีเงินได้แบบก้าวหน้า (สูงสุด 45%) ปรับด้วยเครดิตภาษีต่างประเทศ (FTC) — ประมาณการอ้างอิง', 'Прогрессивный совокупный подоходный налог (до 45%), скорректированный иностранным налоговым кредитом (FTC) — справочная оценка', { km: "ពន្ធលើប្រាក់ចំណូលសរុបជាលំដាប់ (រហូតដល់ 45%) កែសម្រួលដោយឥណទានពន្ធបរទេស (FTC) — ការគណនាយោង", ne: "प्रगतिशील समग्र आयकर (अधिकतम ४५%), विदेशी कर क्रेडिट (FTC) द्वारा समायोजित — सन्दर्भ अनुमान", id: "Pajak penghasilan komprehensif progresif (hingga 45%), disesuaikan dengan Kredit Pajak Luar Negeri (FTC) — perkiraan referensi", my: "တိုးမြှင့်စနစ် ပေါင်းစည်းဝင်ငွေခွန် (အများဆုံး ၄၅%)၊ နိုင်ငံခြားအခွန်ခရက်ဒစ် (FTC) ဖြင့်ချိန်ညှိထား — ရည်ညွှန်းခန့်မှန်းချက်", si: "ප්‍රගතිශීලී සම්පූර්ණ ආදායම් බද්ද (උපරිම 45%), විදේශ බදු ණය (FTC) මගින් සකස් කර ඇත — යොමු ඇස්තමේන්තුව", uz: "Progressiv umumiy daromad solig'i (45%gacha), Xorijiy Soliq Krediti (FTC) bilan tuzatilgan — ma'lumot uchun taxminiy hisob", mn: "Даамжирсан бүх орлогын татвар (хамгийн ихдээ 45%), Гадаадын татварын хөнгөлөлт (FTC)-өөр тохируулсан — лавлагаа тооцоо", kk: "Прогрессивті жиынтық табыс салығы (ең көбі 45%), Шетелдік салық несиесімен (FTC) түзетілген — анықтамалық есеп", ky: "Прогрессивдүү жалпы киреше салыгы (эң көбү 45%), Чет өлкө салык кредити (FTC) менен туураланган — маалымдама эсеп", ur: "ترقی پذیر مجموعی انکم ٹیکس (زیادہ سے زیادہ 45%)، غیر ملکی ٹیکس کریڈٹ (FTC) سے ایڈجسٹ — حوالہ جاتی تخمینہ", bn: "প্রগতিশীল সামগ্রিক আয়কর (সর্বোচ্চ ৪৫%), বিদেশি কর ক্রেডিট (FTC) দ্বারা সমন্বিত — রেফারেন্স অনুমান", lo: "ພາສີລາຍໄດ້ລວມແບບກ້າວໜ້າ (ສູງສຸດ 45%) ປັບດ້ວຍເຄຣດິດພາສີຕ່າງປະເທດ (FTC) — ການຄາດຄະເນອ້າງອີງ", ja: "総合所得税累進税率（最高45%）、外国税額控除（FTC）で調整 — 参考計算", ar: "ضريبة الدخل الإجمالية التصاعدية (حتى 45%)، معدَّلة بائتمان الضريبة الأجنبية (FTC) — تقدير مرجعي", hi: "प्रगतिशील समग्र आयकर (अधिकतम 45%), विदेशी कर क्रेडिट (FTC) द्वारा समायोजित — संदर्भ अनुमान", fr: "Impôt sur le revenu global progressif (jusqu'à 45 %), ajusté par le crédit d'impôt étranger (FTC) — estimation de référence", tl: "Progresibong comprehensive income tax (hanggang 45%), naaayon sa Foreign Tax Credit (FTC) — pang-reperensyang pagtatantya" })
   },
   us: {
     title: () => pickLang('주(State) 세금은 얼마나 붙어요?', 'How much does state tax add?', '州税会加多少？', 'Thuế bang tính thêm bao nhiêu?', 'ภาษีมลรัฐเพิ่มเท่าไหร่?', 'Сколько добавляет налог штата?', STATE_TAX_TITLE_MORE),
@@ -5007,7 +5017,7 @@ function updateFaqTg2Card(){
   if (!titleEl || !subEl) return;
   const entry = FAQ_TG2[sharedCountry] || FAQ_TG2.kr;
   titleEl.textContent = entry.title();
-  subEl.textContent = entry.sub();
+  subEl.innerHTML = entry.sub();
 }
 
 const DREAM_DATA = {
@@ -6258,6 +6268,22 @@ function updateHomeCalc(usdOverride){
   document.getElementById('result-visual-take-pct').textContent = takeHomePct + '%';
   document.getElementById('result-visual-tax-pct').textContent = taxImpactPct + '%';
 
+  // 일시불 대신 연금(annuity)으로 받으면? — 확률체감 탭 잭팟계산기와 같은 로직 재사용.
+  // 여기 입력값(억)은 이미 "일시불 세전 기준"이라, 확률체감 탭처럼 발표총액(announcedKrw)에서
+  // CASH_VALUE_RATIO(58%)를 곱해 일시불을 구하는 게 아니라 거꾸로 나눠서 발표총액을 역산함
+  const homeAnnouncedKrw = (억 * 100000000) / CASH_VALUE_RATIO;
+  const ANNUITY_PAYMENTS_HOME = 30;
+  const homePerYearKrw = homeAnnouncedKrw / ANNUITY_PAYMENTS_HOME;
+  const rHomeAnnuityYear = calcTakeHome(homePerYearKrw / 100000000, 'kr');
+  const homeAnnuityYearEl = document.getElementById('home-annuity-year');
+  if (homeAnnuityYearEl) {
+    const aboutHome = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE);
+    homeAnnuityYearEl.textContent = aboutHome + formatWon(homePerYearKrw / 100000000);
+    document.getElementById('home-annuity-year-net').textContent = aboutHome + formatWon(rHomeAnnuityYear.final);
+    document.getElementById('home-annuity-month-net').textContent = aboutHome + formatWon(rHomeAnnuityYear.final / 12);
+    renderAnnuitySchedule(homeAnnouncedKrw, 'home-annuity-schedule-list');
+  }
+
   const usdNote = document.getElementById('home-usd-note');
   const cnyNote = document.getElementById('home-cny-note');
   const inrNote = document.getElementById('home-inr-note');
@@ -6441,9 +6467,9 @@ function updateHomeCalc(usdOverride){
   document.getElementById('home-filing-small').style.display = showFiling ? 'block' : 'none';
   const filingNote = document.getElementById('home-filing-note');
   if (!showFiling) {
-    filingNote.textContent = (country === 'cn')
+    filingNote.innerHTML = (country === 'cn')
       ? pickLang(
-          '💡 중국 거주자는 어느 주(State)에서 당첨되든 미국 비거주자 원천징수(30%)가 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.',
+          '💡 중국 거주자는 어느 <span style="white-space:nowrap">주(State)에서</span> 당첨되든 미국 비거주자 <span style="white-space:nowrap">원천징수(30%)가</span> 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.',
           '💡 China residents face the same 30% US non-resident withholding regardless of which state they won in — no need to factor in state tax.',
           '💡 中国税收居民无论在哪个州中奖，都统一适用美国非居民30%预扣税——不需要另外考虑州税',
           '💡 Cư dân Trung Quốc đều chịu mức khấu trừ 30% cho người không cư trú tại Mỹ bất kể trúng số ở bang nào — không cần tính thêm thuế bang.',
@@ -6453,7 +6479,7 @@ function updateHomeCalc(usdOverride){
         )
       : (country === 'in')
       ? pickLang(
-          '💡 인도 거주자는 어느 주(State)에서 당첨되든 미국 비거주자 원천징수(30%)가 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.',
+          '💡 인도 거주자는 어느 <span style="white-space:nowrap">주(State)에서</span> 당첨되든 미국 비거주자 <span style="white-space:nowrap">원천징수(30%)가</span> 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.',
           '💡 India residents face the same 30% US non-resident withholding regardless of which state they won in — no need to factor in state tax.',
           '💡 印度税收居民无论在哪个州中奖，都统一适用美国非居民30%预扣税——不需要另外考虑州税',
           '💡 Cư dân Ấn Độ đều chịu mức khấu trừ 30% cho người không cư trú tại Mỹ bất kể trúng số ở bang nào — không cần tính thêm thuế bang.',
@@ -6463,7 +6489,7 @@ function updateHomeCalc(usdOverride){
         )
       : (country !== 'kr')
       ? pickLang(
-          '💡 어느 주(State)에서 당첨되든 미국 비거주자 원천징수(30%)가 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.',
+          '💡 어느 <span style="white-space:nowrap">주(State)에서</span> 당첨되든 미국 비거주자 <span style="white-space:nowrap">원천징수(30%)가</span> 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.',
           '💡 The same 30% US non-resident withholding applies regardless of which state you won in — no need to factor in state tax.',
           '💡 无论在哪个州中奖，都统一适用美国非居民30%预扣税——不需要另外考虑州税',
           '💡 Mức khấu trừ 30% cho người không cư trú tại Mỹ áp dụng như nhau bất kể trúng số ở bang nào — không cần tính thêm thuế bang.',
@@ -6472,7 +6498,7 @@ function updateHomeCalc(usdOverride){
           { ar:'💡 يُطبَّق نفس معدل الاستقطاع 30% لغير المقيمين في الولايات المتحدة بغض النظر عن الولاية التي فزت فيها — لا داعي لحساب ضريبة الولاية.', bn:'💡 আপনি যে রাজ্যেই জিতুন না কেন একই ৩০% মার্কিন অনাবাসী উৎসকর প্রযোজ্য হয় — রাজ্য কর আলাদাভাবে হিসাব করার দরকার নেই।', fr:"💡 La même retenue de 30% pour non-résidents américains s'applique quel que soit l'État où vous avez gagné — pas besoin de tenir compte de l'impôt d'État.", hi:'💡 आप चाहे किसी भी राज्य में जीतें, वही अमेरिकी गैर-निवासी 30% कटौती लागू होती है — राज्य कर अलग से जोड़ने की जरूरत नहीं।', id:'💡 Pemotongan bukan penduduk AS sebesar 30% yang sama berlaku terlepas dari negara bagian mana kamu menang — tidak perlu memperhitungkan pajak negara bagian.', ja:'💡 どの州で当選しても同じ米国非居住者源泉徴収（30%）が適用されます — 州税を別途計算する必要はありません。', kk:'💡 Қай штатта ұтқаныңызға қарамастан бірдей 30% АҚШ резидент емес адамдарға арналған ұстап қалу қолданылады — штат салығын есептеудің қажеті жоқ.', km:'💡 អត្រាកាត់ទុក 30% ដូចគ្នាសម្រាប់អ្នកមិនមែនអ្នករស់នៅអាមេរិកអនុវត្តដោយមិនគិតពីរដ្ឋដែលអ្នកឈ្នះ — មិនចាំបាច់គិតពន្ធរដ្ឋបន្ថែមទេ។', ky:'💡 Кайсы штатта уткандыгыңызга карабастан бирдей 30% АКШнын резидент эмес адамдар үчүн кармап калуу коэффициенти колдонулат — штат салыгын эсептөөнүн кереги жок.', lo:'💡 ອັດຕາການຫັກພາສີ 30% ຜູ້ບໍ່ມີຖິ່ນພຳນັກໃນສະຫະລັດຄືກັນຈະຖືກນຳໃຊ້ ບໍ່ວ່າຈະຖືກລາງວັນໃນລັດໃດ — ບໍ່ຕ້ອງຄິດໄລ່ພາສີລັດເພີ່ມ.', mn:'💡 Ямар мужид хожсноос үл хамааран ижил 30% АНУ-ын оршин суугч бус хувийн суутгал хэрэглэгддэг — мужийн татварыг тусад нь тооцох шаардлагагүй.', my:'💡 မည်သည့်ပြည်နယ်တွင် ဆွတ်ခူးစေကာမူ တူညီသော အမေရိကန် နေထိုင်သူမဟုတ်သူ ၃၀% ခုနှိမ်ခြင်းကို အသုံးပြုသည် — ပြည်နယ်အခွန်ကို ထပ်မံတွက်ချက်စရာမလိုပါ။', ne:'💡 तपाईंले जुनसुकै राज्यमा जित्नुभए पनि उही ३०% अमेरिकी गैर-बासिन्दा कट्टी लागू हुन्छ — राज्य कर छुट्टै गणना गर्न आवश्यक छैन।', si:'💡 ඔබ දිනූ ප්‍රාන්තය කුමක් වුවත් එකම 30% ඇමරිකානු පදිංචිකරුවකු නොවන අයට වන අඩු කිරීම අදාළ වේ — ප්‍රාන්ත බද්ද වෙන වශයෙන් සලකා බැලීමට අවශ්‍ය නැත.', tl:'💡 Parehong 30% US non-resident withholding ang mag-aapply anuman ang estadong pinanalunan mo — hindi na kailangang isama ang buwis ng estado.', ur:'💡 آپ خواہ کسی بھی ریاست میں جیتیں، وہی امریکی غیر رہائشی 30% کٹوتی لاگو ہوتی ہے — ریاستی ٹیکس الگ سے شمار کرنے کی ضرورت نہیں۔', uz:"💡 Qaysi shtatda yutganingizdan qat'i nazar bir xil 30% AQSh norezident ushlab qolish stavkasi qo'llaniladi — shtat solig'ini alohida hisoblash shart emas." }
         )
       : pickLang(
-          '💡 한국 거주자는 어느 주(State)에서 당첨되든 미국 비거주자 원천징수(30%)가 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.',
+          '💡 한국 거주자는 어느 <span style="white-space:nowrap">주(State)에서</span> 당첨되든 미국 비거주자 <span style="white-space:nowrap">원천징수(30%)가</span> 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.',
           '💡 Korean residents face the same 30% US non-resident withholding regardless of which state they won in — no need to factor in state tax.',
           '💡 韩国税收居民无论在哪个州中奖，都统一适用美国非居民30%预扣税——不需要另外考虑州税',
           '💡 Cư dân Hàn Quốc đều chịu mức khấu trừ 30% cho người không cư trú tại Mỹ bất kể trúng số ở bang nào — không cần tính thêm thuế bang.',
@@ -6897,6 +6923,11 @@ function renderCountryMapPinsOnce(){
 function highlightCountryOnMap(flagCodes, labelText){
   const wrap = document.getElementById('countryMapWrap');
   if (!wrap) return;
+  // 지도는 카드 목록보다 위에 있어서, 카드를 눌렀을 때 지도가 이미 화면 밖으로 스크롤돼
+  // 있으면 하이라이트가 바뀌어도 안 보임(사용자 지적: "다른 나라 누르면 지도가 핸드폰으로
+  // 한눈에 안 보임") — 지도가 화면에 없을 때만 부드럽게 스크롤해서 보이게 함
+  // (block:'nearest'라 이미 보이는 상태면 스크롤이 발생하지 않음)
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   wrap.querySelectorAll('.country-map-pin').forEach(p => p.classList.remove('active'));
   wrap.querySelectorAll('.country-map-pin-ring').forEach(r => r.classList.remove('active'));
   wrap.querySelectorAll('.country-map-land').forEach(l => l.classList.remove('active'));
