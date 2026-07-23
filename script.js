@@ -3025,7 +3025,7 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
   ctx.fillText(footerText, anchorX, H - pad - 62);
   ctx.fillStyle = '#544E42';
   ctx.font = `500 24px ${SHARE_CARD_FONT}`;
-  ctx.fillText('semilee123456-ui.github.io', anchorX, H - pad - 28);
+  ctx.fillText('chamtax.com', anchorX, H - pad - 28);
 
   return canvas;
 }
