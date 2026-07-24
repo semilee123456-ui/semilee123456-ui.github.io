@@ -4845,6 +4845,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const newSearch = params.toString();
     history.replaceState(null, '', location.pathname + (newSearch ? '?' + newSearch : '') + location.hash);
   }
+
+  // "OO 거주자가 미국 복권 당첨" 류 랜딩페이지(china-resident-us-lottery-tax.html 등)에서
+  // "index.html?country=cn"처럼 세금 기준을 지정해서 들어왔으면 그 기준으로 계산기를 미리
+  // 맞춰줌 — 지정 안 하면 기본값(한국 기준)이 그대로 유지됨(한국에 사는 외국인 페르소나
+  // 페이지들은 애초에 한국 세법이 맞는 기준이라 이 파라미터가 필요 없음).
+  // COUNTRY_TAX_PROFILES에 실제로 있는 코드로만 제한해서, 오타·구버전 링크가 미검증
+  // 국가로 계산기를 조용히 맞춰버리는 걸 막음(21개국 토글 버튼과 동일한 목록).
+  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la'];
+  const urlCountry = params.get('country');
+  if (SUPPORTED_TAX_COUNTRIES.includes(urlCountry)) {
+    setHomeCountry(urlCountry);
+    params.delete('country');
+    const newSearch2 = params.toString();
+    history.replaceState(null, '', location.pathname + (newSearch2 ? '?' + newSearch2 : '') + location.hash);
+  }
 });
 setInterval(() => { fetchLiveExchangeRate(); }, 60 * 60 * 1000); // 1시간마다 환율 자동 재조회 — 유저가 직접 수정한 경우는 fetchLiveExchangeRate 내부에서 자동으로 건너뜀
 setInterval(updateDrawCountdown, 60 * 1000); // 추첨 당일엔 "오늘 N시간 후"처럼 시간 단위로 보여주므로, 방문 중에도 값이 그대로 멈춰있지 않도록 1분마다 갱신
