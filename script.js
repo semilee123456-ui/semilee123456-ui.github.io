@@ -169,6 +169,8 @@ function applyTranslations(){
   updateHiddenMoneyChannelsForLang();
   renderJackpotHistory();
   renderJackpotTakeHomeRanking();
+  renderJackpotIndexRollover();
+  renderJackpotIndexCpiRanking();
   updateDateLookupUi();
   renderLatestDraw();
   renderPrizeTiers();
@@ -1462,6 +1464,8 @@ function renderOddsTabDataWhenReady(){
   ensureOddsDataLoaded().then(() => {
     renderJackpotHistory();
     renderJackpotTakeHomeRanking();
+    renderJackpotIndexRollover();
+    renderJackpotIndexCpiRanking();
     renderNumberFrequencyStats();
   }).catch(err => console.error('[odds-data]', err));
 }
@@ -3417,6 +3421,322 @@ function renderJackpotTakeHomeRanking(){
     </div>`;
   }).join('');
 }
+
+// ==================== 🏆 ChamTax 잭팟 인덱스 (2026-07-24 신규) ====================
+// "발표 금액"이 아니라 다른 두 축으로 역대 잭팟을 다시 보여주는 콘텐츠 — 경쟁 복권 통계
+// 사이트는 미국 세율만 다루거나 세금 계산 자체를 안 해서 이 조합(세금 계산기 + 역대 아카이브)을
+// 못 만듦. 자세한 기획 배경은 differentiation_request.md 논의 참고.
+//
+// (A) 이월(Rollover) 스트릭: POWERBALL_JACKPOT_ARCHIVE/MEGAMILLIONS_JACKPOT_ARCHIVE(둘 다
+//     odds-data.js, 회차별 실제 발표 금액 포함 — 파워볼 1992-04-22~, 메가밀리언즈 1996-09-20~
+//     최신까지 전 회차 커버 확인함, 2026-07-24)를 그대로 재사용. 새로운 외부 데이터가 전혀
+//     필요 없고 이미 검증된 아카이브에서 "연속 증가 구간"만 계산하는 순수 파생 로직이라
+//     신뢰도 리스크가 없음 — 실제로 2022-11-07 파워볼 역대 최고액($2,040.1M)과 2023-08-08
+//     메가밀리언즈 역대 2위($1,602M)가 알고리즘상 최장 스트릭 상위권에 그대로 다시 잡히는 것으로
+//     교차 확인함(이미 알려진 실제 사건과 일치).
+// (B) 물가보정 실질가치 랭킹: 미 BLS CPI-U 연평균 지수로 보정. ⚠️ 아래 US_CPI_ANNUAL 표는 이
+//     세션이 학습 데이터 기준으로 채운 값으로, 이 실행 환경은 외부 인터넷이 막혀있어(WebFetch로
+//     bls.gov/FRED/위키피디아 전부 403 확인함, 2026-07-24) 이번 세션에서 직접 조회해 대조하지
+//     못했음. 게시 전 반드시 bls.gov 공식 CPI-U 연평균 수치와 대조 확인 필요 — 확인 전까지는
+//     "체험용 시뮬레이션" 문구를 반드시 유지할 것(아래 methodology 문구 참고).
+function getRolloverStreaks(archive){
+  if (!archive || !archive.length) return [];
+  const sorted = [...archive].sort((a, b) => a[0].localeCompare(b[0]));
+  const streaks = [];
+  let cur = null;
+  for (const [date, , , amountMillions] of sorted) {
+    if (cur && amountMillions >= cur.prevAmt) {
+      cur.count++;
+      cur.endDate = date;
+      cur.peakAmountMillions = amountMillions;
+    } else {
+      if (cur) streaks.push(cur);
+      cur = { startDate: date, endDate: date, count: 1, peakAmountMillions: amountMillions };
+    }
+    cur.prevAmt = amountMillions;
+  }
+  if (cur) streaks.push(cur);
+  return streaks;
+}
+
+function getTopRolloverStreaks(topN){
+  if (typeof POWERBALL_JACKPOT_ARCHIVE === 'undefined') return []; // odds-data.js 로드 전
+  const combined = [
+    ...getRolloverStreaks(POWERBALL_JACKPOT_ARCHIVE).map(s => ({ ...s, game: 'powerball' })),
+    ...getRolloverStreaks(MEGAMILLIONS_JACKPOT_ARCHIVE).map(s => ({ ...s, game: 'megamillions' })),
+  ];
+  return combined.sort((a, b) => b.count - a.count || b.peakAmountMillions - a.peakAmountMillions).slice(0, topN);
+}
+
+function renderJackpotIndexRollover(){
+  const listEl = document.getElementById('ji-rollover-list');
+  if (!listEl) return;
+  const titleEl = document.getElementById('ji-rollover-title');
+  const descEl = document.getElementById('ji-rollover-desc');
+  if (titleEl) titleEl.textContent = pickLang(
+    '🎢 역대 최장 이월(Rollover) 기록은?',
+    '🎢 What are the longest rollover streaks in history?',
+    '🎢 历史上连续多少期未开出头奖(滚存)最长？',
+    '🎢 Chuỗi jackpot dồn (rollover) dài nhất trong lịch sử là bao nhiêu kỳ?',
+    '🎢 สถิติแจ็คพอตทบยอด (Rollover) ยาวนานที่สุดคือกี่งวด?',
+    '🎢 Какая самая длинная серия переноса джекпота (rollover) в истории?',
+    JI_ROLLOVER_TITLE_MORE
+  );
+  if (descEl) descEl.textContent = pickLang(
+    '1등 당첨자가 안 나와 잭팟이 계속 불어난 회차만 모았어요 — 연속 회차 수 기준 TOP 10',
+    "Draws where nobody hit the jackpot and it kept growing — TOP 10 by consecutive draw count",
+    '汇总了因无人中头奖而头奖金额不断累积的期数 — 按连续期数排出TOP 10',
+    'Tổng hợp các kỳ quay không có người trúng jackpot nên tiền thưởng cứ tăng dần — TOP 10 theo số kỳ liên tiếp',
+    'รวบรวมงวดที่ไม่มีผู้ถูกรางวัลแจ็คพอตทำให้ยอดเงินเพิ่มขึ้นเรื่อยๆ — TOP 10 ตามจำนวนงวดติดต่อกัน',
+    'Здесь собраны розыгрыши, где никто не выиграл джекпот и сумма продолжала расти — ТОП-10 по числу розыгрышей подряд',
+    JI_ROLLOVER_DESC_MORE
+  );
+
+  const gameNameKo = { powerball: '파워볼', megamillions: '메가밀리언즈' };
+  const gameNameEn = { powerball: 'Powerball', megamillions: 'Mega Millions' };
+  const gameNameZh = { powerball: '强力球', megamillions: '超级百万' };
+  const gameNameVi = { powerball: 'Powerball', megamillions: 'Mega Millions' };
+  const gameNameTh = { powerball: 'พาวเวอร์บอล', megamillions: 'เมกะมิลเลียน' };
+  const gameNameRu = { powerball: 'Powerball', megamillions: 'Mega Millions' };
+  const medals = ['🥇', '🥈', '🥉'];
+
+  listEl.innerHTML = getTopRolloverStreaks(10).map((s, i) => {
+    const gameLabel = pickLang(gameNameKo[s.game], gameNameEn[s.game], gameNameZh[s.game], gameNameVi[s.game], gameNameTh[s.game], gameNameRu[s.game], GAME_NAME_MORE[s.game]);
+    const gameTagClass = s.game === 'powerball' ? 'pb' : 'mm';
+    const gameTagEmoji = s.game === 'powerball' ? '🔴' : '🟡';
+    const rankBadge = medals[i] || `${i + 1}`;
+    const peakKrw = s.peakAmountMillions * 1000000 * EXCHANGE_RATE;
+    const streakLine = pickLang(
+      `${s.count}회 연속 이월 끝에 터짐`, `${s.count} consecutive rollovers before it hit`,
+      `连续滚存${s.count}期后开出`, `Dồn liên tiếp ${s.count} kỳ rồi mới trúng`,
+      `ทบยอดต่อเนื่อง ${s.count} งวดก่อนถูกรางวัล`, `${s.count} розыгрышей подряд до выигрыша`,
+      buildStreakLineMore(s.count)
+    );
+    return `<div class="jh-rank-row">
+      <span class="jh-rank-medal">${rankBadge}</span>
+      <div class="jh-rank-body">
+        <div class="jh-rank-top">
+          <span class="jh-rank-date">${s.startDate} ~ ${s.endDate}</span>
+          <span class="jh-game-tag ${gameTagClass}">${gameTagEmoji} ${gameLabel}</span>
+        </div>
+        <div class="jh-rank-amt">${formatWon(peakKrw / 100000000)}</div>
+        <div class="jh-rank-sub">${streakLine}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+const JI_ROLLOVER_TITLE_MORE = {
+  ar: '🎢 ما هي أطول سلسلة تراكم للجائزة الكبرى (Rollover) في التاريخ؟', bn: '🎢 ইতিহাসে সবচেয়ে দীর্ঘ জ্যাকপট রোলওভার ধারা কতটি?',
+  fr: '🎢 Quelle est la plus longue série de reports (rollover) de jackpot de l\'histoire ?', hi: '🎢 इतिहास में सबसे लंबी जैकपॉट रोलओवर श्रृंखला कितनी है?',
+  id: '🎢 Rentetan rollover jackpot terpanjang dalam sejarah, berapa kali?', ja: '🎢 歴代最長のジャックポット持ち越し(ロールオーバー)記録は?',
+  kk: '🎢 Тарихтағы ең ұзақ джекпот ауысу (rollover) сериясы қанша рет?', km: '🎢 កំណត់ត្រារង្វាន់ធំបន្តរំកិល (Rollover) វែងបំផុតក្នុងប្រវត្តិសាស្ត្រ?',
+  ky: '🎢 Тарыхтагы эң узун джекпот которулуу (rollover) сериясы канча жолу?', lo: '🎢 ສະຖິຕິລາງວັນໃຫຍ່ພັກຍົກຍອດ (Rollover) ຍາວທີ່ສຸດໃນປະຫວັດສາດແມ່ນຈັກງວດ?',
+  mn: '🎢 Түүхэн дэх хамгийн урт джекпот шилжилт (rollover) хэдэн удаа вэ?', my: '🎢 သမိုင်းတွင် အရှည်ဆုံး ဂျက်ပေါ့ လွှဲပြောင်း (Rollover) မှတ်တမ်းက ဘယ်နှစ်ကြိမ်လဲ?',
+  ne: '🎢 इतिहासमा सबैभन्दा लामो ज्याकपोट रोलओभर श्रृंखला कति हो?', si: '🎢 ඉතිහාසයේ දිගම ජැක්පොට් රෝල්ඕවර් (Rollover) වාර්තාව කී වතාවක්ද?',
+  tl: '🎢 Ano ang pinakamahabang rollover streak ng jackpot sa kasaysayan?', ur: '🎢 تاریخ کی سب سے طویل جیک پاٹ رول اوور سیریز کتنی ہے؟',
+  uz: '🎢 Tarixdagi eng uzun jekpot rollover seriyasi necha marta?',
+};
+const JI_ROLLOVER_DESC_MORE = {
+  ar: 'جمعنا السحوبات التي لم يفز فيها أحد بالجائزة الكبرى فاستمرت في التراكم — أفضل 10 حسب عدد السحوبات المتتالية',
+  bn: 'কেউ জ্যাকপট না জেতায় যে ড্রগুলোতে অর্থ বাড়তেই থেকেছে সেগুলো — টানা ড্র সংখ্যা অনুযায়ী শীর্ষ ১০',
+  fr: 'Tirages où personne n\'a remporté le jackpot, qui a donc continué à grossir — TOP 10 par nombre de tirages consécutifs',
+  hi: 'जिन ड्रॉ में कोई जैकपॉट नहीं जीता और राशि बढ़ती रही, उन्हें इकट्ठा किया — लगातार ड्रॉ संख्या के अनुसार टॉप 10',
+  id: 'Kumpulan undian di mana tidak ada yang memenangkan jackpot sehingga terus bertambah — TOP 10 berdasarkan jumlah undian berturut-turut',
+  ja: '1等の当選者が出ず、ジャックポットが増え続けた回だけを集めました — 連続回数トップ10',
+  kk: 'Ешкім джекпотты ұтпағандықтан сома өсе берген розыгрыштар жиналды — қатарынан өткен рет саны бойынша топ 10',
+  km: 'ប្រមូលតែការទាញឆ្នោតដែលគ្មាននរណាឈ្នះរង្វាន់ធំ ធ្វើឲ្យទឹកប្រាក់កើនឡើងបន្តបន្ទាប់ — កំពូល១០តាមចំនួនលើកជាប់គ្នា',
+  ky: 'Эч ким джекпотту утпагандыктан суммасы өсө берген розыгрыштар чогултулду — удаама-удаа өткөн саны боюнча топ 10',
+  lo: 'ລວບລວມສະເພາະງວດທີ່ບໍ່ມີຜູ້ຖືກລາງວັນໃຫຍ່ເຮັດໃຫ້ຍອດເງິນເພີ່ມຂຶ້ນເລື້ອຍໆ — TOP 10 ຕາມຈຳນວນງວດຕິດຕໍ່ກັນ',
+  mn: 'Хэн ч джекпотыг хожоогүй тул мөнгө нэмэгдсээр байсан сугалаануудыг цуглуулав — дараалсан удаагийн тоогоор шилдэг 10',
+  my: 'ပထမဆု ဘယ်သူမှမနိုင်ဘဲ ငွေပမာဏ ဆက်တိုက်တိုးလာသော ကြိမ်များကိုသာ စုစည်းထားပါသည် — ဆက်တိုက်ကြိမ်အရေအတွက်အလိုက် ထိပ်တန်း ၁၀',
+  ne: 'कसैले ज्याकपोट नजितेर रकम बढिरहेका ड्रहरू मात्र संकलन गरियो — लगातार ड्र संख्याको आधारमा शीर्ष १०',
+  si: 'කිසිවෙකු ජැක්පොට් නොදිනූ නිසා මුදල දිගින් දිගටම වැඩි වූ දිනුම් ඇදීම් පමණක් එකතු කළෙමු — අඛණ්ඩ වාර ගණන අනුව ඉහළම 10',
+  tl: 'Tinipon ang mga draw kung saan walang nanalo ng jackpot kaya patuloy itong lumaki — TOP 10 base sa magkasunod na bilang ng draw',
+  ur: 'وہ ڈرا جمع کیے گئے جہاں کوئی جیک پاٹ نہیں جیتا اور رقم بڑھتی رہی — لگاتار ڈرا کی تعداد کے لحاظ سے ٹاپ 10',
+  uz: 'Hech kim jekpotni yutmagani uchun summasi o\'sib borgan tortishlar to\'plandi — ketma-ket tortish soni bo\'yicha TOP 10',
+};
+function buildStreakLineMore(count){
+  return {
+    ar: `${count} سحبًا متتاليًا قبل الفوز`, bn: `টানা ${count}টি ড্রয়ের পর জেতা হয়েছে`,
+    fr: `${count} reports consécutifs avant la victoire`, hi: `जीतने से पहले लगातार ${count} बार रोलओवर`,
+    id: `${count} kali rollover berturut-turut sebelum akhirnya menang`, ja: `${count}回連続で持ち越された末に的中`,
+    kk: `Утқанға дейін қатарынан ${count} рет ауысты`, km: `បន្តរំកិល ${count} លើកជាប់គ្នា មុននឹងឈ្នះ`,
+    ky: `Утканга чейин удаама-удаа ${count} жолу которулду`, lo: `ພັກຍົກຍອດຕິດຕໍ່ກັນ ${count} ຄັ້ງກ່ອນຈະຖືກລາງວັນ`,
+    mn: `Хожихоос өмнө дараалан ${count} удаа шилжсэн`, my: `မနိုင်မီ ဆက်တိုက် ${count} ကြိမ် လွှဲပြောင်းခဲ့သည်`,
+    ne: `जित्नुअघि लगातार ${count} पटक रोलओभर भयो`, si: `දිනුමට පෙර අඛණ්ඩව ${count}ක් රෝල්ඕවර් විය`,
+    tl: `${count} magkasunod na rollover bago ito nanalo`, ur: `جیتنے سے پہلے مسلسل ${count} بار رول اوور ہوا`,
+    uz: `G'olib chiqishidan oldin ketma-ket ${count} marta o'tdi`,
+  };
+}
+
+// ---- (B) 물가보정 실질가치 랭킹 ----
+// ⚠️ 아래 표는 검증 필요(위 파일 상단 설명 참고). 출처: 미 BLS CPI-U 연평균(전체 도시 소비자,
+// 1982-84=100). CPI_BASE_YEAR 이후 연도는 표에 없음 — getJackpotRealValueRanking()이 이 연도
+// 이후 잭팟은 자동으로 제외함(물가 차이가 미미해 의미 있는 보정이 안 되기도 하고, 미확정 최신
+// 수치를 쓰지 않기 위함)
+const CPI_BASE_YEAR = 2024;
+const US_CPI_ANNUAL = {
+  1992: 140.3, 2002: 179.9, 2016: 240.0, 2018: 251.1, 2019: 255.7,
+  2020: 258.8, 2021: 271.0, 2022: 292.7, 2023: 304.7, 2024: 313.7,
+};
+function getCpiAdjustedUsd(usd, originalYear){
+  const fromCpi = US_CPI_ANNUAL[originalYear];
+  const toCpi = US_CPI_ANNUAL[CPI_BASE_YEAR];
+  if (!fromCpi || !toCpi) return usd;
+  return usd * (toCpi / fromCpi);
+}
+
+function getJackpotRealValueRanking(topN){
+  if (typeof JACKPOT_HISTORY === 'undefined') return [];
+  return JACKPOT_HISTORY
+    .filter(entry => parseInt(entry.date.slice(0, 4), 10) <= CPI_BASE_YEAR)
+    .map(entry => {
+      const year = parseInt(entry.date.slice(0, 4), 10);
+      const cashUsd = entry.cashUsd || entry.amountUsd * CASH_VALUE_RATIO;
+      const cpiAdjustedCashUsd = getCpiAdjustedUsd(cashUsd, year);
+      const cpiAdjustedKrw = cpiAdjustedCashUsd * EXCHANGE_RATE;
+      const takeHome = calcTakeHome(cpiAdjustedKrw / 100000000, sharedCountry, sharedState).final;
+      return { entry, year, originalCashUsd: cashUsd, takeHome };
+    })
+    .sort((a, b) => b.takeHome - a.takeHome)
+    .slice(0, topN);
+}
+
+function renderJackpotIndexCpiRanking(){
+  const listEl = document.getElementById('ji-cpi-list');
+  if (!listEl) return;
+  const titleEl = document.getElementById('ji-cpi-title');
+  const descEl = document.getElementById('ji-cpi-desc');
+  const noteEl = document.getElementById('ji-cpi-methodology');
+  if (titleEl) titleEl.textContent = pickLang(
+    '📈 물가를 반영하면, 그때 그 잭팟은 지금 얼마?',
+    '📈 Adjusted for inflation, what would that jackpot be worth today?',
+    '📈 如果考虑通货膨胀，当年那笔头奖现在值多少？',
+    '📈 Nếu tính lạm phát, jackpot năm đó bây giờ đáng giá bao nhiêu?',
+    '📈 ถ้าคิดรวมเงินเฟ้อ แจ็คพอตตอนนั้นตอนนี้จะมีมูลค่าเท่าไร?',
+    '📈 С учётом инфляции, сколько стоил бы тот джекпот сегодня?',
+    JI_CPI_TITLE_MORE
+  );
+  if (descEl) descEl.textContent = pickLang(
+    '발표 당시 금액이 아니라, 미국 소비자물가지수(CPI-U)로 오늘 가치로 환산한 뒤 실수령액을 다시 계산했어요',
+    "Not the amount as announced — we converted it to today's value using the US Consumer Price Index (CPI-U), then recalculated the take-home",
+    '不是发布时的金额，而是用美国消费者物价指数(CPI-U)换算成今天的价值后，重新计算了实得金额',
+    'Không phải số tiền công bố lúc đó, mà là số tiền đã quy đổi theo giá trị hôm nay bằng Chỉ số giá tiêu dùng Mỹ (CPI-U), rồi tính lại số tiền thực nhận',
+    'ไม่ใช่จำนวนที่ประกาศตอนนั้น แต่แปลงเป็นมูลค่าวันนี้ด้วยดัชนีราคาผู้บริโภคสหรัฐฯ (CPI-U) แล้วคำนวณจำนวนเงินที่ได้รับจริงใหม่',
+    'Не сумма на момент объявления — мы пересчитали её в сегодняшнюю стоимость по индексу потребительских цен США (CPI-U), а затем заново рассчитали сумму на руки',
+    JI_CPI_DESC_MORE
+  );
+  if (noteEl) noteEl.textContent = pickLang(
+    `※ 미국 노동통계국(BLS) CPI-U(전체 도시 소비자, 1982-84=100) 연평균 지수로 ${CPI_BASE_YEAR}년 물가 기준까지 보정한 뒤, 오늘 환율과 선택하신 세금 기준의 현행 세율을 적용한 체험용 시뮬레이션이에요. 실제 세무 신고 기준이 아니며, ${CPI_BASE_YEAR}년 이후 발표된 잭팟은 물가 차이가 작아 이 랭킹에서 제외했어요.`,
+    `※ This is an experimental simulation: amounts are adjusted to ${CPI_BASE_YEAR} price levels using the US Bureau of Labor Statistics CPI-U (All Urban Consumers, 1982-84=100) annual average, then converted with today's exchange rate and your selected country's current tax rules. Not a basis for actual tax filing — jackpots announced after ${CPI_BASE_YEAR} are excluded since the inflation difference is too small to matter.`,
+    `※ 这是体验性模拟：先用美国劳工统计局CPI-U(全体城市消费者,1982-84=100)年平均指数换算到${CPI_BASE_YEAR}年物价水平，再用今天汇率及您选择国家的现行税率计算。并非实际报税依据，${CPI_BASE_YEAR}年之后发布的头奖因物价差异过小已排除在此排名外。`,
+    `※ Đây là mô phỏng trải nghiệm: số tiền được quy đổi theo mức giá năm ${CPI_BASE_YEAR} bằng chỉ số CPI-U bình quân năm của Cục Thống kê Lao động Mỹ (BLS, mọi người tiêu dùng thành thị, 1982-84=100), sau đó tính theo tỷ giá hôm nay và thuế suất hiện hành theo quốc gia bạn chọn. Không phải căn cứ khai thuế thực tế — các jackpot công bố sau năm ${CPI_BASE_YEAR} bị loại khỏi bảng xếp hạng này vì chênh lệch giá quá nhỏ.`,
+    `※ นี่คือการจำลองเพื่อการทดลอง: ปรับจำนวนเงินให้เป็นระดับราคาปี ${CPI_BASE_YEAR} ด้วยดัชนี CPI-U เฉลี่ยรายปีของสำนักสถิติแรงงานสหรัฐฯ (ผู้บริโภคในเมืองทั้งหมด, 1982-84=100) จากนั้นคำนวณด้วยอัตราแลกเปลี่ยนวันนี้และอัตราภาษีปัจจุบันตามประเทศที่คุณเลือก ไม่ใช่ฐานสำหรับการยื่นภาษีจริง — แจ็คพอตที่ประกาศหลังปี ${CPI_BASE_YEAR} ถูกตัดออกจากอันดับนี้เพราะส่วนต่างเงินเฟ้อน้อยเกินไป`,
+    `※ Это экспериментальная симуляция: суммы пересчитаны в цены ${CPI_BASE_YEAR} года по среднегодовому индексу CPI-U Бюро статистики труда США (все городские потребители, 1982-84=100), затем переведены по сегодняшнему курсу и текущим налоговым ставкам выбранной вами страны. Не является основанием для налоговой декларации — джекпоты, объявленные после ${CPI_BASE_YEAR} года, исключены из этого рейтинга, так как разница в инфляции слишком мала.`,
+    buildCpiMethodologyMore(CPI_BASE_YEAR)
+  );
+
+  const gameNameKo = { powerball: '파워볼', megamillions: '메가밀리언즈' };
+  const gameNameEn = { powerball: 'Powerball', megamillions: 'Mega Millions' };
+  const gameNameZh = { powerball: '强力球', megamillions: '超级百万' };
+  const gameNameVi = { powerball: 'Powerball', megamillions: 'Mega Millions' };
+  const gameNameTh = { powerball: 'พาวเวอร์บอล', megamillions: 'เมกะมิลเลียน' };
+  const gameNameRu = { powerball: 'Powerball', megamillions: 'Mega Millions' };
+  const medals = ['🥇', '🥈', '🥉'];
+
+  listEl.innerHTML = getJackpotRealValueRanking(10).map(({ entry, year, originalCashUsd, takeHome }, i) => {
+    const gameLabel = pickLang(gameNameKo[entry.game], gameNameEn[entry.game], gameNameZh[entry.game], gameNameVi[entry.game], gameNameTh[entry.game], gameNameRu[entry.game], GAME_NAME_MORE[entry.game]);
+    const gameTagClass = entry.game === 'powerball' ? 'pb' : 'mm';
+    const gameTagEmoji = entry.game === 'powerball' ? '🔴' : '🟡';
+    const rankBadge = medals[i] || `${i + 1}`;
+    const originalAmt = formatWon((originalCashUsd * EXCHANGE_RATE) / 100000000);
+    const originalLine = pickLang(
+      `${year}년 발표액 ${originalAmt}`, `Announced in ${year}: ${originalAmt}`,
+      `${year}年发布金额 ${originalAmt}`, `Công bố năm ${year}: ${originalAmt}`,
+      `ประกาศปี ${year}: ${originalAmt}`, `Объявлено в ${year}: ${originalAmt}`,
+      buildCpiOriginalLineMore(year, originalAmt)
+    );
+    return `<div class="jh-rank-row">
+      <span class="jh-rank-medal">${rankBadge}</span>
+      <div class="jh-rank-body">
+        <div class="jh-rank-top">
+          <span class="jh-rank-date">${entry.date}</span>
+          <span class="jh-game-tag ${gameTagClass}">${gameTagEmoji} ${gameLabel}</span>
+        </div>
+        <div class="jh-rank-amt">${formatWon(takeHome)}</div>
+        <div class="jh-rank-sub">${originalLine}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+const JI_CPI_TITLE_MORE = {
+  ar: '📈 مع احتساب التضخم، كم تساوي تلك الجائزة الكبرى اليوم؟', bn: '📈 মুদ্রাস্ফীতি বিবেচনা করলে, তখনকার সেই জ্যাকপট এখন কত হবে?',
+  fr: '📈 En tenant compte de l\'inflation, que vaudrait ce jackpot aujourd\'hui ?', hi: '📈 महंगाई को ध्यान में रखें तो, उस समय का जैकपॉट आज कितना होगा?',
+  id: '📈 Jika memperhitungkan inflasi, berapa nilai jackpot saat itu sekarang?', ja: '📈 物価上昇を反映すると、あの時のジャックポットは今いくら?',
+  kk: '📈 Инфляцияны ескерсек, сол кездегі джекпот бүгін қанша тұрар еді?', km: '📈 ប្រសិនបើគិតគូរអតិផរណា តើរង្វាន់ធំពេលនោះឥឡូវនេះមានតម្លៃប៉ុន្មាន?',
+  ky: '📈 Инфляцияны эске алсак, ошол кездеги джекпот бүгүн канча болмок?', lo: '📈 ຖ້າຄິດໄລ່ອັດຕາເງິນເຟີ້ແລ້ວ ລາງວັນໃຫຍ່ຕອນນັ້ນຕອນນີ້ຈະມີມູນຄ່າເທົ່າໃດ?',
+  mn: '📈 Инфляцийг тооцвол, тухайн үеийн джекпот өнөөдөр хэд байх вэ?', my: '📈 ငွေကြေးဖောင်းပွမှုကို ထည့်တွက်ရင် ထိုစဉ်က ဂျက်ပေါ့ဟာ ယခုဆို ဘယ်လောက်တန်မလဲ?',
+  ne: '📈 मुद्रास्फीति समावेश गर्दा, त्यतिबेलाको ज्याकपोट अहिले कति हुन्छ?', si: '📈 උද්ධමනය සලකා බැලුවහොත්, ඒ කාලයේ ජැක්පොට් අද කීයද?',
+  tl: '📈 Kung isasaalang-alang ang inflation, magkano na kaya ang jackpot na iyon ngayon?', ur: '📈 مہنگائی کو مدنظر رکھیں تو، اس وقت کا جیک پاٹ آج کتنا ہوگا؟',
+  uz: '📈 Inflyatsiyani hisobga olsak, o\'sha paytdagi jekpot bugun qancha bo\'lardi?',
+};
+const JI_CPI_DESC_MORE = {
+  ar: 'ليس المبلغ وقت الإعلان — بل حولناه إلى قيمته اليوم باستخدام مؤشر أسعار المستهلك الأمريكي (CPI-U) ثم أعدنا حساب المبلغ الصافي',
+  bn: 'ঘোষণার সময়ের অর্থ নয় — মার্কিন ভোক্তা মূল্য সূচক (CPI-U) দিয়ে আজকের মূল্যে রূপান্তর করে হাতে পাওয়া অর্থ আবার হিসাব করা হয়েছে',
+  fr: 'Pas le montant annoncé à l\'époque — nous l\'avons converti en valeur actuelle avec l\'indice des prix à la consommation américain (CPI-U), puis recalculé le montant net',
+  hi: 'घोषणा के समय की राशि नहीं — अमेरिकी उपभोक्ता मूल्य सूचकांक (CPI-U) से आज के मूल्य में बदलकर टेक-होम राशि फिर से निकाली गई है',
+  id: 'Bukan jumlah saat diumumkan — kami mengonversinya ke nilai hari ini menggunakan Indeks Harga Konsumen AS (CPI-U), lalu menghitung ulang jumlah yang dibawa pulang',
+  ja: '発表当時の金額ではなく、米国消費者物価指数(CPI-U)で今日の価値に換算してから手取り額を再計算しました',
+  kk: 'Жарияланған кездегі сома емес — АҚШ тұтыну бағасының индексі (CPI-U) арқылы бүгінгі құнға айналдырып, қолға тиетін соманы қайта есептедік',
+  km: 'មិនមែនចំនួនប្រាក់ពេលប្រកាសនោះទេ — យើងបានបំលែងទៅជាតម្លៃថ្ងៃនេះដោយប្រើសន្ទស្សន៍តម្លៃអ្នកប្រើប្រាស់អាមេរិក (CPI-U) រួចគណនាចំនួនប្រាក់ទទួលបានឡើងវិញ',
+  ky: 'Жарыяланган кездеги сумма эмес — АКШнын керектөө баалар индекси (CPI-U) менен бүгүнкү наркка айландырып, колго тиер сумманы кайра эсептедик',
+  lo: 'ບໍ່ແມ່ນຈຳນວນຕອນປະກາດ — ພວກເຮົາປ່ຽນເປັນມູນຄ່າມື້ນີ້ໂດຍໃຊ້ດັດຊະນີລາຄາຜູ້ບໍລິໂພກສະຫະລັດ (CPI-U) ແລ້ວຄິດໄລ່ຈຳນວນເງິນທີ່ໄດ້ຮັບຈິງໃໝ່',
+  mn: 'Зарласан үеийн дүн биш — АНУ-ын хэрэглэгчийн үнийн индекс (CPI-U)-ээр өнөөдрийн үнэ цэнэд хөрвүүлж, гарт орох дүнг дахин тооцов',
+  my: 'ကြေညာချိန်က ငွေပမာဏ မဟုတ်ဘဲ၊ အမေရိကန် စားသုံးသူဈေးနှုန်းညွှန်းကိန်း (CPI-U) ဖြင့် ယနေ့တန်ဖိုးအဖြစ် ပြောင်းပြီး လက်ခံရရှိမည့်ငွေကို ပြန်တွက်ချက်ထားသည်',
+  ne: 'घोषणाको समयको रकम होइन — अमेरिकी उपभोक्ता मूल्य सूचकांक (CPI-U) प्रयोग गरी आजको मूल्यमा रूपान्तरण गरेर हातमा पर्ने रकम पुनः गणना गरिएको हो',
+  si: 'නිවේදනය කළ අවස්ථාවේ මුදල නොවේ — ඇමරිකානු පාරිභෝගික මිල දර්ශකය (CPI-U) භාවිතයෙන් අද වටිනාකමට පරිවර්තනය කර අතට ලැබෙන මුදල නැවත ගණනය කළෙමු',
+  tl: 'Hindi ang halagang inanunsyo noon — kino-convert namin ito sa halaga ngayon gamit ang US Consumer Price Index (CPI-U), pagkatapos ay muling kinalkula ang take-home',
+  ur: 'اعلان کے وقت کی رقم نہیں — امریکی کنزیومر پرائس انڈیکس (CPI-U) کے ذریعے آج کی قدر میں تبدیل کر کے حاصل ہونے والی رقم دوبارہ شمار کی گئی',
+  uz: 'E\'lon qilingan paytdagi summa emas — AQSh iste\'molchi narxlari indeksi (CPI-U) yordamida bugungi qiymatga aylantirib, qo\'lga tegadigan summani qayta hisobladik',
+};
+function buildCpiOriginalLineMore(year, amt){
+  return {
+    ar: `أعلن عام ${year}: ${amt}`, bn: `${year} সালে ঘোষিত: ${amt}`,
+    fr: `Annoncé en ${year} : ${amt}`, hi: `${year} में घोषित: ${amt}`,
+    id: `Diumumkan tahun ${year}: ${amt}`, ja: `${year}年発表額 ${amt}`,
+    kk: `${year} жылы жарияланды: ${amt}`, km: `បានប្រកាសនៅឆ្នាំ ${year}: ${amt}`,
+    ky: `${year}-жылы жарыяланды: ${amt}`, lo: `ປະກາດປີ ${year}: ${amt}`,
+    mn: `${year} онд зарлагдсан: ${amt}`, my: `${year} ခုနှစ်တွင် ကြေညာသည်: ${amt}`,
+    ne: `${year} मा घोषित: ${amt}`, si: `${year} දී නිවේදනය කළේ: ${amt}`,
+    tl: `Inanunsyo noong ${year}: ${amt}`, ur: `${year} میں اعلان کیا گیا: ${amt}`,
+    uz: `${year}-yilda e'lon qilindi: ${amt}`,
+  };
+}
+function buildCpiMethodologyMore(baseYear){
+  return {
+    ar: `※ هذه محاكاة تجريبية: تم تعديل المبالغ إلى مستوى أسعار عام ${baseYear} باستخدام متوسط مؤشر أسعار المستهلك الأمريكي السنوي (CPI-U، جميع المستهلكين الحضريين، 1982-84=100)، ثم حُسبت بسعر الصرف اليوم والقوانين الضريبية الحالية للدولة التي اخترتها. ليست أساسًا للإقرار الضريبي الفعلي — استُبعدت الجوائز المعلنة بعد عام ${baseYear} لأن فرق التضخم فيها ضئيل جدًا.`,
+    bn: `※ এটি একটি পরীক্ষামূলক সিমুলেশন: মার্কিন শ্রম পরিসংখ্যান ব্যুরোর CPI-U (সকল নগর ভোক্তা, ১৯৮২-৮৪=১০০) বার্ষিক গড় সূচক দিয়ে ${baseYear} সালের মূল্যস্তরে সমন্বয় করে, তারপর আজকের বিনিময় হার ও আপনার নির্বাচিত দেশের বর্তমান কর হার প্রয়োগ করা হয়েছে। প্রকৃত কর ফাইলিংয়ের ভিত্তি নয় — ${baseYear} সালের পরে ঘোষিত জ্যাকপটগুলো মুদ্রাস্ফীতির পার্থক্য খুব কম বলে এই তালিকা থেকে বাদ দেওয়া হয়েছে।`,
+    fr: `※ Ceci est une simulation expérimentale : les montants sont ajustés au niveau des prix de ${baseYear} à l'aide de l'indice CPI-U moyen annuel du Bureau of Labor Statistics américain (tous consommateurs urbains, 1982-84=100), puis convertis avec le taux de change actuel et les règles fiscales en vigueur du pays choisi. Ce n'est pas une base de déclaration fiscale réelle — les jackpots annoncés après ${baseYear} sont exclus de ce classement car l'écart d'inflation est trop faible.`,
+    hi: `※ यह एक प्रायोगिक सिमुलेशन है: राशियों को अमेरिकी श्रम सांख्यिकी ब्यूरो के CPI-U (सभी शहरी उपभोक्ता, 1982-84=100) वार्षिक औसत सूचकांक से ${baseYear} के मूल्य स्तर पर समायोजित किया गया, फिर आज की विनिमय दर और आपके चुने देश के मौजूदा कर नियमों से गणना की गई। यह वास्तविक कर फाइलिंग का आधार नहीं है — ${baseYear} के बाद घोषित जैकपॉट महंगाई अंतर बहुत कम होने से इस रैंकिंग से बाहर रखे गए हैं।`,
+    id: `※ Ini simulasi eksperimental: jumlah disesuaikan ke tingkat harga tahun ${baseYear} menggunakan indeks rata-rata tahunan CPI-U Biro Statistik Tenaga Kerja AS (semua konsumen perkotaan, 1982-84=100), lalu dihitung dengan kurs hari ini dan aturan pajak terkini negara pilihan Anda. Bukan dasar pelaporan pajak sebenarnya — jackpot yang diumumkan setelah tahun ${baseYear} dikecualikan dari peringkat ini karena selisih inflasinya terlalu kecil.`,
+    ja: `※ これは体験用シミュレーションです。米国労働統計局のCPI-U(全都市消費者対象、1982-84年=100)年平均指数で${baseYear}年の物価水準に補正した後、今日の為替レートと選択した国の現行税率を適用しています。実際の税務申告の根拠ではなく、${baseYear}年以降に発表されたジャックポットは物価差が小さいためこのランキングから除外しています。`,
+    kk: `※ Бұл — тәжірибелік симуляция: сомалар АҚШ Еңбек статистикасы бюросының CPI-U (барлық қалалық тұтынушылар, 1982-84=100) жылдық орташа индексі арқылы ${baseYear} жылғы баға деңгейіне түзетілді, содан кейін бүгінгі валюта бағамы және таңдаған еліңіздің қолданыстағы салық ережелерімен есептелді. Нақты салық декларациясының негізі емес — ${baseYear} жылдан кейін жарияланған джекпоттар инфляция айырмашылығы тым аз болғандықтан бұл рейтингтен алынып тасталды.`,
+    km: `※ នេះជាការក្លែងធ្វើសាកល្បង៖ ចំនួនប្រាក់ត្រូវបានកែតម្រូវទៅតាមកម្រិតតម្លៃឆ្នាំ ${baseYear} ដោយប្រើសន្ទស្សន៍មធ្យមប្រចាំឆ្នាំ CPI-U របស់ការិយាល័យស្ថិតិការងារអាមេរិក (អ្នកប្រើប្រាស់ទីក្រុងទាំងអស់ 1982-84=100) បន្ទាប់មកគណនាដោយអត្រាប្តូរប្រាក់ថ្ងៃនេះ និងច្បាប់ពន្ធបច្ចុប្បន្នរបស់ប្រទេសដែលអ្នកបានជ្រើសរើស។ មិនមែនជាមូលដ្ឋានសម្រាប់ការបំពេញពន្ធជាក់ស្តែងទេ — រង្វាន់ធំដែលប្រកាសក្រោយឆ្នាំ ${baseYear} ត្រូវបានលុបចេញពីចំណាត់ថ្នាក់នេះ ព្រោះភាពខុសគ្នានៃអតិផរណាតូចពេក។`,
+    ky: `※ Бул — сынамык симуляция: суммалар АКШнын Эмгек статистикасы бюросунун CPI-U (бардык шаардык керектөөчүлөр, 1982-84=100) жылдык орточо индекси менен ${baseYear}-жылдын баа деңгээлине ылайыкташтырылды, андан кийин бүгүнкү валюта курсу жана тандалган өлкөңүздүн учурдагы салык эрежелери менен эсептелди. Реалдуу салык декларациясынын негизи эмес — ${baseYear}-жылдан кийин жарыяланган джекпоттор инфляция айырмасы өтө аз болгондуктан бул рейтингден алынып салынды.`,
+    lo: `※ ນີ້ແມ່ນການຈຳລອງເພື່ອທົດລອງ: ຈຳນວນເງິນຖືກປັບໃຫ້ເປັນລະດັບລາຄາປີ ${baseYear} ໂດຍໃຊ້ດັດຊະນີສະເລ່ຍປະຈຳປີ CPI-U ຂອງອົງການສະຖິຕິແຮງງານສະຫະລັດ (ຜູ້ບໍລິໂພກໃນເມືອງທັງໝົດ, 1982-84=100) ຈາກນັ້ນຄິດໄລ່ດ້ວຍອັດຕາແລກປ່ຽນມື້ນີ້ ແລະ ກົດໝາຍພາສີປັດຈຸບັນຂອງປະເທດທີ່ທ່ານເລືອກ. ບໍ່ແມ່ນພື້ນຖານສຳລັບການຍື່ນພາສີຕົວຈິງ — ລາງວັນໃຫຍ່ທີ່ປະກາດຫຼັງປີ ${baseYear} ຖືກຕັດອອກຈາກອັນດັບນີ້ເພາະສ່ວນຕ່າງເງິນເຟີ້ນ້ອຍເກີນໄປ.`,
+    mn: `※ Энэ бол туршилтын симуляци: дүнг АНУ-ын Хөдөлмөрийн статистикийн товчооны CPI-U (бүх хотын хэрэглэгч, 1982-84=100) жилийн дундаж индексээр ${baseYear} оны үнийн түвшинд тохируулж, дараа нь өнөөдрийн ханш болон сонгосон улсын одоогийн татварын дүрмээр тооцов. Бодит татварын мэдүүлгийн үндэслэл биш — ${baseYear} оноос хойш зарлагдсан джекпотууд инфляцийн зөрүү бага тул энэ жагсаалтаас хассан.`,
+    my: `※ ဤသည်မှာ စမ်းသပ်ခန့်မှန်းချက်ဖြစ်ပါသည်။ အမေရိကန် အလုပ်သမား စာရင်းအင်းဗျူရိုး၏ CPI-U (မြို့ပြစားသုံးသူအားလုံး၊ 1982-84=100) နှစ်စဉ်ပျမ်းမျှညွှန်းကိန်းဖြင့် ${baseYear} ခုနှစ် ဈေးနှုန်းအဆင့်သို့ ချိန်ညှိပြီးနောက်၊ ယနေ့ငွေလဲနှုန်းနှင့် သင်ရွေးချယ်ထားသော နိုင်ငံ၏ လက်ရှိအခွန်စည်းမျဉ်းများဖြင့် တွက်ချက်ထားသည်။ အမှန်တကယ် အခွန်ဆောင်ရန် အခြေခံမဟုတ်ပါ — ${baseYear} ခုနှစ်နောက်ပိုင်း ကြေညာသော ဂျက်ကပေါ့များကို ငွေကြေးဖောင်းပွမှု ကွာခြားချက် သေးငယ်သောကြောင့် ဤအဆင့်သတ်မှတ်ချက်မှ ချန်လှပ်ထားသည်။`,
+    ne: `※ यो प्रयोगात्मक सिमुलेसन हो: रकमहरूलाई अमेरिकी श्रम तथ्यांक ब्यूरोको CPI-U (सबै शहरी उपभोक्ता, 1982-84=100) वार्षिक औसत सूचकांकद्वारा ${baseYear} को मूल्य स्तरमा समायोजन गरी, त्यसपछि आजको विनिमय दर र तपाईंले छनोट गर्नुभएको देशको हालको कर नियमद्वारा गणना गरिएको हो। यो वास्तविक कर दाखिलाको आधार होइन — ${baseYear} पछि घोषित ज्याकपोटहरू मुद्रास्फीति भिन्नता धेरै सानो भएकाले यस श्रेणीबाट बाहिर राखिएको छ।`,
+    si: `※ මෙය පරීක්ෂණාත්මක අනුකරණයකි: ඇමරිකානු කම්කරු සංඛ්‍යාලේඛන කාර්යාංශයේ CPI-U (සියලුම නාගරික පාරිභෝගිකයන්, 1982-84=100) වාර්ෂික සාමාන්‍ය දර්ශකය භාවිතයෙන් මුදල් ${baseYear} මිල මට්ටමට සකස් කර, පසුව අද විනිමය අනුපාතය සහ ඔබ තෝරාගත් රටේ වත්මන් බදු නීති අනුව ගණනය කර ඇත. සැබෑ බදු ගොනු කිරීමේ පදනමක් නොවේ — ${baseYear} න් පසු නිවේදනය කළ ජැක්පොට් උද්ධමන වෙනස කුඩා බැවින් මෙම ශ්‍රේණිගත කිරීමෙන් ඉවත් කර ඇත.`,
+    tl: `※ Ito ay eksperimental na simulation: ang mga halaga ay isinaayos sa antas ng presyo noong ${baseYear} gamit ang taunang average na CPI-U ng US Bureau of Labor Statistics (lahat ng urban consumer, 1982-84=100), pagkatapos ay kinalkula gamit ang palitan ngayon at kasalukuyang batas buwis ng bansang pinili mo. Hindi ito basehan para sa aktwal na pag-file ng buwis — ang mga jackpot na inanunsyo pagkatapos ng ${baseYear} ay hindi isinama sa ranggong ito dahil napakaliit na ng pagkakaiba sa implasyon.`,
+    ur: `※ یہ ایک تجرباتی سیمولیشن ہے: رقوم کو امریکی بیورو آف لیبر سٹیٹسٹکس کے CPI-U (تمام شہری صارفین، 1982-84=100) سالانہ اوسط انڈیکس سے ${baseYear} کی قیمت کی سطح پر ایڈجسٹ کیا گیا، پھر آج کی زری شرح اور آپ کے منتخب کردہ ملک کے موجودہ ٹیکس قوانین سے شمار کیا گیا۔ یہ حقیقی ٹیکس فائلنگ کی بنیاد نہیں ہے — ${baseYear} کے بعد اعلان کردہ جیک پاٹس کو اس درجہ بندی سے خارج کر دیا گیا ہے کیونکہ افراط زر کا فرق بہت کم ہے۔`,
+    uz: `※ Bu tajriba uchun simulyatsiya: summalar AQSh Mehnat statistikasi byurosining CPI-U (barcha shahar iste'molchilari, 1982-84=100) yillik o'rtacha indeksi yordamida ${baseYear}-yil narx darajasiga moslashtirildi, so'ngra bugungi valyuta kursi va tanlangan davlatingizning amaldagi soliq qoidalari bilan hisoblandi. Haqiqiy soliq deklaratsiyasi uchun asos emas — ${baseYear}-yildan keyin e'lon qilingan jekpotlar inflyatsiya farqi juda kichik bo'lgani uchun ushbu reytingdan chiqarib tashlangan.`,
+  };
+}
+// ==================== /ChamTax 잭팟 인덱스 ====================
+
 const JH_RANK_TITLE_MORE = {
   ar: '🏆 ماذا لو رتبنا حسب المبلغ الفعلي المستلم، وليس المبلغ المعلن؟',
   bn: '🏆 ঘোষিত পরিমাণ নয়, প্রকৃত প্রাপ্ত পরিমাণ অনুযায়ী র‍্যাঙ্ক করলে কেমন হয়?',
@@ -6278,6 +6598,8 @@ function updateHomeCalc(usdOverride){
   // 없으면(다른 탭에 있으면) 조용히 스킵하고, odds-data.js가 아직 로드 전이어도 안전하게
   // 빈 목록을 그릴 뿐이라 언제 호출해도 안전함(setLanguage()도 이미 같은 방식으로 무조건 호출)
   renderJackpotTakeHomeRanking();
+  renderJackpotIndexRollover();
+  renderJackpotIndexCpiRanking();
   updateSliderFill(document.getElementById('homeAmountSlider'));
   const 억 = (usd * EXCHANGE_RATE) / 100000000;
   const r = calcTakeHome(억, country, stateCode);
@@ -6752,6 +7074,8 @@ function updateCalc(usdOverride){
   // stateCode를 무시함), updateHomeCalc()와 동일하게 상태 변경 시마다 무조건 다시 그려서 확률체감
   // 탭이 이미 열려 있어도 즉시 반영되게 함 — renderJackpotTakeHomeRanking()은 안전하게 스킵 가능
   renderJackpotTakeHomeRanking();
+  renderJackpotIndexRollover();
+  renderJackpotIndexCpiRanking();
   const 억 = (usd * EXCHANGE_RATE) / 100000000;
 
   document.getElementById('compare-krw-amt').textContent = formatWon(억);

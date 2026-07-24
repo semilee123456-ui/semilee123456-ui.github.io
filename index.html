@@ -1052,6 +1052,18 @@
           <p class="panel-desc" id="jh-rank-desc">발표 잭팟(연금) 순위가 아니라, 한국 거주자가 오늘 세율로 실제 받는 금액 기준 TOP 10이에요</p>
           <div id="jh-rank-list" class="jh-rank-list"></div>
 
+          <!-- 🏆 ChamTax 잭팟 인덱스(2026-07-24 신규) — 이월 스트릭 + 물가보정 실질가치 랭킹.
+               둘 다 script.js의 renderJackpotIndexRollover()/renderJackpotIndexCpiRanking()가
+               pickLang()으로 채움. HTML의 한국어 텍스트는 JS 실행 전/실패 시 폴백용 기본값 -->
+          <p class="panel-title-toggle" style="cursor:default; padding-right:0; margin-top:22px; padding-top:16px; border-top:1px dashed var(--border);" id="ji-rollover-title">🎢 역대 최장 이월(Rollover) 기록은?</p>
+          <p class="panel-desc" id="ji-rollover-desc">1등 당첨자가 안 나와 잭팟이 계속 불어난 회차만 모았어요 — 연속 회차 수 기준 TOP 10</p>
+          <div id="ji-rollover-list" class="jh-rank-list"></div>
+
+          <p class="panel-title-toggle" style="cursor:default; padding-right:0; margin-top:22px; padding-top:16px; border-top:1px dashed var(--border);" id="ji-cpi-title">📈 물가를 반영하면, 그때 그 잭팟은 지금 얼마?</p>
+          <p class="panel-desc" id="ji-cpi-desc">발표 당시 금액이 아니라, 미국 소비자물가지수(CPI-U)로 오늘 가치로 환산한 뒤 실수령액을 다시 계산했어요</p>
+          <div id="ji-cpi-list" class="jh-rank-list"></div>
+          <p class="jh-note" id="ji-cpi-methodology">※ 미국 노동통계국(BLS) CPI-U(전체 도시 소비자, 1982-84=100) 연평균 지수로 2024년 물가 기준까지 보정한 뒤, 오늘 환율과 선택하신 세금 기준의 현행 세율을 적용한 체험용 시뮬레이션이에요. 실제 세무 신고 기준이 아니며, 2024년 이후 발표된 잭팟은 물가 차이가 작아 이 랭킹에서 제외했어요.</p>
+
           <!-- 🎯 내 번호 vs 역대급 당첨번호 비교 위젯 — 이 섹션의 문구는 전부 script.js의
                updateMyNumbersUi()가 pickLang()으로 채움(신규 인터랙션 콘텐츠 관례를 따름).
                HTML의 한국어 텍스트는 JS 실행 전/실패 시 폴백용 기본값임 -->
