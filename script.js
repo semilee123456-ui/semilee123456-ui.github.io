@@ -931,7 +931,7 @@ function renderUsStateCompareTable(amountEok){
     .sort((a, b) => b.final - a.final);
   container.innerHTML = rows.map(row => {
     const ratePct = (row.rate * 100).toFixed(row.rate * 100 % 1 === 0 ? 0 : 2);
-    return `<div class="us-state-row${row.code === currentState ? ' is-current' : ''}"><span class="us-state-row-name">${row.label} <span class="us-state-row-rate">(${ratePct}%)</span></span><span class="us-state-row-amt">${formatWon(row.final)}</span></div>`;
+    return `<div class="us-state-row${row.code === currentState ? ' is-current' : ''}"><span class="us-state-row-name">${row.label} <span class="us-state-row-rate">(${ratePct}%)</span></span><span class="us-state-row-amt"><bdi>${formatWon(row.final)}</bdi></span></div>`;
   }).join('');
 }
 
@@ -3216,14 +3216,14 @@ function renderAmountBreakdownHtml(cashUsd, stateCode){
   const toAmtItem = (group, isPrimary) => {
     const wrapCls = isPrimary ? 'jh-amt-item jh-primary-item' : 'jh-amt-item jh-amt-chip';
     if (group.items.length === 1) {
-      return `<span class="${wrapCls}"><span class="jh-amt-label">${group.items[0].label}</span><span class="jh-amt">${formatWon(group.items[0].final)}</span></span>`;
+      return `<span class="${wrapCls}"><span class="jh-amt-label">${group.items[0].label}</span><span class="jh-amt"><bdi>${formatWon(group.items[0].final)}</bdi></span></span>`;
     }
     const groupLabel = pickLang(`${group.items.length}개국 동일`, `Same for ${group.items.length} countries`, `${group.items.length}个国家相同`, `Giống nhau ở ${group.items.length} nước`, `เท่ากันใน ${group.items.length} ประเทศ`, `Одинаково для ${group.items.length} стран`, buildSameCountMore(group.items.length));
     const listId = `jh-grp-${jhGroupCounter++}`;
     const countryBadges = group.items.map(i => `<span class="flag-badge" title="${i.label}">${i.flagCode}</span>`).join('');
     return `<span class="${wrapCls}">
       <button type="button" class="jh-amt-label jh-amt-group-toggle" onclick="toggleJhGroupList('${listId}')">${groupLabel} ▾</button>
-      <span class="jh-amt">${formatWon(group.items[0].final)}</span>
+      <span class="jh-amt"><bdi>${formatWon(group.items[0].final)}</bdi></span>
       <span class="jh-amt-group-list" id="${listId}" style="display:none;">${countryBadges}</span>
     </span>`;
   };
@@ -3402,11 +3402,15 @@ function renderJackpotTakeHomeRanking(){
     const gameTagClass = entry.game === 'powerball' ? 'pb' : 'mm';
     const gameTagEmoji = entry.game === 'powerball' ? '🔴' : '🟡';
     const rankBadge = medals[i] || `${i + 1}`;
+    // RTL 언어(아랍어·우르두어)에서 방향 지정 없는 금액 문자열이 브라우저 bidi 알고리즘에
+    // 의해 어순이 뒤집혀 보이는 문제(위 아키텍처 패턴 섹션의 nowrap span 사례와 같은 종류의
+    // bidi 버그) — <bdi>로 감싸서 항상 하나의 방향 단위로 렌더링되게 함(2026-07-24 발견·수정)
+    const announcedAmt = `<bdi>${formatWon(announcedKrw / 100000000)}</bdi>`;
     const announcedLine = pickLang(
-      `발표액 ${formatWon(announcedKrw / 100000000)}`, `Announced ${formatWon(announcedKrw / 100000000)}`,
-      `发布金额 ${formatWon(announcedKrw / 100000000)}`, `Công bố ${formatWon(announcedKrw / 100000000)}`,
-      `ประกาศ ${formatWon(announcedKrw / 100000000)}`, `Объявлено ${formatWon(announcedKrw / 100000000)}`,
-      buildAnnouncedLineMore(formatWon(announcedKrw / 100000000))
+      `발표액 ${announcedAmt}`, `Announced ${announcedAmt}`,
+      `发布金额 ${announcedAmt}`, `Công bố ${announcedAmt}`,
+      `ประกาศ ${announcedAmt}`, `Объявлено ${announcedAmt}`,
+      buildAnnouncedLineMore(announcedAmt)
     );
     return `<div class="jh-rank-row">
       <span class="jh-rank-medal">${rankBadge}</span>
@@ -3415,7 +3419,7 @@ function renderJackpotTakeHomeRanking(){
           <span class="jh-rank-date">${entry.date}</span>
           <span class="jh-game-tag ${gameTagClass}">${gameTagEmoji} ${gameLabel}</span>
         </div>
-        <div class="jh-rank-amt">${formatWon(takeHome)}</div>
+        <div class="jh-rank-amt"><bdi>${formatWon(takeHome)}</bdi></div>
         <div class="jh-rank-sub">${announcedLine}</div>
       </div>
     </div>`;
@@ -3520,11 +3524,11 @@ function renderJackpotIndexRollover(){
       <span class="jh-rank-medal">${rankBadge}</span>
       <div class="jh-rank-body">
         <div class="jh-rank-top">
-          <span class="jh-rank-date">${s.startDate} ~ ${s.endDate}</span>
+          <span class="jh-rank-date"><bdi>${s.startDate} ~ ${s.endDate}</bdi></span>
           <span class="jh-game-tag ${gameTagClass}">${gameTagEmoji} ${gameLabel}</span>
         </div>
-        <div class="jh-rank-amt">${formatWon(peakKrw / 100000000)}</div>
-        <div class="jh-rank-sub">${streakLine}</div>
+        <div class="jh-rank-amt"><bdi>${formatWon(peakKrw / 100000000)}</bdi></div>
+        <div class="jh-rank-sub"><bdi>${streakLine}</bdi></div>
       </div>
     </div>`;
   }).join('');
@@ -3655,7 +3659,7 @@ function renderJackpotIndexCpiRanking(){
     const gameTagClass = entry.game === 'powerball' ? 'pb' : 'mm';
     const gameTagEmoji = entry.game === 'powerball' ? '🔴' : '🟡';
     const rankBadge = medals[i] || `${i + 1}`;
-    const originalAmt = formatWon((originalCashUsd * EXCHANGE_RATE) / 100000000);
+    const originalAmt = `<bdi>${formatWon((originalCashUsd * EXCHANGE_RATE) / 100000000)}</bdi>`;
     const originalLine = pickLang(
       `${year}년 발표액 ${originalAmt}`, `Announced in ${year}: ${originalAmt}`,
       `${year}年发布金额 ${originalAmt}`, `Công bố năm ${year}: ${originalAmt}`,
@@ -3666,10 +3670,10 @@ function renderJackpotIndexCpiRanking(){
       <span class="jh-rank-medal">${rankBadge}</span>
       <div class="jh-rank-body">
         <div class="jh-rank-top">
-          <span class="jh-rank-date">${entry.date}</span>
+          <span class="jh-rank-date"><bdi>${entry.date}</bdi></span>
           <span class="jh-game-tag ${gameTagClass}">${gameTagEmoji} ${gameLabel}</span>
         </div>
-        <div class="jh-rank-amt">${formatWon(takeHome)}</div>
+        <div class="jh-rank-amt"><bdi>${formatWon(takeHome)}</bdi></div>
         <div class="jh-rank-sub">${originalLine}</div>
       </div>
     </div>`;
@@ -3885,7 +3889,7 @@ function renderDateLookupResult(dateStr){
   // 국가별 실수령액까지 바로 보여줘서, 번호 조회와 금액 조회를 각각 다른 곳에서 찾아볼 필요가
   // 없게 함 — 두 섹션이 따로 있던 걸 하나로 합쳐달라는 요청 반영(2026-07-22)
   const amountHtml = draw.amountUsd
-    ? `<p class="dl-amt">${pickLang('발표 잭팟', 'Announced jackpot', '发布头奖', 'Jackpot công bố', 'แจ็คพอตที่ประกาศ', 'Объявленный джекпот', DL_JACKPOT_LABEL_MORE)}: ${formatWon(draw.amountUsd * EXCHANGE_RATE / 100000000)}</p>${renderAmountBreakdownHtml(draw.cashUsd || draw.amountUsd * CASH_VALUE_RATIO, draw.stateCode)}`
+    ? `<p class="dl-amt">${pickLang('발표 잭팟', 'Announced jackpot', '发布头奖', 'Jackpot công bố', 'แจ็คพอตที่ประกาศ', 'Объявленный джекпот', DL_JACKPOT_LABEL_MORE)}: <bdi>${formatWon(draw.amountUsd * EXCHANGE_RATE / 100000000)}</bdi></p>${renderAmountBreakdownHtml(draw.cashUsd || draw.amountUsd * CASH_VALUE_RATIO, draw.stateCode)}`
     : `<p class="dl-no-amt">${pickLang('이 회차는 잭팟 금액 데이터가 없어요(당첨번호만 있어요)', 'No jackpot amount for this draw (numbers only)', '这一期没有头奖金额数据（仅有开奖号码）', 'Kỳ quay này không có dữ liệu jackpot (chỉ có số trúng)', 'งวดนี้ไม่มีข้อมูลจำนวนแจ็คพอต (มีแค่เลขที่ออก)', 'Для этого розыгрыша нет суммы джекпота (только числа)', DL_NO_AMT_MORE)}</p>`;
 
   resultEl.innerHTML = `<div class="jackpot-history-row">
@@ -4577,8 +4581,8 @@ function renderAnnuitySchedule(announcedKrw, targetId){
     const r = calcTakeHome(row.grossKrw / 100000000, 'kr');
     return `<div class="annuity-schedule-row">
       <span>${row.year}</span>
-      <span>${formatWon(row.grossKrw / 100000000)}</span>
-      <span class="annuity-schedule-net">${formatWon(r.final)}</span>
+      <span><bdi>${formatWon(row.grossKrw / 100000000)}</bdi></span>
+      <span class="annuity-schedule-net"><bdi>${formatWon(r.final)}</bdi></span>
     </div>`;
   }).join('');
 }

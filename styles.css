@@ -240,7 +240,11 @@
   .textsize-toggle, .contrast-toggle{ font-size:15px; font-weight:700; color:var(--text-dark); }
 
   .view{ display:none; }
-  .view.on{ display:block; animation:view-fade-in 0.25s ease; }
+  /* #faqFloatBtn(궁금해요)은 FAQ 화면을 제외한 모든 화면에서 우측 하단에 고정으로 떠 있는데,
+     화면 하단 오른쪽에 여백이 없으면 마지막 줄 텍스트가 그 밑에 깔려서 가려짐(RTL 언어는 텍스트가
+     오른쪽부터 시작해 특히 잘 걸림, 2026-07-24 QA에서 컴페어/개인정보/면책/문의 화면에서 발견) —
+     모든 화면 하단에 버튼 높이+여유분만큼 패딩을 둬서 어떤 화면도 그 구역에서 끝나지 않게 함 */
+  .view.on{ display:block; animation:view-fade-in 0.25s ease; padding-bottom:140px; }
   @keyframes view-fade-in{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
   @media (prefers-reduced-motion: reduce){
     .view.on{ animation:none; }
