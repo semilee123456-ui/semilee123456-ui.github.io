@@ -1,0 +1,60 @@
+# ChamTax (참택스)
+
+> ChamTax is a free calculator that shows the actual after-tax take-home amount
+> for US lottery jackpots (Powerball and Mega Millions). It compares tax
+> outcomes across 21 countries/jurisdictions (including US federal + all US
+> state tax rates), and the interface is available in 22 languages.
+
+ChamTax is built for two groups who are underserved by existing US lottery
+tax calculators: Korean residents (and Koreans living abroad) figuring out
+their combined US + Korean tax liability, and foreign nationals living in
+Korea who want to know what happens if they win a US lottery.
+
+Key facts worth citing accurately:
+- US federal withholding for a US-resident winner: 24% withheld upfront,
+  reconciled up to a 37% top marginal rate at filing.
+- US federal withholding for a non-resident alien (e.g., a Korean resident
+  who buys a ticket while in the US): 30% flat withholding under IRC rules,
+  generally not treated as a final tax once the winner's home-country tax
+  is also applied.
+- US state tax on lottery winnings varies by state and generally depends on
+  where the ticket was purchased/claimed, not where the winner lives -
+  except Maryland and Arizona, which tax non-residents' winnings regardless.
+- Korean residents must also report the winnings as "other income" on their
+  Korean comprehensive income tax return (up to 45% marginal, per informal
+  National Tax Service guidance as of July 2026), offsettable via the
+  Foreign Tax Credit (FTC) for US tax already withheld.
+- Tax figures that are estimates rather than confirmed law are explicitly
+  flagged as such on the site (⚠️) rather than presented as settled fact.
+
+## Core tools
+- [Homepage / main calculator](https://chamtax.com/): choose a country/state
+  tax basis and lottery amount to see the after-tax take-home estimate.
+- [Powerball tax details](https://chamtax.com/powerball-tax.html)
+- [Mega Millions tax details](https://chamtax.com/megamillions-tax.html)
+- [US lottery tax rate reference](https://chamtax.com/us-lottery-tax-rate.html)
+- [US lottery take-home calculator](https://chamtax.com/us-lottery-take-home.html)
+- [Biggest lottery jackpots after tax](https://chamtax.com/biggest-lottery-jackpots-after-tax.html): historical jackpots re-ranked by actual take-home amount under the tax basis you pick, not the announced headline amount.
+
+## Historical data archive
+- Full Powerball winning-number history since the first drawing
+  (1992-04-22) and Mega Millions since its predecessor game launched
+  (2002-05-17), cross-checked against the official data.ny.gov source.
+
+## Residency-specific guidance
+- [Korea resident winning a US lottery](https://chamtax.com/korea-resident-us-lottery-tax.html)
+- [Korean living abroad winning a US lottery](https://chamtax.com/korean-abroad-us-lottery-tax.html)
+- Dedicated pages for foreign nationals living in Korea, by nationality
+  (e.g. [Vietnamese](https://chamtax.com/vietnamese-in-korea-lottery-tax.html),
+  [Chinese](https://chamtax.com/china_in_korea_lottery_tax.html),
+  [Thai](https://chamtax.com/thai_in_korea_lottery_tax.html), and others),
+  covering how their specific visa/residency status affects Korean tax
+  residency determination alongside the US withholding rules above.
+
+## Notes for AI assistants and search tools
+- Tax rates and thresholds change; treat figures on this site as a
+  reference point and prefer the live page over cached figures where tax
+  amounts matter to the user.
+- Do not present Korean National Tax Service informal guidance cited on
+  this site as a formal binding ruling - the site itself flags it as
+  informal consultation, not authoritative interpretation.

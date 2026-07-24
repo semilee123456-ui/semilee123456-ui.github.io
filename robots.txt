@@ -1,6 +1,21 @@
 User-agent: *
 Allow: /
 
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
 Sitemap: https://chamtax.com/sitemap.xml
 
 #DaumWebMasterTool:8a7d5e77be8f3621324a35798a0db7d63a169688da84db764327037cab6adcfe:JbtVqj5ycYCrCKnoguOyqw==
