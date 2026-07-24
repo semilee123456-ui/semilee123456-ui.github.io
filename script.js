@@ -3388,6 +3388,11 @@ function renderJackpotTakeHomeRanking(){
     `Ранжировано не по объявленному (аннуитетному) джекпоту — это ТОП-10 по сумме, которую реально получают на руки по сегодняшним налоговым ставкам · ${basisSuffix}`,
     buildRankDescMore(basisSuffix)
   );
+  const changeBasisLinkEl = document.getElementById('jh-rank-change-basis-link');
+  if (changeBasisLinkEl) changeBasisLinkEl.textContent = pickLang(
+    '🔧 세금 기준 바꾸기 →', '🔧 Change tax basis →', '🔧 更改税收基准 →',
+    '🔧 Đổi cơ sở thuế →', '🔧 เปลี่ยนฐานภาษี →', '🔧 Изменить налоговую базу →'
+  );
 
   const gameNameKo = { powerball: '파워볼', megamillions: '메가밀리언즈' };
   const gameNameEn = { powerball: 'Powerball', megamillions: 'Mega Millions' };
@@ -3644,6 +3649,11 @@ function renderJackpotIndexCpiRanking(){
     `※ นี่คือการจำลองเพื่อการทดลอง: ปรับจำนวนเงินให้เป็นระดับราคาปี ${CPI_BASE_YEAR} ด้วยดัชนี CPI-U เฉลี่ยรายปีของสำนักสถิติแรงงานสหรัฐฯ (ผู้บริโภคในเมืองทั้งหมด, 1982-84=100) จากนั้นคำนวณด้วยอัตราแลกเปลี่ยนวันนี้และอัตราภาษีปัจจุบันตามประเทศที่คุณเลือก ไม่ใช่ฐานสำหรับการยื่นภาษีจริง — แจ็คพอตที่ประกาศหลังปี ${CPI_BASE_YEAR} ถูกตัดออกจากอันดับนี้เพราะส่วนต่างเงินเฟ้อน้อยเกินไป`,
     `※ Это экспериментальная симуляция: суммы пересчитаны в цены ${CPI_BASE_YEAR} года по среднегодовому индексу CPI-U Бюро статистики труда США (все городские потребители, 1982-84=100), затем переведены по сегодняшнему курсу и текущим налоговым ставкам выбранной вами страны. Не является основанием для налоговой декларации — джекпоты, объявленные после ${CPI_BASE_YEAR} года, исключены из этого рейтинга, так как разница в инфляции слишком мала.`,
     buildCpiMethodologyMore(CPI_BASE_YEAR)
+  );
+  const changeBasisLinkEl2 = document.getElementById('ji-cpi-change-basis-link');
+  if (changeBasisLinkEl2) changeBasisLinkEl2.textContent = pickLang(
+    '🔧 세금 기준 바꾸기 →', '🔧 Change tax basis →', '🔧 更改税收基准 →',
+    '🔧 Đổi cơ sở thuế →', '🔧 เปลี่ยนฐานภาษี →', '🔧 Изменить налоговую базу →'
   );
 
   const gameNameKo = { powerball: '파워볼', megamillions: '메가밀리언즈' };
@@ -4745,6 +4755,15 @@ function setupStickyResultBadge(){
 }
 function scrollToMainResult(){
   const target = document.getElementById('home-final-amt');
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// 확률체감 탭의 실수령액 랭킹/물가보정 랭킹 위젯은 sharedCountry(세금 기준)를 따라 문구가
+// 바뀌는데, 정작 이 탭 안에는 기준을 바꿀 방법이 없어서 홈 화면까지 되돌아가야 했음(2026-07-24
+// 사용자 지적으로 발견) — 홈 화면의 국가 토글로 바로 이동시켜주는 진입점
+function goToHomeCountryToggle(){
+  go('home');
+  const target = document.getElementById('homeCountryToggle');
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 

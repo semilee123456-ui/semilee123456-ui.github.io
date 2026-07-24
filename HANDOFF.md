@@ -712,3 +712,49 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
     코드(CSS letter-spacing 등)에는 문제 없음을 확인했지만, 실제 폰트가 있는 기기에서 최종
     확인은 못 함. **다음에 실기기/정상 폰트 환경에서 이 두 언어만 한 번 더 확인할 것.**
   - 수정 4건 전부 반영 후 회귀 테스트 12개 재실행해서 이슈 0건 재확인, 로컬 커밋 완료.
+
+### 2026-07-24 (아홉 번째 세션)
+- **세션 시작 시 `chamtax_qa_fixes_20260724.zip`(8번째 세션 산출물) 반영**: HANDOFF.md/index.html/
+  script.js/spanish_in_korea_lottery_tax.html/styles.css 5개 파일을 작업 트리에 동기화. 이후 이
+  세션의 변경사항은 전부 그 위에 얹은 것.
+- **"참택스만 할 수 있는 차별화 전략" 브레인스토밍 요청**(`differentiation_request.md`)에 대한
+  응답, Daum 웹마스터도구 PIN 인증(`robots.txt`), GEO(AI 검색엔진 노출)용 `llms.txt` 신규 생성 +
+  `robots.txt`에 GPTBot/ChatGPT-User/PerplexityBot/ClaudeBot/Google-Extended 허용 추가 —
+  전부 사용자가 GitHub 웹 UI로 직접 업로드 완료함(이 세션은 `git push` 403 확인, 아래 항목 참고).
+  FAQPage 스키마 중복 추가는 이미 index.html에 동등한 내용이 있어서 보류 요청함(사용자에게 이유
+  설명 완료).
+- **"40-60대가 이 사이트를 보면 뭐가 불편할까" 스크린샷 기반 접근성 감사 + "국가별 페르소나
+  콘텐츠가 서로 안 섞여있는지" 전수 감사** 요청 처리:
+  - **국가/페르소나 일관성 감사(서브에이전트)**: `*_in_korea_lottery_tax.html` 25개 + 
+    `china-resident-us-lottery-tax.html`/`korea-resident-us-lottery-tax.html`/
+    `korean-abroad-us-lottery-tax.html` + `COUNTRY_TAX_PROFILES`/`calcTakeHome()`/`TAX_MODEL`/
+    `LANGUAGE_CONTENT_PAGES` 전체를 "한국 거주 페르소나 콘텐츠에 그 나라 자체 세법이 잘못
+    섞여있거나, 반대로 그 나라 거주자용 페이지에 한국 45%/FTC 프레임이 새어 들어간 곳이
+    있는지" 기준으로 정독 감사 → **이슈 0건**(전부 올바른 페르소나 프레임 유지, 국가명 오기
+    없음, 세율 복붙 흔적 없음). 과거 세션들이 이미 상당히 꼼꼼하게 관리해온 부분으로 확인됨.
+  - **스크린샷 감사 중 허위 경보 2건 확인 후 기각**(둘 다 실제 버그 아님, 코드로 직접 검증):
+    1. 큰 글씨 모드 스크린샷에서 하단 고정 배지(`#sticky-result-badge`, `position:fixed`)가
+       다른 카드를 가리는 것처럼 보였음 — Playwright `fullPage` 스크린샷이 fixed 요소를
+       페이지 전체 합성 이미지의 뷰포트 기준 위치에 한 번만 그려서 생기는 촬영 방식 문제였고,
+       실제 사용자 스크롤 환경에서는 항상 화면 하단에만 고정됨.
+    2. 확률체감 탭에서 스크린샷에 큰 빈 공백(opacity:0)이 나왔음 — `setupRevealAnimation()`의
+       스크롤 등장 애니메이션(IntersectionObserver)을, 진짜 스크롤 이벤트 없이 `details.open`을
+       스크립트로 강제 조작한 뒤 큰 폭(600px)으로 스크롤한 테스트 방식이 제대로 못 트리거해서
+       생긴 촬영 아티팩트였음. `<details>`를 기본 상태(닫힘)로 두고 100~150px 단위 자연스러운
+       스크롤로 재현하니 5개 아코디언 전부 정상적으로 `is-in` 클래스가 붙고 opacity:1이 됨 —
+       실사용 환경에서는 문제없음. **교훈**: `fullPage:true` 스크린샷 + 스크롤 기반 reveal
+       애니메이션 조합은 오탐 위험이 크므로, 의심스러우면 항상 소폭 실스크롤로 재검증할 것
+       (HANDOFF에 이미 기록된 "elementFromPoint()로 재검증" 교훈과 같은 종류의 함정).
+  - **실제 버그 1건 발견·수정**: 확률체감 탭의 "실수령액 랭킹"(`jh-rank-list`)과 "물가보정
+    랭킹"(`ji-cpi-list`) 위젯은 `sharedCountry`(세금 기준)에 따라 문구·계산이 바뀌는데
+    (`calcTakeHome(...).basisSuffix`로 이미 동적으로 반영되고 있었음 — 이건 버그 아니었음),
+    정작 확률체감 탭 안에는 기준을 바꿀 방법이 전혀 없어서 홈 화면으로 돌아가야만 했음(사용자가
+    직접 스크린샷 보고 지적). 홈 화면으로 이동 + `#homeCountryToggle`로 스크롤하는
+    `goToHomeCountryToggle()` 함수를 추가하고, 두 위젯 설명 바로 아래에 "🔧 세금 기준 바꾸기 →"
+    버튼을 각각 추가(`renderJackpotTakeHomeRanking()`/`renderJackpotIndexCpiRanking()`에서
+    `pickLang()`으로 6개 핵심 언어 텍스트 채움, 나머지 17개 언어는 기존 관례대로 영어 폴백 —
+    이월 스트릭(`ji-rollover-list`)은 세금 기준과 무관한 위젯이라 버튼 추가 안 함). Playwright로
+    클릭→이동→스크롤→기준 변경 후 문구 갱신까지 전체 플로우 재검증 완료, 회귀 테스트 12개
+    재실행해서 이슈 0건 확인.
+  - **다음 세션 참고**: 이 세션도 `git push` 403 확인(구조적 제약, 문서 최상단 항목과 일치).
+    변경 파일은 사용자에게 직접 전달, 웹 UI 업로드는 사용자 몫으로 남김.
