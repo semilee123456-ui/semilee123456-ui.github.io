@@ -4860,6 +4860,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const newSearch2 = params.toString();
     history.replaceState(null, '', location.pathname + (newSearch2 ? '?' + newSearch2 : '') + location.hash);
   }
+
+  // shareResult()가 공유 시 넣어주는 "?amount=250" 같은 파라미터를 되돌려 채워줌 — 공유 링크를
+  // 받은 사람이 빈 계산기가 아니라 보낸 사람과 같은 결과를 바로 보게 하기 위함. 절대 그대로
+  // 신뢰하지 말고(음수·0·NaN·터무니없는 값 가능) 슬라이더의 실제 유효 범위(data-usd-min~
+  // data-usd-max, 로그 스케일)로 clamp해서, 값이 이상해도 UI가 깨지지 않고 조용히 범위 안으로
+  // 맞춰지게 함. 금액 입력창+슬라이더를 같이 채우는 방식은 fillHomeAmountFromJackpot()과 동일한
+  // 패턴을 그대로 씀.
+  const urlAmount = params.get('amount');
+  const parsedAmount = Number(urlAmount);
+  if (urlAmount !== null && Number.isFinite(parsedAmount) && parsedAmount > 0) {
+    const homeAmountSlider = document.getElementById('homeAmountSlider');
+    const sliderUsdMin = Number(homeAmountSlider.dataset.usdMin) || 10;
+    const sliderUsdMax = Number(homeAmountSlider.dataset.usdMax) || 2000;
+    const clampedAmountMillions = Math.min(sliderUsdMax, Math.max(sliderUsdMin, parsedAmount));
+    isAmountManuallyEdited = true;
+    document.getElementById('homeAmountInput').value = clampedAmountMillions;
+    setSliderMillions(homeAmountSlider, clampedAmountMillions);
+    updateHomeCalc(clampedAmountMillions * 1000000);
+    params.delete('amount');
+    const newSearch3 = params.toString();
+    history.replaceState(null, '', location.pathname + (newSearch3 ? '?' + newSearch3 : '') + location.hash);
+  }
+
+  // "?state=CA"는 세금 기준이 미국일 때만 의미가 있음 — 이 요청(urlCountry) 또는 이미 위에서
+  // 반영된 sharedCountry 둘 중 하나라도 'us'가 아니면 무시(미국 외 국가에는 주 선택 UI 자체가
+  // 없음). STATE_TAX_RATES에 실제로 있는 코드(50개 주+DC+AVG)로만 제한하는 화이트리스트 방식은
+  // 위 SUPPORTED_TAX_COUNTRIES와 동일한 패턴 — 오타·존재하지 않는 코드는 조용히 무시되고
+  // 기존 선택(기본값 AVG)이 그대로 유지됨. 실제 select 값 반영은 homeStateSelect의 기존
+  // onchange 핸들러와 동일하게 updateHomeCalc()를 그대로 호출해서 처리를 중복시키지 않음.
+  const urlState = params.get('state');
+  const effectiveCountryForState = SUPPORTED_TAX_COUNTRIES.includes(urlCountry) ? urlCountry : sharedCountry;
+  if (effectiveCountryForState === 'us' && urlState && Object.keys(STATE_TAX_RATES).includes(urlState)) {
+    document.getElementById('homeStateSelect').value = urlState;
+    updateHomeCalc();
+    params.delete('state');
+    const newSearch4 = params.toString();
+    history.replaceState(null, '', location.pathname + (newSearch4 ? '?' + newSearch4 : '') + location.hash);
+  }
 });
 setInterval(() => { fetchLiveExchangeRate(); }, 60 * 60 * 1000); // 1시간마다 환율 자동 재조회 — 유저가 직접 수정한 경우는 fetchLiveExchangeRate 내부에서 자동으로 건너뜀
 setInterval(updateDrawCountdown, 60 * 1000); // 추첨 당일엔 "오늘 N시간 후"처럼 시간 단위로 보여주므로, 방문 중에도 값이 그대로 멈춰있지 않도록 1분마다 갱신
@@ -5804,7 +5842,19 @@ async function shareResult(){
       uz: `Agar men AQSh lotereyasida (${amountText} million USD) yutsam, ${country} sifatida qo'lga tegadigan summam taxminan ${finalAmt} bo'lardi. Soliqdan keyin haqiqatda qancha qolishini ChamTax'da hisoblab ko'ring! (Bu ma'lumot uchun simulyatsiya)`,
     }
   );
-  const shareUrl = location.href;
+  // 공유 링크를 받은 사람이 빈 계산기가 아니라 나와 같은 결과를 바로 보게 하려면, 현재 계산기
+  // 상태(금액/국가/주)를 URL 쿼리 파라미터로 실어 보내야 함 — DOMContentLoaded의 대칭 처리부가
+  // 이 파라미터들을 읽어서 되돌려 채워준다(아래 "?amount=" "?state=" 처리 블록 참고).
+  // 이 함수는 맨 위에서 !isAmountManuallyEdited면 이미 shareGenericPromo()로 빠지므로, 여기
+  // 아래로 내려온 시점엔 amountText가 사용자가 실제로 입력/조작한 값임이 보장됨.
+  const shareUrlObj = new URL(location.href);
+  shareUrlObj.searchParams.set('amount', amountText);
+  shareUrlObj.searchParams.set('country', homeCountryVal);
+  if (homeCountryVal === 'us') {
+    const shareStateVal = document.getElementById('homeStateSelect').value;
+    if (shareStateVal) shareUrlObj.searchParams.set('state', shareStateVal);
+  }
+  const shareUrl = shareUrlObj.toString();
   const shareTitle = pickLang('미국 복권 세금 계산기 - 참택스', 'US Lottery Tax Calculator - ChamTax', '美国彩票税金计算器 - ChamTax', 'Máy tính thuế xổ số Mỹ - ChamTax', 'เครื่องคำนวณภาษีลอตเตอรีสหรัฐฯ - ChamTax', 'Калькулятор налога на американскую лотерею - ChamTax', { ar:'حاسبة ضريبة اليانصيب الأمريكي - ChamTax', bn:'মার্কিন লটারি ট্যাক্স ক্যালকুলেটর - ChamTax', fr:"Calculateur d'impôt sur la loterie américaine - ChamTax", hi:'अमेरिकी लॉटरी टैक्स कैलकुलेटर - ChamTax', id:'Kalkulator Pajak Lotre AS - ChamTax', ja:'アメリカ宝くじ税金計算機 - ChamTax', kk:'АҚШ лотереясының салық калькуляторы - ChamTax', km:'ម៉ាស៊ីនគណនាពន្ធឆ្នោតអាមេរិក - ChamTax', ky:'АКШ лотереясынын салык калькулятору - ChamTax', lo:'ເຄື່ອງຄິດໄລ່ພາສີລອດເຕີຣີອາເມລິກາ - ChamTax', mn:'АНУ-ын лотерейн татварын тооцоолуур - ChamTax', my:'အမေရိကန်ထီအခွန် တွက်ချက်စက် - ChamTax', ne:'अमेरिकी लटरी कर क्यालकुलेटर - ChamTax', si:'ඇමරිකානු ලොතරැයි බදු ගණකය - ChamTax', tl:'US Lottery Tax Calculator - ChamTax', ur:'امریکی لاٹری ٹیکس کیلکولیٹر - ChamTax', uz:"AQSh lotereyasi soliq kalkulyatori - ChamTax" });
 
   const cardLabel = pickLang('💰 예상 실수령액 (일시불 기준)', '💰 Estimated take-home (lump sum)', '💰 预计实得金额（一次性）', '💰 Số tiền thực nhận ước tính (trả một lần)', '💰 เงินที่คาดว่าจะได้รับจริง (จ่ายครั้งเดียว)', '💰 Ожидаемая сумма на руки (единовременно)', { ar:'💰 صافي الدخل المتوقع (دفعة واحدة)', bn:'💰 আনুমানিক প্রকৃত আয় (একবারে)', fr:'💰 Revenu net estimé (paiement unique)', hi:'💰 अनुमानित हाथ में आने वाली राशि (एकमुश्त)', id:'💰 Perkiraan take-home (sekaligus)', ja:'💰 予想手取り額（一時金）', kk:'💰 Болжамды қолға тиетін сома (бір жолғы төлем)', km:'💰 ចំណូលសុទ្ធប៉ាន់ស្មាន (ទូទាត់តែម្តង)', ky:'💰 Болжолдуу кол алдырма акча (бир жолку төлөм)', lo:'💰 ເງິນທີ່ຄາດວ່າຈະໄດ້ຮັບຈິງ (ຈ່າຍເທື່ອດຽວ)', mn:'💰 Тооцоолсон гарт орох дүн (нэг удаагийн төлбөр)', my:'💰 ခန့်မှန်းလက်ခံရရှိမှု (တစ်ကြိမ်တည်း)', ne:'💰 अनुमानित हातमा पर्ने रकम (एकमुष्ट)', si:'💰 ඇස්තමේන්තුගත අත් ලාභය (එකවර ගෙවීම)', tl:'💰 Tinatayang take-home (lump sum)', ur:'💰 متوقع ہاتھ میں آنے والی رقم (یکمشت)', uz:"💰 Taxminiy qo'lga tegadigan summa (bir martalik to'lov)" });

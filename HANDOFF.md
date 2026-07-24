@@ -318,13 +318,16 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   삭제/게시판 전환/이메일만 남기기를 각각 검토했으나, 개인정보처리방침의 "개인정보 보호책임자
   연락처" 조항이 법적으로 연락 수단을 요구하는 점 등을 확인한 뒤 결국 지금 상태(Formspree 폼)
   유지로 결론남. 다시 꺼내지 말 것 — 이미 논의 끝난 사안임.
-- **`chamtax.com` 도메인 → Google/Naver/Daum/Bing 검색엔진 등록 (2026-07-23 시작)**: Google Search
-  Console 도메인 속성 추가 + sitemap 제출 완료(42페이지 "성공"). `sitemap.xml`/랜딩페이지
-  43개의 `canonical`/`og:url`/JSON-LD `item`도 전부 `chamtax.com`으로 치환 완료(같은 세션에서
-  처리). 네이버 서치어드바이저는 HTML 메타태그를 `index.html` `<head>`에 추가함(2026-07-23).
-  **2026-07-24 추가**: 다음(Daum) 웹마스터도구 소유확인용 PIN 인증 태그를 `robots.txt` 하단에
-  추가함(`#DaumWebMasterTool:...`). **남은 것**: 네이버·다음 소유확인이 실제로 통과됐는지 확인,
-  Bing Webmaster Tools 등록 여부 확인 — 다음 세션에서 진행 상황 물어볼 것.
+- ~~**`chamtax.com` 도메인 → Google/Naver/Daum/Bing 검색엔진 등록**~~ — **완료(2026-07-24,
+  사용자 확인)**: Google Search Console(도메인 속성 + sitemap 제출), 네이버 서치어드바이저,
+  Bing Webmaster Tools, 다음(Daum) 웹마스터도구 **4곳 전부 사용자가 직접 소유확인·등록
+  완료함**(대시보드 작업이라 Claude는 코드 쪽 준비만 했음 — Google Search Console 도메인
+  속성/sitemap 제출, `index.html`의 네이버 인증 메타태그, `robots.txt`의 다음 PIN 인증 태그,
+  `sitemap.xml`/랜딩페이지 43개 `canonical`/`og:url`/JSON-LD `item`의 `chamtax.com` 치환은
+  전부 2026-07-23에 이미 반영돼있었음). **더 이상 확인·재점검 불필요, 이 항목 마무리.**
+- ~~**구글 애드센스에 `chamtax.com` 도메인 추가 여부 미확인**~~ — **완료(2026-07-24, 사용자
+  확인)**: 애드센스 대시보드에 새 도메인을 사용자가 직접 추가함(대시보드 작업, Claude 권한
+  밖). 이 항목도 마무리.
 - **🏆 ChamTax 잭팟 인덱스 (2026-07-24 신규, MVP 단계)**: 이월(Rollover) 스트릭 TOP 10 + 물가보정
   (CPI-U) 실질가치 랭킹, 확률체감 탭의 실수령액 랭킹 위젯 바로 아래에 있음. 자세한 기획 배경/
   코드 위치는 아래 "작업 이력"의 해당 세션 항목 참고. **남은 것(의도적으로 미룬 것, 다음 반응
@@ -1030,3 +1033,56 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
     같이 갱신. `biggest_lottery_jackpots_after_tax_zh.html`(중국어판)도 hreflang으로
     연결된 3번째 자매 페이지라는 걸 확인하고 같이 수정(중국 거주자 수치는 이미 정확해서
     안 건드림). 회귀 테스트 12개 재실행 이슈 0건.
+
+### 2026-07-24 (열 번째 세션, `claude/new-session-qlkwo3`)
+- **세션 시작 시 아홉 번째 세션 산출물(`chamtax_jackpot_drift_fix_20260724_1.zip`) 반영**:
+  잭팟 랭킹 정적 페이지 3개(ko/en/zh) "미국 거주자" 수치 드리프트 수정 + HANDOFF.md를 zip과
+  `origin/main` diff로 대조(불일치 확인) 후 로컬에 적용, `broken_link_audit.js`/JSON-LD
+  파싱 검증 통과 확인 후 커밋(`388efa9`).
+- **이 세션도 GitHub 쓰기 권한이 막혀있음을 재확인함 — 이번엔 GitHub MCP까지 시도**: 이 세션
+  유형은 GitHub MCP 읽기(`get_me`/`list_branches`)는 정상 동작했지만, `push_files`/
+  `create_branch`/direct REST API 전부 `403 Resource not accessible by integration`으로
+  막혀있었음(Anthropic GitHub App이 Authorize만 되고 Install은 안 된 상태라는 기존 진단과
+  일치 — 위 최상단 섹션 서술 그대로 유효, 갱신 불필요할 정도로 정확했음). `git push`도 동일하게
+  403. 이번에도 zip 전달 → 사용자가 GitHub 웹 UI로 직접 업로드하는 기존 방식 그대로 따름.
+- **HANDOFF.md 자체에 민감정보가 새어들어갔는지 세션 중간에 별도 서브에이전트로 재검증**:
+  사용자가 "인수인계파일에는 공유되면 안되는 것들은 넣지 말라"고 재차 당부해서, 이 문서
+  전체(1032줄)를 처음부터 끝까지 다시 읽는 전담 서브에이전트를 띄워 PII·자격증명·비공개
+  의도 메모가 있는지 확인 → **이슈 없음**(스크래치패드 전용 파일들은 파일명만 언급되고
+  내용이 옮겨붙지 않았음을 확인, `기존 "개인정보 익명화" 언급은 과거 세션의 정리 이력일 뿐
+  현재 파일엔 잔존물 없음).
+- **사용자가 외부(다른 AI)에서 받아온 SEO/기능 제안 4가지를 검토 후 우선순위 조정**:
+  ① IndexNow 자동 핑 스크립트, ② 계산 결과 공유 링크(URL 파라미터 pre-fill), ③ Breadcrumb/
+  SoftwareApplication JSON-LD, ④ sitemap/RSS 자동 생성 — 이 프로젝트가 "빌드 도구 없음,
+  CI/CD 없음, 배포는 매번 사용자가 GitHub 웹 UI로 zip 수동 업로드" 구조라는 점에 비춰
+  판단함. **①은 자동 실행될 배포 훅 자체가 없어 만들어도 아무도 안 돌리는 죽은 스크립트가
+  될 위험이 커서 보류**(수동 실행 도구로 격하 제안), **④는 sitemap.xml이 이미 수동 관리로
+  감사 통과 상태고 RSS는 계산기 사이트 성격과 안 맞아 보류**. ②③만 실제 진행하기로 함(사용자
+  확인 후 서브에이전트 2개를 병렬로 띄워 각각 담당 파일을 분리해 충돌 방지).
+  - **② 공유 링크 URL 파라미터** (`script.js`): `shareResult()`가 그동안 `location.href`를
+    그대로 공유해서, 받은 사람이 링크를 열면 빈 계산기만 나오던 문제 수정. 홈 화면에서
+    금액을 직접 입력한 뒤 공유/링크복사하면 이제 `?amount=&country=&state=`(주는 국가가
+    'us'일 때만) 파라미터가 URL에 실려 나감. 로드 시점엔 기존 `?lang=`/`?country=` 처리
+    블록과 같은 자리·같은 패턴으로 `?amount=`/`?state=` 파싱을 추가 — `amount`는 슬라이더
+    유효 범위로 clamp, `state`는 `STATE_TAX_RATES`의 실제 키만 화이트리스트 통과(오타·잘못된
+    값은 조용히 무시, 국가 파라미터와 동일한 안전장치 패턴). 적용 후 URL에서 파라미터
+    제거도 기존 관례 그대로. **새 i18n 키 없음**(기존 "✅ 링크가 복사됐어요" 22개 언어
+    피드백을 그대로 재사용, URL 문자열만 바뀐 것이라 새 화면 텍스트가 필요 없었음) —
+    Playwright로 (a) 공유 시 URL에 파라미터가 실제로 실리는지(`navigator.share`/클립보드
+    양쪽 가로채서 확인), (b) `?amount=250&country=us&state=CA`로 접속 시 정상 pre-fill되고
+    파라미터가 지워지는지, (c) `?amount=-5&state=ZZ`(네거티브 컨트롤) 접속 시 안 죽고
+    기본값으로 안전하게 폴백하는지 셋 다 확인. 회귀 테스트 12개 전부(신규 포함) 이슈 0건.
+    커밋 `005f758`.
+  - **③ 구조화 데이터**: `index.html`에 `SoftwareApplication`(`applicationCategory:
+    "FinanceApplication"` — schema.org에 "FinancialCalculator" 타입은 실존하지 않음, 외부
+    제안이 틀린 부분이라 바로잡아 반영) JSON-LD 신규 추가(`url`은 index.html 자체의 기존
+    `canonical` 값을 그대로 참조, 새 값 발명 안 함). **41개 랜딩페이지의 Breadcrumb는
+    작업 전 확인해보니 이미 전부(Home→현재 페이지 2단계) 정상 반영되어 있었음** — 과거
+    세션이 이미 해놓고 이 문서엔 따로 기록을 안 남긴 사례로 보임(문서 서술보다 실제 상태를
+    먼저 확인하는 이 프로젝트 원칙 덕에 중복 작업 없이 넘어감). index.html JSON-LD 4개 +
+    랜딩페이지 85개 JSON-LD 블록 전부 재파싱 검증 통과, `broken_link_audit.js` 이슈 0건.
+    커밋 `dcedda0`.
+- **다음 세션 확인할 것**: 이 세션이 전달한 zip 2개(①잭팟 드리프트 수정 4파일, ②공유링크+
+  구조화데이터 포함 최신 전체본)가 실제로 GitHub 웹 UI 업로드로 반영됐는지부터 확인 — "이번엔
+  진짜 zip 하나로 최종 상태 전체를 한 번에" 원칙(아홉 번째 세션에서 확립)을 지켜서, 세션
+  마지막에 `git diff --name-only` 기준 변경 파일 전체를 한 번에 묶어 전달할 것.
