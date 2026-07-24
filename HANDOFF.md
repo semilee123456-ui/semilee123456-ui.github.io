@@ -102,6 +102,8 @@ styles.css           전체 스타일 (:root 디자인 토큰, 다크모드는 :
 script.js            전체 로직 (세금 계산 + 렌더링 + i18n — 매우 큰 파일, 1MB+)
 odds-data.js         확률체감 탭 전용 대용량 데이터(역대 당첨번호·잭팟 아카이브), 그 탭 열 때만 지연 로드
 manifest.json        PWA 매니페스트
+sw.js                PWA 서비스 워커(2026-07-24 신규, index.html에서만 등록) — 네트워크 우선,
+                     앱 셸만 캐싱, 자세한 설계 이유는 파일 상단 주석 + 아래 "작업 이력" 참고
 sitemap.xml          SEO 사이트맵 (41개 랜딩 페이지 + index.html, 2026-07-23 감사 결과 정합성 문제 없음)
 robots.txt           크롤링 허용 + sitemap 위치 명시, 정상
 
@@ -1082,7 +1084,58 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
     먼저 확인하는 이 프로젝트 원칙 덕에 중복 작업 없이 넘어감). index.html JSON-LD 4개 +
     랜딩페이지 85개 JSON-LD 블록 전부 재파싱 검증 통과, `broken_link_audit.js` 이슈 0건.
     커밋 `dcedda0`.
-- **다음 세션 확인할 것**: 이 세션이 전달한 zip 2개(①잭팟 드리프트 수정 4파일, ②공유링크+
-  구조화데이터 포함 최신 전체본)가 실제로 GitHub 웹 UI 업로드로 반영됐는지부터 확인 — "이번엔
-  진짜 zip 하나로 최종 상태 전체를 한 번에" 원칙(아홉 번째 세션에서 확립)을 지켜서, 세션
+- **PWA 서비스 워커 신규 추가(`sw.js`)**: `manifest.json`은 이미 있었는데 서비스 워커가 없어서
+  "홈 화면에 추가" 설치 프롬프트가 실제로는 안 뜨고 있었을 가능성이 높았음(Chrome 등은 서비스
+  워커 없이는 manifest만으로 설치를 안 띄움) — 그 gap만 메움. **캐시 우선(cache-first)이 아니라
+  네트워크 우선(network-first)으로 설계**(이 프로젝트의 반복된 "고쳤는데 실제 반영 안 됨" 사고
+  이력을 고려해, 온라인 상태에선 항상 최신 네트워크 응답을 쓰고 캐시는 오프라인 폴백 전용).
+  캐싱 대상은 앱 셸(`index.html`/`styles.css`/`script.js`/`manifest.json`/아이콘 3종)만으로
+  최소화 — `odds-data.js`(자체 `?v=YYYYMMDD` 캐시버스팅 씀), 환율 API, 애드센스/GA4/Formspree,
+  41개 랜딩 페이지는 fetch 핸들러의 allowlist에 아예 없어서 서비스 워커를 거치지 않고 브라우저
+  기본 동작 그대로 흘러감. 등록은 `index.html`에서만(41개 랜딩 페이지엔 등록 안 함,
+  `script.js` 하단에 `if ('serviceWorker' in navigator)`로 가드).
+  - **테스트 중 실제 버그 하나 발견·수정**: `fetch()`만 쓰면 브라우저 자체 HTTP 캐시(heuristic
+    freshness)가 서버 요청 자체를 건너뛰고 조용히 구버전을 돌려줘서 "네트워크 우선"이 이름뿐인
+    상태가 될 수 있었음 — `{ cache: 'no-store' }`를 install/runtime 양쪽 fetch에 추가해서 해결,
+    수정 전/후 실제로 `<title>` 텍스트를 바꿔가며 재로드해서 반영되는지 검증함.
+  - `CACHE_NAME`(`chamtax-shell-v1`)은 앱 셸 파일이 바뀔 때마다 손으로 올려야 `activate`의
+    구버전 캐시 정리가 작동함 — sw.js 상단 주석에 이유까지 남겨둠. **앞으로 index.html/
+    styles.css/script.js/manifest.json/아이콘을 바꾸는 세션은 이 버전 문자열도 같이 올릴지
+    검토할 것**(안 올려도 network-first라 온라인 사용자는 문제없지만, 오프라인 폴백 캐시가
+    구버전으로 남아있게 됨).
+  - 회귀 테스트 12개 전부 이슈 0건, `odds-data.js`가 서비스 워커 캐시에 안 들어가는지, 크로스
+    오리진 요청(광고/분석/환율)이 그대로 동작하는지 Playwright로 별도 확인함.
+- **인쇄용 `@media print` 스타일 신규 추가(`styles.css`)**: 새 버튼·새 i18n 텍스트 없이(브라우저
+  기본 Ctrl+P/PDF저장만 사용) 홈 화면 결과가 인쇄될 때 nav/플로팅버튼/입력폼/다른 뷰는 숨기고
+  결과 카드(`.result-hero`)+상세 아코디언만 A4에 깔끔하게 나오도록 함. 다크모드/고대비 모드
+  상태와 무관하게 인쇄는 항상 흑백 라이트로 강제(`!important`로 커스텀 프로퍼티 리셋).
+  - **테스트 중 실제 Chromium 버그 발견·우회**: `<details>` 아코디언이 인쇄 시 `<summary>`만
+    보이고 내용이 안 보였는데, 원인은 이 환경 Chromium(141)이 `<details>` 내부 콘텐츠를
+    내부적으로 `::details-content` 유사 요소로 감싸고 `block-size:0`으로 접어버리는 것 —
+    자식 요소에 `display:block` 줘도 이 래퍼는 안 풀림. `::details-content`를 직접
+    타겟팅해서 해결(`content-visibility:visible; block-size:auto`).
+  - Playwright `emulateMedia({media:'print'})` + `page.pdf()`로 라이트/다크 양쪽 다 인쇄
+    결과물이 동일(흑백 강제 확인)한지, nav/플로팅요소/비활성 뷰가 실제로 0 rect인지 확인.
+    회귀 테스트(`home_audit`/`console_error_audit`/`faq_audit`/`audit_odds_compare`/
+    `wrap_audit`/`map_scroll_audit`/`nav_slider_audit`) 전부 이슈 0건.
+- **외부 AI(제미나이) 제안 검증 패턴이 이번 세션에서도 반복 확인됨**: 세션 중 두 차례에 걸쳐
+  외부 AI가 준 "추가하면 좋을 기능" 목록(4개씩, 총 8개)을 실제 코드로 대조한 결과 **5개가 이미
+  구현되어 있었음**(IndexNow 이 아니라 다른 항목들 — 다크모드, 커스텀 404 페이지, GA4 분석,
+  Breadcrumb JSON-LD, 21개국 실시간 환율 변환), 1개는 이 사이트 호스팅(GitHub Pages)에서
+  **기술적으로 불가능한 제안**이었음(`_headers`/커스텀 HTTP 보안 헤더 — GitHub Pages는 커스텀
+  응답 헤더 자체를 지원 안 함, Netlify 전용 컨벤션을 그대로 가져온 것으로 보임). 실제로 반영한
+  건 2개뿐(공유링크 URL 파라미터, SoftwareApplication JSON-LD)+이번 PWA 서비스 워커/인쇄
+  스타일. **교훈 재확인**: 외부 AI가 주는 "이것도 하면 좋아요" 류 제안은 항상 실제 코드/실제
+  호스팅 환경과 대조 후 판단할 것 — 특히 이번엔 "이미 구현됨" 비율이 절반을 넘어서, 그런
+  제안 목록을 그대로 실행했다면 상당한 중복 작업이 됐을 것.
+- **사용자가 "40-60대가 편하게 쓸 수 있게" 제미나이 검수를 요청 — 검수용 브리핑 문서 +
+  스크린샷 준비까지 진행, 실제 제미나이 답변은 다음 세션(또는 이 세션 후반)으로 이어짐**:
+  이전 제미나이 검수들이 "실제로 사이트를 열어본 적 없이 구조 설명 문서만 보고 낸 추론"이라는
+  한계가 있었던 걸 감안해서, 이번엔 텍스트 브리핑뿐 아니라 실제 Playwright 스크린샷(모바일
+  375px, 라이트/다크/고대비 각 변형)을 같이 준비해서 근거를 붙임 — 스크래치패드 전용 파일이라
+  저장소엔 없음(`gemini_senior_ux_review_request.md` + 스크린샷 폴더, 사용자에게 전달함).
+  **다음 세션이 이어받을 것**: 사용자가 제미나이 답변을 받아오면, 이 프로젝트의 기존 원칙대로
+  "제안 그대로 믿지 말고 코드/실제 동작으로 하나씩 검증 후 실제로 필요한 것만" 반영할 것.
+- **다음 세션 확인할 것**: 이 세션이 전달한 zip이 실제로 GitHub 웹 UI 업로드로 반영됐는지부터
+  확인 — "zip 하나로 최종 상태 전체를 한 번에" 원칙(아홉 번째 세션에서 확립)을 지켜서, 세션
   마지막에 `git diff --name-only` 기준 변경 파일 전체를 한 번에 묶어 전달할 것.

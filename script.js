@@ -4918,6 +4918,21 @@ if (document.fonts && document.fonts.ready) {
     });
   });
 }
+// PWA 설치("홈 화면에 추가") 프롬프트 조건을 만족시키기 위한 서비스 워커 등록.
+// sw.js 자체는 저장소 루트에 별도 파일로 있고(캐싱 전략은 그 파일 상단 주석 참고), 여기서는
+// 등록만 함. index.html에서만 script.js를 불러오므로(랜딩 페이지 41개는 안 불러옴) 이 등록도
+// 자연히 메인 계산기에만 적용됨 — manifest.json이 index.html에만 링크된 것과 같은 범위.
+// 페이지 로딩을 막으면 안 되므로 'load' 이벤트 이후로 미루고(Pretendard 폰트 재계산 로직과
+// 같은 이유 — 초기 렌더링과 경쟁하지 않게 함), 구형 브라우저나 file:// 등 API 자체가 없는
+// 환경에서 에러 없이 조용히 넘어가도록 'serviceWorker' in navigator로 가드함
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => {
+      console.warn('[sw] 등록 실패(치명적이지 않음, 설치 프롬프트만 안 뜸):', err);
+    });
+  });
+}
+
 let _resizeDebounceTimer = null;
 window.addEventListener('resize', () => {
   // resize는 창을 드래그하는 동안 초당 수십 번 발생할 수 있어서, 매번 재계산하면

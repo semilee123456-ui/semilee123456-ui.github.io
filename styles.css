@@ -1807,3 +1807,112 @@
   .us-state-compare-toggle[open] > .us-state-compare-summary::after{
     transform:rotate(180deg);
   }
+
+  /* ===== 인쇄(Ctrl+P / "PDF로 저장") 전용 스타일 (2026-07-24 신규) =====
+     진입점은 브라우저 기본 인쇄 메뉴뿐(새 버튼/JS 없음, CSS만으로 대응) — 사용자가 홈 화면
+     (view-home)에서 계산 결과를 보고 있는 상태로 인쇄를 누르면, 앱 전체 크롬(nav/설정/탭/
+     플로팅 버튼 등) 대신 "결과 요약지"만 종이에 나오게 하는 게 목적.
+     - 화면(.view/.view.on)이 켜고 끄는 방식을 그대로 재사용해서, 인쇄 시점에 실제로 켜져 있는
+       화면만 나오게 함(.view{display:none!important} 기본값 + .view.on만 다시 block) — 특정
+       화면(view-home)을 강제로 보여주는 게 아니라, "화면 전환 로직이 이미 정해놓은 현재 화면"만
+       나오게 하는 방식이라 다른 화면(FAQ 등)에서 인쇄해도 안전하게 그 화면만 나옴. FAQ는
+       .faq-overlay-mode로 열리면 자기 view가 .on이 아니어도 position:fixed로 위에 떠서
+       홈 화면을 가리는데, 인쇄에선 이것도 명시적으로 꺼야 함(아래 참고).
+     - 다크모드/고대비 모드를 켜둔 채로 인쇄해도 항상 라이트 팔레트(밝은 배경+검정에 가까운
+       글자)로 나오게, :root에 선언된 라이트모드 기본값을 !important로 다시 못박음 — !important는
+       나중에 나오는 :root[data-theme="dark"] 같은 속성 선택자보다 명시도가 낮아도 항상 이김. */
+  @media print {
+    @page{ margin:14mm; }
+
+    :root{
+      --navy:#1a1a1a !important; --teal:#155445 !important; --seafoam:#155445 !important;
+      --mint:#1F6E5C !important; --indigo:#35507A !important; --gold:#9C6F1E !important;
+      --bg:#ffffff !important; --card:#ffffff !important; --body-bg:#ffffff !important;
+      --text-dark:#111111 !important; --text-muted:#3a3a3a !important; --border:#cccccc !important;
+      --select-bg:#ffffff !important; --chip-bg:#ffffff !important; --input-card-bg:#ffffff !important;
+      --grad-soft:none !important; --grad-amber:none !important;
+      --shadow-card:none !important; --shadow-btn:none !important;
+      --status-red:#a4291b !important; --status-amber:#7a5313 !important;
+      --on-accent:#ffffff !important; --ink-rgb:17,17,17 !important;
+    }
+
+    /* 화면 배경/그림자/여백은 종이 낭비 + 잉크 낭비라 전부 걷어내고, 텍스트는 검정에 가깝게 */
+    html, body{ background:#fff !important; color:#111 !important; }
+    body{
+      display:block !important; padding:0 !important; margin:0 !important; gap:0 !important;
+    }
+    .page{
+      max-width:100% !important; width:100% !important; margin:0 !important; padding:0 !important;
+      border-radius:0 !important; box-shadow:none !important; overflow:visible !important; background:#fff !important;
+    }
+
+    /* 화면 전용 크롬: 상단 nav(로고/탭/설정), 하단 sticky 결과 배지, 우하단 FAQ 플로팅 버튼,
+       광고 영역, 공지 배너, 잭팟 퀵필 스파클 이펙트 — 종이에는 의미 없는 인터랙션 요소들 */
+    .nav, .site-footer, #sticky-result-badge, .faq-float-btn, .ad-slot,
+    .site-notice, .quickfill-spark, .milestone-burst{
+      display:none !important;
+    }
+
+    /* 지금 켜져 있는 화면(.view.on)만 인쇄되게 — 나머지 화면은 화면표시와 동일하게 숨김 유지.
+       FAQ 오버레이 모드는 .on 여부와 무관하게 뜨는 별도 오버레이라 따로 꺼야 함. */
+    .view{ display:none !important; }
+    .view.on{ display:block !important; padding-bottom:0 !important; animation:none !important; }
+    .view#view-faq.faq-overlay-mode{ display:none !important; }
+
+    /* ----- 홈 화면(view-home) 결과 요약지 전용 ----- */
+    /* 상단 히어로 문구/캐릭터 로고 대신, 인쇄물 맨 위에 브랜드명만 간단히 텍스트로 붙임
+       (별도 버튼·i18n 문자열을 새로 만들지 않기 위해 CSS content로 처리 — "참택스"는 nav 로고에서도
+       언어와 무관하게 항상 이 표기로 고정되어 있어서 새 문구를 만드는 게 아님) */
+    #view-home::before{
+      content:'참택스 (ChamTax) — 미국 복권 세후 실수령액 계산 결과';
+      display:block; text-align:center; font-weight:800; font-size:14pt;
+      color:#111; margin:0 0 14pt; padding-bottom:8pt; border-bottom:1px solid #999;
+    }
+
+    /* 입력용 UI(퀵필 버튼/슬라이더/국가·주 선택/탭)는 종이에서 누를 수 없는 인터랙션 그 자체라
+       통째로 숨김 — 사용자가 입력한 "값"은 이미 결과 카드(.result-hero) 문구 안에 텍스트로
+       그대로 나와 있어서(예: "100M USD 당첨 · 한국 거주자") 정보 손실은 없음 */
+    #view-home > .hero,
+    #view-home #introPersonaAccordion,
+    #view-home .input-card,
+    #view-home .explore-section,
+    #view-home details.more-details-toggle,
+    #view-home details.fun-toggle,
+    #view-home .share-btn{
+      display:none !important;
+    }
+
+    /* 결과 카드/상세 내역은 이 인쇄물의 본문이므로 장식(그라데이션·그림자·반투명 원)만 걷어내고
+       내용은 그대로 유지, 얇은 테두리만 남겨서 종이에서도 카드 경계가 보이게 함 */
+    .result-hero{
+      background:#fff !important; box-shadow:none !important; border:1px solid #999 !important;
+      padding:14pt 10pt !important;
+    }
+    .result-hero::before, .result-hero::after{ display:none !important; }
+    #view-home .result-cell{ background:#fff !important; border:1px solid #ccc !important; }
+    #view-home .jc-annuity-box{ background:#fff !important; border:1px solid #ccc !important; }
+    #view-home .usd-actual-note{ background:#fff !important; border:1px solid #ccc !important; }
+
+    /* <details> 아코디언은 open 속성 없이는 브라우저가 내용을 숨기는데, 결과와 직접 관련된
+       아코디언(연금 환산, "결과 더 자세히 보기", 30년 지급표)은 닫힌 채로 인쇄되면 "빈 요약 줄"만
+       남아 오해를 살 수 있어서 open 여부와 무관하게 항상 펼쳐서 인쇄되게 강제함.
+       최신 크로미움은 summary를 제외한 내용을 ::details-content라는 내부 의사 요소로 감싸서
+       접힌 상태일 때 block-size:0 + content-visibility:hidden(애니메이션 지원용)으로 숨기므로,
+       자식 요소들의 display만 바꿔선 안 되고 이 의사 요소 자체를 열린 상태처럼 강제해야 함 —
+       그냥 display 오버라이드만 하면 부모 .result-hero의 overflow:hidden에 눌려 내용이 있어도
+       카드 안에서 잘려 안 보이는 버그가 실제로 재현됐음(2026-07-24 Playwright 테스트로 확인) */
+    #view-home .calc-detail-toggle,
+    #view-home .calc-detail-toggle > *,
+    #view-home .jh-more,
+    #view-home .jh-more > *{
+      display:block !important;
+    }
+    #view-home .calc-detail-toggle::details-content,
+    #view-home .jh-more::details-content{
+      content-visibility:visible !important; block-size:auto !important; overflow:visible !important;
+    }
+    #view-home .calc-detail-summary::after,
+    #view-home .jh-more-summary::after{
+      display:none !important; /* 펼침/접힘 화살표도 종이에선 무의미 */
+    }
+  }
