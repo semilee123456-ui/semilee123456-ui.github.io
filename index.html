@@ -508,11 +508,11 @@
                 <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
               </div>
               <div class="slider-track-wrap">
-                <input type="range" class="slider" id="homeAmountSlider" min="10" max="2000" step="10" value="100" oninput="onHomeSliderMoved()">
+                <input type="range" class="slider" id="homeAmountSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onHomeSliderMoved()">
                 <div class="slider-ticks" aria-hidden="true">
-                  <span class="slider-tick" style="left:24.62%"><span class="slider-tick-mark"></span><span class="slider-tick-label" data-i18n="home.sliderTick500">5억 달러</span></span>
-                  <span class="slider-tick slider-tick-mid" style="left:49.75%"><span class="slider-tick-mark"></span><span class="slider-tick-label" data-i18n="home.sliderTick1000">10억 달러</span></span>
-                  <span class="slider-tick" style="left:74.87%"><span class="slider-tick-mark"></span><span class="slider-tick-label" data-i18n="home.sliderTick1500">15억 달러</span></span>
+                  <span class="slider-tick" style="left:73.84%"><span class="slider-tick-mark"></span><span class="slider-tick-label" data-i18n="home.sliderTick500">5억 달러</span></span>
+                  <span class="slider-tick slider-tick-mid" style="left:86.92%"><span class="slider-tick-mark"></span><span class="slider-tick-label" data-i18n="home.sliderTick1000">10억 달러</span></span>
+                  <span class="slider-tick slider-tick-far" style="left:94.57%"><span class="slider-tick-mark"></span><span class="slider-tick-label" data-i18n="home.sliderTick1500">15억 달러</span></span>
                 </div>
               </div>
               <div class="slider-range-label"><span data-i18n="home.sliderMin">1천만 달러</span><span data-i18n="home.sliderMax">20억 달러</span></div>
@@ -817,7 +817,7 @@
             <input type="text" id="amountInput" class="dollar-input" inputmode="decimal" value="100" oninput="onCompareAmountTyped()" onfocus="this.select()">
             <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
           </div>
-          <input type="range" class="slider" id="compareAmountSlider" min="10" max="2000" step="10" value="100" oninput="onCompareSliderMoved()">
+          <input type="range" class="slider" id="compareAmountSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onCompareSliderMoved()">
           <div class="slider-range-label"><span data-i18n="home.sliderMin">1천만 달러</span><span data-i18n="home.sliderMax">20억 달러</span></div>
           <p class="krw-hint">≈ <span id="compare-krw-amt">1,503억원</span> · <span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="compare-rate-input" value="1,503.4" inputmode="decimal" oninput="onCompareRateChanged()"><span data-i18n="common.won">원</span> <button type="button" class="rate-live-badge" onclick="retryLiveExchangeRate(this)" title="기본값 사용 중 · 탭하면 실시간 환율로 갱신" aria-label="환율 새로고침" data-i18n-aria-label="common.refreshRate"><span aria-hidden="true">🔄</span></button></p>
 

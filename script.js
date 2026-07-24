@@ -447,10 +447,7 @@ function syncHomeFromShared(){
   // 슬라이더·계산 결과는 계속 sharedAmountUsd 기준으로 정상 동기화됨
   if (isAmountManuallyEdited) document.getElementById('homeAmountInput').value = millions;
   const slider = document.getElementById('homeAmountSlider');
-  slider.max = Math.max(2000, millions);
-  slider.step = (millions % 10 === 0) ? 10 : 1; // 10의 배수가 아니면 step을 풀어줘야 value가 반올림 없이 정확히 반영됨
-  slider.min = Math.min(10, Math.round(millions)); // $10M 미만 입력 시 슬라이더 하한도 같이 낮춰 불일치 방지
-  slider.value = Math.round(millions);
+  setSliderMillions(slider, millions); // updateHomeCalc()가 끝에서 updateSliderFill도 같이 처리함
   document.getElementById('homeCountrySelect').value = sharedCountry;
   document.querySelectorAll('#homeCountryToggle .country-toggle-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.country === sharedCountry);
@@ -473,9 +470,7 @@ function syncCompareFromShared(){
   const millions = sharedAmountUsd / 1000000;
   document.getElementById('amountInput').value = millions;
   const slider = document.getElementById('compareAmountSlider');
-  slider.max = Math.max(2000, millions);
-  slider.min = Math.min(10, Math.round(millions));
-  slider.value = Math.round(millions);
+  setSliderMillions(slider, millions);
   updateSliderFill(slider);
   document.getElementById('compareStateSelect').value = sharedState;
   document.getElementById('compare-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR');
@@ -4159,10 +4154,7 @@ function fillHomeAmountFromJackpot(game, btn){
   const input = document.getElementById('homeAmountInput');
   input.value = millions;
   const slider = document.getElementById('homeAmountSlider');
-  slider.max = Math.max(2000, millions);
-  slider.step = 1;
-  slider.min = Math.min(10, millions);
-  slider.value = millions;
+  setSliderMillions(slider, millions);
   updateHomeCalc(millions * 1000000);
   // 예전엔 여기서 input.focus()를 호출했는데, 모바일에서는 입력칸에 포커스가 가는 순간
   // 숫자 키패드가 자동으로 올라와서 — 퀵필 버튼은 값을 이미 다 채워주는 건데 타이핑할
@@ -4658,10 +4650,7 @@ function onHomeAmountTyped(){
   if (rawValue.trim() !== '') isAmountManuallyEdited = true;
   const millions = parseMillionsInput(rawValue);
   const slider = document.getElementById('homeAmountSlider');
-  slider.max = Math.max(2000, millions); // 기본 상한(2000=$2B)을 넘는 값을 입력하면 슬라이더 상한도 같이 늘려서 롤백 방지
-  slider.step = 1; // 타이핑한 정밀값(예: 153)이 슬라이더를 살짝 건드릴 때 10단위로 스냅되지 않도록 임시로 완화
-  slider.min = Math.min(10, Math.round(millions)); // $10M 미만 입력 시 슬라이더 하한도 같이 낮춰 불일치 방지
-  slider.value = Math.round(millions);
+  setSliderMillions(slider, millions); // 기본 범위(1천만~20억)를 벗어나는 값이면 범위 자체도 같이 늘림
   // rawValue가 진짜 비어있을 때만 "값 없음"(undefined -> 마지막 유효값 유지)으로 처리하고,
   // "0"을 직접 입력한 경우는 millions===0이어도 유효한 입력으로 인정해서 그대로 반영함
   // (예전엔 millions>0으로만 판단해서 "0"을 입력해도 무시되고 이전 값에 멈춰있던 문제가 있었음)
@@ -4681,10 +4670,7 @@ function onHomeAnnouncedTyped(){
   const input = document.getElementById('homeAmountInput');
   input.value = lumpMillions;
   const slider = document.getElementById('homeAmountSlider');
-  slider.max = Math.max(2000, lumpMillions);
-  slider.step = 1;
-  slider.min = Math.min(10, lumpMillions);
-  slider.value = lumpMillions;
+  setSliderMillions(slider, lumpMillions);
   updateHomeCalc(lumpMillions * 1000000);
 
   const wrap = input.closest('.million-input-wrap');
@@ -4740,13 +4726,55 @@ function updateSliderFill(slider){
   slider.style.background = `linear-gradient(to right, var(--teal) ${pct}%, var(--border) ${pct}%)`;
 }
 
+// 금액 슬라이더(1천만~20억 달러, 200배 범위)를 예전엔 그냥 선형으로 다뤘는데, 그러면 물리적으로
+// 드래그할 수 있는 폭(수백 px)에 이 넓은 범위가 다 눌려 들어가서 "3억 달러"처럼 원하는 특정
+// 금액을 정확히 맞추기가 거의 불가능했음(사용자 지적, 2026-07-23). 그래서 slider.value 자체를
+// "0~1000 사이의 로그 스케일 위치"로 바꾸고, 실제 달러 금액은 이 두 헬퍼로만 서로 변환함.
+// 각 슬라이더가 지금 담당하는 실제 달러 범위(usdMin/usdMax, 타이핑으로 기본 범위를 벗어나면
+// 늘어남)는 data-usd-min/data-usd-max 속성에 저장해둠.
+const SLIDER_POS_MAX = 1000;
+const SLIDER_LOG_FLOOR_M = 1; // 로그는 0 이하를 표현 못하므로, 0을 입력해도 이 값을 바닥으로 씀
+
+function sliderPosToMillions(slider, pos){
+  const usdMin = Number(slider.dataset.usdMin) || 10;
+  const usdMax = Number(slider.dataset.usdMax) || 2000;
+  const logMin = Math.log(usdMin), logMax = Math.log(usdMax);
+  const clampedPos = Math.min(SLIDER_POS_MAX, Math.max(0, pos));
+  const raw = Math.exp(logMin + (clampedPos / SLIDER_POS_MAX) * (logMax - logMin));
+  // 낮은 금액대는 10단위, 500M 이상은 50단위로 반올림 — 사용자가 실제로 노리는 딱 떨어지는
+  // 숫자(3억=300 등)에 자연스럽게 걸리게 함
+  const roundTo = raw < 500 ? 10 : 50;
+  return Math.round(raw / roundTo) * roundTo;
+}
+
+function sliderMillionsToPos(slider, millions){
+  const usdMin = Number(slider.dataset.usdMin) || 10;
+  const usdMax = Number(slider.dataset.usdMax) || 2000;
+  const logMin = Math.log(usdMin), logMax = Math.log(usdMax);
+  const clamped = Math.min(usdMax, Math.max(usdMin, millions));
+  return Math.round((Math.log(clamped) - logMin) / (logMax - logMin) * SLIDER_POS_MAX);
+}
+
+// 타이핑/퀵필 등으로 슬라이더 값을 "달러 금액"으로 직접 설정할 때 쓰는 공용 함수 — 기본 범위
+// (1천만~20억)를 벗어나는 값이 들어오면 그 범위 자체를 넓혀서(예전 slider.max 확장 로직과 동일한
+// 의도) 값이 잘리지 않게 함
+function setSliderMillions(slider, millions){
+  const safeMillions = Number.isFinite(millions) ? millions : 10;
+  slider.dataset.usdMin = Math.max(SLIDER_LOG_FLOOR_M, Math.min(10, Math.round(safeMillions)));
+  slider.dataset.usdMax = Math.max(2000, safeMillions);
+  slider.value = sliderMillionsToPos(slider, safeMillions);
+}
+
+function getSliderMillions(slider){
+  return sliderPosToMillions(slider, Number(slider.value));
+}
+
 let _prevSliderUsdM = null; // 5억 달러 문턱 통과 감지용 (진동 피드백이 방향 전환마다 한 번만 울리게)
 function onHomeSliderMoved(){
   hideAnnouncedConvertNote();
   isAmountManuallyEdited = true;
   const slider = document.getElementById('homeAmountSlider');
-  slider.step = 10; // 유저가 슬라이더를 직접 조작하면 원래대로 10단위 스냅 복원
-  const usdMillions = Number(slider.value);
+  const usdMillions = getSliderMillions(slider);
   document.getElementById('homeAmountInput').value = usdMillions;
   updateHomeCalc(usdMillions * 1000000);
 
@@ -5647,7 +5675,7 @@ function confirmEditMiniResult(rawValue){
   const amountInput = document.getElementById('homeAmountInput');
   amountInput.value = requiredUsdM >= 10 ? Math.round(requiredUsdM) : Math.round(requiredUsdM * 10) / 10;
   const slider = document.getElementById('homeAmountSlider');
-  slider.value = Math.min(Math.max(Math.round(requiredUsdM), Number(slider.min)), Number(slider.max));
+  slider.value = sliderMillionsToPos(slider, Math.round(requiredUsdM)); // 기존 범위를 벗어나면 clamp만(범위 확장은 안 함)
   updateSliderFill(slider);
   updateHomeCalc(requiredUsd);
 }
@@ -6686,10 +6714,7 @@ function onCompareAmountTyped(){
   if (rawValue.trim() !== '') isAmountManuallyEdited = true;
   const millions = parseMillionsInput(rawValue);
   const slider = document.getElementById('compareAmountSlider');
-  slider.max = Math.max(2000, millions);
-  slider.step = 1;
-  slider.min = Math.min(10, Math.round(millions));
-  slider.value = Math.round(millions);
+  setSliderMillions(slider, millions);
   updateSliderFill(slider);
   updateCalc(rawValue.trim() === '' ? undefined : millions * 1000000);
 }
@@ -6697,8 +6722,7 @@ function onCompareAmountTyped(){
 function onCompareSliderMoved(){
   isAmountManuallyEdited = true;
   const slider = document.getElementById('compareAmountSlider');
-  slider.step = 10;
-  const usdMillions = Number(slider.value);
+  const usdMillions = getSliderMillions(slider);
   document.getElementById('amountInput').value = usdMillions;
   updateSliderFill(slider);
   updateCalc(usdMillions * 1000000);
