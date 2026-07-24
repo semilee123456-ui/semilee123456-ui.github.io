@@ -1452,7 +1452,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260723';
+    script.src = 'odds-data.js?v=20260724';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -2639,8 +2639,8 @@ function buildDrawScheduleMore(days){
 // amountUsd만 공식 사이트 보고 고치면 30초로 끝납니다.
 // ============================================================================
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 544000000 },
-  megamillions: { amountUsd: 707000000 },
+  powerball:    { amountUsd: 600000000 },
+  megamillions: { amountUsd: 743000000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
@@ -2655,8 +2655,8 @@ const GAME_NAME_MORE = {
 // 재미 요소 + 공유 유도용(사용자 피드백: "사이트가 너무 교과서 같다") — 세금 계산기 본질은 그대로 두고
 // 잭팟 카드 안에 양념처럼 추가한 것이라, 갱신을 깜빡해도 계산기 기능엔 영향 없음.
 const LATEST_DRAW = {
-  powerball:    { date: '2026-07-18', numbers: [9, 14, 44, 50, 56], special: 3 },
-  megamillions: { date: '2026-07-17', numbers: [22, 34, 45, 48, 55], special: 14 },
+  powerball:    { date: '2026-07-22', numbers: [4, 5, 22, 50, 58], special: 1 },
+  megamillions: { date: '2026-07-21', numbers: [25, 37, 59, 68, 70], special: 10 },
 };
 
 
@@ -3355,8 +3355,29 @@ function getJackpotRealTakeHomeRanking(topN){
     const cashUsd = entry.cashUsd || entry.amountUsd * CASH_VALUE_RATIO;
     const cashKrw = cashUsd * EXCHANGE_RATE;
     const takeHome = calcTakeHome(cashKrw / 100000000, sharedCountry, sharedState).final;
-    return { entry, announcedKrw: entry.amountUsd * EXCHANGE_RATE, takeHome };
+    return { entry, announcedKrw: entry.amountUsd * EXCHANGE_RATE, cashUsd, takeHome };
   }).sort((a, b) => b.takeHome - a.takeHome).slice(0, topN);
+}
+
+// 랭킹 항목 옆 "이 금액으로 계산하기" 소형 CTA 버튼 문구 — jh-rank-list/ji-cpi-list 둘 다 같은
+// 문구를 재사용(장식용 아이콘 버튼이라 위 buildAnnouncedLineMore류처럼 값을 문장에 끼워넣을
+// 필요가 없어서 인자 없는 순수 pickLang 호출로 충분함)
+function jackpotRankCtaLabel(){
+  return pickLang(
+    '이 금액으로 계산하기 →', 'Calculate with this amount →', '用这个金额计算 →',
+    'Tính với số tiền này →', 'คำนวณด้วยจำนวนนี้ →', 'Рассчитать с этой суммой →',
+    {
+      ar: 'احسب بهذا المبلغ ←', bn: 'এই পরিমাণ দিয়ে হিসাব করুন →',
+      fr: 'Calculer avec ce montant →', hi: 'इस राशि से गणना करें →',
+      id: 'Hitung dengan jumlah ini →', ja: 'この金額で計算する →',
+      kk: 'Осы сомамен есептеу →', km: 'គណនាដោយប្រើចំនួននេះ →',
+      ky: 'Ушул сумма менен эсептөө →', lo: 'ຄິດໄລ່ດ້ວຍຈຳນວນນີ້ →',
+      mn: 'Энэ дүнгээр тооцоолох →', my: 'ဤပမာဏဖြင့် တွက်ချက်ရန် →',
+      ne: 'यो रकमले गणना गर्नुहोस् →', si: 'මෙම මුදලින් ගණනය කරන්න →',
+      tl: 'Kalkulahin gamit ang halagang ito →', ur: 'اس رقم سے حساب لگائیں ←',
+      uz: "Shu summa bilan hisoblash →",
+    }
+  );
 }
 
 function renderJackpotTakeHomeRanking(){
@@ -3402,7 +3423,8 @@ function renderJackpotTakeHomeRanking(){
   const gameNameRu = { powerball: 'Powerball', megamillions: 'Mega Millions' };
   const medals = ['🥇', '🥈', '🥉'];
 
-  listEl.innerHTML = getJackpotRealTakeHomeRanking(10).map(({ entry, announcedKrw, takeHome }, i) => {
+  const rankCtaLabel = jackpotRankCtaLabel();
+  listEl.innerHTML = getJackpotRealTakeHomeRanking(10).map(({ entry, announcedKrw, cashUsd, takeHome }, i) => {
     const gameLabel = pickLang(gameNameKo[entry.game], gameNameEn[entry.game], gameNameZh[entry.game], gameNameVi[entry.game], gameNameTh[entry.game], gameNameRu[entry.game], GAME_NAME_MORE[entry.game]);
     const gameTagClass = entry.game === 'powerball' ? 'pb' : 'mm';
     const gameTagEmoji = entry.game === 'powerball' ? '🔴' : '🟡';
@@ -3426,6 +3448,7 @@ function renderJackpotTakeHomeRanking(){
         </div>
         <div class="jh-rank-amt"><bdi>${formatWon(takeHome)}</bdi></div>
         <div class="jh-rank-sub">${announcedLine}</div>
+        <button type="button" class="jh-rank-cta" onclick="fillHomeAmountFromRanking(${Math.round(cashUsd)})">${rankCtaLabel}</button>
       </div>
     </div>`;
   }).join('');
@@ -3611,7 +3634,7 @@ function getJackpotRealValueRanking(topN){
       const cpiAdjustedCashUsd = getCpiAdjustedUsd(cashUsd, year);
       const cpiAdjustedKrw = cpiAdjustedCashUsd * EXCHANGE_RATE;
       const takeHome = calcTakeHome(cpiAdjustedKrw / 100000000, sharedCountry, sharedState).final;
-      return { entry, year, originalCashUsd: cashUsd, takeHome };
+      return { entry, year, originalCashUsd: cashUsd, cpiAdjustedCashUsd, takeHome };
     })
     .sort((a, b) => b.takeHome - a.takeHome)
     .slice(0, topN);
@@ -3664,7 +3687,8 @@ function renderJackpotIndexCpiRanking(){
   const gameNameRu = { powerball: 'Powerball', megamillions: 'Mega Millions' };
   const medals = ['🥇', '🥈', '🥉'];
 
-  listEl.innerHTML = getJackpotRealValueRanking(10).map(({ entry, year, originalCashUsd, takeHome }, i) => {
+  const rankCtaLabel2 = jackpotRankCtaLabel();
+  listEl.innerHTML = getJackpotRealValueRanking(10).map(({ entry, year, originalCashUsd, cpiAdjustedCashUsd, takeHome }, i) => {
     const gameLabel = pickLang(gameNameKo[entry.game], gameNameEn[entry.game], gameNameZh[entry.game], gameNameVi[entry.game], gameNameTh[entry.game], gameNameRu[entry.game], GAME_NAME_MORE[entry.game]);
     const gameTagClass = entry.game === 'powerball' ? 'pb' : 'mm';
     const gameTagEmoji = entry.game === 'powerball' ? '🔴' : '🟡';
@@ -3685,6 +3709,7 @@ function renderJackpotIndexCpiRanking(){
         </div>
         <div class="jh-rank-amt"><bdi>${formatWon(takeHome)}</bdi></div>
         <div class="jh-rank-sub">${originalLine}</div>
+        <button type="button" class="jh-rank-cta" onclick="fillHomeAmountFromRanking(${Math.round(cpiAdjustedCashUsd)})">${rankCtaLabel2}</button>
       </div>
     </div>`;
   }).join('');
@@ -4483,18 +4508,24 @@ function initJackpotCardAmt(){
   document.getElementById('quickfill-mm-usd').textContent = quickfillSubLabel(mgUsd);
 }
 
-function fillHomeAmountFromJackpot(game, btn){
+// 홈 화면 일시불 입력칸/슬라이더에 특정 현금가치(USD)를 채워넣는 공통 로직 — 잭팟 퀵필 버튼
+// (fillHomeAmountFromJackpot)과 확률체감 탭 랭킹 항목의 "이 금액으로 계산하기" CTA
+// (fillHomeAmountFromRanking)가 둘 다 이걸 재사용함(중복 로직 방지). 입력칸/슬라이더는 항상
+// 백만 단위로 반올림해서 채움(입력칸이 백만 단위 정수만 받는 UI라 그대로 노출하면 소수점이
+// 보여 어색함). exactCalc가 true면 실제 계산(updateHomeCalc)에는 반올림 전 원래 cashUsd를
+// 그대로 넘김 — 랭킹 항목 클릭 시, 방금 그 항목이 보여준 실수령액과 홈 화면 결과가 백만 단위
+// 반올림 오차 없이 정확히 일치해야 하기 때문(2026-07-24, 랭킹 CTA 추가하며 도입). 기존 잭팟
+// 퀵필 버튼은 이 옵션 없이 그대로 둬서(기본값 false) 기존 동작을 안 건드림
+function setHomeLumpAmountUsd(cashUsd, btn, exactCalc){
   hideAnnouncedConvertNote();
   switchAmountTab('lump'); // 퀵필은 일시불 칸을 채우므로, 다른 탭이 열려있으면 안 보이는 문제 방지
   isAmountManuallyEdited = true;
-  const amountUsd = JACKPOT_DATA[game].amountUsd;
-  const cashUsd = amountUsd * CASH_VALUE_RATIO;
   const millions = Math.round(cashUsd / 1000000);
   const input = document.getElementById('homeAmountInput');
   input.value = millions;
   const slider = document.getElementById('homeAmountSlider');
   setSliderMillions(slider, millions);
-  updateHomeCalc(millions * 1000000);
+  updateHomeCalc(exactCalc ? cashUsd : millions * 1000000);
   // 예전엔 여기서 input.focus()를 호출했는데, 모바일에서는 입력칸에 포커스가 가는 순간
   // 숫자 키패드가 자동으로 올라와서 — 퀵필 버튼은 값을 이미 다 채워주는 건데 타이핑할
   // 필요가 없는데도 키보드가 뜨는 게 어색했음(사용자 지적, 2026-07-22) — 삭제함.
@@ -4502,6 +4533,30 @@ function fillHomeAmountFromJackpot(game, btn){
   // "실제 이 잭팟에 당첨되면?"을 상상해보는 순간이라 재미로 살짝 반짝임 효과를 줌
   // (사용자 요청 "이 사이트에 맞게, 과하지 않게 재밌는 요소" 반영, 2026-07-22)
   if (btn) celebrateQuickFill(btn);
+}
+
+function fillHomeAmountFromJackpot(game, btn){
+  const amountUsd = JACKPOT_DATA[game].amountUsd;
+  const cashUsd = amountUsd * CASH_VALUE_RATIO;
+  setHomeLumpAmountUsd(cashUsd, btn);
+}
+
+// 확률체감 탭의 잭팟 랭킹(jh-rank-list)/물가보정 랭킹(ji-cpi-list) 항목 옆 "이 금액으로
+// 계산하기" CTA — cashUsd는 이미 그 랭킹을 그릴 때 계산해둔 값(각 항목의 실수령액 계산에
+// 실제로 쓰인 현금가치)을 그대로 넘겨받음, 재계산하지 않음. UX 리뷰어 지적(단순 정보 탐색
+// 유저를 계산기 유저로 전환)에 따라 2026-07-24 신규 추가.
+// 잭팟 퀵필 버튼(fillHomeAmountFromJackpot)과 달리 celebrateQuickFill() 반짝임은 안 씀 —
+// 클릭 즉시 화면 자체가 확률체감 탭 → 홈으로 바뀌어버려서, 반짝임이 이미 사라진 버튼 위치에
+// 떴다가 새 화면 위로 겹쳐 보이면 오히려 어색함. 결과로 스크롤되는 동작 자체가 충분한 피드백.
+// go('home')을 먼저 호출한 뒤에 금액을 채우는 순서가 중요함 — go('home')은 내부에서
+// syncHomeFromShared()를 불러 input.value를 sharedAmountUsd 기준으로 다시 씀(반올림 없이,
+// "/1000000"만 함). 순서를 반대로 하면 그 재동기화가 나중에 실행되면서 방금 깔끔하게 반올림해
+// 넣은 입력값을 소수점 있는 값으로 덮어써버림 — 그래서 반드시 go('home') 다음에
+// setHomeLumpAmountUsd를 호출해서 마지막 값(깔끔한 반올림 입력값 + 정확한 계산값)이 남게 함
+function fillHomeAmountFromRanking(cashUsd){
+  go('home');
+  setHomeLumpAmountUsd(cashUsd, null, true); // exactCalc=true — 랭킹에 보이던 실수령액과 정확히 일치시킴
+  scrollToMainResult();
 }
 
 function celebrateQuickFill(btn){
