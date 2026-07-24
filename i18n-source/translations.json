@@ -165,7 +165,7 @@
   "ar": "أعيش في كوريا",
   "hi": "मैं कोरिया में रहता हूँ",
   "fr": "Je vis en Corée",
-  "tl": "🇰🇷 Nakatira ako sa Korea"
+  "tl": "Nakatira ako sa Korea"
  },
  "intro.krAction": {
   "en": "Go to calculator →",
@@ -309,7 +309,7 @@
   "ar": "🌐 أعيش خارج كوريا (أمريكا، الصين، إلخ)",
   "hi": "🌐 मैं कोरिया के बाहर रहता हूँ (अमेरिका, चीन, आदि)",
   "fr": "🌐 Je vis en dehors de la Corée (États-Unis, Chine, etc.)",
-  "tl": "🌎 Talagang nakatira ako sa ibang bansa (US/China/India atbp.)"
+  "tl": "🌐 Talagang nakatira ako sa ibang bansa (US/China/India atbp.)"
  },
  "intro.realAbroadHint": {
   "en": "See it in my own country’s terms",
@@ -333,7 +333,7 @@
   "ar": "عرض حسب معايير بلدي",
   "hi": "अपने देश के मानकों के अनुसार देखें",
   "fr": "Voir selon les critères de mon propre pays",
-  "tl": "Piliin ang wika mo"
+  "tl": "Tingnan ayon sa pamantayan ng sarili mong bansa"
  },
  "intro.realAbroadAction": {
   "en": "See country comparison →",
