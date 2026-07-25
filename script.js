@@ -2738,9 +2738,11 @@ const GAME_NAME_MORE = {
 // 🎱 최신 추첨 당첨번호 — 잭팟 확인할 때 공식 사이트(powerball.com/megamillions.com) 보고 같이 갱신.
 // 재미 요소 + 공유 유도용(사용자 피드백: "사이트가 너무 교과서 같다") — 세금 계산기 본질은 그대로 두고
 // 잭팟 카드 안에 양념처럼 추가한 것이라, 갱신을 깜빡해도 계산기 기능엔 영향 없음.
+// 2026-07-25 사용자가 usamega.com 스크린샷으로 확인해서 갱신: 파워볼(7/22)은 이미 최신, 메가밀리언즈만
+// 7/21 → 7/24 회차로 갱신(2,5,42,44,60 + 메가볼 1)
 const LATEST_DRAW = {
   powerball:    { date: '2026-07-22', numbers: [4, 5, 22, 50, 58], special: 1 },
-  megamillions: { date: '2026-07-21', numbers: [25, 37, 59, 68, 70], special: 10 },
+  megamillions: { date: '2026-07-24', numbers: [2, 5, 42, 44, 60], special: 1 },
 };
 
 
