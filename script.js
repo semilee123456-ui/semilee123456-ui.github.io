@@ -4588,6 +4588,141 @@ function saveMyNumbersAsTicketImage(){
   link.click();
 }
 
+const RESULT_IMG_DISCLAIMER_MORE = {
+  ar: 'نتيجة محاكاة مرجعية فقط · ليست إقرارًا ضريبيًا رسميًا',
+  bn: 'শুধুমাত্র রেফারেন্স সিমুলেশন ফলাফল · সরকারি কর ফাইলিং নয়',
+  fr: 'Résultat de simulation de référence uniquement · pas une déclaration fiscale officielle',
+  hi: 'केवल संदर्भ सिमुलेशन परिणाम · आधिकारिक कर फाइलिंग नहीं',
+  id: 'Hanya hasil simulasi referensi · bukan pengajuan pajak resmi',
+  ja: '参考シミュレーション結果です・正式な税務申告ではありません',
+  kk: 'Тек анықтамалық модельдеу нәтижесі · ресми салық декларациясы емес',
+  km: 'លទ្ធផលការក្លែងធ្វើសម្រាប់យោងតែប៉ុណ្ណោះ · មិនមែនការដាក់ពន្ធជាផ្លូវការទេ',
+  ky: 'Бул жөн гана шилтемелик моделдөө натыйжасы · расмий салык декларациясы эмес',
+  lo: 'ຜົນການຈຳລອງເພື່ອອ້າງອີງເທົ່ານັ້ນ · ບໍ່ແມ່ນການຍື່ນພາສີຢ່າງເປັນທາງການ',
+  mn: 'Зөвхөн лавлагаа загварчлалын үр дүн · албан ёсны татварын мэдүүлэг биш',
+  my: 'ရည်ညွှန်းသက်သက် အတု ဖန်တီးမှုရလဒ်သာဖြစ်သည် · တရားဝင် အခွန်ဆောင်မှု မဟုတ်ပါ',
+  ne: 'यो केवल सन्दर्भ सिमुलेशन नतिजा हो · आधिकारिक कर फाइलिङ होइन',
+  si: 'යොමු කිරීම සඳහා පමණක් වන අනුකරණ ප්‍රතිඵලයකි · නිල බදු ගොනු කිරීමක් නොවේ',
+  tl: 'Reference simulation lang na resulta · hindi opisyal na paghahain ng buwis',
+  ur: 'صرف حوالہ جاتی سمولیشن نتیجہ · سرکاری ٹیکس فائلنگ نہیں',
+  uz: "Faqat ma'lumot uchun simulyatsiya natijasi · rasmiy soliq deklaratsiyasi emas",
+};
+
+// 홈 결과 카드("얼마 남을까")를 이미지로 저장 — "🎫 이미지로 저장"(내 번호 티켓)과 같은 Canvas
+// 직접 그리기 방식 재사용. 새 텍스트를 pickLang으로 또 다 번역하는 대신, 이미 화면에 렌더링된
+// DOM 값(이미 22개 언어로 번역·포맷 완료된 상태)을 그대로 읽어와서 캔버스에 옮겨 그림 — 새로
+// 번역이 필요한 건 이 이미지에만 있는 문구(하단 참고용 배지) 하나뿐
+function saveHomeResultAsImage(){
+  const isRtl = RTL_LANGS.includes(currentLang);
+  const resultLabelText = document.querySelector('.result-hero-label').textContent;
+  const finalAmt = document.getElementById('home-final-amt').textContent;
+  const basisMini = document.getElementById('home-final-basis-mini').textContent;
+  const beforeTax = document.getElementById('tax-impact-before').textContent;
+  const taxDiff = document.getElementById('tax-impact-diff').textContent;
+  const takePct = parseInt(document.getElementById('result-visual-take-pct').textContent, 10) || 0;
+  const taxPct = parseInt(document.getElementById('result-visual-tax-pct').textContent, 10) || 0;
+  const takeLabel = document.querySelector('[data-i18n="result.takeHomeLabel"]').textContent;
+  const taxLabel = document.querySelector('[data-i18n="result.taxLabel"]').textContent;
+
+  const SCALE = 2;
+  const W = 900, H = 500;
+  const canvas = document.createElement('canvas');
+  canvas.width = W * SCALE;
+  canvas.height = H * SCALE;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(SCALE, SCALE);
+
+  // 배경 + 테두리 (티켓 이미지와 같은 톤으로 통일)
+  ctx.fillStyle = '#FFFEF9';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#E8E2D3';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(6, 6, W - 12, H - 12);
+
+  ctx.textBaseline = 'middle';
+
+  // 로고
+  ctx.fillStyle = '#155445';
+  ctx.font = "700 30px 'Pretendard', -apple-system, sans-serif";
+  ctx.textAlign = isRtl ? 'right' : 'left';
+  ctx.fillText('참택스', isRtl ? W - 40 : 40, 56);
+  ctx.fillStyle = '#8A8371';
+  ctx.font = "600 14px 'Pretendard', -apple-system, sans-serif";
+  ctx.fillText('chamtax.com', isRtl ? W - 40 : 40, 84);
+
+  // 입력 기준 (예: "100M USD 당첨 · 한국 거주자")
+  ctx.fillStyle = '#8A8371';
+  ctx.font = "700 14px 'Pretendard', -apple-system, sans-serif";
+  ctx.fillText(basisMini, isRtl ? W - 40 : 40, 120);
+
+  // 결과 라벨
+  ctx.fillStyle = '#262420';
+  ctx.font = "800 22px 'Pretendard', -apple-system, sans-serif";
+  ctx.fillText(resultLabelText, isRtl ? W - 40 : 40, 156);
+
+  // 실수령액 — 이 이미지의 중심이라 가장 크게, 가운데 정렬
+  ctx.fillStyle = '#155445';
+  ctx.font = "800 58px 'Pretendard', -apple-system, sans-serif";
+  ctx.textAlign = 'center';
+  ctx.fillText(finalAmt, W / 2, 240);
+
+  // 실수령/세금 비율 막대 — 화면의 result-visual-bar와 같은 개념을 캔버스에 재현
+  const barW = 760, barH = 16, barX0 = (W - barW) / 2, barY0 = 288;
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(barX0, barY0, barW, barH, 8);
+  ctx.clip();
+  ctx.fillStyle = '#C0392B';
+  ctx.fillRect(barX0, barY0, barW, barH);
+  ctx.fillStyle = '#155445';
+  ctx.fillRect(barX0, barY0, barW * (takePct / 100), barH);
+  ctx.restore();
+
+  ctx.font = "700 16px 'Pretendard', -apple-system, sans-serif";
+  ctx.fillStyle = '#262420';
+  ctx.fillText(`${takePct}% ${takeLabel}   ·   ${taxPct}% ${taxLabel}`, W / 2, 326);
+
+  ctx.font = "600 17px 'Pretendard', -apple-system, sans-serif";
+  ctx.fillStyle = '#544E42';
+  ctx.fillText(`${beforeTax} → ${taxDiff}`, W / 2, 366);
+
+  // 참고용 배지 — 티켓 이미지의 "가상 티켓" 배지와 같은 이유(실제 세무 신고 자료로 오인 방지)
+  const disclaimer = pickLang(
+    '참고용 시뮬레이션 결과 · 실제 세무 신고 기준 아님',
+    'Reference simulation only · not an official tax filing',
+    '仅供参考的模拟结果 · 非正式报税依据',
+    'Chỉ là kết quả mô phỏng tham khảo · không phải căn cứ khai thuế chính thức',
+    'ผลจำลองเพื่ออ้างอิงเท่านั้น · ไม่ใช่เกณฑ์การยื่นภาษีอย่างเป็นทางการ',
+    'Только справочное моделирование · не является официальной налоговой декларацией',
+    RESULT_IMG_DISCLAIMER_MORE
+  );
+  const badgeY = 410, badgeH = 34;
+  ctx.font = "700 14px 'Pretendard', -apple-system, sans-serif";
+  const badgeW = Math.min(W - 80, ctx.measureText(disclaimer).width + 48);
+  ctx.fillStyle = 'rgba(192,57,43,0.1)';
+  ctx.strokeStyle = '#C0392B';
+  ctx.lineWidth = 1.5;
+  const bxLeft = (W - badgeW) / 2;
+  ctx.beginPath();
+  ctx.roundRect(bxLeft, badgeY, badgeW, badgeH, 17);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#C0392B';
+  ctx.fillText(disclaimer, W / 2, badgeY + badgeH / 2 + 1);
+
+  // 발행일
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  ctx.fillStyle = '#8A8371';
+  ctx.font = "600 14px 'Pretendard', -apple-system, sans-serif";
+  ctx.fillText(dateStr, W / 2, 462);
+
+  const link = document.createElement('a');
+  link.download = 'chamtax-result.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
 function renderMyNumbersResult(mainNums, specialNum){
   const resultEl = document.getElementById('mn-result');
   const announcerEl = document.getElementById('mn-announcer');

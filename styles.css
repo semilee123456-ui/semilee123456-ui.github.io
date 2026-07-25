@@ -1645,6 +1645,10 @@
   }
   
   .share-btn.copied{ background:var(--teal); color:var(--on-accent); border-color:var(--teal); }
+  /* "결과 공유하기"(텍스트/링크)와 "이미지로 저장"(PNG)이 서로 다른 두 가지 방법이라 나란히
+     둠 — .mn-btn-row(내 번호 티켓 이미지 버튼 줄)와 같은 flex 2등분 패턴 재사용 */
+  .home-result-btn-row{ display:flex; gap:8px; margin-top:12px; }
+  .home-result-btn-row .share-btn{ flex:1; min-width:0; margin-top:0; }
 
   .trust-panel{ text-align:center; }
   .trust-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
