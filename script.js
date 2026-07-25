@@ -5575,17 +5575,31 @@ function setupFaqFloatBtnScrollVisibility(){
   if (!btn || btn.dataset.scrollBound) return;
   btn.dataset.scrollBound = '1';
   let ticking = false;
-  const debouncedUpdate = () => {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(() => { ticking = false; updateFaqFloatBtnVisibility(); });
+  let settleTimer = null;
+  // 스크롤 중엔 보이기/숨기기(임계값 기준)만 매 프레임 즉시 반영하고, "지금 밑에 글자가
+  // 있는지" 충돌 검사(faqFloatBtnCollidesWithText, 무거운 elementsFromPoint 호출)는 스크롤이
+  // 실제로 멈춘 뒤에만 한 번 함 — 원래는 이것도 매 프레임 같이 돌렸는데, 스크롤 중에 버튼
+  // 밑을 스쳐가는 글자마다 옅어졌다 진해졌다 하며 깜빡이는 문제(2026-07-25 지적)로 분리함
+  const updateShowHideOnly = () => {
+    const scrolledEnough = window.scrollY > FAQ_FLOAT_SCROLL_THRESHOLD;
+    btn.classList.toggle('is-visible', scrolledEnough);
+    if (!scrolledEnough) btn.classList.remove('is-colliding');
   };
-  window.addEventListener('scroll', debouncedUpdate, { passive: true });
+  const onScroll = () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(() => { ticking = false; updateShowHideOnly(); });
+    }
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(updateFaqFloatBtnVisibility, 150);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
   // 잭팟 계산 드로어(details/summary)나 "일시불 대신 연금으로" 같은 아코디언을 열고 닫으면
-  // 스크롤은 그대로인데 그 아래 콘텐츠 높이가 바뀌어서 겹침 여부가 달라질 수 있음.
+  // 스크롤은 그대로인데 그 아래 콘텐츠 높이가 바뀌어서 겹침 여부가 달라질 수 있음. 이건 스크롤처럼
+  // 연속으로 일어나는 이벤트가 아니라서 매번 전체 검사(충돌 포함)를 그대로 해도 깜빡임 문제가 없음.
   // 'toggle' 이벤트는 버블링을 안 해서 document에 capture:true로 걸어야 모든 <details>를
   // 한 번에 잡을 수 있음(요소마다 따로 리스너를 안 달아도 됨)
-  document.addEventListener('toggle', debouncedUpdate, true);
+  document.addEventListener('toggle', updateFaqFloatBtnVisibility, true);
   updateFaqFloatBtnVisibility();
 }
 
