@@ -3101,6 +3101,54 @@ async function tryShareCardImage(canvas, shareTitle, shareText){
   }
 }
 
+// tryShareCardImage()가 실패해서(파일 공유 미지원 브라우저 — 카카오톡 인앱 등) 텍스트+링크
+// 공유로 폴백하면, 메신저가 링크의 고정된 og:image로 실제 결과와 무관한 일반 홍보 카드를
+// 자동으로 붙여버리는 문제가 있었음(2026-07-25 사용자 스크린샷으로 신고). 링크 자체는 클릭
+// 유입을 위해 그대로 유지하되, 폴백 직전에 실제 결과가 담긴 카드 이미지를 미리 갤러리에
+// 저장해둬서 사용자가 원하면 그 이미지를 채팅에 직접 첨부할 수 있게 함
+function downloadShareCardImage(canvas, filename){
+  try {
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = filename;
+    link.click();
+  } catch (e) {
+    // 다운로드 자체가 막힌 환경 — 조용히 무시, 텍스트+링크 공유는 그대로 진행됨
+  }
+}
+
+// 위 다운로드 폴백이 실행된 뒤의 "복사 완료" 토스트 — 이미지도 같이 저장됐다는 걸 알려줘야
+// 사용자가 그 이미지를 찾아서 같이 보낼 수 있음(기존 COPY_DONE_MORE 문구는 이 사실을 안 알려줌)
+function shareFallbackCopyToast(){
+  return pickLang(
+    '✅ 복사 완료! 저장된 결과 이미지도 함께 보내보세요',
+    '✅ Copied! We also saved a result image — send that along too',
+    '✅ 已复制！也保存了结果图片，一起发送吧',
+    '✅ Đã sao chép! Ảnh kết quả cũng đã được lưu, hãy gửi kèm nhé',
+    '✅ คัดลอกแล้ว! เราบันทึกภาพผลลัพธ์ไว้ด้วย ลองส่งไปด้วยกัน',
+    '✅ Скопировано! Мы также сохранили изображение с результатом — отправьте и его',
+    {
+      ar: '✅ تم النسخ! لقد حفظنا أيضًا صورة للنتيجة — أرسلها أيضًا',
+      bn: '✅ কপি সম্পন্ন! ফলাফলের একটি ছবিও সংরক্ষণ করা হয়েছে — সেটাও পাঠান',
+      fr: '✅ Copié ! Nous avons aussi enregistré une image du résultat — envoyez-la aussi',
+      hi: '✅ कॉपी पूरा हुआ! रिज़ल्ट की एक इमेज भी सेव कर दी है — उसे भी भेजें',
+      id: '✅ Disalin! Kami juga menyimpan gambar hasilnya — kirim itu juga',
+      ja: '✅ コピー完了！結果の画像も保存しました。それも送ってみてください',
+      kk: '✅ Көшірілді! Нәтиже суретін де сақтадық — соны да жіберіңіз',
+      km: '✅ ចម្លងរួចរាល់! យើងបានរក្សាទុករូបភាពលទ្ធផលផងដែរ — សូមផ្ញើវាផងដែរ',
+      ky: '✅ Көчүрүлдү! Натыйжа сүрөтүн да сактап койдук — аны да жибериңиз',
+      lo: '✅ ສຳເນົາສຳເລັດ! ພວກເຮົາໄດ້ບັນທຶກຮູບຜົນລັບໄວ້ນຳ — ລອງສົ່ງອັນນັ້ນນຳ',
+      mn: '✅ Хуулж дууслаа! Үр дүнгийн зургийг мөн хадгалсан — үүнийг ч бас илгээгээрэй',
+      my: '✅ ကူးယူပြီးပါပြီ! ရလဒ်ပုံကိုလည်း သိမ်းထားပါတယ် — ဒါကိုလည်း ပို့ကြည့်ပါ',
+      ne: '✅ प्रतिलिपि पूरा भयो! नतिजाको तस्बिर पनि सेभ गरिएको छ — त्यो पनि पठाउनुहोस्',
+      si: '✅ පිටපත් කිරීම සම්පූර්ණයි! ප්‍රතිඵල රූපයක්ද සුරකින ලදී — එයද එවන්න',
+      tl: '✅ Nakumpleto ang pag-copy! Na-save din namin ang larawan ng resulta — ipadala rin iyon',
+      ur: '✅ کاپی مکمل! نتیجے کی ایک تصویر بھی محفوظ کر دی ہے — وہ بھی بھیجیں',
+      uz: "✅ Nusxalash tugadi! Natija rasmini ham saqladik — uni ham yuboring",
+    }
+  );
+}
+
 async function shareLatestDraw(game, btnEl){
   const draw = LATEST_DRAW[game];
   const jackpotMillions = Math.round(JACKPOT_DATA[game].amountUsd / 1000000);
@@ -3172,6 +3220,7 @@ async function shareLatestDraw(game, btnEl){
   const cardFooter = pickLang(...SHARE_CTA_FOOTER);
   const canvas = buildShareCard({ label: cardLabel, subText: cardSub, footerText: cardFooter, balls: { numbers: draw.numbers, special: draw.special, specialColor } });
   if (await tryShareCardImage(canvas, gameLabel, shareText)) return;
+  downloadShareCardImage(canvas, 'chamtax-draw-share.png');
 
   if (navigator.share) {
     try {
@@ -3185,7 +3234,7 @@ async function shareLatestDraw(game, btnEl){
     await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
     if (btnEl) {
       const original = btnEl.textContent;
-      btnEl.textContent = pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
+      btnEl.textContent = shareFallbackCopyToast();
       btnEl.classList.add('copied');
       setTimeout(() => { btnEl.textContent = original; btnEl.classList.remove('copied'); }, 2000);
     }
@@ -6729,6 +6778,7 @@ async function shareDreamResult(btnEl){
   const cardFooter = pickLang(...SHARE_CTA_FOOTER);
   const canvas = buildShareCard({ label: title, bigText: amt, subText: cardSub, footerText: cardFooter });
   if (await tryShareCardImage(canvas, shareTitle, shareText)) return;
+  downloadShareCardImage(canvas, 'chamtax-dream-share.png');
 
   if (navigator.share) {
     try {
@@ -6742,7 +6792,7 @@ async function shareDreamResult(btnEl){
     await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
     if (btnEl) {
       const original = btnEl.textContent;
-      btnEl.textContent = pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
+      btnEl.textContent = shareFallbackCopyToast();
       btnEl.classList.add('copied');
       setTimeout(() => { btnEl.textContent = original; btnEl.classList.remove('copied'); }, 2000);
     }
@@ -6874,6 +6924,7 @@ async function shareResult(){
   const cardFooter = pickLang(...SHARE_CTA_FOOTER);
   const canvas = buildShareCard({ label: cardLabel, bigText: finalAmt, subText: cardSub, footerText: cardFooter });
   if (await tryShareCardImage(canvas, shareTitle, shareText)) return;
+  downloadShareCardImage(canvas, 'chamtax-result-share.png');
 
   if (navigator.share) {
     try {
@@ -6891,7 +6942,7 @@ async function shareResult(){
     await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
     if (btn) {
       const original = btn.textContent;
-      btn.textContent = pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
+      btn.textContent = shareFallbackCopyToast();
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
     }
@@ -6965,6 +7016,7 @@ async function shareRefundChecklist(){
   const cardFooter = pickLang('👉 참택스 FAQ에서 확인하기', '👉 Check it on the ChamTax FAQ', '👉 到ChamTax常见问题确认', '👉 Kiểm tra trên FAQ của ChamTax', '👉 ตรวจสอบที่ FAQ ของ ChamTax', '👉 Проверьте в FAQ ChamTax', { ar:'👉 تحقق منه في الأسئلة الشائعة لـ ChamTax', bn:'👉 ChamTax-এর FAQ-তে দেখুন', fr:'👉 Vérifiez sur la FAQ de ChamTax', hi:'👉 ChamTax के FAQ पर देखें', id:'👉 Cek di FAQ ChamTax', ja:'👉 ChamTaxのFAQでチェック', kk:'👉 ChamTax-тың FAQ бөлімінде қараңыз', km:'👉 ពិនិត្យនៅ FAQ របស់ ChamTax', ky:"👉 ChamTax'тын FAQ'унда текшериңиз", lo:'👉 ກວດສອບທີ່ FAQ ຂອງ ChamTax', mn:'👉 ChamTax-ийн FAQ дээр шалгаарай', my:'👉 ChamTax ရဲ့ FAQ မှာ စစ်ဆေးပါ', ne:'👉 ChamTax को FAQ मा जाँच गर्नुहोस्', si:'👉 ChamTax හි FAQ හි පරීක්ෂා කරන්න', tl:'👉 Tingnan sa FAQ ng ChamTax', ur:'👉 ChamTax کے FAQ پر چیک کریں', uz:"👉 ChamTax'ning FAQ sahifasida tekshiring" });
   const canvas = buildShareCard({ label: cardLabel, bigText: cardBig, subText: cardSub, footerText: cardFooter });
   if (await tryShareCardImage(canvas, shareTitle, shareText)) return;
+  downloadShareCardImage(canvas, 'chamtax-refund-checklist-share.png');
 
   if (navigator.share) {
     try {
@@ -6979,7 +7031,7 @@ async function shareRefundChecklist(){
     await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
     if (btn) {
       const original = btn.textContent;
-      btn.textContent = pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
+      btn.textContent = shareFallbackCopyToast();
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
     }
