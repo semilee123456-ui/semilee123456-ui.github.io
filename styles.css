@@ -174,20 +174,26 @@
   .logo-text{ white-space:nowrap; }
   .logo span{ color:var(--teal); }
   .menu{ display:flex; gap:14px; align-items:center; margin-left:auto; }
-  .menu-links{ display:flex; gap:14px; align-items:center; }
   /* lang-toggle와 theme-toggle을 하나의 묶음으로 감싸서, 좁은 화면에서 .menu가 줄바꿈될 때
      이 둘이 서로 떨어져 theme-toggle만 혼자 다음 줄로 밀려나는 일이 없게 함 */
   .menu-controls{ display:flex; gap:8px; align-items:center; }
-  /* 탭 이동 버튼(비교/확률/FAQ)이 예전엔 배경·테두리 없는 순수 텍스트라, 옆의 언어 전환
-     버튼(테두리+배경 있는 pill 모양)과 대비돼 "누를 수 있는 버튼"으로 안 읽히는 문제가
-     실사용자 테스트(고령층, 카카오톡 인앱 브라우저)에서 확인됨 — 클릭 가능해 보이도록
-     lang-toggle과 같은 pill 스타일(테두리+배경)로 통일함 */
+  /* 탭 이동 버튼(비교/확률/FAQ)이 예전엔 배경·테두리 없는 순수 텍스트라 "누를 수 있는 버튼"으로
+     안 읽히는 문제가 실사용자 테스트(고령층, 카카오톡 인앱 브라우저)에서 확인돼서, 각자 테두리+
+     배경이 있는 pill 3개로 바꿨었음. 그런데 그러면 pill 3개가 각각 따로 떠서 화면이 복잡해
+     보인다는 지적(2026-07-24)을 받아, 세그먼트 컨트롤(하나의 둥근 트랙 안에 버튼 3개가 함께
+     들어있고 활성 탭만 안에서 채워지는 스타일)로 다시 바꿈 — "누를 수 있다"는 신호(테두리+배경)는
+     트랙 자체가 여전히 주고, 개별 버튼끼리 서로 떨어져 보이는 무게감만 없앰 */
+  .menu-links{
+    display:flex; align-items:center; gap:2px;
+    border:1px solid rgba(21,84,69,0.25); border-radius:14px; background:rgba(21,84,69,0.06);
+    padding:3px;
+  }
   .menu-links button{
     font-size:16px; color:var(--text-muted); font-weight:600; font-family:inherit; cursor:pointer;
-    border:1px solid rgba(21,84,69,0.25); border-radius:14px; background:rgba(21,84,69,0.06);
-    padding:6px 16px; min-height:44px; display:inline-flex; align-items:center; position:relative;
+    border:none; border-radius:11px; background:none;
+    padding:6px 14px; min-height:38px; display:inline-flex; align-items:center; position:relative;
   }
-  .menu-links button::after{ content:''; position:absolute; top:-6px; left:-4px; right:-4px; bottom:-6px; }
+  .menu-links button::after{ content:''; position:absolute; top:-3px; left:-2px; right:-2px; bottom:-3px; }
   .menu-links button.active{
     color:var(--on-accent); font-weight:700; text-decoration:none;
     background:var(--teal); border-color:var(--teal);
@@ -489,18 +495,32 @@
     position:absolute; top:0; transform:translateX(-50%);
     display:flex; flex-direction:column; align-items:center; gap:3px;
   }
-  .slider-tick-mark{ width:1.5px; height:6px; background:var(--border); display:block; }
+  /* 예전엔 눈금선이 var(--border)(연한 아이보리 테마에서 배경과 거의 구분 안 되는 색) 1.5px라
+     화면에서 사실상 안 보였음 — 그래서 라벨 세 개가 트랙 어디와도 안 이어진 채 그냥 계단식으로
+     떠 있는 것처럼 보인다는 지적(사용자, 2026-07-24)을 받음. 라벨과 같은 색(--text-muted, 명암비
+     7:1대)으로 바꾸고 살짝 굵혀서, 각 라벨이 자기 눈금과 실제로 연결된 선이라는 게 눈에 보이게 함 */
+  .slider-tick-mark{ width:2px; height:6px; background:var(--text-muted); display:block; }
   .slider-tick-label{
     font-size:var(--fs-small); font-weight:600; color:var(--text-muted); white-space:nowrap; line-height:1;
   }
   /* 5억/10억/15억 세 눈금이 좁은 화면(320px)에서 언어에 따라(예: 인도네시아어 "$500
      Juta"/"$1 Miliar"/"$1,5 Miliar") 라벨끼리 가로로 겹치는 문제가 있었음 — 글자 크기를 시니어
-     최소 기준(--fs-small) 아래로 줄이는 대신, 눈금선 길이를 세 단계로 다르게 둬서 라벨이 서로
-     다른 줄에 놓이게 함(2026-07-23: 슬라이더를 로그 스케일로 바꾸면서 세 눈금이 오른쪽 끝
-     쪽으로 몰려 가까워졌고, 가운데 눈금만 어긋나게 하는 걸로는 부족해져서 세 번째 눈금도
-     한 단 더 내림 — 이제 세 라벨이 각자 다른 줄이라 폭·언어와 무관하게 절대 안 겹침) */
-  .slider-tick-mid .slider-tick-mark{ height:24px; }
-  .slider-tick-far .slider-tick-mark{ height:42px; }
+     최소 기준(--fs-small) 아래로 줄이는 대신, 라벨을 세 단계로 다르게 내려서 서로 다른 줄에
+     놓이게 함(2026-07-23: 슬라이더를 로그 스케일로 바꾸면서 세 눈금이 오른쪽 끝 쪽으로 몰려
+     가까워졌고, 가운데 눈금만 어긋나게 하는 걸로는 부족해져서 세 번째 눈금도 한 단 더 내림).
+     2026-07-24: 처음엔 이 간격을 "눈금선 길이"로 줬는데(mark height 24px/42px), 눈금선을
+     눈에 보이는 색으로 바꾸고 나니 그 길어진 선이 옆 눈금의 라벨을 가로질러 그어지는 버그가
+     됨(사용자가 실기기 스크린샷으로 발견 — "5억 달러" 글자 옆에 낯선 세로줄이 떠 있었음).
+     눈금선 자체는 항상 짧게(6px) 고정하고, 그만큼의 간격을 라벨 쪽 margin-top으로 옮겨서
+     — 눈금선은 항상 트랙 바로 밑 6px 안에만 있으니 다른 줄 라벨과 절대 안 겹침 */
+  .slider-tick-mid .slider-tick-label{ margin-top:18px; }
+  .slider-tick-far .slider-tick-label{ margin-top:36px; }
+  /* 마지막(15억) 눈금은 트랙 오른쪽 끝(94.57%)에 너무 가까워서, 다른 눈금처럼 가운데 정렬
+     (translateX(-50%))하면 라벨 절반이 카드 오른쪽 테두리 밖으로 잘려나갔음(2026-07-24, 실사용
+     스크린샷으로 발견 — 320~768px 폭 모두에서 재현). 이 눈금만 오른쪽 끝에서부터 안쪽으로
+     너비를 잡는 방식(right, 가운데 정렬 대신 오른쪽 정렬)으로 바꿔서, 라벨이 몇 글자든(번역
+     길이 무관) 카드 밖으로 못 나가게 함 */
+  .slider-tick-far{ left:auto; right:5.43%; transform:none; align-items:flex-end; }
 
   .result-grid{ display:grid; grid-template-columns:0.85fr 0.85fr 1.3fr; gap:10px; align-items:stretch; }
   /* 국기 4개 이상 묶인 큰 그룹 카드는 .side-card-full로 자기 줄을 통째로 차지하게 분리했으니,
@@ -581,6 +601,13 @@
   .side-card-group-note{
     font-size:var(--fs-small); font-weight:600; color:var(--text-muted); margin:0;
     background:var(--card); border:1px dashed rgba(21,84,69,0.35); border-radius:20px; padding:2px 10px;
+  }
+  /* 나라 이름을 전부 풀어쓴 긴 문장(2~3개국 그룹)은 알약/뱃지 모양 안에 넣으면 답답해 보여서
+     (사용자 지적, 2026-07-25) 태그 스타일을 벗기고 카드 전체 폭을 쓰는 일반 텍스트로 바꿈 —
+     짧은 "N개국 동일" 뱃지(위 기본 스타일)는 그대로 유지, 이 긴 문장 케이스만 예외 적용 */
+  .side-card-group-note-long{
+    background:none; border:none; border-radius:0; padding:0; display:block;
+    width:100%; flex-basis:100%; line-height:1.5;
   }
   /* 국기가 많이 묶인 카드(예: 12개국)는 한 칸짜리 폭에서 국기가 여러 줄로 접혀서 카드가 세로로
      길어지고, 옆 칸의 짧은 카드와 키 차이가 커서 빈 공간이 크게 남음 — 그리드 전체 폭을 차지하게
@@ -924,18 +951,55 @@
   .faq-overlay-close-btn{ display:none; }
   /* "궁금해요" 버튼으로 도움말을 열 때, go('faq')로 실제 탭 전환을 하면 사용자가 하던 화면(입력값,
      스크롤 위치)에서 완전히 벗어나게 되고 "뒤로 가면 다시 보기 힘들다"는 피드백이 있었음 — 그래서
-     탭 전환 없이 #view-faq에 이 클래스만 붙여서 현재 화면 위에 통째로 덮어씌우는 오버레이로 띄움.
-     닫으면 클래스만 제거되고 원래 화면은 밑에서 손 안 댄 채 그대로 있음 */
+     탭 전환 없이 #view-faq에 이 클래스만 붙여서 현재 화면 위에 오버레이로 띄움.
+     닫으면 클래스만 제거되고 원래 화면은 밑에서 손 안 댄 채 그대로 있음.
+     2026-07-24: 처음엔 화면을 완전히 덮는 풀스크린(배경 var(--bg), 틈 없이 꽉 참)이었는데,
+     상태는 안 날아가도 시각적으로 "탭이 또 뜬 것" 같다는 피드백을 받아 바텀시트로 바꿈 — 뒷배경을
+     어둡게 깔아 원래 화면이 카드 위로 살짝 비치게 하고, 카드 자체도 화면 하단에서 올라오는
+     형태(위쪽 여백 남김)로 바꿔서 "그 위에 얹힌 패널"이라는 느낌을 주려 함 */
   .view#view-faq.faq-overlay-mode{
-    display:block; position:fixed; inset:0; z-index:2000; background:var(--bg);
-    overflow-y:auto; -webkit-overflow-scrolling:touch; padding:16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+    display:block; position:fixed; inset:0; z-index:2000; background:rgba(15,13,10,0.5);
+    padding:0; animation:faqBackdropFadeIn 0.18s ease;
   }
-  .view#view-faq.faq-overlay-mode > *{ max-width:720px; margin-left:auto; margin-right:auto; }
   .view#view-faq.faq-overlay-mode > .back-btn{ display:none; }
-  .view#view-faq.faq-overlay-mode > .faq-overlay-close-btn{
-    display:flex; align-items:center; gap:6px; position:sticky; top:0; z-index:1;
+  /* .panel 하나만 시트로 만들면 되는 게 아니라, 같은 #view-faq 밑에 .panel과 나란히 있는
+     .ad-slot/.more-details-toggle/.disclaimer까지 전부 시트 안에 들어가야 함 — 처음엔 부모
+     (#view-faq)를 display:flex로 바꿔서 .panel만 따로 스타일링하려 했는데, 그러면 이 형제
+     요소들까지 전부 flex item이 되어 한 줄에 나란히 눌려버리는 버그가 났음(2026-07-24, 실제
+     스크린샷으로 발견 — 글자가 세로로 한 글자씩 쪼개져 보였음). 그래서 이 넷을 감싸는
+     .faq-sheet-content 래퍼(index.html)를 새로 추가해서, 부모는 그냥 단순 block 배경으로
+     두고 이 래퍼 하나만 절대좌표로 하단에 앉힘 */
+  .faq-sheet-content{ display:contents; }
+  .view#view-faq.faq-overlay-mode .faq-sheet-content{
+    display:block; position:absolute; left:0; right:0; bottom:0;
+    max-width:720px; max-height:88vh; margin:0 auto;
+    background:var(--bg); border-radius:20px 20px 0 0;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:10px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+    box-shadow:0 -12px 32px rgba(0,0,0,0.28);
+    animation:faqSheetSlideUp 0.22s cubic-bezier(0.16,1,0.3,1);
+  }
+  .view#view-faq.faq-overlay-mode .faq-sheet-content > .panel{ background:none; border:none; padding:0; margin:0; }
+  @media (prefers-reduced-motion: reduce){
+    .view#view-faq.faq-overlay-mode{ animation:none; }
+    .view#view-faq.faq-overlay-mode .faq-sheet-content{ animation:none; }
+  }
+  @keyframes faqBackdropFadeIn{ from{ background:rgba(15,13,10,0); } to{ background:rgba(15,13,10,0.5); } }
+  @keyframes faqSheetSlideUp{ from{ transform:translateY(24px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+  .faq-sheet-handle{ display:none; }
+  .view#view-faq.faq-overlay-mode .faq-sheet-handle{
+    display:block; width:36px; height:4px; border-radius:2px; background:var(--border);
+    margin:8px auto 4px;
+  }
+  /* 카테고리/페르소나 필터로 결과 위치까지 스크롤되면(setFaqCategory 등) 이 버튼 뒤로 FAQ 문항
+     텍스트가 지나가는데, 버튼 너비가 텍스트만큼만 좁으면 배경이 그 폭만큼만 덮여서 좌우로
+     글자가 겹쳐 보이는 버그가 있었음(2026-07-24, 스크린샷으로 발견) — 버튼을 시트 폭 전체로
+     넓혀서 뒤 텍스트를 확실히 가리게 함 */
+  .view#view-faq.faq-overlay-mode .faq-overlay-close-btn{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    width:100%; position:sticky; top:0; z-index:1;
     background:var(--bg); border:none; font-family:inherit; font-size:var(--fs-body); font-weight:700;
-    color:var(--teal); padding:4px 0 14px; cursor:pointer; margin-left:auto; margin-right:auto;
+    color:var(--teal); padding:6px 0 10px; cursor:pointer;
   }
   @media (max-width: 420px) {
     .sticky-result-label{ max-width:38vw; }
@@ -1098,6 +1162,11 @@
   .mn-special-input:focus{ border-color:var(--status-red); box-shadow:0 0 0 3px rgba(var(--status-red-rgb),0.16); }
   .mn-error{ font-size:var(--fs-small); color:var(--status-red); font-weight:700; margin:10px 0 0; }
   .mn-error:empty{ display:none; margin:0; }
+  /* "🎫 이미지로 저장" 버튼(2026-07-24 신규, saveMyNumbersAsTicketImage())을 "확인하기"와 한 줄에
+     나란히 두되, 둘 다 min-height 44px 터치 타깃은 유지 — .cta-btn/.share-btn 둘 다 기본은
+     width:100%+margin-top이라 그대로 두면 세로로 쌓이므로, 이 행 안에서만 flex:1로 덮어씀 */
+  .mn-btn-row{ display:flex; gap:8px; margin-top:14px; }
+  .mn-btn-row .mn-check-btn, .mn-btn-row .mn-save-btn{ flex:1; min-width:0; margin-top:0; }
   .mn-check-btn{ margin-top:14px; }
   .mn-disclaimer{ color:var(--text-muted); }
   .mn-result-wrap{ margin-top:16px; display:flex; flex-direction:column; gap:10px; }
@@ -1349,20 +1418,25 @@
   .dl-inline-label{ font-size:var(--fs-small); font-weight:600; color:var(--text-dark); margin:14px 0 6px; }
   .dl-input-row{ margin-top:4px; }
   #dl-result:not(:empty){ margin-bottom:16px; }
-  .dl-date-input{
-    width:100%; max-width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--border);
+  /* 2026-07-24: 네이티브 <input type="date">가 iOS Safari에서 내부 UI 폭을 CSS보다 우선시해서
+     박스 밖으로 튀어나오는 문제가 2026-07-23부터 반복 재발했고, 이 세션 환경엔 실제 iOS/WebKit이
+     없어 CSS만으로 고치는 시도 자체를 검증할 수 없었음 — 브라우저 기본 달력 UI를 아예 안 쓰고
+     select 3개(연/월/일)로 교체함. select는 어느 브라우저든 우리가 지정한 폭 안에서만 렌더링되는
+     흔한 폼 컨트롤이라 이 버그 자체가 원천적으로 발생할 수 없음 */
+  .dl-date-select-row{ display:flex; align-items:center; gap:4px; width:100%; }
+  .dl-date-select{
+    flex:1 1 0; min-width:0; padding:12px 8px; border-radius:10px; border:1px solid var(--border);
     background:var(--card); color:var(--text-dark); font-family:inherit; font-size:var(--fs-small);
-    box-sizing:border-box; overflow:hidden;
-    /* iOS 사파리는 type=date의 내부 날짜 세그먼트+달력 아이콘 고유 너비를 width:100%보다
-       우선시해서 박스 테두리 밖으로 튀어나오는 경우가 있음(사용자가 스크린샷으로 직접 지적,
-       2026-07-23) — 이 웹킷 전용 속성으로 내부 최소 너비 강제를 해제해야 실제로 잡힘.
-       2026-07-23 같은 날 실사용 중 다시 오버플로우처럼 보인다는 지적이 있었으나, 이 환경엔
-       실제 iOS/WebKit 브라우저가 없어 재현·검증은 못 했음 — overflow:hidden을 방어적으로
-       추가함(폭 계산 자체는 헤드리스 크로미움에서 컨테이너 안에 정확히 들어맞는 것까지는 확인함).
-       다음에 실기기에서 재확인 필요. */
-    -webkit-min-logical-width:0;
+    box-sizing:border-box; min-height:44px; text-align:center;
+    -webkit-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23155445' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 6px center; background-size:9px; padding-right:20px;
   }
-  .dl-date-input:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(21,84,69,0.14); }
+  /* 연도 select만 "2026" 같은 4자리 숫자라 다른 두 개(월/일, 최대 2자리)보다 폭이 더 필요함 —
+     flex:1로 균등 분배하면 연도만 좁아서 화살표 아이콘과 숫자가 붙어 보일 수 있어 비율을 다르게 줌 */
+  #dl-date-year{ flex-grow:1.3; }
+  .dl-date-select:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(21,84,69,0.14); }
+  .dl-date-sep{ color:var(--text-muted); font-weight:700; flex-shrink:0; }
   .dl-empty{ font-size:var(--fs-small); color:var(--text-muted); text-align:center; padding:14px 0; }
   .dl-amt, .dl-no-amt{ font-size:var(--fs-small); color:var(--text-muted); margin:6px 0 0; }
   .dl-amt{ font-weight:700; color:var(--teal); }
@@ -1443,6 +1517,31 @@
   .jc-annuity-box .jc-row{ border-bottom:1px solid var(--border); padding:8px 0; }
   .jc-annuity-box .jc-row:last-of-type{ border-bottom:none; }
   .jc-annuity-box .jc-row.jc-final{ background:rgba(21,84,69,0.06); margin:2px -8px; padding:8px 8px; border-radius:8px; border-bottom:none; }
+
+  /* 확률체감 탭의 "🔧 세금 기준 바꾸기 →" 팝오버(openTaxBasisOverlay()/closeTaxBasisOverlay()).
+     FAQ의 faq-overlay-mode(전체화면)와 같은 문제(탭 전환하면 스크롤 위치를 잃음)를 해결하지만,
+     여기 콘텐츠는 국가 버튼 몇 개짜리 짧은 목록이라 전체화면 대신 배경을 살짝 덮고 가운데
+     떠 있는 작은 카드로 처리함(jackpot-calc.show처럼 항상 DOM에 있다가 클래스만 토글) */
+  .tax-basis-overlay{ display:none; }
+  .tax-basis-overlay.show{
+    display:flex; align-items:center; justify-content:center; position:fixed; inset:0; z-index:2100; padding:16px;
+  }
+  .tax-basis-overlay-backdrop{
+    position:absolute; inset:0; background:rgba(0,0,0,0.45);
+  }
+  .tax-basis-overlay-panel{
+    position:relative; width:100%; max-width:420px; max-height:calc(100vh - 32px); overflow-y:auto;
+    background:var(--card); border-radius:16px; padding:16px; box-shadow:0 12px 32px rgba(0,0,0,0.28);
+  }
+  .tax-basis-overlay-header{
+    display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px;
+    font-size:var(--fs-body); font-weight:800; color:var(--text-dark);
+  }
+  .tax-basis-overlay-close{
+    display:flex; align-items:center; gap:4px; background:none; border:none; font-family:inherit;
+    font-size:var(--fs-small); font-weight:700; color:var(--text-muted); cursor:pointer; padding:4px;
+  }
+  .tax-basis-overlay-body .country-toggle{ margin:0; }
   .annuity-schedule-wrap{ margin-top:8px; }
   .annuity-schedule-row{
     display:grid; grid-template-columns:38px 1fr 1fr; gap:4px 8px; align-items:baseline;
@@ -1469,10 +1568,13 @@
   /* 디자인 3차 개선: 1·2단계는 참고용 정보로 나란히 축소하고, 제일 중요한 3단계(세후 실수령액)만
      그라데이션 카드로 확실히 승격 — 4단계(연금 옵션)는 궁금한 사람만 펼쳐보는 아코디언으로 분리 */
   .jc-step-row-12{ display:flex; gap:10px; margin-bottom:8px; }
-  @media (max-width:340px){
-    /* 좁은 화면(아이폰 SE급)에서는 두 칸이 반씩 나눠 가지면 "일시불 선택 시 (세전, 약 58%)"
-       같은 짧은 문구도 단어마다 줄바꿈되며 세로로 길게 늘어졌음 — 세로로 쌓아서 각 칸이
-       전체 너비를 쓰게 함 */
+  @media (max-width:600px){
+    /* 원래 340px(아이폰 SE급) 밑에서만 세로로 쌓았는데, "발표된 잭팟 (연금 기준)"·"일시불 선택
+       시 (세전, 약 58%)" 같은 라벨은 흔한 폰 폭(375~428px)에서도 반칸(약 170~200px)에 욱여
+       넣으면 단어마다 줄바꿈되며 카드가 세로로 길게 늘어지는 문제가 있었음(390px 실기기 스크린샷
+       으로 재확인, 2026-07-24 — 428px에서도 여전히 부자연스러웠음). 웬만한 폰 폭 전체를 커버하게
+       기준을 600px로 올려서, 좁은 화면에선 항상 전체 너비로 쌓이게 함 — 나란히 배치는 화면이
+       실제로 넉넉한 태블릿/데스크톱에서만 남김 */
     .jc-step-row-12{ flex-direction:column; }
   }
   .jc-step-row-12 .jc-step{
@@ -1701,7 +1803,9 @@
        가려서 화면 밖 스크롤은 안 생기지만 대신 글자가 그냥 잘려서 안 보이는 문제가 있었음.
        .menu 자체도 줄바꿈되게 해서 안 들어가면 2번째 줄로 넘어가게 함(잘리는 대신) */
     .menu{ row-gap:8px; column-gap:8px; flex-wrap:wrap; justify-content:flex-end; width:100%; max-width:100%; }
-    .menu-links{ gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    /* .menu-links 자체는 세그먼트 컨트롤 트랙이라 gap을 넓히면 버튼끼리 떨어져 보여 트랙 느낌이
+       깨짐(2026-07-24 세그먼트 컨트롤 전환 때 유지) — 넓은 gap은 .menu 줄바꿈 쪽에서만 줌 */
+    .menu-links{ flex-wrap:wrap; justify-content:flex-end; }
     .menu-controls{ flex-wrap:wrap; justify-content:flex-end; max-width:100%; }
     /* 원형 설정 버튼(🌐) 하나만 nav 버튼 3개와 안 붙고 혼자 다음 줄에 뚝 떨어져서 어색하게
        떠 보이는 문제가 320~360px 근방에서 있었음(사용자가 실기기 스크린샷으로 지적,

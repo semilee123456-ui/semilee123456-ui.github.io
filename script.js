@@ -2098,6 +2098,21 @@ function setFaqCategory(cat, btnEl){
   document.querySelectorAll('.faq-chip').forEach(c => c.classList.remove('active'));
   if (btnEl) btnEl.classList.add('active');
   filterFaq();
+
+  // 바로 아래 setFaqAudience()가 "누가 묻는지" 필터에서 이미 해결한 것과 같은 문제(필터를
+  // 눌렀는데 걸러진 결과가 화면 밖에 있어서 아무 반응이 없는 것처럼 보임)가 이 카테고리 필터
+  // 줄에서도 그대로 재현된다는 사용자 지적(2026-07-24) — 다만 카테고리는 오디언스와 달리 한
+  // 질문이 아니라 여러 질문이 한꺼번에 매칭되므로, 그중 첫 번째로 보이는 항목까지만 스크롤하고
+  // (긴 목록을 한 번에 다 펼치면 오히려 부담스러워서) <details>는 열지 않음 — filterFaq()가
+  // 이미 item.style.display로 매칭 여부를 표시해둔 걸 그대로 이용해 첫 가시 항목을 찾음
+  if (cat !== 'all') {
+    const items = document.querySelectorAll('#view-faq .faq-item[data-cat="' + cat + '"]');
+    let target = null;
+    for (const item of items) {
+      if (item.style.display !== 'none') { target = item; break; }
+    }
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 // FAQ 탭 전용 두 번째 필터 축 — "누가 묻는 질문이냐"(재외국민 vs 한국 거주 외국인) 기준.
@@ -3860,18 +3875,88 @@ function findDrawByDate(dateStr){
   return null;
 }
 
+// 연/월/일 select 3개의 현재 값을 합쳐서 기존 <input type="date">와 같은 "YYYY-MM-DD" 문자열로 만듦
+function getDlSelectedDate(){
+  const y = document.getElementById('dl-date-year');
+  const m = document.getElementById('dl-date-month');
+  const d = document.getElementById('dl-date-day');
+  if (!y || !m || !d || !y.value || !m.value || !d.value) return '';
+  return `${y.value}-${m.value.padStart(2, '0')}-${d.value.padStart(2, '0')}`;
+}
+
+// 연/월 select 값에 맞춰 일(day) select의 선택지 개수를 다시 채움(예: 2월은 28~29일까지만) —
+// 이미 골라둔 날짜가 새 달에도 존재하면 그대로 유지하고, 없으면(예: 31일 → 2월) 그 달의
+// 마지막 날로 자동 보정함
+function populateDlDaySelect(daySel, year, month, preferredDay){
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const keepDay = Math.min(preferredDay || daysInMonth, daysInMonth);
+  daySel.innerHTML = '';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const opt = document.createElement('option');
+    opt.value = String(d);
+    opt.textContent = String(d);
+    if (d === keepDay) opt.selected = true;
+    daySel.appendChild(opt);
+  }
+}
+
+function onDlDateChanged(){
+  renderDateLookupResult(getDlSelectedDate());
+}
+
+// 2026-07-24: 예전엔 네이티브 <input type="date">를 썼는데, iOS Safari가 내부 UI 폭을 CSS보다
+// 우선시해서 박스 밖으로 튀어나오는 문제가 반복 재발함(이 세션 환경엔 iOS/WebKit이 없어 CSS로만
+// 고치는 시도 자체를 검증할 수 없었음) — 브라우저 기본 달력 UI에 기대지 않고 완전히 우리가
+// 그리는 select 3개(연/월/일)로 교체해서, 어느 브라우저에서든 우리가 지정한 폭 안에만 있게 함
 function setupDateLookup(){
-  const input = document.getElementById('dl-date-input');
-  if (!input || input.dataset.wired) return;
-  input.dataset.wired = '1';
-  input.addEventListener('change', () => renderDateLookupResult(input.value));
+  const yearSel = document.getElementById('dl-date-year');
+  const monthSel = document.getElementById('dl-date-month');
+  const daySel = document.getElementById('dl-date-day');
+  if (!yearSel || !monthSel || !daySel || yearSel.dataset.wired) return;
+  yearSel.dataset.wired = '1';
+
+  yearSel.setAttribute('aria-label', pickLang('연도 선택', 'Select year', '选择年份', 'Chọn năm', 'เลือกปี', 'Выбрать год', DL_YEAR_LABEL_MORE));
+  monthSel.setAttribute('aria-label', pickLang('월 선택', 'Select month', '选择月份', 'Chọn tháng', 'เลือกเดือน', 'Выбрать месяц', DL_MONTH_LABEL_MORE));
+  daySel.setAttribute('aria-label', pickLang('일 선택', 'Select day', '选择日期', 'Chọn ngày', 'เลือกวัน', 'Выбрать день', DL_DAY_LABEL_MORE));
+
+  const today = new Date();
+  const thisYear = today.getFullYear();
+  const thisMonth = today.getMonth() + 1;
+  const thisDay = today.getDate();
+
+  // 파워볼 최초 추첨(1992)부터 오늘까지만 — 그 밖의 연도는 애초에 데이터가 없어 골라봐야 의미 없음
+  const FIRST_DRAW_YEAR = 1992;
+  yearSel.innerHTML = '';
+  for (let y = thisYear; y >= FIRST_DRAW_YEAR; y--) {
+    const opt = document.createElement('option');
+    opt.value = String(y);
+    opt.textContent = String(y);
+    if (y === thisYear) opt.selected = true;
+    yearSel.appendChild(opt);
+  }
+  monthSel.innerHTML = '';
+  for (let m = 1; m <= 12; m++) {
+    const opt = document.createElement('option');
+    opt.value = String(m);
+    opt.textContent = String(m);
+    if (m === thisMonth) opt.selected = true;
+    monthSel.appendChild(opt);
+  }
+  populateDlDaySelect(daySel, thisYear, thisMonth, thisDay);
+
+  // 연/월이 바뀌면 그 달의 실제 일수에 맞게 일 select부터 다시 채운 뒤 조회를 새로 함
+  const onYearOrMonthChanged = () => {
+    populateDlDaySelect(daySel, Number(yearSel.value), Number(monthSel.value), Number(daySel.value));
+    onDlDateChanged();
+  };
+  yearSel.addEventListener('change', onYearOrMonthChanged);
+  monthSel.addEventListener('change', onYearOrMonthChanged);
+  daySel.addEventListener('change', onDlDateChanged);
+
   // 처음엔 빈 채로 두는 게 의도였는데, 아이폰 사파리는 빈 date input에 "mm/dd/yyyy" 같은
   // 안내 텍스트조차 안 보여줘서 완전히 텅 빈 칸처럼 보이는 문제가 있었음(스크린샷으로 확인,
   // 2026-07-22) — 오늘 날짜로 기본값을 채워서 처음부터 뭔가 보이게 하고, 그 날짜 결과도 바로 보여줌
-  const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  input.value = todayStr;
-  renderDateLookupResult(todayStr);
+  renderDateLookupResult(getDlSelectedDate());
 }
 
 function renderDateLookupResult(dateStr){
@@ -3887,8 +3972,7 @@ function renderDateLookupResult(dateStr){
   if (typeof JACKPOT_HISTORY === 'undefined') {
     resultEl.innerHTML = `<p class="dl-empty">${pickLang('불러오는 중…', 'Loading…', '加载中…', 'Đang tải…', 'กำลังโหลด…', 'Загрузка…', DL_LOADING_MORE)}</p>`;
     ensureOddsDataLoaded().then(() => {
-      const input = document.getElementById('dl-date-input');
-      if (input && input.value !== dateStr) return;
+      if (getDlSelectedDate() !== dateStr) return;
       renderDateLookupResult(dateStr);
     });
     return;
@@ -4023,6 +4107,26 @@ const DL_NO_AMT_MORE = {
   uz: "bu tortish uchun jekpot summasi ma'lumoti yo'q (faqat raqamlar bor)",
 };
 
+// 날짜 조회용 연/월/일 select 3개의 aria-label — 화면엔 안 보이고 스크린리더용
+const DL_YEAR_LABEL_MORE = {
+  ar: 'اختر السنة', bn: 'বছর নির্বাচন করুন', fr: 'Sélectionner l\'année', hi: 'वर्ष चुनें',
+  id: 'Pilih tahun', ja: '年を選択', kk: 'Жылды таңдау', km: 'ជ្រើសរើសឆ្នាំ',
+  ky: 'Жылды тандаңыз', lo: 'ເລືອກປີ', mn: 'Он сонгох', my: 'နှစ်ရွေးရန်',
+  ne: 'वर्ष छान्नुहोस्', si: 'වර්ෂය තෝරන්න', tl: 'Pumili ng taon', ur: 'سال منتخب کریں', uz: 'Yilni tanlang',
+};
+const DL_MONTH_LABEL_MORE = {
+  ar: 'اختر الشهر', bn: 'মাস নির্বাচন করুন', fr: 'Sélectionner le mois', hi: 'महीना चुनें',
+  id: 'Pilih bulan', ja: '月を選択', kk: 'Айды таңдау', km: 'ជ្រើសរើសខែ',
+  ky: 'Айды тандаңыз', lo: 'ເລືອກເດືອນ', mn: 'Сар сонгох', my: 'လရွေးရန်',
+  ne: 'महिना छान्नुहोस्', si: 'මාසය තෝරන්න', tl: 'Pumili ng buwan', ur: 'مہینہ منتخب کریں', uz: 'Oyni tanlang',
+};
+const DL_DAY_LABEL_MORE = {
+  ar: 'اختر اليوم', bn: 'দিন নির্বাচন করুন', fr: 'Sélectionner le jour', hi: 'दिन चुनें',
+  id: 'Pilih tanggal', ja: '日を選択', kk: 'Күнді таңдау', km: 'ជ្រើសរើសថ្ងៃ',
+  ky: 'Күндү тандаңыз', lo: 'ເລືອກວັນ', mn: 'Өдөр сонгох', my: 'နေ့ရွေးရန်',
+  ne: 'दिन छान्नुहोस्', si: 'දිනය තෝරන්න', tl: 'Pumili ng araw', ur: 'دن منتخب کریں', uz: 'Kunni tanlang',
+};
+
 // ============================================================================
 // 🎯 내 번호 vs 역대급 당첨번호 비교 위젯 — "확률 감이 안 온다"는 위 패널들과 이어지는 재미 요소.
 // 세금 계산기 본질과 무관한 순수 novelty라, 실제 당첨 확인이 아니라는 걸 문구 곳곳에 명시함.
@@ -4140,6 +4244,37 @@ const MN_DUPLICATE_ERROR_MORE = {
   tl: 'May paulit-ulit na numero sa mga pangunahing numerong inilagay mo — pakilagay ang 5 magkakaibang numero', ur: 'آپ کے درج کردہ مرکزی نمبروں میں سے کچھ دہرائے گئے ہیں — براہ کرم 5 مختلف نمبر درج کریں',
   uz: "Siz kiritgan asosiy raqamlar orasida takrorlanadigan raqam bor — iltimos, 5 ta har xil raqam kiriting",
 };
+// "🎫 이미지로 저장"(saveMyNumbersAsTicketImage()) 관련 문구 — 캔버스에 직접 그려 넣는 텍스트라
+// data-i18n으로 못 채우고 pickLang()으로 JS에서 문자열만 만들어서 fillText()에 씀
+const MN_SAVE_BTN_MORE = {
+  ar: '🎫 حفظ كصورة', bn: '🎫 ছবি হিসেবে সংরক্ষণ', fr: '🎫 Enregistrer en image', hi: '🎫 इमेज के रूप में सेव करें',
+  id: '🎫 Simpan sebagai gambar', ja: '🎫 画像として保存', kk: '🎫 Сурет ретінде сақтау', km: '🎫 រក្សាទុកជារូបភាព',
+  ky: '🎫 Сүрөт катары сактоо', lo: '🎫 ບັນທຶກເປັນຮູບພາບ', mn: '🎫 Зураг болгон хадгалах', my: '🎫 ပုံအဖြစ် သိမ်းမည်',
+  ne: '🎫 तस्बिरको रूपमा सेभ गर्नुहोस्', si: '🎫 රූපයක් ලෙස සුරකින්න', tl: '🎫 I-save bilang larawan', ur: '🎫 تصویر کے طور پر محفوظ کریں',
+  uz: "🎫 Rasm sifatida saqlash",
+};
+const MN_TICKET_TITLE_MORE = {
+  ar: 'تذكرتي', bn: 'আমার টিকিট', fr: 'Mon billet', hi: 'मेरी टिकट', id: 'Tiket Saya', ja: 'マイチケット',
+  kk: 'Менің билетім', km: 'សំបុត្ររបស់ខ្ញុំ', ky: 'Менин билетим', lo: 'ປີ້ຂອງຂ້ອຍ', mn: 'Миний тасалбар', my: 'ကျွန်ုပ်၏လက်မှတ်',
+  ne: 'मेरो टिकट', si: 'මගේ ටිකට් පත', tl: 'Aking Tiket', ur: 'میری ٹکٹ', uz: "Mening chiptam",
+};
+const MN_TICKET_DISCLAIMER_MORE = {
+  ar: 'تذكرة وهمية للمتعة فقط · ليست شراءً حقيقيًا', bn: 'শুধু মজার জন্য বানানো নকল টিকিট · আসল কেনাকাটা নয়',
+  fr: 'Faux billet créé pour le plaisir · pas un vrai achat', hi: 'सिर्फ मज़े के लिए बनाई गई नकली टिकट · असली खरीद नहीं',
+  id: 'Tiket palsu untuk hiburan saja · bukan pembelian sungguhan', ja: '楽しみのために作った偽のチケット・実際の購入ではありません',
+  kk: 'Тек көңіл көтеру үшін жасалған жалған билет · нақты сатып алу емес', km: 'សំបុត្រក្លែងក្លាយសម្រាប់ភាពសប្បាយប៉ុណ្ណោះ · មិនមែនការទិញពិតប្រាកដទេ',
+  ky: 'Жөн гана көңүл ачуу үчүн жасалган жасалма билет · чыныгы сатып алуу эмес', lo: 'ປີ້ປອມສ້າງຂຶ້ນເພື່ອຄວາມມ່ວນເທົ່ານັ້ນ · ບໍ່ແມ່ນການຊື້ຈິງ',
+  mn: 'Зөвхөн зугаа цэнгэлийн зорилгоор хийсэн хуурамч тасалбар · бодит худалдан авалт биш', my: 'ပျော်စရာအတွက်ပဲ ပြုလုပ်ထားတဲ့ အတု လက်မှတ် · တကယ့်ဝယ်ယူမှု မဟုတ်ပါ',
+  ne: 'रमाइलोका लागि मात्र बनाइएको नक्कली टिकट · वास्तविक खरिद होइन', si: 'විනෝදය සඳහා පමණක් සාදන ලද ව්‍යාජ ටිකට් පතක් · සැබෑ මිලදී ගැනීමක් නොවේ',
+  tl: 'Peke lang na tiket para sa saya · hindi totoong pagbili', ur: 'صرف تفریح کے لیے بنائی گئی جعلی ٹکٹ · اصل خریداری نہیں',
+  uz: "Faqat qiziqarli maqsadda yaratilgan soxta chipta · haqiqiy xarid emas",
+};
+const MN_TICKET_SELFPICK_MORE = {
+  ar: 'اختيار شخصي', bn: 'নিজে বাছাই করা', fr: 'Choisi personnellement', hi: 'खुद चुना गया', id: 'Pilih sendiri',
+  ja: '自分で選択', kk: 'Өзі таңдаған', km: 'ជ្រើសរើសដោយខ្លួនឯង', ky: 'Өзү тандаган', lo: 'ເລືອກເອງ', mn: 'Өөрөө сонгосон',
+  my: 'ကိုယ်တိုင်ရွေးချယ်', ne: 'आफैं छानिएको', si: 'තමන් තෝරාගත්', tl: 'Sariling pinili', ur: 'خود منتخب کردہ',
+  uz: "O'zi tanlagan",
+};
 const MN_LEGENDARY_TAG_MORE = {
   ar: '🏆 جاكبوت أسطوري', bn: '🏆 কিংবদন্তি জ্যাকপট', fr: '🏆 Jackpot légendaire', hi: '🏆 ऐतिहासिक जैकपॉट',
   id: '🏆 Jackpot legendaris', ja: '🏆 伝説のジャックポット', kk: '🏆 Аңызға айналған джекпот', km: '🏆 ជេកផតដ៏ល្បីល្បាញ',
@@ -4236,6 +4371,8 @@ function updateMyNumbersUi(){
   mainLabelEl.textContent = pickLang('일반번호 5개 (1~69)', '5 main numbers (1–69)', '5个普通号码（1~69）', '5 số chính (1–69)', 'เลขหลัก 5 ตัว (1-69)', '5 основных чисел (1–69)', MN_MAIN_LABEL_MORE);
   specialLabelEl.textContent = pickLang('파워볼 번호 (1~26)', 'Powerball number (1–26)', '强力球号码（1~26）', 'Số Powerball (1–26)', 'เลขพาวเวอร์บอล (1-26)', 'Число Powerball (1–26)', MN_SPECIAL_LABEL_MORE);
   btnEl.textContent = pickLang('확인하기', 'Check it', '查看结果', 'Kiểm tra', 'ตรวจสอบ', 'Проверить', MN_BTN_MORE);
+  const saveBtnEl = document.getElementById('mn-save-btn');
+  if (saveBtnEl) saveBtnEl.textContent = pickLang('🎫 이미지로 저장', '🎫 Save as image', '🎫 保存为图片', '🎫 Lưu thành ảnh', '🎫 บันทึกเป็นรูปภาพ', '🎫 Сохранить как изображение', MN_SAVE_BTN_MORE);
   disclaimerEl.textContent = pickLang(
     '재미로 보는 가상 비교예요 — 실제 당첨 확인이 아니고, 복권 구매를 권하는 것도 아니에요 🙂',
     'Just a fun hypothetical comparison — not a real prize check, and not an endorsement to buy lottery tickets 🙂',
@@ -4278,7 +4415,10 @@ function getMyNumbersComparableDraws(){
 let lastMyNumbersCheck = null; // { mainNums, specialNum } — 언어 전환 시 결과 재렌더링용
 
 // 입력값 검증 + 결과 렌더링 트리거. 버튼 onclick에서 호출됨
-function checkMyNumbersVsHistory(){
+// 입력칸 6개를 읽어서 검증까지 하는 공용 함수 — checkMyNumbersVsHistory()와
+// saveMyNumbersAsTicketImage()(2026-07-24 신규) 둘 다 "같은 번호 6개, 같은 검증 규칙"이 필요해서
+// 분리함. 실패 시 mn-error에 이유를 채우고 null을 반환, 성공 시 mn-error를 비우고 값을 반환
+function readAndValidateMyNumbers(){
   const errorEl = document.getElementById('mn-error');
   const mainNums = [];
   for (let i = 1; i <= 5; i++) {
@@ -4307,7 +4447,7 @@ function checkMyNumbersVsHistory(){
       'В введённых числах есть повтор — пожалуйста, введите 5 разных чисел',
       MN_DUPLICATE_ERROR_MORE
     );
-    return;
+    return null;
   }
   if (!rangeValid || !specialValid) {
     errorEl.textContent = pickLang(
@@ -4319,13 +4459,133 @@ function checkMyNumbersVsHistory(){
       'Пожалуйста, введите все 5 основных чисел (1–69, разные) и число Powerball (1–26)',
       MN_ERROR_MORE
     );
-    return;
+    return null;
   }
   errorEl.textContent = '';
+  return { mainNums, specialNum };
+}
+
+function checkMyNumbersVsHistory(){
+  const valid = readAndValidateMyNumbers();
+  if (!valid) return;
+  const { mainNums, specialNum } = valid;
   lastMyNumbersCheck = { mainNums, specialNum };
   // odds-data.js가 아직 로딩 중일 수 있어(날짜조회 위젯과 같은 이유, 2026-07-22) 로드 완료를
   // 기다렸다가 실제 비교 결과를 그림 — ensureOddsDataLoaded()는 이미 로드됐으면 즉시 resolve됨
   ensureOddsDataLoaded().then(() => renderMyNumbersResult(mainNums, specialNum));
+}
+
+// 2026-07-24 신규: 입력한 번호 6개로 "재미용 가상 티켓" 이미지를 만들어 다운로드시킴. 서버 없이
+// 전부 클라이언트 Canvas로 직접 그림 — 참택스 로고가 찍힌 이미지가 카톡/SNS로 퍼지면 그 자체로
+// 브랜드 노출이 되는 효과를 노림(사용자 요청, "지저분해지지 않게" 기존 위젯에 버튼만 추가하는
+// 형태로 넣음). 실제 티켓처럼 보이면 "이게 진짜 구매한 티켓인 줄" 오해할 수 있어서, 큰 글씨로
+// "가상 티켓" 문구를 넣어 명확히 함(사이트가 이미 "구매·중개 NO"를 신뢰 배지로 내세우고 있어서
+// 이 원칙과 어긋나지 않게).
+function saveMyNumbersAsTicketImage(){
+  const valid = readAndValidateMyNumbers();
+  if (!valid) return;
+  const { mainNums, specialNum } = valid;
+  const isRtl = RTL_LANGS.includes(currentLang);
+
+  // 배율 2x로 그려서 다운로드한 이미지가 확대해도 안 흐릿하게 함
+  const SCALE = 2;
+  const W = 900, H = 460;
+  const canvas = document.createElement('canvas');
+  canvas.width = W * SCALE;
+  canvas.height = H * SCALE;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(SCALE, SCALE);
+
+  // 배경 + 테두리 (styles.css .ticket-mock-card와 같은 톤)
+  ctx.fillStyle = '#FFFEF9';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#E8E2D3';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(6, 6, W - 12, H - 12);
+
+  ctx.textBaseline = 'middle';
+
+  // 로고 — 헤더 로고와 같은 관례로 언어 상관없이 항상 "참택스"(사이트 어디서나 이 텍스트는
+  // 번역 안 함, 브랜드명이라 고정)
+  ctx.fillStyle = '#155445';
+  ctx.font = "700 30px 'Pretendard', -apple-system, sans-serif";
+  ctx.textAlign = isRtl ? 'right' : 'left';
+  ctx.fillText('참택스', isRtl ? W - 40 : 40, 56);
+  ctx.fillStyle = '#8A8371';
+  ctx.font = "600 14px 'Pretendard', -apple-system, sans-serif";
+  ctx.fillText('chamtax.com', isRtl ? W - 40 : 40, 84);
+
+  // 큰 제목("나만의 복권 티켓" 등)
+  const title = pickLang('나만의 복권 티켓', 'My Lottery Ticket', '我的彩票', 'Vé số của tôi', 'ตั๋วลอตเตอรี่ของฉัน', 'Мой лотерейный билет', MN_TICKET_TITLE_MORE);
+  ctx.fillStyle = '#262420';
+  ctx.font = "800 26px 'Pretendard', -apple-system, sans-serif";
+  ctx.textAlign = isRtl ? 'right' : 'left';
+  ctx.fillText(title, isRtl ? W - 40 : 40, 130);
+
+  // 번호 공(일반 5개 + 파워볼 1개) — 항상 가운데 정렬, 왼쪽부터 순서대로(방향 무관 — 숫자 순서 자체가
+  // 의미 있는 정보라 RTL이어도 안 뒤집음, 실제 복권 번호 표기 관례를 따름)
+  const balls = [...mainNums, specialNum];
+  const ballR = 34, ballGap = 20;
+  const totalW = balls.length * (ballR * 2) + (balls.length - 1) * ballGap;
+  let bx = (W - totalW) / 2 + ballR;
+  const by = 220;
+  balls.forEach((n, i) => {
+    ctx.beginPath();
+    ctx.arc(bx, by, ballR, 0, Math.PI * 2);
+    ctx.fillStyle = i === balls.length - 1 ? '#C0392B' : '#262420';
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = "800 24px 'Pretendard', -apple-system, sans-serif";
+    ctx.textAlign = 'center';
+    ctx.fillText(String(n), bx, by + 2);
+    bx += ballR * 2 + ballGap;
+  });
+
+  // 발행일 + "직접 선택" 메타 정보(실제 티켓의 QP(퀵픽) 표기 자리와 같은 위치·스타일)
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const selfPick = pickLang('직접 선택', 'Self-picked', '自选', 'Tự chọn', 'เลือกเอง', 'Выбрано самостоятельно', MN_TICKET_SELFPICK_MORE);
+  ctx.fillStyle = '#8A8371';
+  ctx.font = "600 15px 'Pretendard', -apple-system, sans-serif";
+  ctx.textAlign = 'center';
+  ctx.fillText(`${dateStr}  ·  ${selfPick}`, W / 2, 290);
+
+  // 가상 티켓 배지 — 실제 구매 티켓으로 오해되지 않도록 눈에 띄게 표시(사이트의 "구매·중개 NO"
+  // 원칙과 일관되게 유지하기 위해 필수)
+  const disclaimer = pickLang('재미로 만든 가상 티켓 · 실제 구매 아님', 'Fun mock ticket · not a real purchase', '仅供娱乐的虚拟彩票 · 非真实购买', 'Vé số ảo cho vui · không phải giao dịch mua thật', 'ตั๋วจำลองเพื่อความบันเทิง · ไม่ใช่การซื้อจริง', 'Шуточный билет для развлечения · не настоящая покупка', MN_TICKET_DISCLAIMER_MORE);
+  const badgeY = 340, badgeH = 34;
+  ctx.font = "700 14px 'Pretendard', -apple-system, sans-serif";
+  const badgeW = Math.min(W - 80, ctx.measureText(disclaimer).width + 48);
+  ctx.fillStyle = 'rgba(192,57,43,0.1)';
+  ctx.strokeStyle = '#C0392B';
+  ctx.lineWidth = 1.5;
+  const bxLeft = (W - badgeW) / 2;
+  ctx.beginPath();
+  ctx.roundRect(bxLeft, badgeY, badgeW, badgeH, 17);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#C0392B';
+  ctx.textAlign = 'center';
+  ctx.fillText(disclaimer, W / 2, badgeY + badgeH / 2 + 1);
+
+  // 바코드 장식(실제 발권 관례를 살짝 흉내낸 세로 줄 패턴 — 폭을 결정적으로 다르게 둬서 진짜
+  // 바코드처럼 보이게 하되, 스캔 가능한 진짜 바코드는 아님을 명확히 하기 위해 일부러 정보 없는
+  // 장식용으로만 씀)
+  ctx.fillStyle = '#262420';
+  let barX = 60;
+  const barY = 400, barH = 28;
+  let seed = mainNums.reduce((a, b) => a + b, specialNum);
+  while (barX < W - 60) {
+    seed = (seed * 9301 + 49297) % 233280;
+    const w = 1 + (seed % 3);
+    ctx.fillRect(barX, barY, w, barH);
+    barX += w + 3;
+  }
+
+  const link = document.createElement('a');
+  link.download = 'chamtax-my-ticket.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
 }
 
 function renderMyNumbersResult(mainNums, specialNum){
@@ -4617,6 +4877,24 @@ function refreshJackpotDrawerIfOpen(){
     const ANNUITY_PAYMENTS = 30;
     const perYearKrw = announcedKrw / ANNUITY_PAYMENTS;
     const rYear = calcTakeHome(perYearKrw / 100000000, 'kr');
+    // 이 박스 바로 위 1단계("📢 발표된 잭팟")에 이미 총액이 나와있긴 하지만, 사용자가 이 박스만
+    // 스크롤해서 보면(1단계는 화면 밖) 아래 연/월 숫자가 뭘 나눈 값인지 알 길이 없다는 지적
+    // (2026-07-24, 홈 탭에 먼저 추가했던 것과 같은 이유) — 여기도 똑같이 맨 위에 한 줄 추가
+    const jcAnnouncedLabelEl = document.getElementById('jc-annuity-announced-label');
+    if (jcAnnouncedLabelEl) jcAnnouncedLabelEl.textContent = pickLang(
+      '📢 발표된 잭팟 총액', '📢 Announced jackpot total', '📢 公布的头奖总额',
+      '📢 Tổng jackpot đã công bố', '📢 ยอดแจ็คพอตที่ประกาศทั้งหมด', '📢 Объявленный общий джекпот',
+      {
+        km: '📢 ចំនួនប្រាក់ចាប់រង្វាន់សរុបដែលបានប្រកាស', ne: '📢 घोषित कुल ज्याकपोट रकम', id: '📢 Total jackpot yang diumumkan',
+        my: '📢 ကြေညာထားသော ဂျက်ပေါ့ စုစုပေါင်း', si: '📢 නිවේදනය කළ මුළු ජැක්පොට් මුදල', uz: "📢 E'lon qilingan jekpot summasi",
+        mn: '📢 Зарласан нийт жекпот', kk: '📢 Жарияланған джекпот сомасы', ky: '📢 Жарыяланган жекпот суммасы',
+        ur: '📢 اعلان کردہ کل جیک پاٹ', bn: '📢 ঘোষিত মোট জ্যাকপট', lo: '📢 ຈຳນວນແຈັກພອດທັງໝົດທີ່ປະກາດ',
+        ja: '📢 発表されたジャックポット総額', ar: '📢 إجمالي الجاكبوت المعلن', hi: '📢 घोषित कुल जैकपॉट',
+        fr: '📢 Total du jackpot annoncé', tl: '📢 Kabuuang inanunsyong jackpot',
+      }
+    );
+    const jcAnnouncedEl = document.getElementById('jc-annuity-announced');
+    if (jcAnnouncedEl) jcAnnouncedEl.textContent = about + formatWon(announcedKrw / 100000000);
     document.getElementById('jc-annuity-year').textContent = about + formatWon(perYearKrw / 100000000);
     document.getElementById('jc-annuity-year-net').textContent = about + formatWon(rYear.final);
     document.getElementById('jc-annuity-month-net').textContent = about + formatWon(rYear.final / 12);
@@ -4795,7 +5073,12 @@ function setupStickyResultBadge(){
   _stickyResultObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.target === target) {
-        resultOutOfView = !entry.isIntersecting;
+        // !isIntersecting만 보면 "아직 결과까지 스크롤 안 내려간 상태"(예: 맨 위 "나는 어떤
+        // 경우일까요?" 섹션)도 "화면 밖"으로 잡혀서, 결과를 한 번도 본 적 없는데 배지부터 뜨는
+        // 문제가 있었음(2026-07-24, 320px 실기기 스크린샷으로 발견 — 배지가 realAbroadSelect
+        // 드롭다운을 완전히 가려서 클릭도 안 됐음). top이 0보다 작을 때(=결과가 화면 위쪽으로
+        // 이미 지나감)만 "지나쳐서 안 보이는 것"으로 간주 — 아직 안 내려가서 안 보이는 것과 구분함
+        resultOutOfView = !entry.isIntersecting && entry.boundingClientRect.top < 0;
       } else if (entry.target === zoneEnd) {
         pastRelevantZone = entry.boundingClientRect.bottom < 0;
       }
@@ -4815,11 +5098,38 @@ function scrollToMainResult(){
 
 // 확률체감 탭의 실수령액 랭킹/물가보정 랭킹 위젯은 sharedCountry(세금 기준)를 따라 문구가
 // 바뀌는데, 정작 이 탭 안에는 기준을 바꿀 방법이 없어서 홈 화면까지 되돌아가야 했음(2026-07-24
-// 사용자 지적으로 발견) — 홈 화면의 국가 토글로 바로 이동시켜주는 진입점
-function goToHomeCountryToggle(){
-  go('home');
-  const target = document.getElementById('homeCountryToggle');
-  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+// 사용자 지적으로 발견). 처음엔 go('home')으로 탭 자체를 전환하는 goToHomeCountryToggle()을
+// 썼었는데, 그러면 보고 있던 랭킹 목록·스크롤 위치를 잃고 되돌아오기 불편하다는 피드백이 또
+// 있어서(openFaqSearchFloat()과 같은 문제 클래스) 탭 전환 없는 팝오버로 교체함 — 아래 참고
+const TAX_BASIS_OVERLAY_TITLE_MORE = {
+  ar: '🔧 تغيير أساس الضريبة', bn: '🔧 কর ভিত্তি পরিবর্তন করুন', fr: '🔧 Changer la base fiscale',
+  hi: '🔧 टैक्स आधार बदलें', id: '🔧 Ubah dasar pajak', ja: '🔧 税金の基準を変更',
+  kk: '🔧 Салық негізін өзгерту', km: '🔧 ផ្លាស់ប្តូរមូលដ្ឋានពន្ធ', ky: '🔧 Салык негизин өзгөртүү',
+  lo: '🔧 ປ່ຽນພື້ນຖານພາສີ', mn: '🔧 Татварын үндэслэлийг өөрчлөх', my: '🔧 အခွန်အခြေခံပြောင်းရန်',
+  ne: '🔧 कर आधार परिवर्तन गर्नुहोस्', si: '🔧 බදු පදනම වෙනස් කරන්න', tl: '🔧 Palitan ang basehan ng buwis',
+  ur: '🔧 ٹیکس کی بنیاد تبدیل کریں', uz: "🔧 Soliq bazasini o'zgartirish",
+};
+
+// #homeCountryToggle DOM 노드를 통째로 옮겨서 재사용(21개 국가 버튼 마크업/onclick 배선을
+// 오버레이용으로 중복 생성하지 않기 위함) — 닫을 때 #homeCountryTogglePlaceholder 자리로
+// 되돌려놓아야 홈 화면에서도 다시 정상적으로 보임(closeTaxBasisOverlay 참고)
+function openTaxBasisOverlay(){
+  const overlay = document.getElementById('taxBasisOverlay');
+  const body = document.getElementById('taxBasisOverlayBody');
+  const toggle = document.getElementById('homeCountryToggle');
+  const titleEl = document.getElementById('taxBasisOverlayTitle');
+  if (!overlay || !body || !toggle) return;
+  if (titleEl) titleEl.textContent = pickLang('🔧 세금 기준 바꾸기', '🔧 Change tax basis', '🔧 更改税收基准', '🔧 Đổi cơ sở tính thuế', '🔧 เปลี่ยนเกณฑ์ภาษี', '🔧 Изменить налоговую базу', TAX_BASIS_OVERLAY_TITLE_MORE);
+  body.appendChild(toggle);
+  overlay.classList.add('show');
+}
+
+function closeTaxBasisOverlay(){
+  const overlay = document.getElementById('taxBasisOverlay');
+  const toggle = document.getElementById('homeCountryToggle');
+  const placeholder = document.getElementById('homeCountryTogglePlaceholder');
+  if (overlay) overlay.classList.remove('show');
+  if (toggle && placeholder && placeholder.parentNode) placeholder.parentNode.insertBefore(toggle, placeholder);
 }
 
 // 어느 화면에서든 뜨는 #faqFloatBtn용 — go('faq')로 실제 탭을 전환하면 사용자가 보던 화면
@@ -4845,7 +5155,7 @@ function closeFaqOverlay(){
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeFaqOverlay();
+  if (e.key === 'Escape') { closeFaqOverlay(); closeTaxBasisOverlay(); }
 });
 
 // renderJackpotHistory()/renderJackpotTakeHomeRanking()/renderNumberFrequencyStats()는 확률체감
@@ -6169,6 +6479,18 @@ function setHomeCountry(country){
   });
   updateHomeCalc();
   filterFaq(); // FAQ가 세금 기준(KR/US/CN)에 따라 관련 없는 질문은 숨기므로, 기준 바뀔 때마다 다시 걸러줌
+  // 확률체감 탭의 실수령액 랭킹(jh-rank-list)/물가보정 랭킹(ji-cpi-list)도 sharedCountry를 따라
+  // 문구·순위가 바뀌는데, 세금 기준을 openTaxBasisOverlay() 팝오버로 바꾼 경우 이 탭은 화면
+  // 뒤에 그대로 깔려 있을 뿐 다시 그려지진 않으므로 여기서 명시적으로 갱신해줘야 함. 두 함수 다
+  // odds-data.js(JACKPOT_HISTORY)가 아직 로드 전이면 내부적으로 조용히 스킵하므로 아무 때나
+  // 호출해도 안전함
+  renderJackpotTakeHomeRanking();
+  renderJackpotIndexCpiRanking();
+  // 세금 기준을 openTaxBasisOverlay() 팝오버로 바꾼 경우, 국가 하나 고르고 나면 그게 곧 완료
+  // 신호라 팝오버를 자동으로 닫아줌(사용자가 매번 따로 "닫기"를 또 눌러야 하는 불필요한 한 단계를
+  // 없앰, 2026-07-24). 팝오버가 애초에 안 열려있었으면(홈 탭에서 직접 눌렀을 때) 조용히 아무
+  // 효과 없음 — closeTaxBasisOverlay()는 열려있지 않을 때 호출해도 안전함
+  closeTaxBasisOverlay();
 }
 
 // 나라별 실제 과세당국 표기 — home-trust-line에 "OO 공식 자료 기반"으로 노출됨. 나라가 6개일 땐
@@ -6948,6 +7270,41 @@ function updateHomeCalc(usdOverride){
   const homeAnnuityYearEl = document.getElementById('home-annuity-year');
   if (homeAnnuityYearEl) {
     const aboutHome = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE);
+    // 연금 박스가 매년/매월 실수령액만 보여주고 정작 그 기준이 되는 발표 총액(homeAnnouncedKrw)은
+    // 어디에도 안 보여서, "이 숫자들이 뭘 나눈 값인지" 알 길이 없다는 문제(2026-07-24 사용자 지적)
+    // — 다른 .jc-row들 바로 위에 발표 총액 환산 줄을 하나 추가함. 여기서 한 걸음 더 나아가,
+    // 정작 이 발표 총액 자체가 "어떤 일시불 금액"에서 역산됐는지도 안 보인다는 후속 지적(같은 날) —
+    // 라벨에 입력하신 일시불 금액(usdMillions, home-final-basis-mini와 같은 값)을 괄호로 덧붙임
+    const homeAnnouncedLabelEl = document.getElementById('home-annuity-announced-label');
+    if (homeAnnouncedLabelEl) homeAnnouncedLabelEl.textContent = pickLang(
+      `📢 발표된 잭팟 총액 (일시불 ${usdMillions}M USD 기준)`,
+      `📢 Announced jackpot total (based on ${usdMillions}M USD lump sum)`,
+      `📢 公布的头奖总额（按一次性支付 ${usdMillions}M USD 计算）`,
+      `📢 Tổng jackpot đã công bố (dựa trên khoản trả một lần ${usdMillions}M USD)`,
+      `📢 ยอดแจ็คพอตที่ประกาศทั้งหมด (คำนวณจากเงินก้อน ${usdMillions}M USD)`,
+      `📢 Объявленный общий джекпот (на основе единовременной выплаты ${usdMillions}M USD)`,
+      {
+        km: `📢 ចំនួនប្រាក់ចាប់រង្វាន់សរុបដែលបានប្រកាស (គិតលើមូលដ្ឋានទូទាត់តែម្តង ${usdMillions}M USD)`,
+        ne: `📢 घोषित कुल ज्याकपोट रकम (${usdMillions}M USD एकमुष्टको आधारमा)`,
+        id: `📢 Total jackpot yang diumumkan (berdasarkan sekaligus ${usdMillions}M USD)`,
+        my: `📢 ကြေညာထားသော ဂျက်ပေါ့ စုစုပေါင်း (${usdMillions}M USD တစ်ကြိမ်တည်းအခြေခံ)`,
+        si: `📢 නිවේදනය කළ මුළු ජැක්පොට් මුදල (${usdMillions}M USD එකවර ගෙවීම මත පදනම්ව)`,
+        uz: `📢 E'lon qilingan jekpot summasi (${usdMillions}M USD bir martalik to'lov asosida)`,
+        mn: `📢 Зарласан нийт жекпот (${usdMillions}M USD нэг удаагийн төлбөрт үндэслэсэн)`,
+        kk: `📢 Жарияланған джекпот сомасы (${usdMillions}M USD бір реттік төлем негізінде)`,
+        ky: `📢 Жарыяланган жекпот суммасы (${usdMillions}M USD бир жолку төлөм негизинде)`,
+        ur: `📢 اعلان کردہ کل جیک پاٹ (${usdMillions}M USD یکمشت کی بنیاد پر)`,
+        bn: `📢 ঘোষিত মোট জ্যাকপট (${usdMillions}M USD একবারে প্রদানের ভিত্তিতে)`,
+        lo: `📢 ຈຳນວນແຈັກພອດທັງໝົດທີ່ປະກາດ (ອີງໃສ່ການຈ່າຍເທື່ອດຽວ ${usdMillions}M USD)`,
+        ja: `📢 発表されたジャックポット総額（一括受取額 ${usdMillions}M USD 基準）`,
+        ar: `📢 إجمالي الجاكبوت المعلن (بناءً على دفعة واحدة ${usdMillions}M USD)`,
+        hi: `📢 घोषित कुल जैकपॉट (${usdMillions}M USD एकमुश्त राशि पर आधारित)`,
+        fr: `📢 Total du jackpot annoncé (basé sur un versement unique de ${usdMillions}M USD)`,
+        tl: `📢 Kabuuang inanunsyong jackpot (batay sa ${usdMillions}M USD na lump sum)`,
+      }
+    );
+    const homeAnnouncedEl = document.getElementById('home-annuity-announced');
+    if (homeAnnouncedEl) homeAnnouncedEl.textContent = aboutHome + formatWon(homeAnnouncedKrw / 100000000);
     homeAnnuityYearEl.textContent = aboutHome + formatWon(homePerYearKrw / 100000000);
     document.getElementById('home-annuity-year-net').textContent = aboutHome + formatWon(rHomeAnnuityYear.final);
     document.getElementById('home-annuity-month-net').textContent = aboutHome + formatWon(rHomeAnnuityYear.final / 12);
@@ -7869,7 +8226,12 @@ function updateSideBySide(eok, stateCode){
       const flagGroupEl = document.createElement('p'); flagGroupEl.className = 'side-card-flag-group';
       rows.forEach(row => { flagGroupEl.appendChild(makeFlagBadge(row.profile.flagCode)); });
       flagsRowEl.appendChild(flagGroupEl);
-      const noteEl = document.createElement('p'); noteEl.className = 'side-card-group-note';
+      // 2~3개국은 getGroupSameLabel()이 "필리핀 거주자 · 태국 거주자 · 라오스 거주자"처럼 나라
+      // 이름을 전부 풀어써서(4개국 이상일 때의 짧은 "N개국 동일"보다 훨씬 긴 문장) 뱃지/알약
+      // 모양 안에 억지로 2줄로 욱여넣히면 답답해 보임(사용자 지적, 2026-07-25) — 이 경우만 태그
+      // 스타일을 벗기고 일반 텍스트로 자연스럽게 흐르게 함
+      const noteEl = document.createElement('p');
+      noteEl.className = rows.length <= 3 ? 'side-card-group-note side-card-group-note-long' : 'side-card-group-note';
       noteEl.textContent = getGroupSameLabel(rows);
       flagsRowEl.appendChild(noteEl);
       card.appendChild(flagsRowEl);
