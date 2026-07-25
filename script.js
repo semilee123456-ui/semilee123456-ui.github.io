@@ -957,6 +957,12 @@ function renderUsStateCompareTable(amountEok){
   }).join('');
 }
 
+// 세금 항목 2개(연방세/거주국 추가납부) 밑에 붙는 "합계 -39%" 줄의 "합계"/"Total" 접두어 —
+// 홈 화면 결과 카드와 확률체감 탭 잭팟 드로어 둘 다 같은 문구를 쓰므로 공용 함수로 뺌
+function taxTotalLinePrefix(){
+  return pickLang('합계 ', 'Total ', '合计 ', 'Tổng ', 'รวม ', 'Итого ', { km:'សរុប ', ne:'जम्मा ', id:'Total ', my:'စုစုပေါင်း ', si:'එකතුව ', uz:'Jami ', mn:'Нийт ', kk:'Барлығы ', ky:'Баары ', ur:'کل ', bn:'মোট ', lo:'ລວມ ', ja:'合計 ', ar:'الإجمالي ', hi:'कुल ', fr:'Total ', tl:'Kabuuan ' });
+}
+
 function calcTakeHome(amount, country, stateCode){
   if (country === 'us') {
     const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
@@ -5368,6 +5374,19 @@ function refreshJackpotDrawerIfOpen(){
       }
     );
 
+    // 세금 항목별 퍼센트 내역 — 예전엔 계산은 이미 하고 있었는데(r.label1/val1/label2/val2) 화면엔
+    // "30% + 한국 세금 적용"이라는 뭉뚱그린 문장 하나만 보여줘서, 실제로 몇 %씩 떼이는지 알 수
+    // 없었음(2026-07-25 사용자 지적 — "어떤 세금을 떼서 이런 금액이 되는지 알아야 할 거 같다").
+    // 홈 화면 결과 카드(home-tax1-label 등)와 똑같은 마크업/로직으로 채워서 두 화면의 표시 방식을 통일함
+    document.getElementById('jc-tax1-label').textContent = r.label1;
+    document.getElementById('jc-tax1-val').textContent = r.val1;
+    document.getElementById('jc-tax2-label').textContent = r.label2;
+    document.getElementById('jc-tax2-val').textContent = r.val2;
+    const jcCashEok = cashKrw / 100000000;
+    const jcTaxTotalPctPrecise = jcCashEok > 0 ? (100 - (r.final / jcCashEok * 100)) : 0;
+    document.getElementById('jc-tax-total-line').textContent =
+      taxTotalLinePrefix() + '-' + jcTaxTotalPctPrecise.toFixed(1) + '%';
+
     // "일시불 대신 연금으로 받으면?" 박스 — 홈 화면의 같은 박스와 계산 로직이 완전히 같아져서
     // (둘 다 이제 일시불 금액이 출발점) 공용 함수로 합침. 예전엔 이 부분이 각자 따로
     // 구현돼 있어서 한쪽만 고치고 다른 쪽을 깜빡하는 사고가 있었음(jc-annuity-announced-label
@@ -7915,8 +7934,7 @@ function updateHomeCalc(usdOverride){
   // 거기는 단독으로만 보여서 소수점 유무가 문제되지 않음
   const taxImpactPctPrecise = 억 > 0 ? (100 - (final / 억 * 100)) : 0;
   document.getElementById('home-tax-total-line').textContent =
-    pickLang('합계 ', 'Total ', '合计 ', 'Tổng ', 'รวม ', 'Итого ', { km:'សរុប ', ne:'जम्मा ', id:'Total ', my:'စုစုပေါင်း ', si:'එකතුව ', uz:'Jami ', mn:'Нийт ', kk:'Барлығы ', ky:'Баары ', ur:'کل ', bn:'মোট ', lo:'ລວມ ', ja:'合計 ', ar:'الإجمالي ', hi:'कुल ', fr:'Total ', tl:'Kabuuan ' })
-    + '-' + taxImpactPctPrecise.toFixed(1) + '%';
+    taxTotalLinePrefix() + '-' + taxImpactPctPrecise.toFixed(1) + '%';
 
   // 실수령/세금 비율을 숫자로만 보여주는 대신 막대그래프로도 한눈에 보이게 함 —
   // 다른 복권 세금 계산기들(infinitycalculator 등)에 공통으로 있는 시각적 breakdown 패턴 참고

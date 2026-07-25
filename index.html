@@ -1204,6 +1204,17 @@
                   <p class="jc-step-label" data-i18n="odds.jcStep3">세금 떼고 실제로 손에 들어오는 돈</p>
                   <p class="jc-step-val-big" id="jc-final">-</p>
                   <p class="jc-note" id="jc-note-basis">한국 거주자 기준 (미국 비거주자 원천징수 30% + 한국 종합소득세 누진세율/FTC 적용, 환율 약 1,503원 적용)</p>
+                  <div class="result-grid" style="margin-top:10px; grid-template-columns:1fr 1fr;">
+                    <div class="result-cell">
+                      <p class="result-label" id="jc-tax1-label">미국 연방세 (비거주자)</p>
+                      <p class="result-value" id="jc-tax1-val">-30%</p>
+                    </div>
+                    <div class="result-cell">
+                      <p class="result-label" id="jc-tax2-label">한국 추가 납부 (FTC 적용)</p>
+                      <p class="result-value" id="jc-tax2-val">-16.5%</p>
+                    </div>
+                  </div>
+                  <p class="result-total-line" id="jc-tax-total-line" style="margin-top:8px; text-align:center; font-weight:700; color:var(--status-red);">합계 -39%</p>
                   <button type="button" class="annuity-info-link" style="margin-top:2px;" onclick="toggleInlineTermBox('jc-tax-term-box')" data-i18n="home.taxTermToggle">❓ 원천징수·누진세율·FTC가 뭐예요? →</button>
                   <div class="detail-note-box" id="jc-tax-term-box" style="display:none; background:var(--bg); border-radius:10px; padding:12px 14px; margin-top:6px;">
                     <p style="margin:0;"><b data-i18n="home.taxTermWithholdingTitle">원천징수란?</b> <span data-i18n-html="home.taxTermWithholdingDesc">돈을 주는 <span style="white-space:nowrap">쪽(미국)이</span> 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 "일단 떼어가는 선불금"이라고 보시면 돼요.</span></p>
