@@ -30,7 +30,7 @@
     --grad-soft: linear-gradient(150deg, #EAF3EE 0%, #FCFBF6 55%, #FFFEF9 100%);
     --grad-amber: linear-gradient(150deg, #FBF1DE 0%, #FFFDF9 100%);
     --shadow-card: 0 1px 0 rgba(var(--ink-rgb),0.06);
-    --shadow-btn: 0 6px 14px rgba(21,84,69,0.22);
+    --shadow-btn: 0 6px 14px rgba(var(--teal-rgb),0.22);
     --status-red:#C0392B;
     --status-red-rgb: 192,57,43;
     --status-amber:#946716; /* 원래 #B8862E는 명암비 3.00:1로 경고 문구(16px bold) WCAG AA(4.5:1) 미달 — 톤 유지하며 더 진하게 조정 */
@@ -45,6 +45,12 @@
        사라지지 않음). 나머지(카드 표면색 등)는 아래 별도 시맨틱 변수로 분리 */
     --ink-rgb: 38,36,32;
     --navyblue-rgb: 11,37,69;
+    /* 배경 틴트(알약·배지·hover 등)에 rgba(21,84,69,X)처럼 --teal 값을 곳곳(58곳)에서 직접
+       숫자로 박아 썼었는데, 다크모드에서는 --teal 자체(글자색 용도로 튜닝된 값, #3AA98A)만
+       밝게 바뀌고 이 배경 틴트들은 라이트모드 값 그대로 남아서 어두운 배경(--bg:#1B1917)에
+       거의 묻혀 보이던 버그(디자인 검수로 발견, 2026-07-25) — 위 --ink-rgb와 같은 패턴으로
+       변수화해서 다크모드 블록에서 함께 뒤집음 */
+    --teal-rgb: 21,84,69;
     --body-bg:#F0ECE0;
     --select-bg:#FDFBF5;
     --chip-bg:#F1EDE0;
@@ -76,6 +82,7 @@
       --on-accent:#1B1917;
       --ink-rgb: 237,232,218;
       --navyblue-rgb: 124,155,209;
+      --teal-rgb: 58,169,138;
       --body-bg:#161412;
       --select-bg:#2A2723;
       --chip-bg:#2E2B26;
@@ -156,7 +163,7 @@
 
   /* 브라우저 기본 텍스트 선택 색(진한 파랑)은 사이트 팔레트에 아예 없는 색이라, 입력칸 숫자를
      길게 눌러 선택했을 때 디자인이 완전히 깨진 것처럼 보임 — 톤을 청록 계열로 맞춤 */
-  ::selection{ background:rgba(21,84,69,0.25); color:var(--text-dark); }
+  ::selection{ background:rgba(var(--teal-rgb),0.25); color:var(--text-dark); }
 
   .page{
     background:var(--bg); padding:28px 28px 36px; min-height:200px;
@@ -164,7 +171,7 @@
     box-shadow:0 1px 3px rgba(var(--ink-rgb),0.08), 0 8px 24px rgba(var(--ink-rgb),0.06);
   }
 
-  .nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; row-gap:8px; column-gap:10px; }
+  .nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; row-gap:8px; column-gap:10px; }
   .logo{
     font-size:17px; font-weight:700; color:var(--navy); letter-spacing:-0.02em; cursor:pointer;
     background:none; border:none; font-family:inherit; padding:0;
@@ -185,7 +192,7 @@
      트랙 자체가 여전히 주고, 개별 버튼끼리 서로 떨어져 보이는 무게감만 없앰 */
   .menu-links{
     display:flex; align-items:center; gap:2px;
-    border:1px solid rgba(21,84,69,0.25); border-radius:14px; background:rgba(21,84,69,0.06);
+    border:1px solid rgba(var(--teal-rgb),0.25); border-radius:14px; background:rgba(var(--teal-rgb),0.06);
     padding:3px;
   }
   .menu-links button{
@@ -209,8 +216,8 @@
     background:var(--teal); border-color:var(--teal);
   }
   .menu .lang-toggle{
-    border:1px solid rgba(21,84,69,0.25); border-radius:14px; padding:6px 22px 6px 10px; min-height:44px;
-    font-size:16px; font-weight:700; color:var(--teal); background:rgba(21,84,69,0.08);
+    border:1px solid rgba(var(--teal-rgb),0.25); border-radius:14px; padding:6px 22px 6px 10px; min-height:44px;
+    font-size:16px; font-weight:700; color:var(--teal); background:rgba(var(--teal-rgb),0.08);
     cursor:pointer; font-family:inherit; margin-left:0;
     -webkit-appearance:none; appearance:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23155445' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -218,7 +225,7 @@
   }
   .theme-toggle{
     width:40px; height:40px; min-height:40px; flex:0 0 auto; border-radius:50%;
-    border:1px solid rgba(21,84,69,0.25); background:rgba(21,84,69,0.08);
+    border:1px solid rgba(var(--teal-rgb),0.25); background:rgba(var(--teal-rgb),0.08);
     font-size:17px; line-height:1; cursor:pointer; font-family:inherit;
     display:flex; align-items:center; justify-content:center; padding:0;
   }
@@ -229,7 +236,7 @@
   .settings-menu{ position:relative; }
   .settings-toggle{
     width:40px; height:40px; min-height:40px; flex:0 0 auto; border-radius:50%;
-    border:1px solid rgba(21,84,69,0.25); background:rgba(21,84,69,0.08);
+    border:1px solid rgba(var(--teal-rgb),0.25); background:rgba(var(--teal-rgb),0.08);
     font-size:17px; line-height:1; cursor:pointer; font-family:inherit;
     display:flex; align-items:center; justify-content:center; padding:0; list-style:none;
   }
@@ -246,7 +253,7 @@
     font-family:inherit; font-size:var(--fs-small); font-weight:700; cursor:pointer; text-align:left;
   }
   .settings-row-icon{
-    flex:0 0 auto; width:28px; height:28px; border-radius:50%; background:rgba(21,84,69,0.08);
+    flex:0 0 auto; width:28px; height:28px; border-radius:50%; background:rgba(var(--teal-rgb),0.08);
     display:flex; align-items:center; justify-content:center; font-size:15px;
   }
   :root[data-theme="dark"] .settings-row-icon{ background:var(--chip-bg); }
@@ -266,10 +273,10 @@
     .view.on{ animation:none; }
   }
 
-  .hero{ text-align:center; padding:16px 0 24px; }
+  .hero{ text-align:center; padding:8px 0 20px; }
   .site-notice{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
-    background:rgba(21,84,69,0.08); border:1px solid rgba(21,84,69,0.25); border-radius:10px;
+    background:rgba(var(--teal-rgb),0.08); border:1px solid rgba(var(--teal-rgb),0.25); border-radius:10px;
     padding:10px 12px; margin:0 0 14px; font-size:var(--fs-note); color:var(--text-dark); line-height:1.5;
   }
   .site-notice-close{
@@ -277,8 +284,8 @@
     color:var(--text-muted); padding:2px 4px; font-family:inherit;
   }
   .hero-category-tag{
-    display:inline-block; font-size:var(--fs-small); font-weight:800; color:var(--teal);
-    background:rgba(21,84,69,0.08); border-radius:20px; padding:5px 14px; margin:0 0 10px;
+    display:inline-block; font-size:var(--fs-small); font-weight:600; color:var(--text-muted);
+    background:none; border-radius:20px; padding:0; margin:0 0 8px;
   }
   .tax-impact-compact{
     display:flex; flex-direction:row; flex-wrap:wrap; align-items:baseline; justify-content:center; gap:6px;
@@ -303,7 +310,7 @@
   .rvb-dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:-2px; }
   .rvb-dot-take{ background:var(--teal); }
   .rvb-dot-tax{ background:var(--status-red); margin-left:10px; }
-  .hero-amount{ font-size:var(--fs-h1); font-weight:800; color:var(--navy); margin:0; letter-spacing:-0.02em; line-height:1.4; }
+  .hero-amount{ font-size:var(--fs-h1); font-weight:800; color:var(--navy); margin:0; letter-spacing:-0.02em; line-height:1.3; }
 
   .cards-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:8px; }
   .feature-card{
@@ -356,15 +363,15 @@
      as "start here" instead of blending into the page. */
   #introPersonaAccordion{
     background:linear-gradient(135deg, #EAF3EE 0%, #FBFAF4 65%, #FFFEF9 100%);
-    border:1.5px solid rgba(21,84,69,0.3);
+    border:1.5px solid rgba(var(--teal-rgb),0.3);
     animation:intro-persona-glow 2.2s ease-out 0.4s 1;
   }
   #introPersonaAccordion[open]{ border-color:var(--teal); }
   #introPersonaAccordion > .panel-title-toggle{ color:var(--teal); }
   @keyframes intro-persona-glow{
-    0%{ box-shadow:0 0 0 0 rgba(21,84,69,0); }
-    30%{ box-shadow:0 0 0 6px rgba(21,84,69,0.12); }
-    100%{ box-shadow:0 0 0 0 rgba(21,84,69,0); }
+    0%{ box-shadow:0 0 0 0 rgba(var(--teal-rgb),0); }
+    30%{ box-shadow:0 0 0 6px rgba(var(--teal-rgb),0.12); }
+    100%{ box-shadow:0 0 0 0 rgba(var(--teal-rgb),0); }
   }
   @media (prefers-reduced-motion: reduce){
     #introPersonaAccordion{ animation:none; }
@@ -424,7 +431,7 @@
     border-radius:14px; padding:8px 10px 8px 18px; height:auto; background:var(--card);
     min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden; transition:box-shadow 0.15s ease;
   }
-  .million-input-wrap:focus-within{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(21,84,69,0.14); }
+  .million-input-wrap:focus-within{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.14); }
   .million-input-wrap .dollar-input{
     border:none; padding:8px 0; height:auto; flex:1; min-width:0; width:auto;
     font-size:32px; font-size:clamp(26px, 10vw, 38px); font-weight:800; color:var(--teal);
@@ -436,12 +443,12 @@
     border-radius:14px; padding:8px 10px 8px 18px; height:auto; background:var(--card);
     min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden; transition:box-shadow 0.15s ease;
   }
-  .million-input-wrap-secondary:focus-within{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(21,84,69,0.14); }
+  .million-input-wrap-secondary:focus-within{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.14); }
   .million-input-wrap-secondary .dollar-input{
     border:none; padding:8px 0; height:auto; flex:1; min-width:0; width:auto;
     font-size:32px; font-size:clamp(26px, 10vw, 38px); font-weight:800; color:var(--teal);
   }
-  @keyframes field-autofill-flash{ 0%{ box-shadow:0 0 0 4px rgba(21,84,69,0.28); } 100%{ box-shadow:0 0 0 0 rgba(21,84,69,0); } }
+  @keyframes field-autofill-flash{ 0%{ box-shadow:0 0 0 4px rgba(var(--teal-rgb),0.28); } 100%{ box-shadow:0 0 0 0 rgba(var(--teal-rgb),0); } }
   .field-autofill-flash{ animation:field-autofill-flash 700ms ease-out; }
   .million-unit{ font-size:16px; color:var(--text-muted); font-weight:700; white-space:nowrap; padding-right:4px; flex-shrink:0; }
   .unit-short{ display:none; }
@@ -461,7 +468,7 @@
     display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0 4px;
     text-align:center; line-height:1.2; padding:6px 4px;
   }
-  .country-toggle-btn.active{ border-color:var(--teal); background:rgba(21,84,69,0.08); color:var(--teal); }
+  .country-toggle-btn.active{ border-color:var(--teal); background:rgba(var(--teal-rgb),0.08); color:var(--teal); }
   .country-toggle-btn .flag-badge{ background:var(--text-dark); }
   .country-toggle-btn.active .flag-badge{ background:var(--teal); }
   .rate-input{
@@ -537,8 +544,7 @@
   .country-map-land{ fill:rgba(var(--ink-rgb),0.1); stroke:rgba(var(--ink-rgb),0.18); stroke-width:1.5; transition:fill 0.3s ease, stroke 0.3s ease; }
   /* 국가 카드를 탭하면 핀뿐 아니라 실제 국경선 자체도 브랜드 색으로 옅게 채워져서,
      그 나라가 지도 위 어디에 어떤 모양으로 있는지 바로 확인 가능 */
-  .country-map-land.active{ fill:rgba(21,84,69,0.35); stroke:var(--teal); stroke-width:2; }
-  :root[data-theme="dark"] .country-map-land.active{ fill:rgba(58,169,138,0.35); }
+  .country-map-land.active{ fill:rgba(var(--teal-rgb),0.35); stroke:var(--teal); stroke-width:2; }
   /* 미국 클러스터만 라벨을 남김 — 아시아 쪽은 나라 수가 많아 실제 국경선 모양만으로도
      어디가 어디인지 충분히 구분되지만, 미국은 단독 대륙이라 시각적 맥락이 필요함 */
   .country-map-labels text{ fill:rgba(var(--ink-rgb),0.32); font-size:15px; font-weight:700; letter-spacing:0.5px; }
@@ -584,13 +590,13 @@
   .side-card-amt-row .side-card-amt{ margin:0; }
   .side-card-bar{ width:100%; height:6px; border-radius:4px; margin-top:8px; overflow:hidden; background:var(--status-red); opacity:0.8; }
   .side-card-bar-fill{ height:100%; background:var(--teal); border-radius:4px 0 0 4px; }
-  .side-card-best{ border:1.5px solid rgba(21,84,69,0.3); background:var(--grad-soft); border-radius:16px; position:relative; }
+  .side-card-best{ border:1.5px solid rgba(var(--teal-rgb),0.3); background:var(--grad-soft); border-radius:16px; position:relative; }
   .side-card-best .side-card-amt{ font-size:27px; color:var(--teal); }
   .side-card-best .side-card-bar{ height:8px; }
   /* 국기 배지는 사이트 전역 .flag-badge(진한 청록 채움)를 그대로 쓰면 비교 카드에서 너무 무거워 보여서,
      이 카드 안에서만 옅은 틴트 스타일로 오버라이드(기본 클래스 자체는 다른 곳에 영향 없이 그대로 둠) */
   .side-card .flag-badge{ background:rgba(38,36,32,0.08); color:var(--text-muted); font-weight:800; }
-  .side-card-best .flag-badge{ background:rgba(21,84,69,0.1); color:var(--teal); }
+  .side-card-best .flag-badge{ background:rgba(var(--teal-rgb),0.1); color:var(--teal); }
   .side-card-best-badge{
     font-size:var(--fs-small); font-weight:800; color:var(--teal); background:var(--card);
     display:inline-block; padding:3px 10px; border-radius:20px; border:1px solid var(--teal);
@@ -605,7 +611,7 @@
   .side-card-flag-group .flag-badge{ border:none; font-family:inherit; cursor:pointer; }
   .side-card-group-note{
     font-size:var(--fs-small); font-weight:600; color:var(--text-muted); margin:0;
-    background:var(--card); border:1px dashed rgba(21,84,69,0.35); border-radius:20px; padding:2px 10px;
+    background:var(--card); border:1px dashed rgba(var(--teal-rgb),0.35); border-radius:20px; padding:2px 10px;
   }
   /* 나라 이름을 전부 풀어쓴 긴 문장(2~3개국 그룹)은 알약/뱃지 모양 안에 넣으면 답답해 보여서
      (사용자 지적, 2026-07-25) 태그 스타일을 벗기고 카드 전체 폭을 쓰는 일반 텍스트로 바꿈 —
@@ -650,9 +656,9 @@
     text-decoration:none; transition:border-color 0.15s ease, background 0.15s ease;
   }
   .intro-persona-row.is-clickable{ cursor:pointer; }
-  .intro-persona-row.is-clickable:active{ background:rgba(21,84,69,0.08); border-color:var(--teal); }
+  .intro-persona-row.is-clickable:active{ background:rgba(var(--teal-rgb),0.08); border-color:var(--teal); }
   @media (hover: hover) {
-    .intro-persona-row.is-clickable:hover{ border-color:var(--teal); background:rgba(21,84,69,0.06); }
+    .intro-persona-row.is-clickable:hover{ border-color:var(--teal); background:rgba(var(--teal-rgb),0.06); }
   }
   .intro-persona-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0 0 4px; }
   .flag-badge{
@@ -835,22 +841,24 @@
     .freq-balls .draw-ball{ opacity:1; transform:none; }
     .freq-ball-pop{ animation:none; }
   }
-  .foot-note{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; line-height:1.4; }
+  /* --text-muted는 이미 WCAG AA 기준으로 명암비 맞춰 튜닝된 값이라, 그 위에 opacity:0.85까지
+     또 얹으면 대비가 불필요하게 더 줄어듦(디자인 검수로 발견, 2026-07-25) — opacity 제거 */
+  .foot-note{ font-size:16px; color:var(--text-muted); margin:0; line-height:1.4; }
 
   .result-hero{
     position:relative; overflow:hidden;
     background:linear-gradient(135deg, #EAF3EE 0%, #FBFAF4 55%, #FFFEF9 100%);
-    border:1px solid rgba(21,84,69,0.16); border-radius:14px;
+    border:1px solid rgba(var(--teal-rgb),0.16); border-radius:14px;
     padding:26px 20px 24px; text-align:center;
   }
   .result-hero::before{
     content:''; position:absolute; top:-70px; right:-60px; width:220px; height:220px; border-radius:50%;
-    background:radial-gradient(circle, rgba(21,84,69,0.08) 0%, rgba(21,84,69,0) 70%);
+    background:radial-gradient(circle, rgba(var(--teal-rgb),0.08) 0%, rgba(var(--teal-rgb),0) 70%);
     pointer-events:none;
   }
   .result-hero::after{
     content:''; position:absolute; bottom:-90px; left:-60px; width:200px; height:200px; border-radius:50%;
-    background:radial-gradient(circle, rgba(21,84,69,0.05) 0%, rgba(21,84,69,0) 70%);
+    background:radial-gradient(circle, rgba(var(--teal-rgb),0.05) 0%, rgba(var(--teal-rgb),0) 70%);
     pointer-events:none;
   }
   /* 시그니처 요소 — "참"(眞, 진짜·검증됨)의 뜻을 담은 도장 마크.
@@ -897,7 +905,7 @@
   }
   .usd-actual-note span{ font-weight:400; color:var(--text-muted); }
   .result-hero .usd-actual-note{
-    color:var(--teal); background:rgba(21,84,69,0.08); position:relative;
+    color:var(--teal); background:rgba(var(--teal-rgb),0.08); position:relative;
   }
   .result-hero .usd-actual-note span{ color:var(--text-muted); }
   .krw-hint{ font-size:var(--fs-small); color:var(--text-muted); font-weight:400; margin:0 0 10px 2px; }
@@ -918,7 +926,7 @@
     .live-result-mini{ flex-direction:column; align-items:flex-start; }
     .live-result-mini span:first-child{ width:100%; }
   }
-  .live-result-mini:hover, .live-result-mini:focus-within{ box-shadow:0 0 0 3px rgba(21,84,69,0.14); }
+  .live-result-mini:hover, .live-result-mini:focus-within{ box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.14); }
   .live-result-mini:hover{ border-color:var(--teal); }
   .live-result-mini span:first-child{ font-size:var(--fs-note); color:var(--text-muted); font-weight:600; min-width:0; overflow-wrap:break-word; }
   #home-final-basis{ display:none; }
@@ -933,7 +941,7 @@
     display:flex; align-items:center; gap:10px; max-width:calc(100% - 32px);
     background:var(--card); border:1.5px solid var(--teal); border-radius:999px;
     padding:10px 18px; padding-bottom:calc(10px + env(safe-area-inset-bottom, 0px));
-    box-shadow:0 6px 20px rgba(21,84,69,0.22); cursor:pointer; font-family:inherit;
+    box-shadow:0 6px 20px rgba(var(--teal-rgb),0.22); cursor:pointer; font-family:inherit;
     z-index:40; opacity:0; pointer-events:none; transition:opacity 0.2s ease, transform 0.2s ease;
   }
   .sticky-result-badge.is-visible{ opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
@@ -954,7 +962,7 @@
     display:inline-flex; align-items:center; gap:6px; min-height:44px;
     background:var(--teal); color:var(--on-accent); border:none; border-radius:999px;
     padding:10px 16px; font-family:inherit; font-size:var(--fs-small); font-weight:700; cursor:pointer;
-    box-shadow:0 6px 16px rgba(21,84,69,0.28); z-index:39;
+    box-shadow:0 6px 16px rgba(var(--teal-rgb),0.28); z-index:39;
     opacity:0; pointer-events:none; transform:translateY(8px);
     transition:transform 0.15s ease, opacity 0.15s ease;
   }
@@ -1085,7 +1093,7 @@
     font-size:var(--fs-small); font-weight:700; color:var(--text-muted); background:var(--bg);
     border:1.5px solid var(--border); border-radius:20px; padding:6px 14px; cursor:pointer;
   }
-  .lightning-game-btn.active{ color:var(--teal); border-color:var(--teal); background:rgba(21,84,69,0.06); }
+  .lightning-game-btn.active{ color:var(--teal); border-color:var(--teal); background:rgba(var(--teal-rgb),0.06); }
   /* 확률체감 페이지엔 파워볼/메가밀리언즈 토글이 두 곳(등수표용·번개 번호용)에 있어서, 서로
      다른 기능임을 구분할 수 있게 등수표 쪽만 세그먼트 필 스타일로 다르게 표시함(디자인 3차 개선) */
   .odds-toggle-eyebrow{ font-size:var(--fs-small); font-weight:700; color:var(--text-muted); text-align:center; margin:0 0 6px; }
@@ -1149,7 +1157,7 @@
   .us-state-row-name{ color:var(--text-dark); }
   .us-state-row-rate{ color:var(--text-muted); }
   .us-state-row-amt{ font-weight:700; color:var(--teal); font-variant-numeric:tabular-nums; white-space:nowrap; }
-  .us-state-row.is-current{ background:rgba(21,84,69,0.1); border-radius:6px; padding-left:6px; padding-right:6px; margin:0 -6px; }
+  .us-state-row.is-current{ background:rgba(var(--teal-rgb),0.1); border-radius:6px; padding-left:6px; padding-right:6px; margin:0 -6px; }
   .filing-label{ font-size:var(--fs-small); font-weight:600; color:var(--text-muted); margin:0 0 6px; }
   /* 이 US 배지는 선택 가능한 토글이 아니라 "이 항목은 미국 기준이에요"라는 정보성 라벨이라,
      과세기준 토글의 활성 색(청록)을 그대로 쓰면 마치 선택된 버튼처럼 보여 헷갈림 — 중립 톤으로 */
@@ -1173,7 +1181,7 @@
   /* 스핀 화살표(위/아래 버튼)는 46px 폭 안에서 숫자와 겹쳐 보여서 오히려 지저분함 — 모바일은
      어차피 inputmode="numeric"으로 숫자 키패드가 뜨므로 화살표 없이도 입력에 문제없음 */
   .mn-num-input::-webkit-outer-spin-button, .mn-num-input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
-  .mn-num-input:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(21,84,69,0.14); }
+  .mn-num-input:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.14); }
   /* 파워볼 번호칸만 빨간 테두리로 구분 — 잭팟 카드·번개뽑기의 특별볼(빨강) 색 관례를 그대로 따름 */
   .mn-special-input{ border-color:var(--status-red); color:var(--status-red); }
   .mn-special-input:focus{ border-color:var(--status-red); box-shadow:0 0 0 3px rgba(var(--status-red-rgb),0.16); }
@@ -1262,7 +1270,7 @@
        "펼치는 버튼"이 아니라 그냥 텍스트 줄처럼 보였음(실사용자 테스트에서 FAQ의 "더 자세히
        알아보기"를 통째로 놓침) — 탭 메뉴를 버튼처럼 보이게 고친 것(5a7d6ea)과 같은 teal 톤 배경을
        줘서 "이건 누를 수 있다"는 신호를 강하게 함 */
-    background:rgba(21,84,69,0.06); border:1.5px solid rgba(21,84,69,0.3);
+    background:rgba(var(--teal-rgb),0.06); border:1.5px solid rgba(var(--teal-rgb),0.3);
     border-radius:12px; transition:border-color 0.15s ease, background 0.15s ease;
   }
   /* FAQ "더 자세히 알아보기"는 안에 .panel-accordion-title(20px) 자식들을 담고 있어서
@@ -1338,7 +1346,7 @@
   @media (hover: hover) { .dream-option:hover{ border-color:var(--teal); } }
   .dream-result{
     margin-top:14px; padding:18px 16px; text-align:center; background:var(--grad-soft);
-    border:1px solid rgba(21,84,69,0.2); border-radius:12px;
+    border:1px solid rgba(var(--teal-rgb),0.2); border-radius:12px;
   }
   .dream-title{ font-size:var(--fs-h3); font-weight:800; color:var(--teal); margin:0 0 6px; }
   .dream-desc{ font-size:var(--fs-note); color:var(--text-dark); margin:0 0 8px; line-height:1.5; }
@@ -1415,7 +1423,7 @@
     display:block; width:100%; margin-top:12px; padding:10px; border-radius:10px; border:1px solid var(--border);
     background:var(--bg); color:var(--teal); font-family:inherit; font-size:var(--fs-small); font-weight:700; cursor:pointer;
   }
-  .jh-more-btn:hover{ background:rgba(21,84,69,0.08); }
+  .jh-more-btn:hover{ background:rgba(var(--teal-rgb),0.08); }
   .jh-rank-list{ display:flex; flex-direction:column; gap:8px; margin-top:4px; }
   .jh-rank-row{ display:flex; align-items:center; gap:12px; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px 14px; }
   .jh-rank-medal{ font-size:20px; font-weight:800; width:28px; flex-shrink:0; text-align:center; }
@@ -1455,7 +1463,7 @@
   /* 연도 select만 "2026" 같은 4자리 숫자라 다른 두 개(월/일, 최대 2자리)보다 폭이 더 필요함 —
      flex:1로 균등 분배하면 연도만 좁아서 화살표 아이콘과 숫자가 붙어 보일 수 있어 비율을 다르게 줌 */
   #dl-date-year{ flex-grow:1.3; }
-  .dl-date-select:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(21,84,69,0.14); }
+  .dl-date-select:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.14); }
   .dl-date-sep{ color:var(--text-muted); font-weight:700; flex-shrink:0; }
   .dl-empty{ font-size:var(--fs-small); color:var(--text-muted); text-align:center; padding:14px 0; }
   .dl-amt, .dl-no-amt{ font-size:var(--fs-small); color:var(--text-muted); margin:6px 0 0; }
@@ -1523,7 +1531,7 @@
   .legal-body b{ color:var(--text-dark); }
 
   .jackpot-calc{
-    display:none; background:var(--card); border:1.5px solid rgba(21,84,69,0.25); border-radius:12px;
+    display:none; background:var(--card); border:1.5px solid rgba(var(--teal-rgb),0.25); border-radius:12px;
     padding:16px; margin:-2px 0 10px; text-align:center;
   }
   .jackpot-calc.show{ display:block; }
@@ -1536,7 +1544,7 @@
   .jc-annuity-box{ margin-top:6px; background:var(--bg); border-radius:8px; padding:10px 12px; }
   .jc-annuity-box .jc-row{ border-bottom:1px solid var(--border); padding:8px 0; }
   .jc-annuity-box .jc-row:last-of-type{ border-bottom:none; }
-  .jc-annuity-box .jc-row.jc-final{ background:rgba(21,84,69,0.06); margin:2px -8px; padding:8px 8px; border-radius:8px; border-bottom:none; }
+  .jc-annuity-box .jc-row.jc-final{ background:rgba(var(--teal-rgb),0.06); margin:2px -8px; padding:8px 8px; border-radius:8px; border-bottom:none; }
 
   /* 확률체감 탭의 "🔧 세금 기준 바꾸기 →" 팝오버(openTaxBasisOverlay()/closeTaxBasisOverlay()).
      FAQ의 faq-overlay-mode(전체화면)와 같은 문제(탭 전환하면 스크롤 위치를 잃음)를 해결하지만,
@@ -1652,7 +1660,7 @@
   .jc-step-arrow{ text-align:center; color:var(--teal); font-size:16px; margin:2px 0; }
   .jc-step-highlight{
     flex-direction:column; align-items:center; text-align:center; padding-bottom:0;
-    background:var(--grad-soft); border:1.5px solid rgba(21,84,69,0.3); border-radius:16px; padding:20px 18px;
+    background:var(--grad-soft); border:1.5px solid rgba(var(--teal-rgb),0.3); border-radius:16px; padding:20px 18px;
   }
   .jc-step-highlight .jc-step-num{ width:32px; height:32px; margin:0 auto 10px; }
   .jc-step-highlight .jc-step-val-big{ font-size:38px; }
@@ -1675,8 +1683,8 @@
   .game-label{ font-size:var(--fs-small); color:var(--text-muted); font-weight:400; }
   .game-val{ font-size:var(--fs-small); color:var(--text-dark); font-weight:700; line-height:1.4; }
   .same-place-box{
-    background:rgba(var(--ink-rgb),0.06); border:1.5px dashed var(--seafoam); border-radius:10px;
-    padding:10px 14px; text-align:center; font-size:var(--fs-small); font-weight:700; color:var(--seafoam); margin-top:12px;
+    background:none; border:none; border-radius:0;
+    padding:0; text-align:center; font-size:var(--fs-small); font-weight:700; color:var(--seafoam); margin-top:12px;
   }
 
   .cta-btn{
@@ -1699,12 +1707,12 @@
   .contact-status-msg{
     display:none; margin-top:10px; padding:10px 12px; border-radius:8px; font-weight:700; font-size:var(--fs-note); text-align:center;
   }
-  .contact-status-success{ background:rgba(21,84,69,0.08); color:var(--teal); }
+  .contact-status-success{ background:rgba(var(--teal-rgb),0.08); color:var(--teal); }
   .contact-status-error{ background:rgba(192,57,43,0.08); color:var(--status-red); }
 
   .share-btn{
     display:flex; align-items:center; justify-content:center; gap:6px; width:100%; text-align:center;
-    background:rgba(21,84,69,0.08); color:var(--teal); border:1.5px solid transparent;
+    background:rgba(var(--teal-rgb),0.08); color:var(--teal); border:1.5px solid transparent;
     font-family:inherit; font-size:var(--fs-note); font-weight:700; padding:11px; border-radius:12px;
     cursor:pointer; margin-top:8px; transition:background 0.15s ease;
   }
@@ -1721,7 +1729,7 @@
      넓어지는 "그리드 blowout" 현상이 생겨 카드가 화면 밖으로 삐져나갔음 */
   .trust-item{ display:flex; flex-direction:column; align-items:center; min-width:0; }
   .trust-icon{
-    width:44px; height:44px; border-radius:50%; background:rgba(21,84,69,0.1);
+    width:44px; height:44px; border-radius:50%; background:rgba(var(--teal-rgb),0.1);
     display:flex; align-items:center; justify-content:center; color:var(--teal); margin-bottom:8px;
     font-size:18px;
   }
@@ -1748,8 +1756,8 @@
     border-radius:6px; padding:2px 8px; margin-left:8px; vertical-align:middle;
   }
   .faq-audience-badge{
-    display:inline-block; font-size:14px; font-weight:700; color:var(--teal); background:rgba(21,84,69,0.1);
-    border-radius:6px; padding:2px 8px; margin-left:8px; vertical-align:middle;
+    display:inline-block; font-size:16px; font-weight:700; color:var(--teal); background:none;
+    border-radius:6px; padding:0; margin-left:8px; vertical-align:middle;
   }
 
   .refund-step-card{ background:var(--refund-step-bg); border:1px solid var(--border); border-radius:14px; padding:14px 16px; margin:8px 0; }
@@ -1772,7 +1780,7 @@
   .refund-wizard-result.tag-check{ border-left-color:var(--teal); }
   .filing-dday{
     font-size:var(--fs-note); color:var(--teal); font-weight:700; margin:12px 0 0;
-    padding:8px 10px; background:rgba(21,84,69,0.08); border-radius:8px; text-align:center;
+    padding:8px 10px; background:rgba(var(--teal-rgb),0.08); border-radius:8px; text-align:center;
   }
 
   .refund-check-row{
@@ -1780,7 +1788,7 @@
     background:var(--card); border:1px solid transparent; border-radius:8px; padding:9px 12px; margin-bottom:6px; cursor:pointer;
     min-height:44px;
   }
-  .refund-check-row.checked{ background:rgba(21,84,69,0.08); border-color:var(--teal); color:var(--teal); font-weight:700; }
+  .refund-check-row.checked{ background:rgba(var(--teal-rgb),0.08); border-color:var(--teal); color:var(--teal); font-weight:700; }
   .refund-check-row:last-of-type{ margin-bottom:0; }
   .refund-check-row span{ min-width:0; overflow-wrap:break-word; }
   .refund-check-row input{ width:16px; height:16px; margin-top:3px; accent-color:var(--teal); flex-shrink:0; cursor:pointer; }
@@ -1799,7 +1807,7 @@
     display:none; position:absolute; top:-11px; left:50%; transform:translateX(-50%);
     font-size:16px; font-weight:800; color:var(--on-accent); background:var(--teal); border-radius:8px; padding:1px 8px; white-space:nowrap;
   }
-  .refund-link-btn.recommended{ border-color:var(--teal); border-width:2px; background:rgba(21,84,69,0.06); order:-1; }
+  .refund-link-btn.recommended{ border-color:var(--teal); border-width:2px; background:rgba(var(--teal-rgb),0.06); order:-1; }
   .refund-link-btn.recommended .refund-link-btn-badge{ display:inline-block; }
   .refund-link-btn.dimmed{ opacity:0.5; }
 
@@ -1857,7 +1865,11 @@
     .bar-value{ width:auto; flex:0 0 76px; }
     .jc-step-val-big{ font-size:24px; }
     .hero-amount{ font-size:28px; font-size:clamp(24px, 8vw, var(--fs-hero)); }
-    .result-hero-amt{ font-size:32px; font-size:clamp(26px, 9vw, 40px); }
+    /* .result-hero-amt는 원래 여기서 clamp(26px, 9vw, 40px)로 한 번 더 눌러놨었는데, 기본
+       규칙(.result-hero-amt 본체, clamp(30px, 11vw, 54px))이 이미 반응형이라 380px 이하에서도
+       자체적으로 30px까지만 줄어들어 잘릴 위험이 없음 — 오히려 이 중복 오버라이드 때문에 좁은
+       화면에서 사이트의 가장 중요한 숫자(실수령액)가 390px+ 화면보다 더 작게 나오는 역전 현상이
+       있었음(디자인 검수로 발견, 2026-07-25) — 제거해서 기본 규칙 하나로 통일 */
     .live-result-mini-amt{ font-size:17px; font-size:clamp(16px, 6vw, 19px); }
     .jc-step{ gap:8px; }
     .playslip-mock{ padding:8px; }
@@ -1978,7 +1990,7 @@
   .country-toggle-more-summary::after{
     content:'▾'; display:inline-flex; align-items:center; justify-content:center;
     width:22px; height:22px; min-width:22px; border-radius:50%;
-    background:rgba(21,84,69,0.16); color:var(--teal); font-size:13px; font-weight:800; line-height:1;
+    background:rgba(var(--teal-rgb),0.16); color:var(--teal); font-size:13px; font-weight:800; line-height:1;
   }
   /* 이 둘은 원래 화살표 자체가 없이 글자 색만으로 "눌러진다"는 걸 표시했던 곳이라, 절대좌표가
      아니라 텍스트 바로 뒤에 붙는 인라인 배지로 붙임(다른 곳들은 이미 위치가 잡혀있는 자기 자리
