@@ -5289,32 +5289,36 @@ function renderAnnuityFromCash(cashKrw, usdMillionsLabel, idPrefix, scheduleList
   const rYear = calcTakeHome(perYearKrw / 100000000, 'kr');
   const about = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE);
 
+  // "(일시불 XM USD 기준)"이라고만 하면 "발표된 잭팟 총액" 바로 뒤에 붙어서, 마치 그 총액
+  // 자체가 일시불 금액인 것처럼 오독될 수 있었음(2026-07-25 40~60대 사용자 검수 지적) —
+  // "환산"/"converted from" 등 방향성이 드러나는 단어를 넣어서 "일시불 입력값을 연금 총액으로
+  // 거꾸로 계산한 것"이라는 관계가 문장만 봐도 분명해지게 함
   const labelEl = document.getElementById(idPrefix + '-announced-label');
   if (labelEl) labelEl.textContent = pickLang(
-    `📢 발표된 잭팟 총액 (일시불 ${usdMillionsLabel}M USD 기준)`,
-    `📢 Announced jackpot total (based on ${usdMillionsLabel}M USD lump sum)`,
-    `📢 公布的头奖总额（按一次性支付 ${usdMillionsLabel}M USD 计算）`,
-    `📢 Tổng jackpot đã công bố (dựa trên khoản trả một lần ${usdMillionsLabel}M USD)`,
-    `📢 ยอดแจ็คพอตที่ประกาศทั้งหมด (คำนวณจากเงินก้อน ${usdMillionsLabel}M USD)`,
-    `📢 Объявленный общий джекпот (на основе единовременной выплаты ${usdMillionsLabel}M USD)`,
+    `📢 발표된 잭팟 총액 (일시불 ${usdMillionsLabel}M USD를 연금으로 환산)`,
+    `📢 Announced jackpot total (converted from a ${usdMillionsLabel}M USD lump sum)`,
+    `📢 公布的头奖总额（由一次性支付 ${usdMillionsLabel}M USD 换算而来）`,
+    `📢 Tổng jackpot đã công bố (quy đổi từ khoản trả một lần ${usdMillionsLabel}M USD)`,
+    `📢 ยอดแจ็คพอตที่ประกาศทั้งหมด (แปลงมาจากเงินก้อน ${usdMillionsLabel}M USD)`,
+    `📢 Объявленный общий джекпот (пересчитано из единовременной выплаты ${usdMillionsLabel}M USD)`,
     {
-      km: `📢 ចំនួនប្រាក់ចាប់រង្វាន់សរុបដែលបានប្រកាស (គិតលើមូលដ្ឋានទូទាត់តែម្តង ${usdMillionsLabel}M USD)`,
-      ne: `📢 घोषित कुल ज्याकपोट रकम (${usdMillionsLabel}M USD एकमुष्टको आधारमा)`,
-      id: `📢 Total jackpot yang diumumkan (berdasarkan sekaligus ${usdMillionsLabel}M USD)`,
-      my: `📢 ကြေညာထားသော ဂျက်ပေါ့ စုစုပေါင်း (${usdMillionsLabel}M USD တစ်ကြိမ်တည်းအခြေခံ)`,
-      si: `📢 නිවේදනය කළ මුළු ජැක්පොට් මුදල (${usdMillionsLabel}M USD එකවර ගෙවීම මත පදනම්ව)`,
-      uz: `📢 E'lon qilingan jekpot summasi (${usdMillionsLabel}M USD bir martalik to'lov asosida)`,
-      mn: `📢 Зарласан нийт жекпот (${usdMillionsLabel}M USD нэг удаагийн төлбөрт үндэслэсэн)`,
-      kk: `📢 Жарияланған джекпот сомасы (${usdMillionsLabel}M USD бір реттік төлем негізінде)`,
-      ky: `📢 Жарыяланган жекпот суммасы (${usdMillionsLabel}M USD бир жолку төлөм негизинде)`,
-      ur: `📢 اعلان کردہ کل جیک پاٹ (${usdMillionsLabel}M USD یکمشت کی بنیاد پر)`,
-      bn: `📢 ঘোষিত মোট জ্যাকপট (${usdMillionsLabel}M USD একবারে প্রদানের ভিত্তিতে)`,
-      lo: `📢 ຈຳນວນແຈັກພອດທັງໝົດທີ່ປະກາດ (ອີງໃສ່ການຈ່າຍເທື່ອດຽວ ${usdMillionsLabel}M USD)`,
-      ja: `📢 発表されたジャックポット総額（一括受取額 ${usdMillionsLabel}M USD 基準）`,
-      ar: `📢 إجمالي الجاكبوت المعلن (بناءً على دفعة واحدة ${usdMillionsLabel}M USD)`,
-      hi: `📢 घोषित कुल जैकपॉट (${usdMillionsLabel}M USD एकमुश्त राशि पर आधारित)`,
-      fr: `📢 Total du jackpot annoncé (basé sur un versement unique de ${usdMillionsLabel}M USD)`,
-      tl: `📢 Kabuuang inanunsyong jackpot (batay sa ${usdMillionsLabel}M USD na lump sum)`,
+      km: `📢 ចំនួនប្រាក់ចាប់រង្វាន់សរុបដែលបានប្រកាស (បម្លែងចេញពីការទូទាត់តែម្តង ${usdMillionsLabel}M USD)`,
+      ne: `📢 घोषित कुल ज्याकपोट रकम (${usdMillionsLabel}M USD एकमुष्टबाट रूपान्तरण गरिएको)`,
+      id: `📢 Total jackpot yang diumumkan (dikonversi dari sekaligus ${usdMillionsLabel}M USD)`,
+      my: `📢 ကြေညာထားသော ဂျက်ပေါ့ စုစုပေါင်း (${usdMillionsLabel}M USD တစ်ကြိမ်တည်းမှ ပြောင်းလဲထားသည်)`,
+      si: `📢 නිවේදනය කළ මුළු ජැක්පොට් මුදල (${usdMillionsLabel}M USD එකවර ගෙවීමෙන් පරිවර්තනය කර ඇත)`,
+      uz: `📢 E'lon qilingan jekpot summasi (${usdMillionsLabel}M USD bir martalik to'lovdan aylantirilgan)`,
+      mn: `📢 Зарласан нийт жекпот (${usdMillionsLabel}M USD нэг удаагийн төлбөрөөс хөрвүүлсэн)`,
+      kk: `📢 Жарияланған джекпот сомасы (${usdMillionsLabel}M USD бір реттік төлемнен қайта есептелген)`,
+      ky: `📢 Жарыяланган жекпот суммасы (${usdMillionsLabel}M USD бир жолку төлөмдөн кайра эсептелген)`,
+      ur: `📢 اعلان کردہ کل جیک پاٹ (${usdMillionsLabel}M USD یکمشت رقم سے تبدیل شدہ)`,
+      bn: `📢 ঘোষিত মোট জ্যাকপট (${usdMillionsLabel}M USD একবারে প্রদান থেকে রূপান্তরিত)`,
+      lo: `📢 ຈຳນວນແຈັກພອດທັງໝົດທີ່ປະກາດ (ປ່ຽນມາຈາກການຈ່າຍເທື່ອດຽວ ${usdMillionsLabel}M USD)`,
+      ja: `📢 発表されたジャックポット総額（一括受取額 ${usdMillionsLabel}M USD から換算）`,
+      ar: `📢 إجمالي الجاكبوت المعلن (محوّل من دفعة واحدة قدرها ${usdMillionsLabel}M USD)`,
+      hi: `📢 घोषित कुल जैकपॉट (${usdMillionsLabel}M USD एकमुश्त राशि से बदला गया)`,
+      fr: `📢 Total du jackpot annoncé (converti à partir d'un versement unique de ${usdMillionsLabel}M USD)`,
+      tl: `📢 Kabuuang inanunsyong jackpot (kinombert mula sa ${usdMillionsLabel}M USD na lump sum)`,
     }
   );
   const announcedEl = document.getElementById(idPrefix + '-announced');
