@@ -393,6 +393,11 @@
           <button class="site-notice-close" onclick="document.getElementById('site-notice').style.display='none';" aria-label="닫기" data-i18n-aria-label="common.close">✕</button>
         </div>
 
+        <!-- 이 카드는 반드시 기본 펼침(open) 상태여야 함 — 처음 오는 방문자가 재외국민/외국인
+             거주자 같은 자기 경우를 못 찾고 그냥 한국 거주자용 계산기만 보고 이탈할 위험을 막기
+             위해 의도적으로 열어둔 것(2026-07-25 사용자 확인). 첫 화면이 이 카드로 꽉 차 보인다는
+             레이아웃 지적이 있었지만, "닫아두면 못 찾을 사람이 생긴다"는 우려가 더 커서 되돌림 —
+             다시 접어두자는 제안이 나오면 이 코멘트부터 참고할 것 -->
         <details class="panel odds-accordion" id="introPersonaAccordion" style="margin:14px 0;" open>
           <summary class="panel-title-toggle" data-i18n="intro.panelTitle">👋 나는 어떤 경우일까요?</summary>
           <div class="intro-persona-list">
@@ -1295,21 +1300,27 @@
           <p class="panel-desc" id="faq-panel-desc">검색하다 오신 분들이 자주 물어보는 질문 모았어요 · 국세청 상담 기준으로 확인된 정보예요</p>
           <p class="krw-hint" style="margin-bottom:10px;" data-i18n="faq.basisNote">💡 홈 화면에서 고르신 세금 계산 기준에 맞는 질문만 보여드려요</p>
           <input type="text" class="faq-search" id="faqSearch" placeholder="🔍 궁금한 거 검색해보세요 (예: 세금, 시민권, 파워볼)" oninput="filterFaq()" data-i18n-placeholder="faq.searchPlaceholder">
-          <p class="faq-audience-eyebrow" data-i18n="faq.audienceEyebrow">👤 나는 어떤 경우에 해당하나요?</p>
-          <div class="faq-audience-row">
-            <button class="faq-audience-chip active" onclick="setFaqAudience('all', this)" data-i18n="faq.audienceAll">전체</button>
-            <button class="faq-audience-chip" onclick="setFaqAudience('korean', this)" data-i18n-html="faq.audienceKorean">🇰🇷 저는 <span style="white-space:nowrap">재외국민(외국 거주 한국인)</span>이에요</button>
-            <button class="faq-audience-chip" onclick="setFaqAudience('foreigner', this)" data-i18n="faq.audienceForeigner">🌏 저는 한국 거주 외국인이에요</button>
-          </div>
-          <p class="faq-category-eyebrow" data-i18n="faq.categoryEyebrow">📂 무슨 내용이 궁금하세요?</p>
-          <div class="faq-chip-row">
-            <button class="faq-chip active" onclick="setFaqCategory('all', this)" data-i18n="faq.catAll">전체</button>
-            <button class="faq-chip" onclick="setFaqCategory('tax', this)" data-i18n="faq.catTax">세금·이중과세</button>
-            <button class="faq-chip" onclick="setFaqCategory('life', this)" data-i18n="faq.catLife">건강보험·연금·증여·사기주의</button>
-            <button class="faq-chip" onclick="setFaqCategory('refund', this)" data-i18n="faq.catRefund">환급·청구기한</button>
-            <button class="faq-chip" onclick="setFaqCategory('purchase', this)" data-i18n="faq.catPurchase">구매·절차</button>
-            <button class="faq-chip" onclick="setFaqCategory('game', this)" data-i18n="faq.catGame">게임 정보</button>
-          </div>
+          <!-- 2026-07-25: 예전엔 이 필터 2단(대상+카테고리)이 기본으로 펼쳐져 있어서, FAQ 탭에
+               들어오면 스크롤 없이는 질문이 단 하나도 안 보이는 문제가 있었음(레이아웃 검수 지적) —
+               둘 다 기본값이 "전체"라 접어놔도 잃는 정보가 없으므로 기본 접힘으로 바꿈 -->
+          <details class="calc-detail-toggle" id="faqFilterAccordion">
+            <summary class="calc-detail-summary" data-i18n="faq.filterToggle">🔎 조건으로 좁혀보기</summary>
+            <p class="faq-audience-eyebrow" data-i18n="faq.audienceEyebrow">👤 나는 어떤 경우에 해당하나요?</p>
+            <div class="faq-audience-row">
+              <button class="faq-audience-chip active" onclick="setFaqAudience('all', this)" data-i18n="faq.audienceAll">전체</button>
+              <button class="faq-audience-chip" onclick="setFaqAudience('korean', this)" data-i18n-html="faq.audienceKorean">🇰🇷 저는 <span style="white-space:nowrap">재외국민(외국 거주 한국인)</span>이에요</button>
+              <button class="faq-audience-chip" onclick="setFaqAudience('foreigner', this)" data-i18n="faq.audienceForeigner">🌏 저는 한국 거주 외국인이에요</button>
+            </div>
+            <p class="faq-category-eyebrow" data-i18n="faq.categoryEyebrow">📂 무슨 내용이 궁금하세요?</p>
+            <div class="faq-chip-row">
+              <button class="faq-chip active" onclick="setFaqCategory('all', this)" data-i18n="faq.catAll">전체</button>
+              <button class="faq-chip" onclick="setFaqCategory('tax', this)" data-i18n="faq.catTax">세금·이중과세</button>
+              <button class="faq-chip" onclick="setFaqCategory('life', this)" data-i18n="faq.catLife">건강보험·연금·증여·사기주의</button>
+              <button class="faq-chip" onclick="setFaqCategory('refund', this)" data-i18n="faq.catRefund">환급·청구기한</button>
+              <button class="faq-chip" onclick="setFaqCategory('purchase', this)" data-i18n="faq.catPurchase">구매·절차</button>
+              <button class="faq-chip" onclick="setFaqCategory('game', this)" data-i18n="faq.catGame">게임 정보</button>
+            </div>
+          </details>
           <p class="faq-no-result" id="faqNoResult" style="display:none;" data-i18n="faq.noResult">내용이 없어요.</p>
 
           <div class="faq-list-divider"></div>
