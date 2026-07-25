@@ -598,6 +598,9 @@
   .side-card-hidden-extra{ display:none; }
   .side-card-flags-row{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 8px; }
   .side-card-flag-group{ display:flex; flex-wrap:wrap; gap:3px; margin:0; }
+  /* 4개국 이상 그룹의 국기 배지는 <button>(탭하면 국가명 표시)이라, .flag-badge 자체 스타일은
+     그대로 쓰되 네이티브 버튼 기본값(테두리·폰트·커서)만 지움 */
+  .side-card-flag-group .flag-badge{ border:none; font-family:inherit; cursor:pointer; }
   .side-card-group-note{
     font-size:var(--fs-small); font-weight:600; color:var(--text-muted); margin:0;
     background:var(--card); border:1px dashed rgba(21,84,69,0.35); border-radius:20px; padding:2px 10px;

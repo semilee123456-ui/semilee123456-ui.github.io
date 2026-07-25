@@ -8382,7 +8382,23 @@ function updateSideBySide(eok, stateCode){
       if (rows.length > 1) card.classList.add('side-card-full');
       const flagsRowEl = document.createElement('div'); flagsRowEl.className = 'side-card-flags-row';
       const flagGroupEl = document.createElement('p'); flagGroupEl.className = 'side-card-flag-group';
-      rows.forEach(row => { flagGroupEl.appendChild(makeFlagBadge(row.profile.flagCode)); });
+      // 4개국 이상 그룹은 국기 코드(VN/KZ/KG 등)만 나열해서, 낯선 나라 코드는 뭔지 알 길이 없다는
+      // 지적(2026-07-25) — makeFlagBadge()의 정적 span 대신 탭하면 국가명이 뜨는 버튼으로 바꿈.
+      // aria-label은 토글 상태와 무관하게 항상 전체 국가명을 담아 스크린리더에서는 항상 들리게 함
+      rows.forEach(row => {
+        const badge = document.createElement('button');
+        badge.type = 'button';
+        badge.className = 'flag-badge';
+        badge.textContent = row.profile.flagCode;
+        const fullName = getProfileShortLabel(row.profile);
+        badge.setAttribute('aria-label', fullName);
+        badge.addEventListener('click', () => {
+          const showingName = badge.dataset.showingName === '1';
+          badge.textContent = showingName ? row.profile.flagCode : fullName;
+          badge.dataset.showingName = showingName ? '0' : '1';
+        });
+        flagGroupEl.appendChild(badge);
+      });
       flagsRowEl.appendChild(flagGroupEl);
       // 2~3개국은 getGroupSameLabel()이 "필리핀 거주자 · 태국 거주자 · 라오스 거주자"처럼 나라
       // 이름을 전부 풀어써서(4개국 이상일 때의 짧은 "N개국 동일"보다 훨씬 긴 문장) 뱃지/알약
