@@ -177,6 +177,28 @@ function applyTranslations(){
   updateLightningGameUi();
   updateMyNumbersUi();
   renderNumberFrequencyStats();
+  adjustNavIconVisibility();
+}
+
+// nav 버튼(비교/확률/도움말)에 아이콘을 추가(2026-07-25, 시각 밀도 개선)하면서 폭이 조금
+// 늘어났는데, 러시아어·카자흐어·키르기스어처럼 라벨이 긴 언어는 원래도 480px 이하에서 원형
+// 설정 버튼(🌐)이 nav 트랙과 같은 줄에 못 들어가는 경우가 있었고(고정 픽셀 breakpoint로는
+// 언어별 라벨 길이를 다 못 맞춤), 아이콘까지 더해지면 그 폭을 조금 더 넓힘. 폭 기준 미디어
+// 쿼리 대신 실제로 같은 줄에 들어가는지 직접 측정해서, 안 들어갈 때만 아이콘을 숨기는 방식으로
+// 언어·폭 조합과 무관하게 항상 맞게 함(언어 전환·리사이즈 시 재확인)
+function adjustNavIconVisibility(){
+  const nav = document.querySelector('.nav');
+  const links = document.querySelector('.menu-links');
+  const settings = document.querySelector('.settings-toggle');
+  if (!nav || !links || !settings) return;
+  nav.classList.remove('nav-icons-tight');
+  const fits = Math.abs(links.getBoundingClientRect().top - settings.getBoundingClientRect().top) < 10;
+  if (!fits) nav.classList.add('nav-icons-tight');
+}
+// 웹폰트(Pretendard)가 초기 측정 이후에 늦게 로드되면 글자 폭이 바뀌어 판단이 틀어질 수 있어서,
+// 폰트 로드 완료 시점에 한 번 더 재확인
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => adjustNavIconVisibility()).catch(() => {});
 }
 
 // 최초 로드 시, data-i18n 요소들의 원본 한국어를 저장해둠(다시 한국어로 돌아갈 때 쓰기 위함)
@@ -1412,6 +1434,9 @@ function go(view){
   // 그 화면에서만 숨김 (다른 모든 화면에서는 계속 떠 있음)
   const faqFloatBtn = document.getElementById('faqFloatBtn');
   if (faqFloatBtn) faqFloatBtn.classList.toggle('is-hidden', view === 'faq');
+  // 탭을 바꾸면 스크롤 위치는 그대로인데 그 아래 콘텐츠는 통째로 바뀌므로(스크롤 이벤트가
+  // 안 남) 겹침 여부를 여기서도 다시 확인해야 함
+  requestAnimationFrame(updateFaqFloatBtnVisibility);
 
   // 홈 ↔ 국가비교 이동 시, 어느 쪽에서 왔든 상관없이 항상 공용 상태(sharedAmountUsd/sharedCountry/EXCHANGE_RATE)를
   // 기준으로 화면을 다시 그려서 입력값·환율이 끊기지 않게 함
@@ -3076,7 +3101,7 @@ async function tryShareCardImage(canvas, shareTitle, shareText){
   }
 }
 
-async function shareLatestDraw(game){
+async function shareLatestDraw(game, btnEl){
   const draw = LATEST_DRAW[game];
   const jackpotMillions = Math.round(JACKPOT_DATA[game].amountUsd / 1000000);
   const gameLabel = pickLang(
@@ -3144,11 +3169,7 @@ async function shareLatestDraw(game){
       ur: `اگلا جیک پاٹ $${jackpotMillions}M!`, uz: `Keyingi jekpot $${jackpotMillions}M!`,
     }
   );
-  const cardFooter = pickLang(
-    '👉 참택스에서 실수령액 계산해보기', '👉 Calculate your take-home on ChamTax', '👉 到ChamTax算算实得金额',
-    '👉 Tính số tiền thực nhận trên ChamTax', '👉 คำนวณเงินที่ได้รับจริงที่ ChamTax', '👉 Посчитайте сумму на руки на ChamTax',
-    { ar:'👉 احسب صافي دخلك على ChamTax', bn:'👉 ChamTax-এ আপনার প্রকৃত আয় হিসাব করুন', fr:'👉 Calculez votre revenu net sur ChamTax', hi:'👉 ChamTax पर अपनी हाथ में आने वाली राशि निकालें', id:'👉 Hitung take-home Anda di ChamTax', ja:'👉 ChamTaxで手取り額を計算する', kk:'👉 ChamTax-та қолға тиетін соманы есептеңіз', km:'👉 គណនាចំណូលសុទ្ធរបស់អ្នកនៅ ChamTax', ky:"👉 ChamTax'та кол алдырма акчаңызды эсептеңиз", lo:'👉 ຄິດໄລ່ເງິນທີ່ໄດ້ຮັບຈິງຂອງທ່ານທີ່ ChamTax', mn:'👉 ChamTax дээр гарт орох дүнгээ тооцоолоорой', my:'👉 ChamTax တွင် သင့်လက်ခံရရှိမှုကို တွက်ချက်ပါ', ne:'👉 ChamTax मा आफ्नो हातमा पर्ने रकम गणना गर्नुहोस्', si:'👉 ChamTax හි ඔබේ අත් ලාභය ගණනය කරන්න', tl:'👉 Kalkulahin ang iyong take-home sa ChamTax', ur:'👉 ChamTax پر اپنی ہاتھ میں آنے والی رقم کا حساب لگائیں', uz:"👉 ChamTax'da qo'lga tegadigan summangizni hisoblang" }
-  );
+  const cardFooter = pickLang(...SHARE_CTA_FOOTER);
   const canvas = buildShareCard({ label: cardLabel, subText: cardSub, footerText: cardFooter, balls: { numbers: draw.numbers, special: draw.special, specialColor } });
   if (await tryShareCardImage(canvas, gameLabel, shareText)) return;
 
@@ -3162,7 +3183,12 @@ async function shareLatestDraw(game){
   }
   try {
     await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-    alert(pickLang('복사됐어요! 카톡에 붙여넣기 해보세요 :)', 'Copied! Paste it anywhere you like :)', '已复制！粘贴到任何地方分享吧 :)', 'Đã sao chép! Dán vào bất cứ đâu bạn muốn :)', 'คัดลอกแล้ว! วางที่ไหนก็ได้ที่คุณต้องการ :)', 'Скопировано! Вставьте куда угодно :)', COPIED_TOAST_MORE));
+    if (btnEl) {
+      const original = btnEl.textContent;
+      btnEl.textContent = pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
+      btnEl.classList.add('copied');
+      setTimeout(() => { btnEl.textContent = original; btnEl.classList.remove('copied'); }, 2000);
+    }
   } catch (e) {
     window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), `${shareText} ${shareUrl}`);
   }
@@ -4582,10 +4608,7 @@ function saveMyNumbersAsTicketImage(){
     barX += w + 3;
   }
 
-  const link = document.createElement('a');
-  link.download = 'chamtax-my-ticket.png';
-  link.href = canvas.toDataURL('image/png');
-  link.click();
+  openAnnotateOverlay(canvas, 'chamtax-my-ticket.png');
 }
 
 const RESULT_IMG_DISCLAIMER_MORE = {
@@ -4717,10 +4740,242 @@ function saveHomeResultAsImage(){
   ctx.font = "600 14px 'Pretendard', -apple-system, sans-serif";
   ctx.fillText(dateStr, W / 2, 462);
 
+  openAnnotateOverlay(canvas, 'chamtax-result.png');
+}
+
+// "이미지로 저장" 캔버스(위 saveMyNumbersAsTicketImage/saveHomeResultAsImage가 만든 결과물)를
+// 바로 다운로드하지 않고, 펜/텍스트로 직접 꾸민 뒤 저장할 수 있게 하는 오버레이. 아이폰 사진
+// 꾸미기 앱처럼 크롭·회전·필터까지 다 넣는 대신, 이 캔버스들은 레이아웃이 고정된 생성 이미지라
+// 실제로 쓰일 일이 있는 펜(자유선)과 텍스트만 넣음(2026-07-25)
+let annotateSourceCanvas = null;
+let annotateDownloadFilename = 'chamtax-result.png';
+let annotateTool = 'pen';
+let annotateColor = '#C0392B';
+let annotateActions = [];
+let annotateDrawing = null;
+let annotateActiveTextInput = null;
+let annotatePenWidth = 6;
+let annotateFontSize = 32;
+const ANNOTATE_COLORS = ['#C0392B', '#262420', '#155445', '#F4B740', '#FFFFFF'];
+
+function openAnnotateOverlay(sourceCanvas, filename){
+  const overlay = document.getElementById('annotateOverlay');
+  const base = document.getElementById('annotateBaseCanvas');
+  const draw = document.getElementById('annotateOverlayCanvas');
+  if (!overlay || !base || !draw) return;
+  annotateSourceCanvas = sourceCanvas;
+  annotateDownloadFilename = filename;
+  annotateActions = [];
+  annotateDrawing = null;
+  // 캔버스 실제 해상도 기준으로 펜 굵기/글자 크기를 정함 — 이미 2배율로 그려진 큰 캔버스(예:
+  // 900*2=1800px)에 고정 픽셀 값을 쓰면 너무 가늘어 보여서, 폭에 비례하게 계산함
+  annotatePenWidth = Math.max(4, Math.round(sourceCanvas.width / 180));
+  annotateFontSize = Math.max(20, Math.round(sourceCanvas.width / 32));
+  base.width = sourceCanvas.width; base.height = sourceCanvas.height;
+  base.getContext('2d').drawImage(sourceCanvas, 0, 0);
+  draw.width = sourceCanvas.width; draw.height = sourceCanvas.height;
+  draw.getContext('2d').clearRect(0, 0, draw.width, draw.height);
+  renderAnnotateColorRow();
+  setAnnotateTool('pen');
+  updateAnnotateUndoClearState();
+  setupAnnotateCanvasEvents(draw);
+  overlay.classList.add('show');
+}
+
+function closeAnnotateOverlay(){
+  removeAnnotateTextInput();
+  const overlay = document.getElementById('annotateOverlay');
+  if (overlay) overlay.classList.remove('show');
+  annotateDrawing = null;
+}
+
+function renderAnnotateColorRow(){
+  const row = document.getElementById('annotateColorRow');
+  if (!row) return;
+  row.innerHTML = '';
+  ANNOTATE_COLORS.forEach(color => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'annotate-color-swatch' + (color === annotateColor ? ' is-active' : '');
+    btn.style.background = color;
+    btn.setAttribute('aria-label', color);
+    btn.addEventListener('click', () => {
+      annotateColor = color;
+      row.querySelectorAll('.annotate-color-swatch').forEach(s => s.classList.remove('is-active'));
+      btn.classList.add('is-active');
+    });
+    row.appendChild(btn);
+  });
+}
+
+function setAnnotateTool(tool){
+  removeAnnotateTextInput();
+  annotateTool = tool;
+  const penBtn = document.getElementById('annotatePenBtn');
+  const textBtn = document.getElementById('annotateTextBtn');
+  if (penBtn) penBtn.classList.toggle('is-active', tool === 'pen');
+  if (textBtn) textBtn.classList.toggle('is-active', tool === 'text');
+}
+
+function annotateCanvasPoint(e, canvas){
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+}
+
+function drawAnnotateStrokeSegment(ctx, color, width, from, to){
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(from.x, from.y);
+  ctx.lineTo(to.x, to.y);
+  ctx.stroke();
+}
+
+function redrawAnnotateOverlay(){
+  const canvas = document.getElementById('annotateOverlayCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  annotateActions.forEach(action => {
+    if (action.type === 'pen') {
+      ctx.strokeStyle = action.color; ctx.lineWidth = action.width; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath();
+      action.points.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+      ctx.stroke();
+    } else if (action.type === 'text') {
+      ctx.fillStyle = action.color;
+      ctx.font = `800 ${action.fontSize}px 'Pretendard', -apple-system, sans-serif`;
+      ctx.textBaseline = 'top';
+      ctx.textAlign = 'left';
+      ctx.fillText(action.text, action.x, action.y);
+    }
+  });
+}
+
+// 캔버스 위 그리기 이벤트는 오버레이를 열 때마다 다시 바인딩하지 않고 캔버스 엘리먼트에 한 번만
+// 붙임(dataset 플래그로 중복 바인딩 방지) — 오버레이는 매번 새로 만들어지는 게 아니라 DOM에
+// 계속 남아있는 같은 엘리먼트라서, openAnnotateOverlay()를 여러 번 불러도 리스너가 안 쌓임
+function setupAnnotateCanvasEvents(canvas){
+  if (canvas.dataset.annotateBound) return;
+  canvas.dataset.annotateBound = '1';
+  canvas.addEventListener('pointerdown', (e) => {
+    if (annotateTool === 'pen') {
+      e.preventDefault();
+      canvas.setPointerCapture(e.pointerId);
+      const pt = annotateCanvasPoint(e, canvas);
+      annotateDrawing = { type: 'pen', color: annotateColor, width: annotatePenWidth, points: [pt] };
+    } else if (annotateTool === 'text') {
+      e.preventDefault();
+      const pt = annotateCanvasPoint(e, canvas);
+      placeAnnotateTextInput(pt, e.clientX, e.clientY);
+    }
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!annotateDrawing) return;
+    e.preventDefault();
+    const pt = annotateCanvasPoint(e, canvas);
+    const prev = annotateDrawing.points[annotateDrawing.points.length - 1];
+    annotateDrawing.points.push(pt);
+    drawAnnotateStrokeSegment(canvas.getContext('2d'), annotateDrawing.color, annotateDrawing.width, prev, pt);
+  });
+  const endStroke = () => {
+    if (!annotateDrawing) return;
+    if (annotateDrawing.points.length > 1) annotateActions.push(annotateDrawing);
+    annotateDrawing = null;
+    updateAnnotateUndoClearState();
+  };
+  canvas.addEventListener('pointerup', endStroke);
+  canvas.addEventListener('pointercancel', endStroke);
+  canvas.addEventListener('pointerleave', endStroke);
+}
+
+// 텍스트 도구로 캔버스를 탭하면 그 자리에 임시 <input>을 띄워서 입력받고, 확정되면(Enter/포커스
+// 아웃) 캔버스 액션으로 굳혀서 그려 넣음 — Esc는 입력을 그냥 버림. done 플래그로 Enter 확정 뒤
+// input을 지울 때 발생하는 blur가 같은 텍스트를 중복으로 추가하지 않게 막음
+function placeAnnotateTextInput(canvasPt, clientX, clientY){
+  removeAnnotateTextInput();
+  const wrap = document.getElementById('annotateCanvasWrap');
+  if (!wrap) return;
+  const wrapRect = wrap.getBoundingClientRect();
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'annotate-text-input';
+  input.style.left = Math.max(0, Math.min(wrapRect.width - 90, clientX - wrapRect.left)) + 'px';
+  input.style.top = Math.max(0, Math.min(wrapRect.height - 28, clientY - wrapRect.top)) + 'px';
+  input.style.color = annotateColor;
+  let done = false;
+  const commit = () => {
+    if (done) return;
+    done = true;
+    const text = input.value.trim();
+    if (text) {
+      annotateActions.push({ type: 'text', color: annotateColor, x: canvasPt.x, y: canvasPt.y, text, fontSize: annotateFontSize });
+      redrawAnnotateOverlay();
+      updateAnnotateUndoClearState();
+    }
+    if (input.parentNode) input.parentNode.removeChild(input);
+    if (annotateActiveTextInput && annotateActiveTextInput.el === input) annotateActiveTextInput = null;
+  };
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); commit(); }
+    else if (e.key === 'Escape') {
+      e.preventDefault();
+      done = true;
+      if (input.parentNode) input.parentNode.removeChild(input);
+      annotateActiveTextInput = null;
+    }
+  });
+  input.addEventListener('blur', commit);
+  wrap.appendChild(input);
+  annotateActiveTextInput = { el: input, commit };
+  input.focus();
+}
+
+function removeAnnotateTextInput(){
+  if (annotateActiveTextInput) annotateActiveTextInput.commit();
+}
+
+function undoAnnotateAction(){
+  removeAnnotateTextInput();
+  annotateActions.pop();
+  redrawAnnotateOverlay();
+  updateAnnotateUndoClearState();
+}
+
+function clearAnnotateActions(){
+  removeAnnotateTextInput();
+  annotateActions = [];
+  redrawAnnotateOverlay();
+  updateAnnotateUndoClearState();
+}
+
+function updateAnnotateUndoClearState(){
+  const has = annotateActions.length > 0;
+  const undoBtn = document.getElementById('annotateUndoBtn');
+  const clearBtn = document.getElementById('annotateClearBtn');
+  if (undoBtn) undoBtn.disabled = !has;
+  if (clearBtn) clearBtn.disabled = !has;
+}
+
+function finishAnnotateAndDownload(){
+  removeAnnotateTextInput();
+  const base = document.getElementById('annotateBaseCanvas');
+  const draw = document.getElementById('annotateOverlayCanvas');
+  if (!base || !draw) return;
+  const out = document.createElement('canvas');
+  out.width = base.width; out.height = base.height;
+  const ctx = out.getContext('2d');
+  ctx.drawImage(base, 0, 0);
+  ctx.drawImage(draw, 0, 0);
   const link = document.createElement('a');
-  link.download = 'chamtax-result.png';
-  link.href = canvas.toDataURL('image/png');
+  link.download = annotateDownloadFilename;
+  link.href = out.toDataURL('image/png');
   link.click();
+  closeAnnotateOverlay();
 }
 
 function renderMyNumbersResult(mainNums, specialNum){
@@ -4969,11 +5224,67 @@ function celebrateQuickFill(btn){
   });
 }
 
+// "일시불 대신 연금(annuity)으로 받으면?" 박스 — 홈 화면 결과 카드와 확률체감 탭 잭팟
+// 드로어 둘 다 있고, 둘 다 "일시불 금액을 58%로 나눠 발표총액을 역산 → 30년 분할 → 세후"라는
+// 같은 계산을 하므로 하나로 합침(idPrefix로 각자의 DOM id 접두사만 구분: 'home-annuity'/'jc-annuity')
+function renderAnnuityFromCash(cashKrw, usdMillionsLabel, idPrefix, scheduleListId){
+  const announcedKrw = cashKrw / CASH_VALUE_RATIO;
+  const ANNUITY_PAYMENTS = 30;
+  const perYearKrw = announcedKrw / ANNUITY_PAYMENTS;
+  const rYear = calcTakeHome(perYearKrw / 100000000, 'kr');
+  const about = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE);
+
+  const labelEl = document.getElementById(idPrefix + '-announced-label');
+  if (labelEl) labelEl.textContent = pickLang(
+    `📢 발표된 잭팟 총액 (일시불 ${usdMillionsLabel}M USD 기준)`,
+    `📢 Announced jackpot total (based on ${usdMillionsLabel}M USD lump sum)`,
+    `📢 公布的头奖总额（按一次性支付 ${usdMillionsLabel}M USD 计算）`,
+    `📢 Tổng jackpot đã công bố (dựa trên khoản trả một lần ${usdMillionsLabel}M USD)`,
+    `📢 ยอดแจ็คพอตที่ประกาศทั้งหมด (คำนวณจากเงินก้อน ${usdMillionsLabel}M USD)`,
+    `📢 Объявленный общий джекпот (на основе единовременной выплаты ${usdMillionsLabel}M USD)`,
+    {
+      km: `📢 ចំនួនប្រាក់ចាប់រង្វាន់សរុបដែលបានប្រកាស (គិតលើមូលដ្ឋានទូទាត់តែម្តង ${usdMillionsLabel}M USD)`,
+      ne: `📢 घोषित कुल ज्याकपोट रकम (${usdMillionsLabel}M USD एकमुष्टको आधारमा)`,
+      id: `📢 Total jackpot yang diumumkan (berdasarkan sekaligus ${usdMillionsLabel}M USD)`,
+      my: `📢 ကြေညာထားသော ဂျက်ပေါ့ စုစုပေါင်း (${usdMillionsLabel}M USD တစ်ကြိမ်တည်းအခြေခံ)`,
+      si: `📢 නිවේදනය කළ මුළු ජැක්පොට් මුදල (${usdMillionsLabel}M USD එකවර ගෙවීම මත පදනම්ව)`,
+      uz: `📢 E'lon qilingan jekpot summasi (${usdMillionsLabel}M USD bir martalik to'lov asosida)`,
+      mn: `📢 Зарласан нийт жекпот (${usdMillionsLabel}M USD нэг удаагийн төлбөрт үндэслэсэн)`,
+      kk: `📢 Жарияланған джекпот сомасы (${usdMillionsLabel}M USD бір реттік төлем негізінде)`,
+      ky: `📢 Жарыяланган жекпот суммасы (${usdMillionsLabel}M USD бир жолку төлөм негизинде)`,
+      ur: `📢 اعلان کردہ کل جیک پاٹ (${usdMillionsLabel}M USD یکمشت کی بنیاد پر)`,
+      bn: `📢 ঘোষিত মোট জ্যাকপট (${usdMillionsLabel}M USD একবারে প্রদানের ভিত্তিতে)`,
+      lo: `📢 ຈຳນວນແຈັກພອດທັງໝົດທີ່ປະກາດ (ອີງໃສ່ການຈ່າຍເທື່ອດຽວ ${usdMillionsLabel}M USD)`,
+      ja: `📢 発表されたジャックポット総額（一括受取額 ${usdMillionsLabel}M USD 基準）`,
+      ar: `📢 إجمالي الجاكبوت المعلن (بناءً على دفعة واحدة ${usdMillionsLabel}M USD)`,
+      hi: `📢 घोषित कुल जैकपॉट (${usdMillionsLabel}M USD एकमुश्त राशि पर आधारित)`,
+      fr: `📢 Total du jackpot annoncé (basé sur un versement unique de ${usdMillionsLabel}M USD)`,
+      tl: `📢 Kabuuang inanunsyong jackpot (batay sa ${usdMillionsLabel}M USD na lump sum)`,
+    }
+  );
+  const announcedEl = document.getElementById(idPrefix + '-announced');
+  if (announcedEl) announcedEl.textContent = about + formatWon(announcedKrw / 100000000);
+  const yearEl = document.getElementById(idPrefix + '-year');
+  if (yearEl) yearEl.textContent = about + formatWon(perYearKrw / 100000000);
+  const yearNetEl = document.getElementById(idPrefix + '-year-net');
+  if (yearNetEl) yearNetEl.textContent = about + formatWon(rYear.final);
+  const monthNetEl = document.getElementById(idPrefix + '-month-net');
+  if (monthNetEl) monthNetEl.textContent = about + formatWon(rYear.final / 12);
+  renderAnnuitySchedule(announcedKrw, scheduleListId);
+  return announcedKrw;
+}
+
 function refreshJackpotDrawerIfOpen(){
   const box = document.getElementById('jackpot-calc-box');
   if (box && box.classList.contains('show')) {
-    const announcedKrw = getJackpotKRW();
-    const cashKrw = announcedKrw * CASH_VALUE_RATIO;
+    // 2026-07-25: 예전엔 "오늘 파워볼 광고 잭팟(JACKPOT_DATA, 운영자가 수동으로 올리는 값)"을
+    // 출발점으로 삼아서, 그때그때 못 올리면 이 위젯 전체가 낡은 숫자를 계속 보여주는
+    // 문제가 있었음(사용자 지적 — "내가 그때그때 업데이트를 못 할 수도 있어서"). 계산기는
+    // 이미 홈 화면에 있으니, 여기서도 홈과 똑같이 "사용자가 입력한(또는 기본값) 일시불
+    // 금액"(sharedAmountUsd)을 출발점으로 써서 수동 업데이트 없이 항상 정확하고, 홈 화면
+    // 결과와 이 위젯이 늘 같은 금액을 보여주게 함(더 이상 서로 다른 두 숫자가 따로 안 뜸)
+    const cashKrw = sharedAmountUsd * EXCHANGE_RATE;
+    const announcedKrw = cashKrw / CASH_VALUE_RATIO;
     const r = calcTakeHome(cashKrw / 100000000, 'kr');
     // formatWon()이 이미 언어별(ko/en/zh/vi/th/ru) 단위 변환·표기를 전부 처리하므로 재사용
     const about = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE);
@@ -5008,55 +5319,12 @@ function refreshJackpotDrawerIfOpen(){
       }
     );
 
-    // 연금(annuity) 선택 시 — 발표 잭팟 총액을 30회로 단순 평균해 희망적인 그림도 함께 보여줌
-    const ANNUITY_PAYMENTS = 30;
-    const perYearKrw = announcedKrw / ANNUITY_PAYMENTS;
-    const rYear = calcTakeHome(perYearKrw / 100000000, 'kr');
-    // 이 박스 바로 위 1단계("📢 발표된 잭팟")에 이미 총액이 나와있긴 하지만, 사용자가 이 박스만
-    // 스크롤해서 보면(1단계는 화면 밖) 아래 연/월 숫자가 뭘 나눈 값인지 알 길이 없다는 지적
-    // (2026-07-24, 홈 탭에 먼저 추가했던 것과 같은 이유) — 여기도 똑같이 맨 위에 한 줄 추가
-    const jcAnnouncedLabelEl = document.getElementById('jc-annuity-announced-label');
-    // 홈 탭의 동일 라벨(home-annuity-announced-label)은 "(일시불 XXXM USD 기준)"처럼 괄호로
-    // 기준을 밝혀주는데, 이 박스만 그 설명이 빠져있어 사용자가 "이 금액이 어디서 나왔는지" 헷갈린다는
-    // 지적(2026-07-25) — 다만 이 박스는 홈 탭과 달리 "입력한 일시불 금액"을 거꾸로 환산한 게 아니라
-    // 오늘 파워볼 광고 잭팟(JACKPOT_DATA.powerball.amountUsd) 자체가 출발점이라, 문구도 그에 맞게
-    // "일시불 기준"이 아닌 "오늘 파워볼 광고 잭팟 기준"으로 씀(사실과 다르게 "일시불 기준"이라고
-    // 쓰면 오히려 새로운 오해를 만들게 됨)
-    const jackpotUsdM = Math.round(announcedKrw / EXCHANGE_RATE / 1000000);
-    const jcAnnouncedBasisMore = {
-      km: `📢 ចំនួនប្រាក់ចាប់រង្វាន់សរុបដែលបានប្រកាស (គិតលើមូលដ្ឋានចំនួនប្រាក់ដែលបានប្រកាសរបស់ Powerball ថ្ងៃនេះ ${jackpotUsdM}M USD)`,
-      ne: `📢 घोषित कुल ज्याकपोट रकम (आजको Powerball घोषित ज्याकपोट ${jackpotUsdM}M USD मा आधारित)`,
-      id: `📢 Total jackpot yang diumumkan (berdasarkan jackpot Powerball yang diumumkan hari ini ${jackpotUsdM}M USD)`,
-      my: `📢 ကြေညာထားသော ဂျက်ပေါ့ စုစုပေါင်း (ယနေ့ Powerball ကြေညာထားသော ဂျက်ပေါ့ ${jackpotUsdM}M USD အခြေခံ)`,
-      si: `📢 නිවේදනය කළ මුළු ජැක්පොට් මුදල (අද Powerball නිවේදනය කළ ජැක්පොට් ${jackpotUsdM}M USD මත පදනම්ව)`,
-      uz: `📢 E'lon qilingan jekpot summasi (bugungi Powerball e'lon qilingan jekpoti ${jackpotUsdM}M USD asosida)`,
-      mn: `📢 Зарласан нийт жекпот (өнөөдрийн Powerball-ын зарласан жекпот ${jackpotUsdM}M USD дээр үндэслэсэн)`,
-      kk: `📢 Жарияланған джекпот сомасы (бүгінгі Powerball жарияланған джекпоты ${jackpotUsdM}M USD негізінде)`,
-      ky: `📢 Жарыяланган жекпот суммасы (бүгүнкү Powerball жарыяланган жекпоту ${jackpotUsdM}M USD негизинде)`,
-      ur: `📢 اعلان کردہ کل جیک پاٹ (آج کے Powerball اعلان کردہ جیک پاٹ ${jackpotUsdM}M USD کی بنیاد پر)`,
-      bn: `📢 ঘোষিত মোট জ্যাকপট (আজকের Powerball ঘোষিত জ্যাকপট ${jackpotUsdM}M USD ভিত্তিতে)`,
-      lo: `📢 ຈຳນວນແຈັກພອດທັງໝົດທີ່ປະກາດ (ອີງໃສ່ແຈັກພອດ Powerball ທີ່ປະກາດມື້ນີ້ ${jackpotUsdM}M USD)`,
-      ja: `📢 発表されたジャックポット総額（本日のPowerball発表ジャックポット ${jackpotUsdM}M USD 基準）`,
-      ar: `📢 إجمالي الجاكبوت المعلن (بناءً على جاكبوت Powerball المعلن اليوم ${jackpotUsdM}M USD)`,
-      hi: `📢 घोषित कुल जैकपॉट (आज के Powerball घोषित जैकपॉट ${jackpotUsdM}M USD पर आधारित)`,
-      fr: `📢 Total du jackpot annoncé (basé sur le jackpot Powerball annoncé aujourd'hui de ${jackpotUsdM}M USD)`,
-      tl: `📢 Kabuuang inanunsyong jackpot (batay sa inanunsyong Powerball jackpot ngayon na ${jackpotUsdM}M USD)`,
-    };
-    if (jcAnnouncedLabelEl) jcAnnouncedLabelEl.textContent = pickLang(
-      `📢 발표된 잭팟 총액 (오늘 파워볼 광고 잭팟 ${jackpotUsdM}M USD 기준)`,
-      `📢 Announced jackpot total (based on today's advertised Powerball jackpot of ${jackpotUsdM}M USD)`,
-      `📢 公布的头奖总额（按今日Powerball公布头奖 ${jackpotUsdM}M USD 计算）`,
-      `📢 Tổng jackpot đã công bố (dựa trên jackpot Powerball công bố hôm nay ${jackpotUsdM}M USD)`,
-      `📢 ยอดแจ็คพอตที่ประกาศทั้งหมด (คำนวณจากแจ็คพอต Powerball ที่ประกาศวันนี้ ${jackpotUsdM}M USD)`,
-      `📢 Объявленный общий джекпот (на основе объявленного сегодня джекпота Powerball ${jackpotUsdM}M USD)`,
-      jcAnnouncedBasisMore
-    );
-    const jcAnnouncedEl = document.getElementById('jc-annuity-announced');
-    if (jcAnnouncedEl) jcAnnouncedEl.textContent = about + formatWon(announcedKrw / 100000000);
-    document.getElementById('jc-annuity-year').textContent = about + formatWon(perYearKrw / 100000000);
-    document.getElementById('jc-annuity-year-net').textContent = about + formatWon(rYear.final);
-    document.getElementById('jc-annuity-month-net').textContent = about + formatWon(rYear.final / 12);
-    renderAnnuitySchedule(announcedKrw);
+    // "일시불 대신 연금으로 받으면?" 박스 — 홈 화면의 같은 박스와 계산 로직이 완전히 같아져서
+    // (둘 다 이제 일시불 금액이 출발점) 공용 함수로 합침. 예전엔 이 부분이 각자 따로
+    // 구현돼 있어서 한쪽만 고치고 다른 쪽을 깜빡하는 사고가 있었음(jc-annuity-announced-label
+    // 기준 문구를 2026-07-25에 두 번 고친 게 바로 그 사고)
+    const usdMillionsJc = Math.round(sharedAmountUsd / 1000000).toLocaleString(LOCALE_MAP[currentLang] || 'ko-KR');
+    renderAnnuityFromCash(cashKrw, usdMillionsJc, 'jc-annuity', 'annuity-schedule-list');
   }
 }
 
@@ -5254,6 +5522,73 @@ function scrollToMainResult(){
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
+// "궁금해요" 플로팅 버튼(#faqFloatBtn)이 스크롤 없이 화면을 막 열었을 때부터 실제 콘텐츠 위에
+// 그대로 겹쳐 보이는 문제(2026-07-25 시각 감사 지적) — 로드 직후엔 숨겨두고, 어느 정도
+// 스크롤을 내려야 나타나게 함(styles.css .faq-float-btn.is-visible). go('faq')로 도움말
+// 화면 자체에 있을 때 숨기는 기존 .is-hidden 로직과는 별개로 항상 같이 동작함(display:none이
+// opacity/pointer-events보다 우선하므로 두 로직이 서로 안 부딪힘)
+const FAQ_FLOAT_SCROLL_THRESHOLD = 150;
+// 2026-07-25: 로드 직후 안 보이게만 해서는 부족했음 — 사용자가 스크린샷으로 재확인, 스크롤
+// 후 자연스럽게 멈춘 위치에서도 이 버튼이 확률체감 탭의 "일시불 대신 연금으로 받으면?" 문구나
+// 잭팟 단계별 금액 위에 그대로 얹히는 경우가 있었음. 스크롤 임계값만으로는 "화면에 보일지"는
+// 정할 수 있어도 "하필 그 자리에 뭐가 있는지"는 알 수 없음 — document.elementsFromPoint()로
+// 버튼이 차지하는 실제 화면 영역 밑에 글자가 있는 텍스트 요소가 있는지 직접 확인해서, 있으면
+// 그 순간만 흐리게 비활성화함(버튼 자체를 없애지 않아 스크롤이 멈추면 곧바로 다시 씀 가능)
+function faqFloatBtnCollidesWithText(btn){
+  const rect = btn.getBoundingClientRect();
+  if (!rect.width || !rect.height) return false;
+  const points = [
+    [rect.left + rect.width * 0.5, rect.top + 2],
+    [rect.left + rect.width * 0.5, rect.bottom - 2],
+    [rect.left + 4, rect.top + rect.height * 0.5],
+    [rect.right - 4, rect.top + rect.height * 0.5],
+  ];
+  return points.some(([x, y]) => {
+    if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) return false;
+    const stack = document.elementsFromPoint(x, y);
+    for (const el of stack) {
+      if (el === btn || btn.contains(el)) continue;
+      // 버튼 자신에 도달하기 전에 카드 배경(:before/배경 전용 요소)만 있으면 계속 더 아래(뒤)
+      // 요소를 확인 — 실제로 눈에 보이는 글자가 있는 leaf 요소를 만나면 그때 충돌로 판단
+      const text = (el.textContent || '').trim();
+      if (!text) continue;
+      // el 자신이 텍스트를 직접 담은 노드인지(자식 요소가 아니라 텍스트 노드가 바로 있는지) 확인 —
+      // 아니면 큰 컨테이너(예: .page 전체)가 우연히 그 지점에 있다고 항상 걸리는 오탐이 생김
+      const hasDirectText = Array.from(el.childNodes).some(n => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
+      if (hasDirectText) return true;
+    }
+    return false;
+  });
+}
+
+function updateFaqFloatBtnVisibility(){
+  const btn = document.getElementById('faqFloatBtn');
+  if (!btn) return;
+  const scrolledEnough = window.scrollY > FAQ_FLOAT_SCROLL_THRESHOLD;
+  btn.classList.toggle('is-visible', scrolledEnough);
+  if (!scrolledEnough) { btn.classList.remove('is-colliding'); return; }
+  btn.classList.toggle('is-colliding', faqFloatBtnCollidesWithText(btn));
+}
+
+function setupFaqFloatBtnScrollVisibility(){
+  const btn = document.getElementById('faqFloatBtn');
+  if (!btn || btn.dataset.scrollBound) return;
+  btn.dataset.scrollBound = '1';
+  let ticking = false;
+  const debouncedUpdate = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; updateFaqFloatBtnVisibility(); });
+  };
+  window.addEventListener('scroll', debouncedUpdate, { passive: true });
+  // 잭팟 계산 드로어(details/summary)나 "일시불 대신 연금으로" 같은 아코디언을 열고 닫으면
+  // 스크롤은 그대로인데 그 아래 콘텐츠 높이가 바뀌어서 겹침 여부가 달라질 수 있음.
+  // 'toggle' 이벤트는 버블링을 안 해서 document에 capture:true로 걸어야 모든 <details>를
+  // 한 번에 잡을 수 있음(요소마다 따로 리스너를 안 달아도 됨)
+  document.addEventListener('toggle', debouncedUpdate, true);
+  updateFaqFloatBtnVisibility();
+}
+
 // 확률체감 탭의 실수령액 랭킹/물가보정 랭킹 위젯은 sharedCountry(세금 기준)를 따라 문구가
 // 바뀌는데, 정작 이 탭 안에는 기준을 바꿀 방법이 없어서 홈 화면까지 되돌아가야 했음(2026-07-24
 // 사용자 지적으로 발견). 처음엔 go('home')으로 탭 자체를 전환하는 goToHomeCountryToggle()을
@@ -5319,7 +5654,7 @@ document.addEventListener('keydown', e => {
 // renderJackpotHistory()/renderJackpotTakeHomeRanking()/renderNumberFrequencyStats()는 확률체감
 // 탭 전용 데이터(odds-data.js)가 필요해서 여기서 안 부름 — go('odds')가 처음 호출될 때 지연 로드
 // 후 그려짐(renderOddsTabDataWhenReady, 2026-07-22 성능 개선)
-document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); updateDateLookupUi(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); renderFilingDday(); });
+document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); updateDateLookupUi(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); renderFilingDday(); setupFaqFloatBtnScrollVisibility(); adjustNavIconVisibility(); });
 
 // 다른 페이지(korea-resident-us-lottery-tax.html 등)에서 "index.html#faq"처럼 해시가 붙은 링크로
 // 들어왔을 때, 이 SPA는 해시를 안 보고 항상 홈 화면부터 그려서 그 링크가 사실상 무시되던 문제 수정.
@@ -5468,6 +5803,10 @@ window.addEventListener('resize', () => {
       // auto-fit 그리드는 창 너비에 따라 열 수가 바뀌므로, 리사이즈 후에도 마지막 줄
       // 혼자 남은 카드가 있는지 다시 판단해야 함
       fixSideCardOrphanRow();
+      adjustNavIconVisibility();
+      // 슬라이더 눈금 겹침 판정은 실제 렌더링 폭 기준이라, 창 폭이 바뀌면 다시 확인해야 함
+      renderSliderTicks(document.getElementById('homeAmountSlider'));
+      renderSliderTicks(document.getElementById('compareAmountSlider'));
     });
   }, 200);
 });
@@ -5702,6 +6041,101 @@ function setSliderMillions(slider, millions){
   slider.dataset.usdMin = Math.max(SLIDER_LOG_FLOOR_M, Math.min(10, Math.round(safeMillions)));
   slider.dataset.usdMax = Math.max(2000, safeMillions);
   slider.value = sliderMillionsToPos(slider, safeMillions);
+  renderSliderTicks(slider);
+}
+
+// 로그 스케일 슬라이더 위에 그리는 중간 눈금 후보. 처음엔 사용자가 예로 든 "1억/5억/10억/15억/
+// 20억"을 그대로 후보로 썼는데, 500/1000/1500(백만 단위)이 로그 스케일에서는 전체 범위의
+// 오른쪽 30%도 안 되는 구간에 몰려있어서(바로 이게 예전 3개 눈금이 겹쳐서 계단식으로 쌓아야
+// 했던 근본 원인) 겹침 제거 로직을 거치면 대부분 탈락해 눈금이 듬성듬성해짐 — 대신 공학용
+// "1-2-5" 눈금 패턴(20/50/100/200/500/1000...)을 써서 로그 스케일 전체에 고르게 펼쳐지게 함.
+// 2000(=sliderMax 끝 라벨과 같은 값)은 겹치므로 빼고, 그 대신 범위가 커졌을 때를 대비해 5000을 둠
+const SLIDER_TICK_CANDIDATES = [
+  { millions: 20, key: 'home.sliderTick20', ko: '2천만 달러' },
+  { millions: 50, key: 'home.sliderTick50', ko: '5천만 달러' },
+  { millions: 100, key: 'home.sliderTick100', ko: '1억 달러' },
+  { millions: 200, key: 'home.sliderTick200', ko: '2억 달러' },
+  { millions: 500, key: 'home.sliderTick500', ko: '5억 달러' },
+  { millions: 1000, key: 'home.sliderTick1000', ko: '10억 달러' },
+  { millions: 5000, key: 'home.sliderTick5000', ko: '50억 달러' },
+];
+
+// 하드코딩된 %(2026-07-24 이전 방식) 대신, 지금 슬라이더의 실제 usd-min/usd-max 범위 안에
+// 드는 후보만 골라서 그리고, 실제 렌더링된 위치를 측정해 겹치는 라벨은 제거함(언어·글자 길이·
+// 화면 폭이 뭐든 항상 안전 — "실제 렌더링 기준으로 확인"이라는 이 프로젝트의 테스트 원칙과
+// 같은 방식). 값을 입력해서 usd-max가 2000 이상으로 늘어나면(예: 30억 달러 입력) 그에 맞는
+// 더 큰 눈금(3000)도 자동으로 나타남 — 예전엔 3개 눈금이 기본 범위(10~2000)에만 맞게
+// 하드코딩돼 있어서 범위가 바뀌면 위치가 안 맞았음
+// 줄자처럼 촘촘한 잔금(라벨 없는 짧은 선)을 트랙 전체에 균등한 %(로그값이 아니라 화면상
+// 위치 기준)로 깔아서, 굵은 눈금(라벨 있는 것들) 사이 어디쯤인지도 눈대중으로 가늠할 수
+// 있게 함(2026-07-25 사용자 요청, 줄자 사진 참고) — 라벨이 없어서 언어·글자길이와 무관하게
+// 항상 안전하고, 겹침 계산도 필요 없음(같은 자리에 겹쳐도 그냥 선 하나로 보일 뿐이라 무해함)
+const SLIDER_MINOR_TICK_STEP_PCT = 4; // 4%씩 = 트랙에 촘촘한 선 24개
+function renderSliderMinorTicks(container){
+  for (let pct = 0; pct <= 100; pct += SLIDER_MINOR_TICK_STEP_PCT) {
+    const mark = document.createElement('span');
+    mark.className = 'slider-tick-minor';
+    mark.style.left = pct + '%';
+    container.appendChild(mark);
+  }
+}
+
+function renderSliderTicks(slider){
+  const container = slider.parentElement && slider.parentElement.querySelector('.slider-ticks');
+  if (!container) return;
+  container.innerHTML = '';
+  renderSliderMinorTicks(container);
+  const usdMin = Number(slider.dataset.usdMin) || 10;
+  const usdMax = Number(slider.dataset.usdMax) || 2000;
+  // 트랙 맨 끝(0%/100%)에 딱 붙은 눈금은 슬라이더 손잡이·트랙 테두리와 겹쳐 읽기 힘드므로,
+  // 끝에서 살짝 안쪽으로 들어온 후보만 채택(로그 스케일이라 %가 아니라 배수로 여유를 둠)
+  const candidates = SLIDER_TICK_CANDIDATES.filter(c => c.millions > usdMin * 1.3 && c.millions < usdMax / 1.3);
+  if (!candidates.length) return;
+
+  const elements = candidates.map(c => {
+    const pos = sliderMillionsToPos(slider, c.millions);
+    const pct = (pos / SLIDER_POS_MAX) * 100;
+    const el = document.createElement('span');
+    el.className = 'slider-tick';
+    el.style.left = pct + '%';
+    const mark = document.createElement('span');
+    mark.className = 'slider-tick-mark';
+    const label = document.createElement('span');
+    label.className = 'slider-tick-label';
+    label.textContent = resolveI18n(c.key) || c.ko;
+    el.appendChild(mark);
+    el.appendChild(label);
+    container.appendChild(el);
+    return el;
+  });
+
+  // 실제 DOM에 그려진 뒤에야 각 라벨의 진짜 폭을 알 수 있으므로, 다음 프레임에서 측정 —
+  // 왼쪽부터 순서대로 훑으면서, 앞 눈금과 가로로 겹치면(최소 여백 6px 포함) 뒤엣것을 제거
+  requestAnimationFrame(() => {
+    const containerRect = container.getBoundingClientRect();
+    if (!containerRect.width) return;
+    let lastRight = -Infinity;
+    elements.forEach(el => {
+      if (!el.isConnected) return;
+      const r = el.getBoundingClientRect();
+      if (r.left < lastRight + 6) {
+        el.remove();
+        return;
+      }
+      // 카드 좌우 경계를 벗어나면(맨 끝 눈금이 가운데 정렬 때문에 반쪽이 잘리는 경우) 그
+      // 방향으로만 정렬 기준을 바꿔서 폭 안에 붙임 — 특정 눈금·언어를 하드코딩해서 예외
+      // 처리하던 예전 방식(.slider-tick-far) 대신, 실제로 넘치는 쪽만 그때그때 clamp
+      if (r.right > containerRect.right) {
+        el.style.left = 'auto';
+        el.style.right = '0';
+        el.style.transform = 'none';
+      } else if (r.left < containerRect.left) {
+        el.style.left = '0';
+        el.style.transform = 'none';
+      }
+      lastRight = el.getBoundingClientRect().right;
+    });
+  });
 }
 
 function getSliderMillions(slider){
@@ -6244,7 +6678,7 @@ function refreshDreamResultIfOpen(finalAmtOverride){
   }
 }
 
-async function shareDreamResult(){
+async function shareDreamResult(btnEl){
   const title = document.getElementById('dream-title').textContent;
   const amt = document.getElementById('dream-amt').textContent;
   const shareText = pickLang(
@@ -6278,7 +6712,7 @@ async function shareDreamResult(){
   const shareTitle = pickLang('당첨되면 나는?', 'What would I do if I won?', '如果中奖了，我会……', 'Nếu trúng số tôi sẽ?', 'ถ้าถูกรางวัลฉันจะ?', 'Что бы я сделал, если бы выиграл?', { ar:'ماذا سأفعل لو فزت؟', bn:'জিতলে আমি কী করব?', fr:'Que ferais-je si je gagnais ?', hi:'अगर मैं जीत जाऊं तो क्या करूंगा?', id:'Apa yang akan kulakukan kalau menang?', ja:'当たったら私は何をする？', kk:'Ұтып алсам не істер едім?', km:'តើខ្ញុំនឹងធ្វើអ្វី ប្រសិនបើឈ្នះ?', ky:'Утуп алсам эмне кылмакмын?', lo:'ຖ້າຂ້ອຍຖືກລາງວັນ ຂ້ອຍຈະເຮັດຫຍັງ?', mn:'Хожвол би юу хийх вэ?', my:'ဆုမှန်ရင် ငါဘာလုပ်မလဲ?', ne:'जितें भने म के गर्छु?', si:'මම දිනුවොත් මොකද කරන්නේ?', tl:'Ano ang gagawin ko kung manalo ako?', ur:'اگر میں جیت جاؤں تو کیا کروں گا؟', uz:'Agar yutib olsam, nima qilaman?' });
 
   const cardSub = pickLang('너는 당첨되면 뭐부터 할래?', 'What would you do first if you won?', '如果你中奖了，会先做什么？', 'Bạn sẽ làm gì đầu tiên nếu trúng số?', 'คุณจะทำอะไรก่อนถ้าถูกรางวัล?', 'Что бы вы сделали в первую очередь, если бы выиграли?', { ar:'ماذا ستفعل أولاً لو فزت؟', bn:'জিতলে তুমি প্রথমে কী করবে?', fr:'Que ferais-tu en premier si tu gagnais ?', hi:'अगर तुम जीतोगे तो सबसे पहले क्या करोगे?', id:'Kalau kamu menang, apa yang akan kamu lakukan duluan?', ja:'あなたは当たったら最初に何する？', kk:'Сен ұтып алсаң, ең алдымен не істер едің?', km:'បើអ្នកឈ្នះ តើអ្នកនឹងធ្វើអ្វីមុនគេ?', ky:'Сен утуп алсаң, эң оболу эмне кыласың?', lo:'ຖ້າເຈົ້າຖືກລາງວັນ ເຈົ້າຈະເຮັດຫຍັງກ່ອນ?', mn:'Чи хожвол юуг эхлээд хийх вэ?', my:'သင်ဆုမှန်ရင် ဘာကို အရင်လုပ်မလဲ?', ne:'तिमी जित्यौ भने पहिले के गर्छौ?', si:'ඔබ දිනුවොත් මුලින්ම කරන්නේ මොකක්ද?', tl:'Ano ang unang gagawin mo kung manalo ka?', ur:'اگر آپ جیت جائیں تو سب سے پہلے کیا کریں گے؟', uz:"Agar yutib olsang, birinchi bo'lib nima qilasan?" });
-  const cardFooter = pickLang('👉 참택스에서 나도 골라보기', '👉 Pick yours on ChamTax', '👉 到ChamTax也选一个', '👉 Chọn của bạn trên ChamTax', '👉 เลือกของคุณที่ ChamTax', '👉 Выберите своё на ChamTax', { ar:'👉 اختر خيارك على ChamTax', bn:'👉 ChamTax-এ তোমারটা বেছে নাও', fr:'👉 Choisissez le vôtre sur ChamTax', hi:'👉 ChamTax पर अपना चुनें', id:'👉 Pilih milikmu di ChamTax', ja:'👉 ChamTaxであなたも選んでみて', kk:'👉 ChamTax-та өзіңіздікін таңдаңыз', km:'👉 ជ្រើសរើសរបស់អ្នកនៅ ChamTax', ky:"👉 ChamTax'та өзүңдүкүн тандаңыз", lo:'👉 ເລືອກຂອງເຈົ້າທີ່ ChamTax', mn:'👉 ChamTax дээр өөрийнхөө сонголтыг хийгээрэй', my:'👉 ChamTax တွင် သင့်ရွေးချယ်မှုကို ရွေးပါ', ne:'👉 ChamTax मा आफ्नो छान्नुहोस्', si:'👉 ChamTax හි ඔබේ එක තෝරන්න', tl:"👉 Piliin ang sa'yo sa ChamTax", ur:'👉 ChamTax پر اپنا انتخاب کریں', uz:"👉 ChamTax'da o'zingiznikini tanlang" });
+  const cardFooter = pickLang(...SHARE_CTA_FOOTER);
   const canvas = buildShareCard({ label: title, bigText: amt, subText: cardSub, footerText: cardFooter });
   if (await tryShareCardImage(canvas, shareTitle, shareText)) return;
 
@@ -6292,7 +6726,12 @@ async function shareDreamResult(){
   }
   try {
     await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-    alert(pickLang('복사됐어요! 카톡에 붙여넣기 해보세요 :)', 'Copied! Paste it anywhere you like :)', '已复制！粘贴到任何地方分享吧 :)', 'Đã sao chép! Dán vào bất cứ đâu bạn muốn :)', 'คัดลอกแล้ว! วางที่ไหนก็ได้ที่คุณต้องการ :)', 'Скопировано! Вставьте куда угодно :)', COPIED_TOAST_MORE));
+    if (btnEl) {
+      const original = btnEl.textContent;
+      btnEl.textContent = pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
+      btnEl.classList.add('copied');
+      setTimeout(() => { btnEl.textContent = original; btnEl.classList.remove('copied'); }, 2000);
+    }
   } catch (e) {
     window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), `${shareText} ${shareUrl}`);
   }
@@ -6331,7 +6770,7 @@ async function shareGenericPromo(){
     await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
     if (btn) {
       const original = btn.textContent;
-      btn.textContent = pickLang('✅ 링크가 복사됐어요', '✅ Link copied', '✅ 链接已复制', '✅ Đã sao chép liên kết', '✅ คัดลอกลิงก์แล้ว', '✅ Ссылка скопирована', LINK_COPIED_MORE);
+      btn.textContent = pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
     }
@@ -6354,7 +6793,7 @@ async function shareResult(){
     : pickLang('한국 거주자', 'Korea resident', '韩国居民', 'Cư dân Hàn Quốc', 'ผู้พำนักในเกาหลี', 'Резидент Кореи', buildCountryMore('kr'));
   const article = homeCountryVal === 'in' ? 'an' : 'a'; // "an India resident" vs "a US/China/Korea resident"
   const shareText = pickLang(
-    `미국 복권(${amountText} Million USD) 당첨되면 ${country} 기준 실수령액이 약 ${finalAmt}이래요. 세금 떼고 나면 실제로 얼마 남는지 참택스에서 계산해보세요! (참고용 시뮬레이션 결과예요)`,
+    `나 미국 복권(${amountText} Million USD) 당첨되면 ${country} 기준 ${finalAmt} 실수령! 너도 얼마 받을 수 있는지 참택스에서 확인해봐 (참고용 시뮬레이션이에요)`,
     `If I won the US lottery (${amountText} Million USD), my take-home as ${article} ${country} would be about ${finalAmt}. See how much you'd actually keep after tax on ChamTax! (This is a reference simulation)`,
     `如果中了美国彩票（${amountText} Million USD），按${country}计算实得金额大约是${finalAmt}。来ChamTax算算你扣税后实际能拿到多少吧！（仅供参考的模拟计算）`,
     `Nếu trúng xổ số Mỹ (${amountText} Million USD), số tiền thực nhận theo ${country} sẽ khoảng ${finalAmt}. Xem bạn thực sự giữ lại bao nhiêu sau thuế trên ChamTax! (Đây là kết quả mô phỏng tham khảo)`,
@@ -6395,7 +6834,10 @@ async function shareResult(){
   const shareUrl = shareUrlObj.toString();
   const shareTitle = pickLang('미국 복권 세금 계산기 - 참택스', 'US Lottery Tax Calculator - ChamTax', '美国彩票税金计算器 - ChamTax', 'Máy tính thuế xổ số Mỹ - ChamTax', 'เครื่องคำนวณภาษีลอตเตอรีสหรัฐฯ - ChamTax', 'Калькулятор налога на американскую лотерею - ChamTax', { ar:'حاسبة ضريبة اليانصيب الأمريكي - ChamTax', bn:'মার্কিন লটারি ট্যাক্স ক্যালকুলেটর - ChamTax', fr:"Calculateur d'impôt sur la loterie américaine - ChamTax", hi:'अमेरिकी लॉटरी टैक्स कैलकुलेटर - ChamTax', id:'Kalkulator Pajak Lotre AS - ChamTax', ja:'アメリカ宝くじ税金計算機 - ChamTax', kk:'АҚШ лотереясының салық калькуляторы - ChamTax', km:'ម៉ាស៊ីនគណនាពន្ធឆ្នោតអាមេរិក - ChamTax', ky:'АКШ лотереясынын салык калькулятору - ChamTax', lo:'ເຄື່ອງຄິດໄລ່ພາສີລອດເຕີຣີອາເມລິກາ - ChamTax', mn:'АНУ-ын лотерейн татварын тооцоолуур - ChamTax', my:'အမေရိကန်ထီအခွန် တွက်ချက်စက် - ChamTax', ne:'अमेरिकी लटरी कर क्यालकुलेटर - ChamTax', si:'ඇමරිකානු ලොතරැයි බදු ගණකය - ChamTax', tl:'US Lottery Tax Calculator - ChamTax', ur:'امریکی لاٹری ٹیکس کیلکولیٹر - ChamTax', uz:"AQSh lotereyasi soliq kalkulyatori - ChamTax" });
 
-  const cardLabel = pickLang('💰 예상 실수령액 (일시불 기준)', '💰 Estimated take-home (lump sum)', '💰 预计实得金额（一次性）', '💰 Số tiền thực nhận ước tính (trả một lần)', '💰 เงินที่คาดว่าจะได้รับจริง (จ่ายครั้งเดียว)', '💰 Ожидаемая сумма на руки (единовременно)', { ar:'💰 صافي الدخل المتوقع (دفعة واحدة)', bn:'💰 আনুমানিক প্রকৃত আয় (একবারে)', fr:'💰 Revenu net estimé (paiement unique)', hi:'💰 अनुमानित हाथ में आने वाली राशि (एकमुश्त)', id:'💰 Perkiraan take-home (sekaligus)', ja:'💰 予想手取り額（一時金）', kk:'💰 Болжамды қолға тиетін сома (бір жолғы төлем)', km:'💰 ចំណូលសុទ្ធប៉ាន់ស្មាន (ទូទាត់តែម្តង)', ky:'💰 Болжолдуу кол алдырма акча (бир жолку төлөм)', lo:'💰 ເງິນທີ່ຄາດວ່າຈະໄດ້ຮັບຈິງ (ຈ່າຍເທື່ອດຽວ)', mn:'💰 Тооцоолсон гарт орох дүн (нэг удаагийн төлбөр)', my:'💰 ခန့်မှန်းလက်ခံရရှိမှု (တစ်ကြိမ်တည်း)', ne:'💰 अनुमानित हातमा पर्ने रकम (एकमुष्ट)', si:'💰 ඇස්තමේන්තුගත අත් ලාභය (එකවර ගෙවීම)', tl:'💰 Tinatayang take-home (lump sum)', ur:'💰 متوقع ہاتھ میں آنے والی رقم (یکمشت)', uz:"💰 Taxminiy qo'lga tegadigan summa (bir martalik to'lov)" });
+  // 라벨 어순을 홈 화면 결과 카드(result.label, "일시불 예상 실수령액")와 맞춤 — 예전엔
+  // "예상 실수령액 (일시불 기준)"으로 어순이 달라서, 공유받은 사람이 화면과 다른 걸 보는 줄
+  // 헷갈릴 수 있었음(2026-07-25 카피 검수 지적)
+  const cardLabel = pickLang('💰 일시불 예상 실수령액', '💰 Lump-sum estimated take-home', '💰 一次性预计实得金额', '💰 Số tiền thực nhận ước tính trả một lần', '💰 เงินที่คาดว่าจะได้รับจริงแบบจ่ายครั้งเดียว', '💰 Единовременная ожидаемая сумма на руки', { ar:'💰 صافي الدخل المتوقع بدفعة واحدة', bn:'💰 একবারে প্রদানের আনুমানিক প্রকৃত আয়', fr:'💰 Revenu net estimé en paiement unique', hi:'💰 एकमुश्त अनुमानित हाथ में आने वाली राशि', id:'💰 Perkiraan take-home sekaligus', ja:'💰 一時金の予想手取り額', kk:'💰 Бір жолғы төлемнің болжамды қолға тиетін сомасы', km:'💰 ចំណូលសុទ្ធប៉ាន់ស្មានទូទាត់តែម្តង', ky:'💰 Бир жолку төлөмдүн болжолдуу кол алдырма акчасы', lo:'💰 ເງິນທີ່ຄາດວ່າຈະໄດ້ຮັບຈິງແບບຈ່າຍເທື່ອດຽວ', mn:'💰 Нэг удаагийн төлбөрийн тооцоолсон гарт орох дүн', my:'💰 တစ်ကြိမ်တည်း ခန့်မှန်းလက်ခံရရှိမှု', ne:'💰 एकमुष्ट अनुमानित हातमा पर्ने रकम', si:'💰 එකවර ගෙවීමේ ඇස්තමේන්තුගත අත් ලාභය', tl:'💰 Lump-sum na tinatayang take-home', ur:'💰 یکمشت متوقع ہاتھ میں آنے والی رقم', uz:"💰 Bir martalik to'lovning taxminiy qo'lga tegadigan summasi" });
   const cardSub = pickLang(`${amountText} Million USD 당첨 시 · ${country} 기준`, `If you win $${amountText}M USD · as ${article} ${country}`, `如果中了${amountText} Million USD · 按${country}计算`, `Nếu trúng ${amountText} Million USD · theo ${country}`, `ถ้าถูก ${amountText} Million USD · ตาม${country}`, `Если выиграть ${amountText} Million USD · как ${country}`, {
       ar: `عند الفوز بـ ${amountText} مليون دولار · بصفتك ${country}`,
       bn: `${amountText} মিলিয়ন USD জিতলে · ${country} হিসেবে`,
@@ -6415,7 +6857,7 @@ async function shareResult(){
       ur: `${amountText} ملین USD جیتنے پر · ${country} کے طور پر`,
       uz: `${amountText} million USD yutganda · ${country} sifatida`,
     });
-  const cardFooter = pickLang('👉 참택스에서 직접 계산해보기', '👉 Calculate yours on ChamTax', '👉 到ChamTax自己算算看', '👉 Tự tính trên ChamTax', '👉 ลองคำนวณเองที่ ChamTax', '👉 Посчитайте своё на ChamTax', { ar:'👉 احسب حالتك على ChamTax', bn:'👉 ChamTax-এ নিজেরটা হিসাব করুন', fr:'👉 Calculez le vôtre sur ChamTax', hi:'👉 ChamTax पर खुद हिसाब लगाएं', id:'👉 Hitung sendiri di ChamTax', ja:'👉 ChamTaxで自分で計算してみる', kk:'👉 ChamTax-та өзіңіз есептеп көріңіз', km:'👉 គណនាដោយខ្លួនឯងនៅ ChamTax', ky:"👉 ChamTax'та өзүңүз эсептеп көрүңүз", lo:'👉 ລອງຄິດໄລ່ເອງທີ່ ChamTax', mn:'👉 ChamTax дээр өөрөө тооцоолж үзээрэй', my:'👉 ChamTax တွင် ကိုယ်တိုင် တွက်ချက်ကြည့်ပါ', ne:'👉 ChamTax मा आफैं गणना गर्नुहोस्', si:'👉 ChamTax හි ඔබම ගණනය කරන්න', tl:"👉 Kalkulahin ang sa'yo sa ChamTax", ur:'👉 ChamTax پر خود حساب لگائیں', uz:"👉 ChamTax'da o'zingiz hisoblab ko'ring" });
+  const cardFooter = pickLang(...SHARE_CTA_FOOTER);
   const canvas = buildShareCard({ label: cardLabel, bigText: finalAmt, subText: cardSub, footerText: cardFooter });
   if (await tryShareCardImage(canvas, shareTitle, shareText)) return;
 
@@ -6435,7 +6877,7 @@ async function shareResult(){
     await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
     if (btn) {
       const original = btn.textContent;
-      btn.textContent = pickLang('✅ 링크가 복사됐어요', '✅ Link copied', '✅ 链接已复制', '✅ Đã sao chép liên kết', '✅ คัดลอกลิงก์แล้ว', '✅ Ссылка скопирована', LINK_COPIED_MORE);
+      btn.textContent = pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
     }
@@ -6523,7 +6965,7 @@ async function shareRefundChecklist(){
     await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
     if (btn) {
       const original = btn.textContent;
-      btn.textContent = pickLang('✅ 링크가 복사됐어요', '✅ Link copied', '✅ 链接已复制', '✅ Đã sao chép liên kết', '✅ คัดลอกลิงก์แล้ว', '✅ Ссылка скопирована', LINK_COPIED_MORE);
+      btn.textContent = pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
     }
@@ -7243,7 +7685,14 @@ function updateHomeCalc(usdOverride){
   renderJackpotTakeHomeRanking();
   renderJackpotIndexRollover();
   renderJackpotIndexCpiRanking();
+  // 확률체감 탭 잭팟 드로어도 2026-07-25부터 sharedAmountUsd 기준으로 계산하므로(예전엔
+  // 고정 잭팟값이라 금액 변경과 무관했음), 위 랭킹들과 같은 이유로 열려 있으면 같이 갱신
+  refreshJackpotDrawerIfOpen();
   updateSliderFill(document.getElementById('homeAmountSlider'));
+  // 언어 전환 시(setLanguage → applyTranslations → updateHomeCalc)에는 범위(usd-min/max)가
+  // 안 바뀌어 setSliderMillions()가 다시 안 불릴 수 있어서, 눈금 라벨을 새 언어로 갱신하려면
+  // 여기서도 명시적으로 다시 그려야 함(renderSliderTicks 자체는 가벼워서 매번 불러도 안전)
+  renderSliderTicks(document.getElementById('homeAmountSlider'));
   const 억 = (usd * EXCHANGE_RATE) / 100000000;
   const r = calcTakeHome(억, country, stateCode);
   const { final, label1, val1, label2, val2, basisSuffix } = r;
@@ -7320,7 +7769,7 @@ function updateHomeCalc(usdOverride){
   const milestoneEl = document.getElementById('home-milestone');
   const newMilestoneTier = final >= 10000 ? 2 : (final >= 1000 ? 1 : 0);
   if (newMilestoneTier === 2) {
-    milestoneEl.textContent = pickLang('🎉 실수령액만 1조원이 넘어요!', '🎉 Your take-home tops ₩1 trillion!', '🎉 实得金额突破1万亿韩元！', '🎉 Số tiền thực nhận vượt quá 1 nghìn tỷ won!', '🎉 เงินที่ได้รับจริงเกิน 1 ล้านล้านวอน!', '🎉 Сумма на руки превысила 1 триллион вон!', { ar:'🎉 صافي دخلك تجاوز 1 تريليون وون!', bn:'🎉 আপনার প্রকৃত আয় ১ ট্রিলিয়ন ওন ছাড়িয়ে গেছে!', fr:'🎉 Votre revenu net dépasse 1 000 milliards de wons !', hi:'🎉 आपकी हाथ में आने वाली राशि 1 ट्रिलियन वॉन को पार कर गई!', id:'🎉 Take-home-mu tembus ₩1 triliun!', ja:'🎉 手取り額が1兆ウォンを突破！', kk:'🎉 Қолыңызға тиетін сома 1 триллион воннан асты!', km:'🎉 ចំណូលសុទ្ធរបស់អ្នកលើសពី 1 ទ្រីលានវ៉ុនហើយ!', ky:'🎉 Кол алдырма акчаңыз 1 триллион вондон ашты!', lo:'🎉 ເງິນທີ່ໄດ້ຮັບຈິງຂອງທ່ານເກີນ 1 ລ້ານລ້ານວອນແລ້ວ!', mn:'🎉 Таны гарт орох дүн 1 их наяд воноос давлаа!', my:'🎉 သင့်လက်ခံရရှိမှုသည် ဝမ်း ၁ ထရီလီယံ ကျော်လွန်သွားပါပြီ!', ne:'🎉 तपाईंको हातमा पर्ने रकम १ ट्रिलियन वोन नाघ्यो!', si:'🎉 ඔබේ අත් ලාභය වොන් ට්‍රිලියන 1 ඉක්මවා ඇත!', tl:'🎉 Lumampas na sa ₩1 trillion ang take-home mo!', ur:'🎉 آپ کی ہاتھ میں آنے والی رقم 1 ٹریلین وون سے تجاوز کر گئی!', uz:"🎉 Qo'lingizga tegadigan summa 1 trillion vondan oshdi!" });
+    milestoneEl.textContent = pickLang('🎉 실수령액만 1조원을 넘었어요!', '🎉 Your take-home tops ₩1 trillion!', '🎉 实得金额突破1万亿韩元！', '🎉 Số tiền thực nhận vượt quá 1 nghìn tỷ won!', '🎉 เงินที่ได้รับจริงเกิน 1 ล้านล้านวอน!', '🎉 Сумма на руки превысила 1 триллион вон!', { ar:'🎉 صافي دخلك تجاوز 1 تريليون وون!', bn:'🎉 আপনার প্রকৃত আয় ১ ট্রিলিয়ন ওন ছাড়িয়ে গেছে!', fr:'🎉 Votre revenu net dépasse 1 000 milliards de wons !', hi:'🎉 आपकी हाथ में आने वाली राशि 1 ट्रिलियन वॉन को पार कर गई!', id:'🎉 Take-home-mu tembus ₩1 triliun!', ja:'🎉 手取り額が1兆ウォンを突破！', kk:'🎉 Қолыңызға тиетін сома 1 триллион воннан асты!', km:'🎉 ចំណូលសុទ្ធរបស់អ្នកលើសពី 1 ទ្រីលានវ៉ុនហើយ!', ky:'🎉 Кол алдырма акчаңыз 1 триллион вондон ашты!', lo:'🎉 ເງິນທີ່ໄດ້ຮັບຈິງຂອງທ່ານເກີນ 1 ລ້ານລ້ານວອນແລ້ວ!', mn:'🎉 Таны гарт орох дүн 1 их наяд воноос давлаа!', my:'🎉 သင့်လက်ခံရရှိမှုသည် ဝမ်း ၁ ထရီလီယံ ကျော်လွန်သွားပါပြီ!', ne:'🎉 तपाईंको हातमा पर्ने रकम १ ट्रिलियन वोन नाघ्यो!', si:'🎉 ඔබේ අත් ලාභය වොන් ට්‍රිලියන 1 ඉක්මවා ඇත!', tl:'🎉 Lumampas na sa ₩1 trillion ang take-home mo!', ur:'🎉 آپ کی ہاتھ میں آنے والی رقم 1 ٹریلین وون سے تجاوز کر گئی!', uz:"🎉 Qo'lingizga tegadigan summa 1 trillion vondan oshdi!" });
     milestoneEl.style.display = 'block';
   } else if (newMilestoneTier === 1) {
     milestoneEl.textContent = pickLang('💎 실수령액이 1,000억원을 넘었어요', '💎 Your take-home tops ₩100 billion', '💎 实得金额突破1000亿韩元', '💎 Số tiền thực nhận vượt quá 100 tỷ won', '💎 เงินที่ได้รับจริงเกิน 1 แสนล้านวอน', '💎 Сумма на руки превысила 100 миллиардов вон', { ar:'💎 صافي دخلك تجاوز 100 مليار وون', bn:'💎 আপনার প্রকৃত আয় ১০০ বিলিয়ন ওন ছাড়িয়ে গেছে', fr:'💎 Votre revenu net dépasse 100 milliards de wons', hi:'💎 आपकी हाथ में आने वाली राशि 100 अरब वॉन को पार कर गई', id:'💎 Take-home-mu tembus ₩100 miliar', ja:'💎 手取り額が1000億ウォンを突破', kk:'💎 Қолыңызға тиетін сома 100 миллиард воннан асты', km:'💎 ចំណូលសុទ្ធរបស់អ្នកលើសពី 100 ប៊ីលានវ៉ុន', ky:'💎 Кол алдырма акчаңыз 100 миллиард вондон ашты', lo:'💎 ເງິນທີ່ໄດ້ຮັບຈິງຂອງທ່ານເກີນ 1 ແສນລ້ານວອນແລ້ວ', mn:'💎 Таны гарт орох дүн 100 тэрбум воноос давлаа', my:'💎 သင့်လက်ခံရရှိမှုသည် ဝမ်း ၁၀၀ ဘီလီယံ ကျော်လွန်သွားပါပြီ', ne:'💎 तपाईंको हातमा पर्ने रकम १०० अर्ब वोन नाघ्यो', si:'💎 ඔබේ අත් ලාභය වොන් බිලියන 100 ඉක්මවා ඇත', tl:'💎 Lumampas na sa ₩100 billion ang take-home mo', ur:'💎 آپ کی ہاتھ میں آنے والی رقم 100 ارب وون سے تجاوز کر گئی', uz:"💎 Qo'lingizga tegadigan summa 100 milliard vondan oshdi" });
@@ -7418,56 +7867,9 @@ function updateHomeCalc(usdOverride){
   document.getElementById('result-visual-take-pct').textContent = takeHomePct + '%';
   document.getElementById('result-visual-tax-pct').textContent = taxImpactPct + '%';
 
-  // 일시불 대신 연금(annuity)으로 받으면? — 확률체감 탭 잭팟계산기와 같은 로직 재사용.
-  // 여기 입력값(억)은 이미 "일시불 세전 기준"이라, 확률체감 탭처럼 발표총액(announcedKrw)에서
-  // CASH_VALUE_RATIO(58%)를 곱해 일시불을 구하는 게 아니라 거꾸로 나눠서 발표총액을 역산함
-  const homeAnnouncedKrw = (억 * 100000000) / CASH_VALUE_RATIO;
-  const ANNUITY_PAYMENTS_HOME = 30;
-  const homePerYearKrw = homeAnnouncedKrw / ANNUITY_PAYMENTS_HOME;
-  const rHomeAnnuityYear = calcTakeHome(homePerYearKrw / 100000000, 'kr');
-  const homeAnnuityYearEl = document.getElementById('home-annuity-year');
-  if (homeAnnuityYearEl) {
-    const aboutHome = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE);
-    // 연금 박스가 매년/매월 실수령액만 보여주고 정작 그 기준이 되는 발표 총액(homeAnnouncedKrw)은
-    // 어디에도 안 보여서, "이 숫자들이 뭘 나눈 값인지" 알 길이 없다는 문제(2026-07-24 사용자 지적)
-    // — 다른 .jc-row들 바로 위에 발표 총액 환산 줄을 하나 추가함. 여기서 한 걸음 더 나아가,
-    // 정작 이 발표 총액 자체가 "어떤 일시불 금액"에서 역산됐는지도 안 보인다는 후속 지적(같은 날) —
-    // 라벨에 입력하신 일시불 금액(usdMillions, home-final-basis-mini와 같은 값)을 괄호로 덧붙임
-    const homeAnnouncedLabelEl = document.getElementById('home-annuity-announced-label');
-    if (homeAnnouncedLabelEl) homeAnnouncedLabelEl.textContent = pickLang(
-      `📢 발표된 잭팟 총액 (일시불 ${usdMillions}M USD 기준)`,
-      `📢 Announced jackpot total (based on ${usdMillions}M USD lump sum)`,
-      `📢 公布的头奖总额（按一次性支付 ${usdMillions}M USD 计算）`,
-      `📢 Tổng jackpot đã công bố (dựa trên khoản trả một lần ${usdMillions}M USD)`,
-      `📢 ยอดแจ็คพอตที่ประกาศทั้งหมด (คำนวณจากเงินก้อน ${usdMillions}M USD)`,
-      `📢 Объявленный общий джекпот (на основе единовременной выплаты ${usdMillions}M USD)`,
-      {
-        km: `📢 ចំនួនប្រាក់ចាប់រង្វាន់សរុបដែលបានប្រកាស (គិតលើមូលដ្ឋានទូទាត់តែម្តង ${usdMillions}M USD)`,
-        ne: `📢 घोषित कुल ज्याकपोट रकम (${usdMillions}M USD एकमुष्टको आधारमा)`,
-        id: `📢 Total jackpot yang diumumkan (berdasarkan sekaligus ${usdMillions}M USD)`,
-        my: `📢 ကြေညာထားသော ဂျက်ပေါ့ စုစုပေါင်း (${usdMillions}M USD တစ်ကြိမ်တည်းအခြေခံ)`,
-        si: `📢 නිවේදනය කළ මුළු ජැක්පොට් මුදල (${usdMillions}M USD එකවර ගෙවීම මත පදනම්ව)`,
-        uz: `📢 E'lon qilingan jekpot summasi (${usdMillions}M USD bir martalik to'lov asosida)`,
-        mn: `📢 Зарласан нийт жекпот (${usdMillions}M USD нэг удаагийн төлбөрт үндэслэсэн)`,
-        kk: `📢 Жарияланған джекпот сомасы (${usdMillions}M USD бір реттік төлем негізінде)`,
-        ky: `📢 Жарыяланган жекпот суммасы (${usdMillions}M USD бир жолку төлөм негизинде)`,
-        ur: `📢 اعلان کردہ کل جیک پاٹ (${usdMillions}M USD یکمشت کی بنیاد پر)`,
-        bn: `📢 ঘোষিত মোট জ্যাকপট (${usdMillions}M USD একবারে প্রদানের ভিত্তিতে)`,
-        lo: `📢 ຈຳນວນແຈັກພອດທັງໝົດທີ່ປະກາດ (ອີງໃສ່ການຈ່າຍເທື່ອດຽວ ${usdMillions}M USD)`,
-        ja: `📢 発表されたジャックポット総額（一括受取額 ${usdMillions}M USD 基準）`,
-        ar: `📢 إجمالي الجاكبوت المعلن (بناءً على دفعة واحدة ${usdMillions}M USD)`,
-        hi: `📢 घोषित कुल जैकपॉट (${usdMillions}M USD एकमुश्त राशि पर आधारित)`,
-        fr: `📢 Total du jackpot annoncé (basé sur un versement unique de ${usdMillions}M USD)`,
-        tl: `📢 Kabuuang inanunsyong jackpot (batay sa ${usdMillions}M USD na lump sum)`,
-      }
-    );
-    const homeAnnouncedEl = document.getElementById('home-annuity-announced');
-    if (homeAnnouncedEl) homeAnnouncedEl.textContent = aboutHome + formatWon(homeAnnouncedKrw / 100000000);
-    homeAnnuityYearEl.textContent = aboutHome + formatWon(homePerYearKrw / 100000000);
-    document.getElementById('home-annuity-year-net').textContent = aboutHome + formatWon(rHomeAnnuityYear.final);
-    document.getElementById('home-annuity-month-net').textContent = aboutHome + formatWon(rHomeAnnuityYear.final / 12);
-    renderAnnuitySchedule(homeAnnouncedKrw, 'home-annuity-schedule-list');
-  }
+  // 일시불 대신 연금(annuity)으로 받으면? — 확률체감 탭 잭팟 드로어와 공용 함수 사용
+  // (renderAnnuityFromCash, refreshJackpotDrawerIfOpen 근처 정의 참고)
+  renderAnnuityFromCash(usd * EXCHANGE_RATE, usdMillions, 'home-annuity', 'home-annuity-schedule-list');
 
   const usdNote = document.getElementById('home-usd-note');
   const cnyNote = document.getElementById('home-cny-note');
@@ -7754,6 +8156,10 @@ function updateCalc(usdOverride){
   renderJackpotTakeHomeRanking();
   renderJackpotIndexRollover();
   renderJackpotIndexCpiRanking();
+  // 확률체감 탭 잭팟 드로어도 sharedAmountUsd 기준이라(2026-07-25) 위 랭킹들과 같은 이유로 갱신
+  refreshJackpotDrawerIfOpen();
+  // 홈 슬라이더와 같은 이유(언어 전환 시 범위는 안 바뀌어도 눈금 라벨은 새 언어로 갱신해야 함)
+  renderSliderTicks(document.getElementById('compareAmountSlider'));
   const 억 = (usd * EXCHANGE_RATE) / 100000000;
 
   document.getElementById('compare-krw-amt').textContent = formatWon(억);
@@ -7966,10 +8372,20 @@ const ZERO_OFFSET_MORE ={ ar:'0 وون (تمت مقاصته بائتمان ضر�
 const ZERO_UNCLEAR_MORE = { ar:'0 وون (الأساس غير واضح ⚠️)', bn:'০ ওন (ভিত্তি অস্পষ্ট ⚠️)', fr:'0 KRW (base incertaine ⚠️)', hi:'₩0 (आधार अस्पष्ट ⚠️)', id:'₩0 (dasar tidak jelas ⚠️)', ja:'0ウォン（根拠不明確 ⚠️）', kk:'0 вон (негізі анық емес ⚠️)', km:'0 វอน (មូលដ្ឋានមិនច្បាស់ ⚠️)', ky:'0 вон (негизи так эмес ⚠️)', lo:'0 ວອນ (ພື້ນຖານບໍ່ຈະແຈ້ງ ⚠️)', mn:'0 вон (үндэслэл тодорхойгүй ⚠️)', my:'၀ ဝမ်း (အခြေခံမရှင်းလင်း ⚠️)', ne:'₩0 (आधार अस्पष्ट ⚠️)', si:'0 වොන් (පදනම අපැහැදිලියි ⚠️)', tl:'₩0 (hindi malinaw ang basehan ⚠️)', ur:'0 وون (بنیاد غیر واضح ⚠️)', uz:"0 von (asos noaniq ⚠️)" };
 
 // 공유 카드/토스트 등에서 여러 함수(shareLatestDraw/shareDreamResult/shareResult/
-// shareRefundChecklist)가 똑같이 반복해서 쓰는 문구들의 17개 언어 버전 — 한 번만 정의해서 재사용함
-const COPIED_TOAST_MORE = { ar:'تم النسخ! الصقه في أي مكان تريده :)', bn:'কপি হয়েছে! যেকোনো জায়গায় পেস্ট করুন :)', fr:'Copié ! Collez-le où vous voulez :)', hi:'कॉपी हो गया! कहीं भी पेस्ट कर लीजिए :)', id:'Disalin! Tempel di mana saja kamu suka :)', ja:'コピーしました！好きな場所に貼り付けてください :)', kk:'Көшірілді! Қалаған жеріңізге қойыңыз :)', km:'បានចម្លង! សូមបិទភ្ជាប់នៅកន្លែងណាក៏បាន :)', ky:'Көчүрүлдү! Каалаган жериңизге чаптаңыз :)', lo:'ສຳເນົາແລ້ວ! ວາງໃສ່ບ່ອນໃດກໍໄດ້ທີ່ທ່ານຕ້ອງການ :)', mn:'Хуулагдлаа! Хүссэн газартаа буулгаарай :)', my:'ကူးယူပြီးပါပြီ! နှစ်သက်ရာနေရာတွင် ကူးထည့်ပါ :)', ne:'प्रतिलिपि भयो! जुनसुकै ठाउँमा टाँस्नुहोस् :)', si:'පිටපත් විය! ඔබට කැමති ඕනෑම තැනක අලවන්න :)', tl:'Na-copy! I-paste kahit saan mo gusto :)', ur:'کاپی ہو گیا! جہاں چاہیں پیسٹ کریں :)', uz:"Nusxalandi! Xohlagan joyingizga joylashtiring :)" };
+// shareRefundChecklist)가 똑같이 반복해서 쓰는 문구의 17개 언어 버전 — 한 번만 정의해서 재사용함.
+// 예전엔 함수마다 alert()/버튼 텍스트 전환이 서로 다르게 쓰이고 문구도 "링크가 복사됐어요"와
+// "복사됐어요! 카톡에 붙여넣기 해보세요" 두 갈래로 나뉘어 있었는데(2026-07-25 카피 검수 지적),
+// 전부 조용한 버튼 텍스트 전환 방식 + 이 문구 하나로 통일함
+// 공유 카드 하단 CTA — shareLatestDraw/shareDreamResult/shareResult 세 곳이 "참택스에서
+// 계산기 써보라"는 같은 메시지를 각자 다르게 써서(2026-07-25 카피 검수 지적) 문구 하나로 통일.
+// pickLang(ko, en, zh, vi, th, ru, more) 인자 순서 그대로 배열에 담아 세 곳에서 스프레드로 재사용
+const SHARE_CTA_FOOTER = [
+  '👉 참택스에서 나도 계산해보기', '👉 Calculate yours on ChamTax too', '👉 你也来ChamTax算算看',
+  '👉 Bạn cũng tính thử trên ChamTax', '👉 คุณก็ลองคำนวณที่ ChamTax ดูสิ', '👉 Посчитайте и своё на ChamTax',
+  { ar:'👉 احسب حالتك أنت أيضًا على ChamTax', bn:'👉 তুমিও ChamTax-এ হিসাব করে দেখো', fr:'👉 Calculez aussi le vôtre sur ChamTax', hi:'👉 आप भी ChamTax पर हिसाब लगाएं', id:'👉 Kamu juga coba hitung di ChamTax', ja:'👉 あなたもChamTaxで計算してみて', kk:'👉 Сіз де ChamTax-та есептеп көріңіз', km:'👉 អ្នកក៏គណនានៅ ChamTax ដែរ', ky:"👉 Сиз да ChamTax'та эсептеп көрүңүз", lo:'👉 ເຈົ້າກໍລອງຄິດໄລ່ທີ່ ChamTax ນຳ', mn:'👉 Та ч бас ChamTax дээр тооцоолж үзээрэй', my:'👉 မင်းလည်း ChamTax မှာ တွက်ကြည့်ပါ', ne:'👉 तपाईं पनि ChamTax मा गणना गरेर हेर्नुहोस्', si:'👉 ඔබත් ChamTax හි ගණනය කර බලන්න', tl:'👉 Kalkulahin mo rin sa ChamTax', ur:'👉 آپ بھی ChamTax پر حساب لگائیں', uz:"👉 Siz ham ChamTax'da hisoblab ko'ring" }
+];
 
-const LINK_COPIED_MORE = { ar:'✅ تم نسخ الرابط', bn:'✅ লিংক কপি হয়েছে', fr:'✅ Lien copié', hi:'✅ लिंक कॉपी हो गया', id:'✅ Tautan disalin', ja:'✅ リンクをコピーしました', kk:'✅ Сілтеме көшірілді', km:'✅ បានចម្លងតំណ', ky:'✅ Шилтеме көчүрүлдү', lo:'✅ ສຳເນົາລິ້ງແລ້ວ', mn:'✅ Холбоос хуулагдлаа', my:'✅ လင့်ခ်ကူးယူပြီးပါပြီ', ne:'✅ लिंक प्रतिलिपि भयो', si:'✅ සබැඳිය පිටපත් විය', tl:'✅ Na-copy ang link', ur:'✅ لنک کاپی ہو گیا', uz:"✅ Havola nusxalandi" };
+const COPY_DONE_MORE = { ar:'تم النسخ! الصقه في المكان الذي تريده', bn:'কপি সম্পন্ন! আপনার পছন্দের জায়গায় পেস্ট করুন', fr:'Copié ! Collez-le où vous voulez', hi:'कॉपी पूरा हुआ! अपनी पसंद की जगह पेस्ट करें', id:'Disalin! Tempel di tempat yang kamu mau', ja:'コピー完了！好きな場所に貼り付けてください', kk:'Көшірілді! Қалаған жеріңізге қойыңыз', km:'ចម្លងរួចរាល់! សូមបិទភ្ជាប់នៅកន្លែងណាដែលអ្នកចង់បាន', ky:'Көчүрүү аяктады! Каалаган жериңизге чаптаңыз', lo:'ສຳເນົາສຳເລັດ! ວາງໃສ່ບ່ອນທີ່ທ່ານຕ້ອງການ', mn:'Хуулж дууслаа! Хүссэн газартаа буулгаарай', my:'ကူးယူပြီးပါပြီ! ကြိုက်ရာနေရာတွင် ကူးထည့်ပါ', ne:'प्रतिलिपि पूरा भयो! आफ्नो मनपर्ने ठाउँमा टाँस्नुहोस्', si:'පිටපත් කිරීම සම්පූර්ණයි! ඔබ කැමති තැනක අලවන්න', tl:'Nakumpleto ang pag-copy! I-paste sa gusto mong lugar', ur:'کاپی مکمل! اپنی پسندیدہ جگہ پیسٹ کریں', uz:"Nusxalash tugadi! Xohlagan joyingizga joylashtiring" };
 
 const PRESS_HOLD_COPY_MORE = { ar:'اضغط مطولاً على المحتوى أدناه لنسخه، ثم شاركه', bn:'নিচের লেখাটি চেপে ধরে কপি করে শেয়ার করুন', fr:"Appuyez longuement ci-dessous pour copier, puis partagez-le", hi:'नीचे दिए गए टेक्स्ट को दबाकर रखें, कॉपी करके शेयर करें', id:'Tekan dan tahan di bawah untuk menyalin, lalu bagikan', ja:'下の内容を長押ししてコピーし、共有してください', kk:'Төмендегі мәтінді басып тұрып көшіріп алып, бөлісіңіз', km:'ចុចខ្លាំងលើអត្ថបទខាងក្រោមដើម្បីចម្លង រួចចែករំលែក', ky:'Төмөндөгү текстти басып туруп көчүрүп алып бөлүшүңүз', lo:'ກົດຄ້າງໄວ້ທີ່ຂໍ້ຄວາມຂ້າງລຸ່ມເພື່ອສຳເນົາ ແລ້ວແບ່ງປັນ', mn:'Доорх агуулгыг удаан дараад хуулж аваад хуваалцаарай', my:'အောက်ပါအကြောင်းအရာကို ဖိကိုင်ပြီး ကူးယူကာ မျှဝေပါ', ne:'तलको सामग्रीलाई थिचिराखेर प्रतिलिपि गरी सेयर गर्नुहोस्', si:'පහත අන්තර්ගතය දිගටම ඔබා පිටපත් කර බෙදාගන්න', tl:'Pindutin nang matagal ang nasa ibaba para kopyahin, pagkatapos ay i-share', ur:'نیچے دیے گئے مواد کو دبا کر رکھیں، کاپی کریں اور شیئر کریں', uz:"Quyidagi matnni bosib turib nusxalang, so'ng ulashing" };
 
@@ -8006,6 +8422,14 @@ function buildShowMoreCountriesMore(n){
   Object.keys(SHOW_MORE_COUNTRIES_PHRASE_MORE).forEach(lang => { more[lang] = SHOW_MORE_COUNTRIES_PHRASE_MORE[lang](n); });
   return more;
 }
+// 국가 비교 카드 그리드에서 처음에 보여주는 카드 수 — toggleSideShowMore()도 같은 값을
+// 써야 접었다 폈다 할 때 기준이 어긋나지 않아서 모듈 스코프로 뺌
+const SIDE_VISIBLE_COUNT = 6;
+const COLLAPSE_COUNTRIES_MORE = {
+  ar:'طي ▴', bn:'সংক্ষিপ্ত করুন ▴', fr:'Réduire ▴', hi:'संक्षिप्त करें ▴', id:'Ciutkan ▴', ja:'閉じる ▴',
+  kk:'Жию ▴', km:'បង្រួម ▴', ky:'Жыйыштыруу ▴', lo:'ຫຍໍ້ ▴', mn:'Хураах ▴', my:'ခေါက်ရန် ▴',
+  ne:'सङ्कुचित गर्नुहोस् ▴', si:'හකුළන්න ▴', tl:'I-collapse ▴', ur:'سکیڑیں ▴', uz:"Yig'ish ▴",
+};
 
 // 한국/미국 거주자 결과를 나란히(select와 무관하게 항상 둘 다) 보여주는 비교 카드용 계산
 // 국가 비교 카드에 표시할 나라 목록 — 새 나라를 추가할 때는 이 배열에 항목만 추가하면
@@ -8499,7 +8923,6 @@ function updateSideBySide(eok, stateCode){
   // 모바일에서 카드를 한 번에 쭉 나열하면 스크롤이 너무 길어져서, 처음엔 상위 6개(이미
   // 실수령액 순 정렬됨)만 보여주고 나머지는 "더보기" 버튼으로 펼치게 함. 매번 다시 그릴 때마다
   // 접힌 상태로 리셋 — eok/국가가 바뀌면 순위도 달라지므로 이전 펼침 상태를 유지할 이유가 없음
-  const SIDE_VISIBLE_COUNT = 6;
   const allCards = Array.from(grid.children);
   const showMoreBtn = document.getElementById('sideShowMoreBtn');
   // 카드 수가 아니라 그 안에 묶인 나라 수 합계로 세어줌 — 카드 하나가 여러 나라를
@@ -8513,6 +8936,7 @@ function updateSideBySide(eok, stateCode){
     if (shouldCollapse) {
       showMoreBtn.style.display = 'block';
       showMoreBtn.dataset.expanded = 'false';
+      showMoreBtn.dataset.remaining = String(remaining);
       showMoreBtn.textContent = pickLang(`${remaining}개국 더 보기 ▾`, `Show ${remaining} more ▾`, `再显示${remaining}个国家 ▾`, `Xem thêm ${remaining} nước ▾`, `ดูเพิ่มอีก ${remaining} ประเทศ ▾`, `Показать ещё ${remaining} стран ▾`, buildShowMoreCountriesMore(remaining));
     } else {
       showMoreBtn.style.display = 'none';
@@ -8541,14 +8965,24 @@ function fixSideCardOrphanRow(){
   }
 }
 
-// 펼친 뒤 다시 접는 옵션은 실익이 적어서(펼친 김에 계속 보는 게 자연스러움) 없앰 —
-// 누르면 전부 펼쳐지고 버튼 자체가 사라짐. 어차피 국가/금액이 바뀌어 다시 그려지면
-// 접힌 상태로 리셋되니 "다시 접고 싶을 때"는 그때 해결됨
+// "더 보기"로 펼친 뒤 다시 접을 수 있게 토글 — 눌러서 펼친 목록이 길어지면 다시 접어서
+// 스크롤을 줄이고 싶다는 요청(2026-07-25)으로 추가. 국가/금액이 바뀌어 다시 그려지면
+// renderSideByCountry()가 항상 접힌 상태로 리셋하는 건 그대로 유지
 function toggleSideShowMore(){
   const grid = document.getElementById('sideByCountryGrid');
   const btn = document.getElementById('sideShowMoreBtn');
   if (!grid || !btn) return;
-  grid.querySelectorAll('.side-card-hidden-extra').forEach(card => { card.classList.remove('side-card-hidden-extra'); });
-  btn.style.display = 'none';
+  const allCards = Array.from(grid.children);
+  const isExpanded = btn.dataset.expanded === 'true';
+  if (isExpanded) {
+    allCards.forEach((card, i) => { card.classList.toggle('side-card-hidden-extra', i >= SIDE_VISIBLE_COUNT); });
+    btn.dataset.expanded = 'false';
+    const remaining = btn.dataset.remaining || '';
+    btn.textContent = pickLang(`${remaining}개국 더 보기 ▾`, `Show ${remaining} more ▾`, `再显示${remaining}个国家 ▾`, `Xem thêm ${remaining} nước ▾`, `ดูเพิ่มอีก ${remaining} ประเทศ ▾`, `Показать ещё ${remaining} стран ▾`, buildShowMoreCountriesMore(remaining));
+  } else {
+    allCards.forEach(card => { card.classList.remove('side-card-hidden-extra'); });
+    btn.dataset.expanded = 'true';
+    btn.textContent = pickLang('접기 ▴', 'Collapse ▴', '收起 ▴', 'Thu gọn ▴', 'ย่อ ▴', 'Свернуть ▴', COLLAPSE_COUNTRIES_MORE);
+  }
   fixSideCardOrphanRow();
 }

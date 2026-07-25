@@ -332,9 +332,9 @@
         </button>
         <div class="menu">
           <div class="menu-links">
-            <button id="nav-compare" onclick="go('compare')" data-i18n="nav.compare">비교</button>
-            <button id="nav-odds" onclick="go('odds')" data-i18n="nav.odds">확률</button>
-            <button id="nav-faq" onclick="go('faq')" data-i18n="nav.faq">도움말</button>
+            <button id="nav-compare" onclick="go('compare')"><span class="nav-link-icon" aria-hidden="true">🌍</span><span data-i18n="nav.compare">비교</span></button>
+            <button id="nav-odds" onclick="go('odds')"><span class="nav-link-icon" aria-hidden="true">🎲</span><span data-i18n="nav.odds">확률</span></button>
+            <button id="nav-faq" onclick="go('faq')"><span class="nav-link-icon" aria-hidden="true">❓</span><span data-i18n="nav.faq">도움말</span></button>
           </div>
           <div class="menu-controls">
             <details class="settings-menu" id="settingsMenu">
@@ -509,8 +509,8 @@
                 <div class="jc-row"><span data-i18n="odds.jcAnnuityYear">📅 30회 분할, 연평균 세전</span><span class="jc-val" id="home-annuity-year">-</span></div>
                 <div class="jc-row jc-final"><span data-i18n="odds.jcAnnuityYearNet">매년 손에 들어오는 돈</span><span class="jc-val" id="home-annuity-year-net">-</span></div>
                 <div class="jc-row"><span data-i18n="odds.jcAnnuityMonth">🗓️ 한 달로 치면</span><span class="jc-val" id="home-annuity-month-net">-</span></div>
-                <p class="jc-note" data-i18n-html="odds.jcAnnuityNote"><span style="white-space:nowrap">일시불(할인된 현재가치)과</span> 달리 연금은 <b>발표된 잭팟 총액을 그대로</b> 29년에 걸쳐 30번 나눠 받아요 (첫 회 이후 매년 5%씩 증액). 한 해에 몰리지 않아 세금 부담도 분산돼요.</p>
-                <p class="jc-note" data-i18n-html="odds.jcAnnuityNote2" style="margin-top:6px;">※ 위 금액은 30년 단순 평균이라 실제 첫 회 수령액은 이보다 적어요</p>
+                <p class="jc-note" data-i18n-html="odds.jcAnnuityNote">일시불과 달리 연금은 <b>발표된 잭팟 총액을 그대로</b> 29년에 걸쳐 30번 나눠 받아요 (첫 회 이후 매년 5%씩 증액). 한 해에 몰리지 않아 세금 부담도 분산돼요.</p>
+                <p class="jc-note" data-i18n-html="odds.jcAnnuityNote2" style="margin-top:6px;">※ 위 금액은 30년 단순 평균이라 실제 첫 회 수령액은 이보다 적어요.</p>
                 <details class="jh-more" style="margin-top:10px;">
                   <summary class="jh-more-summary" data-i18n="odds.annuityScheduleToggle">📊 30년 전체 지급표 보기 (회차별 실제 금액)</summary>
                   <div class="annuity-schedule-wrap">
@@ -558,13 +558,8 @@
               </div>
               <div class="slider-track-wrap">
                 <input type="range" class="slider" id="homeAmountSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onHomeSliderMoved()">
-                <div class="slider-ticks" aria-hidden="true">
-                  <span class="slider-tick" style="left:73.84%"><span class="slider-tick-mark"></span><span class="slider-tick-label" data-i18n="home.sliderTick500">5억 달러</span></span>
-                  <span class="slider-tick slider-tick-mid" style="left:86.92%"><span class="slider-tick-mark"></span><span class="slider-tick-label" data-i18n="home.sliderTick1000">10억 달러</span></span>
-                  <span class="slider-tick slider-tick-far" style="left:94.57%"><span class="slider-tick-mark"></span><span class="slider-tick-label" data-i18n="home.sliderTick1500">15억 달러</span></span>
-                </div>
+                <div class="slider-ticks" aria-hidden="true"></div>
               </div>
-              <div class="slider-range-label"><span data-i18n="home.sliderMin">1천만 달러</span><span data-i18n="home.sliderMax">20억 달러</span></div>
             </div>
 
             <div class="amount-tab-panel" id="amountTabAnnounced" role="tabpanel" style="display:none;">
@@ -572,7 +567,7 @@
                 <input type="text" id="homeAnnouncedInput" class="dollar-input" inputmode="decimal" placeholder="예: 200" data-i18n-placeholder="input.announcedPlaceholder" oninput="onHomeAnnouncedTyped()" onfocus="this.select()">
                 <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
               </div>
-              <p class="krw-hint" style="margin:6px 0 0;" data-i18n="input.announcedHint">💡 발표 금액의 약 58%를 일시불 기준으로 환산해서 계산해요</p>
+              <p class="krw-hint" style="margin:6px 0 0;" data-i18n="input.announcedHint">💡 발표 금액의 평균 약 58%를 일시불 기준으로 환산해서 계산해요</p>
             </div>
 
             <div class="amount-tab-panel" id="amountTabReverse" role="tabpanel" style="display:none;">
@@ -731,17 +726,17 @@
             <button class="explore-card" onclick="goToCompareWithOppositeCountry()">
               <span class="explore-icon">🌍</span>
               <span class="explore-label" data-i18n="explore.compareLabel">국가별 비교</span>
-              <span class="explore-sub" data-i18n="explore.compareSub">어디 살면 유리할까</span>
+              <span class="explore-sub" data-i18n="explore.compareSub">국가별로 뭐가 유리한지 비교해요</span>
             </button>
             <button class="explore-card" onclick="go('odds')">
               <span class="explore-icon">🎲</span>
               <span class="explore-label" data-i18n="explore.oddsLabel">확률 체감</span>
-              <span class="explore-sub" data-i18n="explore.oddsSub">1등 확률, 감이 와요</span>
+              <span class="explore-sub" data-i18n="explore.oddsSub">1등 확률, 감이 딱 와요</span>
             </button>
             <button class="explore-card" onclick="go('faq')">
               <span class="explore-icon">❓</span>
               <span class="explore-label" data-i18n="explore.faqLabel">자주 묻는 질문</span>
-              <span class="explore-sub" data-i18n="explore.faqSub">세금·환급까지 한번에</span>
+              <span class="explore-sub" data-i18n="explore.faqSub">세금부터 환급까지 한 번에 확인해요</span>
             </button>
           </div>
         </div>
@@ -761,7 +756,7 @@
               <p class="draw-date-label" id="draw-date-powerball">-</p>
               <div class="draw-balls" id="draw-balls-powerball"></div>
               <div class="jp-actions-row">
-                <button type="button" class="share-btn" onclick="shareLatestDraw('powerball')" data-i18n="home.shareDreamBtn">📤 이 결과 공유하기</button>
+                <button type="button" class="share-btn" onclick="shareLatestDraw('powerball', this)" data-i18n="home.shareDrawBtn">📤 당첨번호 공유하기</button>
                 <a class="jp-official-link" href="https://www.powerball.com" target="_blank" rel="noopener noreferrer" data-i18n="home.officialLink">🔗 공식 사이트에서 확인</a>
               </div>
             </div>
@@ -776,7 +771,7 @@
               <p class="draw-date-label" id="draw-date-megamillions">-</p>
               <div class="draw-balls" id="draw-balls-megamillions"></div>
               <div class="jp-actions-row">
-                <button type="button" class="share-btn" onclick="shareLatestDraw('megamillions')" data-i18n="home.shareDreamBtn">📤 이 결과 공유하기</button>
+                <button type="button" class="share-btn" onclick="shareLatestDraw('megamillions', this)" data-i18n="home.shareDrawBtn">📤 당첨번호 공유하기</button>
                 <a class="jp-official-link" href="https://www.megamillions.com" target="_blank" rel="noopener noreferrer" data-i18n="home.officialLink">🔗 공식 사이트에서 확인</a>
               </div>
             </div>
@@ -804,7 +799,7 @@
               <p class="dream-title" id="dream-title">-</p>
               <p class="dream-desc" id="dream-desc">-</p>
               <p class="dream-amt" id="dream-amt">-</p>
-              <button class="share-btn" onclick="shareDreamResult()" data-i18n="home.shareDreamBtn">📤 이 결과 공유하기</button>
+              <button class="share-btn" onclick="shareDreamResult(this)" data-i18n="home.shareDreamBtn">📤 이 결과 공유하기</button>
             </div>
           </div>
         </details>
@@ -869,8 +864,10 @@
             <input type="text" id="amountInput" class="dollar-input" inputmode="decimal" value="100" oninput="onCompareAmountTyped()" onfocus="this.select()">
             <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
           </div>
-          <input type="range" class="slider" id="compareAmountSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onCompareSliderMoved()">
-          <div class="slider-range-label"><span data-i18n="home.sliderMin">1천만 달러</span><span data-i18n="home.sliderMax">20억 달러</span></div>
+          <div class="slider-track-wrap">
+            <input type="range" class="slider" id="compareAmountSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onCompareSliderMoved()">
+            <div class="slider-ticks" aria-hidden="true"></div>
+          </div>
           <p class="krw-hint">≈ <span id="compare-krw-amt">1,503억원</span> · <span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="compare-rate-input" value="1,503.4" inputmode="decimal" oninput="onCompareRateChanged()"><span data-i18n="common.won">원</span> <button type="button" class="rate-live-badge" onclick="retryLiveExchangeRate(this)" title="기본값 사용 중 · 탭하면 실시간 환율로 갱신" aria-label="환율 새로고침" data-i18n-aria-label="common.refreshRate"><span aria-hidden="true">🔄</span></button></p>
 
           <p class="filing-label" id="compare-state-label"><span class="flag-badge">US</span> <span data-i18n-html="compare.stateLabel">미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9% 로 크게 달라요)</span></span></p>
@@ -1222,8 +1219,8 @@
                   <div class="jc-row"><span data-i18n="odds.jcAnnuityYear">📅 30회 분할, 연평균 세전</span><span class="jc-val" id="jc-annuity-year">-</span></div>
                   <div class="jc-row jc-final"><span data-i18n="odds.jcAnnuityYearNet">매년 손에 들어오는 돈</span><span class="jc-val" id="jc-annuity-year-net">-</span></div>
                   <div class="jc-row"><span data-i18n="odds.jcAnnuityMonth">🗓️ 한 달로 치면</span><span class="jc-val" id="jc-annuity-month-net">-</span></div>
-                  <p class="jc-note" data-i18n-html="odds.jcAnnuityNote"><span style="white-space:nowrap">일시불(할인된 현재가치)과</span> 달리 연금은 <b>발표된 잭팟 총액을 그대로</b> 29년에 걸쳐 30번 나눠 받아요 (첫 회 이후 매년 5%씩 증액). 한 해에 몰리지 않아 세금 부담도 분산돼요.</p>
-                  <p class="jc-note" data-i18n-html="odds.jcAnnuityNote2" style="margin-top:6px;">※ 위 금액은 30년 단순 평균이라 실제 첫 회 수령액은 이보다 적어요</p>
+                  <p class="jc-note" data-i18n-html="odds.jcAnnuityNote">일시불과 달리 연금은 <b>발표된 잭팟 총액을 그대로</b> 29년에 걸쳐 30번 나눠 받아요 (첫 회 이후 매년 5%씩 증액). 한 해에 몰리지 않아 세금 부담도 분산돼요.</p>
+                  <p class="jc-note" data-i18n-html="odds.jcAnnuityNote2" style="margin-top:6px;">※ 위 금액은 30년 단순 평균이라 실제 첫 회 수령액은 이보다 적어요.</p>
                   <details class="jh-more" style="margin-top:10px;">
                     <summary class="jh-more-summary" data-i18n="odds.annuityScheduleToggle">📊 30년 전체 지급표 보기 (회차별 실제 금액)</summary>
                     <div class="annuity-schedule-wrap">
@@ -1927,6 +1924,35 @@
           </button>
         </div>
         <div class="tax-basis-overlay-body" id="taxBasisOverlayBody"></div>
+      </div>
+    </div>
+
+    <!-- "이미지로 저장" 캔버스에 펜/텍스트로 직접 꾸며서 저장하는 오버레이(openAnnotateOverlay()) —
+         아이폰 사진 꾸미기처럼 글씨를 쓰거나 그림을 그릴 수 있으면 좋겠다는 요청(2026-07-25)으로
+         추가. 크롭·회전·필터는 넣지 않음 — 결과 카드가 레이아웃이 고정된 생성 이미지라 그 기능들은
+         쓸 일이 없어서, 실제로 자주 쓰일 펜(자유선)과 텍스트만으로 스코프를 좁힘 -->
+    <div class="annotate-overlay" id="annotateOverlay">
+      <div class="annotate-overlay-backdrop" onclick="closeAnnotateOverlay()"></div>
+      <div class="annotate-overlay-panel" role="dialog" aria-modal="true" aria-labelledby="annotateOverlayTitle">
+        <div class="annotate-overlay-header">
+          <span id="annotateOverlayTitle" data-i18n="annotate.title">✏️ 꾸며서 저장하기</span>
+          <button type="button" class="tax-basis-overlay-close" onclick="closeAnnotateOverlay()" aria-label="닫기" data-i18n-aria-label="common.close">
+            <span aria-hidden="true">✕</span> <span data-i18n="common.close">닫기</span>
+          </button>
+        </div>
+        <div class="annotate-toolbar">
+          <button type="button" class="annotate-tool-btn" id="annotatePenBtn" onclick="setAnnotateTool('pen')" data-i18n="annotate.pen">✏️ 펜</button>
+          <button type="button" class="annotate-tool-btn" id="annotateTextBtn" onclick="setAnnotateTool('text')" data-i18n="annotate.text">🔤 텍스트</button>
+          <span class="annotate-color-row" id="annotateColorRow"></span>
+          <button type="button" class="annotate-tool-btn annotate-tool-btn-ghost" id="annotateUndoBtn" onclick="undoAnnotateAction()" data-i18n="annotate.undo">↩️ 실행 취소</button>
+          <button type="button" class="annotate-tool-btn annotate-tool-btn-ghost" id="annotateClearBtn" onclick="clearAnnotateActions()" data-i18n="annotate.clear">🗑️ 지우기</button>
+        </div>
+        <div class="annotate-canvas-wrap" id="annotateCanvasWrap">
+          <canvas id="annotateBaseCanvas"></canvas>
+          <canvas id="annotateOverlayCanvas"></canvas>
+        </div>
+        <p class="annotate-hint" data-i18n="annotate.hint">펜으로 그리거나, 텍스트를 눌러 원하는 곳을 탭해서 글자를 넣어보세요</p>
+        <button type="button" class="share-btn" id="annotateSaveBtn" onclick="finishAnnotateAndDownload()" data-i18n="annotate.save">💾 저장하기</button>
       </div>
     </div>
 
