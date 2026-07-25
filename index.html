@@ -1185,11 +1185,18 @@
             <div class="prize-right">
               <p class="prize-amt" id="jackpot-card-amt">-</p>
               <p class="prize-amt-note" id="jackpot-card-amt-note"></p>
-              <p class="prize-odds"><span data-i18n="odds.oddsPowerball">1 / 2억 9,200만</span> <span class="prize-pct">(0.00000034%)</span></p>
+              <p class="prize-odds"><span id="jackpot-card-odds-num">1 / 2억 9,200만</span> <span class="prize-pct" id="jackpot-card-odds-pct">(0.00000034%)</span></p>
             </div>
           </div>
           <p class="jc-tap-cta" id="jc-tap-cta" onclick="toggleJackpotCalc()">👇 눌러서 세후 실수령액 보기</p>
           <div class="jackpot-calc" id="jackpot-calc-box">
+
+            <!-- 2026-07-25: 위 카드 상단 요약(오늘 실제 광고 잭팟, 예: 5,177억원)과 이 스테퍼의
+                 1번(홈 화면 입력 금액 기준, 기본 100M USD)이 서로 다른 숫자라서, 사용자가 "세금
+                 떼서 이렇게 줄었나?"로 오해하는 걸 실제로 확인함(사용자 스크린샷) — 세금이 아니라
+                 아예 다른 기준(오늘 실제 잭팟 vs 예시/직접 입력 금액)이라는 걸 스테퍼 진입 전에
+                 먼저 밝혀서 오해를 막음 -->
+            <p class="jc-note" id="jc-amount-basis-note" style="margin-bottom:10px;">-</p>
 
             <div class="jc-stepper">
               <div class="jc-step-row-12">

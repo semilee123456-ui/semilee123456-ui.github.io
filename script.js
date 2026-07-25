@@ -1621,9 +1621,33 @@ function usdToKrwLabel(usd){
   return `(약 ${억.toLocaleString('ko-KR')}억원)`;
 }
 
-function getJackpotKRW(){
-  const usd = Number(document.getElementById('jp-powerball').getAttribute('data-target'));
+// 2026-07-25: "잭팟 카드 기준 게임" 토글(odds-game-pb/odds-game-mega)이 있는데도 이 함수가
+// jp-powerball만 고정으로 읽어서, 메가밀리언즈로 토글해도 위 "🏆 잭팟" 카드가 계속 파워볼
+// 금액을 보여주는 버그가 있었음(사용자 지적 — "메가밀리언즈 1등은 어떻게 되는거야?"). 인자로
+// 게임을 받아 currentOddsGame을 기본값으로 씀
+function getJackpotKRW(game){
+  const targetId = (game || currentOddsGame) === 'megamillions' ? 'jp-mega' : 'jp-powerball';
+  const usd = Number(document.getElementById(targetId).getAttribute('data-target'));
   return usd * EXCHANGE_RATE;
+}
+
+// jackpot-card-odds-num에 들어가는 "1 / N" 확률 표기 — odds.oddsPowerball 번역키와 같은
+// 스타일(언어별 단위 관례: 억/만, M, 亿, करोड़ 등)로 메가밀리언즈(1/302,575,350)도 맞춤
+function jackpotOddsText(game){
+  if (game === 'megamillions') {
+    return pickLang('1 / 3억 260만', '1 / 303M', '1 / 3.03亿', '1 / 303 triệu', '1 / 303 ล้าน', '1 / 303 млн', {
+      ar: '1 / 303 مليون', bn: '1 / 30 কোটি', fr: '1 / 303 M', hi: '1 / 30 करोड़', id: '1 / 303 juta',
+      ja: '1 / 3.03億', kk: '1 / 303 млн', km: '1 / 303លាន', ky: '1 / 303 млн', lo: '1 / 303 ລ້ານ',
+      mn: '1 / 303 сая', my: '1 / 303 သန်း', ne: '1 / 30.3 करोड', si: '1 / මිලියන 303', tl: '1 / 303M',
+      ur: '1 / 303 ملین', uz: '1 / 303 mln',
+    });
+  }
+  return pickLang('1 / 2억 9,200만', '1 / 292M', '1 / 2.92亿', '1 / 292 triệu', '1 / 292 ล้าน', '1 / 292 млн', {
+    ar: '1 / 292 مليون', bn: '1 / 29 কোটি', fr: '1 / 292 M', hi: '1 / 29 करोड़', id: '1 / 292 juta',
+    ja: '1 / 2.92億', kk: '1 / 292 млн', km: '1 / 292លាន', ky: '1 / 292 млн', lo: '1 / 292 ລ້ານ',
+    mn: '1 / 292 сая', my: '1 / 292 သန်း', ne: '1 / 29.2 करोड', si: '1 / මිලියන 292', tl: '1 / 292M',
+    ur: '1 / 292 ملین', uz: '1 / 292 mln',
+  });
 }
 
 // 놓친 돈 체크리스트의 5개 채널 링크 — 한국 사이트는 전부 주민등록번호 인증이 필요한
@@ -2383,30 +2407,30 @@ const HOWTO_TEXT_PB = ['파워볼은 일반번호 5개 (1~69 중에서) + 파워
     ur: 'Powerball ایک ایسا کھیل ہے جس میں 5 مرکزی نمبر (1–69 میں سے) اور 1 Powerball نمبر (1–26 میں سے) ملانا ہوتا ہے — کل 6 نمبر۔ انعام کا انحصار اس بات پر ہے کہ آپ نے کتنے مرکزی نمبر ملائے اور کیا آپ نے Powerball بھی ملایا۔',
     uz: "Powerball — 5 ta asosiy raqam (1–69 orasidan) va 1 ta Powerball raqami (1–26 orasidan), jami 6 ta raqamni topish o'yini. Yutuq miqdori nechta asosiy raqamni topganingizga va Powerball raqamini ham topganingizga bog'liq.",
   }];
-const ODDS_GAME_NOTE_MEGA = ['💡 위 잭팟 카드는 파워볼 기준이에요. 메가밀리언즈는 조금 달라요 — 잭팟이 아닌 상금을 받으면 추첨 때 2~10배 중 하나가 무작위로 정해져서 자동으로 곱해져요. 아래 금액은 그 배수를 곱하기 전, 원래 상금이에요',
-  '💡 The jackpot card above is for Powerball. Mega Millions works a bit differently — if you win any prize other than the jackpot, a random multiplier between 2x and 10x is picked at the drawing and automatically applied to it. The amounts below are the original prize, before that multiplier.',
-  '💡 上方的头奖卡片是强力球的数据。超级百万不太一样——如果中的不是头奖，开奖时会随机抽出一个2~10倍的倍数，自动乘到奖金上。下面的金额是乘倍数之前的原始奖金',
-  '💡 Thẻ jackpot ở trên là của Powerball. Mega Millions hoạt động hơi khác — nếu trúng giải nào đó không phải jackpot, một hệ số nhân ngẫu nhiên từ 2 đến 10 lần sẽ được chọn lúc quay số và tự động nhân vào giải thưởng đó. Số tiền dưới đây là giải thưởng gốc, trước khi nhân hệ số.',
-  '💡 การ์ดแจ็คพอตด้านบนเป็นของพาวเวอร์บอล เมกะมิลเลียนทำงานต่างออกไปเล็กน้อย — ถ้าคุณถูกรางวัลอื่นที่ไม่ใช่แจ็คพอต ตัวคูณแบบสุ่มระหว่าง 2 ถึง 10 เท่าจะถูกเลือกตอนออกรางวัลแล้วคูณเข้ากับรางวัลนั้นโดยอัตโนมัติ จำนวนเงินด้านล่างคือรางวัลเดิมก่อนคูณ',
-  '💡 Карточка джекпота выше — данные Powerball. В Mega Millions немного иначе — если вы выиграли любой приз, кроме джекпота, во время розыгрыша случайно выбирается множитель от 2 до 10, который автоматически применяется к призу. Суммы ниже — это исходный приз, до умножения.',
+const ODDS_GAME_NOTE_MEGA = ['💡 위 잭팟 카드는 파워볼 기준이에요. 메가밀리언즈는 조금 달라요 — 티켓 살 때 \'메가플라이어(Megaplier)\'라는 옵션을 추가로 살 수 있는데, 이 옵션을 사면 잭팟을 제외한 나머지 등수에 당첨됐을 때 추첨 당일 무작위로 정해지는 2~10배 배수가 상금에 자동으로 곱해져서 원래보다 더 많이 받을 수 있어요. 이 옵션은 선택 사항이고 배수도 매번 달라지기 때문에, 아래 표에는 이 배수를 곱하기 전의 기본 상금만 보여드려요',
+  "💡 The jackpot card above is for Powerball. Mega Millions works a bit differently — when buying a ticket, you can pay extra for an optional add-on called the 'Megaplier.' If you have it and win any prize other than the jackpot, a random multiplier between 2x and 10x (picked at that drawing) is automatically applied, so you can win more than the base amount. Since this add-on is optional and the multiplier changes every drawing, the amounts below are just the base prize, before that multiplier.",
+  '💡 上方的头奖卡片是强力球的数据。超级百万不太一样——买彩票时可以额外付费购买一个叫"Megaplier"的加成选项。如果买了这个选项，中的不是头奖的话，开奖当天会随机抽出一个2~10倍的倍数自动乘到奖金上，让你拿到比原本更多的钱。因为这个选项是自选的，而且倍数每次都不同，所以下面表格里的金额只是加成前的基本奖金',
+  "💡 Thẻ jackpot ở trên là của Powerball. Mega Millions hoạt động hơi khác — khi mua vé, bạn có thể trả thêm tiền để mua tùy chọn 'Megaplier'. Nếu có tùy chọn này và trúng giải nào đó không phải jackpot, một hệ số nhân ngẫu nhiên từ 2 đến 10 lần (được chọn ngay hôm quay số đó) sẽ tự động nhân vào giải thưởng, giúp bạn nhận được nhiều hơn số tiền gốc. Vì tùy chọn này không bắt buộc và hệ số nhân thay đổi mỗi lần quay số, số tiền dưới đây chỉ là giải thưởng gốc, trước khi nhân hệ số.",
+  "💡 การ์ดแจ็คพอตด้านบนเป็นของพาวเวอร์บอล เมกะมิลเลียนทำงานต่างออกไปเล็กน้อย — ตอนซื้อตั๋วคุณสามารถจ่ายเพิ่มเพื่อซื้อออปชันเสริมที่เรียกว่า 'Megaplier' ได้ ถ้าคุณมีออปชันนี้และถูกรางวัลอื่นที่ไม่ใช่แจ็คพอต ตัวคูณแบบสุ่มระหว่าง 2 ถึง 10 เท่า (ที่เลือกในวันออกรางวัลนั้น) จะถูกคูณเข้ากับรางวัลโดยอัตโนมัติ ทำให้คุณได้เงินมากกว่าจำนวนเดิม เนื่องจากออปชันนี้เป็นทางเลือกและตัวคูณเปลี่ยนไปทุกครั้งที่ออกรางวัล จำนวนเงินด้านล่างจึงเป็นแค่รางวัลพื้นฐานก่อนคูณ",
+  "💡 Карточка джекпота выше — данные Powerball. В Mega Millions немного иначе — при покупке билета можно доплатить за дополнительную опцию «Megaplier». Если она у вас есть и вы выиграли любой приз, кроме джекпота, во время того же розыгрыша случайно выбирается множитель от 2 до 10, который автоматически применяется к призу, так что вы получите больше базовой суммы. Поскольку эта опция необязательна, а множитель меняется каждый розыгрыш, суммы ниже — это только базовый приз, до умножения.",
   {
-    ar: '💡 بطاقة الجاكبوت أعلاه خاصة بـ Powerball. بالنسبة إلى Mega Millions، تحصل كل جائزة عدا الجاكبوت تلقائيًا على مضاعف عشوائي من 2 إلى 10 أضعاف — المبالغ أدناه هي القيمة الأساسية قبل ذلك',
-    bn: '💡 উপরের জ্যাকপট কার্ডটি Powerball-এর ভিত্তিতে। Mega Millions-এ, জ্যাকপট বাদে প্রতিটি পুরস্কারে স্বয়ংক্রিয়ভাবে ২–১০ গুণ র‍্যান্ডম গুণক যুক্ত হয় — নিচের পরিমাণগুলো সেই গুণকের আগের মূল মান',
-    fr: '💡 La carte du jackpot ci-dessus concerne Powerball. Pour Mega Millions, chaque gain hors jackpot reçoit automatiquement un multiplicateur aléatoire de 2x à 10x — les montants ci-dessous sont la valeur de base avant application de ce multiplicateur',
-    hi: '💡 ऊपर दिया गया जैकपॉट कार्ड Powerball का है। Mega Millions में, जैकपॉट को छोड़कर हर इनाम में अपने आप 2–10 गुना का रैंडम मल्टीप्लायर जुड़ जाता है — नीचे दी गई राशि उस मल्टीप्लायर से पहले की मूल राशि है',
-    id: '💡 Kartu jackpot di atas adalah milik Powerball. Untuk Mega Millions, setiap hadiah selain jackpot otomatis mendapat pengali acak 2x–10x — jumlah di bawah adalah nilai dasar sebelum pengali tersebut',
-    ja: '💡 上記のジャックポットカードはパワーボールのものです。メガミリオンズでは、ジャックポットを除くすべての賞金に自動的に2〜10倍のランダムな倍率が適用されます — 以下の金額は倍率適用前の基本額です',
-    kk: '💡 Жоғарыдағы джекпот картасы Powerball бойынша. Mega Millions үшін джекпоттан басқа әрбір жүлдеге автоматты түрде 2–10 еселік кездейсоқ көбейткіш қосылады — төмендегі сомалар осы көбейткішке дейінгі негізгі мән',
-    km: '💡 កាតជេកផតខាងលើគឺសម្រាប់ Powerball។ សម្រាប់ Mega Millions រង្វាន់ទាំងអស់ក្រៅពីជេកផតនឹងទទួលបានគុណនកម្មចៃដន្យ 2-10 ដងដោយស្វ័យប្រវត្តិ — ចំនួនទឹកប្រាក់ខាងក្រោមគឺជាតម្លៃមូលដ្ឋានមុនពេលគុណ',
-    ky: '💡 Жогорудагы джекпот картасы Powerball боюнча. Mega Millions үчүн джекпоттон башка ар бир байгеге автоматтык түрдө 2–10 эсе кокустук көбөйткүч кошулат — төмөндөгү суммалар ушул көбөйткүчкө чейинки негизги мааниси',
-    lo: '💡 ບັດແຈັກພອດຂ້າງເທິງແມ່ນຂອງ Powerball. ສຳລັບ Mega Millions, ທຸກລາງວັນຍົກເວັ້ນແຈັກພອດຈະໄດ້ຮັບຕົວຄູນແບບສຸ່ມ 2-10 ເທົ່າໂດຍອັດຕະໂນມັດ — ຈຳນວນເງິນຂ້າງລຸ່ມແມ່ນມູນຄ່າພື້ນຖານກ່ອນຄູນ',
-    mn: '💡 Дээрх жекпотын карт нь Powerball-ийн юм. Mega Millions-д жекпотоос бусад бүх шагналд автоматаар 2-10 дахин санамсаргүй үржүүлэгч нэмэгддэг — доорх дүн нь тэр үржүүлэгч орохоос өмнөх үндсэн дүн юм',
-    my: '💡 အထက်ပါ ဂျက်ပေါ့ကတ်သည် Powerball အတွက်ဖြစ်ပါတယ်။ Mega Millions အတွက်တော့ ဂျက်ပေါ့မှလွဲပြီး ဆုငွေတိုင်းမှာ ၂ မှ ၁၀ ဆအထိ ကျပန်းမြှောက်တန်ဖိုးကို အလိုအလျောက်ပေါင်းထည့်ပါတယ် — အောက်ကပမာဏများသည် ထိုမြှောက်တန်ဖိုးမတိုင်မီ အခြေခံတန်ဖိုးဖြစ်ပါတယ်',
-    ne: '💡 माथिको ज्याकपोट कार्ड Powerball को हो। Mega Millions मा, ज्याकपोट बाहेक हरेक पुरस्कारमा स्वचालित रूपमा २–१० गुणा अनियमित गुणक थपिन्छ — तलको रकम त्यो गुणक लाग्नुअघिको आधारभूत मान हो',
-    si: '💡 ඉහත ජැක්පොට් කාඩ්පත Powerball සඳහා වේ. Mega Millions සඳහා, ජැක්පොට් හැර සෑම ත්‍යාගයකටම ස්වයංක්‍රීයව 2-10 ගුණයක අහඹු ගුණකයක් එකතු වේ — පහත මුදල් ඒ ගුණකයට පෙර මූලික අගයයි',
-    tl: '💡 Ang jackpot card sa itaas ay para sa Powerball. Para sa Mega Millions, bawat premyo maliban sa jackpot ay awtomatikong nakakakuha ng random na 2x–10x na multiplier — ang mga halaga sa ibaba ay ang base value bago iyon',
-    ur: '💡 اوپر دیا گیا جیک پاٹ کارڈ Powerball کا ہے۔ Mega Millions میں، جیک پاٹ کے علاوہ ہر انعام میں خودکار طور پر 2–10 گنا بے ترتیب ضرب شامل ہو جاتی ہے — نیچے دی گئی رقم اس ضرب سے پہلے کی بنیادی رقم ہے',
-    uz: "💡 Yuqoridagi jekpot kartasi Powerball uchun. Mega Millions uchun jekpotdan tashqari har bir yutuqqa avtomatik ravishda 2–10 baravar tasodifiy multiplikator qo'shiladi — quyidagi summalar shu multiplikatorgacha bo'lgan asosiy qiymat",
+    ar: "💡 بطاقة الجاكبوت أعلاه خاصة بـ Powerball. أما Mega Millions فتعمل بشكل مختلف قليلاً — عند شراء التذكرة يمكنك دفع مبلغ إضافي مقابل خيار اختياري يُسمى 'Megaplier'. إذا كان لديك هذا الخيار وفزت بأي جائزة عدا الجاكبوت، يتم اختيار مضاعف عشوائي من 2 إلى 10 أضعاف في نفس السحب ويُطبَّق تلقائيًا على الجائزة، فتحصل على أكثر من المبلغ الأساسي. بما أن هذا الخيار اختياري والمضاعف يتغير في كل سحب، فإن المبالغ أدناه هي القيمة الأساسية فقط قبل هذا المضاعف",
+    bn: "💡 উপরের জ্যাকপট কার্ডটি Powerball-এর ভিত্তিতে। Mega Millions একটু ভিন্নভাবে কাজ করে — টিকিট কেনার সময় আপনি বাড়তি টাকা দিয়ে 'Megaplier' নামের একটি ঐচ্ছিক অপশন কিনতে পারেন। এটি থাকলে এবং জ্যাকপট বাদে অন্য কোনো পুরস্কার জিতলে, সেই দিনের ড্রয়ে র‍্যান্ডমভাবে ২ থেকে ১০ গুণের একটি গুণক বেছে নেওয়া হয় এবং স্বয়ংক্রিয়ভাবে পুরস্কারে যোগ হয়, ফলে মূল অঙ্কের চেয়ে বেশি পাওয়া যায়। এই অপশনটি ঐচ্ছিক এবং গুণকও প্রতিবার বদলায় বলে, নিচের পরিমাণগুলো শুধু সেই গুণকের আগের মূল পুরস্কার",
+    fr: "💡 La carte du jackpot ci-dessus concerne Powerball. Mega Millions fonctionne un peu différemment — à l'achat du billet, vous pouvez payer un supplément pour une option facultative appelée « Megaplier ». Si vous l'avez et que vous gagnez un lot autre que le jackpot, un multiplicateur aléatoire de 2x à 10x (tiré au sort ce jour-là) est automatiquement appliqué au lot, ce qui vous permet de recevoir plus que le montant de base. Comme cette option est facultative et que le multiplicateur change à chaque tirage, les montants ci-dessous correspondent uniquement au lot de base, avant ce multiplicateur",
+    hi: "💡 ऊपर दिया गया जैकपॉट कार्ड Powerball का है। Mega Millions थोड़ा अलग तरीके से काम करता है — टिकट खरीदते समय आप अतिरिक्त पैसे देकर 'Megaplier' नाम का एक वैकल्पिक ऐड-ऑन खरीद सकते हैं। अगर आपके पास यह है और आप जैकपॉट के अलावा कोई भी इनाम जीतते हैं, तो उसी ड्रॉ में बेतरतीब ढंग से चुना गया 2 से 10 गुना का मल्टीप्लायर अपने आप इनाम में जुड़ जाता है, जिससे आपको मूल राशि से ज़्यादा मिलता है। चूंकि यह ऐड-ऑन वैकल्पिक है और मल्टीप्लायर हर ड्रॉ में बदलता है, नीचे दी गई राशि सिर्फ उस मल्टीप्लायर से पहले की मूल इनाम राशि है",
+    id: "💡 Kartu jackpot di atas adalah milik Powerball. Mega Millions bekerja sedikit berbeda — saat membeli tiket, kamu bisa membayar ekstra untuk opsi tambahan bernama 'Megaplier'. Jika kamu memilikinya dan memenangkan hadiah apa pun selain jackpot, pengali acak 2x–10x (dipilih pada hari pengundian itu) otomatis diterapkan ke hadiahmu, sehingga kamu bisa mendapat lebih banyak dari jumlah dasarnya. Karena opsi ini bersifat opsional dan pengalinya berubah setiap pengundian, jumlah di bawah hanyalah hadiah dasar sebelum pengali tersebut",
+    ja: "💡 上記のジャックポットカードはパワーボールのものです。メガミリオンズは少し仕組みが違います — チケットを買うときに追加料金を払うと「メガプライヤー(Megaplier)」というオプションを付けられます。このオプションがあってジャックポット以外の賞に当選すると、その抽選日にランダムに決まる2〜10倍の倍率が自動的に賞金に適用され、基本額より多くもらえます。このオプションは任意で倍率も毎回変わるため、以下の金額は倍率適用前の基本賞金だけを示しています",
+    kk: "💡 Жоғарыдағы джекпот картасы Powerball бойынша. Mega Millions сәл басқаша жұмыс істейді — билет сатып алғанда қосымша ақы төлеп 'Megaplier' деп аталатын опция сатып алуға болады. Бұл опция болып, джекпоттан басқа кез келген жүлдені ұтып алсаңыз, сол тартылым күні кездейсоқ таңдалған 2-ден 10-ға дейінгі көбейткіш жүлдеге автоматты түрде қолданылады, сөйтіп негізгі соманан көбірек аласыз. Бұл опция міндетті емес және көбейткіш әр тартылымда өзгеретіндіктен, төмендегі сомалар тек сол көбейткішке дейінгі негізгі жүлде",
+    km: "💡 កាតជេកផតខាងលើគឺសម្រាប់ Powerball។ Mega Millions ដំណើរការខុសបន្តិច — នៅពេលទិញសំបុត្រ អ្នកអាចបង់ប្រាក់បន្ថែមសម្រាប់ជម្រើសបន្ថែមមួយហៅថា 'Megaplier'។ ប្រសិនបើអ្នកមានជម្រើសនេះ ហើយឈ្នះរង្វាន់ណាមួយក្រៅពីជេកផត គុណនកម្មចៃដន្យពី 2 ទៅ 10 ដង (ជ្រើសរើសនៅថ្ងៃទាញឆ្នោតនោះ) នឹងត្រូវអនុវត្តដោយស្វ័យប្រវត្តិទៅលើរង្វាន់ ធ្វើឱ្យអ្នកទទួលបានច្រើនជាងចំនួនដើម។ ដោយសារជម្រើសនេះជាជម្រើសសេរី ហើយគុណនកម្មផ្លាស់ប្តូររាល់ការទាញឆ្នោត ចំនួនទឹកប្រាក់ខាងក្រោមគឺជារង្វាន់មូលដ្ឋានតែប៉ុណ្ណោះ មុនពេលគុណនកម្មនោះ",
+    ky: "💡 Жогорудагы джекпот картасы Powerball боюнча. Mega Millions бир аз башкача иштейт — билет сатып алганда кошумча акы төлөп 'Megaplier' деп аталган кошумча опцияны сатып алсаңыз болот. Бул опция болуп, джекпоттон башка кандайдыр бир байгени утуп алсаңыз, ошол тартылыш күнү кокустан тандалган 2дон 10го чейинки көбөйткүч байгеге автоматтык түрдө колдонулат, ошентип негизги суммадан көбүрөөк аласыз. Бул опция милдеттүү эмес жана көбөйткүч ар бир тартылышта өзгөргөндүктөн, төмөндөгү суммалар ошол көбөйткүчкө чейинки негизги байге гана",
+    lo: "💡 ບັດແຈັກພອດຂ້າງເທິງແມ່ນຂອງ Powerball. Mega Millions ເຮັດວຽກແຕກຕ່າງກັນເລັກນ້ອຍ — ຕອນຊື້ປີ້ ທ່ານສາມາດຈ່າຍເພີ່ມເພື່ອຊື້ຕົວເລືອກເສີມທີ່ເອີ້ນວ່າ 'Megaplier'. ຖ້າທ່ານມີຕົວເລືອກນີ້ ແລະຖືກລາງວັນອື່ນທີ່ບໍ່ແມ່ນແຈັກພອດ, ຕົວຄູນແບບສຸ່ມ 2-10 ເທົ່າ (ເລືອກໃນມື້ອອກລາງວັນນັ້ນ) ຈະຖືກນຳໃຊ້ກັບລາງວັນໂດຍອັດຕະໂນມັດ, ເຮັດໃຫ້ທ່ານໄດ້ຮັບຫຼາຍກວ່າຈຳນວນເດີມ. ເນື່ອງຈາກຕົວເລືອກນີ້ເປັນທາງເລືອກ ແລະຕົວຄູນປ່ຽນທຸກຄັ້ງທີ່ອອກລາງວັນ, ຈຳນວນເງິນຂ້າງລຸ່ມແມ່ນລາງວັນພື້ນຖານເທົ່ານັ້ນ ກ່ອນຄູນ",
+    mn: "💡 Дээрх жекпотын карт нь Powerball-ийн юм. Mega Millions бага зэрэг өөрөөр ажилладаг — тасалбар авахдаа нэмэлт төлбөр төлж 'Megaplier' гэдэг нэмэлт сонголтыг худалдаж авч болно. Энэ сонголттой бөгөөд жекпотоос бусад ямар нэгэн шагнал хожвол, тухайн сугалааны өдөр санамсаргүйгээр сонгогдсон 2-10 дахин үржүүлэгч шагналд автоматаар нэмэгдэж, үндсэн дүнгээс илүү авах боломжтой болно. Энэ сонголт заавал биш бөгөөд үржүүлэгч сугалаа болгонд өөрчлөгддөг тул доорх дүн нь зөвхөн тэр үржүүлэгч орохоос өмнөх үндсэн шагнал юм",
+    my: "💡 အထက်ပါ ဂျက်ပေါ့ကတ်သည် Powerball အတွက်ဖြစ်ပါတယ်။ Mega Millions ကတော့ နည်းနည်းကွာပါတယ် — လက်မှတ်ဝယ်တဲ့အခါ 'Megaplier' လို့ခေါ်တဲ့ ရွေးချယ်နိုင်တဲ့ဝန်ဆောင်မှုအတွက် ငွေပိုပေးပြီး ဝယ်နိုင်ပါတယ်။ ဒီဝန်ဆောင်မှုရှိပြီး ဂျက်ပေါ့မှလွဲပြီး တခြားဆုတစ်ခုခုကို ရရင်၊ ထိုနေ့ မဲနှုတ်ချိန်မှာ ကျပန်းရွေးချယ်တဲ့ ၂ ဆမှ ၁၀ ဆအထိ မြှောက်တန်ဖိုးကို ဆုငွေမှာ အလိုအလျောက် ပေါင်းထည့်ပေးလို့ မူရင်းပမာဏထက် ပိုရနိုင်ပါတယ်။ ဒီဝန်ဆောင်မှုက ရွေးချယ်ခွင့်ဖြစ်ပြီး မြှောက်တန်ဖိုးလည်း မဲနှုတ်တိုင်း ပြောင်းလဲနေတာကြောင့်၊ အောက်ကပမာဏများသည် ထိုမြှောက်တန်ဖိုးမတိုင်မီ အခြေခံဆုငွေသာဖြစ်ပါတယ်",
+    ne: "💡 माथिको ज्याकपोट कार्ड Powerball को हो। Mega Millions अलि फरक तरिकाले काम गर्छ — टिकट किन्दा तपाईं थप पैसा तिरेर 'Megaplier' भनिने वैकल्पिक थप विकल्प किन्न सक्नुहुन्छ। यो भएको र ज्याकपोट बाहेक अरू कुनै पुरस्कार जित्नुभयो भने, त्यही दिनको लटरीमा अनियमित रूपमा छानिने २ देखि १० गुणा गुणक पुरस्कारमा स्वचालित रूपमा लागू हुन्छ, जसले गर्दा तपाईंले आधारभूत रकमभन्दा बढी पाउनुहुन्छ। यो विकल्प वैकल्पिक भएकोले र गुणक हरेक पटक फेरिने भएकोले, तलको रकम त्यो गुणक लाग्नुअघिको आधारभूत पुरस्कार मात्र हो",
+    si: "💡 ඉහත ජැක්පොට් කාඩ්පත Powerball සඳහා වේ. Mega Millions ටිකක් වෙනස්ව ක්‍රියා කරයි — ටිකට් එකක් මිලදී ගන්නා විට 'Megaplier' නම් විකල්ප එකතුවක් අමතර මුදලක් ගෙවා මිලදී ගත හැක. ඔබ එය ලබාගෙන ජැක්පොට් හැර වෙනත් ත්‍යාගයක් දිනුවහොත්, එම දිනුම් ඇදීමේදී අහඹු ලෙස තෝරාගන්නා ගුණ 2 සිට 10 දක්වා ගුණකයක් ස්වයංක්‍රීයව ත්‍යාගයට යොදන අතර, එමගින් මූලික මුදලට වඩා වැඩි මුදලක් ලැබිය හැක. මෙම විකල්පය අනිවාර්ය නොවන අතර ගුණකයද සෑම දිනුම් ඇදීමකදීම වෙනස් වන බැවින්, පහත මුදල් යනු එම ගුණකයට පෙර මූලික ත්‍යාගය පමණි",
+    tl: "💡 Ang jackpot card sa itaas ay para sa Powerball. Medyo iba ang Mega Millions — kapag bumili ka ng tiket, puwede kang magbayad ng dagdag para sa opsyonal na add-on na tinatawag na 'Megaplier'. Kung meron ka nito at nanalo ka ng anumang premyo maliban sa jackpot, awtomatikong ilalapat sa premyo ang random na multiplier na 2x hanggang 10x (napili sa araw na iyon ng draw), kaya mas malaki ang matatanggap mo kaysa sa base amount. Dahil opsyonal ang add-on na ito at nagbabago ang multiplier sa bawat draw, ang mga halaga sa ibaba ay ang base na premyo lang, bago ang multiplier na iyon",
+    ur: "💡 اوپر دیا گیا جیک پاٹ کارڈ Powerball کا ہے۔ Mega Millions تھوڑا مختلف طریقے سے کام کرتا ہے — ٹکٹ خریدتے وقت آپ اضافی رقم دے کر 'Megaplier' نامی ایک اختیاری اضافی سہولت خرید سکتے ہیں۔ اگر یہ آپ کے پاس ہو اور آپ جیک پاٹ کے علاوہ کوئی بھی انعام جیتیں، تو اسی قرعہ اندازی کے دن بے ترتیب طور پر چنا گیا 2 سے 10 گنا ضرب خودکار طور پر انعام پر لاگو ہو جاتا ہے، جس سے آپ کو بنیادی رقم سے زیادہ ملتا ہے۔ چونکہ یہ سہولت اختیاری ہے اور ضرب ہر قرعہ اندازی میں بدلتی ہے، نیچے دی گئی رقوم صرف اس ضرب سے پہلے کی بنیادی انعامی رقم ہیں",
+    uz: "💡 Yuqoridagi jekpot kartasi Powerball uchun. Mega Millions biroz boshqacha ishlaydi — chipta sotib olayotganda qo'shimcha to'lov evaziga 'Megaplier' deb ataladigan ixtiyoriy qo'shimcha xizmatni sotib olishingiz mumkin. Agar bu sizda bo'lsa va jekpotdan boshqa istalgan yutuqni yutsangiz, o'sha tortishuv kunida tasodifiy tanlangan 2 dan 10 barobargacha multiplikator yutuqqa avtomatik qo'llaniladi, shu tufayli asosiy summadan ko'proq olasiz. Bu xizmat ixtiyoriy bo'lgani va multiplikator har safar o'zgargani uchun, quyidagi summalar faqat o'sha multiplikatorgacha bo'lgan asosiy yutuqdir",
   }];
 
 // "약 "/"About " 접두어의 17개 언어 버전 — jackpot-card-amt·jc-jackpot/cash/final(2319·2398행 근처)에서도
@@ -2477,6 +2501,18 @@ function setOddsGame(game){
   document.getElementById('odds-game-pb').classList.toggle('active', game === 'powerball');
   document.getElementById('odds-game-mega').classList.toggle('active', game === 'megamillions');
   renderPrizeTiers();
+  // 2026-07-25: 바로 위 "잭팟 카드 기준 게임" 라벨이 이 토글을 누르면 위 "🏆 잭팟" 카드(금액+확률)도
+  // 같이 바뀐다고 약속하는데 실제로는 renderPrizeTiers()만 부르고 카드는 그대로 파워볼로 남아있던
+  // 버그였음(사용자가 "메가밀리언즈 1등은 어떻게 되는거야?"라고 물어봐서 발견) — 카드도 같이 갱신
+  initJackpotCardAmt();
+  // 사용자가 금액을 직접 입력한 적이 없으면(기본 예시 상태) 계산기 기본값도 방금 고른 게임의
+  // 실제 잭팟에 맞춰 다시 맞춤 — 안 하면 위 카드(방금 바뀐 게임)와 계산기 드로어(이전 게임 기준
+  // 기본값)가 또 서로 다른 숫자를 보여주는, 위와 똑같은 종류의 혼란이 재발함
+  if (!isAmountManuallyEdited) {
+    const defaultUsd = JACKPOT_DATA[game].amountUsd * CASH_VALUE_RATIO;
+    updateHomeCalc(defaultUsd);
+    updateCalc(defaultUsd);
+  }
 }
 
 let currentLightningGame = 'powerball';
@@ -2684,9 +2720,11 @@ function buildDrawScheduleMore(days){
 // 🎟️ 오늘 잭팟 수동 업데이트 존 — 추첨(파워볼 월/수/토, 메가밀리언즈 화/금) 다음날
 // amountUsd만 공식 사이트 보고 고치면 30초로 끝납니다.
 // ============================================================================
+// 2026-07-25 사용자가 usamega.com 스크린샷으로 확인해서 갱신: 파워볼은 이미 정확($600M, 7/25(토)
+// 추첨 기준), 메가밀리언즈만 갱신($743M → $800M, 7/28(화) 추첨 기준)
 const JACKPOT_DATA = {
   powerball:    { amountUsd: 600000000 },
-  megamillions: { amountUsd: 743000000 },
+  megamillions: { amountUsd: 800000000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
@@ -5184,6 +5222,14 @@ function initJackpotCardAmt(){
     }
   );
 
+  // 잭팟 카드 우측 하단의 "1 / N (0.00000034%)" 확률 표기도 게임에 따라 달라져야 하는데
+  // (파워볼 1/292,201,338 vs 메가밀리언즈 1/302,575,350), 예전엔 파워볼 확률이 항상 고정으로
+  // 박혀있어서 메가밀리언즈로 토글해도 안 바뀌었음 — 위 금액과 같은 이유로 같이 고침
+  const oddsNumEl = document.getElementById('jackpot-card-odds-num');
+  const oddsPctEl = document.getElementById('jackpot-card-odds-pct');
+  if (oddsNumEl) oddsNumEl.textContent = jackpotOddsText(currentOddsGame);
+  if (oddsPctEl) oddsPctEl.textContent = currentOddsGame === 'megamillions' ? '(0.00000033%)' : '(0.00000034%)';
+
   const pbUsd = Number(document.getElementById('jp-powerball').getAttribute('data-target'));
   const mgUsd = Number(document.getElementById('jp-mega').getAttribute('data-target'));
   document.getElementById('jp-powerball-krw').textContent = usdToKrwLabel(pbUsd);
@@ -5347,6 +5393,45 @@ function refreshJackpotDrawerIfOpen(){
     const r = calcTakeHome(cashKrw / 100000000, 'kr');
     // formatWon()이 이미 언어별(ko/en/zh/vi/th/ru) 단위 변환·표기를 전부 처리하므로 재사용
     const about = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE);
+
+    // 위 "🏆 잭팟" 카드 요약(오늘 실제 잭팟)과 이 스테퍼(직접 입력한/기본 예시 금액) 기준이
+    // 다르다는 걸 숫자 보여주기 전에 먼저 밝힘 — jc-amount-basis-note
+    const jcAmountUsdM = Math.round(sharedAmountUsd / 1000000).toLocaleString(LOCALE_MAP[currentLang] || 'ko-KR');
+    // 2026-07-25: 처음엔 이 두 기준(오늘 실제 잭팟 vs 스테퍼 계산 금액)이 항상 달라서 이 안내가
+    // 매번 필요했는데, 이제 시작 기본값 자체를 오늘 실제 잭팟과 맞춰놨기 때문에(아래
+    // DOMContentLoaded 초기화 참고) 사용자가 금액을 직접 안 바꾼 기본 상태에서는 두 숫자가
+    // 이미 같아서 이 안내가 오히려 불필요한 군더더기가 됨 — 실제로 갈라지는 경우
+    // (isAmountManuallyEdited === true)에만 보여줌
+    const amountBasisEl = document.getElementById('jc-amount-basis-note');
+    if (amountBasisEl) amountBasisEl.style.display = isAmountManuallyEdited ? 'block' : 'none';
+    if (amountBasisEl && isAmountManuallyEdited) amountBasisEl.textContent = pickLang(
+      `💡 위 잭팟 카드는 오늘 실제 광고 금액이고, 아래 계산은 ${jcAmountUsdM}M USD(직접 입력 가능, 세금과 무관)를 기준으로 해요 — 숫자가 다른 건 세금 때문이 아니에요`,
+      `💡 The jackpot card above shows today's actual announced amount, while the steps below are based on ${jcAmountUsdM}M USD (you can change this — it's unrelated to tax). The numbers differ for that reason, not because of tax`,
+      `💡 上方彩金卡显示的是今天实际公布的金额，下面的计算基于${jcAmountUsdM}M USD（可自行输入，与税金无关）——数字不同不是因为税金`,
+      `💡 Thẻ jackpot ở trên là số tiền công bố thực tế hôm nay, còn các bước bên dưới dựa trên ${jcAmountUsdM}M USD (bạn có thể thay đổi, không liên quan đến thuế) — số liệu khác nhau không phải do thuế`,
+      `💡 การ์ดแจ็คพอตด้านบนคือยอดประกาศจริงวันนี้ ส่วนขั้นตอนด้านล่างคำนวณจาก ${jcAmountUsdM}M USD (ปรับเองได้ ไม่เกี่ยวกับภาษี) — ตัวเลขต่างกันไม่ใช่เพราะภาษี`,
+      `💡 Карточка джекпота выше показывает сегодняшнюю объявленную сумму, а расчёт ниже основан на ${jcAmountUsdM}M USD (можно изменить, к налогу отношения не имеет) — числа отличаются не из-за налога`,
+      {
+        ar: `💡 بطاقة الجاكبوت أعلاه تعرض المبلغ المعلن فعليًا اليوم، بينما الخطوات أدناه مبنية على ${jcAmountUsdM}M USD (يمكنك تغييره، ولا علاقة له بالضريبة) — اختلاف الأرقام ليس بسبب الضريبة`,
+        bn: `💡 উপরের জ্যাকপট কার্ডে আজকের প্রকৃত ঘোষিত পরিমাণ দেখানো হয়েছে, নিচের ধাপগুলো ${jcAmountUsdM}M USD ভিত্তিতে (আপনি বদলাতে পারেন, করের সাথে সম্পর্কিত নয়) — সংখ্যা ভিন্ন হওয়ার কারণ কর নয়`,
+        fr: `💡 La carte du jackpot ci-dessus indique le montant réellement annoncé aujourd'hui, tandis que les étapes ci-dessous sont basées sur ${jcAmountUsdM}M USD (modifiable, sans rapport avec l'impôt) — la différence n'est pas due à l'impôt`,
+        hi: `💡 ऊपर का जैकपॉट कार्ड आज की वास्तविक घोषित राशि दिखाता है, जबकि नीचे के चरण ${jcAmountUsdM}M USD (आप बदल सकते हैं, टैक्स से कोई संबंध नहीं) पर आधारित हैं — संख्याएं अलग होने का कारण टैक्स नहीं है`,
+        id: `💡 Kartu jackpot di atas menampilkan jumlah yang benar-benar diumumkan hari ini, sedangkan langkah di bawah berdasarkan ${jcAmountUsdM}M USD (bisa diubah, tidak terkait pajak) — angka berbeda bukan karena pajak`,
+        ja: `💡 上のジャックポットカードは今日実際に発表された金額で、下の計算は${jcAmountUsdM}M USD（変更可能、税金とは無関係）が基準です — 数字が違うのは税金のせいではありません`,
+        kk: `💡 Жоғарыдағы джекпот картасы бүгінгі нақты жарияланған соманы көрсетеді, ал төмендегі қадамдар ${jcAmountUsdM}M USD негізінде (өзгертуге болады, салыққа қатысы жоқ) — сандардың айырмашылығы салыққа байланысты емес`,
+        km: `💡 កាតជេកផតខាងលើបង្ហាញចំនួនប្រាក់ដែលបានប្រកាសពិតប្រាកដថ្ងៃនេះ ចំណែកជំហានខាងក្រោមផ្អែកលើ ${jcAmountUsdM}M USD (អាចផ្លាស់ប្តូរបាន មិនទាក់ទងនឹងពន្ធទេ) — លេខខុសគ្នាមិនមែនដោយសារពន្ធទេ`,
+        ky: `💡 Жогорудагы жекпот картасы бүгүнкү реалдуу жарыяланган суманы көрсөтөт, ал эми төмөнкү кадамдар ${jcAmountUsdM}M USD негизинде (өзгөртсө болот, салыкка тиешеси жок) — сандардын айырмасы салыктан эмес`,
+        lo: `💡 ບັດແຈັກພອດຂ້າງເທິງສະແດງຈຳນວນທີ່ປະກາດຈິງມື້ນີ້ ສ່ວນຂັ້ນຕອນຂ້າງລຸ່ມອີງໃສ່ ${jcAmountUsdM}M USD (ປ່ຽນໄດ້ ບໍ່ກ່ຽວກັບພາສີ) — ຕົວເລກຕ່າງກັນບໍ່ແມ່ນຍ້ອນພາສີ`,
+        mn: `💡 Дээрх жекпотын карт өнөөдрийн бодит зарласан дүнг харуулж байгаа бол доорх алхмууд ${jcAmountUsdM}M USD дээр үндэслэсэн (өөрчилж болно, татвартай хамааралгүй) — тоо ялгаатай байгаа нь татвараас болоогүй`,
+        my: `💡 အထက်ကဂျက်ပေါ့ကတ်သည် ယနေ့တကယ်ကြေညာထားသောပမာဏဖြစ်ပြီး အောက်ကအဆင့်များသည် ${jcAmountUsdM}M USD (ပြောင်းနိုင်သည်၊ အခွန်နှင့်မသက်ဆိုင်) ကို အခြေခံသည် — ကိန်းဂဏန်းကွာခြားခြင်းသည် အခွန်ကြောင့်မဟုတ်ပါ`,
+        ne: `💡 माथिको ज्याकपोट कार्डले आजको वास्तविक घोषित रकम देखाउँछ, तल्ला चरणहरू ${jcAmountUsdM}M USD (परिवर्तन गर्न सकिन्छ, करसँग सम्बन्धित छैन) मा आधारित छन् — संख्या फरक हुनुको कारण कर होइन`,
+        si: `💡 ඉහත ජැක්පොට් කාඩ්පත අද සැබෑ නිවේදනය කළ මුදල පෙන්වයි, පහත පියවර ${jcAmountUsdM}M USD (වෙනස් කළ හැක, බද්දට සම්බන්ධ නැත) මත පදනම් වේ — සංඛ්‍යා වෙනස් වීමට හේතුව බද්ද නොවේ`,
+        tl: `💡 Ipinapakita ng jackpot card sa itaas ang aktwal na inanunsyong halaga ngayon, habang ang mga hakbang sa ibaba ay batay sa ${jcAmountUsdM}M USD (puwedeng baguhin, walang kinalaman sa buwis) — hindi dahil sa buwis kung bakit magkaiba ang numero`,
+        ur: `💡 اوپر جیک پاٹ کارڈ آج کی اصل اعلان شدہ رقم دکھاتا ہے، جبکہ نیچے کے مراحل ${jcAmountUsdM}M USD (تبدیل کیا جا سکتا ہے، ٹیکس سے غیر متعلق) پر مبنی ہیں — نمبروں کا فرق ٹیکس کی وجہ سے نہیں ہے`,
+        uz: `💡 Yuqoridagi jekpot kartasi bugungi haqiqiy e'lon qilingan summani ko'rsatadi, quyidagi bosqichlar esa ${jcAmountUsdM}M USD asosida (o'zgartirish mumkin, soliqqa aloqasi yo'q) — raqamlar farqi soliq tufayli emas`,
+      }
+    );
+
     document.getElementById('jc-jackpot').textContent = about + formatWon(announcedKrw / 100000000);
     document.getElementById('jc-cash').textContent = about + formatWon(cashKrw / 100000000);
     document.getElementById('jc-final').textContent = about + formatWon(r.final);
@@ -5740,7 +5825,28 @@ document.addEventListener('keydown', e => {
 // renderJackpotHistory()/renderJackpotTakeHomeRanking()/renderNumberFrequencyStats()는 확률체감
 // 탭 전용 데이터(odds-data.js)가 필요해서 여기서 안 부름 — go('odds')가 처음 호출될 때 지연 로드
 // 후 그려짐(renderOddsTabDataWhenReady, 2026-07-22 성능 개선)
-document.addEventListener('DOMContentLoaded', () => { applyJackpotData(); runCountUps(); updateHomeCalc(100000000); updateCalc(); initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); updateDateLookupUi(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); renderFilingDday(); setupFaqFloatBtnScrollVisibility(); adjustNavIconVisibility(); });
+//
+// 2026-07-25: 계산기 기본 시작 금액을 고정 $100M 예시 대신 "오늘의 파워볼 실제 광고 잭팟의
+// 일시불 환산액"(JACKPOT_DATA.powerball.amountUsd * CASH_VALUE_RATIO)으로 바꿈 — 확률체감
+// 탭의 "🏆 잭팟" 카드 상단 요약도 같은 값을 쓰므로, 사용자가 아직 금액을 직접 입력/조작하지
+// 않은 기본 상태에서는 그 카드를 펼쳤을 때 나오는 계산기 숫자가 상단 요약과 항상 일치하게 됨
+// (사용자가 두 숫자가 달라 세금 때문인 줄 알고 헷갈렸던 문제, 위 note-basis 안내문과 별개로
+// 이 방법으로 근본적으로 없앰). JACKPOT_DATA는 여전히 운영자가 수동으로 갱신해야 하지만,
+// 그 갱신이 늦어도 "계산이 틀리거나 깨지는" 게 아니라 그냥 "기본값이 며칠 전 잭팟"인
+// 정도라 계산기 자체의 정확성 보장(위 refreshJackpotDrawerIfOpen 주석 참고)은 그대로 유지됨.
+// 사용자가 직접 금액을 입력하는 순간(isAmountManuallyEdited=true) 이 기본값은 더 이상
+// 안 쓰이므로, 그 이후엔 두 숫자가 달라도 혼란의 여지가 없음(본인이 방금 바꾼 것이므로).
+document.addEventListener('DOMContentLoaded', () => {
+  applyJackpotData(); runCountUps();
+  // compare 탭의 amountInput은 home과 달리 HTML에 value="100"이 실제 값으로 박혀있어서(홈처럼
+  // placeholder만 쓰는 방식이 아님), updateCalc()를 인자 없이 부르면 그 "100"을 사용자가 직접
+  // 입력한 값처럼 읽어버려서 바로 위 updateHomeCalc()가 막 설정한 기본값을 곧장 덮어써버림
+  // (실제로 이 문제로 아래 기본값 계산이 무효화되는 걸 콘솔 트레이스로 확인함) — 두 함수에
+  // 반드시 같은 값을 명시적으로 넘겨서 어느 쪽이 나중에 불려도 항상 같은 기본값으로 맞춰지게 함
+  const defaultStartUsd = JACKPOT_DATA.powerball.amountUsd * CASH_VALUE_RATIO;
+  updateHomeCalc(defaultStartUsd); updateCalc(defaultStartUsd);
+  initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); updateDateLookupUi(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); renderFilingDday(); setupFaqFloatBtnScrollVisibility(); adjustNavIconVisibility();
+});
 
 // 다른 페이지(korea-resident-us-lottery-tax.html 등)에서 "index.html#faq"처럼 해시가 붙은 링크로
 // 들어왔을 때, 이 SPA는 해시를 안 보고 항상 홈 화면부터 그려서 그 링크가 사실상 무시되던 문제 수정.
