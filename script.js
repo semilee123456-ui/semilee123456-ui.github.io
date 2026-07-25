@@ -4881,17 +4881,40 @@ function refreshJackpotDrawerIfOpen(){
     // 스크롤해서 보면(1단계는 화면 밖) 아래 연/월 숫자가 뭘 나눈 값인지 알 길이 없다는 지적
     // (2026-07-24, 홈 탭에 먼저 추가했던 것과 같은 이유) — 여기도 똑같이 맨 위에 한 줄 추가
     const jcAnnouncedLabelEl = document.getElementById('jc-annuity-announced-label');
+    // 홈 탭의 동일 라벨(home-annuity-announced-label)은 "(일시불 XXXM USD 기준)"처럼 괄호로
+    // 기준을 밝혀주는데, 이 박스만 그 설명이 빠져있어 사용자가 "이 금액이 어디서 나왔는지" 헷갈린다는
+    // 지적(2026-07-25) — 다만 이 박스는 홈 탭과 달리 "입력한 일시불 금액"을 거꾸로 환산한 게 아니라
+    // 오늘 파워볼 광고 잭팟(JACKPOT_DATA.powerball.amountUsd) 자체가 출발점이라, 문구도 그에 맞게
+    // "일시불 기준"이 아닌 "오늘 파워볼 광고 잭팟 기준"으로 씀(사실과 다르게 "일시불 기준"이라고
+    // 쓰면 오히려 새로운 오해를 만들게 됨)
+    const jackpotUsdM = Math.round(announcedKrw / EXCHANGE_RATE / 1000000);
+    const jcAnnouncedBasisMore = {
+      km: `📢 ចំនួនប្រាក់ចាប់រង្វាន់សរុបដែលបានប្រកាស (គិតលើមូលដ្ឋានចំនួនប្រាក់ដែលបានប្រកាសរបស់ Powerball ថ្ងៃនេះ ${jackpotUsdM}M USD)`,
+      ne: `📢 घोषित कुल ज्याकपोट रकम (आजको Powerball घोषित ज्याकपोट ${jackpotUsdM}M USD मा आधारित)`,
+      id: `📢 Total jackpot yang diumumkan (berdasarkan jackpot Powerball yang diumumkan hari ini ${jackpotUsdM}M USD)`,
+      my: `📢 ကြေညာထားသော ဂျက်ပေါ့ စုစုပေါင်း (ယနေ့ Powerball ကြေညာထားသော ဂျက်ပေါ့ ${jackpotUsdM}M USD အခြေခံ)`,
+      si: `📢 නිවේදනය කළ මුළු ජැක්පොට් මුදල (අද Powerball නිවේදනය කළ ජැක්පොට් ${jackpotUsdM}M USD මත පදනම්ව)`,
+      uz: `📢 E'lon qilingan jekpot summasi (bugungi Powerball e'lon qilingan jekpoti ${jackpotUsdM}M USD asosida)`,
+      mn: `📢 Зарласан нийт жекпот (өнөөдрийн Powerball-ын зарласан жекпот ${jackpotUsdM}M USD дээр үндэслэсэн)`,
+      kk: `📢 Жарияланған джекпот сомасы (бүгінгі Powerball жарияланған джекпоты ${jackpotUsdM}M USD негізінде)`,
+      ky: `📢 Жарыяланган жекпот суммасы (бүгүнкү Powerball жарыяланган жекпоту ${jackpotUsdM}M USD негизинде)`,
+      ur: `📢 اعلان کردہ کل جیک پاٹ (آج کے Powerball اعلان کردہ جیک پاٹ ${jackpotUsdM}M USD کی بنیاد پر)`,
+      bn: `📢 ঘোষিত মোট জ্যাকপট (আজকের Powerball ঘোষিত জ্যাকপট ${jackpotUsdM}M USD ভিত্তিতে)`,
+      lo: `📢 ຈຳນວນແຈັກພອດທັງໝົດທີ່ປະກາດ (ອີງໃສ່ແຈັກພອດ Powerball ທີ່ປະກາດມື້ນີ້ ${jackpotUsdM}M USD)`,
+      ja: `📢 発表されたジャックポット総額（本日のPowerball発表ジャックポット ${jackpotUsdM}M USD 基準）`,
+      ar: `📢 إجمالي الجاكبوت المعلن (بناءً على جاكبوت Powerball المعلن اليوم ${jackpotUsdM}M USD)`,
+      hi: `📢 घोषित कुल जैकपॉट (आज के Powerball घोषित जैकपॉट ${jackpotUsdM}M USD पर आधारित)`,
+      fr: `📢 Total du jackpot annoncé (basé sur le jackpot Powerball annoncé aujourd'hui de ${jackpotUsdM}M USD)`,
+      tl: `📢 Kabuuang inanunsyong jackpot (batay sa inanunsyong Powerball jackpot ngayon na ${jackpotUsdM}M USD)`,
+    };
     if (jcAnnouncedLabelEl) jcAnnouncedLabelEl.textContent = pickLang(
-      '📢 발표된 잭팟 총액', '📢 Announced jackpot total', '📢 公布的头奖总额',
-      '📢 Tổng jackpot đã công bố', '📢 ยอดแจ็คพอตที่ประกาศทั้งหมด', '📢 Объявленный общий джекпот',
-      {
-        km: '📢 ចំនួនប្រាក់ចាប់រង្វាន់សរុបដែលបានប្រកាស', ne: '📢 घोषित कुल ज्याकपोट रकम', id: '📢 Total jackpot yang diumumkan',
-        my: '📢 ကြေညာထားသော ဂျက်ပေါ့ စုစုပေါင်း', si: '📢 නිවේදනය කළ මුළු ජැක්පොට් මුදල', uz: "📢 E'lon qilingan jekpot summasi",
-        mn: '📢 Зарласан нийт жекпот', kk: '📢 Жарияланған джекпот сомасы', ky: '📢 Жарыяланган жекпот суммасы',
-        ur: '📢 اعلان کردہ کل جیک پاٹ', bn: '📢 ঘোষিত মোট জ্যাকপট', lo: '📢 ຈຳນວນແຈັກພອດທັງໝົດທີ່ປະກາດ',
-        ja: '📢 発表されたジャックポット総額', ar: '📢 إجمالي الجاكبوت المعلن', hi: '📢 घोषित कुल जैकपॉट',
-        fr: '📢 Total du jackpot annoncé', tl: '📢 Kabuuang inanunsyong jackpot',
-      }
+      `📢 발표된 잭팟 총액 (오늘 파워볼 광고 잭팟 ${jackpotUsdM}M USD 기준)`,
+      `📢 Announced jackpot total (based on today's advertised Powerball jackpot of ${jackpotUsdM}M USD)`,
+      `📢 公布的头奖总额（按今日Powerball公布头奖 ${jackpotUsdM}M USD 计算）`,
+      `📢 Tổng jackpot đã công bố (dựa trên jackpot Powerball công bố hôm nay ${jackpotUsdM}M USD)`,
+      `📢 ยอดแจ็คพอตที่ประกาศทั้งหมด (คำนวณจากแจ็คพอต Powerball ที่ประกาศวันนี้ ${jackpotUsdM}M USD)`,
+      `📢 Объявленный общий джекпот (на основе объявленного сегодня джекпота Powerball ${jackpotUsdM}M USD)`,
+      jcAnnouncedBasisMore
     );
     const jcAnnouncedEl = document.getElementById('jc-annuity-announced');
     if (jcAnnouncedEl) jcAnnouncedEl.textContent = about + formatWon(announcedKrw / 100000000);
