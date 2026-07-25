@@ -480,7 +480,7 @@
             <h2 class="result-hero-label" data-i18n="result.label">💰 일시불 예상 실수령액</h2>
             <p class="result-hero-amt" id="home-final-amt" role="status" aria-live="polite">805억원</p>
             <div class="tax-impact-compact">
-              <span class="tax-impact-before-line"><span class="tax-impact-strike" data-i18n="home.taxBefore">발표 금액</span> <span class="tax-impact-strike" id="tax-impact-before">-</span></span>
+              <span class="tax-impact-before-line"><span class="tax-impact-strike" data-i18n="home.taxBefore">세전</span> <span class="tax-impact-strike" id="tax-impact-before">-</span></span>
               <span class="tax-impact-arrow">→</span>
               <span class="tax-impact-diff-big" id="tax-impact-diff">-</span>
             </div>
@@ -505,6 +505,7 @@
             <details class="calc-detail-toggle" style="margin-top:12px; text-align:left;">
               <summary class="calc-detail-summary" data-i18n-html="odds.jcStep4"><span>💡 일시불 대신 <span style="white-space:nowrap">연금(annuity)으로</span> 받으면?</span></summary>
               <div class="jc-annuity-box">
+                <div class="jc-row"><span id="home-annuity-announced-label">-</span><span class="jc-val" id="home-annuity-announced">-</span></div>
                 <div class="jc-row"><span data-i18n="odds.jcAnnuityYear">📅 30회 분할, 연평균 세전</span><span class="jc-val" id="home-annuity-year">-</span></div>
                 <div class="jc-row jc-final"><span data-i18n="odds.jcAnnuityYearNet">매년 손에 들어오는 돈</span><span class="jc-val" id="home-annuity-year-net">-</span></div>
                 <div class="jc-row"><span data-i18n="odds.jcAnnuityMonth">🗓️ 한 달로 치면</span><span class="jc-val" id="home-annuity-month-net">-</span></div>
@@ -614,6 +615,9 @@
                 </div>
               </details>
             </div>
+            <!-- 세금 기준 오버레이(openTaxBasisOverlay())가 이 국가 토글 DOM 노드를 통째로
+                 오버레이 안으로 옮겼다가 닫을 때 이 자리로 되돌려놓는 기준점 -->
+            <span id="homeCountryTogglePlaceholder" style="display:none"></span>
             <p class="krw-hint" style="margin:-6px 0 14px;" data-i18n="input.basisHint">💡 실제 납세 국가 기준으로 골라주세요 (한국 거주자는 그대로 두면 돼요)</p>
 
             <p class="filing-label" id="home-state-label" style="display:none;"><span class="flag-badge">US</span> <span data-i18n-html="compare.stateLabel">미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9% 로 크게 달라요)</span></span></p>
@@ -1084,8 +1088,20 @@
                잭팟/당첨번호" 주제라 사용자 피드백으로 이 목록 바로 위로 옮겨서 하나의 섹션으로
                합침(2026-07-22). 문구는 script.js가 pickLang()으로 채움 -->
           <p class="dl-inline-label" id="dl-desc">날짜를 골라보세요 — 파워볼은 월·수·토, 메가밀리언즈는 화·금에 추첨해요</p>
+          <!-- 2026-07-24: 기존엔 네이티브 <input type="date">였는데, iOS Safari가 내부
+               세그먼트+달력 아이콘 폭을 CSS 지정 폭보다 우선시해서 박스 밖으로 튀어나오는 문제가
+               2026-07-23부터 반복 재발했음(이 세션 환경엔 실제 iOS/WebKit이 없어 그 CSS 수정
+               자체를 검증할 방법이 없었음) — 브라우저 기본 UI에 기대는 대신, 완전히 우리가
+               통제하는 select 3개(연/월/일)로 교체함. 아이디/dl-date-input.value는 이제 없고,
+               getDlSelectedDate()가 세 select 값을 조합해서 기존과 같은 "YYYY-MM-DD" 문자열을 만듦 -->
           <div class="dl-input-row">
-            <input type="date" id="dl-date-input" class="dl-date-input">
+            <div class="dl-date-select-row">
+              <select class="dl-date-select" id="dl-date-year"></select>
+              <span class="dl-date-sep" aria-hidden="true">.</span>
+              <select class="dl-date-select" id="dl-date-month"></select>
+              <span class="dl-date-sep" aria-hidden="true">.</span>
+              <select class="dl-date-select" id="dl-date-day"></select>
+            </div>
           </div>
           <div id="dl-result"></div>
 
@@ -1095,7 +1111,7 @@
           <!-- 🏆 실수령액 재랭킹 — 이 섹션 문구도 mn-* 위젯과 같은 관례로 script.js가 pickLang()으로 채움 -->
           <p class="panel-title-toggle" style="cursor:default; padding-right:0; margin-top:22px; padding-top:16px; border-top:1px dashed var(--border);" id="jh-rank-title">🏆 발표 금액 말고, 실제로 손에 쥐는 돈 기준으로 다시 줄 세우면?</p>
           <p class="panel-desc" id="jh-rank-desc">발표 잭팟(연금) 순위가 아니라, 한국 거주자가 오늘 세율로 실제 받는 금액 기준 TOP 10이에요</p>
-          <button type="button" class="annuity-info-link" id="jh-rank-change-basis-link" onclick="goToHomeCountryToggle()" style="margin-bottom:8px;">🔧 세금 기준 바꾸기 →</button>
+          <button type="button" class="annuity-info-link" id="jh-rank-change-basis-link" onclick="openTaxBasisOverlay()" style="margin-bottom:8px;">🔧 세금 기준 바꾸기 →</button>
           <div id="jh-rank-list" class="jh-rank-list"></div>
 
           <!-- 🏆 ChamTax 잭팟 인덱스(2026-07-24 신규) — 이월 스트릭 + 물가보정 실질가치 랭킹.
@@ -1109,7 +1125,7 @@
           <p class="panel-desc" id="ji-cpi-desc">발표 당시 금액이 아니라, 미국 소비자물가지수(CPI-U)로 오늘 가치로 환산한 뒤 실수령액을 다시 계산했어요</p>
           <div id="ji-cpi-list" class="jh-rank-list"></div>
           <p class="jh-note" id="ji-cpi-methodology">※ 미국 노동통계국(BLS) CPI-U(전체 도시 소비자, 1982-84=100) 연평균 지수로 2024년 물가 기준까지 보정한 뒤, 오늘 환율과 선택하신 세금 기준의 현행 세율을 적용한 체험용 시뮬레이션이에요. 실제 세무 신고 기준이 아니며, 2024년 이후 발표된 잭팟은 물가 차이가 작아 이 랭킹에서 제외했어요.</p>
-          <button type="button" class="annuity-info-link" id="ji-cpi-change-basis-link" onclick="goToHomeCountryToggle()" style="margin-top:4px;">🔧 세금 기준 바꾸기 →</button>
+          <button type="button" class="annuity-info-link" id="ji-cpi-change-basis-link" onclick="openTaxBasisOverlay()" style="margin-top:4px;">🔧 세금 기준 바꾸기 →</button>
 
           <!-- 🎯 내 번호 vs 역대급 당첨번호 비교 위젯 — 이 섹션의 문구는 전부 script.js의
                updateMyNumbersUi()가 pickLang()으로 채움(신규 인터랙션 콘텐츠 관례를 따름).
@@ -1130,7 +1146,10 @@
               <input type="number" class="mn-num-input mn-special-input" id="mn-special" min="1" max="26" inputmode="numeric" autocomplete="off">
             </div>
             <p class="mn-error" id="mn-error" role="alert"></p>
-            <button type="button" class="cta-btn mn-check-btn" id="mn-check-btn" onclick="checkMyNumbersVsHistory()">확인하기</button>
+            <div class="mn-btn-row">
+              <button type="button" class="cta-btn mn-check-btn" id="mn-check-btn" onclick="checkMyNumbersVsHistory()">확인하기</button>
+              <button type="button" class="share-btn mn-save-btn" id="mn-save-btn" onclick="saveMyNumbersAsTicketImage()">🎫 이미지로 저장</button>
+            </div>
             <p class="foot-note mn-disclaimer" id="mn-disclaimer" style="margin-top:10px; text-align:center;">재미로 보는 가상 비교예요 — 실제 당첨 확인이 아니고, 복권 구매를 권하는 것도 아니에요 🙂</p>
           </div>
           <p class="sr-only" id="mn-announcer" role="status" aria-live="polite"></p>
@@ -1196,6 +1215,7 @@
               <details class="calc-detail-toggle">
                 <summary class="calc-detail-summary" data-i18n-html="odds.jcStep4"><span>💡 일시불 대신 <span style="white-space:nowrap">연금(annuity)으로</span> 받으면?</span></summary>
                 <div class="jc-annuity-box">
+                  <div class="jc-row"><span id="jc-annuity-announced-label">-</span><span class="jc-val" id="jc-annuity-announced">-</span></div>
                   <div class="jc-row"><span data-i18n="odds.jcAnnuityYear">📅 30회 분할, 연평균 세전</span><span class="jc-val" id="jc-annuity-year">-</span></div>
                   <div class="jc-row jc-final"><span data-i18n="odds.jcAnnuityYearNet">매년 손에 들어오는 돈</span><span class="jc-val" id="jc-annuity-year-net">-</span></div>
                   <div class="jc-row"><span data-i18n="odds.jcAnnuityMonth">🗓️ 한 달로 치면</span><span class="jc-val" id="jc-annuity-month-net">-</span></div>
@@ -1245,13 +1265,15 @@
       </div>
 
       <!-- FAQ VIEW -->
-      <div class="view" id="view-faq">
+      <div class="view" id="view-faq" onclick="if(event.target===this) closeFaqOverlay();">
         <button class="back-btn" onclick="go('home')" data-i18n="common.backHome">← 홈으로</button>
-        <button type="button" class="faq-overlay-close-btn" onclick="closeFaqOverlay()" aria-label="닫기" data-i18n-aria-label="common.close">
-          <span aria-hidden="true">✕</span> <span data-i18n="common.close">닫기</span>
-        </button>
 
+        <div class="faq-sheet-content">
         <div class="panel">
+          <div class="faq-sheet-handle" aria-hidden="true"></div>
+          <button type="button" class="faq-overlay-close-btn" onclick="closeFaqOverlay()" aria-label="닫기" data-i18n-aria-label="common.close">
+            <span aria-hidden="true">✕</span> <span data-i18n="common.close">닫기</span>
+          </button>
           <h2 class="panel-title" data-i18n="faq.panelTitle">다들 이런 거 궁금해하시더라고요</h2>
           <p class="panel-desc" id="faq-panel-desc">검색하다 오신 분들이 자주 물어보는 질문 모았어요 · 국세청 상담 기준으로 확인된 정보예요</p>
           <p class="krw-hint" style="margin-bottom:10px;" data-i18n="faq.basisNote">💡 홈 화면에서 고르신 세금 계산 기준에 맞는 질문만 보여드려요</p>
@@ -1434,7 +1456,7 @@
                 <span class="refund-link-btn-sub">Yeosin Finance</span>
               </a>
             </div>
-            <p class="qty-a" style="margin-top:10px;" data-i18n-html="faq.checklistFooter">저희가 직접 조회는 못 <span style="white-space:nowrap">해드려요(주민등록번호 인증이 필요한 정부 시스템이라)</span> — 대신 진짜 공식 채널로 바로 연결해드렸어요. 10분이면 확인 끝나요.</p>
+            <p class="qty-a" style="margin-top:10px;" data-i18n-html="faq.checklistFooter">저희가 직접 조회는 못 해드려요(주민등록번호 인증이 필요한 정부 시스템이라) — 대신 진짜 공식 채널로 바로 연결해드렸어요. 10분이면 확인 끝나요.</p>
             <button class="share-btn" id="refund-share-btn" style="margin-top:10px;" onclick="shareRefundChecklist()" data-i18n="faq.shareChecklist">📤 이거 친구한테 공유하기</button>
           </div>
           <details class="faq-item" data-cat="tax">
@@ -1737,6 +1759,7 @@
         </details>
 
         <p class="disclaimer" data-i18n="faq.finalDisclaimer">더 궁금한 거 있으면 문의하기로 편하게 남겨주세요!</p>
+        </div>
       </div>
 
       <!-- PRIVACY VIEW -->
@@ -1884,6 +1907,25 @@
     <button type="button" class="faq-float-btn" id="faqFloatBtn" onclick="openFaqSearchFloat()" aria-label="도움말 검색으로 이동" data-i18n-aria-label="a11y.faqFloatBtn">
       <span aria-hidden="true">🔍</span><span data-i18n="nav.faqFloatLabel">궁금해요</span>
     </button>
+
+    <!-- 확률체감 탭(잭팟 랭킹/CPI 랭킹)의 "🔧 세금 기준 바꾸기 →" 버튼용 오버레이. 예전엔
+         goToHomeCountryToggle()로 go('home')을 호출해 탭 자체를 전환했는데, 사용자가 보고 있던
+         랭킹 목록·스크롤 위치를 잃어버리고 되돌아오기 불편하다는 피드백이 있었음(openFaqSearchFloat()의
+         faq-overlay-mode와 동일한 문제 클래스). 탭 전환 없이 실제 #homeCountryToggle 노드를
+         이 팝오버 안으로 옮겨왔다가(openTaxBasisOverlay) 닫을 때 원래 자리(#homeCountryTogglePlaceholder)로
+         되돌려놓는 방식이라, 21개 국가 버튼 마크업/onclick 배선을 중복으로 만들 필요가 없음 -->
+    <div class="tax-basis-overlay" id="taxBasisOverlay">
+      <div class="tax-basis-overlay-backdrop" onclick="closeTaxBasisOverlay()"></div>
+      <div class="tax-basis-overlay-panel" role="dialog" aria-modal="true" aria-labelledby="taxBasisOverlayTitle">
+        <div class="tax-basis-overlay-header">
+          <span id="taxBasisOverlayTitle"></span>
+          <button type="button" class="tax-basis-overlay-close" onclick="closeTaxBasisOverlay()" aria-label="닫기" data-i18n-aria-label="common.close">
+            <span aria-hidden="true">✕</span> <span data-i18n="common.close">닫기</span>
+          </button>
+        </div>
+        <div class="tax-basis-overlay-body" id="taxBasisOverlayBody"></div>
+      </div>
+    </div>
 
 </body>
 </html>
