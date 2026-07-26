@@ -61,7 +61,7 @@ function setLanguage(lang, isManual){
   // onclick="setLanguage(...)"처럼 이 Promise를 기다리지 않고 바로 다음 동작(예: 화면 이동)으로
   // 넘어가도 되게 설계되어 있음 (번역 텍스트와 무관한 동작이라 순서 문제 없음)
   loadI18nLanguage(lang).then(() => {
-    if (currentLang === lang) applyTranslations();
+    if (currentLang === lang) { applyTranslations(); invalidateCrossTabSearchIndex(); }
   });
 }
 
@@ -5846,6 +5846,116 @@ function closeFaqOverlay(){
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeFaqOverlay(); closeTaxBasisOverlay(); }
 });
+
+// ===== "궁금해요" 검색을 홈/비교/확률체감 탭까지 확장 =====
+// 예전엔 filterFaq()가 FAQ 화면 안의 항목만 걸러서, 정작 답이 홈(계산기)이나 확률체감 탭에
+// 있는 질문(예: "확률", "잭팟 얼마")은 검색해도 못 찾았음. 언어별로 따로 매핑을 하드코딩하는
+// 대신, 이미 i18n이 적용되어 화면에 실제로 렌더링된 제목/라벨 텍스트를 그대로 검색 대상으로
+// 삼아서 22개 언어 어디서든 별도 유지보수 없이 동일하게 동작하게 함
+let crossTabSearchIndex = null;
+
+function buildCrossTabSearchIndex(){
+  const idx = [];
+  const selector = [
+    '#view-home h1', '#view-home h2', '#view-home .panel-title', '#view-home .explore-label', '#view-home .trust-name',
+    '#view-compare h2', '#view-compare .panel-title',
+    '#view-odds h2', '#view-odds .panel-title', '#view-odds .feature-title', '#view-odds summary',
+  ].join(', ');
+  document.querySelectorAll(selector).forEach(el => {
+    const text = el.textContent.trim();
+    // 너무 짧은 텍스트(아이콘만 있는 경우 등)나 너무 긴 텍스트(문단급)는 검색 매칭 정확도가
+    // 떨어지므로 제외 — 제목/라벨 수준의 길이만 색인 대상으로 삼음
+    if (text.length < 2 || text.length > 40) return;
+    const view = el.closest('.view');
+    if (!view) return;
+    idx.push({ el, text: text.toLowerCase(), viewId: view.id.replace('view-', '') });
+  });
+  return idx;
+}
+
+// 언어가 바뀌면 화면 텍스트가 통째로 다시 렌더링되므로, 색인도 다음 검색 시점에 새로 만들도록
+// 캐시를 비워둠(setLanguage에서 호출)
+function invalidateCrossTabSearchIndex(){ crossTabSearchIndex = null; }
+
+// 검색어가 다른 탭의 제목/라벨과 매칭되면 그 탭으로 이동해서 스크롤+하이라이트, 매칭되면 true 반환
+function tryCrossTabSearchJump(query){
+  const q = (query || '').trim().toLowerCase();
+  if (q.length < 2) return false;
+  if (!crossTabSearchIndex) crossTabSearchIndex = buildCrossTabSearchIndex();
+  const hit = crossTabSearchIndex.find(t => t.text.includes(q) || q.includes(t.text));
+  if (!hit) return false;
+  closeFaqOverlay();
+  go(hit.viewId);
+  // go()가 화면을 막 그린 직후라 레이아웃이 아직 자리 잡기 전일 수 있어 한 틱 늦춰서 스크롤함
+  setTimeout(() => {
+    hit.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    hit.el.classList.add('search-jump-highlight');
+    setTimeout(() => hit.el.classList.remove('search-jump-highlight'), 1600);
+  }, 200);
+  return true;
+}
+
+// 타이핑할 때마다(oninput) 화면이 다른 탭으로 훅훅 튀면 오히려 산만해지므로, 실시간 입력은
+// 기존처럼 FAQ 안에서만 필터링하고 — Enter를 누르거나 음성 인식 결과가 확정된, "질문을 다
+// 마쳤다"고 볼 수 있는 시점에만 다른 탭 이동을 시도함
+function handleFaqSearchSubmit(){
+  const input = document.getElementById('faqSearch');
+  if (!input) return;
+  if (tryCrossTabSearchJump(input.value)) return;
+  filterFaq(); // 다른 탭에 해당하는 답이 없으면 기존처럼 FAQ 안에서 검색 결과를 보여줌
+}
+
+// ===== 음성으로 검색(Web Speech API) =====
+// iOS Safari는 이 글을 쓰는 시점(2026-07) 기준 SpeechRecognition을 지원하지 않음 — 지원 안 하는
+// 브라우저에서는 버튼 자체를 숨겨서, 눌러도 반응 없는 버튼을 보여주는 상황을 피함
+const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+let faqVoiceRecognition = null;
+
+// 사이트가 지원하는 언어 코드 → 음성 인식용 BCP-47 로케일. 브라우저가 이 힌트로 발음을
+// 더 정확히 알아들음(값이 없는 언어는 각 브라우저가 자동 감지하는 기본값에 맡김)
+const FAQ_VOICE_LANG_MAP = {
+  ko: 'ko-KR', en: 'en-US', zh: 'zh-CN', vi: 'vi-VN', th: 'th-TH', ru: 'ru-RU',
+  km: 'km-KH', ne: 'ne-NP', id: 'id-ID', my: 'my-MM', si: 'si-LK', uz: 'uz-UZ',
+  mn: 'mn-MN', kk: 'kk-KZ', ky: 'ky-KG', ur: 'ur-PK', bn: 'bn-BD', lo: 'lo-LA',
+  ja: 'ja-JP', ar: 'ar-SA', hi: 'hi-IN', fr: 'fr-FR', tl: 'fil-PH',
+};
+
+function initFaqVoiceButton(){
+  const btn = document.getElementById('faqVoiceBtn');
+  if (!btn) return;
+  if (!SpeechRecognitionCtor) { btn.style.display = 'none'; return; }
+  btn.style.display = '';
+}
+
+function startFaqVoiceSearch(){
+  if (!SpeechRecognitionCtor) return;
+  const btn = document.getElementById('faqVoiceBtn');
+  const input = document.getElementById('faqSearch');
+  if (!input) return;
+
+  // 이미 듣고 있는 중에 다시 누르면 중지(토글) — 사용자가 실수로 계속 눌러도 안전
+  if (faqVoiceRecognition) { faqVoiceRecognition.stop(); return; }
+
+  faqVoiceRecognition = new SpeechRecognitionCtor();
+  faqVoiceRecognition.lang = FAQ_VOICE_LANG_MAP[currentLang] || 'ko-KR';
+  faqVoiceRecognition.interimResults = true;
+  faqVoiceRecognition.maxAlternatives = 1;
+
+  faqVoiceRecognition.onstart = () => { if (btn) btn.classList.add('listening'); };
+  faqVoiceRecognition.onresult = (e) => {
+    const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+    input.value = transcript;
+    filterFaq(); // 말하는 중에도 FAQ 안 실시간 필터링은 계속 보여줌
+    const lastResult = e.results[e.results.length - 1];
+    if (lastResult && lastResult.isFinal) handleFaqSearchSubmit(); // 문장이 끝나면 다른 탭 이동도 시도
+  };
+  faqVoiceRecognition.onerror = () => { if (btn) btn.classList.remove('listening'); faqVoiceRecognition = null; };
+  faqVoiceRecognition.onend = () => { if (btn) btn.classList.remove('listening'); faqVoiceRecognition = null; };
+
+  try { faqVoiceRecognition.start(); } catch (e) { /* 이미 시작된 세션 등 — 조용히 무시 */ }
+}
+
+document.addEventListener('DOMContentLoaded', initFaqVoiceButton);
 
 // renderJackpotHistory()/renderJackpotTakeHomeRanking()/renderNumberFrequencyStats()는 확률체감
 // 탭 전용 데이터(odds-data.js)가 필요해서 여기서 안 부름 — go('odds')가 처음 호출될 때 지연 로드

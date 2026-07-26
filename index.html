@@ -1411,7 +1411,14 @@
           <h2 class="panel-title" data-i18n="faq.panelTitle">다들 이런 거 궁금해하시더라고요</h2>
           <p class="panel-desc" id="faq-panel-desc">검색하다 오신 분들이 자주 물어보는 질문 모았어요 · 국세청 상담 기준으로 확인된 정보예요</p>
           <p class="krw-hint" style="margin-bottom:10px;" data-i18n="faq.basisNote">💡 홈 화면에서 고르신 세금 계산 기준에 맞는 질문만 보여드려요</p>
-          <input type="text" class="faq-search" id="faqSearch" placeholder="🔍 궁금한 거 검색해보세요 (예: 세금, 시민권, 파워볼)" oninput="filterFaq()" data-i18n-placeholder="faq.searchPlaceholder">
+          <div class="faq-search-row">
+            <input type="text" class="faq-search" id="faqSearch" placeholder="🔍 궁금한 거 검색해보세요 (예: 세금, 시민권, 파워볼)" oninput="filterFaq()" onkeydown="if(event.key==='Enter'){ event.preventDefault(); handleFaqSearchSubmit(); }" data-i18n-placeholder="faq.searchPlaceholder">
+            <!-- 지원 브라우저에서만 JS로 보이게 함(initFaqVoiceButton) — iOS Safari 등 음성 인식 미지원
+                 브라우저에서는 눌러도 안 되는 버튼을 보여주는 것보다 아예 숨기는 게 나음 -->
+            <button type="button" class="faq-voice-btn" id="faqVoiceBtn" onclick="startFaqVoiceSearch()" aria-label="음성으로 검색" data-i18n-aria-label="a11y.voiceSearch" style="display:none;">
+              <span aria-hidden="true">🎤</span>
+            </button>
+          </div>
           <!-- 2026-07-25: 예전엔 이 필터 2단(대상+카테고리)이 기본으로 펼쳐져 있어서, FAQ 탭에
                들어오면 스크롤 없이는 질문이 단 하나도 안 보이는 문제가 있었음(레이아웃 검수 지적) —
                둘 다 기본값이 "전체"라 접어놔도 잃는 정보가 없으므로 기본 접힘으로 바꿈 -->
