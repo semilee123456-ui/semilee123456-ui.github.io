@@ -91,17 +91,17 @@
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
   :root{
-    --teal:#155445; --bg:#FAF6EC; --card:#FFFEF9; --text-dark:#262420; --text-muted:#544E42; --border:#E8E2D3;
+    --teal:#155445; --teal-rgb:21,84,69; --bg:#FAF6EC; --card:#FFFEF9; --text-dark:#262420; --text-muted:#544E42; --border:#E8E2D3;
     --status-red:#C0392B; --status-amber:#946716;
     --fs-hero:36px; --fs-h1:26px; --fs-h2:20px; --fs-h3:18px; --fs-body:16px; --fs-note:16px; --fs-small:16px;
   }
   :root[data-theme="dark"]{
-    --teal:#3AA98A; --bg:#1B1917; --card:#242220; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#3D3A34;
+    --teal:#3AA98A; --teal-rgb:58,169,138; --bg:#1B1917; --card:#242220; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#3D3A34;
     --status-red:#E2776C; --status-amber:#D6AC55;
   }
   .theme-toggle{
     width:36px; height:36px; min-height:36px; flex:0 0 auto; border-radius:50%;
-    border:1px solid rgba(21,84,69,0.25); background:rgba(21,84,69,0.08);
+    border:1px solid rgba(var(--teal-rgb),0.25); background:rgba(var(--teal-rgb),0.08);
     font-size:16px; line-height:1; cursor:pointer; font-family:inherit;
     display:inline-flex; align-items:center; justify-content:center; padding:0; margin-left:10px;
   }

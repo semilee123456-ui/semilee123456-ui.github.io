@@ -221,6 +221,9 @@ function toggleTheme(){
   if (isDark) { document.documentElement.removeAttribute('data-theme'); try{ localStorage.setItem('theme','light'); }catch(e){} }
   else { document.documentElement.setAttribute('data-theme','dark'); try{ localStorage.setItem('theme','dark'); }catch(e){} }
   syncThemeToggleIcon();
+  // 모바일 브라우저 상단바 색도 토글에 맞춰 즉시 갱신(index.html head의 초기 동기화 스크립트와 짝)
+  const themeColorMeta = document.getElementById('theme-color-meta');
+  if (themeColorMeta) themeColorMeta.setAttribute('content', isDark ? '#155445' : '#1B1917');
 }
 document.addEventListener('DOMContentLoaded', syncThemeToggleIcon);
 
@@ -1467,6 +1470,13 @@ function go(view){
     filterFaq();
   } else if (view === 'odds') {
     renderOddsTabDataWhenReady();
+    // 2026-07-26: 날짜별 당첨번호 조회 위젯은 odds 탭 DOM 안에만 있지만, 초기화 함수
+    // (updateDateLookupUi -> setupDateLookup -> renderDateLookupResult)가 DOMContentLoaded에서
+    // 무조건 호출되고 있어서 이 탭을 열어본 적 없는 방문자도 odds-data.js(492KB)를 강제로
+    // 받아가고 있었음(2026-07-22 지연로드 최적화가 실질적으로 무효화된 상태 — Playwright
+    // 성능 측정으로 발견). 다른 지연로드 호출들과 동일하게 이 탭을 처음 열 때만 실행하도록 이동.
+    // setupDateLookup()은 yearSel.dataset.wired로 한 번만 실제 초기화되므로 여러 번 호출해도 안전
+    updateDateLookupUi();
   }
 
   document.querySelector('.page').scrollIntoView({behavior:'smooth', block:'start'});
@@ -4033,7 +4043,12 @@ function setupDateLookup(){
   const yearSel = document.getElementById('dl-date-year');
   const monthSel = document.getElementById('dl-date-month');
   const daySel = document.getElementById('dl-date-day');
-  if (!yearSel || !monthSel || !daySel || yearSel.dataset.wired) return;
+  if (!yearSel || !monthSel || !daySel) return;
+  // 2026-07-26: 드롭다운 채우기·이벤트 리스너 연결은 최초 1회만 해야 하지만(dataset.wired로 방지),
+  // 결과 렌더링(맨 아래 renderDateLookupResult)은 매번 다시 해야 함 — odds 탭을 처음 열기 전(아직
+  // "on" 클래스가 없을 때) 이 함수가 한 번 불려서 이미 wired=1이 찍힌 상태이므로, wired 여부와
+  // 무관하게 매번 결과만은 다시 그려야 실제로 탭이 열렸을 때 odds-data.js 로드가 트리거됨
+  if (yearSel.dataset.wired) { renderDateLookupResult(getDlSelectedDate()); return; }
   yearSel.dataset.wired = '1';
 
   yearSel.setAttribute('aria-label', pickLang('연도 선택', 'Select year', '选择年份', 'Chọn năm', 'เลือกปี', 'Выбрать год', DL_YEAR_LABEL_MORE));
@@ -4091,7 +4106,15 @@ function renderDateLookupResult(dateStr){
   // 사용자가 다른 날짜로 또 바꾸면(연타), 그 사이 값이 이미 낡았을 수 있어 resolve 시점에 입력값이
   // 그대로인지 다시 확인해서 낡은 결과가 늦게 튀어나오지 않게 함
   if (typeof JACKPOT_HISTORY === 'undefined') {
+    // 2026-07-26: applyTranslations()가 "뷰와 무관하게 항상 갱신"하려고 언어 전환마다(그리고
+    // 최초 언어 초기화 때도) 이 함수를 부르는데, odds 탭을 연 적 없는 방문자한테까지
+    // ensureOddsDataLoaded()를 태우면 odds-data.js(492KB)가 강제로 로드돼버림 — odds 탭이 실제로
+    // 켜져 있을 때만 로드를 트리거하고, 그 전까지는 "불러오는 중" 문구만 보여줌(어차피 안 보이는
+    // 탭이라 사용자에게 실질적 차이 없음). odds 탭을 열면 go()가 updateDateLookupUi()를 다시
+    // 불러서 이 시점엔 view-odds가 이미 켜져 있으므로 정상적으로 로드됨
     resultEl.innerHTML = `<p class="dl-empty">${pickLang('불러오는 중…', 'Loading…', '加载中…', 'Đang tải…', 'กำลังโหลด…', 'Загрузка…', DL_LOADING_MORE)}</p>`;
+    const oddsViewEl = document.getElementById('view-odds');
+    if (!oddsViewEl || !oddsViewEl.classList.contains('on')) return;
     ensureOddsDataLoaded().then(() => {
       if (getDlSelectedDate() !== dateStr) return;
       renderDateLookupResult(dateStr);
@@ -5847,7 +5870,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 반드시 같은 값을 명시적으로 넘겨서 어느 쪽이 나중에 불려도 항상 같은 기본값으로 맞춰지게 함
   const defaultStartUsd = JACKPOT_DATA.powerball.amountUsd * CASH_VALUE_RATIO;
   updateHomeCalc(defaultStartUsd); updateCalc(defaultStartUsd);
-  initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); updateDateLookupUi(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); renderFilingDday(); setupFaqFloatBtnScrollVisibility(); adjustNavIconVisibility();
+  initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); renderFilingDday(); setupFaqFloatBtnScrollVisibility(); adjustNavIconVisibility();
 });
 
 // 다른 페이지(korea-resident-us-lottery-tax.html 등)에서 "index.html#faq"처럼 해시가 붙은 링크로
