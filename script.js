@@ -1424,10 +1424,29 @@ const PAGE_TITLES = {
   contact: { ko: '문의하기 | 참택스', en: 'Contact | ChamTax', zh: '联系我们 | ChamTax' }
 };
 
+// PAGE_TITLES는 ko/en/zh 3개 언어만 공들여 따로 쓴 문구가 있고, 나머지 19개 언어는 커스텀
+// 문구가 없어서 entry.ko(한국어)로 조용히 폴백하고 있었음 — "다국어 드롭다운을 하나씩 들어가서
+// 번역이 다 되어있는지 확인해달라"는 요청으로 실제 렌더링해보다가 발견(2026-07-27, 19개
+// 언어 × 7개 화면 = 133곳에서 탭 제목만 한국어로 고정 표시되고 있었음). 133개를 전부 새로
+// 번역하는 대신, 이미 화면에 노출되어 검증된 다른 i18n 키(네비게이션 라벨 등)를 재사용해서
+// "{짧은 이름} | ChamTax" 형태로 자동 구성함 — 새 번역 리스크 없이 22개 언어 전부 커버됨
+const PAGE_TITLE_KEYS = {
+  home: 'hero.tag', compare: 'nav.compare', odds: 'nav.odds', faq: 'nav.faq',
+  privacy: 'privacy.breadcrumb', disclaimer: 'disclaimer.breadcrumb', contact: 'contact.breadcrumb',
+};
+
 function applyCurrentViewTitle(view){
   const entry = PAGE_TITLES[view];
   if (!entry) return;
-  document.title = entry[currentLang] || entry.ko;
+  if (entry[currentLang]) { document.title = entry[currentLang]; return; }
+  if (currentLang === 'ko') { document.title = entry.ko; return; }
+  const key = PAGE_TITLE_KEYS[view];
+  const label = key && resolveI18n(key);
+  // hero.tag만 "🧮 US Lottery Tax Calculator"처럼 이모지 접두어가 붙어있어 탭 제목에는 안 어울려
+  // 떼어냄(나머지 키는 애초에 이모지가 없음). resolveI18n이 실패하면(있을 수 없지만 방어적으로)
+  // entry.ko까지 그대로 폴백
+  const cleanLabel = label && view === 'home' ? label.replace(/^\S+\s+/, '') : label;
+  document.title = cleanLabel ? `${cleanLabel} | ChamTax` : entry.ko;
 }
 
 function go(view){
