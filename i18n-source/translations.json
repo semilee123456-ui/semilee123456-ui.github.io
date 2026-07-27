@@ -13703,5 +13703,30 @@
   "tl": "Gumuhit gamit ang panulat, o pindutin ang Teksto pagkatapos i-tap ang gustong lugar para magdagdag ng sulat",
   "ur": "قلم سے بنائیں، یا \"متن\" دبا کر مطلوبہ جگہ پر ٹیپ کر کے تحریر شامل کریں",
   "uz": "Qalam bilan chizing yoki \"Matn\"ni bosib, xohlagan joyga bosib yozuv qo'shing"
+ },
+ "a11y.voiceAmount": {
+  "ko": "음성으로 금액 입력",
+  "en": "Voice input for amount",
+  "zh": "语音输入金额",
+  "vi": "Nhập số tiền bằng giọng nói",
+  "th": "ป้อนจำนวนเงินด้วยเสียง",
+  "ru": "Голосовой ввод суммы",
+  "km": "បញ្ចូលចំនួនទឹកប្រាក់ដោយសំឡេង",
+  "ne": "आवाजबाट रकम इनपुट गर्नुहोस्",
+  "id": "Masukkan jumlah dengan suara",
+  "my": "အသံဖြင့် ပမာဏထည့်ရန်",
+  "si": "හඬෙන් මුදල ඇතුළත් කරන්න",
+  "uz": "Ovoz orqali summa kiriting",
+  "mn": "Дүнг дуугаар оруулах",
+  "kk": "Соманы дауыспен енгізу",
+  "ky": "Сумманы үн менен киргизүү",
+  "ur": "آواز سے رقم درج کریں",
+  "bn": "কণ্ঠস্বর দিয়ে পরিমাণ লিখুন",
+  "lo": "ປ້ອນຈຳນວນເງິນດ້ວຍສຽງ",
+  "ja": "音声で金額を入力",
+  "ar": "إدخال المبلغ صوتيًا",
+  "hi": "आवाज़ से राशि दर्ज करें",
+  "fr": "Saisir le montant à la voix",
+  "tl": "Magsalita ng halaga"
  }
 }

@@ -1441,8 +1441,8 @@ function go(view){
 
   // 도움말(FAQ) 검색 플로팅 버튼은 이미 도착해있는 도움말 화면에서까지 떠 있을 필요가 없어서
   // 그 화면에서만 숨김 (다른 모든 화면에서는 계속 떠 있음)
-  const faqFloatBtn = document.getElementById('faqFloatBtn');
-  if (faqFloatBtn) faqFloatBtn.classList.toggle('is-hidden', view === 'faq');
+  const faqFloatWrap = document.getElementById('faqFloatWrap');
+  if (faqFloatWrap) faqFloatWrap.classList.toggle('is-hidden', view === 'faq');
   // 탭을 바꾸면 스크롤 위치는 그대로인데 그 아래 콘텐츠는 통째로 바뀌므로(스크롤 이벤트가
   // 안 남) 겹침 여부를 여기서도 다시 확인해야 함
   requestAnimationFrame(updateFaqFloatBtnVisibility);
@@ -5287,14 +5287,28 @@ function initJackpotCardAmt(){
 // 홈 화면 일시불 입력칸/슬라이더에 특정 현금가치(USD)를 채워넣는 공통 로직 — 잭팟 퀵필 버튼
 // (fillHomeAmountFromJackpot)과 확률체감 탭 랭킹 항목의 "이 금액으로 계산하기" CTA
 // (fillHomeAmountFromRanking)가 둘 다 이걸 재사용함(중복 로직 방지). 입력칸/슬라이더는 항상
+// 현재 열려있는 금액 입력 탭(일시불/연금액/희망액)을 DOM에서 그대로 읽음 — 별도 상태 변수 없이
+// .amount-tab-btn.active의 data-tab을 신뢰(switchAmountTab이 항상 이 클래스를 갱신해둠)
+function getActiveAmountTab(){
+  const active = document.querySelector('.amount-tab-btn.active');
+  return active ? active.dataset.tab : 'lump';
+}
+
 // 백만 단위로 반올림해서 채움(입력칸이 백만 단위 정수만 받는 UI라 그대로 노출하면 소수점이
 // 보여 어색함). exactCalc가 true면 실제 계산(updateHomeCalc)에는 반올림 전 원래 cashUsd를
 // 그대로 넘김 — 랭킹 항목 클릭 시, 방금 그 항목이 보여준 실수령액과 홈 화면 결과가 백만 단위
 // 반올림 오차 없이 정확히 일치해야 하기 때문(2026-07-24, 랭킹 CTA 추가하며 도입). 기존 잭팟
-// 퀵필 버튼은 이 옵션 없이 그대로 둬서(기본값 false) 기존 동작을 안 건드림
-function setHomeLumpAmountUsd(cashUsd, btn, exactCalc){
+// 퀵필 버튼은 이 옵션 없이 그대로 둬서(기본값 false) 기존 동작을 안 건드림.
+// keepAnnouncedTab: 호출부(fillHomeAmountFromJackpot)가 연금액 칸도 같이 채워주는 경우에만
+// true로 넘김 — 그 경우 사용자가 "연금액" 탭을 보고 있었다면 강제로 "일시불"로 넘기지 않고
+// 그대로 둠(2026-07-27, "연금액 탭에서 퀵필 누르면 일시불로 튕겨나간다"는 지적으로 추가).
+// 연금액 칸을 안 채워주는 랭킹 CTA(fillHomeAmountFromRanking)는 이 옵션 없이 그대로 둬서
+// 항상 일시불 탭으로 이동(안 그러면 무관한 탭에 값만 안 보이게 채워짐)
+function setHomeLumpAmountUsd(cashUsd, btn, exactCalc, keepAnnouncedTab){
   hideAnnouncedConvertNote();
-  switchAmountTab('lump'); // 퀵필은 일시불 칸을 채우므로, 다른 탭이 열려있으면 안 보이는 문제 방지
+  if (!(keepAnnouncedTab && getActiveAmountTab() === 'announced')) {
+    switchAmountTab('lump'); // 퀵필은 일시불 칸을 채우므로, 다른 탭이 열려있으면 안 보이는 문제 방지
+  }
   isAmountManuallyEdited = true;
   const millions = Math.round(cashUsd / 1000000);
   const input = document.getElementById('homeAmountInput');
@@ -5314,7 +5328,12 @@ function setHomeLumpAmountUsd(cashUsd, btn, exactCalc){
 function fillHomeAmountFromJackpot(game, btn){
   const amountUsd = JACKPOT_DATA[game].amountUsd;
   const cashUsd = amountUsd * CASH_VALUE_RATIO;
-  setHomeLumpAmountUsd(cashUsd, btn);
+  setHomeLumpAmountUsd(cashUsd, btn, false, true);
+  // 일시불 칸만 채우고 연금액 칸은 그대로 두면, 탭을 "연금액"으로 바꿨을 때 이 잭팟과 무관한
+  // 예전 값(또는 빈칸)이 보여서 혼란스러움 — 같은 발표 금액(amountUsd) 기준으로 연금액 칸도
+  // 같이 채워서 어느 탭으로 봐도 방금 고른 잭팟 숫자와 일치하게 함(2026-07-27 요청)
+  const announcedInput = document.getElementById('homeAnnouncedInput');
+  if (announcedInput) announcedInput.value = Math.round(amountUsd / 1000000);
 }
 
 // 확률체감 탭의 잭팟 랭킹(jh-rank-list)/물가보정 랭킹(ji-cpi-list) 항목 옆 "이 금액으로
@@ -5744,16 +5763,16 @@ function faqFloatBtnCollidesWithText(btn){
 }
 
 function updateFaqFloatBtnVisibility(){
-  const btn = document.getElementById('faqFloatBtn');
-  if (!btn) return;
+  const wrap = document.getElementById('faqFloatWrap');
+  if (!wrap) return;
   const scrolledEnough = window.scrollY > FAQ_FLOAT_SCROLL_THRESHOLD;
-  btn.classList.toggle('is-visible', scrolledEnough);
-  if (!scrolledEnough) { btn.classList.remove('is-colliding'); return; }
-  btn.classList.toggle('is-colliding', faqFloatBtnCollidesWithText(btn));
+  wrap.classList.toggle('is-visible', scrolledEnough);
+  if (!scrolledEnough) { wrap.classList.remove('is-colliding'); return; }
+  wrap.classList.toggle('is-colliding', faqFloatBtnCollidesWithText(wrap));
 }
 
 function setupFaqFloatBtnScrollVisibility(){
-  const btn = document.getElementById('faqFloatBtn');
+  const btn = document.getElementById('faqFloatWrap');
   if (!btn || btn.dataset.scrollBound) return;
   btn.dataset.scrollBound = '1';
   let ticking = false;
@@ -5846,6 +5865,27 @@ function closeFaqOverlay(){
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeFaqOverlay(); closeTaxBasisOverlay(); }
 });
+
+// "궁금해요" 플로팅 버튼 자체가 거슬리는 사람을 위한 영구 닫기(2026-07-27) — 세션이 아니라
+// localStorage에 저장해서 다음 방문에도 계속 숨겨짐(홈 FAQ 미리보기 닫기와 같은 패턴)
+const FAQ_FLOAT_BTN_DISMISS_KEY = 'chamtaxFaqFloatBtnDismissed';
+
+function initFaqFloatBtnDismiss(){
+  const wrap = document.getElementById('faqFloatWrap');
+  if (!wrap) return;
+  let dismissed = false;
+  try { dismissed = localStorage.getItem(FAQ_FLOAT_BTN_DISMISS_KEY) === '1'; } catch (e) {}
+  if (dismissed) wrap.style.display = 'none';
+}
+
+function dismissFaqFloatBtn(event){
+  if (event) event.stopPropagation();
+  const wrap = document.getElementById('faqFloatWrap');
+  if (wrap) wrap.style.display = 'none';
+  try { localStorage.setItem(FAQ_FLOAT_BTN_DISMISS_KEY, '1'); } catch (e) {}
+}
+
+document.addEventListener('DOMContentLoaded', initFaqFloatBtnDismiss);
 
 // ===== "궁금해요" 검색을 홈/비교/확률체감 탭까지 확장 =====
 // 예전엔 filterFaq()가 FAQ 화면 안의 항목만 걸러서, 정작 답이 홈(계산기)이나 확률체감 탭에
@@ -5956,6 +5996,55 @@ function startFaqVoiceSearch(){
 }
 
 document.addEventListener('DOMContentLoaded', initFaqVoiceButton);
+
+// 홈 화면 금액 입력칸(일시불/연금액)에도 같은 음성 인식 버튼을 붙임(2026-07-27, "말로 금액을
+// 입력하고 싶다"는 요청) — FAQ 검색과 똑같이 SpeechRecognitionCtor/FAQ_VOICE_LANG_MAP을
+// 재사용하되, 결과 텍스트를 그대로 보여주는 대신 숫자만 뽑아서(parseMillionsInput과 동일한
+// 필터) 입력칸에 넣음. "삼백사십팔" 같은 말은 브라우저 음성 인식 엔진이 자체적으로 "348"
+// 형태로 정규화해주는 경우가 대부분이라 대부분의 언어에서 그대로 작동함
+let amountVoiceRecognition = null;
+
+function initAmountVoiceButtons(){
+  ['homeAmountVoiceBtn', 'homeAnnouncedVoiceBtn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    if (!SpeechRecognitionCtor) { btn.style.display = 'none'; return; }
+    btn.style.display = '';
+  });
+}
+
+function startAmountVoiceInput(inputId, onTyped){
+  if (!SpeechRecognitionCtor) return;
+  const input = document.getElementById(inputId);
+  const btn = document.getElementById(inputId === 'homeAmountInput' ? 'homeAmountVoiceBtn' : 'homeAnnouncedVoiceBtn');
+  if (!input) return;
+
+  // 이미 듣고 있는 중에 다시 누르면 중지(토글) — FAQ 음성 버튼과 동일한 안전장치
+  if (amountVoiceRecognition) { amountVoiceRecognition.stop(); return; }
+
+  amountVoiceRecognition = new SpeechRecognitionCtor();
+  amountVoiceRecognition.lang = FAQ_VOICE_LANG_MAP[currentLang] || 'ko-KR';
+  amountVoiceRecognition.interimResults = true;
+  amountVoiceRecognition.maxAlternatives = 1;
+
+  amountVoiceRecognition.onstart = () => { if (btn) btn.classList.add('listening'); };
+  amountVoiceRecognition.onresult = (e) => {
+    const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+    const digits = transcript.replace(/[^0-9.]/g, '');
+    if (digits) {
+      input.value = digits;
+      onTyped();
+    }
+    const lastResult = e.results[e.results.length - 1];
+    if (lastResult && lastResult.isFinal) amountVoiceRecognition.stop();
+  };
+  amountVoiceRecognition.onerror = () => { if (btn) btn.classList.remove('listening'); amountVoiceRecognition = null; };
+  amountVoiceRecognition.onend = () => { if (btn) btn.classList.remove('listening'); amountVoiceRecognition = null; };
+
+  try { amountVoiceRecognition.start(); } catch (e) { /* 이미 시작된 세션 등 — 조용히 무시 */ }
+}
+
+document.addEventListener('DOMContentLoaded', initAmountVoiceButtons);
 
 // renderJackpotHistory()/renderJackpotTakeHomeRanking()/renderNumberFrequencyStats()는 확률체감
 // 탭 전용 데이터(odds-data.js)가 필요해서 여기서 안 부름 — go('odds')가 처음 호출될 때 지연 로드

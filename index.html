@@ -662,9 +662,14 @@
             </div>
 
             <div class="amount-tab-panel" id="amountTabLump" role="tabpanel">
-              <div class="million-input-wrap">
-                <input type="text" id="homeAmountInput" class="dollar-input" inputmode="decimal" placeholder="예: 100" data-i18n-placeholder="input.amountPlaceholder" oninput="onHomeAmountTyped()" onfocus="this.select()">
+              <div class="million-input-wrap has-voice-btn">
+                <input type="text" id="homeAmountInput" class="dollar-input" inputmode="decimal" enterkeyhint="done" placeholder="예: 100" data-i18n-placeholder="input.amountPlaceholder" oninput="onHomeAmountTyped()" onfocus="this.select()" onkeydown="if(event.key==='Enter'){ event.preventDefault(); this.blur(); }">
                 <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
+                <!-- 지원 브라우저에서만 JS로 보이게 함(initAmountVoiceButtons) — FAQ 검색 음성 버튼과
+                     동일 패턴, iOS Safari 등 음성 인식 미지원 브라우저에서는 숨김 -->
+                <button type="button" class="amount-voice-btn" id="homeAmountVoiceBtn" onclick="startAmountVoiceInput('homeAmountInput', onHomeAmountTyped)" aria-label="음성으로 금액 입력" data-i18n-aria-label="a11y.voiceAmount" style="display:none;">
+                  <span aria-hidden="true">🎤</span>
+                </button>
               </div>
               <div class="slider-track-wrap">
                 <input type="range" class="slider" id="homeAmountSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onHomeSliderMoved()">
@@ -673,9 +678,12 @@
             </div>
 
             <div class="amount-tab-panel" id="amountTabAnnounced" role="tabpanel" style="display:none;">
-              <div class="million-input-wrap-secondary">
-                <input type="text" id="homeAnnouncedInput" class="dollar-input" inputmode="decimal" placeholder="예: 200" data-i18n-placeholder="input.announcedPlaceholder" oninput="onHomeAnnouncedTyped()" onfocus="this.select()">
+              <div class="million-input-wrap-secondary has-voice-btn">
+                <input type="text" id="homeAnnouncedInput" class="dollar-input" inputmode="decimal" enterkeyhint="done" placeholder="예: 200" data-i18n-placeholder="input.announcedPlaceholder" oninput="onHomeAnnouncedTyped()" onfocus="this.select()" onkeydown="if(event.key==='Enter'){ event.preventDefault(); this.blur(); }">
                 <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
+                <button type="button" class="amount-voice-btn" id="homeAnnouncedVoiceBtn" onclick="startAmountVoiceInput('homeAnnouncedInput', onHomeAnnouncedTyped)" aria-label="음성으로 금액 입력" data-i18n-aria-label="a11y.voiceAmount" style="display:none;">
+                  <span aria-hidden="true">🎤</span>
+                </button>
               </div>
               <p class="krw-hint" style="margin:6px 0 0;" data-i18n="input.announcedHint">💡 발표 금액의 평균 약 58%를 일시불 기준으로 환산해서 계산해요</p>
             </div>
@@ -2050,10 +2058,17 @@
     <!-- 홈/비교/확률체감 어디서든 늘 떠 있다가 누르면 도움말(FAQ) 검색으로 바로 이동하는 버튼.
          "다른 화면·도움말이 있다"는 걸 상단 탭 스타일 개선(5a7d6ea)만으로는 놓칠 수 있어서 추가한
          이중 안전장치 — 아이콘만 두면 똑같이 "눌러지는 것처럼 안 보이는" 문제가 재발할 수 있어
-         짧은 글자 라벨을 함께 둠. 도움말(FAQ) 화면 자체에서는 목적지에 이미 와 있으므로 숨김 -->
-    <button type="button" class="faq-float-btn" id="faqFloatBtn" onclick="openFaqSearchFloat()" aria-label="도움말 검색으로 이동" data-i18n-aria-label="a11y.faqFloatBtn">
-      <span aria-hidden="true">🔍</span><span data-i18n="nav.faqFloatLabel">궁금해요</span>
-    </button>
+         짧은 글자 라벨을 함께 둠. 도움말(FAQ) 화면 자체에서는 목적지에 이미 와 있으므로 숨김.
+         2026-07-27: 이 버튼 자체가 거슬리는 사람을 위해 ✕로 완전히 없앨 수 있게 함(#faqFloatClose,
+         localStorage에 영구 저장) -->
+    <div class="faq-float-wrap" id="faqFloatWrap">
+      <button type="button" class="faq-float-btn" id="faqFloatBtn" onclick="openFaqSearchFloat()" aria-label="도움말 검색으로 이동" data-i18n-aria-label="a11y.faqFloatBtn">
+        <span aria-hidden="true">🔍</span><span data-i18n="nav.faqFloatLabel">궁금해요</span>
+      </button>
+      <button type="button" class="faq-float-close" id="faqFloatClose" onclick="dismissFaqFloatBtn(event)" aria-label="닫기" data-i18n-aria-label="common.close">
+        <span aria-hidden="true">✕</span>
+      </button>
+    </div>
 
     <!-- 확률체감 탭(잭팟 랭킹/CPI 랭킹)의 "🔧 세금 기준 바꾸기 →" 버튼용 오버레이. 예전엔
          goToHomeCountryToggle()로 go('home')을 호출해 탭 자체를 전환했는데, 사용자가 보고 있던

@@ -6,14 +6,20 @@
         us-lottery-take-home.html, us-lottery-tax-rate.html) — 여기서 색상을 바꾸면
        반드시 저 5개 파일도 같이 고쳐야 함. 한 곳만 고치면 이번처럼 --status-amber 같은
        변수가 일부 페이지에만 빠지는 문제가 재발함. 공유 CSS 파일로 합치는 걸 권장함 */
+    /* 2026-07-27: --body-bg/--bg/--card 3단이 서로 거의 같은 톤이라 "카드가 배경이랑 구분이
+       안 돼서 집중이 안 된다"는 지적(실사용자 데스크톱 스크린샷으로 확인 — 특히 .page가 넓은
+       화면에서 body 배경과 거의 안 갈라져 보였음) — 세 겹의 명암 단차를 명확히 벌림(카드는
+       아예 순백으로). "갈색 비선호" 원칙은 유지(채도를 올리지 않고 명도 단차만 벌림). 대비
+       후보 여러 개를 실제로 렌더링해서 비교한 뒤 고름 — 너무 벌리면(카키/탄 계열) 갈색에
+       가까워 보여서 제외, 이 정도가 "선명하게 구분되면서도 여전히 밝고 따뜻한" 균형점 */
     --navy:#262420;      /* 먹빛(warm ink) — 순검정 대신 온기 있는 다크톤 */
     --teal:#155445;      /* 깊은 청록-초록 — 40~60대 선호도 데이터 + 오방색 "정화·시작" 의미 반영 */
     --seafoam:#155445;
     --mint:#1F6E5C;
     --indigo:#35507A;    /* 쪽빛 — 서브 포인트 (버튼 hover, 보조 강조) */
     --gold:#9C6F1E;      /* 금색 — 재물운 상징, 아주 소량만 사용(도장·소형 강조) */
-    --bg:#FAF6EC;        /* 웜 아이보리(한지톤) — 갈색 비선호 데이터 반영해 밝게 */
-    --card:#FFFEF9;
+    --bg:#F7F1E0;        /* 웜 아이보리(한지톤) — 갈색 비선호 데이터 반영해 밝게 */
+    --card:#FFFFFF;
     --text-dark:#262420; /* 먹빛 */
     --text-muted:#544E42;
     --border:#E8E2D3;    /* 웜톤 보더 (기존 회색 대신) */
@@ -27,8 +33,8 @@
     --fs-small:16px;   /* 최소 (15→16px, 시니어 가독성 연구 최소 권장치) */
     --fs-emphasis:25px; /* 카드 강조 숫자 */
 
-    --grad-soft: linear-gradient(150deg, #EAF3EE 0%, #FCFBF6 55%, #FFFEF9 100%);
-    --grad-amber: linear-gradient(150deg, #FBF1DE 0%, #FFFDF9 100%);
+    --grad-soft: linear-gradient(150deg, #EAF3EE 0%, #FCFBF6 55%, #FFFFFF 100%);
+    --grad-amber: linear-gradient(150deg, #FBF1DE 0%, #FFFFFF 100%);
     --shadow-card: 0 1px 0 rgba(var(--ink-rgb),0.06);
     --shadow-btn: 0 6px 14px rgba(var(--teal-rgb),0.22);
     --status-red:#C0392B;
@@ -47,11 +53,11 @@
     --navyblue-rgb: 11,37,69;
     /* 배경 틴트(알약·배지·hover 등)에 rgba(21,84,69,X)처럼 --teal 값을 곳곳(58곳)에서 직접
        숫자로 박아 썼었는데, 다크모드에서는 --teal 자체(글자색 용도로 튜닝된 값, #3AA98A)만
-       밝게 바뀌고 이 배경 틴트들은 라이트모드 값 그대로 남아서 어두운 배경(--bg:#1B1917)에
+       밝게 바뀌고 이 배경 틴트들은 라이트모드 값 그대로 남아서 어두운 배경(--bg, 다크모드 기준)에
        거의 묻혀 보이던 버그(디자인 검수로 발견, 2026-07-25) — 위 --ink-rgb와 같은 패턴으로
        변수화해서 다크모드 블록에서 함께 뒤집음 */
     --teal-rgb: 21,84,69;
-    --body-bg:#F0ECE0;
+    --body-bg:#D9CDA8;
     --select-bg:#FDFBF5;
     --chip-bg:#F1EDE0;
     --input-card-bg:#F9F5EB;
@@ -71,7 +77,7 @@
      방문에도 유지됨. 기본값은 항상 라이트모드 */
   :root[data-theme="dark"]{
       --navy:#EDE8DA; --teal:#3AA98A; --seafoam:#3AA98A; --mint:#4CC2A0; --indigo:#7C9BD1; --gold:#D6AC55;
-      --bg:#1B1917; --card:#242220; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#3D3A34;
+      --bg:#1E1A16; --card:#39332B; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#3D3A34;
       --grad-soft: linear-gradient(150deg, #1E2622 0%, #201E1A 55%, #201E1A 100%);
       --grad-amber: linear-gradient(150deg, #2A2318 0%, #201E1A 100%);
       --shadow-card: 0 1px 0 rgba(0,0,0,0.3);
@@ -83,7 +89,7 @@
       --ink-rgb: 237,232,218;
       --navyblue-rgb: 124,155,209;
       --teal-rgb: 58,169,138;
-      --body-bg:#161412;
+      --body-bg:#0C0A09;
       --select-bg:#2A2723;
       --chip-bg:#2E2B26;
       --input-card-bg:#221F1B;
@@ -110,8 +116,10 @@
      --text-muted를 --text-dark에 단순히 변수로 연결하는 방식은 쓰지 않음 — text-dark 값이 나중에
      바뀌면 같이 틀어질 수 있어서, 지금 시점의 실제 hex 값을 기준으로 저시력 사용자를 위해
      명암비가 확실히 오르는 톤을 직접 골라 넣음).
-     --text-muted: 라이트 7.64:1→11.16:1(#FAF6EC 배경 기준), 다크 7.69:1→12.21:1(#1B1917 배경 기준)
-     --border: 라이트 1.2:1→3.28:1, 다크 1.4:1→3.82:1 (WCAG 비텍스트 명암비 권장 3:1 이상으로) */
+     --text-muted: 라이트 7.31:1→10.67:1(#F7F1E0 배경 기준), 다크 7.58:1→12.04:1(#1E1A16 배경 기준)
+     --border: 라이트 1.15:1→3.14:1, 다크 1.53:1→3.77:1 (WCAG 비텍스트 명암비 권장 3:1 이상으로)
+     (2026-07-27 --bg 값 변경에 맞춰 수치 재계산 — 배경이 바뀌어도 고대비 모드가 여전히
+     3:1 이상을 만족하는지 매번 재확인할 것) */
   :root[data-contrast="high"]{
       --text-muted:#3A362C; --border:#93876F;
   }
@@ -165,9 +173,15 @@
      길게 눌러 선택했을 때 디자인이 완전히 깨진 것처럼 보임 — 톤을 청록 계열로 맞춤 */
   ::selection{ background:rgba(var(--teal-rgb),0.25); color:var(--text-dark); }
 
+  /* 2026-07-27: 1140px는 이 사이트(모바일 전용으로 설계된 계산기 UI)에는 너무 넓어서, 큰
+     모니터에서는 버튼 한 줄·입력칸 한 줄이 화면 절반을 가로지르듯 늘어나 부자연스럽다는 지적
+     (실사용자 데스크톱 스크린샷으로 확인). 640px 안팎이면 모바일에서 이미 검증된 카드/그리드
+     레이아웃(explore-grid 3열, trust-grid 4열 등)이 그대로도 자연스러운 "큰 폰" 정도의 폭이라
+     별도 데스크톱 전용 레이아웃을 새로 만들 필요가 없음(회귀 테스트가 이미 다루는 240~430px
+     범위보다 넓기만 해서 줄바꿈 쪽 위험도 없음) */
   .page{
     background:var(--bg); padding:28px 28px 36px; min-height:200px;
-    width:100%; max-width:1140px; margin:0 auto; border-radius:14px; overflow:hidden;
+    width:100%; max-width:640px; margin:0 auto; border-radius:14px; overflow:hidden;
     box-shadow:0 1px 3px rgba(var(--ink-rgb),0.08), 0 8px 24px rgba(var(--ink-rgb),0.06);
   }
 
@@ -363,7 +377,7 @@
      personas. Give it the same teal-tinted treatment as .result-hero so it visually reads
      as "start here" instead of blending into the page. */
   #introPersonaAccordion{
-    background:linear-gradient(135deg, #EAF3EE 0%, #FBFAF4 65%, #FFFEF9 100%);
+    background:linear-gradient(135deg, #EAF3EE 0%, #FBFAF4 65%, #FFFFFF 100%);
     border:1.5px solid rgba(var(--teal-rgb),0.3);
     animation:intro-persona-glow 2.2s ease-out 0.4s 1;
   }
@@ -428,7 +442,7 @@
   .jackpot-quickfill-amt{ font-size:var(--fs-small); font-weight:800; color:var(--text-dark); }
   .jackpot-quickfill-usd{ font-size:var(--fs-small); font-weight:600; color:var(--text-muted); }
   .million-input-wrap{
-    display:flex; align-items:center; gap:10px; flex:1.5; border:2px solid var(--teal);
+    position:relative; display:flex; align-items:center; gap:10px; flex:1.5; border:2px solid var(--teal);
     border-radius:14px; padding:8px 10px 8px 18px; height:auto; background:var(--card);
     min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden; transition:box-shadow 0.15s ease;
   }
@@ -440,7 +454,7 @@
   /* 탭 3개(일시불/연금발표액/목표실수령액)를 오갈 때 입력칸 크기가 서로 달라 카드가 들쭉날쭉해
      보인다는 지적 — 연금발표액 칸을 일시불 칸과 동일한 테두리·크기·글자 크기로 통일함 */
   .million-input-wrap-secondary{
-    display:flex; align-items:center; gap:10px; flex:1.5; border:2px solid var(--teal);
+    position:relative; display:flex; align-items:center; gap:10px; flex:1.5; border:2px solid var(--teal);
     border-radius:14px; padding:8px 10px 8px 18px; height:auto; background:var(--card);
     min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden; transition:box-shadow 0.15s ease;
   }
@@ -452,6 +466,24 @@
   @keyframes field-autofill-flash{ 0%{ box-shadow:0 0 0 4px rgba(var(--teal-rgb),0.28); } 100%{ box-shadow:0 0 0 0 rgba(var(--teal-rgb),0); } }
   .field-autofill-flash{ animation:field-autofill-flash 700ms ease-out; }
   .million-unit{ font-size:16px; color:var(--text-muted); font-weight:700; white-space:nowrap; padding-right:4px; flex-shrink:0; }
+  /* 2026-07-27: 음성 입력 버튼을 .million-unit 옆 flex 자리에 나란히 두면, 이미 폭이 빠듯한
+     240px 화면에서 버튼(40px)+단위 라벨("M USD", 약 56px)이 전체 폭의 절반 이상을 먹어버려서
+     정작 숫자 입력칸이 3자리 숫자도 못 보여줄 만큼 짜부라지는 문제가 있었음(Playwright로 실제
+     rect 폭을 재서 확인) — flex 흐름에서 완전히 빼서 테두리 모서리에 겹치는 배지로 바꿈(위
+     "궁금해요" 버튼 ✕ 배지와 같은 패턴). 숫자·단위 라벨이 쓰는 flex 폭에는 전혀 영향을 안 줌.
+     비교(compare) 탭의 #amountInput은 이 배지가 없는 세 번째 .million-input-wrap이라, 오른쪽
+     여백 확보(.has-voice-btn)는 실제로 마이크가 있는 홈 화면 두 칸에만 별도 클래스로 한정함 —
+     안 그러면 마이크 없는 칸까지 이유 없이 숫자 자리가 좁아지는 회귀가 생김 */
+  .million-input-wrap.has-voice-btn, .million-input-wrap-secondary.has-voice-btn{ padding-right:40px; }
+  .amount-voice-btn{
+    position:absolute; right:6px; top:50%; transform:translateY(-50%);
+    width:32px; height:32px; min-width:32px; border-radius:50%; border:1.5px solid var(--border);
+    background:var(--bg); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-family:inherit; padding:0;
+  }
+  .amount-voice-btn:hover{ border-color:var(--teal); }
+  .amount-voice-btn.listening{ background:var(--teal); border-color:var(--teal); color:var(--card); animation:faqVoicePulse 1.1s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce){ .amount-voice-btn.listening{ animation:none; } }
   .unit-short{ display:none; }
   .input-card-headline{ font-size:18px; font-weight:800; color:var(--text-dark); margin:0 0 4px; }
   .country-toggle{ display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 14px; }
@@ -848,7 +880,7 @@
 
   .result-hero{
     position:relative; overflow:hidden;
-    background:linear-gradient(135deg, #EAF3EE 0%, #FBFAF4 55%, #FFFEF9 100%);
+    background:linear-gradient(135deg, #EAF3EE 0%, #FBFAF4 55%, #FFFFFF 100%);
     border:1px solid rgba(var(--teal-rgb),0.16); border-radius:14px;
     padding:26px 20px 24px; text-align:center;
   }
@@ -958,22 +990,39 @@
      나타나게 함(sticky-result-badge와 같은 opacity/pointer-events 트랜지션 방식 재사용).
      짧은 페이지에서는 스크롤할 내용이 얼마 없어 애초에 안 뜨거나 늦게 뜨는데, 이 버튼 자체가
      "다른 화면도 있다"는 보조 안내라 급하지 않음 */
-  .faq-float-btn{
+  /* 2026-07-27: "궁금해요 자체도 거슬리면 없앨 수 있게 해달라"는 요청으로 우측 상단에 작은
+     ✕ 배지를 추가함(#faqFloatClose) — 배지가 버튼과 같이 뜨고/숨고/흐려지려면 fixed
+     위치·opacity/pointer-events 전환·스크롤 표시 로직(.is-visible/.is-colliding/.is-hidden)이
+     버튼이 아니라 이 둘을 감싸는 wrap에 있어야 함(예전엔 .faq-float-btn 자체에 있었음) —
+     script.js도 이제 #faqFloatBtn 대신 #faqFloatWrap을 대상으로 이 클래스들을 토글하도록 맞춰
+     고침. ✕는 버튼의 실제 사각형(faqFloatBtnCollidesWithText가 샘플링하는 4개 지점) 바깥으로
+     반쯤 튀어나오게 배치해서, 충돌 감지 로직이 이 배지 자체를 "버튼 위의 글자"로 오인해
+     엉뚱하게 흐려지는 오탐을 피함 */
+  .faq-float-wrap{
     position:fixed; right:16px; bottom:calc(84px + env(safe-area-inset-bottom, 0px));
-    display:inline-flex; align-items:center; gap:6px; min-height:44px;
-    background:var(--teal); color:var(--on-accent); border:none; border-radius:999px;
-    padding:10px 16px; font-family:inherit; font-size:var(--fs-small); font-weight:700; cursor:pointer;
-    box-shadow:0 6px 16px rgba(var(--teal-rgb),0.28); z-index:39;
-    opacity:0; pointer-events:none; transform:translateY(8px);
+    z-index:39; opacity:0; pointer-events:none; transform:translateY(8px);
     transition:transform 0.15s ease, opacity 0.15s ease;
   }
-  .faq-float-btn.is-visible{ opacity:1; pointer-events:auto; transform:translateY(0); }
+  .faq-float-wrap.is-visible{ opacity:1; pointer-events:auto; transform:translateY(0); }
   /* script.js의 faqFloatBtnCollidesWithText()가 이 버튼 자리에 실제 글자가 있는 요소를
      발견하면 붙이는 클래스 — 스크롤이 멈춘 위치에서도 뒤 텍스트를 가리지 않도록 그 순간만
      흐리게(완전히 사라지지 않아 "버튼이 있었는데 갑자기 없어짐" 혼란은 피함) */
-  .faq-float-btn.is-colliding{ opacity:0.16; pointer-events:none; }
+  .faq-float-wrap.is-colliding{ opacity:0.16; pointer-events:none; }
+  .faq-float-wrap.is-hidden{ display:none; }
+  .faq-float-btn{
+    position:relative; display:inline-flex; align-items:center; gap:6px; min-height:44px;
+    background:var(--teal); color:var(--on-accent); border:none; border-radius:999px;
+    padding:10px 16px; font-family:inherit; font-size:var(--fs-small); font-weight:700; cursor:pointer;
+    box-shadow:0 6px 16px rgba(var(--teal-rgb),0.28);
+  }
   .faq-float-btn:active{ transform:scale(0.96); }
-  .faq-float-btn.is-hidden{ display:none; }
+  .faq-float-close{
+    position:absolute; top:-8px; right:-8px; width:22px; height:22px; min-width:22px;
+    display:flex; align-items:center; justify-content:center; border-radius:50%;
+    background:var(--card); border:1px solid var(--border); color:var(--text-muted);
+    font-size:12px; line-height:1; cursor:pointer; padding:0; box-shadow:0 2px 6px rgba(0,0,0,0.15);
+  }
+  .faq-float-close:active{ transform:scale(0.9); }
   .faq-overlay-close-btn{ display:none; }
   /* "궁금해요" 버튼으로 도움말을 열 때, go('faq')로 실제 탭 전환을 하면 사용자가 하던 화면(입력값,
      스크롤 위치)에서 완전히 벗어나게 되고 "뒤로 가면 다시 보기 힘들다"는 피드백이 있었음 — 그래서
@@ -1854,6 +1903,9 @@
     .cta-btn{ padding:15px; }
     .million-unit{ font-size:var(--fs-small); padding-right:4px; }
     .million-input-wrap{ padding:6px 6px 6px 14px; gap:6px; }
+    .million-input-wrap-secondary{ padding:6px 6px 6px 14px; gap:6px; }
+    .million-input-wrap.has-voice-btn, .million-input-wrap-secondary.has-voice-btn{ padding-right:36px; }
+    .amount-voice-btn{ width:28px; height:28px; min-width:28px; font-size:13px; right:4px; }
     .unit-full{ display:none; }
     .unit-short{ display:inline; }
     .lightning-ball{ width:38px; height:38px; font-size:16px; }
@@ -2063,7 +2115,7 @@
 
     /* 화면 전용 크롬: 상단 nav(로고/탭/설정), 하단 sticky 결과 배지, 우하단 FAQ 플로팅 버튼,
        광고 영역, 공지 배너, 잭팟 퀵필 스파클 이펙트 — 종이에는 의미 없는 인터랙션 요소들 */
-    .nav, .site-footer, #sticky-result-badge, .faq-float-btn, .ad-slot,
+    .nav, .site-footer, #sticky-result-badge, .faq-float-wrap, .ad-slot,
     .site-notice, .quickfill-spark, .milestone-burst{
       display:none !important;
     }

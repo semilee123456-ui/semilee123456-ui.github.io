@@ -1692,3 +1692,188 @@ Artifact로 publish).
 되돌린 중간 커밋"이 rebase 충돌을 일으키는 경우, 안전하게 HEAD 쪽(더 최근 로컬 이력)을 채택하면
 되는 경우가 많음 — 다만 사용자가 GitHub 웹 UI에서 Claude가 만든 적 없는 내용을 직접 편집해
 올렸을 가능성이 있으면 그 경우는 내용을 먼저 확인할 것(무조건 HEAD 채택 금지).
+
+### 2026-07-27 (열세 번째 세션)
+
+#### 신규 기능: 홈 화면 "자주 묻는 질문" 미리보기 + 닫기(✕)
+사용자 요청: "검색을 못 하겠다"는 사람들을 위해 FAQ 탭까지 안 가도 홈 화면을 스크롤만 내리면
+질문/답이 바로 보이게 해달라, 거슬리는 사람을 위해 ✕로 없앨 수 있게도 해달라(같은 요청이 이전
+세션 대화에도 있었는데 실제 커밋까지는 안 된 상태였음 — grep으로 재확인 후 진행).
+
+- **위치**: 홈 화면(`#view-home`) 맨 아래, "✓ 왜 믿을 수 있나요?" 패널 바로 다음(`index.html`
+  약 892~925줄 근처). 상단 🔍 궁금해요 플로팅 버튼/`explore-section` 카드는 눌러야 FAQ 탭으로
+  이동하는 "링크"일 뿐이라, 클릭 없이 실제 내용이 보이는 이 섹션과는 역할이 다름(둘 다 유지).
+- **콘텐츠 재사용**: 질문 4개(`faq.q1`/`faq.q9`/`faq.q12`/`faq.q15`, 세금·환급기한·구매처·
+  시민권)는 FAQ 탭(`#view-faq`)과 동일한 `data-i18n`(-html) 키를 그대로 재사용 — `data-basis`
+  (세금 계산 기준별) 제한이 없는 질문만 골라서 모든 기준에서 동일하게 보임. 덕분에 22개 언어
+  번역이 자동으로 맞고, 새로 번역해야 했던 건 CTA 버튼 문구 하나(`homeFaq.moreLabel`, "더 많은
+  질문 보기 →")뿐 — `i18n-source/translations.json`에 추가 후 `node scripts/build-i18n.js`로
+  22개 `i18n/*.json` 재생성.
+- **닫기(✕)**: `dismissHomeFaqPreview()`가 `localStorage`(`chamtaxHomeFaqPreviewDismissed`)에
+  저장 — 세션이 아니라 영구 dismiss라 재방문해도 계속 숨겨짐. `initHomeFaqPreview()`가
+  `DOMContentLoaded`에서 저장된 값을 확인해 초기 표시 여부를 정함.
+- **실제 버그 하나 발견·수정(구현 중)**: 새 섹션에 스크롤 시 떠오르는 `reveal-up` 애니메이션을
+  적용하려고 클래스를 마크업에 직접 `class="home-faq-preview reveal-up"`로 박아 넣었는데,
+  `setupRevealAnimation()`(script.js)의 로직이 "이미 `reveal-up` 클래스가 있으면 건너뛴다"는
+  전제로 짜여있어서(관찰자가 이 클래스를 나중에 직접 붙이는 방식) 오히려 **영원히 관찰 대상에서
+  제외되어 opacity:0으로 안 보이는 상태로 고정**되는 버그가 났었음. 원인 두 가지 다 고침: ①
+  `setupRevealAnimation()`의 대상 셀렉터(`:scope > .explore-section` 등)에
+  `:scope > .home-faq-preview` 추가 ② 마크업에서 `reveal-up` 클래스 제거(JS가 알아서 붙이게
+  둠, `.explore-section` 등 기존 요소와 동일한 패턴). Playwright로 opacity/is-in 클래스를
+  직접 찍어봐서 고치기 전/후 차이를 실제로 확인함 — 정적 코드만 봤으면 놓쳤을 것.
+- **검증**: Playwright로 (1) 390px 뷰포트 스크린샷 2장(접힘/펼침) (2) ✕ 클릭 시 즉시 숨김 +
+  새로고침 후에도 안 보임(localStorage 반영) 확인. 회귀 테스트 11개
+  (`home_audit`/`faq_audit`/`i18n_coverage_audit`/`i18n_attr_lint`/`broken_link_audit`/
+  `lang_leak_audit`/`console_error_audit`/`wrap_audit`/`map_scroll_audit`/`nav_slider_audit`/
+  `audit_odds_compare`) 전부 `ISSUES: 0`(단, `i18n_coverage_audit`의 `a11y.voiceSearch` 누락
+  1건은 이 세션 이전부터 있던 무관한 기존 이슈 — `git stash`로 변경 전 상태에서 재확인함).
+- **`git push` 실제로 시도해봄 — 이 세션 유형도 여전히 403으로 막혀있음 확인**: 위
+  "GitHub push가 항상 막혀있음" 섹션의 제약이 이 세션 유형에도 그대로 적용됨(재진단 불필요,
+  다음 세션도 굳이 다시 테스트할 필요 없음). 로컬 커밋 후 SendUserFile로 zip 전달 → 사용자가
+  GitHub 웹 UI로 업로드하는 기존 방식 그대로 따름. (참고: 이 세션 시작 시점에 `main`과 이
+  작업 브랜치가 이미 완전히 동일한 커밋(5943113)이었음을 확인했음 — 사용자가 업로드할 때
+  `main`에 올리면 바로 반영됨.)
+
+#### 같은 세션, 위 홈 FAQ 미리보기를 되돌리고 대신 "궁금해요" 버튼 자체에 ✕ 추가
+사용자가 스크린샷(🔍 궁금해요 버튼)을 다시 보여주며 원래 의도를 명확히 함 — "FAQ 목록을
+궁금해요랑 같이 묶어서 보여주고 싶었던 것"이었고, 위에서 만든 홈 화면 하단의 별도 정적
+박스는 원하는 형태가 아니었음. 논의 끝에: 그 정적 박스는 완전히 제거하고, 대신 기존 🔍
+궁금해요 플로팅 버튼(모든 탭에서 뜨는 검색 진입점)은 그대로 유지하되 **그 버튼 자체도
+거슬리면 없앨 수 있게 ✕를 추가**하는 방향으로 정리함(리스트를 정적으로 항상 보여주는 대신,
+버튼을 통한 기존 진입 방식 자체를 사용자가 완전히 끌 수 있게 하는 쪽).
+
+- **되돌리기**: `index.html`/`styles.css`/`script.js`/`i18n-source/translations.json`(및
+  `i18n/*.json` 재생성)에서 위 항목의 변경분을 전부 제거 — `git diff <직전 커밋 이전 베이스>
+  -- index.html styles.css script.js i18n-source/translations.json i18n/`로 완전히
+  바이트 단위 원상복구됐는지 확인함.
+- **"궁금해요" 버튼 ✕ 추가**(`index.html` 2085줄 근처): 기존 `<button class="faq-float-btn"
+  id="faqFloatBtn">`을 `<div class="faq-float-wrap" id="faqFloatWrap">`로 감싸고, 그 안에
+  작은 원형 ✕ 배지(`#faqFloatClose`, `dismissFaqFloatBtn(event)`)를 형제로 추가. 닫으면
+  `localStorage`(`chamtaxFaqFloatBtnDismissed`)에 저장되어 다음 방문에도 계속 안 보임(홈 FAQ
+  미리보기 때 쓴 것과 동일한 영구 dismiss 패턴).
+- **리팩터 필요했던 이유**: 이 버튼은 스크롤 위치·"밑에 깔린 텍스트와 겹치는지"에 따라
+  `is-visible`/`is-colliding`/`is-hidden` 클래스로 opacity·pointer-events가 계속 바뀌는
+  구조라(`updateFaqFloatBtnVisibility`/`faqFloatBtnCollidesWithText`, script.js), 이 상태를
+  버튼과 ✕ 배지 **둘 다** 같이 따라가게 하려면 `position:fixed`+가시성 클래스를 버튼이 아니라
+  이 둘을 감싸는 wrap으로 옮겨야 했음. `#faqFloatBtn`을 대상으로 하던 곳(view 전환 시 숨김
+  로직, 스크롤 가시성 로직, 충돌 감지에 넘기는 요소)을 전부 `#faqFloatWrap` 기준으로 바꿈.
+- **실제로 고친 회귀 하나**: `@media print` 규칙(`styles.css` 약 2083줄)이 인쇄 시 화면 전용
+  요소를 숨기는 선택자 목록에 `.faq-float-btn`을 쓰고 있었는데, 이제 `position:fixed`가
+  버튼이 아니라 wrap에 있으므로 그대로 두면 **인쇄 시 버튼은 숨어도 fixed된 wrap(과 그 안의
+  ✕ 배지)이 화면에 그대로 남는** 회귀가 생길 뻔했음 — 선택자를 `.faq-float-wrap`으로 같이
+  수정.
+- **오탐 아닌지 직접 확인한 것**: ✕ 배지가 버튼의 실제 사각형 경계에 걸치지 않게(위쪽·오른쪽으로
+  살짝 튀어나오게) 배치해서, `faqFloatBtnCollidesWithText`의 샘플링 지점(버튼 rect의 상하좌우
+  변 중앙)에 ✕ 배지 자신이 잡혀 스스로를 "텍스트와 충돌"로 오인해 흐려지는 일이 없는지
+  Playwright로 여러 스크롤 위치에서 `pointer-events`/`opacity` 값을 직접 찍어 확인함(정상).
+  ✕를 실제로 클릭해도 부모 버튼의 `onclick`(FAQ 오버레이 열기)이 같이 발동하지 않는지도
+  `event.stopPropagation()` 넣고 실제 클릭으로 확인.
+- **검증**: 회귀 테스트 11개 전부 `ISSUES: 0`(i18n_coverage_audit는 원래 상태와 동일하게
+  560개 키·기존 무관 이슈 1건만). Playwright로 (1) 스크롤 후 버튼+✕ 배지 노출 (2) ✕ 클릭 시
+  즉시 숨김+FAQ 오버레이 안 열림 (3) 새로고침 후에도 계속 숨김(localStorage) 확인.
+
+#### 같은 세션, 홈 화면 금액 입력칸에 음성 인식 + Enter 지원, 잭팟 퀵필이 연금액 칸도 채우게 함
+사용자가 "348 Million USD" 입력칸 스크린샷을 보여주며 3가지 요청: ① 이 칸에도 음성으로 금액을
+말할 수 있게 ② 숫자 입력 후 Enter를 누를 수 있게(엔터가 없어서 불편함) ③ 파워볼/메가밀리언즈
+퀵필 버튼을 누르면 연금액(발표액) 탭의 값도 같이 바뀌게.
+
+- **① 음성 인식**(`#homeAmountVoiceBtn`/`#homeAnnouncedVoiceBtn`, `startAmountVoiceInput()`):
+  FAQ 검색 음성 버튼(`SpeechRecognitionCtor`/`FAQ_VOICE_LANG_MAP`)을 그대로 재사용하되, 인식된
+  문장을 그대로 넣는 대신 숫자만 뽑아서(`.replace(/[^0-9.]/g, '')`, `parseMillionsInput`과 같은
+  필터) 입력칸에 넣음 — "삼백사십팔" 같은 말은 브라우저 음성 엔진이 자체적으로 "348"처럼
+  숫자로 정규화해주는 경우가 대부분이라 대부분 언어에서 그대로 작동함. Playwright로 실제
+  `webkitSpeechRecognition`을 가짜 구현체로 바꿔치기해서 `onresult`를 직접 발생시켜 입력값·
+  슬라이더 갱신·인식 종료까지 검증(진짜 마이크/네트워크 없이도 로직 자체는 확인 가능).
+- **② Enter 지원**: `oninput`으로 이미 매 키 입력마다 실시간 계산되고 있어서 Enter가 계산을
+  "트리거"할 필요는 없었음 — 진짜 문제는 `inputmode="decimal"` 입력칸이 일부 모바일 브라우저에서
+  가상 키패드에 Enter/완료 키 자체가 안 뜨는 것으로 추정(사용자가 "엔터가 없다"고 명시). 두 칸
+  모두 `enterkeyhint="done"` 속성을 추가해 모바일 키보드에 "완료" 키가 뜨도록 힌트를 주고,
+  `onkeydown`으로 Enter 시 `this.blur()`(키보드 닫기)를 실행함.
+- **③ 퀵필→연금액 동기화** (`fillHomeAmountFromJackpot`): 이미 `JACKPOT_DATA[game].amountUsd`
+  (연금 발표 총액)를 갖고 있었으므로, 일시불 칸(`setHomeLumpAmountUsd`)뿐 아니라
+  `homeAnnouncedInput.value`도 같은 값(백만 달러 단위)으로 채움 — 이제 퀵필 버튼을 누른 뒤
+  "연금액" 탭으로 바꿔도 방금 고른 잭팟과 무관한 값이 안 보임.
+- **실제로 잡은 회귀(구현 중 발견)**: 마이크 버튼을 처음엔 `.million-unit` 옆에 flex 형제로
+  넣었는데, Playwright로 240px 뷰포트에서 실제 렌더 폭을 재보니 버튼(40px)+단위 라벨(~56px)이
+  전체 폭(176px)의 절반 넘게 먹어서 숫자 입력칸이 44px로 줄어들어 "예: 100" 조차 안 보이는
+  문제가 있었음(자동 오버플로우 테스트는 안 잡음 — `<input>` 내부 텍스트 잘림은 레이아웃
+  오버플로우가 아니라서 `wrap_audit`/`home_audit` 등으로는 검출 안 됨, 눈으로 직접 스크린샷
+  찍어서 발견). **해결**: 마이크를 flex 흐름에서 완전히 빼서 테두리 모서리에 겹치는 절대위치
+  배지로 바꿈(`.amount-voice-btn`, 위 "궁금해요" ✕ 배지와 같은 패턴) — 숫자·단위 라벨의 flex
+  폭에 전혀 영향 안 줌. 배지를 위한 오른쪽 여백(`padding-right`)은 실제 마이크가 있는 홈 화면
+  두 칸에만 `.has-voice-btn` 클래스로 한정 적용 — `.million-input-wrap`을 공유하는 비교(compare)
+  탭의 `#amountInput`(마이크 없음)까지 이유 없이 좁아지는 회귀를 막기 위함(처음엔 안 나눠서
+  실제로 그 회귀가 생겼었음, Playwright로 세 번째 `.million-input-wrap` 폭을 따로 재서 확인
+  후 수정).
+- **새 번역 키**: `a11y.voiceAmount`(마이크 버튼 aria-label) 22개 언어 전부 채움 —
+  참고로 FAQ 검색 음성 버튼의 `a11y.voiceSearch`는 애초에 번역 파일에 없는 상태로 방치돼있는
+  것(i18n_coverage_audit가 계속 잡아내는 기존 이슈)이었는데, 이번에 새로 만든 키는 그 실수를
+  반복하지 않고 처음부터 22개 언어 다 채워 넣음.
+- **검증**: 회귀 테스트 11개 전부 `ISSUES: 0`. Playwright로 (1) 퀵필 클릭 시 일시불+연금액
+  동시 반영 (2) Enter 키 시 포커스 해제(키보드 닫힘) (3) 가짜 음성 인식 결과로 입력값·슬라이더
+  갱신 (4) 240px/390px 스크린샷으로 마이크 배지가 숫자·단위 라벨과 안 겹치고 3~4자리 숫자도
+  잘리지 않고 보이는지 (5) 비교 탭 입력칸 폭이 그대로 유지되는지 확인.
+
+#### 같은 세션, 위에서 연금액 칸도 채우게 하면서 생긴 후속 버그: "연금액 탭에서 퀵필 누르면 일시불로 튕겨나감"
+사용자가 바로 지적함 — `setHomeLumpAmountUsd()`가 예전부터 퀵필 클릭 시 무조건
+`switchAmountTab('lump')`를 호출하고 있었음(당시엔 일시불 칸만 채웠으니 안 보이면 의미
+없어서 당연한 설계였음). 그런데 바로 위 항목에서 연금액 칸도 같이 채우게 바꾼 뒤에도 이
+강제 전환 로직은 그대로 남아있어서, 사용자가 "연금액" 탭을 보고 있다가 퀵필을 눌러도 방금
+채워진 연금액 값은 못 보고 다시 "일시불" 탭으로 튕겨나가는 모순이 생김.
+
+- **수정**: `getActiveAmountTab()` 신규 함수로 현재 열려있는 탭을 `.amount-tab-btn.active`에서
+  읽고, `setHomeLumpAmountUsd(cashUsd, btn, exactCalc, keepAnnouncedTab)`에 4번째 인자
+  추가 — `keepAnnouncedTab`이 true이고 현재 탭이 "연금액"이면 강제 전환을 건너뜀.
+  `fillHomeAmountFromJackpot`만 이 옵션을 true로 넘김(연금액 칸도 같이 채워주므로 그대로
+  둬도 값이 맞게 보임). **연금액을 안 채워주는 랭킹 CTA(`fillHomeAmountFromRanking`)는 이
+  옵션 없이 그대로 둬서 여전히 항상 "일시불"로 전환됨** — 안 그러면 그 탭엔 무관한 값만
+  남아있게 됨. "희망액" 탭에서 퀵필을 눌렀을 때도 기존처럼 "일시불"로 전환되는 게 맞음(그
+  탭도 채워주는 값이 없으므로).
+- **검증**: Playwright로 3개 시나리오 실제 클릭 재현 — ① 연금액 탭에서 파워볼 퀵필 → 연금액
+  탭 그대로 유지+양쪽 필드 값 정확(348/600) ② 일시불 탭에서 메가밀리언즈 퀵필 → 일시불 탭
+  그대로 ③ 희망액 탭에서 파워볼 퀵필 → 일시불로 전환(의도된 기존 동작). 회귀 테스트 11개
+  전부 `ISSUES: 0` 재확인.
+
+#### 같은 세션, 배경색 명암비 + 데스크톱 레이아웃 폭 수정 (사용자가 "네가 말한 거 전부 수정해줘"로 승인)
+사용자가 "카드 색이 페이지 배경이랑 비슷해서 집중이 안 된다" + "모니터에 따라 크기가 이상하게
+나온다"고 지적 → 데스크톱 1440px로 실제 렌더링해서 확인해보니 둘 다 진짜 문제였음:
+① `--body-bg`(#F0ECE0)/`--bg`(#FAF6EC)/`--card`(#FFFEF9) 3단이 거의 같은 톤이라 큰 화면에서
+`.page`가 body 배경과 거의 안 갈라져 보임(WCAG 비텍스트 대비 계산해보니 실제로 1.05~1.11:1
+수준 — 거의 차이 없음) ② `.page{max-width:1140px}`라서 데스크톱에서 모바일용 버튼/입력창이
+그 폭까지 그냥 늘어나 한 줄이 화면 절반을 가로지르는 것처럼 부자연스러워 보임.
+
+**사용자에게 "커스터마이징 기능"을 만들어주는 대신 기본값 자체를 고치자고 먼저 제안하고 동의를
+받은 뒤 진행**(사용자가 원한 건 "왜 이렇게 보이는지"에 대한 근본 해결이었지, 색/크기를 직접
+조절하는 UI 자체가 목적은 아니었다고 판단 — 이 사이트는 22개 언어 레이아웃이 이미 예민해서
+사용자별 임의 커스텀을 허용하면 조합 폭발로 새 버그 유형이 계속 생길 위험이 큼).
+
+- **배경 3단 명암비 확대** (`--body-bg`/`--bg`/`--card`, 라이트+다크 양쪽): 여러 후보 팔레트를
+  실제로 나란히 렌더링해서 비교한 뒤 골랐음(정적 HTML 스와치 + Playwright 스크린샷 — 카드 하나
+  고치고 매번 사이트 전체를 다시 스크린샷하는 대신 빠르게 반복 비교). "갈색 비선호" 리서치
+  결과는 유지해야 해서, 채도를 올리는 대신 명도 단차만 벌림 — 후보 중 채도가 높아 카키/탄
+  계열로 보이던 안은 제외하고 "선명히 구분되면서도 여전히 밝고 따뜻한" 안으로 확정.
+  - 라이트: body-bg `#F0ECE0→#D9CDA8`, bg `#FAF6EC→#F7F1E0`, card `#FFFEF9→#FFFFFF`(순백)
+  - 다크: body-bg `#161412→#0C0A09`, bg `#1B1917→#1E1A16`, card `#242220→#39332B`
+  - 카드가 순백으로 바뀌면서, 카드색과 정확히 맞춰뒀던 하드코딩 그라데이션 2곳
+    (`#introPersonaAccordion`, `.result-hero`)과 `--grad-soft`/`--grad-amber` 변수의 끝
+    지점도 같이 `#FFFFFF`로 맞춤 — 안 맞추면 그라데이션 끝과 카드 배경 사이에 눈에 띄는 이음매가
+    생김. 다크모드는 이 두 요소가 이미 `var(--grad-soft)`로 자동 대응되고 있어서 손 안 댐.
+  - 고대비 모드(`--contrast="high"`) 주석에 적혀있던 WCAG 비율도 새 `--bg` 기준으로 재계산해서
+    갱신(라이트 text-muted 7.31→10.67:1, border 1.15→3.14:1 / 다크 text-muted 7.58→12.04:1,
+    border 1.53→3.77:1 — 전부 3:1 이상 유지 확인).
+  - **⚠️ 5개 서브페이지 동기화 필수**(파일 최상단에 이미 경고 주석이 있던 부분 — 이 팔레트가
+    `korea-resident-us-lottery-tax.html`/`megamillions-tax.html`/`powerball-tax.html`/
+    `us-lottery-take-home.html`/`us-lottery-tax-rate.html` 5개 파일에 각자 `:root`로 중복
+    정의돼있음): `--bg`/`--card`(라이트+다크) 전부 동일하게 동기화함. 이 5개 페이지는
+    `--body-bg`/`.page` 구조 자체가 없어서(이미 `.wrap{max-width:640px}`로 충분히 좁은 레이아웃)
+    폭 조정은 불필요했음.
+- **데스크톱 폭 축소** (`.page{max-width:1140px → 640px}`): 위 5개 서브페이지가 이미
+  `max-width:640px`를 쓰고 있어서 우연히 같은 값으로 맞아떨어짐(이 사이트의 기존 "적당한
+  읽기 폭" 관례와 일치, 새로 발명한 숫자가 아님). 640px면 모바일에서 이미 검증된 explore-grid
+  (3열)/trust-grid(4열) 등이 큰 폰 정도의 폭으로 자연스럽게 맞음 — 데스크톱 전용 레이아웃을
+  새로 만들 필요 없었음. 회귀 테스트가 다루는 240~430px보다 더 넓게만 만드는 것이라 줄바꿈
+  쪽 새 위험도 없음(더 좁게 갈 때만 wrap 테스트 커버리지 밖 위험이 있음).
+- **검증**: Playwright로 1440px 데스크톱 스크린샷(라이트+다크) 찍어서 전/후 비교 — 전에는
+  카드/배경 경계가 거의 안 보이고 버튼 줄이 화면 절반을 가로질렀는데, 수정 후엔 3단이 뚜렷이
+  구분되고 콘텐츠 폭도 자연스러운 열으로 줄어듦. 5개 서브페이지 중 1곳도 렌더링해서 색 동기화
+  확인. 회귀 테스트 11개 전부 `ISSUES: 0`(240~430px 좁은 화면은 손 안 댄 부분이라 그대로 통과).
