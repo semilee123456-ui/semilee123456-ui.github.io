@@ -1951,3 +1951,72 @@ fr,tl — 한국 거주 외국인 인구 비중 기준)에 맞춰 재정렬함.
   그대로 적용 — 이번에도 재진단만 하고 우회 방법 새로 찾지 않음). 로컬 커밋 후 `styles.css`
   파일 하나만 SendUserFile로 전달, 사용자가 GitHub 웹 UI에서 `main` 브랜치에 직접 덮어쓰기로
   반영해야 실제 라이브 사이트(GitHub Pages)에 배포됨.
+
+#### 같은 세션 이어서 — 홈 화면 "연금액" 탭에도 일시불 탭과 똑같은 금액 슬라이더 추가
+사용자가 일시불 탭의 로그 스케일 슬라이더(2천만~10억 달러 눈금) 스크린샷을 보여주며 "연금액
+밑에도 이렇게 넣을까?"라고 물어봄 — 확인해보니 연금액 탭(`#amountTabAnnounced`)은 텍스트
+입력칸+환산 안내 문구만 있고 슬라이더가 없었음(일시불 탭만 `#homeAmountSlider` 보유).
+
+- **구조**: `index.html`의 `#amountTabAnnounced` 안에 `#homeAnnouncedSlider`(일시불 슬라이더와
+  동일한 마크업 패턴 — `min/max/step/value/data-usd-min/data-usd-max` 그대로 복사) 추가.
+- **JS(`script.js`)**: 기존 `onHomeAnnouncedTyped()`(타이핑 시 연금액→일시불 58% 환산 후 계산
+  갱신하던 로직)를 `applyHomeAnnouncedMillions(announcedMillions)`(공통 처리: 일시불 환산·
+  계산 갱신·환산 안내 문구)로 분리하고, 그 위에 얇은 래퍼 두 개를 둠:
+  - `onHomeAnnouncedTyped()`: 텍스트 타이핑 시 — 슬라이더 위치를 그 값에 맞게 재계산
+    (`setSliderMillions`) 후 공통 처리 호출.
+  - `onHomeAnnouncedSliderMoved()`(신규, 일시불의 `onHomeSliderMoved()`와 대응): 슬라이더
+    드래그 시 — 슬라이더는 이미 그 위치에 있으므로 텍스트칸만 채운 뒤 공통 처리 호출.
+  - `fillHomeAmountFromJackpot()`(퀵필 버튼)과 `updateHomeCalc()`(언어 전환 시 눈금 라벨
+    갱신)도 새 슬라이더를 같이 챙기도록 수정. `switchAmountTab()`에도 "연금액" 탭으로 전환된
+    직후 눈금을 다시 그리는 코드 추가 — 탭이 `display:none`인 동안엔 폭이 0이라
+    `renderSliderTicks()`가 조용히 눈금을 못 그린 채 넘어가기 때문(탭이 보이게 된 시점에야
+    실제 폭을 잴 수 있음).
+- **검증**: Playwright로 (1) 연금액 탭에 슬라이더가 실제로 존재 (2) "300" 타이핑 →
+  슬라이더가 그 값(300M)에 맞는 위치로 이동+일시불 칸 자동 174(=300×58%)+안내 문구 정확
+  (3) 슬라이더를 직접 드래그(값 700) → 텍스트칸 410M로 자동 채워짐+일시불 칸 238M로
+  같이 갱신 — 양방향 동기화 확인. 375px/420px 모바일 스크린샷으로 레이아웃도 확인(잘림·
+  겹침 없음). 회귀 테스트 11개 전부 `ISSUES: 0`(`a11y.voiceSearch` 1건은 여전히 무관한
+  기존 이슈).
+- 새로 추가한 UI 텍스트/번역 키는 없음(기존 슬라이더 눈금 라벨 키를 그대로 재사용) — i18n
+  작업 불필요.
+
+#### 같은 세션 이어서 — "한국에 사는 외국인이에요" 드롭다운에서 이동한 랜딩페이지 "3초 요약" 표가
+#### 우즈베크어·미얀마어·인도네시아어 등에서 글자가 한 줄에 한 단어씩만 나오는 심각한 레이아웃
+#### 깨짐 발견·수정
+사용자가 카카오톡 인앱 브라우저에서 캡처한 스크린샷 4장(우즈베크어/미얀마어/인도네시아어 등)을
+보여줌 — "3초 요약" 박스의 질문(왼쪽)·답변(오른쪽, 굵게) 한 줄 표 형태가, 답변 쪽이 세로로
+한 단어씩 쌓이는 형태로 완전히 깨져 있었음.
+
+- **원인**: `.quick-answer .row{display:flex; justify-content:space-between}` 구조에서
+  왼쪽 라벨(`<span>`)에 `flex-shrink:0`(줄어들지 않음)을 주고, 오른쪽 답변(`<b>`)에는
+  `flex:1; min-width:0`(남는 공간을 차지하되 얼마든지 좁아질 수 있음)을 준 게 원인. 한국어
+  원문은 라벨이 짧아서("1단계: 미국에서") 문제가 안 됐는데, 번역이 길어지는 언어(우즈베크어
+  "Ikki marta soliq to'lamaslik uchun" 등)는 라벨이 줄어들지 않고 자기 폭을 그대로 차지해버려서
+  답변 쪽 공간이 거의 안 남고, `min-width:0` 때문에 그 좁은 폭까지 강제로 줄어들어 단어 하나도
+  못 들어갈 정도로 좁아진 것 — 결과적으로 단어마다 줄바꿈됨. `.quick-answer .row`를 재사용하는
+  랜딩페이지 33개(언어별 페이지 대부분 + `biggest-lottery-jackpots-after-tax.html` 계열
+  등) 전부에서 동일한 CSS가 파일마다 중복 정의돼있어서 다 같이 영향받음(정확히는 아랍어·
+  우르두어는 RTL이라 `text-align:left`+`unicode-bidi:plaintext`가 추가된 변형, 6개 파일은
+  `overflow-wrap`/`word-break` 없는 더 단순한 변형이었지만 핵심 버그(flex-shrink:0 vs
+  flex:1/min-width:0)는 33개 전부 동일).
+- **수정**: flex 대신 `display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr)`로
+  바꿔서 라벨·답변이 항상 정확히 50%씩 나눠 갖게 함(번역 길이와 무관하게 한쪽이 다른 쪽을
+  밀어내는 게 원천적으로 불가능해짐) — `flex-shrink:0`/`min-width:0`/`flex:1`은 grid에서
+  불필요해져서 제거. RTL 변형(아랍어/우르두어)은 `text-align:left`+`unicode-bidi:plaintext`
+  유지, 단순 변형 6개는 다른 27개와 같은 `overflow-wrap:anywhere; word-break:break-word;`를
+  추가해서 33개 전부 동일한 안전장치를 갖추게 통일함. 한국어처럼 라벨이 짧은 경우는 답변 쪽이
+  이전엔 한 줄(약 65~70% 폭)이었다가 이제 정확히 50% 폭이라 2~3줄로 나뉘는 정도의 사소한
+  변화만 있고(깨짐 아님), 라벨이 긴 경우는 완전히 정상적으로 여러 단어가 한 줄에 들어가는
+  형태로 고쳐짐.
+- **검증**: Playwright로 390px 폭 기준 6개 파일(한국어/우즈베크어/미얀마어/인도네시아어/
+  아랍어(RTL)/`korean_abroad_us_lottery_tax_ko.html`(단순 변형))의 `.quick-answer` 박스를
+  수정 전/후 스크린샷으로 직접 비교 — 전부 단어별 줄바꿈 없이 정상 렌더링 확인.
+  `tests/broken_link_audit.js`(44개 파일 전수 검사)로 이번 수정이 다른 링크·구조를
+  깨뜨리지 않았는지 확인, `ISSUES: 0`. 이 랜딩페이지들은 정적 HTML이라 나머지 회귀
+  테스트(JS 앱 대상)는 해당 없음.
+- **영향받은 파일 33개**: 언어별 페이지 31개(아랍어/벵골어/캄보디아어/중국어(2개: 자체+
+  해외거주용)/프랑스어/힌디어/인도네시아어/일본어/카자흐어/한국(자체+해외거주용 2개)/
+  키르기스어/라오어/몽골어/미얀마어/네팔어/필리핀어/포르투갈어/러시아어/스페인어/스리랑카어
+  (신할라)/대만·홍콩(번체중문)/태국어/티모르어(테툰어)/우크라이나어/우르두어/우즈베크어/
+  베트남어) + `korea-resident-us-lottery-tax.html`/`biggest-lottery-jackpots-after-tax.html`/
+  `biggest_lottery_jackpots_after_tax_zh.html` 3개.

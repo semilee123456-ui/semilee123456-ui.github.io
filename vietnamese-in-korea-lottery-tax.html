@@ -153,10 +153,10 @@
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
   .quick-answer{ background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px; padding:20px; margin-bottom:24px; }
   .quick-answer p.label{ font-size:var(--fs-small); font-weight:700; color:var(--teal); margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em; }
-  .quick-answer .row{ display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px; }
+  .quick-answer .row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:6px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px; }
   .quick-answer .row:last-child{ border-bottom:none; }
-  .quick-answer .row span{ flex-shrink:0; overflow-wrap:anywhere; word-break:break-word; }
-  .quick-answer .row b{ color:var(--text-dark); text-align:right; min-width:0; flex:1; overflow-wrap:anywhere; word-break:break-word; }
+  .quick-answer .row span{ overflow-wrap:anywhere; word-break:break-word; }
+  .quick-answer .row b{ color:var(--text-dark); text-align:right; overflow-wrap:anywhere; word-break:break-word; }
   h2{ font-size:var(--fs-h2); margin:36px 0 14px; }
   p{ font-size:var(--fs-body); margin:0 0 16px; }
   ul{ padding-left:20px; margin:0 0 14px; }
