@@ -13728,5 +13728,30 @@
   "hi": "आवाज़ से राशि दर्ज करें",
   "fr": "Saisir le montant à la voix",
   "tl": "Magsalita ng halaga"
+ },
+ "a11y.voiceSearch": {
+  "ko": "음성으로 검색",
+  "en": "Voice search",
+  "zh": "语音搜索",
+  "vi": "Tìm kiếm bằng giọng nói",
+  "th": "ค้นหาด้วยเสียง",
+  "ru": "Голосовой поиск",
+  "km": "ស្វែងរកដោយសំឡេង",
+  "ne": "आवाजबाट खोज्नुहोस्",
+  "id": "Cari dengan suara",
+  "my": "အသံဖြင့် ရှာဖွေရန်",
+  "si": "හඬෙන් සොයන්න",
+  "uz": "Ovoz orqali qidiruv",
+  "mn": "Дуугаар хайх",
+  "kk": "Дауыспен іздеу",
+  "ky": "Үн менен издөө",
+  "ur": "آواز سے تلاش کریں",
+  "bn": "কণ্ঠস্বর দিয়ে খুঁজুন",
+  "lo": "ຄົ້ນຫາດ້ວຍສຽງ",
+  "ja": "音声で検索",
+  "ar": "البحث الصوتي",
+  "hi": "आवाज़ से खोजें",
+  "fr": "Recherche vocale",
+  "tl": "Maghanap gamit ang boses"
  }
 }

@@ -175,13 +175,13 @@
 
   /* 2026-07-27: 1140px는 이 사이트(모바일 전용으로 설계된 계산기 UI)에는 너무 넓어서, 큰
      모니터에서는 버튼 한 줄·입력칸 한 줄이 화면 절반을 가로지르듯 늘어나 부자연스럽다는 지적
-     (실사용자 데스크톱 스크린샷으로 확인). 640px 안팎이면 모바일에서 이미 검증된 카드/그리드
-     레이아웃(explore-grid 3열, trust-grid 4열 등)이 그대로도 자연스러운 "큰 폰" 정도의 폭이라
-     별도 데스크톱 전용 레이아웃을 새로 만들 필요가 없음(회귀 테스트가 이미 다루는 240~430px
-     범위보다 넓기만 해서 줄바꿈 쪽 위험도 없음) */
+     (실사용자 데스크톱 스크린샷으로 확인). 640px로 좁혔더니 이번엔 반대로 2560px급 넓은
+     모니터에서 카드 양옆에 배경만 과도하게 남는다는 지적이 나와서, 버튼 늘어짐과 여백 과다
+     사이의 절충값으로 900px로 재조정함(모바일 레이아웃은 max-width가 화면 폭보다 커서
+     영향 없음, 회귀 테스트가 다루는 240~430px 범위 밖이라 줄바꿈 위험도 없음) */
   .page{
     background:var(--bg); padding:28px 28px 36px; min-height:200px;
-    width:100%; max-width:640px; margin:0 auto; border-radius:14px; overflow:hidden;
+    width:100%; max-width:900px; margin:0 auto; border-radius:14px; overflow:hidden;
     box-shadow:0 1px 3px rgba(var(--ink-rgb),0.08), 0 8px 24px rgba(var(--ink-rgb),0.06);
   }
 
@@ -309,7 +309,8 @@
   .tax-impact-strike{ text-decoration:line-through; }
   .tax-impact-before-line{ display:inline-flex; gap:4px; }
   .tax-impact-arrow{ color:var(--text-muted); }
-  .tax-impact-diff-big{ font-weight:800; color:var(--status-red); font-size:18px; }
+  .tax-impact-diff-big{ font-weight:800; color:var(--status-red); font-size:18px; display:inline-block; }
+  .tax-impact-diff-big.diff-pop{ animation:pop 0.35s cubic-bezier(0.34,1.56,0.64,1); }
   .result-visual-bar{
     width:100%; height:10px; border-radius:6px; margin:14px 0 8px; overflow:hidden;
     background:var(--status-red); opacity:0.85;
@@ -1306,8 +1307,14 @@
   .explore-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
   .explore-card{
     /* min-width:0이 없으면 그리드 트랙이 내용(긴 번역 텍스트)만큼 억지로 넓어지는 "그리드 blowout"
-       현상이 생겨, 카자흐어·키르기스어처럼 라벨이 긴 언어에서 카드가 화면 밖으로 삐져나갔음 */
-    display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0;
+       현상이 생겨, 카자흐어·키르기스어처럼 라벨이 긴 언어에서 카드가 화면 밖으로 삐져나갔음.
+       그런데 그것만으로는 부족했음 — align-items:center(기본값 stretch 대신)를 쓰면 자식
+       span(.explore-label/.explore-sub)이 카드 너비에 맞춰 늘어나지 않고 "내용 그대로의 폭"으로
+       스스로 크기를 정해버려서, overflow-wrap:break-word가 있어도 실제로 줄바꿈시킬 너비 제약이
+      아예 없는 셈이 됨 — 그 결과 우즈베크어·몽골어·키르기스어·프랑스어 등 긴 라벨에서 카드
+       자체보다 글자가 넓어져 삐져나갔음(2026-07-27 발견). align-items:stretch로 바꿔 자식이
+       카드 너비를 그대로 상속하게 하면 text-align:center는 그대로 유지하면서 줄바꿈이 정상 작동함 */
+    display:flex; flex-direction:column; align-items:stretch; gap:4px; min-width:0;
     background:var(--card); border:1.5px solid var(--border); border-radius:12px; padding:14px 10px;
     cursor:pointer; font-family:inherit; text-align:center;
     transition:border-color 0.15s ease, transform 0.1s ease;
@@ -1400,6 +1407,11 @@
   .flex-icon{ flex-shrink:0; font-size:15px; }
   .flex-label{ flex:1; min-width:120px; color:var(--text-dark); }
   .flex-val{ font-weight:800; color:var(--text-dark); white-space:normal; text-align:right; margin-left:auto; }
+  /* 2026-07-27: "이 돈이면 뭘 살 수 있을까요" 카드에 국가별 커스텀 대신 가벼운 공통 모션 추가
+     (사용자 요청) — 아이콘은 barIconPop과 같은 통통 튀는 느낌, 숫자는 값 갱신 시 살짝
+     팝인되는 정도로만. 국가마다 다른 애니메이션을 새로 만들지 않아 유지보수 부담이 없음 */
+  .flex-icon.icon-pop{ animation:barIconPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  .flex-val.val-pop{ animation:pop 0.35s cubic-bezier(0.34,1.56,0.64,1); }
   .grounding-note{
     font-size:var(--fs-small); color:var(--text-muted); text-align:center; margin:8px 0 0; font-style:italic;
   }

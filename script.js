@@ -1512,7 +1512,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260724';
+    script.src = 'odds-data.js?v=20260727';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -1594,6 +1594,29 @@ function animateCount(el, target, opts) {
         : Math.round(value).toLocaleString('en-US');
     el.textContent = prefix + formatted + suffix;
     if (progress < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+// "이 돈이면 뭘 살 수 있을까요" 카드(강남 아파트/페라리/스타벅스 등, updateFlexBox)용 범용 카운트업.
+// animateCount()는 "$"+축약 표기(USD 전용)를 전제로 하지만, 여기는 "108채"/"하루 3잔씩 N년"처럼
+// 언어별 완성 문장 안에 숫자만 끼워 넣는 형태라 서식을 직접 못 박아둘 수 없음 — 그래서 서식을
+// buildText(현재값)라는 콜백으로 호출부가 결정하게 함(가장 가벼운 형태의 공통 모션이라 국가·
+// 문구별로 매번 새로 만들 필요 없음, 2026-07-27).
+function animateFlexNumber(el, target, buildText, duration){
+  if (!el) return;
+  duration = duration || 700;
+  const start = performance.now();
+  function frame(now){
+    // rAF 콜백의 now가 드물게 start보다 아주 살짝 앞선 값으로 들어올 때가 있어서(프레임 경계
+    // 타이밍 오차), 그대로 두면 progress가 미세하게 음수가 되고 Math.floor가 그걸 -1로
+    // 내림해버려 "-1채"처럼 잠깐 마이너스로 보이는 버그가 있었음(Playwright로 실제 재현) —
+    // 0 이상으로 고정해서 막음
+    const progress = Math.min(1, Math.max(0, (now - start) / duration));
+    const eased = 1 - Math.pow(1 - progress, 3); // ease-out, animateCount()와 동일한 완급
+    el.textContent = buildText(Math.floor(target * eased));
+    if (progress < 1) requestAnimationFrame(frame);
+    else el.textContent = buildText(target);
   }
   requestAnimationFrame(frame);
 }
@@ -2752,7 +2775,7 @@ function buildDrawScheduleMore(days){
 // 2026-07-25 사용자가 usamega.com 스크린샷으로 확인해서 갱신: 파워볼은 이미 정확($600M, 7/25(토)
 // 추첨 기준), 메가밀리언즈만 갱신($743M → $800M, 7/28(화) 추첨 기준)
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 600000000 },
+  powerball:    { amountUsd: 633000000 },
   megamillions: { amountUsd: 800000000 },
 };
 
@@ -2767,10 +2790,10 @@ const GAME_NAME_MORE = {
 // 🎱 최신 추첨 당첨번호 — 잭팟 확인할 때 공식 사이트(powerball.com/megamillions.com) 보고 같이 갱신.
 // 재미 요소 + 공유 유도용(사용자 피드백: "사이트가 너무 교과서 같다") — 세금 계산기 본질은 그대로 두고
 // 잭팟 카드 안에 양념처럼 추가한 것이라, 갱신을 깜빡해도 계산기 기능엔 영향 없음.
-// 2026-07-25 사용자가 usamega.com 스크린샷으로 확인해서 갱신: 파워볼(7/22)은 이미 최신, 메가밀리언즈만
-// 7/21 → 7/24 회차로 갱신(2,5,42,44,60 + 메가볼 1)
+// 2026-07-27 사용자가 전달한 스크린샷 + WebSearch(abc10/10tv 등)로 교차검증해서 갱신: 파워볼
+// 7/22 → 7/25 회차(3,4,24,36,47 + 파워볼 17), 메가밀리언즈는 이미 최신(7/24)이라 변경 없음.
 const LATEST_DRAW = {
-  powerball:    { date: '2026-07-22', numbers: [4, 5, 22, 50, 58], special: 1 },
+  powerball:    { date: '2026-07-25', numbers: [3, 4, 24, 36, 47], special: 17 },
   megamillions: { date: '2026-07-24', numbers: [2, 5, 42, 44, 60], special: 1 },
 };
 
@@ -5351,8 +5374,13 @@ function fillHomeAmountFromJackpot(game, btn){
   // 일시불 칸만 채우고 연금액 칸은 그대로 두면, 탭을 "연금액"으로 바꿨을 때 이 잭팟과 무관한
   // 예전 값(또는 빈칸)이 보여서 혼란스러움 — 같은 발표 금액(amountUsd) 기준으로 연금액 칸도
   // 같이 채워서 어느 탭으로 봐도 방금 고른 잭팟 숫자와 일치하게 함(2026-07-27 요청)
+  const announcedMillions = Math.round(amountUsd / 1000000);
   const announcedInput = document.getElementById('homeAnnouncedInput');
-  if (announcedInput) announcedInput.value = Math.round(amountUsd / 1000000);
+  if (announcedInput) announcedInput.value = announcedMillions;
+  // 연금액 칸에 슬라이더가 생긴 뒤로는(2026-07-27) 이 슬라이더 위치도 같이 맞춰야 텍스트칸과
+  // 어긋나지 않음
+  const announcedSlider = document.getElementById('homeAnnouncedSlider');
+  if (announcedSlider) setSliderMillions(announcedSlider, announcedMillions);
 }
 
 // 확률체감 탭의 잭팟 랭킹(jh-rank-list)/물가보정 랭킹(ji-cpi-list) 항목 옆 "이 금액으로
@@ -6017,10 +6045,7 @@ function startFaqVoiceSearch(){
 document.addEventListener('DOMContentLoaded', initFaqVoiceButton);
 
 // 홈 화면 금액 입력칸(일시불/연금액)에도 같은 음성 인식 버튼을 붙임(2026-07-27, "말로 금액을
-// 입력하고 싶다"는 요청) — FAQ 검색과 똑같이 SpeechRecognitionCtor/FAQ_VOICE_LANG_MAP을
-// 재사용하되, 결과 텍스트를 그대로 보여주는 대신 숫자만 뽑아서(parseMillionsInput과 동일한
-// 필터) 입력칸에 넣음. "삼백사십팔" 같은 말은 브라우저 음성 인식 엔진이 자체적으로 "348"
-// 형태로 정규화해주는 경우가 대부분이라 대부분의 언어에서 그대로 작동함
+// 입력하고 싶다"는 요청) — FAQ 검색과 똑같이 SpeechRecognitionCtor/FAQ_VOICE_LANG_MAP을 재사용함
 let amountVoiceRecognition = null;
 
 function initAmountVoiceButtons(){
@@ -6030,6 +6055,144 @@ function initAmountVoiceButtons(){
     if (!SpeechRecognitionCtor) { btn.style.display = 'none'; return; }
     btn.style.display = '';
   });
+}
+
+// ===== 음성 인식 금액 파싱(2026-07-27, "오천만원처럼 말해도 되게" 요청) =====
+// 입력칸은 항상 "USD 백만 단위"를 기대하는데, 실제로 말할 때는 두 가지 문제가 있었음:
+// 1) "오천만원"처럼 한글 숫자 단어(만/억/천 등)로 말하면 아라비아 숫자가 하나도 없어서
+//    기존의 "숫자만 남기고 지우기" 방식으로는 빈 문자열이 되어 아무 반응이 없었음
+// 2) 원(KRW)이나 각 나라 통화로 말하면, 환전 없이 숫자만 그대로 들어가 전혀 다른 금액이 입력됨
+// koreanWordsToNumber()가 한글 숫자 단어(+섞인 아라비아 숫자)를 실제 값으로 환산하고,
+// detectSpokenCurrencyRate()가 원/달러 및 사이트가 이미 관리 중인 각국 환율(EXCHANGE_RATE_*)로
+// 통화 키워드를 인식해 최종적으로 USD 백만 단위로 환산함. 통화 키워드가 전혀 없으면 기존처럼
+// "이미 USD 백만 단위"로 간주해 하위호환을 유지함. 22개 언어 전부의 고유 숫자 읽기 체계까지
+// 완벽히 지원하진 못하지만(한글 숫자 단어 파싱은 한국어 전용), 통화 키워드 인식과 million/
+// billion/thousand 배율 처리는 모든 언어에 공통 적용됨
+
+const KOR_NUM_DIGIT = { 영:0, 공:0, 일:1, 이:2, 삼:3, 사:4, 오:5, 육:6, 륙:6, 칠:7, 팔:8, 구:9 };
+const KOR_NUM_SMALL_UNIT = { 십:10, 백:100, 천:1000 };
+const KOR_NUM_BIG_UNIT = { 만:10000, 억:100000000, 조:1000000000000 };
+
+// 한글 숫자 단어(아라비아 숫자와 섞여도 됨, 예: "3억5000만")를 실제 값으로 환산.
+// 한글 숫자 관련 글자가 하나도 없으면 null(= 순수 아라비아 숫자만 있다는 뜻이라 기존 방식으로 처리)
+function koreanWordsToNumber(text){
+  let matched = false;
+  let result = 0, section = 0, current = 0, numBuf = '';
+  const flushBuf = () => { if (!numBuf) return null; const v = Number(numBuf); numBuf = ''; return v; };
+  for (const ch of text) {
+    if (ch >= '0' && ch <= '9') { numBuf += ch; continue; }
+    if (Object.prototype.hasOwnProperty.call(KOR_NUM_DIGIT, ch)) {
+      const bufVal = flushBuf();
+      current = bufVal !== null ? bufVal : KOR_NUM_DIGIT[ch];
+      matched = true;
+    } else if (Object.prototype.hasOwnProperty.call(KOR_NUM_SMALL_UNIT, ch)) {
+      const bufVal = flushBuf();
+      const base = bufVal !== null ? bufVal : (current || 1);
+      section += base * KOR_NUM_SMALL_UNIT[ch];
+      current = 0;
+      matched = true;
+    } else if (Object.prototype.hasOwnProperty.call(KOR_NUM_BIG_UNIT, ch)) {
+      const bufVal = flushBuf();
+      if (bufVal !== null) current = bufVal;
+      const segment = section + current;
+      result += (segment || 1) * KOR_NUM_BIG_UNIT[ch];
+      section = 0; current = 0;
+      matched = true;
+    }
+  }
+  const bufVal = flushBuf();
+  if (bufVal !== null) current += bufVal;
+  result += section + current;
+  return matched ? result : null;
+}
+
+// 언어별로 자국 통화 단어를 EXCHANGE_RATE_* 전역 변수와 매칭 — 이미 사이트가 관리 중인
+// 환율을 그대로 재사용함(운영자가 매일 갱신하는 그 값). "루피"처럼 여러 나라가 같은 통화명을
+// 쓰는 경우가 있어(인도/네팔/스리랑카/파키스탄), 전역이 아니라 현재 UI 언어에 매인 통화만 검사함
+const VOICE_LOCAL_CURRENCY = {
+  zh: /元|人民币|块钱|yuan|rmb/i,
+  hi: /रुपये|रुपया|rupee/i,
+  vi: /đồng|dong\b/i,
+  id: /rupiah/i,
+  tl: /piso|peso/i,
+  th: /บาท|baht/i,
+  ja: /円|yen/i,
+  ru: /рубл|ruble|rouble/i,
+  ne: /रुपैयाँ|रुपिया/i,
+  si: /රුපියල්|rupee/i,
+  uz: /so'm|sum\b|сум/i,
+  kk: /теңге|tenge/i,
+  ky: /сом|som\b/i,
+  my: /ကျပ်|kyat/i,
+  bn: /টাকা|taka/i,
+  ur: /روپے|rupee/i,
+  km: /រៀល|riel/i,
+  mn: /төгрөг|tugrik/i,
+  lo: /ກີບ|kip\b/i,
+};
+function voiceLocalCurrencyRate(lang){
+  switch (lang) {
+    case 'zh': return EXCHANGE_RATE_CNY;
+    case 'hi': return EXCHANGE_RATE_INR;
+    case 'vi': return EXCHANGE_RATE_VND;
+    case 'id': return EXCHANGE_RATE_IDR;
+    case 'tl': return EXCHANGE_RATE_PHP;
+    case 'th': return EXCHANGE_RATE_THB;
+    case 'ja': return EXCHANGE_RATE_JPY;
+    case 'ru': return EXCHANGE_RATE_RUB;
+    case 'ne': return EXCHANGE_RATE_NPR;
+    case 'si': return EXCHANGE_RATE_LKR;
+    case 'uz': return EXCHANGE_RATE_UZS;
+    case 'kk': return EXCHANGE_RATE_KZT;
+    case 'ky': return EXCHANGE_RATE_KGS;
+    case 'my': return EXCHANGE_RATE_MMK;
+    case 'bn': return EXCHANGE_RATE_BDT;
+    case 'ur': return EXCHANGE_RATE_PKR;
+    case 'km': return EXCHANGE_RATE_KHR;
+    case 'mn': return EXCHANGE_RATE_MNT;
+    case 'lo': return EXCHANGE_RATE_LAK;
+    default: return null;
+  }
+}
+
+// 말한 문장에서 통화 키워드를 찾아 "1 USD = rate 단위" 환율을 반환. 없으면 null
+function detectSpokenCurrencyRate(text, lang){
+  if (/원|원화/.test(text)) return EXCHANGE_RATE; // KRW — 언어와 무관하게 항상 확인(참택스가 한국어 우선 서비스라 가장 흔한 케이스)
+  if (/달러|dollar|usd|\$/i.test(text)) return 1; // USD — 입력칸 기준 통화라 배율 1
+  const localRe = VOICE_LOCAL_CURRENCY[lang];
+  if (localRe && localRe.test(text)) return voiceLocalCurrencyRate(lang);
+  return null;
+}
+
+// 음성 인식 결과 문자열 → 입력칸에 넣을 "USD 백만 단위" 숫자로 최종 환산. 실패 시 null
+function parseSpokenAmountToMillions(transcript, lang){
+  const korValue = koreanWordsToNumber(transcript);
+  const hadKoreanUnitWord = /[만억조]/.test(transcript);
+  const currencyRate = detectSpokenCurrencyRate(transcript, lang);
+
+  if (korValue !== null && (hadKoreanUnitWord || currencyRate !== null)) {
+    // 한글 숫자 단어(만/억 등)로 말했거나 통화 키워드가 있으면, 이건 "총액"이지 이미 million
+    // 단위인 게 아님 — 통화가 명시 안 됐는데 만/억 단위를 썼다면(예: "삼억") 한국어 화자가
+    // 원화를 그렇게 부르는 게 일반적이라 원화로 간주함
+    const rate = currencyRate !== null ? currencyRate : EXCHANGE_RATE;
+    if (!rate) return null;
+    return korValue / rate / 1000000;
+  }
+
+  const digitsOnly = transcript.replace(/[^0-9.]/g, '');
+  if (!digitsOnly) return null;
+  let n = Number(digitsOnly);
+  if (isNaN(n)) return null;
+  if (/billion/i.test(transcript)) n *= 1000; // 입력칸 기준(million) 대비 ×1000
+  else if (/thousand/i.test(transcript)) n /= 1000; // 입력칸 기준(million) 대비 ÷1000
+  // "million" 단어는 입력칸 기본 단위와 이미 같아서 별도 배율 처리 불필요
+
+  if (currencyRate !== null && currencyRate !== 1) {
+    // 통화 키워드는 있는데 위에서 한글 파서가 안 걸린 경우(예: "50000000원"처럼 아라비아
+    // 숫자+통화 키워드 조합) — 이 숫자는 "총액"이므로 환전 필요
+    return n / currencyRate / 1000000;
+  }
+  return n; // 통화 키워드 없음 — 기존처럼 이미 million 단위로 간주(하위호환)
 }
 
 function startAmountVoiceInput(inputId, onTyped){
@@ -6049,9 +6212,10 @@ function startAmountVoiceInput(inputId, onTyped){
   amountVoiceRecognition.onstart = () => { if (btn) btn.classList.add('listening'); };
   amountVoiceRecognition.onresult = (e) => {
     const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
-    const digits = transcript.replace(/[^0-9.]/g, '');
-    if (digits) {
-      input.value = digits;
+    const millions = parseSpokenAmountToMillions(transcript, currentLang);
+    if (millions !== null && millions > 0) {
+      const rounded = Math.min(Math.round(millions * 10000) / 10000, MAX_INPUT_MILLIONS);
+      input.value = String(rounded);
       onTyped();
     }
     const lastResult = e.results[e.results.length - 1];
@@ -6350,6 +6514,15 @@ function switchAmountTab(tab){
   document.getElementById('amountTabLump').style.display = tab === 'lump' ? 'block' : 'none';
   document.getElementById('amountTabAnnounced').style.display = tab === 'announced' ? 'block' : 'none';
   document.getElementById('amountTabReverse').style.display = tab === 'reverse' ? 'block' : 'none';
+  // 연금액 슬라이더는 이 탭이 display:none인 동안엔 폭이 0이라 눈금(renderSliderTicks)이
+  // 못 그려진 채로 넘어갈 수 있음 — 이 탭으로 전환된 직후(폭이 생긴 시점)에 다시 그려줌
+  if (tab === 'announced') {
+    const announcedSliderEl = document.getElementById('homeAnnouncedSlider');
+    if (announcedSliderEl) {
+      updateSliderFill(announcedSliderEl);
+      renderSliderTicks(announcedSliderEl);
+    }
+  }
 }
 
 function hideAnnouncedConvertNote(){
@@ -6373,11 +6546,11 @@ function onHomeAmountTyped(){
 // "일시불이 발표액의 몇 %인지" 감으로 어림잡아야 하는 진입장벽을 없애기 위한 보조 입력칸 —
 // 발표된 연금 총액만 입력하면 CASH_VALUE_RATIO(58%, 퀵필 버튼과 동일 기준)를 곱해
 // 아래 실제 계산용 입력칸(homeAmountInput)에 자동으로 채워줌. 계산 로직 자체는 그대로 재사용.
-function onHomeAnnouncedTyped(){
-  const rawValue = document.getElementById('homeAnnouncedInput').value;
-  if (rawValue.trim() === '') return;
-  const announcedMillions = parseMillionsInput(rawValue);
-  if (isNaN(announcedMillions) || announcedMillions <= 0) return;
+// 타이핑(onHomeAnnouncedTyped)과 슬라이더 드래그(onHomeAnnouncedSliderMoved) 둘 다 여기로
+// 모여서 "연금 발표액 → 일시불 환산" 이후의 공통 처리(계산 갱신·환산 안내 문구)를 한 곳에서 함
+// — homeAnnouncedInput/homeAnnouncedSlider 자기 자신의 위치는 호출부에서 이미 맞춰뒀으므로
+// 여기서는 건드리지 않음(2026-07-27, 일시불 칸에만 있던 슬라이더를 연금액 칸에도 추가하며 분리).
+function applyHomeAnnouncedMillions(announcedMillions){
   isAmountManuallyEdited = true;
   const lumpMillions = Math.max(1, Math.round(announcedMillions * CASH_VALUE_RATIO));
   const input = document.getElementById('homeAmountInput');
@@ -6426,6 +6599,26 @@ function onHomeAnnouncedTyped(){
     );
     note.style.display = 'block';
   }
+}
+
+function onHomeAnnouncedTyped(){
+  const rawValue = document.getElementById('homeAnnouncedInput').value;
+  if (rawValue.trim() === '') return;
+  const announcedMillions = parseMillionsInput(rawValue);
+  if (isNaN(announcedMillions) || announcedMillions <= 0) return;
+  const slider = document.getElementById('homeAnnouncedSlider');
+  setSliderMillions(slider, announcedMillions); // 타이핑한 값에 맞춰 슬라이더 위치도 재계산
+  applyHomeAnnouncedMillions(announcedMillions);
+}
+
+// 일시불 칸의 onHomeSliderMoved()와 같은 역할 — 연금 발표액 슬라이더를 드래그했을 때 호출됨.
+// 슬라이더는 이미 사용자가 옮긴 위치에 있으므로(setSliderMillions로 되돌릴 필요 없음) 텍스트칸만
+// 그 값으로 채우고, 나머지(일시불 환산·계산·안내 문구)는 applyHomeAnnouncedMillions에 위임함.
+function onHomeAnnouncedSliderMoved(){
+  const slider = document.getElementById('homeAnnouncedSlider');
+  const announcedMillions = getSliderMillions(slider);
+  document.getElementById('homeAnnouncedInput').value = announcedMillions;
+  applyHomeAnnouncedMillions(announcedMillions);
 }
 
 // -webkit-appearance:none으로 네이티브 트랙을 지운 뒤라 Chrome/Safari는 진행 정도를 색으로
@@ -6690,11 +6883,40 @@ function updateFlexBox(finalEok, country){
   document.getElementById('flex-car-label').textContent = ref.car.label();
   document.getElementById('flex-coffee-label').textContent = ref.coffee.label();
 
-  document.getElementById('flex-apt').textContent = apt.toLocaleString(localeStr) + pickLang('채', ' units', '套', ' căn', ' หลัง', ' шт.', { km:'ខ្នង', ne:'वटा', id:' unit', my:' လုံး', si:'ක්', uz:' ta', mn:' айл', kk:' пәтер', ky:' батир', ur:' یونٹس', bn:'টি', lo:' ຫຼັງ', ja:'戸', ar:' وحدة', hi:' यूनिट', fr:' logements', tl:' unit' });
-  document.getElementById('flex-car').textContent = car.toLocaleString(localeStr) + pickLang('대', ' cars', '辆', ' chiếc', ' คัน', ' шт.', { km:'គ្រឿង', ne:'वटा', id:' unit', my:' စီး', si:'ක්', uz:' ta', mn:' машин', kk:' көлік', ky:' машина', ur:' گاڑیاں', bn:'টি', lo:' ຄັນ', ja:'台', ar:' سيارة', hi:' गाड़ियाँ', fr:' voitures', tl:' kotse' });
-  document.getElementById('flex-coffee').textContent = coffeeYears > 0
-    ? pickLang(`하루 3잔씩 ${coffeeYears.toLocaleString(localeStr)}년`, `3/day for ${coffeeYears.toLocaleString(localeStr)} years`, `每天3杯，喝${coffeeYears.toLocaleString(localeStr)}年`, `3 ly/ngày trong ${coffeeYears.toLocaleString(localeStr)} năm`, `วันละ 3 แก้ว เป็นเวลา ${coffeeYears.toLocaleString(localeStr)} ปี`, `по 3 в день в течение ${coffeeYears.toLocaleString(localeStr)} лет`, { km:`ថ្ងៃមួយ 3 ពែង អស់រយៈពេល ${coffeeYears.toLocaleString(localeStr)} ឆ្នាំ`, ne:`दिनको ३ कपका दरले ${coffeeYears.toLocaleString(localeStr)} वर्ष`, id:`3/hari selama ${coffeeYears.toLocaleString(localeStr)} tahun`, my:`တစ်နေ့ ၃ ခွက်နှုန်းဖြင့် ${coffeeYears.toLocaleString(localeStr)} နှစ်`, si:`දිනකට කෝප්ප 3 බැගින් වසර ${coffeeYears.toLocaleString(localeStr)} ක්`, uz:`kuniga 3 tadan ${coffeeYears.toLocaleString(localeStr)} yil`, mn:`өдөрт 3-аар ${coffeeYears.toLocaleString(localeStr)} жил`, kk:`күніне 3-тен ${coffeeYears.toLocaleString(localeStr)} жыл`, ky:`күнүнө 3төн ${coffeeYears.toLocaleString(localeStr)} жыл`, ur:`روزانہ 3 کپ کے حساب سے ${coffeeYears.toLocaleString(localeStr)} سال`, bn:`দিনে ৩ কাপ করে ${coffeeYears.toLocaleString(localeStr)} বছর`, lo:`ວັນລະ 3 ຈອກ ເປັນເວລາ ${coffeeYears.toLocaleString(localeStr)} ປີ`, ja:`1日3杯で${coffeeYears.toLocaleString(localeStr)}年分`, ar:`3 أكواب يومياً لمدة ${coffeeYears.toLocaleString(localeStr)} سنة`, hi:`रोज़ 3 कप के हिसाब से ${coffeeYears.toLocaleString(localeStr)} साल`, fr:`3/jour pendant ${coffeeYears.toLocaleString(localeStr)} ans`, tl:`3/araw sa loob ng ${coffeeYears.toLocaleString(localeStr)} taon` })
-    : coffeeCups.toLocaleString(localeStr) + pickLang('잔', ' cups', '杯', ' ly', ' แก้ว', ' чашек', { km:'ពែង', ne:'कप', id:' cangkir', my:' ခွက်', si:'ක්', uz:' finjon', mn:' аяга', kk:' кесе', ky:' чыны', ur:' کپ', bn:'কাপ', lo:' ຈອກ', ja:'杯', ar:' كوب', hi:' कप', fr:' tasses', tl:' tasa' });
+  // 2026-07-27: 국가별 커스텀 애니메이션 대신 "가벼운 공통 모션"(사용자 요청) — 숫자는 0에서
+  // 목표값까지 카운트업되고, 아이콘은 barIconPop으로 살짝 통통 튐. 셋 다 같은 로직이라
+  // 나라마다 새로 만들 게 없음.
+  const aptUnit = pickLang('채', ' units', '套', ' căn', ' หลัง', ' шт.', { km:'ខ្នង', ne:'वटा', id:' unit', my:' လုံး', si:'ක්', uz:' ta', mn:' айл', kk:' пәтер', ky:' батир', ur:' یونٹس', bn:'টি', lo:' ຫຼັງ', ja:'戸', ar:' وحدة', hi:' यूनिट', fr:' logements', tl:' unit' });
+  const carUnit = pickLang('대', ' cars', '辆', ' chiếc', ' คัน', ' шт.', { km:'គ្រឿង', ne:'वटा', id:' unit', my:' စီး', si:'ක්', uz:' ta', mn:' машин', kk:' көлік', ky:' машина', ur:' گاڑیاں', bn:'টি', lo:' ຄັນ', ja:'台', ar:' سيارة', hi:' गाड़ियाँ', fr:' voitures', tl:' kotse' });
+  const cupUnit = pickLang('잔', ' cups', '杯', ' ly', ' แก้ว', ' чашек', { km:'ពែង', ne:'कप', id:' cangkir', my:' ခွက်', si:'ක්', uz:' finjon', mn:' аяга', kk:' кесе', ky:' чыны', ur:' کپ', bn:'কাপ', lo:' ຈອກ', ja:'杯', ar:' كوب', hi:' कप', fr:' tasses', tl:' tasa' });
+  // 연 단위 문장("하루 3잔씩 N년")인지 잔 수만 표시할지는 최종값 기준으로 한 번만 정하고, 카운트업
+  // 도중에는 그 문구 형식을 그대로 두고 숫자(n)만 0→목표치로 바꿔치기함 — 애니메이션 중간에
+  // 문장 형태 자체가 바뀌면(예: 잔→년) 어색해 보이기 때문
+  const useCoffeeYears = coffeeYears > 0;
+  function buildCoffeeText(n){
+    return useCoffeeYears
+      ? pickLang(`하루 3잔씩 ${n.toLocaleString(localeStr)}년`, `3/day for ${n.toLocaleString(localeStr)} years`, `每天3杯，喝${n.toLocaleString(localeStr)}年`, `3 ly/ngày trong ${n.toLocaleString(localeStr)} năm`, `วันละ 3 แก้ว เป็นเวลา ${n.toLocaleString(localeStr)} ปี`, `по 3 в день в течение ${n.toLocaleString(localeStr)} лет`, { km:`ថ្ងៃមួយ 3 ពែង អស់រយៈពេល ${n.toLocaleString(localeStr)} ឆ្នាំ`, ne:`दिनको ३ कपका दरले ${n.toLocaleString(localeStr)} वर्ष`, id:`3/hari selama ${n.toLocaleString(localeStr)} tahun`, my:`တစ်နေ့ ၃ ခွက်နှုန်းဖြင့် ${n.toLocaleString(localeStr)} နှစ်`, si:`දිනකට කෝප්ප 3 බැගින් වසර ${n.toLocaleString(localeStr)} ක්`, uz:`kuniga 3 tadan ${n.toLocaleString(localeStr)} yil`, mn:`өдөрт 3-аар ${n.toLocaleString(localeStr)} жил`, kk:`күніне 3-тен ${n.toLocaleString(localeStr)} жыл`, ky:`күнүнө 3төн ${n.toLocaleString(localeStr)} жыл`, ur:`روزانہ 3 کپ کے حساب سے ${n.toLocaleString(localeStr)} سال`, bn:`দিনে ৩ কাপ করে ${n.toLocaleString(localeStr)} বছর`, lo:`ວັນລະ 3 ຈອກ ເປັນເວລາ ${n.toLocaleString(localeStr)} ປີ`, ja:`1日3杯で${n.toLocaleString(localeStr)}年分`, ar:`3 أكواب يومياً لمدة ${n.toLocaleString(localeStr)} سنة`, hi:`रोज़ 3 कप के हिसाब से ${n.toLocaleString(localeStr)} साल`, fr:`3/jour pendant ${n.toLocaleString(localeStr)} ans`, tl:`3/araw sa loob ng ${n.toLocaleString(localeStr)} taon` })
+      : n.toLocaleString(localeStr) + cupUnit;
+  }
+
+  const aptEl = document.getElementById('flex-apt');
+  const carEl = document.getElementById('flex-car');
+  const coffeeEl = document.getElementById('flex-coffee');
+  animateFlexNumber(aptEl, apt, n => n.toLocaleString(localeStr) + aptUnit);
+  animateFlexNumber(carEl, car, n => n.toLocaleString(localeStr) + carUnit);
+  animateFlexNumber(coffeeEl, useCoffeeYears ? coffeeYears : coffeeCups, buildCoffeeText);
+
+  [aptEl, carEl, coffeeEl].forEach((el, i) => {
+    el.classList.remove('val-pop');
+    const icon = el.closest('.flex-row')?.querySelector('.flex-icon');
+    if (icon) icon.classList.remove('icon-pop');
+    void el.offsetWidth; // 강제 리플로우 — 연속 갱신 때도 매번 다시 재생되도록
+    el.classList.add('val-pop');
+    if (icon) {
+      icon.style.animationDelay = (i * 80) + 'ms';
+      icon.classList.add('icon-pop');
+    }
+  });
 }
 
 // FAQ "세금 가이드" 3칸 요약 카드의 2번째 칸 — "다른 나라에서도 또 내는지"는 세금 계산
@@ -8131,6 +8353,13 @@ function updateHomeCalc(usdOverride){
   // 안 바뀌어 setSliderMillions()가 다시 안 불릴 수 있어서, 눈금 라벨을 새 언어로 갱신하려면
   // 여기서도 명시적으로 다시 그려야 함(renderSliderTicks 자체는 가벼워서 매번 불러도 안전)
   renderSliderTicks(document.getElementById('homeAmountSlider'));
+  // 연금액 탭의 슬라이더(homeAnnouncedSlider)는 자기 자신의 값이 안 바뀌었을 때도 언어 전환마다
+  // 눈금 라벨을 새로 그려야 하므로, 일시불 슬라이더와 같은 이유로 여기서 같이 처리함
+  const announcedSliderEl = document.getElementById('homeAnnouncedSlider');
+  if (announcedSliderEl) {
+    updateSliderFill(announcedSliderEl);
+    renderSliderTicks(announcedSliderEl);
+  }
   const 억 = (usd * EXCHANGE_RATE) / 100000000;
   const r = calcTakeHome(억, country, stateCode);
   const { final, label1, val1, label2, val2, basisSuffix } = r;
@@ -8280,7 +8509,19 @@ function updateHomeCalc(usdOverride){
   const taxImpactPct = 억 > 0 ? Math.round(100 - (final / 억 * 100)) : 0;
   document.getElementById('tax-impact-before').textContent = formatWon(억);
   document.getElementById('tax-impact-after').textContent = formatWon(final);
-  document.getElementById('tax-impact-diff').textContent = '-' + formatWon(억 - final) + ` (${taxImpactPct}%)`;
+  // 세전→세후 차액(빨간 -46% 줄)은 바로 위 home-final-amt(카운트업)와 달리 값이 바뀔 때마다
+  // 그냥 텍스트가 스냅되기만 해서 밋밋하다는 지적("실수령 세금에 애니 넣어줘") — flex-box
+  // 카드에 쓴 것과 같은 pop 리트리거 패턴(remove→강제 reflow→add)을 그대로 재사용함.
+  // 최초 렌더링(placeholder "-" 상태)에서는 애니메이션 없이 바로 값을 채움
+  const taxDiffEl = document.getElementById('tax-impact-diff');
+  const newTaxDiffText = '-' + formatWon(억 - final) + ` (${taxImpactPct}%)`;
+  const shouldPopTaxDiff = taxDiffEl.textContent !== '-' && taxDiffEl.textContent !== newTaxDiffText;
+  taxDiffEl.textContent = newTaxDiffText;
+  if (shouldPopTaxDiff) {
+    taxDiffEl.classList.remove('diff-pop');
+    void taxDiffEl.offsetWidth;
+    taxDiffEl.classList.add('diff-pop');
+  }
   // "합계" 줄만 소수 첫째자리까지 보여줌 — 바로 위 두 항목(연방세/한국 추가납부)이 각각 -30%,
   // -16.5%처럼 소수점이 있는 값인데 합계를 정수로 반올림하면(-46%) 30+16.5=46.5와 안 맞아
   // "계산이 틀렸나?" 오해를 살 수 있음. 히어로 영역 상단의 taxImpactPct(정수)는 그대로 둠 —
