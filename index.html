@@ -638,6 +638,19 @@
                 </details>
               </div>
             </details>
+            <!-- "이미지로 저장" 캔버스에 그려질 날짜를 사용자가 직접 정할 수 있게 함(2026-07-28
+                 후속 세션 신규 — 기존엔 saveHomeResultAsImage()가 항상 실제 오늘 날짜를 고정으로
+                 그렸음). 네이티브 <input type="date">는 iOS Safari에서 내부 UI가 CSS 지정 폭을
+                 넘어 튀어나오는 문제가 이미 이 프로젝트에서 확인돼있어서(위 "날짜로 당첨번호
+                 찾아보기" 섹션이 select 3개로 바꾼 사례 참고, 그 근처 주석에 배경 설명 있음) 같은
+                 이유로 여기서도 피하고, #compare-rate-input과 같은 텍스트 인라인 입력 패턴을
+                 재사용함. 저장 버튼 바로 위에 둬서 "이미지로 저장" 누르기 직전에 눈에 띄게 함.
+                 비우거나 형식이 잘못되면 저장 시 script.js의 sanitizeCheckDateForCanvas()가 오늘
+                 날짜로 대체함(값은 DOMContentLoaded 때 오늘 날짜로 미리 채워짐) -->
+            <div class="check-date-row">
+              <label for="home-check-date-input" class="check-date-label" data-i18n="home.checkDateLabel">카드에 표시할 날짜</label>
+              <input type="text" id="home-check-date-input" class="check-date-input" inputmode="numeric" maxlength="10" placeholder="YYYY-MM-DD" data-i18n-aria-label="home.checkDateLabel" aria-label="카드에 표시할 날짜">
+            </div>
             <div class="home-result-btn-row">
               <button type="button" class="share-btn" id="home-share-btn" onclick="shareResult()" data-i18n="home.shareDreamBtn">📤 이 결과 공유하기</button>
               <button type="button" class="share-btn" id="home-save-image-btn" onclick="saveHomeResultAsImage()" data-i18n="home.saveImageBtn">🖼️ 이미지로 저장</button>

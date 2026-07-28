@@ -1838,6 +1838,16 @@
      둠 — .mn-btn-row(내 번호 티켓 이미지 버튼 줄)와 같은 flex 2등분 패턴 재사용 */
   .home-result-btn-row{ display:flex; gap:8px; margin-top:12px; }
   .home-result-btn-row .share-btn{ flex:1; min-width:0; margin-top:0; }
+  /* "이미지로 저장" 캔버스에 그려질 날짜를 사용자가 직접 정하는 입력칸(2026-07-28) —
+     .amount-currency-row와 같은 "라벨 오른쪽 + 입력요소" 정렬 패턴을 재사용함 */
+  .check-date-row{ display:flex; align-items:center; justify-content:flex-end; gap:6px; margin:10px 0 0; }
+  .check-date-label{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; }
+  .check-date-input{
+    width:118px; min-height:40px; border:1.5px solid var(--border); border-radius:10px; background:var(--card);
+    font-family:inherit; font-size:var(--fs-small); font-weight:700; color:var(--text-dark);
+    text-align:center; padding:8px 6px; letter-spacing:0.02em;
+  }
+  .check-date-input:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.14); }
 
   .trust-panel{ text-align:center; }
   .trust-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }

@@ -5084,6 +5084,36 @@ const CHECK_PAYTO_MORE = {
 //    두께(굵게)를 이전보다 키움.
 // 5. "당첨/WINNER" 같은 새 문구를 추가로 만들지 않음 — resultLabelText는 이미 화면에서
 //    "💰 일시불 예상 실수령액"처럼 "예상"이라는 프레이밍을 쓰고 있는 기존 문구라 그대로 재사용.
+
+// #home-check-date-input(index.html, "이미지로 저장" 버튼 바로 위)에 사용자가 직접 입력한 값을
+// 캔버스에 그려도 안전한 "YYYY-MM-DD" 문자열로 정제함(2026-07-28 후속 세션 신규). 비어있거나,
+// 자릿수가 안 맞거나, "2026-02-30"처럼 달력에 실제로 없는 날짜면 전부 오늘 날짜로 대체함(기존
+// saveHomeResultAsImage()가 항상 오늘 날짜를 고정으로 그리던 것과 같은 기본 동작 유지) — 잘못된
+// 문자열이 그대로 캔버스에 그려져 깨진/뭉개진 글자로 보이는 일이 없게 하는 방어 함수.
+function sanitizeCheckDateForCanvas(rawValue){
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const trimmed = String(rawValue || '').trim();
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+  if (!m) return todayStr;
+  const y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
+  const parsed = new Date(y, mo - 1, d);
+  // Date 생성자는 범위를 넘는 값(예: 2월 30일 → 3월 2일)을 조용히 다음 달로 넘겨버리므로, 실제로
+  // 만들어진 날짜가 입력값과 정확히 같은지 되짚어 확인해서 존재하지 않는 날짜를 걸러냄
+  if (parsed.getFullYear() !== y || parsed.getMonth() !== mo - 1 || parsed.getDate() !== d) return todayStr;
+  return `${String(y).padStart(4, '0')}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+
+// 페이지 로드 시 #home-check-date-input을 빈 칸이 아니라 오늘 날짜로 미리 채워둠 — "날짜로
+// 당첨번호 찾아보기" select에서 이미 확인된 교훈(빈 date 입력칸은 아이폰 사파리 등에서 완전히
+// 텅 빈 것처럼 보여 사용자가 뭘 입력해야 할지 헷갈려함, 2026-07-22)과 같은 이유로 기본값을 채움
+document.addEventListener('DOMContentLoaded', () => {
+  const el = document.getElementById('home-check-date-input');
+  if (!el) return;
+  const today = new Date();
+  el.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+});
+
 function saveHomeResultAsImage(){
   const isRtl = RTL_LANGS.includes(currentLang);
   const resultLabelText = document.querySelector('.result-hero-label').textContent;
@@ -5091,10 +5121,6 @@ function saveHomeResultAsImage(){
   const basisMini = document.getElementById('home-final-basis-mini').textContent;
   const beforeTax = document.getElementById('tax-impact-before').textContent;
   const taxDiff = document.getElementById('tax-impact-diff').textContent;
-  const takePct = parseInt(document.getElementById('result-visual-take-pct').textContent, 10) || 0;
-  const taxPct = parseInt(document.getElementById('result-visual-tax-pct').textContent, 10) || 0;
-  const takeLabel = document.querySelector('[data-i18n="result.takeHomeLabel"]').textContent;
-  const taxLabel = document.querySelector('[data-i18n="result.taxLabel"]').textContent;
 
   const SCALE = 2;
   // 실제 "대형 기념 수표"는 세로보다 훨씬 넓은 포스터보드 형태(대략 2:1 이상) — 기존 900x620
@@ -5167,9 +5193,11 @@ function saveHomeResultAsImage(){
   ctx.fillText('chamtax.com', anchorX, 96);
 
   // 반대쪽 모서리: 계산 기준 한 줄(basisMini) + 날짜 — 언어별 길이 차이가 커서 폭을 넘으면
-  // 폰트를 줄임(fitFontSize)
-  const today = new Date();
-  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  // 폰트를 줄임(fitFontSize). 날짜는 2026-07-28 후속 세션부터 항상 오늘 날짜를 고정으로 그리는
+  // 대신, 사용자가 #home-check-date-input(index.html, 이 버튼 바로 위)에 직접 입력한 값을 읽어옴
+  // — 비어있거나 형식이 잘못됐으면 sanitizeCheckDateForCanvas()가 오늘 날짜로 대체함(아래 함수 참고)
+  const dateInputEl = document.getElementById('home-check-date-input');
+  const dateStr = sanitizeCheckDateForCanvas(dateInputEl ? dateInputEl.value : '');
   ctx.fillStyle = '#262420';
   ctx.textAlign = oppositeAlign;
   fitFontSize(ctx, basisMini, 700, 15, 11, cornerMaxW);
@@ -5223,29 +5251,16 @@ function saveHomeResultAsImage(){
   ctx.fillText(resultLabelText, W / 2, 300);
   ctx.direction = 'ltr'; // 이후 draw 호출에 영향 안 주도록 기본값 복원
 
-  // 실수령/세금 비율 막대 — 화면의 result-visual-bar와 같은 개념을 캔버스에 재현(넓어진 캔버스
-  // 비율에 맞춰 막대 폭도 비례해서 키움)
-  const barW = 980, barH = 16, barX0 = (W - barW) / 2, barY0 = 328;
-  ctx.save();
-  ctx.beginPath();
-  ctx.roundRect(barX0, barY0, barW, barH, 8);
-  ctx.clip();
-  ctx.fillStyle = '#C0392B';
-  ctx.fillRect(barX0, barY0, barW, barH);
-  ctx.fillStyle = '#155445';
-  ctx.fillRect(barX0, barY0, barW * (takePct / 100), barH);
-  ctx.restore();
-
+  // before→after 세전/세후 금액 줄 — 2026-07-28 세 번째 후속 세션에서 실수령/세금 비율 막대(빨강
+  // 배경+초록 채움)와 그 옆 퍼센트 텍스트 줄을 제거함(사용자 요청 — 카드 정보가 너무 빽빽해
+  // 보인다는 판단). 막대가 있던 자리를 빈 공백으로 남기지 않고, 결과 라벨(y=300)과 아래 참고용
+  // 배지(bannerY0=470) 사이 남은 공간(170px)의 정중앙(y=386)으로 이 줄만 끌어올려 자연스럽게
+  // 다시 채움 — 막대 삭제 전 이 줄의 자리(y=406)보다 살짝 위, 막대 자리(y=328~372)보다는 아래.
   ctx.textAlign = 'center';
-  const pctLine = `${takePct}% ${takeLabel}   ·   ${taxPct}% ${taxLabel}`;
-  ctx.fillStyle = '#262420';
-  fitFontSize(ctx, pctLine, 700, 16, 12, cardW - PAD * 2);
-  ctx.fillText(pctLine, W / 2, 372);
-
   const beforeAfterLine = `${beforeTax} → ${taxDiff}`;
   ctx.fillStyle = '#544E42';
-  fitFontSize(ctx, beforeAfterLine, 600, 17, 12, cardW - PAD * 2);
-  ctx.fillText(beforeAfterLine, W / 2, 406);
+  fitFontSize(ctx, beforeAfterLine, 600, 18, 13, cardW - PAD * 2);
+  ctx.fillText(beforeAfterLine, W / 2, 386);
 
   // 참고용 배지 — 이전 버전(작은 알약 배지)과 달리 카드 폭 전체에 가까운 띠(banner)로 키움(하드
   // 제약 4번: 수표 모양이 실제 금융 서류를 연상시킬 위험이 티켓보다 커서, 오히려 이 배지를

@@ -822,3 +822,76 @@ Playwright로 한국어("천원"/"백원"/"만원"/"천만원") + 베트남어("
 **`git push` 권한 여전히 없음**(구조적 제약, 재진단 불필요) — 로컬 커밋 후 zip으로
 `SendUserFile` 전달, 사용자가 GitHub 웹 UI로 업로드해야 실제 반영됨. 다음 세션은 위 5번
 항목대로 `git fetch origin main`부터 확인할 것.
+
+### 2026-07-28 (스무 번째 세션, `claude/progress-checkpoint-vd08p1` — 서브에이전트로 진행)
+
+**요청 배경**: 열여덟 번째 세션이 만든 "대형 기념 수표" 스타일 결과 카드(`saveHomeResultAsImage()`)에
+대해 사용자가 채팅으로 두 가지 후속 수정을 요청함(공개 문서엔 대화 원문 대신 결론만): (1) 실수령/
+세금 비율 막대 + 퍼센트 텍스트 줄 제거(카드가 너무 빽빽해 보인다는 판단), (2) 캔버스에 찍히는
+날짜를 항상 실제 오늘 날짜로 고정하지 말고 사용자가 직접 정할 수 있게 편집 가능한 입력칸 추가.
+
+**수정 1 — 비율 막대 + 퍼센트 줄 제거**: `saveHomeResultAsImage()`에서 빨강 배경/초록 채움 막대
+(`barW`/`barH`/`barX0`/`barY0` 관련 `ctx.roundRect`+`ctx.clip`+두 번의 `ctx.fillRect`)와 그 아래
+`pctLine`(`${takePct}% ${takeLabel} · ${taxPct}% ${taxLabel}`) 텍스트를 통째로 삭제. 이 두 값만
+쓰던 DOM 읽기 4개(`result-visual-take-pct`/`result-visual-tax-pct`/`[data-i18n="result.takeHomeLabel"]`/
+`[data-i18n="result.taxLabel"]`)도 함수 안에서 grep으로 다른 용도가 전혀 없음을 재확인한 뒤 같이
+삭제 — 화면(온스크린)의 `result-visual-bar`/`result-visual-take-pct` 자체(`updateResult()`가 채우는
+실제 위젯)는 이 카드와 무관한 별개 요소라 손대지 않음. 막대가 있던 자리를 빈 공백으로 남기지
+않도록, before→after 세전/세후 줄(`beforeAfterLine`)을 원래 위치(y=406)에서 결과 라벨(y=300)과
+아래 참고용 배지 상단(bannerY0≈470) 사이 남은 공간의 정중앙(y=386)으로 끌어올려 자연스럽게 다시
+채움 — 참고용 배지의 위치·크기(폭 전체 배너, 굵기 18px, 카드 바닥까지 16px 이상 여유)는 전혀
+안 건드림(요청의 "명료함 강화, 절대 축소 금지" 원칙 재확인).
+
+**수정 2 — 날짜를 사용자가 직접 편집 가능하게**: 기존엔 함수 안에서 `new Date()`로 항상 실제
+오늘 날짜를 계산해서 그대로 그렸음 — 이제 index.html에 새 텍스트 입력칸(`#home-check-date-input`,
+"이미지로 저장" 버튼 바로 위, 라벨 `home.checkDateLabel`)을 추가하고, 캔버스를 그릴 때 이 입력칸의
+값을 읽어서 사용함. **네이티브 `<input type="date">` 대신 텍스트 입력을 택함** — 이 코드베이스에
+이미 있는 정확한 선례(확률체감 탭 "날짜로 당첨번호 찾아보기" 섹션, 2026-07-24)가 iOS Safari에서
+네이티브 date input의 내부 UI가 CSS 지정 폭을 넘어 튀어나오는 문제 때문에 select 3개로 바꾼
+전례라, 여기서도 같은 이유로 피하고 `#compare-rate-input`과 같은 인라인 텍스트 입력 스타일(밑줄
+포커스 등)을 재사용함. 값 검증은 신규 `sanitizeCheckDateForCanvas(rawValue)`(script.js,
+`saveHomeResultAsImage()` 바로 위)가 전담 — `/^\d{4}-\d{2}-\d{2}$/` 정규식 검사 후, `Date`
+생성자로 만든 날짜가 입력값과 정확히 같은지(연/월/일 각각) 되짚어 확인해서 "2026-02-30"처럼
+존재하지 않는 달력 날짜까지 걸러냄; 비어있거나 형식이 안 맞거나 존재하지 않는 날짜면 전부
+기존과 동일하게 오늘 날짜로 대체함. 입력칸 자체는 페이지 로드 시(`DOMContentLoaded`) 빈 칸이
+아니라 오늘 날짜로 미리 채워둠 — "날짜로 당첨번호 찾아보기" select가 이미 확인한 교훈(빈 date
+입력칸은 아이폰 사파리 등에서 완전히 텅 빈 것처럼 보여 사용자가 뭘 넣어야 할지 헷갈려함,
+2026-07-22)과 같은 이유.
+
+**신규 i18n**: `home.checkDateLabel`(data-i18n, "카드에 표시할 날짜"/"Date on card") — 라벨
+텍스트와 `aria-label` 양쪽에 같은 키 재사용(`input.currencyLabel`이 이미 쓰던 패턴과 동일).
+26개 언어(ko 포함, ko는 HTML 원문) 전부 직접 번역해서 `i18n-source/translations.json`에 추가 —
+기존 `input.currencyLabel`(통화)·`privacy.effectiveDate`(날짜) 두 키가 이미 26개 언어 전부
+확보해둔 "통화"/"카드"/"날짜" 개별 단어 번역을 참고해 일관된 어휘로 맞춤(예: 미얀마어 "ကတ်"=카드,
+크메르어 "កាលបរិច្ឆេទ"=날짜). `node scripts/build-i18n.js` 실행 후 `i18n/*.json` 26개 재생성,
+`tests/i18n_coverage_audit.js`로 567개 키(기존 566+1) 전부 0건 확인. placeholder("YYYY-MM-DD")는
+포맷 예시일 뿐이라 언어 무관으로 판단해 번역 키를 따로 안 만듦.
+
+**검증**: `node --check script.js` 통과. 회귀 테스트 11개 전부 재실행 — 전부 `ISSUES: 0`
+(`TOTAL ISSUES: 0`), `i18n_coverage_audit.js`(567개 키) 포함. Playwright로 `saveHomeResultAsImage()`를
+직접 호출해서(annotate 오버레이로 넘기기 직전을 가로채 캔버스를 PNG export) 한국어(기본 날짜)/
+한국어(커스텀 날짜 "2030-12-25" 직접 입력)/영어/아랍어(RTL) 4장을 실제로 눈으로 확인 — (a) 막대·
+퍼센트 텍스트가 완전히 사라지고 빈 공백 없이 before→after 줄이 자연스럽게 그 자리를 채움 (b) 입력칸에
+타이핑한 커스텀 날짜가 실제 오늘 날짜(2026-07-28) 대신 캔버스에 정확히 그려짐 (c) 참고용 배지가
+여전히 카드 폭 전체 배너로 선명하게 보임(안 잘림, 안 작아짐) (d) 그 외 요소(로고, 받는 사람 빈칸,
+큰 금액, 결과 라벨)는 전과 동일. 온스크린 UI 자체도 스크린샷으로 확인 — 날짜 입력칸이 저장 버튼
+바로 위에 오늘 날짜로 미리 채워진 채 보임. **네거티브 컨트롤**: 날짜 읽기 로직을 임시로 원래
+`new Date()` 고정 코드로 되돌린 뒤, 커스텀 날짜("2030-12-25")를 입력하고 저장해도 여전히 실제
+오늘 날짜(2026-07-28)만 그려지는 것을 확인(=이 검증 방법이 실제로 회귀를 잡아낼 수 있음을 증명)한
+후 원복, 원복 후 다시 커스텀 날짜가 정확히 반영되는지와 핵심 회귀 테스트(`home_audit.js`,
+`i18n_coverage_audit.js`)로 원복이 완전한지 재확인함.
+
+**세션 시작 시 확인**: `git fetch origin main` 결과 `origin/main`이 이전 세션 종료 후 사용자가
+zip을 GitHub 웹 UI로 업로드하면서 여러 "Add files via upload" 커밋으로 전진해있었으나, 트리
+내용은 이 세션 시작 시점의 로컬 `HEAD`(`134bf65`, 열아홉 번째 세션 커밋)와 완전히 동일함
+(`git diff HEAD origin/main` 0줄) — 즉 이전 세션분은 이미 전부 정상 반영됐고 이번 세션은 그 위에
+새로 커밋만 하면 되는 깨끗한 상태였음(병합 불필요).
+
+변경 파일: `script.js`(`saveHomeResultAsImage()`의 막대/퍼센트 줄 삭제 + before→after 줄 위치
+재조정 + 신규 `sanitizeCheckDateForCanvas()` + 날짜 입력칸 기본값 채우는 `DOMContentLoaded` 리스너
+신규), `index.html`(`#home-check-date-input` 텍스트 입력칸 신규, "이미지로 저장" 버튼 바로 위),
+`styles.css`(`.check-date-row`/`.check-date-label`/`.check-date-input` 신규), `i18n-source/translations.json`
++ `i18n/*.json` 26개(`home.checkDateLabel` 신규 키), `HANDOFF.md`(이 항목). **`git push` 권한
+여전히 없음**(구조적 제약, 재진단 불필요) — 로컬 커밋 후 zip으로 `SendUserFile` 전달, 사용자가
+GitHub 웹 UI로 업로드해야 실제 반영됨. 다음 세션은 위 5번 항목대로 `git fetch origin main`부터
+확인할 것.
