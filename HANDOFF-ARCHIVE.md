@@ -1225,3 +1225,774 @@ Artifact로 publish).
 되는 경우가 많음 — 다만 사용자가 GitHub 웹 UI에서 Claude가 만든 적 없는 내용을 직접 편집해
 올렸을 가능성이 있으면 그 경우는 내용을 먼저 확인할 것(무조건 HEAD 채택 금지).
 
+
+### 2026-07-27 (열세 번째 세션)
+
+#### 신규 기능: 홈 화면 "자주 묻는 질문" 미리보기 + 닫기(✕)
+사용자 요청: "검색을 못 하겠다"는 사람들을 위해 FAQ 탭까지 안 가도 홈 화면을 스크롤만 내리면
+질문/답이 바로 보이게 해달라, 거슬리는 사람을 위해 ✕로 없앨 수 있게도 해달라(같은 요청이 이전
+세션 대화에도 있었는데 실제 커밋까지는 안 된 상태였음 — grep으로 재확인 후 진행).
+
+- **위치**: 홈 화면(`#view-home`) 맨 아래, "✓ 왜 믿을 수 있나요?" 패널 바로 다음(`index.html`
+  약 892~925줄 근처). 상단 🔍 궁금해요 플로팅 버튼/`explore-section` 카드는 눌러야 FAQ 탭으로
+  이동하는 "링크"일 뿐이라, 클릭 없이 실제 내용이 보이는 이 섹션과는 역할이 다름(둘 다 유지).
+- **콘텐츠 재사용**: 질문 4개(`faq.q1`/`faq.q9`/`faq.q12`/`faq.q15`, 세금·환급기한·구매처·
+  시민권)는 FAQ 탭(`#view-faq`)과 동일한 `data-i18n`(-html) 키를 그대로 재사용 — `data-basis`
+  (세금 계산 기준별) 제한이 없는 질문만 골라서 모든 기준에서 동일하게 보임. 덕분에 22개 언어
+  번역이 자동으로 맞고, 새로 번역해야 했던 건 CTA 버튼 문구 하나(`homeFaq.moreLabel`, "더 많은
+  질문 보기 →")뿐 — `i18n-source/translations.json`에 추가 후 `node scripts/build-i18n.js`로
+  22개 `i18n/*.json` 재생성.
+- **닫기(✕)**: `dismissHomeFaqPreview()`가 `localStorage`(`chamtaxHomeFaqPreviewDismissed`)에
+  저장 — 세션이 아니라 영구 dismiss라 재방문해도 계속 숨겨짐. `initHomeFaqPreview()`가
+  `DOMContentLoaded`에서 저장된 값을 확인해 초기 표시 여부를 정함.
+- **실제 버그 하나 발견·수정(구현 중)**: 새 섹션에 스크롤 시 떠오르는 `reveal-up` 애니메이션을
+  적용하려고 클래스를 마크업에 직접 `class="home-faq-preview reveal-up"`로 박아 넣었는데,
+  `setupRevealAnimation()`(script.js)의 로직이 "이미 `reveal-up` 클래스가 있으면 건너뛴다"는
+  전제로 짜여있어서(관찰자가 이 클래스를 나중에 직접 붙이는 방식) 오히려 **영원히 관찰 대상에서
+  제외되어 opacity:0으로 안 보이는 상태로 고정**되는 버그가 났었음. 원인 두 가지 다 고침: ①
+  `setupRevealAnimation()`의 대상 셀렉터(`:scope > .explore-section` 등)에
+  `:scope > .home-faq-preview` 추가 ② 마크업에서 `reveal-up` 클래스 제거(JS가 알아서 붙이게
+  둠, `.explore-section` 등 기존 요소와 동일한 패턴). Playwright로 opacity/is-in 클래스를
+  직접 찍어봐서 고치기 전/후 차이를 실제로 확인함 — 정적 코드만 봤으면 놓쳤을 것.
+- **검증**: Playwright로 (1) 390px 뷰포트 스크린샷 2장(접힘/펼침) (2) ✕ 클릭 시 즉시 숨김 +
+  새로고침 후에도 안 보임(localStorage 반영) 확인. 회귀 테스트 11개
+  (`home_audit`/`faq_audit`/`i18n_coverage_audit`/`i18n_attr_lint`/`broken_link_audit`/
+  `lang_leak_audit`/`console_error_audit`/`wrap_audit`/`map_scroll_audit`/`nav_slider_audit`/
+  `audit_odds_compare`) 전부 `ISSUES: 0`(단, `i18n_coverage_audit`의 `a11y.voiceSearch` 누락
+  1건은 이 세션 이전부터 있던 무관한 기존 이슈 — `git stash`로 변경 전 상태에서 재확인함).
+- **`git push` 실제로 시도해봄 — 이 세션 유형도 여전히 403으로 막혀있음 확인**: 위
+  "GitHub push가 항상 막혀있음" 섹션의 제약이 이 세션 유형에도 그대로 적용됨(재진단 불필요,
+  다음 세션도 굳이 다시 테스트할 필요 없음). 로컬 커밋 후 SendUserFile로 zip 전달 → 사용자가
+  GitHub 웹 UI로 업로드하는 기존 방식 그대로 따름. (참고: 이 세션 시작 시점에 `main`과 이
+  작업 브랜치가 이미 완전히 동일한 커밋(5943113)이었음을 확인했음 — 사용자가 업로드할 때
+  `main`에 올리면 바로 반영됨.)
+
+#### 같은 세션, 위 홈 FAQ 미리보기를 되돌리고 대신 "궁금해요" 버튼 자체에 ✕ 추가
+사용자가 스크린샷(🔍 궁금해요 버튼)을 다시 보여주며 원래 의도를 명확히 함 — "FAQ 목록을
+궁금해요랑 같이 묶어서 보여주고 싶었던 것"이었고, 위에서 만든 홈 화면 하단의 별도 정적
+박스는 원하는 형태가 아니었음. 논의 끝에: 그 정적 박스는 완전히 제거하고, 대신 기존 🔍
+궁금해요 플로팅 버튼(모든 탭에서 뜨는 검색 진입점)은 그대로 유지하되 **그 버튼 자체도
+거슬리면 없앨 수 있게 ✕를 추가**하는 방향으로 정리함(리스트를 정적으로 항상 보여주는 대신,
+버튼을 통한 기존 진입 방식 자체를 사용자가 완전히 끌 수 있게 하는 쪽).
+
+- **되돌리기**: `index.html`/`styles.css`/`script.js`/`i18n-source/translations.json`(및
+  `i18n/*.json` 재생성)에서 위 항목의 변경분을 전부 제거 — `git diff <직전 커밋 이전 베이스>
+  -- index.html styles.css script.js i18n-source/translations.json i18n/`로 완전히
+  바이트 단위 원상복구됐는지 확인함.
+- **"궁금해요" 버튼 ✕ 추가**(`index.html` 2085줄 근처): 기존 `<button class="faq-float-btn"
+  id="faqFloatBtn">`을 `<div class="faq-float-wrap" id="faqFloatWrap">`로 감싸고, 그 안에
+  작은 원형 ✕ 배지(`#faqFloatClose`, `dismissFaqFloatBtn(event)`)를 형제로 추가. 닫으면
+  `localStorage`(`chamtaxFaqFloatBtnDismissed`)에 저장되어 다음 방문에도 계속 안 보임(홈 FAQ
+  미리보기 때 쓴 것과 동일한 영구 dismiss 패턴).
+- **리팩터 필요했던 이유**: 이 버튼은 스크롤 위치·"밑에 깔린 텍스트와 겹치는지"에 따라
+  `is-visible`/`is-colliding`/`is-hidden` 클래스로 opacity·pointer-events가 계속 바뀌는
+  구조라(`updateFaqFloatBtnVisibility`/`faqFloatBtnCollidesWithText`, script.js), 이 상태를
+  버튼과 ✕ 배지 **둘 다** 같이 따라가게 하려면 `position:fixed`+가시성 클래스를 버튼이 아니라
+  이 둘을 감싸는 wrap으로 옮겨야 했음. `#faqFloatBtn`을 대상으로 하던 곳(view 전환 시 숨김
+  로직, 스크롤 가시성 로직, 충돌 감지에 넘기는 요소)을 전부 `#faqFloatWrap` 기준으로 바꿈.
+- **실제로 고친 회귀 하나**: `@media print` 규칙(`styles.css` 약 2083줄)이 인쇄 시 화면 전용
+  요소를 숨기는 선택자 목록에 `.faq-float-btn`을 쓰고 있었는데, 이제 `position:fixed`가
+  버튼이 아니라 wrap에 있으므로 그대로 두면 **인쇄 시 버튼은 숨어도 fixed된 wrap(과 그 안의
+  ✕ 배지)이 화면에 그대로 남는** 회귀가 생길 뻔했음 — 선택자를 `.faq-float-wrap`으로 같이
+  수정.
+- **오탐 아닌지 직접 확인한 것**: ✕ 배지가 버튼의 실제 사각형 경계에 걸치지 않게(위쪽·오른쪽으로
+  살짝 튀어나오게) 배치해서, `faqFloatBtnCollidesWithText`의 샘플링 지점(버튼 rect의 상하좌우
+  변 중앙)에 ✕ 배지 자신이 잡혀 스스로를 "텍스트와 충돌"로 오인해 흐려지는 일이 없는지
+  Playwright로 여러 스크롤 위치에서 `pointer-events`/`opacity` 값을 직접 찍어 확인함(정상).
+  ✕를 실제로 클릭해도 부모 버튼의 `onclick`(FAQ 오버레이 열기)이 같이 발동하지 않는지도
+  `event.stopPropagation()` 넣고 실제 클릭으로 확인.
+- **검증**: 회귀 테스트 11개 전부 `ISSUES: 0`(i18n_coverage_audit는 원래 상태와 동일하게
+  560개 키·기존 무관 이슈 1건만). Playwright로 (1) 스크롤 후 버튼+✕ 배지 노출 (2) ✕ 클릭 시
+  즉시 숨김+FAQ 오버레이 안 열림 (3) 새로고침 후에도 계속 숨김(localStorage) 확인.
+
+#### 같은 세션, 홈 화면 금액 입력칸에 음성 인식 + Enter 지원, 잭팟 퀵필이 연금액 칸도 채우게 함
+사용자가 "348 Million USD" 입력칸 스크린샷을 보여주며 3가지 요청: ① 이 칸에도 음성으로 금액을
+말할 수 있게 ② 숫자 입력 후 Enter를 누를 수 있게(엔터가 없어서 불편함) ③ 파워볼/메가밀리언즈
+퀵필 버튼을 누르면 연금액(발표액) 탭의 값도 같이 바뀌게.
+
+- **① 음성 인식**(`#homeAmountVoiceBtn`/`#homeAnnouncedVoiceBtn`, `startAmountVoiceInput()`):
+  FAQ 검색 음성 버튼(`SpeechRecognitionCtor`/`FAQ_VOICE_LANG_MAP`)을 그대로 재사용하되, 인식된
+  문장을 그대로 넣는 대신 숫자만 뽑아서(`.replace(/[^0-9.]/g, '')`, `parseMillionsInput`과 같은
+  필터) 입력칸에 넣음 — "삼백사십팔" 같은 말은 브라우저 음성 엔진이 자체적으로 "348"처럼
+  숫자로 정규화해주는 경우가 대부분이라 대부분 언어에서 그대로 작동함. Playwright로 실제
+  `webkitSpeechRecognition`을 가짜 구현체로 바꿔치기해서 `onresult`를 직접 발생시켜 입력값·
+  슬라이더 갱신·인식 종료까지 검증(진짜 마이크/네트워크 없이도 로직 자체는 확인 가능).
+- **② Enter 지원**: `oninput`으로 이미 매 키 입력마다 실시간 계산되고 있어서 Enter가 계산을
+  "트리거"할 필요는 없었음 — 진짜 문제는 `inputmode="decimal"` 입력칸이 일부 모바일 브라우저에서
+  가상 키패드에 Enter/완료 키 자체가 안 뜨는 것으로 추정(사용자가 "엔터가 없다"고 명시). 두 칸
+  모두 `enterkeyhint="done"` 속성을 추가해 모바일 키보드에 "완료" 키가 뜨도록 힌트를 주고,
+  `onkeydown`으로 Enter 시 `this.blur()`(키보드 닫기)를 실행함.
+- **③ 퀵필→연금액 동기화** (`fillHomeAmountFromJackpot`): 이미 `JACKPOT_DATA[game].amountUsd`
+  (연금 발표 총액)를 갖고 있었으므로, 일시불 칸(`setHomeLumpAmountUsd`)뿐 아니라
+  `homeAnnouncedInput.value`도 같은 값(백만 달러 단위)으로 채움 — 이제 퀵필 버튼을 누른 뒤
+  "연금액" 탭으로 바꿔도 방금 고른 잭팟과 무관한 값이 안 보임.
+- **실제로 잡은 회귀(구현 중 발견)**: 마이크 버튼을 처음엔 `.million-unit` 옆에 flex 형제로
+  넣었는데, Playwright로 240px 뷰포트에서 실제 렌더 폭을 재보니 버튼(40px)+단위 라벨(~56px)이
+  전체 폭(176px)의 절반 넘게 먹어서 숫자 입력칸이 44px로 줄어들어 "예: 100" 조차 안 보이는
+  문제가 있었음(자동 오버플로우 테스트는 안 잡음 — `<input>` 내부 텍스트 잘림은 레이아웃
+  오버플로우가 아니라서 `wrap_audit`/`home_audit` 등으로는 검출 안 됨, 눈으로 직접 스크린샷
+  찍어서 발견). **해결**: 마이크를 flex 흐름에서 완전히 빼서 테두리 모서리에 겹치는 절대위치
+  배지로 바꿈(`.amount-voice-btn`, 위 "궁금해요" ✕ 배지와 같은 패턴) — 숫자·단위 라벨의 flex
+  폭에 전혀 영향 안 줌. 배지를 위한 오른쪽 여백(`padding-right`)은 실제 마이크가 있는 홈 화면
+  두 칸에만 `.has-voice-btn` 클래스로 한정 적용 — `.million-input-wrap`을 공유하는 비교(compare)
+  탭의 `#amountInput`(마이크 없음)까지 이유 없이 좁아지는 회귀를 막기 위함(처음엔 안 나눠서
+  실제로 그 회귀가 생겼었음, Playwright로 세 번째 `.million-input-wrap` 폭을 따로 재서 확인
+  후 수정).
+- **새 번역 키**: `a11y.voiceAmount`(마이크 버튼 aria-label) 22개 언어 전부 채움 —
+  참고로 FAQ 검색 음성 버튼의 `a11y.voiceSearch`는 애초에 번역 파일에 없는 상태로 방치돼있는
+  것(i18n_coverage_audit가 계속 잡아내는 기존 이슈)이었는데, 이번에 새로 만든 키는 그 실수를
+  반복하지 않고 처음부터 22개 언어 다 채워 넣음.
+- **검증**: 회귀 테스트 11개 전부 `ISSUES: 0`. Playwright로 (1) 퀵필 클릭 시 일시불+연금액
+  동시 반영 (2) Enter 키 시 포커스 해제(키보드 닫힘) (3) 가짜 음성 인식 결과로 입력값·슬라이더
+  갱신 (4) 240px/390px 스크린샷으로 마이크 배지가 숫자·단위 라벨과 안 겹치고 3~4자리 숫자도
+  잘리지 않고 보이는지 (5) 비교 탭 입력칸 폭이 그대로 유지되는지 확인.
+
+#### 같은 세션, 위에서 연금액 칸도 채우게 하면서 생긴 후속 버그: "연금액 탭에서 퀵필 누르면 일시불로 튕겨나감"
+사용자가 바로 지적함 — `setHomeLumpAmountUsd()`가 예전부터 퀵필 클릭 시 무조건
+`switchAmountTab('lump')`를 호출하고 있었음(당시엔 일시불 칸만 채웠으니 안 보이면 의미
+없어서 당연한 설계였음). 그런데 바로 위 항목에서 연금액 칸도 같이 채우게 바꾼 뒤에도 이
+강제 전환 로직은 그대로 남아있어서, 사용자가 "연금액" 탭을 보고 있다가 퀵필을 눌러도 방금
+채워진 연금액 값은 못 보고 다시 "일시불" 탭으로 튕겨나가는 모순이 생김.
+
+- **수정**: `getActiveAmountTab()` 신규 함수로 현재 열려있는 탭을 `.amount-tab-btn.active`에서
+  읽고, `setHomeLumpAmountUsd(cashUsd, btn, exactCalc, keepAnnouncedTab)`에 4번째 인자
+  추가 — `keepAnnouncedTab`이 true이고 현재 탭이 "연금액"이면 강제 전환을 건너뜀.
+  `fillHomeAmountFromJackpot`만 이 옵션을 true로 넘김(연금액 칸도 같이 채워주므로 그대로
+  둬도 값이 맞게 보임). **연금액을 안 채워주는 랭킹 CTA(`fillHomeAmountFromRanking`)는 이
+  옵션 없이 그대로 둬서 여전히 항상 "일시불"로 전환됨** — 안 그러면 그 탭엔 무관한 값만
+  남아있게 됨. "희망액" 탭에서 퀵필을 눌렀을 때도 기존처럼 "일시불"로 전환되는 게 맞음(그
+  탭도 채워주는 값이 없으므로).
+- **검증**: Playwright로 3개 시나리오 실제 클릭 재현 — ① 연금액 탭에서 파워볼 퀵필 → 연금액
+  탭 그대로 유지+양쪽 필드 값 정확(348/600) ② 일시불 탭에서 메가밀리언즈 퀵필 → 일시불 탭
+  그대로 ③ 희망액 탭에서 파워볼 퀵필 → 일시불로 전환(의도된 기존 동작). 회귀 테스트 11개
+  전부 `ISSUES: 0` 재확인.
+
+#### 같은 세션, 배경색 명암비 + 데스크톱 레이아웃 폭 수정 (사용자가 "네가 말한 거 전부 수정해줘"로 승인)
+사용자가 "카드 색이 페이지 배경이랑 비슷해서 집중이 안 된다" + "모니터에 따라 크기가 이상하게
+나온다"고 지적 → 데스크톱 1440px로 실제 렌더링해서 확인해보니 둘 다 진짜 문제였음:
+① `--body-bg`(#F0ECE0)/`--bg`(#FAF6EC)/`--card`(#FFFEF9) 3단이 거의 같은 톤이라 큰 화면에서
+`.page`가 body 배경과 거의 안 갈라져 보임(WCAG 비텍스트 대비 계산해보니 실제로 1.05~1.11:1
+수준 — 거의 차이 없음) ② `.page{max-width:1140px}`라서 데스크톱에서 모바일용 버튼/입력창이
+그 폭까지 그냥 늘어나 한 줄이 화면 절반을 가로지르는 것처럼 부자연스러워 보임.
+
+**사용자에게 "커스터마이징 기능"을 만들어주는 대신 기본값 자체를 고치자고 먼저 제안하고 동의를
+받은 뒤 진행**(사용자가 원한 건 "왜 이렇게 보이는지"에 대한 근본 해결이었지, 색/크기를 직접
+조절하는 UI 자체가 목적은 아니었다고 판단 — 이 사이트는 22개 언어 레이아웃이 이미 예민해서
+사용자별 임의 커스텀을 허용하면 조합 폭발로 새 버그 유형이 계속 생길 위험이 큼).
+
+- **배경 3단 명암비 확대** (`--body-bg`/`--bg`/`--card`, 라이트+다크 양쪽): 여러 후보 팔레트를
+  실제로 나란히 렌더링해서 비교한 뒤 골랐음(정적 HTML 스와치 + Playwright 스크린샷 — 카드 하나
+  고치고 매번 사이트 전체를 다시 스크린샷하는 대신 빠르게 반복 비교). "갈색 비선호" 리서치
+  결과는 유지해야 해서, 채도를 올리는 대신 명도 단차만 벌림 — 후보 중 채도가 높아 카키/탄
+  계열로 보이던 안은 제외하고 "선명히 구분되면서도 여전히 밝고 따뜻한" 안으로 확정.
+  - 라이트: body-bg `#F0ECE0→#D9CDA8`, bg `#FAF6EC→#F7F1E0`, card `#FFFEF9→#FFFFFF`(순백)
+  - 다크: body-bg `#161412→#0C0A09`, bg `#1B1917→#1E1A16`, card `#242220→#39332B`
+  - 카드가 순백으로 바뀌면서, 카드색과 정확히 맞춰뒀던 하드코딩 그라데이션 2곳
+    (`#introPersonaAccordion`, `.result-hero`)과 `--grad-soft`/`--grad-amber` 변수의 끝
+    지점도 같이 `#FFFFFF`로 맞춤 — 안 맞추면 그라데이션 끝과 카드 배경 사이에 눈에 띄는 이음매가
+    생김. 다크모드는 이 두 요소가 이미 `var(--grad-soft)`로 자동 대응되고 있어서 손 안 댐.
+  - 고대비 모드(`--contrast="high"`) 주석에 적혀있던 WCAG 비율도 새 `--bg` 기준으로 재계산해서
+    갱신(라이트 text-muted 7.31→10.67:1, border 1.15→3.14:1 / 다크 text-muted 7.58→12.04:1,
+    border 1.53→3.77:1 — 전부 3:1 이상 유지 확인).
+  - **⚠️ 5개 서브페이지 동기화 필수**(파일 최상단에 이미 경고 주석이 있던 부분 — 이 팔레트가
+    `korea-resident-us-lottery-tax.html`/`megamillions-tax.html`/`powerball-tax.html`/
+    `us-lottery-take-home.html`/`us-lottery-tax-rate.html` 5개 파일에 각자 `:root`로 중복
+    정의돼있음): `--bg`/`--card`(라이트+다크) 전부 동일하게 동기화함. 이 5개 페이지는
+    `--body-bg`/`.page` 구조 자체가 없어서(이미 `.wrap{max-width:640px}`로 충분히 좁은 레이아웃)
+    폭 조정은 불필요했음.
+- **데스크톱 폭 축소** (`.page{max-width:1140px → 640px}`): 위 5개 서브페이지가 이미
+  `max-width:640px`를 쓰고 있어서 우연히 같은 값으로 맞아떨어짐(이 사이트의 기존 "적당한
+  읽기 폭" 관례와 일치, 새로 발명한 숫자가 아님). 640px면 모바일에서 이미 검증된 explore-grid
+  (3열)/trust-grid(4열) 등이 큰 폰 정도의 폭으로 자연스럽게 맞음 — 데스크톱 전용 레이아웃을
+  새로 만들 필요 없었음. 회귀 테스트가 다루는 240~430px보다 더 넓게만 만드는 것이라 줄바꿈
+  쪽 새 위험도 없음(더 좁게 갈 때만 wrap 테스트 커버리지 밖 위험이 있음).
+- **검증**: Playwright로 1440px 데스크톱 스크린샷(라이트+다크) 찍어서 전/후 비교 — 전에는
+  카드/배경 경계가 거의 안 보이고 버튼 줄이 화면 절반을 가로질렀는데, 수정 후엔 3단이 뚜렷이
+  구분되고 콘텐츠 폭도 자연스러운 열으로 줄어듦. 5개 서브페이지 중 1곳도 렌더링해서 색 동기화
+  확인. 회귀 테스트 11개 전부 `ISSUES: 0`(240~430px 좁은 화면은 손 안 댄 부분이라 그대로 통과).
+
+#### 같은 세션, "나는 어떤 경우일까요?" 언어 드롭다운 2개를 하나씩 실제로 들어가서 검증 — 탭 제목 번역 누락 버그 발견·수정
+사용자가 "한국에 사는 외국인이에요"/"다른 나라에 살아요" 드롭다운을 캡처해서 보여주며 "언어
+하나씩 다 들어가보고 정렬·번역 다 확인해달라"고 요청. Playwright로 실제 각 옵션을 선택→"이동"
+클릭까지 재현해서 27개(전자)+20개(후자) 옵션 전부 실제 렌더링 결과를 확인함.
+
+- **`#foreignerLangSelect`(27개)**: 6개는 `?lang=xx`로 앱 내 언어 전환(en/zh/vi/th/ru/tl),
+  21개는 각자 전용 정적 랜딩페이지(`href:...`)로 이동. 27개 전부 정상 로드(0 broken),
+  한글 잔존은 전 페이지 공통으로 "참택스"(브랜드명)와 정적 페이지의 "세무사"/"한국어로"
+  뿐(이전 세션들에서 이미 의도적 표기로 확인된 패턴, 재확인만 함) — 실제 번역 누락은 없었음.
+  **단, 실제 렌더링 중 진짜 버그 하나 발견**: 브라우저 탭 제목(`document.title`)이 `PAGE_TITLES`
+  객체에 `ko`/`en`/`zh` 3개 언어만 커스텀 문구가 있고 나머지 19개 언어는 그 항목이 없어서
+  `entry[currentLang] || entry.ko`가 조용히 한국어로 폴백하고 있었음 — 베트남어·태국어·
+  러시아어·타갈로그어 등 19개 언어(7개 화면 × 19 = 133곳)에서 탭 제목만 한국어로 고정 표시.
+  **수정**: 133개를 손으로 새로 번역하는 대신, 이미 화면에 노출되어 검증된 다른 키(`hero.tag`,
+  `nav.compare`/`nav.odds`/`nav.faq`, `privacy`/`disclaimer`/`contact`.breadcrumb — 전부
+  22개 언어 이미 완비)를 재사용해 `"{짧은 이름} | ChamTax"` 형태로 자동 구성하는 폴백을
+  추가(`PAGE_TITLE_KEYS`, `applyCurrentViewTitle()`). ko/en/zh의 기존 커스텀 문구는 그대로
+  유지, 나머지 19개만 이 폴백을 탐. Playwright로 22개 언어 × 7개 화면 = 154개 조합 전부
+  재검증 → 한글 잔존 0건.
+- **정렬 문제(수정 전, 사용자에게 보고만 하고 다음에 처리 예정)**: 이 드롭다운의 옵션 순서가
+  사이트 전역에서 쓰는 정식 언어 순서(hreflang·i18n 빌드 스크립트 `LANGS` 배열 — 한국 거주
+  외국인 인구 비중 기준으로 이미 확정된 순서: en,zh,vi,th,ru,km,ne,id,my,si,uz,mn,kk,ky,ur,bn,
+  lo,ja,ar,hi,fr,tl)와 안 맞음 — tl(타갈로그)이 5번째로 앞당겨져 있고 ru(러시아어)는 12번째로
+  밀려나 있는 등, 정적 랜딩페이지를 세션마다 하나씩 추가하면서 그때그때 끝에 붙인 흔적으로
+  보임. `#realAbroadSelect`(19개, 국가|언어 쌍)도 같은 패턴 — us,vn,cn,in,id,ph,th,jp,ru,...
+  순서가 위 정식 순서와 다름.
+- **`#realAbroadSelect`(20개)**: 전부 `TAX_MODEL`에 해당 국가 전용 세율 모델이 이미 정의돼있음
+  확인(`us_resident`~`la_resident` 19개 국가 전부 존재, 세율 정보 누락 없음). Playwright로 20개
+  전부 선택→이동 재현해서 언어·국가 기준이 실제로 같이 바뀌는지, 결과 금액에 undefined/NaN이
+  없는지, 한글 잔존이 없는지 확인 — 전부 정상.
+  - **검증 스크립트 자체의 오탐 하나 겪음**: 처음엔 "인도네시아 전용 FAQ 문구(`faq.a19id`,
+    `data-basis="id"`)가 우즈베키스탄·파키스탄·필리핀 페이지에도 보인다"는 오류를 발견한
+    줄 알았는데, 원인은 검증 스크립트의 `TreeWalker`가 `lang_leak_audit.js`처럼
+    `getClientRects().length===0`(실제 화면에 안 보이는 요소) 필터링을 안 해서, `filterFaq()`가
+    이미 `display:none`으로 정상적으로 숨겨둔 DOM 텍스트까지 같이 주워온 것이었음 — 그
+    필터를 넣어 재검증하니 실제로는 0건. "undefined/NaN 포함 여부"도 처음엔 대소문자 무시
+    부분일치(`/undefined|NaN/i`)로 검사해서 우즈베크어 "taxminan"(대략)/타갈로그어 "nanalo"
+    (당첨되다) 같은 정상 단어 안의 "nan" 부분이 오탐으로 잡혔음 — 단어 경계(`\bNaN\b`)로
+    바꿔서 재검증 후 0건 확인. **교훈**: 자동 검증 스크립트를 새로 짤 때도 기존에 검증된
+    패턴(`lang_leak_audit.js`의 가시성 필터)을 그대로 재사용할 것 — 새로 짜면서 이 필터를
+    빠뜨리면 "사이트가 깨졌다"는 결론을 잘못 내릴 위험이 있음.
+
+#### 같은 세션, 사용자가 정렬 재정비 승인 → 두 드롭다운을 정식 언어 순서로 재정렬
+`#foreignerLangSelect`(27개)/`#realAbroadSelect`(20개) 옵션 순서를 hreflang·i18n 빌드
+스크립트가 이미 쓰는 정식 순서(en,zh,vi,th,ru,km,ne,id,my,si,uz,mn,kk,ky,ur,bn,lo,ja,ar,hi,
+fr,tl — 한국 거주 외국인 인구 비중 기준)에 맞춰 재정렬함.
+- `#foreignerLangSelect`: 이 22개 언어에 안 속하는 5개(스페인어·포르투갈어·번체중문·테툰어·
+  우크라이나어)는 정식 순서에 없으므로 tl(마지막) 뒤에 원래 순서 그대로 이어붙임.
+- `#realAbroadSelect`: 국가|언어 쌍이라 언어 기준으로 정렬하되, en이 겹치는 US/IN 두 항목은
+  원래 순서(US 먼저) 유지. ar/hi/fr에 대응하는 국가 항목 자체가 이 드롭다운엔 없어서 자동으로
+  빠짐.
+- **검증**: 재정렬 후 옵션 개수(27개/20개)가 정확히 보존됐는지, 값이 하나도 빠지거나 중복되지
+  않았는지 재확인. 회귀 테스트 11개 전부 `ISSUES: 0`.
+
+#### 2026-07-27, 새 세션 — 데스크톱 폭 640px가 이번엔 반대로 "여백 과다" 문제로 지적됨 → 900px로 재조정
+사용자가 실제 사이트 스크린샷(넓은 모니터)을 보여주며 "사이즈 조절했는데 아직도 이렇게 나오냐,
+모니터 긴 곳도 많을텐데"라고 지적. 위 항목("배경색 명암비 + 데스크톱 레이아웃 폭 수정")에서
+`.page{max-width:1140px→640px}`로 좁힌 게 원인 — 그때는 "1140px가 버튼 줄을 화면 절반으로
+늘려서" 문제였는데, 640px는 그 반대로 2560px급 모니터에서 카드 양옆에 배경만 과도하게 남는
+정반대 문제를 만듦(Playwright로 2560/1920/1440px 스크린샷 찍어서 실제 재현 확인, 사용자
+스크린샷과 동일).
+
+- **두 문제가 상충 관계라 사용자에게 AskUserQuestion으로 방향 확인**(① ~900px로 적당히 넓히기
+  ② 640px 그대로 유지 ③ 여백에 장식 콘텐츠 채우기) → **① 선택받아 진행**.
+- **수정**: `styles.css`의 `.page{max-width:640px}` → `900px` 한 줄만 변경(주석도 갱신). 900px
+  기준으로 세금기준 2x2 버튼 그리드/공유·저장 버튼 2열/잭팟 카드 2열 등이 늘어지지 않는지
+  1440~2560px 스크린샷으로 직접 확인.
+- **검증**: 회귀 테스트 11개 전부 `ISSUES: 0`(`a11y.voiceSearch` 누락 1건은 이 세션 이전부터
+  있던 무관한 기존 이슈 — 재확인만 함, i18n_coverage_audit).
+- **이 세션 유형도 `git push` 403으로 막혀있음 재확인**(위 "GitHub push가 항상 막혀있음" 섹션
+  그대로 적용 — 이번에도 재진단만 하고 우회 방법 새로 찾지 않음). 로컬 커밋 후 `styles.css`
+  파일 하나만 SendUserFile로 전달, 사용자가 GitHub 웹 UI에서 `main` 브랜치에 직접 덮어쓰기로
+  반영해야 실제 라이브 사이트(GitHub Pages)에 배포됨.
+
+#### 같은 세션 이어서 — 홈 화면 "연금액" 탭에도 일시불 탭과 똑같은 금액 슬라이더 추가
+사용자가 일시불 탭의 로그 스케일 슬라이더(2천만~10억 달러 눈금) 스크린샷을 보여주며 "연금액
+밑에도 이렇게 넣을까?"라고 물어봄 — 확인해보니 연금액 탭(`#amountTabAnnounced`)은 텍스트
+입력칸+환산 안내 문구만 있고 슬라이더가 없었음(일시불 탭만 `#homeAmountSlider` 보유).
+
+- **구조**: `index.html`의 `#amountTabAnnounced` 안에 `#homeAnnouncedSlider`(일시불 슬라이더와
+  동일한 마크업 패턴 — `min/max/step/value/data-usd-min/data-usd-max` 그대로 복사) 추가.
+- **JS(`script.js`)**: 기존 `onHomeAnnouncedTyped()`(타이핑 시 연금액→일시불 58% 환산 후 계산
+  갱신하던 로직)를 `applyHomeAnnouncedMillions(announcedMillions)`(공통 처리: 일시불 환산·
+  계산 갱신·환산 안내 문구)로 분리하고, 그 위에 얇은 래퍼 두 개를 둠:
+  - `onHomeAnnouncedTyped()`: 텍스트 타이핑 시 — 슬라이더 위치를 그 값에 맞게 재계산
+    (`setSliderMillions`) 후 공통 처리 호출.
+  - `onHomeAnnouncedSliderMoved()`(신규, 일시불의 `onHomeSliderMoved()`와 대응): 슬라이더
+    드래그 시 — 슬라이더는 이미 그 위치에 있으므로 텍스트칸만 채운 뒤 공통 처리 호출.
+  - `fillHomeAmountFromJackpot()`(퀵필 버튼)과 `updateHomeCalc()`(언어 전환 시 눈금 라벨
+    갱신)도 새 슬라이더를 같이 챙기도록 수정. `switchAmountTab()`에도 "연금액" 탭으로 전환된
+    직후 눈금을 다시 그리는 코드 추가 — 탭이 `display:none`인 동안엔 폭이 0이라
+    `renderSliderTicks()`가 조용히 눈금을 못 그린 채 넘어가기 때문(탭이 보이게 된 시점에야
+    실제 폭을 잴 수 있음).
+- **검증**: Playwright로 (1) 연금액 탭에 슬라이더가 실제로 존재 (2) "300" 타이핑 →
+  슬라이더가 그 값(300M)에 맞는 위치로 이동+일시불 칸 자동 174(=300×58%)+안내 문구 정확
+  (3) 슬라이더를 직접 드래그(값 700) → 텍스트칸 410M로 자동 채워짐+일시불 칸 238M로
+  같이 갱신 — 양방향 동기화 확인. 375px/420px 모바일 스크린샷으로 레이아웃도 확인(잘림·
+  겹침 없음). 회귀 테스트 11개 전부 `ISSUES: 0`(`a11y.voiceSearch` 1건은 여전히 무관한
+  기존 이슈).
+- 새로 추가한 UI 텍스트/번역 키는 없음(기존 슬라이더 눈금 라벨 키를 그대로 재사용) — i18n
+  작업 불필요.
+
+#### 같은 세션 이어서 — "한국에 사는 외국인이에요" 드롭다운에서 이동한 랜딩페이지 "3초 요약" 표가
+#### 우즈베크어·미얀마어·인도네시아어 등에서 글자가 한 줄에 한 단어씩만 나오는 심각한 레이아웃
+#### 깨짐 발견·수정
+사용자가 카카오톡 인앱 브라우저에서 캡처한 스크린샷 4장(우즈베크어/미얀마어/인도네시아어 등)을
+보여줌 — "3초 요약" 박스의 질문(왼쪽)·답변(오른쪽, 굵게) 한 줄 표 형태가, 답변 쪽이 세로로
+한 단어씩 쌓이는 형태로 완전히 깨져 있었음.
+
+- **원인**: `.quick-answer .row{display:flex; justify-content:space-between}` 구조에서
+  왼쪽 라벨(`<span>`)에 `flex-shrink:0`(줄어들지 않음)을 주고, 오른쪽 답변(`<b>`)에는
+  `flex:1; min-width:0`(남는 공간을 차지하되 얼마든지 좁아질 수 있음)을 준 게 원인. 한국어
+  원문은 라벨이 짧아서("1단계: 미국에서") 문제가 안 됐는데, 번역이 길어지는 언어(우즈베크어
+  "Ikki marta soliq to'lamaslik uchun" 등)는 라벨이 줄어들지 않고 자기 폭을 그대로 차지해버려서
+  답변 쪽 공간이 거의 안 남고, `min-width:0` 때문에 그 좁은 폭까지 강제로 줄어들어 단어 하나도
+  못 들어갈 정도로 좁아진 것 — 결과적으로 단어마다 줄바꿈됨. `.quick-answer .row`를 재사용하는
+  랜딩페이지 33개(언어별 페이지 대부분 + `biggest-lottery-jackpots-after-tax.html` 계열
+  등) 전부에서 동일한 CSS가 파일마다 중복 정의돼있어서 다 같이 영향받음(정확히는 아랍어·
+  우르두어는 RTL이라 `text-align:left`+`unicode-bidi:plaintext`가 추가된 변형, 6개 파일은
+  `overflow-wrap`/`word-break` 없는 더 단순한 변형이었지만 핵심 버그(flex-shrink:0 vs
+  flex:1/min-width:0)는 33개 전부 동일).
+- **수정**: flex 대신 `display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr)`로
+  바꿔서 라벨·답변이 항상 정확히 50%씩 나눠 갖게 함(번역 길이와 무관하게 한쪽이 다른 쪽을
+  밀어내는 게 원천적으로 불가능해짐) — `flex-shrink:0`/`min-width:0`/`flex:1`은 grid에서
+  불필요해져서 제거. RTL 변형(아랍어/우르두어)은 `text-align:left`+`unicode-bidi:plaintext`
+  유지, 단순 변형 6개는 다른 27개와 같은 `overflow-wrap:anywhere; word-break:break-word;`를
+  추가해서 33개 전부 동일한 안전장치를 갖추게 통일함. 한국어처럼 라벨이 짧은 경우는 답변 쪽이
+  이전엔 한 줄(약 65~70% 폭)이었다가 이제 정확히 50% 폭이라 2~3줄로 나뉘는 정도의 사소한
+  변화만 있고(깨짐 아님), 라벨이 긴 경우는 완전히 정상적으로 여러 단어가 한 줄에 들어가는
+  형태로 고쳐짐.
+- **검증**: Playwright로 390px 폭 기준 6개 파일(한국어/우즈베크어/미얀마어/인도네시아어/
+  아랍어(RTL)/`korean_abroad_us_lottery_tax_ko.html`(단순 변형))의 `.quick-answer` 박스를
+  수정 전/후 스크린샷으로 직접 비교 — 전부 단어별 줄바꿈 없이 정상 렌더링 확인.
+  `tests/broken_link_audit.js`(44개 파일 전수 검사)로 이번 수정이 다른 링크·구조를
+  깨뜨리지 않았는지 확인, `ISSUES: 0`. 이 랜딩페이지들은 정적 HTML이라 나머지 회귀
+  테스트(JS 앱 대상)는 해당 없음.
+- **영향받은 파일 33개**: 언어별 페이지 31개(아랍어/벵골어/캄보디아어/중국어(2개: 자체+
+  해외거주용)/프랑스어/힌디어/인도네시아어/일본어/카자흐어/한국(자체+해외거주용 2개)/
+  키르기스어/라오어/몽골어/미얀마어/네팔어/필리핀어/포르투갈어/러시아어/스페인어/스리랑카어
+  (신할라)/대만·홍콩(번체중문)/태국어/티모르어(테툰어)/우크라이나어/우르두어/우즈베크어/
+  베트남어) + `korea-resident-us-lottery-tax.html`/`biggest-lottery-jackpots-after-tax.html`/
+  `biggest_lottery_jackpots_after_tax_zh.html` 3개.
+
+#### 같은 세션 이어서 — 사용자가 파워볼·메가밀리언즈 공식 결과 스크린샷 전달 → 로또 데이터
+#### 전수 점검해서 빠진 곳 채움 + 자동 루틴 5개를 전부 "이 세션에 이어서 실행"으로 재설정
+사용자가 "로또 데이터 필요한 곳 빠짐없이 다 업뎃해주고, 루틴도 새 대화창 열지 말고 기존
+대화창에서 [처리]하고 틀린 부분 있으면 zip으로 주는 걸로 고쳐줘"라고 요청.
+
+**로또 데이터 갱신**:
+- `odds-data.js`를 실제로 파싱해서(정규식 추출 + `vm` 컨텍스트 평가) `POWERBALL_DRAW_ARCHIVE`
+  (전체 당첨번호)와 `POWERBALL_JACKPOT_ARCHIVE`(당첨번호+그 회차 잭팟액), 메가밀리언즈도
+  동일하게 두 배열씩 있는 걸 확인 — **두 배열이 서로 완전히 동기화돼 있지 않다는 걸 발견**:
+  파워볼은 JACKPOT_ARCHIVE에만 있고 DRAW_ARCHIVE엔 빠진 날짜 4건(2021-04-28/2022-03-12/
+  2022-04-09/2022-11-07 — 이 중 2022-11-07은 역대 최고액 $2,040.1M, 2022년 실제 잭팟과 일치),
+  메가밀리언즈는 522건 차이 났는데 그중 518건은 2002-05-17 이전 "The Big Game" 시절 데이터라
+  DRAW_ARCHIVE 시작 기준일(과거 세션에서 이미 확정 — 번호 매트릭스가 달라 빈도 통계 왜곡
+  방지)보다 앞서서 의도적으로 제외된 게 맞았지만, 나머지 4건(2007-12-25/2009-12-25/
+  2013-10-18/2026-07-21)은 기준일 이후인데 순수 누락이었음.
+- 사용자 스크린샷(메가밀리언즈 7/24 회차, 파워볼 7/25 회차)의 당첨번호를 WebSearch로 교차
+  검증(abc10.com "$600M Powerball..."/10tv.com "$743 million jackpot..." 등, 당첨번호가
+  스크린샷과 정확히 일치 + 사용자가 보여준 "다음 잭팟" 예고액과도 일치 — 2중 교차확인 원칙
+  유지)해서 각 회차 자체 잭팟액(파워볼 $600M, 메가밀리언즈 $743M)까지 확보.
+- **최종 추가/보정**: `POWERBALL_DRAW_ARCHIVE`+`POWERBALL_JACKPOT_ARCHIVE`에 위 4건 누락분과
+  7/25 신규 회차(3,4,24,36,47/PB17, $600M) 반영, `POWERBALL_JACKPOT_ARCHIVE`에 2024-07-06도
+  누락돼 있어 WebSearch로 확인 후($20M) 같이 채움. `MEGAMILLIONS_DRAW_ARCHIVE`에 3건 누락분
+  +7/21(25,37,59,68,70/MB10, 이미 JACKPOT_ARCHIVE에 있던 값 그대로 복사)+7/24(2,5,42,44,60/
+  MB1, $743M) 반영, `MEGAMILLIONS_JACKPOT_ARCHIVE`에 7/24 신규 추가. 전부 날짜 오름차순 위치에
+  삽입(끝에 그냥 append 아님), 기존 항목은 하나도 안 건드렸는지 old/new 배열을 날짜 키로 diff
+  해서 재확인. `tests/draw_archive_integrity_check.js` 통과(minCount/최신일자 기준값도 갱신:
+  메가밀리언즈 2,525건/파워볼 3,833건).
+- **script.js의 별도 수동 위젯도 갱신**(odds-data.js와 자동 연동 안 됨, 이전 세션들이 이미
+  확인한 구조): `JACKPOT_DATA.powerball.amountUsd`를 6억→6.33억 달러로(스크린샷의 "Next
+  Jackpot $633M"), `LATEST_DRAW.powerball`을 7/22→7/25 회차로 갱신(메가밀리언즈 쪽은 이미
+  최신 상태였음). `odds-data.js?v=20260724`→`?v=20260727` 캐시버스팅도 올림.
+- **검증**: 회귀 테스트 11개 전부 `ISSUES: 0`(도중에 로컬 서버가 꺼져있어서 첫 실행 때
+  전부 실패했었는데, 서버 재시작 후 재확인하니 진짜 회귀가 아니었음 — 테스트 환경 문제와
+  실제 버그를 헷갈리지 않도록 매번 서버 살아있는지부터 확인할 것). Playwright로 홈 화면
+  퀵필 금액(367M/464M, 새 잭팟액의 58% 일시불 환산과 일치)·"최근 잭팟 확인하기" 카드의
+  countup 타겟값·당첨볼 표시(3,4,24,36,47,17 / 2,5,42,44,60,1)·확률체감 탭 이월 스트릭
+  위젯(JS 에러 없이 정상 렌더링)까지 직접 확인.
+
+**자동 루틴 재설정**: `list_triggers`로 현재 5개 루틴을 전수 확인해보니, 그중 3개(파워볼/
+메가밀리언즈 잭팟 체크, 주간 버그 점검)는 `persistent_session_id`가 아예 없어서 실행될 때마다
+새 세션(새 대화창)이 열리는 상태였음 — 2026-07-26에 "이 세션에 이어서 실행"으로 고쳤다고
+기록돼 있었지만(위 항목 참고), 그 이후 어느 시점에 트리거가 삭제·재생성되면서(ID가 완전히
+달라져 있었음, 파워볼/메가밀리언즈는 아예 하나였던 게 둘로 쪼개짐) 그 설정이 유실된 것으로
+보임. 나머지 2개(세법 변경 분기별/세율·환율 월간)는 `persistent_session_id`가 있었지만 이
+세션과는 다른 세션(`session_01VfyCy5Zn9pzcBn3pT1osCx`)을 가리키고 있어서, 사용자가 보는
+이 대화창엔 어차피 안 뜨는 상태였음.
+
+- **조치**: 5개 전부 삭제 후 `persistent_session_id`를 지정하지 않는 기본 모드(=호출한
+  세션에 고정)로 재생성 — 결과적으로 5개 전부 **이 세션(`session_01VhJjenTStqvjQ8vJWGywfU`)**
+  에 묶임. 다음 세션에서 "왜 로또 체크가 안 왔지"를 또 재진단하지 말고, 이 세션이 계속
+  살아있는 한 5개 루틴 전부 이 대화로 이어서 들어오는 게 정상 — 세션 자체가 만료되면 그때
+  재설정 필요.
+- **프롬프트 내용도 같이 갱신**: 파워볼/메가밀리언즈 루틴이 지금까지 `script.js`의
+  `JACKPOT_DATA`/`LATEST_DRAW`만 확인하고 `odds-data.js`의 DRAW_ARCHIVE/JACKPOT_ARCHIVE는
+  아예 체크 대상이 아니었던 게 이번에 발견된 누락의 근본 원인이라, 앞으로는 이 아카이브
+  두 벌도 같이 확인·백필하고 `draw_archive_integrity_check.js`를 돌리고 캐시버스팅 버전을
+  올리도록 프롬프트에 명시함. 5개 루틴 전부 "파일이 2개 이상이면 zip으로 묶어서, 1개면
+  그대로 SendUserFile" 문구를 명시적으로 넣어 통일(사용자가 이번에 요청한 부분). 주간
+  점검 루틴에는 이번 세션에서 발견한 두 회귀 유형(데스크톱 폭 극단값, 랜딩페이지
+  `.quick-answer .row` 번역 길이 취약점)도 재발 확인 항목으로 추가.
+
+#### 같은 세션 이어서 — "이 돈이면 뭘 살 수 있을까요"(강남 아파트/페라리/스타벅스) 카드에
+#### 가벼운 공통 모션 추가
+사용자가 이 카드 스크린샷을 보여주며 "나라별로 재밌는 애니 만들면 어때? 나라별 특징을
+살려서"라고 물어봄 — 21개국마다 커스텀 애니메이션을 만들면 작업량이 크고 국가별 고정관념처럼
+보일 위험도 있다고 답하고, 대신 **국가와 무관한 가벼운 공통 모션**(카운트업 + 아이콘 통통
+튐)을 추천 → 사용자가 그쪽으로 확정.
+
+- **숫자 카운트업**(`animateFlexNumber(el, target, buildText, duration)`, script.js): 잭팟
+  카드의 기존 `animateCount()`(달러 축약 표기 전용)와 별개로 새로 만듦 — 이 카드는 "108채"/
+  "하루 3잔씩 N년"처럼 언어별 완성 문장 안에 숫자만 박아 넣는 형태라 서식을 고정할 수 없어서,
+  서식 결정을 `buildText(현재값)` 콜백으로 호출부에 위임하는 범용 함수로 설계함.
+  `animateCount()`와 동일한 ease-out 완급(`1 - (1-progress)^3`)을 그대로 씀.
+  - 아파트/페라리: 단순히 `n + 단위`.
+  - 커피: 최종값 기준으로 "년" 문구를 쓸지 "잔" 문구를 쓸지 **한 번만 정하고** 카운트업
+    도중엔 그 문구 형태를 유지한 채 숫자만 바꿔치기함(중간에 "잔"→"년"으로 문장 형태 자체가
+    바뀌면 어색해 보여서).
+- **아이콘 팝**: 기존 `barIconPop`/`pop` 키프레임을 그대로 재사용해 `.flex-icon.icon-pop`/
+  `.flex-val.val-pop` 클래스만 새로 추가(새 키프레임 없음). `animateBarsIn()`의 "클래스 제거 →
+  강제 리플로우(`void el.offsetWidth`) → 클래스 재추가" 패턴을 그대로 따름 — 아이콘 3개는
+  80ms씩 스태거를 줘서 순차적으로 통통 튀게 함.
+- **실제 버그 하나 발견·수정(구현 중)**: Playwright로 여러 프레임을 연속 캡처해서 검증하던
+  중, 카운트업 시작 직후 첫 프레임에서 "0채"가 아니라 "-1채"/"-2채"처럼 잠깐 음수로 보이는
+  현상을 재현함 — `requestAnimationFrame`의 `now` 인자가 아주 드물게 직전에 잰
+  `performance.now()`(애니메이션 시작 시각)보다 미세하게 더 이른 값으로 들어올 때가 있어서,
+  `progress`가 미세한 음수가 되고 `Math.floor()`가 그걸 -1로 내림해버리는 문제였음. `progress`를
+  `Math.max(0, ...)`로 0 이상으로 고정해서 해결 — 같은 재현 스크립트로 3회 연속 실행해서
+  전부 "0채"로 정상 시작하는지 재확인함(고치기 전엔 3회 다 재현됨).
+- **검증**: Playwright로 (1) 여러 프레임 연속 캡처해서 숫자가 0→목표값으로 단조 증가하는지,
+  음수가 다시 안 나오는지 (2) `val-pop`/`icon-pop` 클래스가 실제로 붙는지 (3) 한국/미국 등
+  다른 세금 기준(country)으로 바꿔도 라벨·숫자·문구가 각각 맞게 나오는지 확인. 회귀 테스트
+  11개 전부 `ISSUES: 0`(`a11y.voiceSearch` 1건은 여전히 무관한 기존 이슈). 새로 추가한 UI
+  텍스트/번역 키 없음(기존 pickLang 문구를 함수로만 감쌌을 뿐, 22개 언어 텍스트 자체는
+  그대로) — i18n 작업 불필요.
+
+#### 2026-07-27 세션 — 음성 입력 통화 인식, 실수령 세금 애니, 카드 오버플로우 3건
+
+한 메시지에 스크린샷 3장과 함께 요청 3개가 같이 들어옴: (1) 스크린샷 하나 보여주며 "여기
+오버플로우 같은데 전부 검수해줘", (2) 마이크 음성 인식이 "오천만원"처럼 원화 단위/한글
+숫자로 말해도 인식되면 좋겠다는 요청(다른 언어도), (3) 실수령 세금 결과 표시에 애니메이션
+추가 요청.
+
+**1) 음성 인식 금액 파싱 강화**(`script.js`, `startAmountVoiceInput`): 기존엔 말한 내용에서
+`[^0-9.]`로 숫자만 남기고 나머지를 지우는 방식이라, "오천만원"처럼 아라비아 숫자가 하나도
+없는 한글 숫자 단어는 빈 문자열이 되어 아무 반응이 없었고, 통화 단위(원/달러/기타)도 무시돼
+숫자만 그대로 USD 백만 단위 입력칸에 들어가 전혀 다른 금액이 되는 문제가 있었음.
+- `koreanWordsToNumber(text)`: 한글 숫자 단어(영/일/이/삼.../만/억/조 등, 아라비아 숫자와
+  섞여도 됨 — 예: "3억5000만")를 실제 값으로 환산하는 파서를 새로 작성. 세그먼트별로 누적하는
+  표준 한글 숫자 읽기 알고리즘(백/천은 소단위 누적, 만/억/조에서 그 누적값을 배수로 확정).
+- `detectSpokenCurrencyRate(text, lang)` / `VOICE_LOCAL_CURRENCY`: "원/원화"는 언어 무관 항상
+  확인(한국어 우선 서비스라 가장 흔한 케이스), "달러/dollar/usd/$"는 USD로 배율 1, 그 외에는
+  **현재 UI 언어에 매인 통화 하나만** 검사(사이트가 이미 관리 중인 `EXCHANGE_RATE_CNY/INR/
+  VND/IDR/PHP/THB/JPY/RUB/NPR/LKR/UZS/KZT/KGS/MMK/BDT/PKR/KHR/MNT/LAK` 재사용) — "루피"처럼
+  인도/네팔/스리랑카/파키스탄이 같은 통화명을 쓰는 경우가 있어 전역이 아니라 언어별로
+  분기해 충돌 방지.
+- `parseSpokenAmountToMillions(transcript, lang)`: 한글 숫자 단어가 있거나(만/억/조 등장) 통화
+  키워드가 있으면 "총액"으로 보고 해당 환율로 USD 백만 단위로 환산(통화 키워드가 없는데
+  만/억만 있으면 한국어 화자의 일반적 어법대로 원화로 간주). 둘 다 없으면 기존처럼 숫자만
+  추출해 "이미 USD 백만 단위"로 간주(하위호환) — million/billion/thousand 단어가 있으면
+  그에 맞게 배율 처리.
+- Node `vm` 컨텍스트로 파서 단위 테스트(오천만원→0.0336M, 3억5000만원→0.235M 등 수동 계산과
+  일치 확인) + Playwright로 실제 페이지에서 `parseSpokenAmountToMillions('오천만원','ko')` 호출
+  후 `onHomeAmountTyped()`까지 이어져 결과 카드가 정상 갱신되는지 end-to-end 확인.
+- 22개 언어 전부의 고유 숫자 읽기 체계까지 완벽 지원하는 건 아님(한글 숫자 단어 파싱은
+  한국어 전용) — 통화 키워드 인식과 million/billion/thousand 배율은 전 언어 공통 적용.
+
+**2) 실수령 세금 결과에 pop 애니메이션 추가**: 메인 결과 카드(`#home-final-amt`)는 이미
+카운트업이 있었지만, 바로 아래 빨간 차액 줄(`#tax-impact-diff`, "-2,361억원 (46%)")은 값이
+바뀔 때 텍스트가 그냥 스냅되기만 해서 밋밋했음. 방금 만든 flex-box 카드의 pop 리트리거
+패턴(클래스 제거→강제 리플로우→재추가, `pop` 키프레임 재사용)을 그대로 적용
+(`.tax-impact-diff-big.diff-pop`, styles.css). 최초 렌더링(placeholder "-" 상태)에서는
+애니메이션 없이 바로 채우고, 값이 실제로 바뀔 때만 재생. Playwright로 슬라이더/입력값을
+연속으로 바꿔가며 매번 정상적으로 재생되는지 확인.
+
+**3) 카드 오버플로우 감사 — 실제 버그 2건 발견·수정**: 스크린샷(우즈베크어 3-카드 그리드)
+자체에는 육안으로 broken한 부분이 안 보여서, Playwright로 index.html 44개 파일 전체 ×
+23개 언어 × 3개 모바일 너비(320/360/390)를 스캔. `.result-hero`가 스크롤너비 초과로
+1건 잡혔지만 `overflow:hidden` + 장식용 `::before`/`::after` 원(의도적으로 박스 밖으로
+번지게 한 뒤 clip)이 원인이라 실제로는 안 보이는 false positive로 확인, 무시.
+
+진짜 버그는 `.explore-grid`(국가별 비교/확률체감/FAQ 3버튼)에서 발견: uz/my/id/mn/ky/kk/
+ru/fr/tl 등 9개 언어에서 버튼 자체 폭을 넘겨 글자가 삐져나옴 — 사용자 스크린샷과 정확히
+일치하는 버그. 근본 원인: 이전 세션이 그리드 blowout(`min-width:0`)은 고쳐놨지만,
+`.explore-card{ display:flex; flex-direction:column; align-items:center }`의
+`align-items:center` 때문에 자식 span(`.explore-label`/`.explore-sub`)이 카드 너비에
+맞춰 늘어나지 않고 **자기 내용 그대로의 폭**으로 스스로 크기를 정해버려서, `overflow-wrap:
+break-word`가 있어도 실제로 줄바꿈시킬 너비 제약이 없었음. `align-items:stretch`로 바꿔서
+해결(styles.css) — 자식이 카드 너비를 그대로 상속받게 되어 줄바꿈이 정상 작동하고
+`text-align:center`는 그대로 유지되어 시각적으로는 그대로임.
+
+같은 구조(그리드+`flex-direction:column`+`align-items:center`)를 쓰는 다른 카드도 전수
+점검: `.trust-item`(왜 믿을 수 있나요 섹션, 4열 그리드)은 스캔 결과 실제로는 문제없음(현재
+번역 텍스트 길이로는 아직 안 터졌을 뿐 잠재 위험은 있는 구조 — 나중에 더 긴 번역이 들어가면
+재발 가능성 있음, 필요시 같은 `align-items:stretch` 처방 적용). `.refund-link-btn`(국세환급금
+찾기 등 3버튼, FAQ 탭)은 `max-width:100%`가 이미 걸려있어 안전.
+- **스캔 방법론 교훈**: 처음엔 "문서 전체 너비(docWidth) 초과" 기준으로만 스캔해서
+  `.explore-card` 내부 삐져나옴을 놓쳤음(카드 자체는 화면 안에 있고 그 안에서만 삐져나와서) —
+  "요소 자기 자신의 scrollWidth vs clientWidth" 기준으로 다시 스캔해서 발견. `.trust-item`
+  체크할 때도 `go('faq')`를 호출해 탭을 옮기는 바람에 홈 탭에 있던 `.trust-grid`가
+  `display:none`이 되어 거짓 "문제없음"이 나온 적 있었음(offsetParent 체크로 재확인).
+
+**4) 부수 발견: `a11y.voiceSearch` i18n 키 누락**: `i18n_coverage_audit.js` 결과에서
+FAQ 음성 검색 버튼의 `data-i18n-aria-label="a11y.voiceSearch"`가 `translations.json`에
+아예 없다는 게 잡힘(스크린리더용 aria-label이 언어 무관하게 항상 한국어로 나오는 상태였음).
+같은 세션에서 음성 관련 코드를 만지는 김에 22개 언어 번역을 `a11y.voiceAmount` 항목과
+같은 형식으로 추가하고 `scripts/build-i18n.js`로 `i18n/*.json` 재생성.
+
+**검증**: 회귀 테스트 11개 + `draw_archive_integrity_check.js` 전부 `ISSUES: 0`(i18n
+포함 완전 클린). 변경 파일: `script.js`, `styles.css`, `i18n-source/translations.json`,
+`i18n/*.json`(22개 언어 전부, voiceSearch 키 추가로 재생성).
+
+
+---
+
+### 2026-07-28 (열네 번째 세션, `claude/progress-checkpoint-1j2wru`)
+
+**메인 요청**: 사용자가 "번역하는 게 낫지 않아?"로 시작해서 결국 "사이트 언어 100프로 완벽하게
+마무리 하고 싶어"까지 확장 — 포르투갈어(pt)/스페인어(es)/우크라이나어(uk)/테툰어(tet, 동티모르
+공용어) 4개 언어를 신규로 완전히 추가하는 작업. 번역은 사용자의 제미나이 프로 앱 구독을 통한
+수동 붙여넣기 워크플로(아래 "번역 워크플로" 참고)로 진행 — 이 세션은 Gemini API 키를 발급받아
+자동화를 시도했으나 무료 티어 일일 한도(20건/모델/일)에 금방 막혀서 포기하고 전환함.
+
+**결과**: `i18n-source/translations.json`(574개 키) + `script.js`의 `pickLang()` 동적 문자열
+(인라인 호출 189개 + 공유 상수 58개) 양쪽 다 pt/es/uk/tet 100% 채움 확인 — 22개 언어 지원
+사이트가 **26개 언어**가 됨. `ADDITIONAL_LANGS`/`LOCALE_MAP`(script.js), `LANGS`(build-i18n.js,
+lang_leak_audit.js) 전부 동기화. `index.html` 언어 선택 드롭다운에 4개 언어 추가. 기존 18개
+랜딩 페이지의 "← 계산기 열기" 상단 링크에 `?lang=xx`가 빠져있던 것도 같이 발견·수정(하단 CTA
+링크에는 있었는데 상단만 누락돼 있었음).
+
+#### 번역 워크플로 (다음 세션에 비슷한 작업 있으면 재사용 가능)
+1. Node `acorn`/`acorn-walk`로 `script.js`를 AST 파싱해서 번역 대상을 정확히 찾음(스크래치패드에
+   설치 — 저장소엔 없음, 재설치 필요). `pickLang(ko,en,zh,vi,th,ru,more)` 호출부의 `more` 인자를
+   기준으로 카테고리 분류: (a) 인라인 객체 리터럴, (b) 배열에 담아뒀다가 `pickLang(...X)`로
+   스프레드하는 패턴(`HOWTO_TEXT_PB`, `SHARE_CTA_FOOTER`, `MN_TONE_TIERS` 등), (c) 함수가
+   `more` 객체를 직접 만들어 리턴하는 패턴(`buildXxxMore()`), (d) 이미 이름 붙은 공유 상수를
+   참조(`buildCountryMore()`, `US_FED_TAX_MORE` 등). **처음에 (a) 패턴만 찾는 스크립트로 시작해서
+   "189개 인라인 호출 다 끝났다"고 보고했다가, 나중에 전체 파일을 `ar:` 같은 언어 키 마커로
+   재스윕하니 (b)/(c) 패턴에서 31개가 더 나왔음** — 한 가지 패턴만 찾는 추출 스크립트로 "다
+   찾았다"고 단정하지 말고, 최소 두 가지 다른 방법(직접 pickLang 호출 스캔 + 객체 리터럴
+   구조 스캔)으로 교차검증할 것.
+2. Korean/English 원문을 40~100개 단위 배치로 나눠서(`build_script_manual_batches.py` 스타일
+   스크립트) 프롬프트 텍스트 파일로 만들고 `SendUserFile`로 전달 → 사용자가 제미나이 프로 앱에
+   붙여넣어서 결과 JSON을 다시 붙여넣음. **한 번에 다 몰아서 하지 말 것**(사용자가 명시적으로
+   "한꺼번에 하면 결과가 별로냐"고 물어봐서 배치 유지로 확정) — 배치가 클수록 품질 저하 위험.
+3. 결과 JSON을 받으면 항상 매니페스트(배치별 예상 id 목록)와 대조해서 검증(빠진 id/여분 id
+   확인) — 사용자가 이전 배치를 착각해서 재붙여넣기하는 경우가 여러 번 있었음(새 제미나이
+   대화창을 열어서 다시 요청하면 해결됨).
+4. 적용 스크립트(`apply_*.js`)는 **매번 적용 직전에 `script.js`를 다시 파싱**해서 오프셋을
+   새로 구해야 함(UTF-16 코드유닛 기준 오프셋이라 Python 아닌 Node로 처리 — astral-plane
+   이모지가 많아서 Python 문자열 인덱싱은 어긋남). 이미 pt/es/uk/tet가 채워진 대상은 건너뛰게
+   만들어서(idempotent) 재실행해도 중복 삽입 안 되게 할 것 — 실제로 이 세션에서 한 배치를
+   두 번 적용해서 `SyntaxError: Unexpected identifier`(중복 프로퍼티) 났다가 이 방식으로
+   재작성해 해결한 적 있음. 삽입 직전엔 항상 기존 객체가 trailing comma로 끝나는지 확인해서
+   `,,` 문법 에러도 방지할 것.
+5. 삽입 후 검증 순서 고정: `node --check script.js`(문법) → 정규식으로 같은 줄에 `pt:`/`es:`/
+   `uk:`/`tet:`가 두 번 이상 나오는지(중복 키 휴리스틱) → Playwright로 실제 함수 호출까지
+   확인(단순 문자열 존재 확인이 아니라 `buildXxxMore()`를 브라우저 안에서 직접 호출해서 결과
+   확인) → 리포 자체 회귀 테스트(`i18n_coverage_audit.js`/`lang_leak_audit.js`/
+   `console_error_audit.js`) 실행.
+
+#### 실제로 잡은 버그들 (번역 작업 도중 발견, 번역과 무관한 진짜 코드 버그)
+- **`FLEX_REF`(이 돈이면 뭘 살 수 있을까요 카드) 17개국 데이터 누락** — kr/us/cn/in 4개국만
+  있고 나머지 17개 세금기준국(jp/vn/id/ph/th/ru/np/lk/uz/kz/kg/mm/bd/pk/kh/mn/la)엔 아파트/차/
+  커피 참고 데이터가 아예 없어서 전부 강남 아파트 기준으로 조용히 폴백되고 있었음(사용자가
+  직접 발견해서 지적). 17개국 전부 현지 시세로 신규 추가.
+- **위 수정 직후, `updateFlexBox()`의 `amountByCurrency`가 krw/usd/cny/inr 4개 통화만 있어서
+  방금 추가한 17개국이 전부 `NaN채`/`NaN대`로 뜨는 버그**(사용자가 키르기스스탄/방글라데시
+  스크린샷으로 발견 — 실제로는 17개국 전부에 영향 있었음). `EXCHANGE_RATE_VND/IDR/PHP/THB/
+  JPY/RUB/NPR/LKR/UZS/KZT/KGS/MMK/BDT/PKR/KHR/MNT/LAK`(이미 다 존재하던 전역 변수)를
+  `amountByCurrency`에 추가해서 해결. **교훈**: 새 데이터 소스(FLEX_REF 국가)를 추가할 때
+  그 데이터를 소비하는 함수(`updateFlexBox`)의 다른 하드코딩된 화이트리스트도 같이 확장해야
+  하는지 항상 점검할 것 — 이번엔 놓쳤다가 사용자 스크린샷으로 뒤늦게 발견됨.
+- 번역 삽입 스크립트가 만든 변수명 버그 2건(`buildFreqDescMore`/`buildJhDescMore`가 내부적으로
+  `count`를 `count.toLocaleString('en-US')`로 포맷한 `c`라는 지역변수를 쓰는데, 삽입한 pt/es/
+  uk/tet 템플릿에 `${count}`/`${totalDraws}`를 잘못 넣어서 `ReferenceError`) — Playwright로
+  직접 함수를 호출해서(문자열 존재 확인이 아니라) 잡음. **교훈**: `more` 객체를 만드는 함수에
+  플레이스홀더를 넣을 땐 함수의 실제 지역변수명을 확인할 것(파라미터명과 템플릿 안에서 쓰는
+  이름이 다를 수 있음 — 특히 `.toLocaleString()` 등으로 가공해서 별칭 변수를 쓰는 경우).
+
+#### 신규 기능: "기타 국가" 옵션 (사용자 요청, 아이디어는 Gemini와 공동 검토)
+사용자가 "홈페이지에 없는 나라 사람이 들어오면 소외감 들지 않을까?"라고 질문 → 21개국
+`COUNTRY_TAX_PROFILES` 목록에 없는 나라는 "준비 중" 표시조차 없이 조용히 빠져있다는 걸 확인.
+사용자가 이 문제를 Gemini에도 검수 요청하도록 검수요청서를 만들어줬고, Gemini가 "기타 국가
+(미국 30% 원천징수만 계산)" 옵션을 1순위로 제안(문의 버튼은 운영자가 메일을 잘 안 봐서
+역효과 위험이 크다고 판단해 제외). 이 세션이 구현:
+- `calcTakeHome()`에 `country === 'other'` 분기 신규 추가 — 자국 세법 조사 없이 확정적으로
+  말할 수 있는 유일한 숫자(IRS 비거주자 30% 원천징수, `TAX_MODEL.nonresident.us_withholding`)만
+  계산. label2/val2는 "0원"이라고 거짓 단정하지 않고 "❓ 자국 추가 세금 (미확인 — 직접 확인
+  필요)"로 정직하게 표시 — 이게 이 기능의 핵심 설계 원칙.
+- `COUNTRY_TAX_AUTHORITY.other`(IRS 고정 표기), `SUPPORTED_TAX_COUNTRIES`에 `'other'` 추가.
+- `FAQ_PANEL_DESC.other`/`FAQ_TG2.other` 신규 — 후자는 기존 "~에서도 또 내요?" 프레이밍이
+  나라가 특정 안 됐을 땐 말이 안 돼서 "제 나라에서는 세금을 어떻게 내나요?"로 문구 자체를
+  바꿈(단순 폴백이 아니라 의미가 맞는 새 문구로).
+- `index.html` 국가 토글 그리드 맨 아래에 `🌐` 버튼 추가, `i18n-source/translations.json`에
+  `input.optOther` 키 신규(26개 언어).
+- **의도적으로 안 한 것**: `COUNTRY_TAX_PROFILES` 배열엔 안 넣음(국가별 비교 탭/지도/잭팟
+  랭킹처럼 "진짜 나라 비교"가 전제인 기능에 "기타 국가"가 섞이면 이상해짐) — 홈 화면 세금
+  기준 토글에서만 선택 가능. `filterFaq()`/잭팟 랭킹 위젯(`renderJackpotTakeHomeRanking` 등)은
+  `calcTakeHome()`이 정상적으로 값을 리턴하기만 하면 되므로 별도 분기 없이 자동으로 안전하게
+  동작함(Playwright로 FAQ 탭·확률체감 탭·비교 탭 전부 크래시 없음 확인).
+- **주의**: 이 분기를 추가하기 전엔 `calcTakeHome()`의 마지막 `else`가 사실상 "모르는
+  country 코드는 전부 한국 거주자로 계산"하는 catch-all이었음(`if (country==='kr')`로
+  명시적으로 분기한 게 아니었음) — 그래서 `'other'`를 명시적 `else if`로 반드시 그 앞에
+  넣어야 했음. 앞으로 새 country 값을 추가할 때 이 함수의 분기 순서를 다시 확인할 것.
+
+#### 인수인계 문서 자체의 문제 발견
+이 세션 시작 시 `origin/main`의 `HANDOFF.md`를 다시 받아보니, 세션 시작 때 사용자가 채팅에
+직접 업로드해준 사본과 내용이 달랐음(업로드본엔 있던 "새 세션 시작 시 지켜야 할 것" 5번
+항목이 `origin/main` 사본엔 없었음) — 이 문서에 이미 기록되어 있는 "이 문서 자체가 반영이
+안 될 수 있다"는 문제가 이번에도 실제로 재발한 사례. 누락됐던 5번 항목을 복원하고 6번으로
+새 항목을 추가함(위 "새 세션 시작 시 지켜야 할 것" 참고). **교훈**: `origin/main`에서 이
+문서를 다시 받아올 때, 세션 시작 시 사용자가 업로드해준 사본과 다를 수 있다는 것도 감안해서
+필요하면 두 버전을 비교해볼 것.
+
+#### 커밋 서명 관련 훅 경고
+이 세션 내내 매 응답마다 stop-hook이 "Unverified" 경고를 띄웠음 — 실제로는 커밋에 SSH 서명
+(`gpgsig`)이 정상적으로 들어가 있고(`git cat-file -p HEAD`로 확인), 단지 로컬에
+`gpg.ssh.allowedSignersFile`이 없어서 로컬 검증만 "N"으로 뜨는 환경설정 문제. 기존 문서
+기록과 동일하게 해결 불가능/불필요한 표시상 문제이니 다음 세션도 재진단 불필요.
+
+**검증**: `tests/i18n_coverage_audit.js`(574개 키, 이슈 0) / `tests/lang_leak_audit.js`(104개
+조합, 이슈 0) / `tests/console_error_audit.js`(161개 조합, 이슈 0) / `tests/home_audit.js`(18개
+조합, 이슈 0) / `tests/faq_audit.js`(이슈 0) 전부 통과. 변경 파일: `script.js`, `index.html`,
+`i18n-source/translations.json`, `i18n/*.json`(26개 언어), `tests/lang_leak_audit.js`,
+`scripts/build-i18n.js`, 랜딩 페이지 다수. **`git push` 권한이 여전히 없어서**(구조적 제약,
+매번 재진단 불필요) 로컬 커밋 후 zip으로 나눠서 `SendUserFile`로 전달 → 사용자가 GitHub 웹
+UI로 업로드하는 방식 그대로 진행. 최종 상태는 사용자가 업로드를 완료했는지에 달려있으므로,
+다음 세션은 반드시 위 5번 항목대로 `git fetch origin main`부터 확인할 것.
+
+### 2026-07-28 (열다섯 번째 세션, `claude/progress-checkpoint-vd08p1` — 서브에이전트로 진행)
+
+**요청 배경**: 바로 앞 세션(열네 번째)이 "기타 국가" 옵션을 홈 화면 세금 기준 토글에만 추가했는데,
+사용자가 이걸 더 넓게 노출해달라고 요청. 메인(오케스트레이팅) 세션이 먼저 코드를 조사해서
+"국가 지도 자체를 건드릴지"·"비교 탭 카드/잭팟 히스토리에서 순위 대상으로 섞을지"를
+`AskUserQuestion`으로 확인받았고(사용자 답: 지도 자체는 그대로, 지도 아래 안내 링크만 추가 /
+카드·칩은 순위 로직 밖에서 항상 맨 끝 고정), 이 확정된 사양을 그대로 서브에이전트에게 위임해서
+구현함.
+
+**구현 3곳**:
+1. **국가 지도 아래 안내 버튼** (`index.html`, `#countryMapWrap`과 `#sideByCountryGrid` 사이):
+   `<button class="compare-map-other-note" onclick="go('home'); setHomeCountry('other');" data-i18n="compare.mapOtherNote">`.
+   `go()`/`setHomeCountry()` 둘 다 기존 함수 그대로 재사용 — 클릭하면 홈 화면으로 이동하면서
+   국가 토글이 "🌐 기타 국가"로 자동 선택됨(Playwright로 클릭 후 토글 버튼에 `active` 클래스가
+   실제로 붙는지 확인). 새 i18n 키 `compare.mapOtherNote` 1개를 26개 언어 전부 번역해서
+   `i18n-source/translations.json`에 추가(용어는 기존 `input.optOther`/`calcTakeHome()`의
+   `other` 분기 `basisSuffix` 번역에서 쓰인 "기타 국가" 표현을 그대로 재사용해 일관성 유지) —
+   `scripts/build-i18n.js` 재실행 후 `tests/i18n_coverage_audit.js` 0건 확인. CSS는
+   `.compare-map-other-note`(점선 테두리, `--teal` 텍스트) 신규.
+2. **국가별 비교 탭 카드 그리드** (`updateSideBySide()`, script.js): `calcTakeHome(eok, 'other', null)`
+   결과로 `.side-card.side-card-other` 카드 1개를 **기존 정렬(`implementedRows.sort`)/그룹핑
+   (동일 실수령액 묶기)/"더보기" 숨김-카운트 로직이 전부 끝난 뒤**(즉 `allCards`/`remaining`
+   계산과 `showMoreBtn` 처리 이후, `fixSideCardOrphanRow()` 호출 전) 별도로 `grid`에 추가 —
+   순위 경쟁·"더보기" 카운트에 전혀 안 끼고 항상 그리드 맨 끝에 보임. `highlightCountryOnMap()`
+   클릭 연동은 의도적으로 안 붙임(지도 좌표가 없어서). 같은 위치에서 "세금은 이렇게
+   빠져나가요" 아코디언(`#sideBreakdownContainer`)에도 매칭되는 항목을 추가. CSS는
+   `.side-card-other`(점선 테두리)로 실제 나라 카드와 시각적으로 구분.
+3. **잭팟 히스토리 국가별 금액 목록** (`renderAmountBreakdownHtml()`, script.js): 기존
+   `amtResults`/`amtGroups` 랭킹 집계에는 아예 안 넣고, `primaryHtml + restHtml + hiddenHtml`
+   계산이 끝난 뒤 `otherHtml`(`.jh-amt-chip.jh-amt-chip-other`)을 별도로 붙여서 반환값 맨
+   끝에 추가. 라벨은 `basisSuffix`에서 `getProfileShortLabel()`과 동일한 정규식으로 괄호
+   부연설명만 잘라 짧게 씀(새 번역 불필요 — `calcTakeHome()`의 `other` 분기가 이미 26개
+   언어로 번역해둔 문자열을 재사용). 이 함수가 잭팟 히스토리 행마다(최대 수백 번) 호출되는
+   구조라 추가 비용은 `calcTakeHome()` 1회 호출뿐으로 최소화. CSS는 `.jh-amt-chip-other`
+   (점선 테두리)로 랭킹 칩들과 구분.
+
+**검증**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js` 포함 회귀 테스트
+11개 전부 재실행 — 전부 `ISSUES: 0`(`TOTAL ISSUES: 0`). Playwright로 모바일 폭(390px)·
+`ko-KR`/`?lang=ko` 기준 (a) 비교 탭 카드 그리드 맨 끝에 점선 테두리 "🌐 기타 국가" 카드가
+실제 계산값과 함께 보이는지 (b) "세금은 이렇게 빠져나가요" 아코디언에도 매칭 항목이 있는지
+(c) 지도 아래 안내 버튼 클릭 시 홈 화면으로 이동 + 토글이 `active` 상태가 되는지 (d) 잭팟
+히스토리 첫 행의 국가별 금액에 "🌐 기타 국가" 칩이 랭킹 칩과 별도로 보이는지 4가지 전부
+직접 확인, 스크린샷도 남김(비교 탭 그리드 + 지도/안내 영역). **네거티브 컨트롤**:
+`grid.appendChild(otherCard);` 줄을 임시로 주석 처리 → 검증 스크립트가 "NO other card in
+sideByCountryGrid"로 실제로 잡아내는지 확인 후 원복.
+
+변경 파일: `index.html`, `script.js`, `styles.css`, `i18n-source/translations.json`,
+`i18n/*.json`(26개 언어), `HANDOFF.md`(이 항목 + "프로젝트 개요" 갱신). **`git push` 권한
+여전히 없음**(구조적 제약, 재진단 불필요) — 로컬 커밋 후 zip으로 `SendUserFile` 전달, 사용자가
+GitHub 웹 UI로 업로드해야 실제 반영됨. 다음 세션은 위 5번 항목대로 `git fetch origin main`부터
+확인할 것.
+
+### 2026-07-28 (열여섯 번째 세션, `claude/progress-checkpoint-vd08p1` — 서브에이전트로 진행)
+
+**요청 배경**: 사용자가 홈 화면 금액 입력 탭 3개(일시불/연금액/희망액) 스크린샷을 보여주며,
+항상 "Million USD"(또는 희망액 탭은 항상 원화/억원)로만 입력·표시되던 걸 다른 나라 통화(원화·
+위안화·엔화 등)로도 보고 입력할 수 있게 해달라고 요청. 시작 전에 두 가지를 확인질문으로 먼저
+확정함: (1) 세 탭이 통화 선택기 하나를 공유(탭별로 따로 안 고름) (2) 이미 환율을 갖고 있는
+`CURRENCY_RATE_CONFIG`(19개) + KRW + USD, 총 21개 통화 전부 노출.
+
+**핵심 설계 — 기본 통화를 USD가 아니라 KRW로 결정**: 세 가지 근거로 KRW를 기본값으로 정함.
+① 이 앱의 주 타겟이 한국 거주 40~60대라고 문서 전반에 명시돼있음 ② 희망액 탭은 애초부터
+예외 없이 KRW/억원 전용이었던 전례가 있음 ③ 결과 표시를 전담하는 `formatWon()`이 이미 전역적
+으로 억/조 단위를 씀. 이 결정 때문에 **일시불/연금액 탭의 기본 표시가 "Million USD"에서
+"억원"으로 실제로 바뀜**(진짜 동작 변경) — 하지만 슬라이더의 내부 값·로그스케일 매핑
+(`data-usd-min/max`, `sliderPosToMillions`/`sliderMillionsToPos`)은 전혀 안 건드리고 항상
+USD 그대로 유지, 통화 선택은 순수히 "타이핑/표시 단위"만 바꾸는 얇은 레이어로 구현함
+(`usdMillionsToInputUnits()`/`inputUnitsToUsdMillions()`). 자세한 설계는 위 "코드 아키텍처
+핵심 패턴"의 `sharedInputCurrency` 항목 참고.
+
+**희망액(역산) 탭도 통화 선택기를 따르게 함**: `calcTakeHome()`의 결과가 항상 KRW-억 단위인
+내부 이분탐색 알고리즘 자체는 그대로 두고("입력 해석"·"결과 표시" 레이어만 통화 인지형으로
+바꿈 — 리스크를 낮추기 위한 의도적 선택), `confirmEditMiniResult()`가 타이핑된 값을 현재
+통화 기준으로 해석해서 USD를 거쳐 KRW-억으로 환산하도록 한 겹만 추가함. 구조적으로 막힌 부분은
+없었음 — 프롬프트가 우려했던 "탭3는 구조적으로 어렵지 않을까"는 기우였음.
+
+**통화 메타데이터 통합 판단**: `LOCAL_CURRENCY_REF`(updateHomeCalc() 안, "기타 국가" 참고
+환산 노트 전용)와 `CURRENCY_RATE_CONFIG`(코드+실시간 갱신 로직)가 symbol/flag/locale/코드
+정보를 나눠 갖고 있던 걸, 새 `CURRENCY_DISPLAY_META`(script.js, `CURRENCY_RATE_CONFIG` 바로
+아래) 하나로 합쳐서 통화 선택기 전용 소스로 씀. **다만 이미 검증된 기존 기능인
+`LOCAL_CURRENCY_REF` 자체는 회귀 위험을 피하려고 안 건드리고 값만 그대로 복사해왔음** — 완전한
+단일화(LOCAL_CURRENCY_REF가 CURRENCY_DISPLAY_META를 파생해서 쓰도록)는 검증된 코드를 굳이
+건드리는 리스크 대비 이득이 작다고 판단해 이번 세션 범위에서 의도적으로 제외함(다음 세션이
+필요하면 진행 가능하게 주석으로 남겨둠).
+
+**숫자 서식 — 입력칸(타이핑 가능) vs 눈금/미리보기(읽기 전용) 다르게 처리**: 입력칸은 항상
+"Million <통화코드>"(KRW는 "억원") 고정 스케일 정수/소수 — 타이핑 가능해야 하므로 압축 표기를
+안 씀. 슬라이더 눈금·희망액 미리보기(`live-result-mini-amt`)는 타이핑할 필요가 없으므로
+`Intl.NumberFormat(locale, {notation:'compact'})`를 실제 통화 총액에 직접 적용 — VND/IDR/UZS처럼
+환율 자릿수가 큰 통화도 로케일에 맞는 압축 접미사(예: 베트남어 로케일은 "tỷ"/"nghìn tỷ"를 "T"/
+"NT"로, 중국어 로케일은 亿/万을 자동으로 씀)로 자동 압축돼서 카드 밖으로 넘치지 않음(390px/
+360px/300px에서 VND 선택 후 Playwright로 `.input-card`/`.amount-currency-row`
+`scrollWidth===clientWidth` 확인). USD가 선택된 경우는 기존 26개 언어 번역 문구(`home.sliderTickN`)
+를 그대로 쓰게 분기해서 100% 회귀 없음.
+
+**라운드트립 드리프트 방지**: 통화를 여러 번 왔다갔다 해도 표시값이 조금씩 틀어지지 않도록,
+재표시는 항상 슬라이더의 반올림된 위치가 아니라 `sharedAmountUsd`/신규
+`sharedAnnouncedUsdMillions`(정확한 원본, 새로 추가한 변수)에서 다시 계산함
+(`refreshAmountInputDisplaysForCurrency()`). Playwright로 KRW "1000" 입력 → USD 전환("67.2"로
+정확히 환산 확인, `1000×100/EXCHANGE_RATE`와 일치) → KRW로 되돌리기("1000"으로 정확히
+복귀, 드리프트 없음) 확인.
+
+**놓칠 뻔했다가 잡은 회귀 3건**: ① `updateHomeCalc()`가 인자 없이 재호출될 때(언어 전환·환율
+재조회 등) 입력칸 텍스트를 다시 파싱하는 폴백 로직이 예전 `parseMillionsInput`(항상 USD로
+해석)을 그대로 쓰고 있어서, 통화가 KRW일 때 입력값이 완전히 잘못 해석될 뻔함 — 통화 인지형
+파서(`parseAmountInputToUsdMillions`)로 교체. ② `shareResult()`의 공유 문구/링크(`?amount=`)가
+입력칸의 화면 텍스트를 그대로 썼는데, 문구 자체가 26개 언어 전부 "Million USD"로 고정 문자열이라
+KRW 등 선택 시 완전히 다른 숫자가 공유될 뻔함 — 항상 정확한 원본(`sharedAmountUsd`)에서 다시
+환산하도록 수정. ③ 음성 입력(`startAmountVoiceInput`)이 `parseSpokenAmountToMillions()`의
+결과(항상 Million USD)를 입력칸에 그대로 넣고 있어서 통화가 KRW일 때 자릿수가 완전히 틀어질
+뻔함 — 같은 통화 인지형 변환을 적용. 셋 다 코드를 읽다가 "이 값을 다른 곳에서도 USD로 가정하고
+쓰는 데가 더 없나" 전수 grep하다가 발견함(테스트로 처음 잡은 게 아니라 코드 리뷰로 먼저 잡고
+테스트로 확인한 순서).
+
+**`nav_slider_audit.js` 갱신**: 기존 "타이핑 300 → 슬라이더 위치 ±2 흔들어도 300 유지" 정밀도
+테스트가 "타이핑한 숫자 = Million USD"를 암묵적으로 전제하고 있었는데, 기본 통화가 KRW로
+바뀌면서 그 전제가 깨짐 — 테스트 삭제 대신, 검사 직전에 `setSharedInputCurrency('USD')`로
+명시적으로 통화를 고정해서 원래 검증하려던 불변식(로그스케일 매핑 자체는 안 깨졌는지)을 그대로
+유지함. 추가로 "KRW 통화-인지 파서(`parseAmountInputToUsdMillions`)가 정확한 공식으로 환산
+하는지"를 검증하는 새 케이스도 추가(슬라이더 양자화와 무관하게 순수 변환 공식만 확인). **네거티브
+컨트롤**: `inputUnitsToUsdMillions()`의 KRW 환산식을 일부러 한 줄 주석 처리(항등함수로 망가뜨림)
+→ 이 신규 테스트가 실제로 잡아내는지 확인(잡아냄, `got 1000, expected 67.2...`) → 원복.
+
+**새 i18n 키**: `input.currencyLabel`(통화 선택기 라벨/aria-label, "통화"/"Currency" 등) 1개,
+26개 언어 전부 직접 번역(짧고 흔한 명사라 Gemini 배치 워크플로 없이 이 세션이 직접 번역 — 열네
+번째 세션 문서의 "번역 워크플로"는 대량·미묘한 문구에 쓰는 것으로, 이런 1개짜리 상용 단어까지
+그 무거운 절차를 거칠 필요는 없다고 판단). 통화 선택기 `<option>` 텍스트(플래그+ISO 코드,
+예: "🇻🇳 VND")와 입력칸 단위 라벨("Million USD" 등)은 새 번역 없이 기존 관례(코드/영어 그대로
+노출)를 그대로 따름 — KRW 단위 라벨은 세 탭 전부 기존 `home.reverseUnit` 키(이미 26개 언어
+번역돼있음)를 재사용.
+
+**검증**: `node --check script.js` 통과. `node scripts/build-i18n.js` → `tests/i18n_coverage_audit.js`
+(0건)/`tests/i18n_attr_lint.js`(0건). 회귀 테스트 11개 전부 `ISSUES: 0`(`TOTAL ISSUES: 0`) —
+`nav_slider_audit.js`(신규 케이스 포함)도 포함. Playwright로 (a) ko-KR/`?lang=ko`/390px에서
+KRW 기본값 확인(세 탭 전부 "억원") (b) KRW→USD→KRW 라운드트립 무손실 확인 (c) 연금액 탭에서
+CNY로 전환 시 "Million CNY" 단위·정확한 환산값 확인 (d) 희망액 탭에서 CNY로 미리보기(`¥1.3亿`,
+Intl 압축표기가 중국어 로케일에서 자동으로 억/만 단위를 씀)·직접 입력·확정까지 end-to-end 확인
+(e) VND 선택 시 300px~390px에서 카드/통화 행 오버플로우 없음 (f) 아랍어(`?lang=ar`, RTL) 레이아웃
+확인 (g) 슬라이더 로그스케일 단조성이 KRW 기본값 상태에서도 안 깨짐 확인. 스크린샷도 6장 남김
+(일시불/연금액/희망액 × KRW, 희망액/일시불 × USD, 일시불 × VND).
+
+**의도적으로 범위 밖에 둔 것**: 연금액 탭의 "연금 X → 일시불 환산 Y" 안내 문구
+(`home-announced-convert-note`, `applyHomeAnnouncedMillions()` 안의 26개 언어 템플릿)는 여전히
+항상 "$X M" 형식으로 고정 — 통화가 KRW 등이어도 이 보조 안내문만은 달러 기준으로 보임. 26개
+언어 템플릿 문자열 안의 숫자 치환부만 골라 고치는 작업이 실수 위험 대비 이득이 작다고 판단해서
+제외함(입력칸 자체·단위 라벨·눈금·희망액 탭은 전부 통화를 따름 — 이 보조 안내문 하나만 예외).
+필요하면 다음 세션에서 `formatDisplayCurrencyAmount()`를 재사용해 고칠 수 있음.
+
+변경 파일: `index.html`, `script.js`, `styles.css`, `i18n-source/translations.json`,
+`i18n/*.json`(26개 언어), `tests/nav_slider_audit.js`, `HANDOFF.md`(이 항목 + "프로젝트 개요"·
+"코드 아키텍처 핵심 패턴" 갱신). **`git push` 권한 여전히 없음**(구조적 제약, 재진단 불필요) —
+로컬 커밋 후 zip으로 `SendUserFile` 전달, 사용자가 GitHub 웹 UI로 업로드해야 실제 반영됨.
+다음 세션은 위 5번 항목대로 `git fetch origin main`부터 확인할 것.

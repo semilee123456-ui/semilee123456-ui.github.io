@@ -111,6 +111,101 @@ const navWidths = [300, 320, 344, 360, 375, 390, 412, 428];
     } else if (Math.abs(currencyCheck.usdMillions - currencyCheck.expected) > 0.01) {
       issues.push({ type: 'currency', problem: `KRW 입력이 USD 백만 단위로 잘못 환산됨: got ${currencyCheck.usdMillions}, expected ${currencyCheck.expected}` });
     }
+
+    // ===== 소액(만원~수천만원 스케일) 회귀 테스트 (2026-07-28 다섯 번째 후속 세션 신규) =====
+    // 사용자가 실사용 중 음성으로 "천원"/"백원"/"천만원" 등을 말했을 때 (1) 소수점 4자리 고정
+    // 반올림에 걸려 정확히 0으로 사라지던 문제, (2) 슬라이더 로그축 하한(SLIDER_LOG_FLOOR_M)이
+    // 1(Million USD)에 고정돼있어서 그보다 작은 값은 전부 같은 왼쪽 끝 위치로 뭉개져 보이던
+    // 문제, 두 가지를 고친 것의 회귀 방지 테스트. 한국어("원") 외에 베트남어("đồng")도 같이
+    // 확인해서 통화/언어 무관하게 공용 로직(parseSpokenAmountToMillions 등)이 고쳐졌는지 검증함
+    // (VOICE_LOCAL_CURRENCY로 18개 이상 언어가 같은 파이프라인을 타므로, 한국어+베트남어 둘 다
+    // 통과하면 나머지 언어도 같은 코드 경로라 안전하다고 봄 — 개별 언어별 검증까지는 과함).
+    const smallAmountCheck = await page.evaluate(() => {
+      if (typeof parseSpokenAmountToMillions !== 'function' || typeof roundToSignificantFigures !== 'function') {
+        return { ok: false, reason: 'parseSpokenAmountToMillions 또는 roundToSignificantFigures 없음' };
+      }
+      const voiceCases = [
+        { label: '천원(ko)', transcript: '천원', lang: 'ko', expectedUsdMillions: 1000 / EXCHANGE_RATE / 1000000 },
+        { label: '백원(ko)', transcript: '백원', lang: 'ko', expectedUsdMillions: 100 / EXCHANGE_RATE / 1000000 },
+        { label: '만원(ko)', transcript: '만원', lang: 'ko', expectedUsdMillions: 10000 / EXCHANGE_RATE / 1000000 },
+        { label: '천만원(ko)', transcript: '천만원', lang: 'ko', expectedUsdMillions: 10000000 / EXCHANGE_RATE / 1000000 },
+        // 베트남어: koreanWordsToNumber는 한국어 전용이라 안 걸리고, 숫자+통화 키워드
+        // 조합(아라비아 숫자로 말한 것처럼 인식된 경우)으로 처리되는 경로를 검증
+        { label: '10000000 đồng(vi)', transcript: '10000000 đồng', lang: 'vi', expectedUsdMillions: 10000000 / EXCHANGE_RATE_VND / 1000000 },
+      ];
+      const voiceResults = voiceCases.map(c => {
+        const millions = parseSpokenAmountToMillions(c.transcript, c.lang);
+        const rounded = millions === null ? null : Math.min(roundToSignificantFigures(millions, 4), MAX_INPUT_MILLIONS);
+        return { label: c.label, millions, rounded, expected: c.expectedUsdMillions };
+      });
+
+      // 슬라이더 하한: 작은 값 2개(천만원 규모·훨씬 더 작은 규모)를 각각 넣었을 때, usdMin이
+      // 옛 하한(1)에 고정되지 않고 값에 비례해서 서로 다르게 낮아지는지 + 되읽었을 때 같은
+      // 자릿수(같은 order of magnitude)로 복원되는지 확인
+      const slider = document.getElementById('homeAmountSlider');
+      const smallA = 10000000 / EXCHANGE_RATE / 1000000; // 천만원 규모
+      const smallB = 300000 / EXCHANGE_RATE / 1000000; // 30만원 규모(smallA보다 한참 작음)
+      setSliderMillions(slider, smallA);
+      const usdMinA = Number(slider.dataset.usdMin);
+      const posA = Number(slider.value);
+      const readBackA = getSliderMillions(slider);
+      setSliderMillions(slider, smallB);
+      const usdMinB = Number(slider.dataset.usdMin);
+      const posB = Number(slider.value);
+      const readBackB = getSliderMillions(slider);
+      // 원복(다음 테스트에 영향 없게 기본 스케일로)
+      setSliderMillions(slider, 100);
+
+      return {
+        ok: true,
+        voiceResults,
+        sliderLogFloor: SLIDER_LOG_FLOOR_M,
+        smallA, usdMinA, posA, readBackA,
+        smallB, usdMinB, posB, readBackB,
+      };
+    });
+
+    if (!smallAmountCheck.ok) {
+      issues.push({ type: 'small-amount', problem: smallAmountCheck.reason });
+    } else {
+      smallAmountCheck.voiceResults.forEach(r => {
+        if (r.rounded === null || r.rounded <= 0) {
+          issues.push({ type: 'small-amount-voice', problem: `"${r.label}"이 반올림 후 0 또는 null이 됨(반올림 전 millions=${r.millions})` });
+        } else if (r.expected > 0) {
+          const relErr = Math.abs(r.rounded - r.expected) / r.expected;
+          if (relErr > 0.2) {
+            issues.push({ type: 'small-amount-voice', problem: `"${r.label}" 반올림 결과가 기대값과 20% 넘게 차이남: got ${r.rounded}, expected ${r.expected}` });
+          }
+        }
+      });
+      // 안전장치(SLIDER_LOG_FLOOR_M) 자체가 옛 값(1)으로 되돌아가지 않았는지
+      if (!(smallAmountCheck.sliderLogFloor < 0.0001)) {
+        issues.push({ type: 'small-amount-slider', problem: `SLIDER_LOG_FLOOR_M이 다시 커짐(만원~수천만원 스케일을 못 담을 정도): ${smallAmountCheck.sliderLogFloor}` });
+      }
+      // 옛 버그: 서로 다른 소액이 항상 같은 usdMin(=1)·같은 위치로 뭉개짐 — 지금은 값에 비례해
+      // 서로 달라야 함
+      if (smallAmountCheck.usdMinA >= 1 || smallAmountCheck.usdMinB >= 1) {
+        issues.push({ type: 'small-amount-slider', problem: `소액인데 usdMin이 옛 하한(1)에 고정됨: usdMinA=${smallAmountCheck.usdMinA}, usdMinB=${smallAmountCheck.usdMinB}` });
+      }
+      if (smallAmountCheck.usdMinA === smallAmountCheck.usdMinB) {
+        issues.push({ type: 'small-amount-slider', problem: `서로 다른 소액(${smallAmountCheck.smallA} vs ${smallAmountCheck.smallB})인데 usdMin이 완전히 같음 — 여전히 고정 바닥에 뭉개지는 것으로 보임` });
+      }
+      if (smallAmountCheck.posA === smallAmountCheck.posB) {
+        issues.push({ type: 'small-amount-slider', problem: `서로 다른 소액인데 슬라이더 핸들 위치(slider.value)가 완전히 같음(둘 다 ${smallAmountCheck.posA}) — 옛 "고정 왼쪽 끝" 버그 재발 의심` });
+      }
+      // 되읽은 값이 원래 자릿수와 같은 크기(0.3~3배 이내)로 복원되는지 — 로그+양자화 반올림
+      // 오차는 감안하되, 자릿수가 통째로 달라지거나(0이 되거나) 하면 이슈로 잡음
+      [['A', smallAmountCheck.smallA, smallAmountCheck.readBackA], ['B', smallAmountCheck.smallB, smallAmountCheck.readBackB]].forEach(([label, expected, got]) => {
+        if (!(got > 0)) {
+          issues.push({ type: 'small-amount-slider', problem: `소액 ${label} 되읽기 결과가 0 이하(got ${got}, expected ≈${expected})` });
+        } else {
+          const ratio = got / expected;
+          if (ratio < 0.3 || ratio > 3) {
+            issues.push({ type: 'small-amount-slider', problem: `소액 ${label} 되읽기 결과가 원래 값과 자릿수가 다름: got ${got}, expected ≈${expected}` });
+          }
+        }
+      });
+    }
   } catch (e) {
     issues.push({ type: 'slider', problem: String(e) });
   } finally {

@@ -4863,6 +4863,45 @@ function checkMyNumbersVsHistory(){
 // 형태로 넣음). 실제 티켓처럼 보이면 "이게 진짜 구매한 티켓인 줄" 오해할 수 있어서, 큰 글씨로
 // "가상 티켓" 문구를 넣어 명확히 함(사이트가 이미 "구매·중개 NO"를 신뢰 배지로 내세우고 있어서
 // 이 원칙과 어긋나지 않게).
+// 아래 "이미지로 저장" 함수 두 개(saveMyNumbersAsTicketImage/saveHomeResultAsImage)가 공유하는
+// 캔버스 바코드 헬퍼(2026-07-28 결과 카드 리디자인 때 분리) — 둘 다 "실제처럼 보이되 오해는
+// 없게"라는 같은 원칙을 쓰므로 시각 요소를 하나로 모아 중복을 없앰.
+// (2026-07-28 후속 세션: saveHomeResultAsImage()는 "복권 티켓" 느낌에서 "대형 기념 수표(giant
+// novelty check)" 느낌으로 다시 리디자인됨 — 그때 이 헬퍼 바로 아래 있던 별/절취선 전용 헬퍼
+// 2개(drawTicketStar/drawTicketPerforation)는 saveHomeResultAsImage()에서만 쓰이던 코드라
+// 함께 삭제함(grep으로 다른 참조 없음을 확인). drawDecorativeBarcode는
+// saveMyNumbersAsTicketImage()가 계속 쓰므로 그대로 유지.)
+
+// 티켓 하단 장식용 세로줄 바코드 패턴 — 실제 발권 관례를 살짝 흉내낸 것일 뿐 스캔 가능한 진짜
+// 바코드는 아님(정보 없는 순수 장식, 원래 saveMyNumbersAsTicketImage()에만 있던 로직).
+// x0~x1 구간을 seed 기반 의사난수로 채움(같은 seed면 항상 같은 패턴 — 재현 가능).
+function drawDecorativeBarcode(ctx, x0, x1, y, h, seed, color){
+  ctx.fillStyle = color || '#262420';
+  let barX = x0;
+  let s = seed;
+  while (barX < x1) {
+    s = (s * 9301 + 49297) % 233280;
+    const w = 1 + (s % 3);
+    ctx.fillRect(barX, y, w, h);
+    barX += w + 3;
+  }
+}
+
+// 텍스트가 maxWidth를 넘으면 폰트 크기를 minSize까지 1px씩 줄여서 항상 카드 안에 들어오게 함
+// (2026-07-28 후속 세션 신규, 수표 카드 리디자인 때 추가) — 26개 언어마다 같은 문구의 실제 렌더링
+// 폭이 크게 다를 수 있어서(예: 독일어/러시아어류는 길고, 한자류는 짧음), 고정 폰트 크기만 믿으면
+// 일부 언어에서만 카드 폭을 넘길 위험이 있음. 호출 후 ctx.font가 이미 맞는 크기로 설정된
+// 상태이므로 곧바로 fillText할 수 있음.
+function fitFontSize(ctx, text, weight, maxSize, minSize, maxWidth){
+  let size = maxSize;
+  ctx.font = `${weight} ${size}px 'Pretendard', -apple-system, sans-serif`;
+  while (size > minSize && ctx.measureText(text).width > maxWidth) {
+    size -= 1;
+    ctx.font = `${weight} ${size}px 'Pretendard', -apple-system, sans-serif`;
+  }
+  return size;
+}
+
 function saveMyNumbersAsTicketImage(){
   const valid = readAndValidateMyNumbers();
   if (!valid) return;
@@ -4950,19 +4989,10 @@ function saveMyNumbersAsTicketImage(){
   ctx.textAlign = 'center';
   ctx.fillText(disclaimer, W / 2, badgeY + badgeH / 2 + 1);
 
-  // 바코드 장식(실제 발권 관례를 살짝 흉내낸 세로 줄 패턴 — 폭을 결정적으로 다르게 둬서 진짜
-  // 바코드처럼 보이게 하되, 스캔 가능한 진짜 바코드는 아님을 명확히 하기 위해 일부러 정보 없는
-  // 장식용으로만 씀)
-  ctx.fillStyle = '#262420';
-  let barX = 60;
+  // 바코드 장식(공유 헬퍼 drawDecorativeBarcode — 스캔 가능한 진짜 바코드 아님, 위 정의 참고)
   const barY = 400, barH = 28;
-  let seed = mainNums.reduce((a, b) => a + b, specialNum);
-  while (barX < W - 60) {
-    seed = (seed * 9301 + 49297) % 233280;
-    const w = 1 + (seed % 3);
-    ctx.fillRect(barX, barY, w, barH);
-    barX += w + 3;
-  }
+  const barcodeSeed = mainNums.reduce((a, b) => a + b, specialNum);
+  drawDecorativeBarcode(ctx, 60, W - 60, barY, barH, barcodeSeed, '#262420');
 
   openAnnotateOverlay(canvas, 'chamtax-my-ticket.png');
 }
@@ -4989,10 +5019,71 @@ const RESULT_IMG_DISCLAIMER_MORE = {
   pt: `Apenas simulação de referência · não é uma declaração fiscal oficial`, es: `Solo simulación de referencia · no es una declaración fiscal oficial`, uk: `Лише довідкова симуляція · не є офіційною податковою декларацією`, tet: `Simulasaun referánsia de'it · la'ós submetasaun impostu ofisiál`,
 };
 
+// "받는 사람" 류 — 대형 기념 수표(giant novelty check) 디자인의 "PAY TO THE ORDER OF" 자리에
+// 들어가는 짧은 라벨(2026-07-28 후속 세션 신규). 실제 수표 법률 용어를 그대로 옮기기보다("배서"
+// 등은 국가마다 법적 의미가 다를 위험), 어느 언어에서나 안전하게 통하는 "받는 사람/수취인" 개념
+// 으로 26개 언어 전부 짧게 번역함 — en만 장르 관습상 바로 알아볼 수 있는 고전 문구
+// "PAY TO THE ORDER OF"를 그대로 씀(사용자 요청 원문에도 이 표현이 예시로 나옴). 다른 짧은
+// 상용어(예: input.currencyLabel, 열여섯 번째 세션)와 같은 이유로 Gemini 배치 번역 없이 이
+// 세션이 직접 번역함.
+const CHECK_PAYTO_MORE = {
+  ar: 'المستفيد',
+  bn: 'প্রাপক',
+  fr: 'Bénéficiaire',
+  hi: 'प्राप्तकर्ता',
+  id: 'Penerima',
+  ja: '受取人',
+  kk: 'Алушы',
+  km: 'អ្នកទទួល',
+  ky: 'Алуучу',
+  lo: 'ຜູ້ຮັບ',
+  mn: 'Хүлээн авагч',
+  my: 'လက်ခံသူ',
+  ne: 'प्राप्तकर्ता',
+  si: 'ලබන්නා',
+  tl: 'Tatanggap',
+  ur: 'وصول کنندہ',
+  uz: 'Oluvchi',
+
+  pt: 'Beneficiário', es: 'Beneficiario', uk: 'Отримувач', tet: "Simu-na'in",
+};
+
 // 홈 결과 카드("얼마 남을까")를 이미지로 저장 — "🎫 이미지로 저장"(내 번호 티켓)과 같은 Canvas
 // 직접 그리기 방식 재사용. 새 텍스트를 pickLang으로 또 다 번역하는 대신, 이미 화면에 렌더링된
-// DOM 값(이미 22개 언어로 번역·포맷 완료된 상태)을 그대로 읽어와서 캔버스에 옮겨 그림 — 새로
-// 번역이 필요한 건 이 이미지에만 있는 문구(하단 참고용 배지) 하나뿐
+// DOM 값(이미 26개 언어로 번역·포맷 완료된 상태)을 그대로 읽어와서 캔버스에 옮겨 그림 — 새로
+// 번역이 필요한 건 이 이미지에만 있는 문구(하단 참고용 배지 + 새 "받는 사람" 라벨) 뿐.
+//
+// 2026-07-28 후속 세션 리디자인: 같은 날 앞선 세션이 "복권 티켓" 스타일(번호 공·장식용 바코드·
+// 절취선·금색 리본 배지)로 만들었는데, 사용자가 실제로 원한 건 그게 아니라 미국 복권사가 실제
+// 당첨자에게 사진 촬영용으로 건네는 "대형 기념 수표(giant novelty check, 포스터보드 크기의
+// 가짜 수표)" 스타일이었음(레퍼런스 사진으로 확인) — 그래서 이 리디자인은 티켓 장식(번호 공·
+// 절취선·바코드·별)을 전부 걷어내고 가로로 훨씬 넓은(2:1 비율에 가까운) 수표 모양 카드로
+// 다시 그림. **데이터는 이전과 동일하게 전부 유지**(로고, 기준 한 줄, 결과 라벨, 큰 금액,
+// 실수령/세금 비율 막대, before→after 줄, 참고용 배지, 날짜) — 배치와 장식 언어만 "수표"로
+// 바뀜.
+//
+// **안전장치(사용자가 명시한 하드 제약 그대로 적용, 다음 세션도 이 판단을 임의로 되돌리지
+// 말 것)**:
+// 1. 실제 기관 이름/로고 없음 — "파워볼"/"메가밀리언즈"/특정 주 복권공사/은행명/정부 문양을
+//    전부 배제하고, 사이트 자체 브랜드(참택스/chamtax.com, 기존 --teal/--status-red/
+//    --gold 계열 색)만 "발행처" 자리에 씀. saveMyNumbersAsTicketImage()가 이미 지켜온
+//    "재미 이미지가 진짜 공식 서류로 오인되면 안 된다"는 원칙과 같은 선.
+// 2. 실제 인물 사진/이름 없음 — 레퍼런스 사진엔 실존하는 실제 당첨자의 이름과 사진이 있었지만
+//    (그 이름은 실존 인물이라 이 코드베이스 어디에도, 커밋 메시지·주석·문서 포함 절대 넣지
+//    않음), 여기선 "PAY TO THE ORDER OF"(=CHECK_PAYTO_MORE) 옆에 진짜 빈 수표처럼 밑줄만
+//    그어진 빈칸을 둠 — 사용자가
+//    기존 "꾸며서 저장하기" 펜/텍스트 오버레이(openAnnotateOverlay(), 이 함수 호출 이후 자동
+//    연결됨)로 이 빈칸에 자기 이름을 직접 써넣는 흐름. 얼굴 실루엣 같은 장식 요소는 레이아웃
+//    복잡도·언어별 여백 확보 리스크 대비 얻는 게 작다고 판단해 이번 리디자인에선 넣지 않음
+//    (요청 원문에 "선택사항"이라고 명시돼있어서 의도적으로 생략 — 다음 세션이 원하면 추가 가능).
+// 3. 실제 발행 가능한 수표처럼 보일 요소(계좌번호·라우팅번호·MICR·서명란) 전부 없음 — "받는
+//    사람" 빈칸 + 큰 금액만 장르 관습으로 넣고, 그 외 기능적 요소는 일절 안 그림.
+// 4. 참고용 배지는 카드 폭 전체에 가까운 띠(banner) 형태로 카드 맨 아래에 둬서(이전 버전은
+//    작은 알약 배지) 가로로 훨씬 넓어진 캔버스에서도 절대 작아 보이거나 잘리지 않게 함 — 오히려
+//    수표 모양이 실제 금융 서류를 연상시키는 정도가 티켓보다 크다고 판단해 크기(14px→18px)와
+//    두께(굵게)를 이전보다 키움.
+// 5. "당첨/WINNER" 같은 새 문구를 추가로 만들지 않음 — resultLabelText는 이미 화면에서
+//    "💰 일시불 예상 실수령액"처럼 "예상"이라는 프레이밍을 쓰고 있는 기존 문구라 그대로 재사용.
 function saveHomeResultAsImage(){
   const isRtl = RTL_LANGS.includes(currentLang);
   const resultLabelText = document.querySelector('.result-hero-label').textContent;
@@ -5006,49 +5097,135 @@ function saveHomeResultAsImage(){
   const taxLabel = document.querySelector('[data-i18n="result.taxLabel"]').textContent;
 
   const SCALE = 2;
-  const W = 900, H = 500;
+  // 실제 "대형 기념 수표"는 세로보다 훨씬 넓은 포스터보드 형태(대략 2:1 이상) — 기존 900x620
+  // (거의 정사각형에 가까운 티켓 비율)을 걷어내고 1180x560(약 2.1:1)로 다시 잡음.
+  const W = 1180, H = 560;
   const canvas = document.createElement('canvas');
   canvas.width = W * SCALE;
   canvas.height = H * SCALE;
   const ctx = canvas.getContext('2d');
   ctx.scale(SCALE, SCALE);
 
-  // 배경 + 테두리 (티켓 이미지와 같은 톤으로 통일)
-  ctx.fillStyle = '#FFFEF9';
+  // 바깥 배경 — "수표 용지" 느낌의 아주 옅은 그린틴트(사이트 브랜드 그린 --teal 계열을 아주
+  // 옅게 희석, 이전 버전의 금색 티켓 배경과는 다른 톤으로 의도적으로 구분)
+  const outerGrad = ctx.createLinearGradient(0, 0, W, H);
+  outerGrad.addColorStop(0, '#F1F5EE');
+  outerGrad.addColorStop(1, '#E7EFE3');
+  ctx.fillStyle = outerGrad;
   ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = '#E8E2D3';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(6, 6, W - 12, H - 12);
+
+  // 안쪽 카드(사이트 기존 크림톤) + 이중 테두리(바깥 굵은 브랜드 그린 선 + 안쪽 얇은 금색 선)로
+  // "은행 서류" 느낌의 정형화된 테두리를 냄 — 실제 위변조 방지 무늬(길로셰)를 흉내내진 않음(과한
+  // 금융서류 흉내는 하드 제약 3번과 충돌할 위험이 있어 일부러 단순한 이중 룰 선까지만).
+  const cardX = 20, cardY = 20, cardW = W - cardX * 2, cardH = H - cardY * 2;
+  ctx.fillStyle = '#FFFEF9';
+  ctx.beginPath();
+  ctx.roundRect(cardX, cardY, cardW, cardH, 14);
+  ctx.fill();
+  ctx.strokeStyle = '#155445';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.strokeStyle = '#D9B65A';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.roundRect(cardX + 7, cardY + 7, cardW - 14, cardH - 14, 10);
+  ctx.stroke();
+
+  // 네 모서리 코너 브래킷 — "증서/서류" 느낌을 문양 없이 순수 선으로만 표현(특정 기관 직인·
+  // 문장이 아닌 일반적인 코너 장식)
+  const tick = 20;
+  [[cardX, cardY, 1, 1], [cardX + cardW, cardY, -1, 1], [cardX, cardY + cardH, 1, -1], [cardX + cardW, cardY + cardH, -1, -1]].forEach(([cx, cy, dx, dy]) => {
+    ctx.strokeStyle = '#155445';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx + dx * 14, cy + dy * 2);
+    ctx.lineTo(cx + dx * 2, cy + dy * 2);
+    ctx.lineTo(cx + dx * 2, cy + dy * 14);
+    ctx.stroke();
+  });
+
+  const PAD = 42;
+  const leftX = cardX + PAD, rightX = cardX + cardW - PAD;
+  // 로고(발행처) 쪽 자리와, 그 반대쪽(레퍼런스 사진의 "게임 로고+날짜" 자리 — 여기선 계산 기준 한
+  // 줄 + 날짜) 자리를 방향에 따라 서로 바꿔줌(RTL이면 로고가 오른쪽, 기준/날짜가 왼쪽)
+  const anchorX = isRtl ? rightX : leftX;
+  const oppositeX = isRtl ? leftX : rightX;
+  const anchorAlign = isRtl ? 'right' : 'left';
+  const oppositeAlign = isRtl ? 'left' : 'right';
+  const cornerMaxW = (W / 2) - PAD - 30; // 헤더 좌우 각 구역이 중앙과 겹치지 않게 하는 폭 상한
 
   ctx.textBaseline = 'middle';
 
-  // 로고
+  // 로고 — "발행처" 자리(레퍼런스 사진의 "[State] Lottery" 로고 자리를 사이트 자체 브랜드로 대체,
+  // 하드 제약 1번)
   ctx.fillStyle = '#155445';
   ctx.font = "700 30px 'Pretendard', -apple-system, sans-serif";
-  ctx.textAlign = isRtl ? 'right' : 'left';
-  ctx.fillText('참택스', isRtl ? W - 40 : 40, 56);
+  ctx.textAlign = anchorAlign;
+  ctx.fillText('참택스', anchorX, 70);
   ctx.fillStyle = '#8A8371';
   ctx.font = "600 14px 'Pretendard', -apple-system, sans-serif";
-  ctx.fillText('chamtax.com', isRtl ? W - 40 : 40, 84);
+  ctx.fillText('chamtax.com', anchorX, 96);
 
-  // 입력 기준 (예: "100M USD 당첨 · 한국 거주자")
-  ctx.fillStyle = '#8A8371';
-  ctx.font = "700 14px 'Pretendard', -apple-system, sans-serif";
-  ctx.fillText(basisMini, isRtl ? W - 40 : 40, 120);
-
-  // 결과 라벨
+  // 반대쪽 모서리: 계산 기준 한 줄(basisMini) + 날짜 — 언어별 길이 차이가 커서 폭을 넘으면
+  // 폰트를 줄임(fitFontSize)
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   ctx.fillStyle = '#262420';
-  ctx.font = "800 22px 'Pretendard', -apple-system, sans-serif";
-  ctx.fillText(resultLabelText, isRtl ? W - 40 : 40, 156);
+  ctx.textAlign = oppositeAlign;
+  fitFontSize(ctx, basisMini, 700, 15, 11, cornerMaxW);
+  ctx.fillText(basisMini, oppositeX, 64);
+  ctx.fillStyle = '#8A8371';
+  ctx.font = "600 13px 'Pretendard', -apple-system, sans-serif";
+  ctx.fillText(dateStr, oppositeX, 90);
 
-  // 실수령액 — 이 이미지의 중심이라 가장 크게, 가운데 정렬
+  // 헤더 구분선
+  ctx.strokeStyle = '#E8E2D3';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(cardX + 30, 118);
+  ctx.lineTo(cardX + cardW - 30, 118);
+  ctx.stroke();
+
+  // "받는 사람" 줄 — 진짜 빈 수표처럼 라벨 옆에 밑줄만 그어진 빈칸을 둠(하드 제약 2번: 실제
+  // 인물 이름/사진을 넣지 않고, 사용자가 이후 "꾸며서 저장하기" 펜/텍스트 오버레이로 직접
+  // 채워넣게 함). 라벨 폭을 측정해서 빈칸 시작 위치를 정확히 계산 — 방향에 따라 좌우 반전.
+  ctx.fillStyle = '#262420';
+  ctx.textAlign = anchorAlign;
+  const payToLabel = pickLang('받는 사람', 'PAY TO THE ORDER OF', '收款人', 'Người nhận', 'ผู้รับ', 'ПОЛУЧАТЕЛЬ', CHECK_PAYTO_MORE);
+  fitFontSize(ctx, payToLabel, 700, 18, 13, cornerMaxW * 1.6);
+  const payToLabelW = ctx.measureText(payToLabel).width;
+  ctx.fillText(payToLabel, anchorX, 172);
+  ctx.strokeStyle = 'rgba(138,131,113,0.65)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  if (isRtl) {
+    ctx.moveTo(leftX + 10, 186);
+    ctx.lineTo(rightX - payToLabelW - 16, 186);
+  } else {
+    ctx.moveTo(leftX + payToLabelW + 16, 186);
+    ctx.lineTo(rightX - 10, 186);
+  }
+  ctx.stroke();
+
+  // 실수령액 — 이 이미지의 시각적 중심(하드 제약 "유지할 것" 항목: 기존 이상 크기·굵기 유지),
+  // 넓어진 캔버스에 맞춰 살짝 더 키움(58px→66px). 폭을 넘으면 fitFontSize로 방어.
   ctx.fillStyle = '#155445';
-  ctx.font = "800 58px 'Pretendard', -apple-system, sans-serif";
   ctx.textAlign = 'center';
-  ctx.fillText(finalAmt, W / 2, 240);
+  fitFontSize(ctx, finalAmt, 800, 66, 40, cardW - PAD * 2);
+  ctx.fillText(finalAmt, W / 2, 256);
 
-  // 실수령/세금 비율 막대 — 화면의 result-visual-bar와 같은 개념을 캔버스에 재현
-  const barW = 760, barH = 16, barX0 = (W - barW) / 2, barY0 = 288;
+  // 결과 라벨 — 화면에 이미 "예상 실수령액"처럼 표기된 기존 문구를 그대로 재사용(하드 제약 5번:
+  // 새 "당첨/WINNER" 문구를 만들지 않음). RTL에서 이모지+문장이 섞인 문자열이 어긋나 보였던
+  // 이전 세션의 발견(직접 확인한 실제 버그) 그대로 ctx.direction을 명시.
+  ctx.direction = isRtl ? 'rtl' : 'ltr';
+  ctx.fillStyle = '#262420';
+  fitFontSize(ctx, resultLabelText, 700, 24, 15, cardW - PAD * 2);
+  ctx.fillText(resultLabelText, W / 2, 300);
+  ctx.direction = 'ltr'; // 이후 draw 호출에 영향 안 주도록 기본값 복원
+
+  // 실수령/세금 비율 막대 — 화면의 result-visual-bar와 같은 개념을 캔버스에 재현(넓어진 캔버스
+  // 비율에 맞춰 막대 폭도 비례해서 키움)
+  const barW = 980, barH = 16, barX0 = (W - barW) / 2, barY0 = 328;
   ctx.save();
   ctx.beginPath();
   ctx.roundRect(barX0, barY0, barW, barH, 8);
@@ -5059,15 +5236,21 @@ function saveHomeResultAsImage(){
   ctx.fillRect(barX0, barY0, barW * (takePct / 100), barH);
   ctx.restore();
 
-  ctx.font = "700 16px 'Pretendard', -apple-system, sans-serif";
+  ctx.textAlign = 'center';
+  const pctLine = `${takePct}% ${takeLabel}   ·   ${taxPct}% ${taxLabel}`;
   ctx.fillStyle = '#262420';
-  ctx.fillText(`${takePct}% ${takeLabel}   ·   ${taxPct}% ${taxLabel}`, W / 2, 326);
+  fitFontSize(ctx, pctLine, 700, 16, 12, cardW - PAD * 2);
+  ctx.fillText(pctLine, W / 2, 372);
 
-  ctx.font = "600 17px 'Pretendard', -apple-system, sans-serif";
+  const beforeAfterLine = `${beforeTax} → ${taxDiff}`;
   ctx.fillStyle = '#544E42';
-  ctx.fillText(`${beforeTax} → ${taxDiff}`, W / 2, 366);
+  fitFontSize(ctx, beforeAfterLine, 600, 17, 12, cardW - PAD * 2);
+  ctx.fillText(beforeAfterLine, W / 2, 406);
 
-  // 참고용 배지 — 티켓 이미지의 "가상 티켓" 배지와 같은 이유(실제 세무 신고 자료로 오인 방지)
+  // 참고용 배지 — 이전 버전(작은 알약 배지)과 달리 카드 폭 전체에 가까운 띠(banner)로 키움(하드
+  // 제약 4번: 수표 모양이 실제 금융 서류를 연상시킬 위험이 티켓보다 커서, 오히려 이 배지를
+  // 축소하지 않고 더 눈에 띄게 함). 카드 바닥까지 항상 16px 이상 여유를 둬서 어떤 언어에서도
+  // 잘리지 않게 함.
   const disclaimer = pickLang(
     '참고용 시뮬레이션 결과 · 실제 세무 신고 기준 아님',
     'Reference simulation only · not an official tax filing',
@@ -5077,26 +5260,18 @@ function saveHomeResultAsImage(){
     'Только справочное моделирование · не является официальной налоговой декларацией',
     RESULT_IMG_DISCLAIMER_MORE
   );
-  const badgeY = 410, badgeH = 34;
-  ctx.font = "700 14px 'Pretendard', -apple-system, sans-serif";
-  const badgeW = Math.min(W - 80, ctx.measureText(disclaimer).width + 48);
-  ctx.fillStyle = 'rgba(192,57,43,0.1)';
+  const bannerX = cardX + 14, bannerW = cardW - 28, bannerY0 = cardY + cardH - 70, bannerH = 54;
+  ctx.fillStyle = 'rgba(192,57,43,0.10)';
   ctx.strokeStyle = '#C0392B';
   ctx.lineWidth = 1.5;
-  const bxLeft = (W - badgeW) / 2;
   ctx.beginPath();
-  ctx.roundRect(bxLeft, badgeY, badgeW, badgeH, 17);
+  ctx.roundRect(bannerX, bannerY0, bannerW, bannerH, 10);
   ctx.fill();
   ctx.stroke();
   ctx.fillStyle = '#C0392B';
-  ctx.fillText(disclaimer, W / 2, badgeY + badgeH / 2 + 1);
-
-  // 발행일
-  const today = new Date();
-  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  ctx.fillStyle = '#8A8371';
-  ctx.font = "600 14px 'Pretendard', -apple-system, sans-serif";
-  ctx.fillText(dateStr, W / 2, 462);
+  ctx.textAlign = 'center';
+  fitFontSize(ctx, disclaimer, 700, 18, 12, bannerW - 40);
+  ctx.fillText(disclaimer, W / 2, bannerY0 + bannerH / 2 + 1);
 
   openAnnotateOverlay(canvas, 'chamtax-result.png');
 }
@@ -6419,7 +6594,15 @@ function startAmountVoiceInput(inputId, onTyped){
     const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
     const millions = parseSpokenAmountToMillions(transcript, currentLang);
     if (millions !== null && millions > 0) {
-      const rounded = Math.min(Math.round(millions * 10000) / 10000, MAX_INPUT_MILLIONS);
+      // 예전엔 Math.round(millions * 10000) / 10000(소수점 4자리 고정)로 반올림했는데, 이 단위는
+      // "Million USD" 기준이라 4자리 반올림 격자 자체가 약 $100 단위임 — "천원"(~$0.67)·"백원"
+      // (~$0.067)처럼 작은 금액은 이 격자보다 작아서 정확히 0으로 뭉개져 음성 입력이 조용히
+      // 아무 반응도 안 하는 것처럼 보였음(2026-07-28 사용자 실사용 중 발견). roundAmountForInput()
+      // 근처의 roundToSignificantFigures()(유효숫자 기준, 값의 크기에 비례해 반올림 단위가 같이
+      // 줄어듦)로 교체 — 통화·언어와 무관하게 모든 VOICE_LOCAL_CURRENCY 언어에 동일하게 적용됨
+      // (parseSpokenAmountToMillions()가 이미 통화별로 USD 백만 단위까지 환산을 끝낸 뒤라, 이
+      // 반올림 자체는 어떤 통화로 말했는지와 무관한 공용 마지막 단계).
+      const rounded = Math.min(roundToSignificantFigures(millions, 4), MAX_INPUT_MILLIONS);
       // parseSpokenAmountToMillions()의 결과는 항상 Million USD 단위 — 지금 화면 통화가 KRW
       // 등이면 그대로 넣지 않고 표시 단위로 환산해야 함(2026-07-28, 통화 선택기 도입과 함께 수정.
       // onTyped()가 곧바로 이 값을 다시 표시 단위 기준으로 재해석하므로 왕복이 서로 맞음)
@@ -6722,14 +6905,28 @@ function inputUnitsToUsdMillions(units, code){
   return rate ? units / rate : units;
 }
 
+// 절대 소수점 자릿수 대신 "유효숫자 개수" 기준으로 반올림 — 소액(예: 만원≈0.0000067M USD)이
+// 고정 소수점 반올림(예: 소수점 4자리)에 걸리면 통째로 0으로 뭉개지는 문제를, 값의 크기(자릿수)에
+// 비례해서 반올림 단위 자체를 같이 줄여서 막음. 반대로 큰 금액은 magnitude가 작아져서 정수(또는
+// 소수점 한두 자리)로 자연히 깔끔하게 남음 — 즉 큰 값에 지저분한 소수점 노이즈가 생기지 않음.
+// (2026-07-28 다섯 번째 후속 세션, 음성/타이핑 소액 입력이 0으로 사라지던 버그 수정)
+function roundToSignificantFigures(n, sigFigs){
+  if (!Number.isFinite(n) || n === 0) return 0;
+  const magnitude = Math.pow(10, sigFigs - 1 - Math.floor(Math.log10(Math.abs(n))));
+  return Math.round(n * magnitude) / magnitude;
+}
+
 // 입력칸에 보여줄 숫자를 너무 지저분한 소수점 없이 다듬음(100 이상은 정수, 10 이상은 소수점
-// 1자리, 그 아래는 소수점 2자리까지) — 기존 UI가 여기저기서 쓰던 반올림 관례를 통화 무관하게
-// 공용 함수로 뽑아낸 것
+// 1자리, 1 이상은 소수점 2자리까지) — 기존 UI가 여기저기서 쓰던 반올림 관례를 통화 무관하게
+// 공용 함수로 뽑아낸 것. **1 미만(예: KRW "억원" 단위에서 0.0001억원=만원처럼 작은 값)은 고정
+// 소수점 2자리로는 0으로 뭉개져버려서(round(0.0001*100)/100 = 0) 유효숫자 기준 반올림으로 전환**
+// (2026-07-28 다섯 번째 후속 세션) — 1 이상 구간의 기존 동작은 완전히 그대로 유지.
 function roundAmountForInput(n){
   if (!Number.isFinite(n)) return 0;
   if (Math.abs(n) >= 100) return Math.round(n);
   if (Math.abs(n) >= 10) return Math.round(n * 10) / 10;
-  return Math.round(n * 100) / 100;
+  if (Math.abs(n) >= 1 || n === 0) return Math.round(n * 100) / 100;
+  return roundToSignificantFigures(n, 4);
 }
 
 // 문자열에서 통화 무관하게 순수 숫자만 뽑아냄(parseMillionsInput과 동일한 정리 규칙) —
@@ -6898,7 +7095,12 @@ function onHomeAmountTyped(){
 function applyHomeAnnouncedMillions(announcedMillions){
   isAmountManuallyEdited = true;
   sharedAnnouncedUsdMillions = announcedMillions; // 통화 전환 시 재환산의 정확한 원본(드리프트 방지)
-  const lumpMillions = Math.max(1, Math.round(announcedMillions * CASH_VALUE_RATIO));
+  // 예전엔 Math.max(1, Math.round(...))로 "정수 + 최소 1(Million USD)"를 강제했는데, 이건 연금
+  // 발표액이 소액(예: 천만원 ≈ $6,700)일 때 실제 일시불 환산액(≈$3,900 ≈ 0.0039M)을 억지로
+  // 1,000,000달러로 부풀려버리는 버그였음(2026-07-28 사용자 실사용 중 발견 — 슬라이더 하한
+  // 고정 버그와 같은 뿌리). roundAmountForInput()이 어차피 화면 표시 단계에서 다시 통화별
+  // 자리수로 반올림하므로, 여기서는 정수로 미리 뭉개지 말고 유효숫자만 보존해서 넘김.
+  const lumpMillions = roundToSignificantFigures(announcedMillions * CASH_VALUE_RATIO, 4);
   const input = document.getElementById('homeAmountInput');
   input.value = roundAmountForInput(usdMillionsToInputUnits(lumpMillions, sharedInputCurrency));
   const slider = document.getElementById('homeAmountSlider');
@@ -6985,7 +7187,42 @@ function updateSliderFill(slider){
 // 각 슬라이더가 지금 담당하는 실제 달러 범위(usdMin/usdMax, 타이핑으로 기본 범위를 벗어나면
 // 늘어남)는 data-usd-min/data-usd-max 속성에 저장해둠.
 const SLIDER_POS_MAX = 1000;
-const SLIDER_LOG_FLOOR_M = 1; // 로그는 0 이하를 표현 못하므로, 0을 입력해도 이 값을 바닥으로 씀
+// 로그는 0 이하를 표현 못하므로 절대 하한이 필요한데, 예전엔 이 값 자체가 1(=$100만)이라 그보다
+// 작은 금액(예: 음성/타이핑으로 넣은 "천만원"≈$6,700)은 전부 이 1로 뭉개져 슬라이더 핸들이
+// 실제 값과 무관하게 항상 같은 위치(왼쪽 끝)에 고정돼 보이는 문제가 있었음(2026-07-28 사용자
+// 실사용 중 발견). "만원~수천만원"(약 $7~$50,000) 스케일까지 슬라이더가 실제 비례한 위치를
+// 보여주려면 이 안전장치 자체를 그 스케일보다 한참 아래로 낮춰야 함 — $0.01(=1e-8 Million)로
+// 잡아서, setSliderMillions()가 실제 입력값의 80%를 usdMin으로 쓰는 로직(아래)이 대부분의
+// 경우 이 안전장치보다 먼저 적용되고, 이 값은 정말 0에 가깝거나 잘못된 입력이 들어왔을 때만
+// 걸리는 최후 방어선 역할만 함. 기본 페이지 로드 시 범위(10~2000, index.html의 정적
+// data-usd-min/max)는 이 상수와 무관하게 그대로라 주 사용 사례(잭팟 스케일)엔 영향 없음.
+const SLIDER_LOG_FLOOR_M = 0.00000001;
+
+// 로그 스케일 위치 → 실제 금액으로 되돌릴 때, 사용자가 실제로 노리는 "딱 떨어지는 숫자"에
+// 자연스럽게 걸리도록 반올림하는 단위. 예전엔 500M 기준 2단계(10/50)뿐이었는데, 슬라이더가
+// 훨씬 작은 금액(만원~수천만원 스케일, 대략 0.000001~0.05 Million USD)까지 다루게 되면서
+// 그 아래 등급에도 맞는 반올림 단위가 필요해짐 — 단위가 너무 크면(예: 10M 단위) 0.007M 같은
+// 작은 값이 통째로 0으로 반올림돼버림. 각 구간은 대략 그 구간 대표값의 몇 % 오차 이내로
+// 반올림되도록 십진 등비로 잡았고, 500 이상 구간(10/50)은 기존 그대로라 주 사용 사례(잭팟
+// 스케일, 20~2000M)엔 회귀 없음(2026-07-28 다섯 번째 후속 세션).
+const SLIDER_ROUND_TIERS = [
+  { below: 0.0000001, step: 0.00000001 },
+  { below: 0.000001, step: 0.0000001 },
+  { below: 0.00001, step: 0.000001 },
+  { below: 0.0001, step: 0.00001 },
+  { below: 0.001, step: 0.0001 },
+  { below: 0.01, step: 0.001 },
+  { below: 0.1, step: 0.01 },
+  { below: 1, step: 0.1 },
+  { below: 10, step: 1 },
+  { below: 500, step: 10 },
+];
+function sliderRoundStep(raw){
+  for (const tier of SLIDER_ROUND_TIERS) {
+    if (raw < tier.below) return tier.step;
+  }
+  return 50; // 500 이상(기존 그대로)
+}
 
 function sliderPosToMillions(slider, pos){
   const usdMin = Number(slider.dataset.usdMin) || 10;
@@ -6993,9 +7230,7 @@ function sliderPosToMillions(slider, pos){
   const logMin = Math.log(usdMin), logMax = Math.log(usdMax);
   const clampedPos = Math.min(SLIDER_POS_MAX, Math.max(0, pos));
   const raw = Math.exp(logMin + (clampedPos / SLIDER_POS_MAX) * (logMax - logMin));
-  // 낮은 금액대는 10단위, 500M 이상은 50단위로 반올림 — 사용자가 실제로 노리는 딱 떨어지는
-  // 숫자(3억=300 등)에 자연스럽게 걸리게 함
-  const roundTo = raw < 500 ? 10 : 50;
+  const roundTo = sliderRoundStep(raw);
   return Math.round(raw / roundTo) * roundTo;
 }
 
@@ -7009,10 +7244,16 @@ function sliderMillionsToPos(slider, millions){
 
 // 타이핑/퀵필 등으로 슬라이더 값을 "달러 금액"으로 직접 설정할 때 쓰는 공용 함수 — 기본 범위
 // (1천만~20억)를 벗어나는 값이 들어오면 그 범위 자체를 넓혀서(예전 slider.max 확장 로직과 동일한
-// 의도) 값이 잘리지 않게 함
+// 의도) 값이 잘리지 않게 함. usdMax 쪽(큰 금액)은 값 자체를 그대로 상한으로 씀 — 아래 usdMin
+// 쪽(작은 금액)도 같은 원리를 대칭으로 적용함(2026-07-28 다섯 번째 후속 세션): 예전엔
+// `Math.min(10, Math.round(safeMillions))`가 1보다 작은 소수(예: 0.0067)를 정수로 반올림하면서
+// 0으로 뭉개버리고, 그 0을 다시 SLIDER_LOG_FLOOR_M(당시 1)로 끌어올려서 모든 소액이 항상 같은
+// 위치(왼쪽 끝)에 고정돼 보이는 버그였음. 이제는 반올림 없이 값의 80%를 usdMin으로 써서
+// (핸들이 로그축 왼쪽 끝에 완전히 달라붙지 않고 살짝 여유를 두게 함), 서로 다른 소액이 서로
+// 다른(값에 비례한) 위치에 보이게 함. 10 초과(주 사용 사례, 잭팟 스케일)는 기존 그대로 usdMin=10.
 function setSliderMillions(slider, millions){
-  const safeMillions = Number.isFinite(millions) ? millions : 10;
-  slider.dataset.usdMin = Math.max(SLIDER_LOG_FLOOR_M, Math.min(10, Math.round(safeMillions)));
+  const safeMillions = Number.isFinite(millions) && millions > 0 ? millions : 10;
+  slider.dataset.usdMin = safeMillions <= 10 ? Math.max(SLIDER_LOG_FLOOR_M, safeMillions * 0.8) : 10;
   slider.dataset.usdMax = Math.max(2000, safeMillions);
   slider.value = sliderMillionsToPos(slider, safeMillions);
   renderSliderTicks(slider);
