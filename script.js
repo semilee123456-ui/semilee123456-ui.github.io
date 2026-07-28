@@ -2446,7 +2446,9 @@ const HOWTO_TEXT_MEGA = ['메가밀리언즈는 일반번호 5개(1~70 중에서
     tl: 'Ang Mega Millions ay laro ng pagtutugma ng 5 pangunahing numero (mula 1–70) at 1 Mega Ball na numero (mula 1–24) — kabuuang 6 na numero. Ang premyo ay depende sa kung ilang pangunahing numero ang tumugma at kung tumugma rin ang Mega Ball, at bawat premyo maliban sa jackpot ay awtomatikong nakakakuha ng random na 2x–10x na multiplier.',
     ur: 'Mega Millions ایک ایسا کھیل ہے جس میں 5 مرکزی نمبر (1–70 میں سے) اور 1 Mega Ball نمبر (1–24 میں سے) ملانا ہوتا ہے — کل 6 نمبر۔ انعام کا انحصار اس بات پر ہے کہ آپ نے کتنے مرکزی نمبر ملائے اور کیا آپ نے Mega Ball بھی ملایا، اور جیک پاٹ کے علاوہ ہر انعام میں خودکار طور پر 2–10 گنا بے ترتیب ضرب شامل ہو جاتی ہے۔',
     uz: "Mega Millions — 5 ta asosiy raqam (1–70 orasidan) va 1 ta Mega Ball raqami (1–24 orasidan), jami 6 ta raqamni topish o'yini. Yutuq miqdori nechta asosiy raqamni topganingizga va Mega Ball raqamini ham topganingizga bog'liq, jekpotdan tashqari har bir yutuqqa avtomatik ravishda 2–10 baravar tasodifiy multiplikator qo'shiladi.",
-  }];
+  
+    pt: `O Mega Millions é um jogo em que se combinam 5 números principais (de 1 a 70) mais 1 Mega Ball (de 1 a 24) — 6 números no total. O prêmio depende de quantos números principais você acertar e se também acertar a Mega Ball, e todo prêmio que não seja o jackpot recebe automaticamente um multiplicador aleatório de 2x a 10x.`, es: `Mega Millions es un juego en el que eliges 5 números principales (del 1 al 70) más 1 Mega Ball (del 1 al 24) — 6 números en total. El premio depende de cuántos números principales aciertes y de si también aciertas la Mega Ball, y cada premio que no sea el acumulado recibe automáticamente un multiplicador aleatorio de 2x a 10x.`, uk: `Mega Millions — це гра, в якій потрібно вгадати 5 основних чисел (від 1 до 70) та 1 Mega Ball (від 1 до 24) — усього 6 чисел. Виграш залежить від того, скільки основних чисел ви вгадали та чи збігся номер Mega Ball, а кожен приз, окрім джекпоту, автоматично отримує випадковий множник від 2x до 10x.`, tet: `Mega Millions ne'e jogu ne'ebé hili númeru meiu 5 (husi 1–70) no númeru Mega Ball 1 (husi 1–24) — totál númeru 6. Prémiu depende husi hira númeru meiu ne'ebé ó kona ho se ó kona mós Mega Ball, no prémiu hotu ne'ebé la'ós jackpot hetan multiplicador aleatóriu 2x–10x automátikamentu.`,
+}];
 const HOWTO_TEXT_PB = ['파워볼은 일반번호 5개 (1~69 중에서) + 파워볼 번호 1개 (1~26 중에서), 총 6개 숫자를 맞히는 게임이에요. 일반번호를 몇 개 맞혔는지 + 파워볼까지 맞혔는지에 따라 상금이 달라져요.',
   'Powerball is a game of matching 5 main numbers (from 1–69) plus 1 Powerball number (from 1–26) — 6 numbers total. The prize depends on how many main numbers you match plus whether you also match the Powerball.',
   '强力球是从1~69中选5个普通号码 + 从1~26中选1个强力球号码，共6个数字的游戏。奖金取决于普通号码命中数量以及是否命中强力球。',
@@ -2471,7 +2473,9 @@ const HOWTO_TEXT_PB = ['파워볼은 일반번호 5개 (1~69 중에서) + 파워
     tl: 'Ang Powerball ay laro ng pagtutugma ng 5 pangunahing numero (mula 1–69) at 1 Powerball na numero (mula 1–26) — kabuuang 6 na numero. Ang premyo ay depende sa kung ilang pangunahing numero ang tumugma at kung tumugma rin ang Powerball.',
     ur: 'Powerball ایک ایسا کھیل ہے جس میں 5 مرکزی نمبر (1–69 میں سے) اور 1 Powerball نمبر (1–26 میں سے) ملانا ہوتا ہے — کل 6 نمبر۔ انعام کا انحصار اس بات پر ہے کہ آپ نے کتنے مرکزی نمبر ملائے اور کیا آپ نے Powerball بھی ملایا۔',
     uz: "Powerball — 5 ta asosiy raqam (1–69 orasidan) va 1 ta Powerball raqami (1–26 orasidan), jami 6 ta raqamni topish o'yini. Yutuq miqdori nechta asosiy raqamni topganingizga va Powerball raqamini ham topganingizga bog'liq.",
-  }];
+  
+    pt: `O Powerball é um jogo em que se combinam 5 números principais (de 1 a 69) mais 1 número Powerball (de 1 a 26) — 6 números no total. O prêmio depende de quantos números principais você acertar e se também acertar o Powerball.`, es: `Powerball es un juego en el que eliges 5 números principales (del 1 al 69) más 1 número Powerball (del 1 al 26) — 6 números en total. El premio depende de cuántos números principales aciertes y de si también aciertas el Powerball.`, uk: `Powerball — це гра, в якій потрібно вгадати 5 основних чисел (від 1 до 69) та 1 число Powerball (від 1 до 26) — усього 6 чисел. Виграш залежить від того, скільки основних чисел ви вгадали та чи збігся номер Powerball.`, tet: `Powerball ne'e jogu ne'ebé hili númeru meiu 5 (husi 1–69) no númeru Powerball 1 (husi 1–26) — totál númeru 6. Prémiu depende husi hira númeru meiu ne'ebé ó kona ho se ó kona mós Powerball.`,
+}];
 const ODDS_GAME_NOTE_MEGA = ['💡 위 잭팟 카드는 파워볼 기준이에요. 메가밀리언즈는 조금 달라요 — 티켓 살 때 \'메가플라이어(Megaplier)\'라는 옵션을 추가로 살 수 있는데, 이 옵션을 사면 잭팟을 제외한 나머지 등수에 당첨됐을 때 추첨 당일 무작위로 정해지는 2~10배 배수가 상금에 자동으로 곱해져서 원래보다 더 많이 받을 수 있어요. 이 옵션은 선택 사항이고 배수도 매번 달라지기 때문에, 아래 표에는 이 배수를 곱하기 전의 기본 상금만 보여드려요',
   "💡 The jackpot card above is for Powerball. Mega Millions works a bit differently — when buying a ticket, you can pay extra for an optional add-on called the 'Megaplier.' If you have it and win any prize other than the jackpot, a random multiplier between 2x and 10x (picked at that drawing) is automatically applied, so you can win more than the base amount. Since this add-on is optional and the multiplier changes every drawing, the amounts below are just the base prize, before that multiplier.",
   '💡 上方的头奖卡片是强力球的数据。超级百万不太一样——买彩票时可以额外付费购买一个叫"Megaplier"的加成选项。如果买了这个选项，中的不是头奖的话，开奖当天会随机抽出一个2~10倍的倍数自动乘到奖金上，让你拿到比原本更多的钱。因为这个选项是自选的，而且倍数每次都不同，所以下面表格里的金额只是加成前的基本奖金',
@@ -2496,7 +2500,9 @@ const ODDS_GAME_NOTE_MEGA = ['💡 위 잭팟 카드는 파워볼 기준이에�
     tl: "💡 Ang jackpot card sa itaas ay para sa Powerball. Medyo iba ang Mega Millions — kapag bumili ka ng tiket, puwede kang magbayad ng dagdag para sa opsyonal na add-on na tinatawag na 'Megaplier'. Kung meron ka nito at nanalo ka ng anumang premyo maliban sa jackpot, awtomatikong ilalapat sa premyo ang random na multiplier na 2x hanggang 10x (napili sa araw na iyon ng draw), kaya mas malaki ang matatanggap mo kaysa sa base amount. Dahil opsyonal ang add-on na ito at nagbabago ang multiplier sa bawat draw, ang mga halaga sa ibaba ay ang base na premyo lang, bago ang multiplier na iyon",
     ur: "💡 اوپر دیا گیا جیک پاٹ کارڈ Powerball کا ہے۔ Mega Millions تھوڑا مختلف طریقے سے کام کرتا ہے — ٹکٹ خریدتے وقت آپ اضافی رقم دے کر 'Megaplier' نامی ایک اختیاری اضافی سہولت خرید سکتے ہیں۔ اگر یہ آپ کے پاس ہو اور آپ جیک پاٹ کے علاوہ کوئی بھی انعام جیتیں، تو اسی قرعہ اندازی کے دن بے ترتیب طور پر چنا گیا 2 سے 10 گنا ضرب خودکار طور پر انعام پر لاگو ہو جاتا ہے، جس سے آپ کو بنیادی رقم سے زیادہ ملتا ہے۔ چونکہ یہ سہولت اختیاری ہے اور ضرب ہر قرعہ اندازی میں بدلتی ہے، نیچے دی گئی رقوم صرف اس ضرب سے پہلے کی بنیادی انعامی رقم ہیں",
     uz: "💡 Yuqoridagi jekpot kartasi Powerball uchun. Mega Millions biroz boshqacha ishlaydi — chipta sotib olayotganda qo'shimcha to'lov evaziga 'Megaplier' deb ataladigan ixtiyoriy qo'shimcha xizmatni sotib olishingiz mumkin. Agar bu sizda bo'lsa va jekpotdan boshqa istalgan yutuqni yutsangiz, o'sha tortishuv kunida tasodifiy tanlangan 2 dan 10 barobargacha multiplikator yutuqqa avtomatik qo'llaniladi, shu tufayli asosiy summadan ko'proq olasiz. Bu xizmat ixtiyoriy bo'lgani va multiplikator har safar o'zgargani uchun, quyidagi summalar faqat o'sha multiplikatorgacha bo'lgan asosiy yutuqdir",
-  }];
+  
+    pt: `💡 O cartão de prêmio acima é do Powerball. O Mega Millions funciona de forma um pouco diferente — ao comprar um bilhete, você pode pagar um valor adicional por um recurso opcional chamado 'Megaplier'. Se você o adquirir e ganhar qualquer prêmio que não seja o principal, um multiplicador aleatório entre 2x e 10x (sorteado naquela extração) é aplicado automaticamente, permitindo ganhar mais do que o valor base. Como esse recurso é opcional e o multiplicador muda a cada sorteio, os valores abaixo representam apenas o prêmio base, antes do multiplicador.`, es: `💡 La tarjeta de acumulado de arriba es para Powerball. Mega Millions funciona de forma un poco diferente: al comprar un boleto, puedes pagar un extra por una opción adicional llamada 'Megaplier'. Si la tienes y ganas cualquier premio que no sea el acumulado, se aplica automáticamente un multiplicador aleatorio de entre 2x y 10x (elegido en ese sorteo), por lo que puedes ganar más del monto base. Dado que esta opción es opcional y el multiplicador cambia en cada sorteo, los montos a continuación son solo el premio base, antes de aplicar el multiplicador.`, uk: `💡 Картка джекпоту вище призначена для Powerball. Mega Millions працює трохи інакше — купуючи квиток, ви можете доплатити за додаткову опцію під назвою «Megaplier». Якщо вона у вас є і ви виграєте будь-який приз, окрім джекпоту, автоматично застосовується випадковий множник від 2x до 10x (обраний під час цього розіграшу), завдяки чому ви можете виграти більше за базову суму. Оскільки ця опція є необов'язковою, а множник змінюється кожного розіграшу, наведені нижче суми є лише базовим призом без урахування множника.`, tet: `💡 Kartão jackpot iha leten ne'e ba Powerball. Mega Millions funsiona diferente uitoan — bainhira sosa bilhete, ó bele selu extra ba opsiun opseonál ne'ebé bolu 'Megaplier.' Se ó iha ne'e no manán prémiu kualker aleinde jackpot, multiplicador aleatóriu entre 2x no 10x (hili iha sorteiu ne'e) aplika automátikamentu, nune'e ó bele manán barak liu fali montante base. Tanba opsiun ne'e opseonál no multiplicador muda iha sorteiu idaidak, montante iha kraik ne'e prémiu base de'it, antes multiplicador ne'e.`,
+}];
 
 // "약 "/"About " 접두어의 17개 언어 버전 — jackpot-card-amt·jc-jackpot/cash/final(2319·2398행 근처)에서도
 // 같은 접두어를 반복해서 쓰므로 여기서 한 번만 정의해 재사용함
@@ -2784,7 +2790,9 @@ function buildDrawScheduleMore(days){
     tl: `Nagdo-draw tuwing ${days}`,
     ur: `ہر ${days} ڈرا ہوتا ہے`,
     uz: `Har ${days} o'tkaziladi`,
-  };
+  
+    pt: `Sorteado a cada ${days}`, es: `Sorteado cada ${days}`, uk: `Розіграш кожного ${days}`, tet: `Sorteiu iha ${days}`,
+};
 }
 
 // ============================================================================
@@ -2950,7 +2958,9 @@ function buildFreqDescMore(count){
     tl: `Kinalkula mula sa ${c} totoong draw simula nang gamitin ng bawat laro ang kasalukuyang format ng numero`,
     ur: `ہر گیم کے موجودہ نمبر فارمیٹ اپنانے کے بعد سے ${c} حقیقی ڈرا سے حساب لگایا گیا`,
     uz: `Har bir o'yin hozirgi raqam formatini qabul qilganidan beri ${c} ta haqiqiy tortishdan hisoblangan`,
-  };
+  
+    pt: `Calculado a partir de ${c} sorteios reais desde que cada jogo adotou seu formato de números atual`, es: `Calculado a partir de ${c} sorteos reales desde que cada juego adoptó su formato de números actual`, uk: `Розраховано на основі ${c} реальних розіграшів з моменту прийняття кожною грою поточного формату чисел`, tet: `Kálkulu husi sorteiu reál ${c} desde jogu idaidak foti nia formatus númeru atuál`,
+};
 }
 function buildFreqTextMore(mainList, specialList, specialWord){
   return {
@@ -2971,7 +2981,9 @@ function buildFreqTextMore(mainList, specialList, specialWord){
     tl: `Ang mga pangunahing numerong <b>${mainList}</b> ang pinakamadalas lumabas, at ang ${specialWord} number na <b>${specialList}</b> ang pinakamadalas lumabas`,
     ur: `مرکزی نمبر <b>${mainList}</b> سب سے زیادہ آئے، اور ${specialWord} نمبر <b>${specialList}</b> سب سے زیادہ آیا`,
     uz: `<b>${mainList}</b> asosiy raqamlari eng ko'p chiqqan, ${specialWord} raqami <b>${specialList}</b> eng ko'p chiqqan`,
-  };
+  
+    pt: `Os números principais <b>${mainList}</b> saíram com mais frequência, e o número ${specialWord} <b>${specialList}</b> foi o mais sorteado`, es: `Los números principales <b>${mainList}</b> salieron con más frecuencia, y la bola ${specialWord} <b>${specialList}</b> fue la más sorteada`, uk: `Основні номери <b>${mainList}</b> випадали найчастіше, а номер ${specialWord} <b>${specialList}</b> випадав найбільше`, tet: `Númeru meiu <b>${mainList}</b> sai beibeik liu, no númeru ${specialWord} <b>${specialList}</b> sai barak liu`,
+};
 }
 
 // ============================================================================
@@ -3527,7 +3539,9 @@ function buildJhMoreBtnMore(remaining){
     ky: `дагы ${remaining} көрсөтүү`, lo: `ສະແດງອີກ ${remaining} ລາຍການ`, mn: `өөр ${remaining}-г харуулах`, my: `နောက်ထပ် ${remaining} ခုပြပါ`,
     ne: `थप ${remaining} देखाउनुहोस्`, si: `තවත් ${remaining}ක් පෙන්වන්න`, tl: `Ipakita ang ${remaining} pa`, ur: `مزید ${remaining} دکھائیں`,
     uz: `yana ${remaining} tasini ko'rsatish`,
-  };
+  
+    pt: `Mostrar mais ${remaining}`, es: `Mostrar ${remaining} más`, uk: `Показати ще ${remaining}`, tet: `Hatudu ${remaining} tan`,
+};
 }
 function buildJhDescMore(count){
   const c = count.toLocaleString('en-US');
@@ -3549,7 +3563,9 @@ function buildJhDescMore(count){
     tl: `Mga halaga ng jackpot na na-check, kasama ang take-home ayon sa bansa (kasama ang top 5 all-time + ${c} totoong nakaraang draw)`,
     ur: `چیک کی گئی جیک پاٹ رقوم، ملک کے حساب سے ملنے والی رقم کے ساتھ (تمام ادوار کے سب سے بڑے 5 + ماضی کے حقیقی ${c} ڈرا سمیت)`,
     uz: `Tekshirilgan jekpot summalari, mamlakatlar bo'yicha qo'lga tegadigan summa bilan (barcha davrlardagi eng yuqori 5 + o'tmishdagi haqiqiy ${c} ta tortish bilan)`,
-  };
+  
+    pt: `Valores de prêmios que verificamos, com estimativa de valor líquido por país (incluindo os 5 maiores recordes de todos os tempos + ${c} sorteios reais anteriores)`, es: `Montos acumulados verificados, con estimado neto por país (incluyendo el Top 5 histórico + ${c} sorteos reales pasados)`, uk: `Перевірені суми джекпотів із сумою на руки за країнами (включаючи топ-5 за весь час + ${c} реальних минулих розіграшів)`, tet: `Montante jackpot ne'ebé ami verifika, ho estimativa lori ba uma tuir rai (inklui top 5 rekord tenpu hotu-hotu + sorteiu reál liuba ${c})`,
+};
 }
 // 🏆 실수령액 재랭킹 — 발표된(연금) 잭팟 금액 순서가 아니라, 실제로 선택된 세금 기준(sharedCountry/
 // sharedState — 홈/비교 화면에서 고른 나라)의 거주자가 오늘 세율로 실제 손에 쥐는 금액 기준으로
@@ -3814,7 +3830,9 @@ function buildStreakLineMore(count){
     ne: `जित्नुअघि लगातार ${count} पटक रोलओभर भयो`, si: `දිනුමට පෙර අඛණ්ඩව ${count}ක් රෝල්ඕවර් විය`,
     tl: `${count} magkasunod na rollover bago ito nanalo`, ur: `جیتنے سے پہلے مسلسل ${count} بار رول اوور ہوا`,
     uz: `G'olib chiqishidan oldin ketma-ket ${count} marta o'tdi`,
-  };
+  
+    pt: `${count} acúmulos consecutivos antes de sair`, es: `${count} acumulados consecutivos antes de salir`, uk: `${count} послідовних накопичень до виграшу`, tet: `${count} akumulasaun tuir-tuir malu antes kona`,
+};
 }
 
 // ---- (B) 물가보정 실질가치 랭킹 ----
@@ -3971,7 +3989,9 @@ function buildCpiOriginalLineMore(year, amt){
     ne: `${year} मा घोषित: ${amt}`, si: `${year} දී නිවේදනය කළේ: ${amt}`,
     tl: `Inanunsyo noong ${year}: ${amt}`, ur: `${year} میں اعلان کیا گیا: ${amt}`,
     uz: `${year}-yilda e'lon qilindi: ${amt}`,
-  };
+  
+    pt: `Anunciado em ${year}: ${amt}`, es: `Anunciado en ${year}: ${amt}`, uk: `Оголошено у ${year} році: ${amt}`, tet: `Anunsia iha ${year}: ${amt}`,
+};
 }
 function buildCpiMethodologyMore(baseYear){
   return {
@@ -3992,7 +4012,9 @@ function buildCpiMethodologyMore(baseYear){
     tl: `※ Ito ay eksperimental na simulation: ang mga halaga ay isinaayos sa antas ng presyo noong ${baseYear} gamit ang taunang average na CPI-U ng US Bureau of Labor Statistics (lahat ng urban consumer, 1982-84=100), pagkatapos ay kinalkula gamit ang palitan ngayon at kasalukuyang batas buwis ng bansang pinili mo. Hindi ito basehan para sa aktwal na pag-file ng buwis — ang mga jackpot na inanunsyo pagkatapos ng ${baseYear} ay hindi isinama sa ranggong ito dahil napakaliit na ng pagkakaiba sa implasyon.`,
     ur: `※ یہ ایک تجرباتی سیمولیشن ہے: رقوم کو امریکی بیورو آف لیبر سٹیٹسٹکس کے CPI-U (تمام شہری صارفین، 1982-84=100) سالانہ اوسط انڈیکس سے ${baseYear} کی قیمت کی سطح پر ایڈجسٹ کیا گیا، پھر آج کی زری شرح اور آپ کے منتخب کردہ ملک کے موجودہ ٹیکس قوانین سے شمار کیا گیا۔ یہ حقیقی ٹیکس فائلنگ کی بنیاد نہیں ہے — ${baseYear} کے بعد اعلان کردہ جیک پاٹس کو اس درجہ بندی سے خارج کر دیا گیا ہے کیونکہ افراط زر کا فرق بہت کم ہے۔`,
     uz: `※ Bu tajriba uchun simulyatsiya: summalar AQSh Mehnat statistikasi byurosining CPI-U (barcha shahar iste'molchilari, 1982-84=100) yillik o'rtacha indeksi yordamida ${baseYear}-yil narx darajasiga moslashtirildi, so'ngra bugungi valyuta kursi va tanlangan davlatingizning amaldagi soliq qoidalari bilan hisoblandi. Haqiqiy soliq deklaratsiyasi uchun asos emas — ${baseYear}-yildan keyin e'lon qilingan jekpotlar inflyatsiya farqi juda kichik bo'lgani uchun ushbu reytingdan chiqarib tashlangan.`,
-  };
+  
+    pt: `※ Esta é uma simulação experimental: os valores são ajustados para o nível de preços de ${baseYear} usando a média anual do CPI-U do Bureau of Labor Statistics dos EUA (All Urban Consumers, 1982-84=100), e depois convertidos com a taxa de câmbio de hoje e as regras fiscais atuais do país selecionado. Não serve como base para declaração fiscal real — prêmios anunciados após ${baseYear} são excluídos, pois a diferença de inflação é insignificante.`, es: `※ Esta es una simulación experimental: los montos se ajustan a los niveles de precios de ${baseYear} usando el promedio anual del CPI-U de la Oficina de Estadísticas Laborales de EE. UU. (All Urban Consumers, 1982-84=100), y luego se convierten con el tipo de cambio de hoy y las normas fiscales actuales del país seleccionado. No es una base para la declaración fiscal real; los acumulados anunciados después de ${baseYear} se excluyen porque la diferencia por inflación es insignificante.`, uk: `※ Це експериментальна симуляція: суми відкориговано до рівня цін ${baseYear} року за допомогою середньорічного індексу CPI-U Бюро статистики праці США (All Urban Consumers, 1982-84=100), а потім конвертовано за сьогоднішнім курсом та чинними податковими правилами обраної країни. Не є підставою для реального подання декларації — джекпоти, оголошені після ${baseYear} року, виключено, оскільки різниця інфляції занадто мала.`, tet: `※ Ne'e simulasaun esperimentál: montante sira ajusta ba nivel presu ${baseYear} uza média anuál CPI-U husi US Bureau of Labor Statistics (All Urban Consumers, 1982-84=100), depois konverte ho taxa kambial loron ne'e nian no regra impostu atuál husi rai ne'ebé hili. La'ós base ba submetasaun impostu reál — jackpot ne'ebé anunsia depois husi ${baseYear} la inklui tanba diferensa inflasaun ki'ik tebes.`,
+};
 }
 // ==================== /ChamTax 잭팟 인덱스 ====================
 
@@ -4041,7 +4063,9 @@ function buildRankDescMore(basisSuffix){
   tl: `Hindi ayon sa inanunsyong (annuity) jackpot — ito ang TOP 10 ayon sa aktwal na natatanggap sa kasalukuyang buwis · ${basisSuffix}`,
   ur: `اعلان شدہ (سالانہ) جیک پاٹ کے حساب سے نہیں — یہ آج کی ٹیکس شرح پر واقعی ملنے والی رقم کی بنیاد پر ٹاپ 10 ہے · ${basisSuffix}`,
   uz: `E'lon qilingan (annuitet) jekpot bo'yicha emas — bu bugungi soliq stavkalarida haqiqatda qo'lga kiritadigan summa bo'yicha TOP 10 · ${basisSuffix}`,
-  };
+  
+    pt: `Não classificado pelo prêmio anunciado (anuidade) — este é o TOP 10 pelo valor que realmente se leva para casa com as alíquotas fiscais de hoje · ${basisSuffix}`, es: `Sin clasificar por el acumulado anunciado (anualidad): este es el TOP 10 por lo que realmente se lleva a casa según las tasas fiscales actuales · ${basisSuffix}`, uk: `Рейтинг складено не за оголошеним джекпотом (аннуїтетом), а за сумою TOP 10, яку насправді отримують на руки за поточними податковими ставками · ${basisSuffix}`, tet: `La'ós klasifika tuir jackpot anunsia (anuidade) — ne'e TOP 10 tuir ne'ebé lori ba uma duni ho taxa impostu atuál · ${basisSuffix}`,
+};
 }
 function buildAnnouncedLineMore(amt){
   return {
@@ -4050,7 +4074,9 @@ function buildAnnouncedLineMore(amt){
     ky: `Жарыяланган ${amt}`, lo: `ປະກາດ ${amt}`, mn: `Зарласан ${amt}`, my: `ကြေညာ ${amt}`,
     ne: `घोषित ${amt}`, si: `නිවේදනය ${amt}`, tl: `Inanunsyo ${amt}`, ur: `اعلان کردہ ${amt}`,
     uz: `E'lon qilingan ${amt}`,
-  };
+  
+    pt: `Anunciado ${amt}`, es: `Anunciado ${amt}`, uk: `Оголошено ${amt}`, tet: `Anunsia ${amt}`,
+};
 }
 
 // 📅 날짜로 당첨번호 찾아보기 — usamega.com의 "Search Past Results"와 비슷한 기능이지만,
@@ -4375,7 +4401,9 @@ function buildMainNumAriaMore(n){
     ky: `Негизги сан ${n}`, lo: `ເລກຫຼັກ ${n}`, mn: `Үндсэн тоо ${n}`, my: `အဓိကဂဏန်း ${n}`,
     ne: `मुख्य नम्बर ${n}`, si: `ප්‍රධාන අංකය ${n}`, tl: `Pangunahing numero ${n}`, ur: `مرکزی نمبر ${n}`,
     uz: `Asosiy raqam ${n}`,
-  };
+  
+    pt: `Número principal ${n}`, es: `Número principal ${n}`, uk: `Основне число ${n}`, tet: `Númeru meiu ${n}`,
+};
 }
 const MN_SPECIAL_ARIA_MORE = {
   ar: 'رقم Powerball', bn: 'Powerball সংখ্যা', fr: 'Numéro Powerball', hi: 'Powerball नंबर',
@@ -4561,7 +4589,9 @@ const MN_TONE_TIERS = [
     ky: 'Кийинки жолу ийгилик күтүп жатат 🍀', lo: 'ຄັ້ງໜ້າອາດຈະໂຊກດີ 🍀', mn: 'Дараагийн удаа азтай байж магадгүй 🍀', my: 'နောက်တစ်ကြိမ်မှာ ကံကောင်းနိုင်ပါတယ် 🍀',
     ne: 'अर्को पटक भाग्य खुल्न सक्छ 🍀', si: 'ඊළඟ වතාවේ වාසනාව විවෘත වෙන්න පුළුවන් 🍀', tl: 'Baka sa susunod na pagkakataon na 🍀', ur: 'اگلی بار قسمت کھل سکتی ہے 🍀',
     uz: "Keyingi safar omad kulib boqishi mumkin 🍀",
-  }],
+  
+    pt: `Da próxima vez pode ser a sua vez — 🍀`, es: `La próxima vez podría ser la vencida — 🍀`, uk: `Наступного разу точно пощастить — 🍀`, tet: `Dala oin pode sai ó-nia tempu — 🍀`,
+}],
   // score 2
   ['오, 나쁘지 않은데요? 😊', 'Oh, not bad at all! 😊', '哦，还不错嘛！😊', 'Ồ, không tệ đấy chứ! 😊', 'โอ้ ไม่เลวเลยนะ! 😊', 'О, совсем неплохо! 😊', {
     ar: 'أوه، ليس سيئًا على الإطلاق! 😊', bn: 'বাহ, মন্দ না তো! 😊', fr: 'Oh, pas mal du tout ! 😊', hi: 'अरे वाह, बुरा नहीं है! 😊',
@@ -4569,7 +4599,9 @@ const MN_TONE_TIERS = [
     ky: 'Ой, жаман эмес экен! 😊', lo: 'ໂອ້, ບໍ່ເລວເລີຍ! 😊', mn: 'Өө, муу биш байна! 😊', my: 'အိုး၊ မဆိုးလှပါဘူးနော်! 😊',
     ne: 'ओहो, नराम्रो त होइन! 😊', si: 'ඕහෝ, නරක නැහැනේ! 😊', tl: 'Oh, hindi naman masama! 😊', ur: 'واہ، برا نہیں ہے! 😊',
     uz: "Voy, yomon emas-ku! 😊",
-  }],
+  
+    pt: `Ah, nada mal mesmo! 😊`, es: `¡Ooh, nada mal! 😊`, uk: `О, а це зовсім непогано! 😊`, tet: `Ooh, la aat duni! 😊`,
+}],
   // score 3
   ['오, 꽤 가까웠는데요! 👀', 'Ooh, that was pretty close! 👀', '哦，还挺接近的呢！👀', 'Ồ, khá gần đấy! 👀', 'โอ้ ใกล้เคียงเลยนะ! 👀', 'О, это было довольно близко! 👀', {
     ar: 'أوه، كانت قريبة جدًا! 👀', bn: 'বাহ, বেশ কাছাকাছি ছিল! 👀', fr: 'Oh, c’était plutôt proche ! 👀', hi: 'अरे, काफी करीब थे! 👀',
@@ -4577,7 +4609,9 @@ const MN_TONE_TIERS = [
     ky: 'Ой, бул абдан жакын болду! 👀', lo: 'ໂອ້, ໃກ້ຫຼາຍເລີຍ! 👀', mn: 'Өө, нэлээд ойрхон байлаа! 👀', my: 'အိုး၊ တော်တော်နီးလိုက်တာနော်! 👀',
     ne: 'ओहो, निकै नजिक थियो! 👀', si: 'ඕහෝ, හරිම ළඟයි! 👀', tl: 'Oh, medyo malapit na iyon! 👀', ur: 'واہ، کافی قریب تھا! 👀',
     uz: "Voy, juda yaqin bo'ldi! 👀",
-  }],
+  
+    pt: `Uau, passou bem perto! 👀`, es: `¡Uff, estuvo bastante cerca! 👀`, uk: `Ого, це було дуже близько! 👀`, tet: `Ooh, ne'e besik tebes! 👀`,
+}],
   // score 4 — "아깝게 놓쳤네요" (기획 문구 예시)
   ['우와, 아깝게 놓쳤네요! 😲', 'Whoa, so close — you just missed it! 😲', '哇，差一点点就中了！😲', 'Ối, suýt nữa là trúng rồi! 😲', 'ว้าว เฉียดไปนิดเดียวเอง! 😲', 'Ого, чуть-чуть не хватило! 😲', {
     ar: 'واو، لقد فاتتك بفارق ضئيل! 😲', bn: 'ওহো, একটুর জন্য মিস হয়ে গেল! 😲', fr: 'Waouh, c’est passé si près ! 😲', hi: 'वाह, बस थोड़े से चूक गए! 😲',
@@ -4585,7 +4619,9 @@ const MN_TONE_TIERS = [
     ky: 'Ва, аз калды! 😲', lo: 'ໂອ້ຍ, ພາດແບບໜ້າເສຍດາຍເລີຍ! 😲', mn: 'Вау, бага зэрэг дутуу байлаа! 😲', my: 'ဝိုး၊ အနည်းငယ်လွဲသွားတာနော်! 😲',
     ne: 'ओहो, थोरैमा छुट्यो! 😲', si: 'අනේ, ටිකකින් මගහැරුනා! 😲', tl: 'Wow, sobrang lapit na — konti na lang! 😲', ur: 'واہ، تھوڑے سے رہ گیا! 😲',
     uz: "Voy, sal-pal yetishmadi! 😲",
-  }],
+  
+    pt: `Nossa, por pouco — faltou quase nada! 😲`, es: `¡Guao, tan cerca! ¡Casi lo logras! 😲`, uk: `Ого, так близько — трохи не вистачило! 😲`, tet: `Uau, besik tebes — foin lakon uitoan! 😲`,
+}],
   // score 5
   ['대박, 거의 다 맞았어요! (그래도 이건 가상 비교예요) 😄', 'Wow, you nearly matched almost everything! (still just a hypothetical comparison) 😄', '哇塞，几乎全中了！（不过这只是假设性比较哦）😄', 'Tuyệt vời, gần như trúng hết rồi! (nhưng đây chỉ là so sánh giả định thôi nhé) 😄', 'สุดยอด เกือบจะถูกหมดแล้ว! (แต่นี่เป็นแค่การเปรียบเทียบสมมติเท่านั้นนะ) 😄', 'Ого, вы почти всё угадали! (но это лишь гипотетическое сравнение) 😄', {
     ar: 'رائع، لقد طابقت كل شيء تقريبًا! (لكن هذه مجرد مقارنة افتراضية) 😄', bn: 'দারুণ, প্রায় সবই মিলে গেছে! (তবে এটা নিছক কাল্পনিক তুলনা) 😄', fr: 'Incroyable, vous avez presque tout trouvé ! (mais ce n’est qu’une comparaison hypothétique) 😄', hi: 'शानदार, लगभग सब कुछ मैच हो गया! (लेकिन यह सिर्फ काल्पनिक तुलना है) 😄',
@@ -4593,7 +4629,9 @@ const MN_TONE_TIERS = [
     ky: 'Укмуш, дээрлик баары дал келди! (бирок бул жөн гана болжолдуу салыштыруу) 😄', lo: 'ສຸດຍອດ, ຖືກເກືອບໝົດເລີຍ! (ແຕ່ນີ້ພຽງແຕ່ການປຽບທຽບສົມມຸດຕິຖານເທົ່ານັ້ນ) 😄', mn: 'Гайхалтай, бараг бүгд таарлаа! (гэхдээ энэ бол зөвхөн таамаглалын харьцуулалт) 😄', my: 'အံ့သြစရာပဲ၊ အားလုံးနီးပါး ကိုက်ညီသွားတယ်! (ဒါပေမဲ့ ဒါက စိတ်ကူးယဉ် နှိုင်းယှဉ်မှုပဲ) 😄',
     ne: 'कमाल, लगभग सबै मिल्यो! (तर यो त काल्पनिक तुलना मात्र हो) 😄', si: 'දැවැන්තයි, පාහේ සියල්ලම ගැලපුණා! (නමුත් මෙය හුදෙක් උපකල්පිත සැසඳීමක් පමණයි) 😄', tl: 'Wow, halos lahat ay tumugma! (pero ito ay isang haka-haka lang na paghahambing) 😄', ur: 'زبردست، تقریباً سب کچھ میچ ہو گیا! (لیکن یہ محض ایک فرضی موازنہ ہے) 😄',
     uz: "Ajoyib, deyarli hammasi mos keldi! (lekin bu shunchaki faraziy taqqoslash) 😄",
-  }],
+  
+    pt: `Uau, você acertou quase tudo! (ainda é apenas uma comparação hipotética) 😄`, es: `¡Guao, acertaste casi todo! (sigue siendo solo una comparación hipotética) 😄`, uk: `Вау, ви вгадали майже все! (все одно це лише гіпотетичне порівняння) 😄`, tet: `Uau, ó besik kona hotu-hotu! (sei simulasaun hipotétiku de'it) 😄`,
+}],
   // score 6 (5개 + 파워볼 전부 일치) — "축하?!" (기획 문구 예시), 실제 당첨 아님을 재차 명시
   ['축하?! 실제였다면 잭팟이었겠지만, 이건 그냥 재미로 해본 가상 비교예요 🎉😄', 'Congrats?! If this were real, that’d be the jackpot — but this is just a fun hypothetical comparison 🎉😄', '恭喜？！如果是真的那就是头奖了，不过这只是好玩的假设性比较而已 🎉😄', 'Chúc mừng?! Nếu là thật thì đã trúng jackpot rồi, nhưng đây chỉ là so sánh giả định cho vui thôi 🎉😄', 'ยินดีด้วยไหมนะ?! ถ้าเป็นเรื่องจริงนี่คือแจ็คพอตเลย แต่นี่เป็นแค่การเปรียบเทียบสมมติเพื่อความสนุกเท่านั้น 🎉😄', 'Поздравляем?! Будь это по-настоящему, это был бы джекпот — но это просто гипотетическое сравнение для развлечения 🎉😄', {
     ar: 'مبروك؟! لو كان هذا حقيقيًا لكانت الجائزة الكبرى، لكنها مجرد مقارنة افتراضية للمتعة 🎉😄', bn: 'অভিনন্দন?! সত্যি হলে এটাই জ্যাকপট হতো, তবে এটা নিছক মজার কাল্পনিক তুলনা 🎉😄', fr: 'Félicitations ?! Si c’était réel, ce serait le jackpot — mais ce n’est qu’une comparaison fictive pour le plaisir 🎉😄', hi: 'बधाई हो?! अगर यह असली होता तो यही जैकपॉट होता, पर यह सिर्फ मज़े के लिए काल्पनिक तुलना है 🎉😄',
@@ -4601,7 +4639,9 @@ const MN_TONE_TIERS = [
     ky: 'Куттуктайбызбы?! Эгер бул чын болсо, бул джекпот болмок — бирок бул жөн гана көңүл ачуу үчүн болжолдуу салыштыруу 🎉😄', lo: 'ຂໍສະແດງຄວາມຍິນດີບໍ?! ຖ້າເປັນເລື່ອງຈິງນີ້ຄືແຈັກພອດເລີຍ — ແຕ່ນີ້ພຽງແຕ່ການປຽບທຽບສົມມຸດຕິຖານເພື່ອຄວາມມ່ວນເທົ່ານັ້ນ 🎉😄', mn: 'Баяр хүргэе үү?! Хэрэв бодит байсан бол энэ жекпот байх байсан — гэхдээ энэ бол зөвхөн зугаа цэнгэлийн таамаглалын харьцуулалт 🎉😄', my: 'ဂုဏ်ယူပါတယ်ရယ်လား?! ဒါအမှန်ဆိုရင် ဂျက်ပေါ့ပဲ ဖြစ်ခဲ့မှာပါ — ဒါပေမဲ့ ဒါက ပျော်စရာအတွက် စိတ်ကူးယဉ် နှိုင်းယှဉ်မှုပဲ 🎉😄',
     ne: 'बधाई छ?! यदि यो साँचो भएको भए यो त ज्याकपोट नै हुन्थ्यो — तर यो त रमाइलोका लागि मात्र काल्पनिक तुलना हो 🎉😄', si: 'සුබ පැතුම්ද?! මෙය සැබෑ නම් මෙය ජැක්පොට් වන්නට තිබුණි — නමුත් මෙය විනෝදය සඳහා පමණක් උපකල්පිත සැසඳීමකි 🎉😄', tl: 'Congrats kaya?! Kung totoo ito, iyan na sana ang jackpot — pero ito ay isang haka-haka lang na paghahambing para sa saya 🎉😄', ur: 'مبارک ہو؟! اگر یہ حقیقی ہوتا تو یہی جیک پاٹ ہوتا — لیکن یہ محض تفریح کے لیے ایک فرضی موازنہ ہے 🎉😄',
     uz: "Tabriklaymizmi?! Agar bu haqiqiy bo'lsa, bu jekpot bo'lardi — lekin bu shunchaki qiziqarli faraziy taqqoslash 🎉😄",
-  }],
+  
+    pt: `Parabéns?! Se fosse real, esse seria o prêmio principal — mas é apenas uma comparação hipotética divertida 🎉😄`, es: `¡¿Felicidades?! Si esto fuera real, sería el acumulado; pero solo es una divertida comparación hipotética 🎉😄`, uk: `Вітаємо?! Якби це було вживу, це був би джекпот — але це лише цікаве гіпотетичне порівняння 🎉😄`, tet: `Parabéns?! Se ne'e reál, ne'e jackpot tiha — maibé ne'e komparasaun hipotétiku ba haksolok de'it 🎉😄`,
+}],
 ];
 
 // score(0~6) -> 톤 문구. 배열 인덱스는 그대로 score(0,1은 같은 문구 공유하려고 인덱스 보정)
@@ -5313,7 +5353,9 @@ function buildDrawCountAnnounceMore(count){
     ky: `${count} тартылыш менен салыштырылды`, lo: `ປຽບທຽບກັບການອອກ ${count} ຄັ້ງແລ້ວ`, mn: `${count} сугалаатай харьцуулав`, my: `ထီပေါက်စဉ် ${count} ခုနှင့် နှိုင်းယှဉ်ပြီးပါပြီ`,
     ne: `${count} ड्रसँग तुलना गरियो`, si: `දිනුම් ඇදීම් ${count}ක් සමඟ සසඳන ලදී`, tl: `Naikumpara sa ${count} draw`, ur: `${count} ڈرا سے موازنہ کیا گیا`,
     uz: `${count} ta tortish bilan solishtirildi`,
-  };
+  
+    pt: `Comparado com ${count} sorteios`, es: `Comparado con ${count} sorteos`, uk: `Порівняно з ${count} розіграшами`, tet: `Kompara ho sorteiu ${count}`,
+};
 }
 
 function buildBestMatchLabelMore(count){
@@ -5327,7 +5369,9 @@ function buildBestMatchLabelMore(count){
     ne: `वास्तविक ड्रहरूमध्ये सबैभन्दा नजिकको ${count} मिलान`, si: `සැබෑ දිනුම් ඇදීම් අතරින් ආසන්නතම ගැලපීම් ${count}`,
     tl: `${count} pinakamalapit na tugma sa mga totoong draw`, ur: `حقیقی ڈرا میں سب سے قریبی ${count} میچز`,
     uz: `Haqiqiy tortishlar orasidagi eng yaqin ${count} ta moslik`,
-  };
+  
+    pt: `Os ${count} resultados mais próximos em sorteios reais`, es: `Las ${count} coincidencias más cercanas entre sorteos reales`, uk: `Топ-${count} найближчих збігів серед реальних розіграшів`, tet: `Top ${count} ne'ebé besik liu iha sorteiu reál sira`,
+};
 }
 
 function applyJackpotData(){
@@ -7040,7 +7084,18 @@ function updateFlexBox(finalEok, country){
   const usdAmount = wonAmount / EXCHANGE_RATE;
   const cnyAmount = usdAmount * EXCHANGE_RATE_CNY;
   const inrAmount = usdAmount * EXCHANGE_RATE_INR;
-  const amountByCurrency = { krw: wonAmount, usd: usdAmount, cny: cnyAmount, inr: inrAmount };
+  // FLEX_REF에 21개국이 있는데(2026-07-28 17개국 추가) 여기는 원래 4개 통화만 커버해서, 새로
+  // 추가된 17개국은 amountByCurrency[ref.apt.currency]가 undefined가 되어 전부 NaN으로 표시되던
+  // 버그가 있었음(사용자가 키르기스스탄/방글라데시 화면에서 발견) — 나머지 통화도 전부 채움
+  const amountByCurrency = {
+    krw: wonAmount, usd: usdAmount, cny: cnyAmount, inr: inrAmount,
+    vnd: usdAmount * EXCHANGE_RATE_VND, idr: usdAmount * EXCHANGE_RATE_IDR, php: usdAmount * EXCHANGE_RATE_PHP,
+    thb: usdAmount * EXCHANGE_RATE_THB, jpy: usdAmount * EXCHANGE_RATE_JPY, rub: usdAmount * EXCHANGE_RATE_RUB,
+    npr: usdAmount * EXCHANGE_RATE_NPR, lkr: usdAmount * EXCHANGE_RATE_LKR, uzs: usdAmount * EXCHANGE_RATE_UZS,
+    kzt: usdAmount * EXCHANGE_RATE_KZT, kgs: usdAmount * EXCHANGE_RATE_KGS, mmk: usdAmount * EXCHANGE_RATE_MMK,
+    bdt: usdAmount * EXCHANGE_RATE_BDT, pkr: usdAmount * EXCHANGE_RATE_PKR, khr: usdAmount * EXCHANGE_RATE_KHR,
+    mnt: usdAmount * EXCHANGE_RATE_MNT, lak: usdAmount * EXCHANGE_RATE_LAK,
+  };
   const ref = FLEX_REF[country] || FLEX_REF.kr;
   const localeStr = LOCALE_MAP[currentLang] || 'ko-KR';
 
@@ -7412,8 +7467,12 @@ const DREAM_DATA = {
     titleVi: 'Cuối cùng cũng tự do', descVi: 'Sáng thứ Hai không còn đáng sợ nữa. Bạn đã nộp đơn xin nghỉ việc rồi.',
     titleTh: 'อิสระในที่สุด', descTh: 'เช้าวันจันทร์ไม่น่ากลัวอีกต่อไป คุณยื่นใบลาออกไปแล้ว',
     titleRu: 'Наконец-то свободен', descRu: 'Утро понедельника больше не пугает. Заявление об увольнении уже подано.',
-    titleMore: { ar:'حرّ أخيرًا', bn:'অবশেষে মুক্ত', fr:'Enfin libre', hi:'आख़िरकार आज़ाद', id:'Akhirnya bebas', ja:'ついに自由の身', kk:'Ақыры еркін', km:'ទីបំផុតរួចផុត', ky:'Акыры эркин', lo:'ໃນທີ່ສຸດກໍເປັນອິດສະຫຼະ', mn:'Эцэст нь эрх чөлөөтэй боллоо', my:'နောက်ဆုံးတော့ လွတ်လပ်သွားပြီ', ne:'अन्ततः स्वतन्त्र', si:'අවසානයේ නිදහස්', tl:'Sa wakas, malaya na', ur:'آخرکار آزاد', uz:"Nihoyat erkin" },
-    descMore: { ar:'صباحات الاثنين لم تعد تخيفك بعد الآن. لقد قدّمت استقالتك بالفعل.', bn:'সোমবার সকাল আর আপনাকে ভয় দেখায় না। আপনি ইতিমধ্যে পদত্যাগপত্র জমা দিয়েছেন।', fr:'Les lundis matin ne vous font plus peur. Vous avez déjà remis votre démission.', hi:'सोमवार की सुबहें अब आपको डराती नहीं। आपने पहले ही इस्तीफा दे दिया है।', id:'Pagi hari Senin tidak lagi menakutkan bagimu. Kamu sudah mengajukan pengunduran diri.', ja:'月曜日の朝はもう怖くありません。すでに退職届を提出しました。', kk:'Дүйсенбі таңы сізді енді қорқытпайды. Сіз жұмыстан босату өтінішін қойып та қойдыңыз.', km:'ព្រឹកថ្ងៃច័ន្ទលែងធ្វើឱ្យអ្នកខ្លាចទៀតហើយ។ អ្នកបានដាក់លិខិតលាឈប់រួចហើយ។', ky:'Дүйшөмбү эртеси сизди эми коркутпайт. Сиз иштен бошотуу арызын мурунтан эле берип койгонсуз.', lo:'ຕອນເຊົ້າວັນຈັນບໍ່ໜ້າຢ້ານອີກຕໍ່ໄປ ທ່ານໄດ້ຍື່ນໃບລາອອກໄປແລ້ວ.', mn:'Даваа гарагийн өглөө таныг цаашид айлгахгүй. Та аль хэдийн ажлаасаа чөлөөлөгдөх өргөдлөө өгсөн.', my:'တနင်္လာနေ့မနက်ခင်းက သင့်ကို ထပ်မံမကြောက်စေတော့ပါ။ သင် နှုတ်ထွက်စာတင်ပြီးသားဖြစ်သည်။', ne:'सोमबार बिहान अब तपाईंलाई डर लाग्दैन। तपाईंले पहिले नै राजीनामा बुझाइसक्नुभएको छ।', si:'සඳුදා උදෑසන දැන් ඔබට බියක් නැත. ඔබ දැනටමත් ඉල්ලා අස්වීමේ ලිපිය ඉදිරිපත් කර ඇත.', tl:'Hindi ka na natatakot sa umaga ng Lunes. Naisumite mo na ang iyong resignasyon.', ur:'پیر کی صبحیں اب آپ کو خوفزدہ نہیں کرتیں۔ آپ پہلے ہی استعفیٰ دے چکے ہیں۔', uz:"Dushanba ertalabi endi sizni qo'rqitmaydi. Siz allaqachon iste'foingizni topshirgansiz." }
+    titleMore: { ar:'حرّ أخيرًا', bn:'অবশেষে মুক্ত', fr:'Enfin libre', hi:'आख़िरकार आज़ाद', id:'Akhirnya bebas', ja:'ついに自由の身', kk:'Ақыры еркін', km:'ទីបំផុតរួចផុត', ky:'Акыры эркин', lo:'ໃນທີ່ສຸດກໍເປັນອິດສະຫຼະ', mn:'Эцэст нь эрх чөлөөтэй боллоо', my:'နောက်ဆုံးတော့ လွတ်လပ်သွားပြီ', ne:'अन्ततः स्वतन्त्र', si:'අවසානයේ නිදහස්', tl:'Sa wakas, malaya na', ur:'آخرکار آزاد', uz:"Nihoyat erkin" ,
+    pt: `Livre finalmente`, es: `Libre al fin`, uk: `Уже на волі`, tet: `Livre ikusmai`,
+},
+    descMore: { ar:'صباحات الاثنين لم تعد تخيفك بعد الآن. لقد قدّمت استقالتك بالفعل.', bn:'সোমবার সকাল আর আপনাকে ভয় দেখায় না। আপনি ইতিমধ্যে পদত্যাগপত্র জমা দিয়েছেন।', fr:'Les lundis matin ne vous font plus peur. Vous avez déjà remis votre démission.', hi:'सोमवार की सुबहें अब आपको डराती नहीं। आपने पहले ही इस्तीफा दे दिया है।', id:'Pagi hari Senin tidak lagi menakutkan bagimu. Kamu sudah mengajukan pengunduran diri.', ja:'月曜日の朝はもう怖くありません。すでに退職届を提出しました。', kk:'Дүйсенбі таңы сізді енді қорқытпайды. Сіз жұмыстан босату өтінішін қойып та қойдыңыз.', km:'ព្រឹកថ្ងៃច័ន្ទលែងធ្វើឱ្យអ្នកខ្លាចទៀតហើយ។ អ្នកបានដាក់លិខិតលាឈប់រួចហើយ។', ky:'Дүйшөмбү эртеси сизди эми коркутпайт. Сиз иштен бошотуу арызын мурунтан эле берип койгонсуз.', lo:'ຕອນເຊົ້າວັນຈັນບໍ່ໜ້າຢ້ານອີກຕໍ່ໄປ ທ່ານໄດ້ຍື່ນໃບລາອອກໄປແລ້ວ.', mn:'Даваа гарагийн өглөө таныг цаашид айлгахгүй. Та аль хэдийн ажлаасаа чөлөөлөгдөх өргөдлөө өгсөн.', my:'တနင်္လာနေ့မနက်ခင်းက သင့်ကို ထပ်မံမကြောက်စေတော့ပါ။ သင် နှုတ်ထွက်စာတင်ပြီးသားဖြစ်သည်။', ne:'सोमबार बिहान अब तपाईंलाई डर लाग्दैन। तपाईंले पहिले नै राजीनामा बुझाइसक्नुभएको छ।', si:'සඳුදා උදෑසන දැන් ඔබට බියක් නැත. ඔබ දැනටමත් ඉල්ලා අස්වීමේ ලිපිය ඉදිරිපත් කර ඇත.', tl:'Hindi ka na natatakot sa umaga ng Lunes. Naisumite mo na ang iyong resignasyon.', ur:'پیر کی صبحیں اب آپ کو خوفزدہ نہیں کرتیں۔ آپ پہلے ہی استعفیٰ دے چکے ہیں۔', uz:"Dushanba ertalabi endi sizni qo'rqitmaydi. Siz allaqachon iste'foingizni topshirgansiz." ,
+    pt: `Segunda-feira de manhã não te assusta mais. Você já entregou seu pedido de demissão.`, es: `Los lunes por la mañana ya no te asustan. Ya entregaste tu renuncia.`, uk: `Ранок понеділка вас більше не лякає. Ви вже віддали заяву про звільнення.`, tet: `Segunda dadeer la halo ó tauk tan. Ó fó tiha ó-nia carta de demissão.`,
+}
   },
   family:  {
     emoji: '🏠',
@@ -7423,8 +7482,12 @@ const DREAM_DATA = {
     titleVi: 'Ông trùm bất động sản gia đình', descVi: 'Cả gia đình sống không lo về nhà cửa \u2014 và bạn chính là lý do.',
     titleTh: 'เจ้าพ่ออสังหาริมทรัพย์ของครอบครัว', descTh: 'ทั้งครอบครัวอยู่อย่างไม่ต้องกังวลเรื่องที่อยู่อาศัย \u2014 และคุณคือเหตุผล',
     titleRu: 'Магнат недвижимости для семьи', descRu: 'Вся семья живёт без забот о жилье \u2014 и всё это благодаря вам.',
-    titleMore: { ar:'عرّاب عقارات العائلة', bn:'পারিবারিক রিয়েল এস্টেট মোগল', fr:'Magnat immobilier de la famille', hi:'परिवार का रियल-एस्टेट किंग', id:'Raja properti keluarga', ja:'一族の不動産王', kk:'Отбасының жылжымайтын мүлік королі', km:'ស្តេចអចលនទ្រព្យគ្រួសារ', ky:'Үй-бүлөнүн кыймылсыз мүлк королу', lo:'ຣາຊາອະສັງຫາລິມະຊັບຄອບຄົວ', mn:'Гэр бүлийн үл хөдлөх хөрөнгийн хаан', my:'မိသားစု အိမ်ခြံမြေ ဘုရင်', ne:'परिवारको घडेरी बादशाह', si:'පවුලේ දේපල රජු', tl:'Hari ng real estate ng pamilya', ur:'خاندان کا رئیل اسٹیٹ بادشاہ', uz:"Oilaning ko'chmas mulk shohi" },
-    descMore: { ar:'العائلة بأكملها تعيش دون قلق بشأن السكن — وأنت السبب في ذلك.', bn:'পুরো পরিবার বাসস্থান নিয়ে চিন্তামুক্ত জীবনযাপন করছে — আর এর কারণ আপনি।', fr:"Toute la famille vit sans souci de logement — et c'est grâce à vous.", hi:'पूरा परिवार बिना घर की चिंता के रहता है — और इसकी वजह आप हैं।', id:'Seluruh keluarga hidup tanpa khawatir soal tempat tinggal — dan kamulah alasannya.', ja:'一家全員が住まいの心配なく暮らしています — その理由はあなたです。', kk:'Бүкіл отбасы баспана туралы уайымсыз өмір сүреді — бұған сіз себепсіз.', km:'ក្រុមគ្រួសារទាំងមូលរស់នៅដោយមិនបារម្ភពីលំនៅដ្ឋាន — ហើយអ្នកគឺជាមូលហេតុ។', ky:'Бүт үй-бүлө турак жай тууралуу тынчсызданбай жашайт — мунун себеби сизсиз.', lo:'ຄອບຄົວທັງໝົດອາໄສຢູ່ໂດຍບໍ່ຕ້ອງກັງວົນເລື່ອງທີ່ຢູ່ອາໄສ — ແລະທ່ານແມ່ນເຫດຜົນ.', mn:'Бүх гэр бүл орон сууцны талаар санаа зовохгүй амьдардаг — учир нь та тэр шалтгаан.', my:'မိသားစုတစ်ခုလုံး အိမ်ခြံမြေအတွက် စိုးရိမ်စရာမလိုဘဲ နေထိုင်နေရပါတယ် — ၎င်းအတွက် အကြောင်းရင်းက သင်ပါပဲ။', ne:'सम्पूर्ण परिवार घर बारे चिन्ता नगरी बस्छ — र त्यसको कारण तपाईं नै हुनुहुन्छ।', si:'මුළු පවුලම නිවාස ගැන කරදර නොවී ජීවත් වේ — ඒ සඳහා හේතුව ඔබයි.', tl:'Ang buong pamilya ay namumuhay nang walang alalahanin tungkol sa tirahan — at ikaw ang dahilan.', ur:'پورا خاندان رہائش کی فکر کے بغیر زندگی گزار رہا ہے — اور اس کی وجہ آپ ہیں۔', uz:"Butun oila uy-joy haqida qayg'urmasdan yashaydi — va buning sababi sizsiz." }
+    titleMore: { ar:'عرّاب عقارات العائلة', bn:'পারিবারিক রিয়েল এস্টেট মোগল', fr:'Magnat immobilier de la famille', hi:'परिवार का रियल-एस्टेट किंग', id:'Raja properti keluarga', ja:'一族の不動産王', kk:'Отбасының жылжымайтын мүлік королі', km:'ស្តេចអចលនទ្រព្យគ្រួសារ', ky:'Үй-бүлөнүн кыймылсыз мүлк королу', lo:'ຣາຊາອະສັງຫາລິມະຊັບຄອບຄົວ', mn:'Гэр бүлийн үл хөдлөх хөрөнгийн хаан', my:'မိသားစု အိမ်ခြံမြေ ဘုရင်', ne:'परिवारको घडेरी बादशाह', si:'පවුලේ දේපල රජු', tl:'Hari ng real estate ng pamilya', ur:'خاندان کا رئیل اسٹیٹ بادشاہ', uz:"Oilaning ko'chmas mulk shohi" ,
+    pt: `Magnata imobiliário da família`, es: `Magnate inmobiliario familiar`, uk: `Сімейний магнат нерухомості`, tet: `Magnata imobiliáriu família nian`,
+},
+    descMore: { ar:'العائلة بأكملها تعيش دون قلق بشأن السكن — وأنت السبب في ذلك.', bn:'পুরো পরিবার বাসস্থান নিয়ে চিন্তামুক্ত জীবনযাপন করছে — আর এর কারণ আপনি।', fr:"Toute la famille vit sans souci de logement — et c'est grâce à vous.", hi:'पूरा परिवार बिना घर की चिंता के रहता है — और इसकी वजह आप हैं।', id:'Seluruh keluarga hidup tanpa khawatir soal tempat tinggal — dan kamulah alasannya.', ja:'一家全員が住まいの心配なく暮らしています — その理由はあなたです。', kk:'Бүкіл отбасы баспана туралы уайымсыз өмір сүреді — бұған сіз себепсіз.', km:'ក្រុមគ្រួសារទាំងមូលរស់នៅដោយមិនបារម្ភពីលំនៅដ្ឋាន — ហើយអ្នកគឺជាមូលហេតុ។', ky:'Бүт үй-бүлө турак жай тууралуу тынчсызданбай жашайт — мунун себеби сизсиз.', lo:'ຄອບຄົວທັງໝົດອາໄສຢູ່ໂດຍບໍ່ຕ້ອງກັງວົນເລື່ອງທີ່ຢູ່ອາໄສ — ແລະທ່ານແມ່ນເຫດຜົນ.', mn:'Бүх гэр бүл орон сууцны талаар санаа зовохгүй амьдардаг — учир нь та тэр шалтгаан.', my:'မိသားစုတစ်ခုလုံး အိမ်ခြံမြေအတွက် စိုးရိမ်စရာမလိုဘဲ နေထိုင်နေရပါတယ် — ၎င်းအတွက် အကြောင်းရင်းက သင်ပါပဲ။', ne:'सम्पूर्ण परिवार घर बारे चिन्ता नगरी बस्छ — र त्यसको कारण तपाईं नै हुनुहुन्छ।', si:'මුළු පවුලම නිවාස ගැන කරදර නොවී ජීවත් වේ — ඒ සඳහා හේතුව ඔබයි.', tl:'Ang buong pamilya ay namumuhay nang walang alalahanin tungkol sa tirahan — at ikaw ang dahilan.', ur:'پورا خاندان رہائش کی فکر کے بغیر زندگی گزار رہا ہے — اور اس کی وجہ آپ ہیں۔', uz:"Butun oila uy-joy haqida qayg'urmasdan yashaydi — va buning sababi sizsiz." ,
+    pt: `A família inteira mora sem preocupação com moradia — e você é o motivo.`, es: `Toda la familia vive sin preocuparse por la vivienda, y tú eres la razón.`, uk: `Уся родина живе без турбот про житло — і все це завдяки вам.`, tet: `Família tomak moris la susar kona-ba uma — no ó mak rezan ba ne'e.`,
+}
   },
   travel:  {
     emoji: '✈️',
@@ -7434,8 +7497,12 @@ const DREAM_DATA = {
     titleVi: 'Câu lạc bộ vòng quanh thế giới', descVi: 'Hộ chiếu của bạn sắp hết trang để đóng dấu. Điểm đến tiếp theo là đâu?',
     titleTh: 'คลับรอบโลก', descTh: 'พาสปอร์ตของคุณหน้ากระดาษไม่พอประทับตราแล้ว จุดหมายต่อไปคือที่ไหน?',
     titleRu: 'Клуб кругосветных путешественников', descRu: 'В паспорте почти не осталось места для штампов. Куда дальше?',
-    titleMore: { ar:'نادي حول العالم', bn:'বিশ্ব ভ্রমণ ক্লাব', fr:'Club du tour du monde', hi:'दुनिया भर की यात्रा क्लब', id:'Klub keliling dunia', ja:'世界一周クラブ', kk:'Дүниежүзін аралау клубы', km:'ក្លឹបជុំវិញពិភពលោក', ky:'Дүйнөнү кыдыруу клубу', lo:'ຊົມຣົມທ່ອງໂລກ', mn:'Дэлхийг тойрох клуб', my:'ကမ္ဘာလှည့်ကလပ်', ne:'विश्व परिक्रमा क्लब', si:'ලෝකය වටා සංචාරක සමාජය', tl:'Around-the-world club', ur:'دنیا بھر کے سفر کا کلب', uz:"Dunyo bo'ylab sayohat klubi" },
-    descMore: { ar:'جواز سفرك أوشك أن ينفد من الصفحات للأختام. إلى أين بعد ذلك؟', bn:'আপনার পাসপোর্টে সিলের জন্য পাতা ফুরিয়ে আসছে। এরপর কোথায়?', fr:"Votre passeport n'a presque plus de pages pour les tampons. Et après ?", hi:'आपके पासपोर्ट में स्टैम्प के लिए पन्ने कम पड़ रहे हैं। अगला कहाँ?', id:'Paspormu hampir kehabisan halaman untuk cap. Ke mana lagi?', ja:'パスポートはスタンプでページが足りなくなりそうです。次はどこへ？', kk:'Төлқұжатыңызда мөр басуға бет жетіспей барады. Келесі қайда?', km:'លិខិតឆ្លងដែនរបស់អ្នកជិតអស់ទំព័រសម្រាប់បោះត្រាហើយ។ បន្ទាប់ទៅណា?', ky:'Паспортуңузда мөөр басууга барак жетишпей баратат. Кийинки жерге кайда?', lo:'ພາສປອດຂອງທ່ານໃກ້ໝົດໜ້າສຳລັບປະທັບຕາແລ້ວ. ຈຸດໝາຍຕໍ່ໄປແມ່ນຢູ່ໃສ?', mn:'Таны паспортын тамга дарах хуудас дуусах шахаж байна. Дараагийн газар хаана вэ?', my:'သင့်နိုင်ငံကူးလက်မှတ်မှာ တံဆိပ်တင်ဖို့ စာမျက်နှာ နီးပါးကုန်နေပြီ။ နောက်ဘယ်ကိုသွားမလဲ?', ne:'तपाईंको राहदानीमा छाप लगाउने पाना सकिन लाग्यो। अर्को गन्तव्य कहाँ हो?', si:'ඔබේ විදේශ ගමන් බලපත්‍රයේ මුද්‍රා සඳහා පිටු ඉවර වෙමින් පවතී. ඊළඟට කොහෙද?', tl:'Halos maubusan na ng pahina ang iyong pasaporte para sa mga selyo. Saan ang susunod?', ur:'آپ کے پاسپورٹ میں مہروں کے لیے صفحات ختم ہو رہے ہیں۔ اگلا کہاں؟', uz:"Pasportingizda muhrlar uchun sahifalar tugab bormoqda. Keyingi manzil qayer?" }
+    titleMore: { ar:'نادي حول العالم', bn:'বিশ্ব ভ্রমণ ক্লাব', fr:'Club du tour du monde', hi:'दुनिया भर की यात्रा क्लब', id:'Klub keliling dunia', ja:'世界一周クラブ', kk:'Дүниежүзін аралау клубы', km:'ក្លឹបជុំវិញពិភពលោក', ky:'Дүйнөнү кыдыруу клубу', lo:'ຊົມຣົມທ່ອງໂລກ', mn:'Дэлхийг тойрох клуб', my:'ကမ္ဘာလှည့်ကလပ်', ne:'विश्व परिक्रमा क्लब', si:'ලෝකය වටා සංචාරක සමාජය', tl:'Around-the-world club', ur:'دنیا بھر کے سفر کا کلب', uz:"Dunyo bo'ylab sayohat klubi" ,
+    pt: `Clube da volta ao mundo`, es: `Club vuelta al mundo`, uk: `Клуб навколосвітніх мандрівників`, tet: `Klube volta mundu`,
+},
+    descMore: { ar:'جواز سفرك أوشك أن ينفد من الصفحات للأختام. إلى أين بعد ذلك؟', bn:'আপনার পাসপোর্টে সিলের জন্য পাতা ফুরিয়ে আসছে। এরপর কোথায়?', fr:"Votre passeport n'a presque plus de pages pour les tampons. Et après ?", hi:'आपके पासपोर्ट में स्टैम्प के लिए पन्ने कम पड़ रहे हैं। अगला कहाँ?', id:'Paspormu hampir kehabisan halaman untuk cap. Ke mana lagi?', ja:'パスポートはスタンプでページが足りなくなりそうです。次はどこへ？', kk:'Төлқұжатыңызда мөр басуға бет жетіспей барады. Келесі қайда?', km:'លិខិតឆ្លងដែនរបស់អ្នកជិតអស់ទំព័រសម្រាប់បោះត្រាហើយ។ បន្ទាប់ទៅណា?', ky:'Паспортуңузда мөөр басууга барак жетишпей баратат. Кийинки жерге кайда?', lo:'ພາສປອດຂອງທ່ານໃກ້ໝົດໜ້າສຳລັບປະທັບຕາແລ້ວ. ຈຸດໝາຍຕໍ່ໄປແມ່ນຢູ່ໃສ?', mn:'Таны паспортын тамга дарах хуудас дуусах шахаж байна. Дараагийн газар хаана вэ?', my:'သင့်နိုင်ငံကူးလက်မှတ်မှာ တံဆိပ်တင်ဖို့ စာမျက်နှာ နီးပါးကုန်နေပြီ။ နောက်ဘယ်ကိုသွားမလဲ?', ne:'तपाईंको राहदानीमा छाप लगाउने पाना सकिन लाग्यो। अर्को गन्तव्य कहाँ हो?', si:'ඔබේ විදේශ ගමන් බලපත්‍රයේ මුද්‍රා සඳහා පිටු ඉවර වෙමින් පවතී. ඊළඟට කොහෙද?', tl:'Halos maubusan na ng pahina ang iyong pasaporte para sa mga selyo. Saan ang susunod?', ur:'آپ کے پاسپورٹ میں مہروں کے لیے صفحات ختم ہو رہے ہیں۔ اگلا کہاں؟', uz:"Pasportingizda muhrlar uchun sahifalar tugab bormoqda. Keyingi manzil qayer?" ,
+    pt: `Seu passaporte está ficando sem páginas para carimbos. Qual é o próximo destino?`, es: `A tu pasaporte se le acaban las páginas para sellos. ¿Cuál es el próximo destino?`, uk: `У вашому паспорті закінчуються сторінки для штампів. Куди далі?`, tet: `Ó-nia pasaporte hela de'it pájina uitoan ba karimbu. Ne'ebé mak oin?`,
+}
   },
   calm:    {
     emoji: '💼',
@@ -7445,8 +7512,12 @@ const DREAM_DATA = {
     titleVi: 'Người thực tế', descVi: 'Không cần lối sống hào nhoáng \u2014 chỉ cần xem số dư tài khoản cũng đủ khiến bạn mỉm cười.',
     titleTh: 'นักสัจนิยม', descTh: 'ไม่จำเป็นต้องใช้ชีวิตหรูหรา \u2014 แค่เช็คยอดเงินก็ยิ้มได้แล้ว',
     titleRu: 'Реалист', descRu: 'Не нужен showy образ жизни \u2014 достаточно проверить баланс, чтобы улыбнуться.',
-    titleMore: { ar:'الواقعي', bn:'বাস্তববাদী', fr:'Le réaliste', hi:'यथार्थवादी', id:'Sang realis', ja:'リアリスト', kk:'Реалист', km:'អ្នកនិយមភាពជាក់ស្តែង', ky:'Реалист', lo:'ນັກປະຕິບັດຕົວຈິງ', mn:'Реалист', my:'လက်တွေ့ဝါဒီ', ne:'यथार्थवादी', si:'යථාර්ථවාදියා', tl:'Ang realista', ur:'حقیقت پسند', uz:"Realist" },
-    descMore: { ar:'لا حاجة لأسلوب حياة فاخر — مجرد التحقق من رصيدك يجعلك تبتسم.', bn:'জাঁকজমকপূর্ণ জীবনযাপনের দরকার নেই — শুধু ব্যালেন্স দেখলেই হাসি চলে আসে।', fr:"Pas besoin d'un style de vie tape-à-l'œil — juste vérifier votre solde vous fait sourire.", hi:'दिखावटी जीवनशैली की ज़रूरत नहीं — बस अपना बैलेंस देखकर ही मुस्कान आ जाती है।', id:'Tak perlu gaya hidup mewah — cukup cek saldo saja sudah bikin tersenyum.', ja:'派手な暮らしは必要ありません — 残高を確認するだけで笑顔になれます。', kk:'Керемет өмір салты қажет емес — жай ғана балансыңызды тексеру сізді күлдіреді.', km:'មិនចាំបាច់រស់នៅប្រណិតទេ — គ្រាន់តែមើលសមតុល្យក៏ធ្វើឱ្យញញឹមហើយ។', ky:'Ажайып жашоо стили керек эмес — жөн гана балансыңызды текшерүү сизди жылмайтат.', lo:'ບໍ່ຈຳເປັນຕ້ອງໃຊ້ຊີວິດຫລູຫລາ — ພຽງແຕ່ເບິ່ງຍອດເງິນກໍ່ເຮັດໃຫ້ຍິ້ມໄດ້ແລ້ວ.', mn:'Гоёмсог амьдралын хэв маяг хэрэггүй — үлдэгдлээ шалгахад л инээмсэглэл төрдөг.', my:'ဇိမ်ခံနေထိုင်ရေးစတိုင် မလိုအပ်ပါ — ဘဏ်လက်ကျန်ကို စစ်ရုံနဲ့တင် အားရကျေနပ်စိတ်ဖြစ်ပါတယ်။', ne:'चम्किलो जीवनशैली आवश्यक छैन — केवल ब्यालेन्स हेर्दा नै मुस्कान आउँछ।', si:'දිලිසෙන ජීවන රටාවක් අවශ්‍ය නැත — ඔබේ ශේෂය පරීක්ෂා කිරීමෙන් ම සිනාව එයි.', tl:'Hindi kailangan ng mamahaling pamumuhay — ang pagtingin lang sa balanse mo ay nakakapangiti na.', ur:'دکھاوے کی زندگی کی ضرورت نہیں — بس اپنا بیلنس دیکھ کر ہی مسکراہٹ آ جاتی ہے۔', uz:"Ko'z-ko'z qiladigan turmush tarzi shart emas — hisobingizni tekshirish sizni jilmaytiradi." }
+    titleMore: { ar:'الواقعي', bn:'বাস্তববাদী', fr:'Le réaliste', hi:'यथार्थवादी', id:'Sang realis', ja:'リアリスト', kk:'Реалист', km:'អ្នកនិយមភាពជាក់ស្តែង', ky:'Реалист', lo:'ນັກປະຕິບັດຕົວຈິງ', mn:'Реалист', my:'လက်တွေ့ဝါဒီ', ne:'यथार्थवादी', si:'යථාර්ථවාදියා', tl:'Ang realista', ur:'حقیقت پسند', uz:"Realist" ,
+    pt: `O realista`, es: `El realista`, uk: `Реаліст`, tet: `Ida ne'ebé realista`,
+},
+    descMore: { ar:'لا حاجة لأسلوب حياة فاخر — مجرد التحقق من رصيدك يجعلك تبتسم.', bn:'জাঁকজমকপূর্ণ জীবনযাপনের দরকার নেই — শুধু ব্যালেন্স দেখলেই হাসি চলে আসে।', fr:"Pas besoin d'un style de vie tape-à-l'œil — juste vérifier votre solde vous fait sourire.", hi:'दिखावटी जीवनशैली की ज़रूरत नहीं — बस अपना बैलेंस देखकर ही मुस्कान आ जाती है।', id:'Tak perlu gaya hidup mewah — cukup cek saldo saja sudah bikin tersenyum.', ja:'派手な暮らしは必要ありません — 残高を確認するだけで笑顔になれます。', kk:'Керемет өмір салты қажет емес — жай ғана балансыңызды тексеру сізді күлдіреді.', km:'មិនចាំបាច់រស់នៅប្រណិតទេ — គ្រាន់តែមើលសមតុល្យក៏ធ្វើឱ្យញញឹមហើយ។', ky:'Ажайып жашоо стили керек эмес — жөн гана балансыңызды текшерүү сизди жылмайтат.', lo:'ບໍ່ຈຳເປັນຕ້ອງໃຊ້ຊີວິດຫລູຫລາ — ພຽງແຕ່ເບິ່ງຍອດເງິນກໍ່ເຮັດໃຫ້ຍິ້ມໄດ້ແລ້ວ.', mn:'Гоёмсог амьдралын хэв маяг хэрэггүй — үлдэгдлээ шалгахад л инээмсэглэл төрдөг.', my:'ဇိမ်ခံနေထိုင်ရေးစတိုင် မလိုအပ်ပါ — ဘဏ်လက်ကျန်ကို စစ်ရုံနဲ့တင် အားရကျေနပ်စိတ်ဖြစ်ပါတယ်။', ne:'चम्किलो जीवनशैली आवश्यक छैन — केवल ब्यालेन्स हेर्दा नै मुस्कान आउँछ।', si:'දිලිසෙන ජීවන රටාවක් අවශ්‍ය නැත — ඔබේ ශේෂය පරීක්ෂා කිරීමෙන් ම සිනාව එයි.', tl:'Hindi kailangan ng mamahaling pamumuhay — ang pagtingin lang sa balanse mo ay nakakapangiti na.', ur:'دکھاوے کی زندگی کی ضرورت نہیں — بس اپنا بیلنس دیکھ کر ہی مسکراہٹ آ جاتی ہے۔', uz:"Ko'z-ko'z qiladigan turmush tarzi shart emas — hisobingizni tekshirish sizni jilmaytiradi." ,
+    pt: `Sem necessidade de um estilo de vida ostentoso — basta checar o saldo para sorrir.`, es: `No hace falta un estilo de vida ostentoso: con solo revisar tu saldo sonríes.`, uk: `Розкішний спосіб життя не потрібен — лише перевірка балансу викликає посмішку.`, tet: `La precisa estilu moris ostentosa — verifika de'it saldo halo ó hamasa.`,
+}
   },
 };
 
@@ -9256,7 +9327,9 @@ const ZERO_UNCLEAR_MORE = { ar:'0 وون (الأساس غير واضح ⚠️)',
 const SHARE_CTA_FOOTER = [
   '👉 참택스에서 나도 계산해보기', '👉 Calculate yours on ChamTax too', '👉 你也来ChamTax算算看',
   '👉 Bạn cũng tính thử trên ChamTax', '👉 คุณก็ลองคำนวณที่ ChamTax ดูสิ', '👉 Посчитайте и своё на ChamTax',
-  { ar:'👉 احسب حالتك أنت أيضًا على ChamTax', bn:'👉 তুমিও ChamTax-এ হিসাব করে দেখো', fr:'👉 Calculez aussi le vôtre sur ChamTax', hi:'👉 आप भी ChamTax पर हिसाब लगाएं', id:'👉 Kamu juga coba hitung di ChamTax', ja:'👉 あなたもChamTaxで計算してみて', kk:'👉 Сіз де ChamTax-та есептеп көріңіз', km:'👉 អ្នកក៏គណនានៅ ChamTax ដែរ', ky:"👉 Сиз да ChamTax'та эсептеп көрүңүз", lo:'👉 ເຈົ້າກໍລອງຄິດໄລ່ທີ່ ChamTax ນຳ', mn:'👉 Та ч бас ChamTax дээр тооцоолж үзээрэй', my:'👉 မင်းလည်း ChamTax မှာ တွက်ကြည့်ပါ', ne:'👉 तपाईं पनि ChamTax मा गणना गरेर हेर्नुहोस्', si:'👉 ඔබත් ChamTax හි ගණනය කර බලන්න', tl:'👉 Kalkulahin mo rin sa ChamTax', ur:'👉 آپ بھی ChamTax پر حساب لگائیں', uz:"👉 Siz ham ChamTax'da hisoblab ko'ring" }
+  { ar:'👉 احسب حالتك أنت أيضًا على ChamTax', bn:'👉 তুমিও ChamTax-এ হিসাব করে দেখো', fr:'👉 Calculez aussi le vôtre sur ChamTax', hi:'👉 आप भी ChamTax पर हिसाब लगाएं', id:'👉 Kamu juga coba hitung di ChamTax', ja:'👉 あなたもChamTaxで計算してみて', kk:'👉 Сіз де ChamTax-та есептеп көріңіз', km:'👉 អ្នកក៏គណនានៅ ChamTax ដែរ', ky:"👉 Сиз да ChamTax'та эсептеп көрүңүз", lo:'👉 ເຈົ້າກໍລອງຄິດໄລ່ທີ່ ChamTax ນຳ', mn:'👉 Та ч бас ChamTax дээр тооцоолж үзээрэй', my:'👉 မင်းလည်း ChamTax မှာ တွက်ကြည့်ပါ', ne:'👉 तपाईं पनि ChamTax मा गणना गरेर हेर्नुहोस्', si:'👉 ඔබත් ChamTax හි ගණනය කර බලන්න', tl:'👉 Kalkulahin mo rin sa ChamTax', ur:'👉 آپ بھی ChamTax پر حساب لگائیں', uz:"👉 Siz ham ChamTax'da hisoblab ko'ring" ,
+    pt: `👉 Calcule o seu no ChamTax também`, es: `👉 Calcula el tuyo en ChamTax también`, uk: `👉 Розрахуйте свій виграш на ChamTax`, tet: `👉 Kalkula ó-nia nian iha ChamTax mós`,
+}
 ];
 
 const COPY_DONE_MORE = { ar:'تم النسخ! الصقه في المكان الذي تريده', bn:'কপি সম্পন্ন! আপনার পছন্দের জায়গায় পেস্ট করুন', fr:'Copié ! Collez-le où vous voulez', hi:'कॉपी पूरा हुआ! अपनी पसंद की जगह पेस्ट करें', id:'Disalin! Tempel di tempat yang kamu mau', ja:'コピー完了！好きな場所に貼り付けてください', kk:'Көшірілді! Қалаған жеріңізге қойыңыз', km:'ចម្លងរួចរាល់! សូមបិទភ្ជាប់នៅកន្លែងណាដែលអ្នកចង់បាន', ky:'Көчүрүү аяктады! Каалаган жериңизге чаптаңыз', lo:'ສຳເນົາສຳເລັດ! ວາງໃສ່ບ່ອນທີ່ທ່ານຕ້ອງການ', mn:'Хуулж дууслаа! Хүссэн газартаа буулгаарай', my:'ကူးယူပြီးပါပြီ! ကြိုက်ရာနေရာတွင် ကူးထည့်ပါ', ne:'प्रतिलिपि पूरा भयो! आफ्नो मनपर्ने ठाउँमा टाँस्नुहोस्', si:'පිටපත් කිරීම සම්පූර්ණයි! ඔබ කැමති තැනක අලවන්න', tl:'Nakumpleto ang pag-copy! I-paste sa gusto mong lugar', ur:'کاپی مکمل! اپنی پسندیدہ جگہ پیسٹ کریں', uz:"Nusxalash tugadi! Xohlagan joyingizga joylashtiring" ,
@@ -9505,6 +9578,8 @@ const LANGUAGE_CONTENT_PAGES = [
     ja: "韓国にお住まいのアラビア語圏の方はこちら", ar: "إذا كنت من الناطقين باللغة العربية المقيمين في كوريا",
     hi: "यदि आप कोरिया में रहने वाले अरबी भाषी व्यक्ति हैं", fr: "Si vous êtes un arabophone résidant en Corée",
     tl: "Kung ikaw ay nagsasalita ng Arabe na nakatira sa Korea",
+  
+    pt: `Se você reside na Coreia e fala árabe`, es: `Si reside en Corea y habla árabe`, uk: `Якщо ви проживаєте в Кореї та розмовляєте арабською`, tet: `Se ó hela iha Korea no ko'alia lian Árabe`,
   } },
   { flagCode: "BD", label: "한국에 사는 방글라데시분이라면", labelEn: "Living in Korea as a Bangladeshi national", labelZh: "住在韩国的孟加拉国人", labelVi: "Là công dân Bangladesh sống ở Hàn Quốc", labelTh: "สำหรับชาวบังกลาเทศที่อาศัยในเกาหลี", labelRu: "Для граждан Бангладеш, живущих в Корее", contentPage: "bengali_in_korea_lottery_tax.html", contentLabel: "বাংলা →", more: buildCountryMore('bd') },
   { flagCode: "KH", label: "한국에 사는 캄보디아분이라면", labelEn: "Living in Korea as a Cambodian national", labelZh: "住在韩国的柬埔寨人", labelVi: "Là công dân Campuchia sống ở Hàn Quốc", labelTh: "สำหรับชาวกัมพูชาที่อาศัยในเกาหลี", labelRu: "Для граждан Камбоджи, живущих в Корее", contentPage: "cambodian_in_korea_lottery_tax.html", contentLabel: "ខ្មែរ →", more: buildCountryMore('kh') },
@@ -9518,6 +9593,8 @@ const LANGUAGE_CONTENT_PAGES = [
     ja: "韓国にお住まいのフランス語圏の方はこちら", ar: "إذا كنت من الناطقين باللغة الفرنسية المقيمين في كوريا",
     hi: "यदि आप कोरिया में रहने वाले फ्रांसीसी भाषी व्यक्ति हैं", fr: "Si vous êtes un francophone résidant en Corée",
     tl: "Kung ikaw ay nagsasalita ng Pranses na nakatira sa Korea",
+  
+    pt: `Se você reside na Coreia e fala francês`, es: `Si reside en Corea y habla francés`, uk: `Якщо ви проживаєте в Кореї та розмовляєте французькою`, tet: `Se ó hela iha Korea no ko'alia lian Fransés`,
   } },
   { flagCode: "IN", label: "한국에 사는 인도분이라면 (힌디어)", labelEn: "Living in Korea as an Indian national (Hindi)", labelZh: "住在韩国的印度人（印地语）", labelVi: "Là công dân Ấn Độ sống ở Hàn Quốc (tiếng Hindi)", labelTh: "สำหรับชาวอินเดียที่อาศัยในเกาหลี (ภาษาฮินดี)", labelRu: "Для граждан Индии, живущих в Корее (хинди)", contentPage: "hindi_in_korea_lottery_tax.html", contentLabel: "हिन्दी →", more: buildCountryMore('in') },
   { flagCode: "ID", label: "한국에 사는 인도네시아분이라면", labelEn: "Living in Korea as an Indonesian national", labelZh: "住在韩国的印尼人", labelVi: "Là công dân Indonesia sống ở Hàn Quốc", labelTh: "สำหรับชาวอินโดนีเซียที่อาศัยในเกาหลี", labelRu: "Для граждан Индонезии, живущих в Корее", contentPage: "indonesian_in_korea_lottery_tax.html", contentLabel: "Bahasa Indonesia →", more: buildCountryMore('id') },
@@ -9542,6 +9619,8 @@ const LANGUAGE_CONTENT_PAGES = [
     ja: "韓国にお住まいのスペイン語圏の方はこちら", ar: "إذا كنت من الناطقين باللغة الإسبانية المقيمين في كوريا",
     hi: "यदि आप कोरिया में रहने वाले स्पैनिश भाषी व्यक्ति हैं", fr: "Si vous êtes un hispanophone résidant en Corée",
     tl: "Kung ikaw ay nagsasalita ng Espanyol na nakatira sa Korea",
+  
+    pt: `Se você reside na Coreia e fala espanhol`, es: `Si reside en Corea y habla español`, uk: `Якщо ви проживаєте в Кореї та розмовляєте іспанською`, tet: `Se ó hela iha Korea no ko'alia lian Espanól`,
   } },
   { flagCode: "BR", label: "한국에 사는 포르투갈어권 분이라면", labelEn: "Living in Korea and speak Portuguese", labelZh: "住在韩国的葡萄牙语使用者", labelVi: "Nói tiếng Bồ Đào Nha và sống ở Hàn Quốc", labelTh: "สำหรับผู้พูดภาษาโปรตุเกสที่อาศัยในเกาหลี", labelRu: "Для португалоговорящих, живущих в Корее", contentPage: "portuguese_in_korea_lottery_tax.html", contentLabel: "Português →", more: {
     km: "ប្រសិនបើអ្នកជាអ្នកប្រើប្រាស់ភាសាព័រទុយហ្គាល់ដែលរស់នៅក្នុងប្រទេសកូរ៉េ", ne: "यदि तपाईं कोरियामा बस्ने पोर्चुगेली भाषी हुनुहुन्छ भने",
@@ -9553,6 +9632,8 @@ const LANGUAGE_CONTENT_PAGES = [
     ja: "韓国にお住まいのポルトガル語圏の方はこちら", ar: "إذا كنت من الناطقين باللغة البرتغالية المقيمين في كوريا",
     hi: "यदि आप कोरिया में रहने वाले पुर्तगाली भाषी व्यक्ति हैं", fr: "Si vous êtes un lusophone résidant en Corée",
     tl: "Kung ikaw ay nagsasalita ng Portuges na nakatira sa Korea",
+  
+    pt: `Se você reside na Coreia e fala português`, es: `Si reside en Corea y habla portugués`, uk: `Якщо ви проживаєте в Кореї та розмовляєте португальською`, tet: `Se ó hela iha Korea no ko'alia lian Português`,
   } },
   { flagCode: "TW", label: "한국에 사는 대만·홍콩분이라면", labelEn: "Living in Korea as a Taiwanese or Hong Kong national", labelZh: "住在韩国的台湾人・香港人", labelVi: "Là người Đài Loan/Hồng Kông sống ở Hàn Quốc", labelTh: "สำหรับชาวไต้หวัน/ฮ่องกงที่อาศัยในเกาหลี", labelRu: "Для граждан Тайваня/Гонконга, живущих в Корее", contentPage: "taiwan_hk_in_korea_lottery_tax.html", contentLabel: "繁體中文 →", more: {
     km: "ប្រសិនបើអ្នកមកពីតៃវ៉ាន់ ឬហុងកុង ដែលរស់នៅក្នុងប្រទេសកូរ៉េ", ne: "यदि तपाईं कोरियामा बस्ने ताइवान वा हङकङका नागरिक हुनुहुन्छ भने",
@@ -9564,6 +9645,8 @@ const LANGUAGE_CONTENT_PAGES = [
     ja: "韓国にお住まいの台湾・香港出身の方はこちら", ar: "إذا كنت من مقيمي كوريا القادمين من تايوان أو هونغ كونغ",
     hi: "यदि आप कोरिया में रहने वाले ताइवान या हांगकांग के निवासी हैं", fr: "Si vous êtes originaire de Taïwan ou de Hong Kong et résidez en Corée",
     tl: "Kung ikaw ay mula sa Taiwan o Hong Kong na nakatira sa Korea",
+  
+    pt: `Se você reside na Coreia e é cidadão de Taiwan ou Hong Kong`, es: `Si reside en Corea y es ciudadano de Taiwán o Hong Kong`, uk: `Якщо ви проживаєте в Кореї як громадянин Тайваню чи Гонконгу`, tet: `Se ó hela iha Korea nu'udar sidadaun Taiwan ka Hong Kong`,
   } },
   { flagCode: "TL", label: "한국에 사는 동티모르분이라면", labelEn: "Living in Korea as a Timorese national", labelZh: "住在韩国的东帝汶人", labelVi: "Là công dân Đông Timor sống ở Hàn Quốc", labelTh: "สำหรับชาวติมอร์-เลสเตที่อาศัยในเกาหลี", labelRu: "Для граждан Восточного Тимора, живущих в Корее", contentPage: "timor_in_korea_lottery_tax.html", contentLabel: "Tetun →", more: {
     km: "ប្រសិនបើអ្នកមកពីទីម័រខាងកើតដែលរស់នៅក្នុងប្រទេសកូរ៉េ", ne: "यदि तपाईं कोरियामा बस्ने पूर्वी तिमोरका नागरिक हुनुहुन्छ भने",
@@ -9575,6 +9658,8 @@ const LANGUAGE_CONTENT_PAGES = [
     ja: "韓国にお住まいの東ティモール出身の方はこちら", ar: "إذا كنت من مقيمي كوريا القادمين من تیمور الشرقية",
     hi: "यदि आप कोरिया में रहने वाले पूर्वी तिमोर के निवासी हैं", fr: "Si vous êtes originaire du Timor oriental et résidez en Corée",
     tl: "Kung ikaw ay mula sa Timor-Leste na nakatira sa Korea",
+  
+    pt: `Se você reside na Coreia e é cidadão timorense`, es: `Si reside en Corea y es ciudadano timorense`, uk: `Якщо ви проживаєте в Кореї як громадянин Тимору`, tet: `Se ó hela iha Korea nu'udar sidadaun Timór`,
   } },
   { flagCode: "UA", label: "한국에 사는 우크라이나분이라면", labelEn: "Living in Korea as a Ukrainian national", labelZh: "住在韩国的乌克兰人", labelVi: "Là công dân Ukraine sống ở Hàn Quốc", labelTh: "สำหรับชาวยูเครนที่อาศัยในเกาหลี", labelRu: "Для граждан Украины, живущих в Корее", contentPage: "ukrainian_in_korea_lottery_tax.html", contentLabel: "Українська →", more: {
     km: "ប្រសិនបើអ្នកមកពីអ៊ុយក្រែនដែលរស់នៅក្នុងប្រទេសកូរ៉េ", ne: "यदि तपाईं कोरियामा बस्ने युक्रेनी नागरिक हुनुहुन्छ भने",
@@ -9586,6 +9671,8 @@ const LANGUAGE_CONTENT_PAGES = [
     ja: "韓国にお住まいのウクライナ出身の方はこちら", ar: "إذا كنت من مقيمي كوريا القادمين من أوكرانيا",
     hi: "यदि आप कोरिया में रहने वाले यूक्रेनी निवासी हैं", fr: "Si vous êtes originaire d'Ukraine et résidez en Corée",
     tl: "Kung ikaw ay mula sa Ukraine na nakatira sa Korea",
+  
+    pt: `Se você reside na Coreia e é cidadão ucraniano`, es: `Si reside en Corea y es ciudadano ucraniano`, uk: `Якщо ви проживаєте в Кореї як громадянин України`, tet: `Se ó hela iha Korea nu'udar sidadaun Ukránia`,
   } },
 ];
 
