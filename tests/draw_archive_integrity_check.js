@@ -108,8 +108,10 @@ function checkArchive(varName, arr, expected) {
 
 const mm = extractArray('MEGAMILLIONS_DRAW_ARCHIVE');
 checkArchive('MEGAMILLIONS_DRAW_ARCHIVE', mm, {
-  // 2026-07-23 백필 이후 기준선: 2002-05-17 ~ 2026-07-17, 2,520건.
-  minCount: 2520,
+  // 2026-07-27 갱신: MEGAMILLIONS_JACKPOT_ARCHIVE에는 있는데 이 배열에는 빠져있던
+  // 2007-12-25/2009-12-25/2013-10-18 3건 보정 + 최신 회차(07-21, 07-24) 추가.
+  // 기준선: 2002-05-17 ~ 2026-07-24, 2,525건.
+  minCount: 2525,
   maxFirstDate: '2002-05-17',
 });
 
@@ -117,7 +119,10 @@ const pb = extractArray('POWERBALL_DRAW_ARCHIVE');
 checkArchive('POWERBALL_DRAW_ARCHIVE', pb, {
   // 2026-07-23 3차 백필(제3자 GitHub 데이터셋) 이후 기준선: 1992-04-22 ~ 2026-07-20, 3,825건.
   // 2026-07-23 추가 보정: 누락 확인된 2014-06-28, 2017-06-10 토요일 추첨 2건 추가, 3,827건.
-  minCount: 3827,
+  // 2026-07-27 갱신: POWERBALL_JACKPOT_ARCHIVE에는 있는데 이 배열에는 빠져있던
+  // 2021-04-28/2022-03-12/2022-04-09/2022-11-07 4건 보정 + 최신 회차(07-25) 추가.
+  // 기준선: 1992-04-22 ~ 2026-07-25, 3,833건.
+  minCount: 3833,
   maxFirstDate: '1992-04-22',
 });
 
