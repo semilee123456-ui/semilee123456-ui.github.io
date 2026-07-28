@@ -150,6 +150,11 @@ GitHub 표시에는 영향 없음. 해결 불가능/불필요한 표시상의 �
   **정렬·그룹핑 로직 밖에서 항상 맨 끝에 고정**으로 추가함(순위 경쟁 대상이 아니라서). 지도
   자체(핀·국경선)는 여전히 21개국 전용으로 안 건드림 — "기타 국가"는 특정 좌표가 없어서 지도에
   올라가지 않음. 자세한 구현 위치는 아래 "작업 이력"의 해당 세션 항목 참고.
+- **2026-07-28 추가**: 홈 화면 금액 입력 탭(일시불/연금액/희망액) 3개가 공용 통화 선택기
+  (`#homeCurrencySelect`, `sharedInputCurrency`)를 공유함 — KRW/USD 포함 21개 통화 중 골라서
+  세 탭 모두 그 통화 단위로 타이핑/표시 가능. 기본값 **KRW**(과거엔 일시불/연금액이 항상
+  "Million USD" 고정이었음). 자세한 설계 근거·데이터 소스는 아래 "코드 아키텍처 핵심 패턴"의
+  `sharedInputCurrency` 항목과 "작업 이력"의 해당 세션 참고.
 - **호스팅**: GitHub Pages, 저장소 `semilee123456-ui/semilee123456-ui.github.io`
 - **커스텀 도메인**: `chamtax.com` (Cloudflare Registrar에서 2026-07-23 구매, 원가 등록비
   ~$10.46/yr, 마크업 없음). Cloudflare 네임서버 + A레코드(GitHub Pages IP 4개, "DNS only"/회색
@@ -224,6 +229,18 @@ tests/               회귀 테스트 스크립트 9개 (아래 "회귀 테스�
   필터링함(`filterFaq()`).
 - **`currentLang`**: 'ko'/'en'/... — 표시 언어. localStorage에 저장 안 되고 새로고침하면
   'ko'로 리셋됨(`?lang=` URL 파라미터로 시작은 가능, 적용 후 URL에서 자동 제거).
+- **`sharedInputCurrency`**(2026-07-28 신규): 'KRW'/'USD'/'CNY'/... — 홈 화면 금액 입력 탭
+  (일시불/연금액/희망액) 3개가 공유하는 "표시 통화". `#homeCurrencySelect`(공용 선택기 하나,
+  탭 버튼 줄 바로 위) 하나로 세 탭 전부 동시에 바뀜. 기본값 **KRW**(과거엔 일시불/연금액이
+  항상 "Million USD"였음 — 이 기본값 변경이 이 세션의 핵심 판단, 아래 작업 이력 참고). 내부
+  계산·슬라이더 값(`sharedAmountUsd`, `homeAmountSlider`의 `data-usd-min/max`·로그스케일 위치)은
+  **항상 USD 기준으로 그대로 유지**되고, `sharedInputCurrency`는 순수히 "입력칸에 타이핑/표시
+  되는 단위"만 바꾸는 표시 레이어임 — `usdMillionsToInputUnits()`/`inputUnitsToUsdMillions()`가
+  이 변환을 전담(KRW는 "억원" 단위, 그 외는 "Million <코드>" 단위). 통화 전환 시 재표시는
+  슬라이더의 반올림된 위치가 아니라 `sharedAmountUsd`/`sharedAnnouncedUsdMillions`(정확한 원본)
+  에서 다시 계산해서, KRW↔다른 통화를 여러 번 왔다갔다 해도 드리프트가 안 생기게 함. 통화별
+  symbol/flagEmoji/locale/실시간환율 메타데이터는 `CURRENCY_DISPLAY_META`(script.js,
+  `CURRENCY_RATE_CONFIG` 근처)에 모아둠.
 - **FAQ 대상 배지**: `data-basis`가 "어느 나라 세법을 적용받는지"만 구분하고 "당신이
   누구인지"(재외국민 vs 한국 거주 외국인)는 구분 못 함 — 특정 페르소나 전용 질문에는
   `faq-audience-badge` 클래스로 별도 배지를 붙임(예: "🌏 해외 거주 한국인 전용").
@@ -1196,3 +1213,105 @@ sideByCountryGrid"로 실제로 잡아내는지 확인 후 원복.
 여전히 없음**(구조적 제약, 재진단 불필요) — 로컬 커밋 후 zip으로 `SendUserFile` 전달, 사용자가
 GitHub 웹 UI로 업로드해야 실제 반영됨. 다음 세션은 위 5번 항목대로 `git fetch origin main`부터
 확인할 것.
+
+### 2026-07-28 (열여섯 번째 세션, `claude/progress-checkpoint-vd08p1` — 서브에이전트로 진행)
+
+**요청 배경**: 사용자가 홈 화면 금액 입력 탭 3개(일시불/연금액/희망액) 스크린샷을 보여주며,
+항상 "Million USD"(또는 희망액 탭은 항상 원화/억원)로만 입력·표시되던 걸 다른 나라 통화(원화·
+위안화·엔화 등)로도 보고 입력할 수 있게 해달라고 요청. 시작 전에 두 가지를 확인질문으로 먼저
+확정함: (1) 세 탭이 통화 선택기 하나를 공유(탭별로 따로 안 고름) (2) 이미 환율을 갖고 있는
+`CURRENCY_RATE_CONFIG`(19개) + KRW + USD, 총 21개 통화 전부 노출.
+
+**핵심 설계 — 기본 통화를 USD가 아니라 KRW로 결정**: 세 가지 근거로 KRW를 기본값으로 정함.
+① 이 앱의 주 타겟이 한국 거주 40~60대라고 문서 전반에 명시돼있음 ② 희망액 탭은 애초부터
+예외 없이 KRW/억원 전용이었던 전례가 있음 ③ 결과 표시를 전담하는 `formatWon()`이 이미 전역적
+으로 억/조 단위를 씀. 이 결정 때문에 **일시불/연금액 탭의 기본 표시가 "Million USD"에서
+"억원"으로 실제로 바뀜**(진짜 동작 변경) — 하지만 슬라이더의 내부 값·로그스케일 매핑
+(`data-usd-min/max`, `sliderPosToMillions`/`sliderMillionsToPos`)은 전혀 안 건드리고 항상
+USD 그대로 유지, 통화 선택은 순수히 "타이핑/표시 단위"만 바꾸는 얇은 레이어로 구현함
+(`usdMillionsToInputUnits()`/`inputUnitsToUsdMillions()`). 자세한 설계는 위 "코드 아키텍처
+핵심 패턴"의 `sharedInputCurrency` 항목 참고.
+
+**희망액(역산) 탭도 통화 선택기를 따르게 함**: `calcTakeHome()`의 결과가 항상 KRW-억 단위인
+내부 이분탐색 알고리즘 자체는 그대로 두고("입력 해석"·"결과 표시" 레이어만 통화 인지형으로
+바꿈 — 리스크를 낮추기 위한 의도적 선택), `confirmEditMiniResult()`가 타이핑된 값을 현재
+통화 기준으로 해석해서 USD를 거쳐 KRW-억으로 환산하도록 한 겹만 추가함. 구조적으로 막힌 부분은
+없었음 — 프롬프트가 우려했던 "탭3는 구조적으로 어렵지 않을까"는 기우였음.
+
+**통화 메타데이터 통합 판단**: `LOCAL_CURRENCY_REF`(updateHomeCalc() 안, "기타 국가" 참고
+환산 노트 전용)와 `CURRENCY_RATE_CONFIG`(코드+실시간 갱신 로직)가 symbol/flag/locale/코드
+정보를 나눠 갖고 있던 걸, 새 `CURRENCY_DISPLAY_META`(script.js, `CURRENCY_RATE_CONFIG` 바로
+아래) 하나로 합쳐서 통화 선택기 전용 소스로 씀. **다만 이미 검증된 기존 기능인
+`LOCAL_CURRENCY_REF` 자체는 회귀 위험을 피하려고 안 건드리고 값만 그대로 복사해왔음** — 완전한
+단일화(LOCAL_CURRENCY_REF가 CURRENCY_DISPLAY_META를 파생해서 쓰도록)는 검증된 코드를 굳이
+건드리는 리스크 대비 이득이 작다고 판단해 이번 세션 범위에서 의도적으로 제외함(다음 세션이
+필요하면 진행 가능하게 주석으로 남겨둠).
+
+**숫자 서식 — 입력칸(타이핑 가능) vs 눈금/미리보기(읽기 전용) 다르게 처리**: 입력칸은 항상
+"Million <통화코드>"(KRW는 "억원") 고정 스케일 정수/소수 — 타이핑 가능해야 하므로 압축 표기를
+안 씀. 슬라이더 눈금·희망액 미리보기(`live-result-mini-amt`)는 타이핑할 필요가 없으므로
+`Intl.NumberFormat(locale, {notation:'compact'})`를 실제 통화 총액에 직접 적용 — VND/IDR/UZS처럼
+환율 자릿수가 큰 통화도 로케일에 맞는 압축 접미사(예: 베트남어 로케일은 "tỷ"/"nghìn tỷ"를 "T"/
+"NT"로, 중국어 로케일은 亿/万을 자동으로 씀)로 자동 압축돼서 카드 밖으로 넘치지 않음(390px/
+360px/300px에서 VND 선택 후 Playwright로 `.input-card`/`.amount-currency-row`
+`scrollWidth===clientWidth` 확인). USD가 선택된 경우는 기존 26개 언어 번역 문구(`home.sliderTickN`)
+를 그대로 쓰게 분기해서 100% 회귀 없음.
+
+**라운드트립 드리프트 방지**: 통화를 여러 번 왔다갔다 해도 표시값이 조금씩 틀어지지 않도록,
+재표시는 항상 슬라이더의 반올림된 위치가 아니라 `sharedAmountUsd`/신규
+`sharedAnnouncedUsdMillions`(정확한 원본, 새로 추가한 변수)에서 다시 계산함
+(`refreshAmountInputDisplaysForCurrency()`). Playwright로 KRW "1000" 입력 → USD 전환("67.2"로
+정확히 환산 확인, `1000×100/EXCHANGE_RATE`와 일치) → KRW로 되돌리기("1000"으로 정확히
+복귀, 드리프트 없음) 확인.
+
+**놓칠 뻔했다가 잡은 회귀 3건**: ① `updateHomeCalc()`가 인자 없이 재호출될 때(언어 전환·환율
+재조회 등) 입력칸 텍스트를 다시 파싱하는 폴백 로직이 예전 `parseMillionsInput`(항상 USD로
+해석)을 그대로 쓰고 있어서, 통화가 KRW일 때 입력값이 완전히 잘못 해석될 뻔함 — 통화 인지형
+파서(`parseAmountInputToUsdMillions`)로 교체. ② `shareResult()`의 공유 문구/링크(`?amount=`)가
+입력칸의 화면 텍스트를 그대로 썼는데, 문구 자체가 26개 언어 전부 "Million USD"로 고정 문자열이라
+KRW 등 선택 시 완전히 다른 숫자가 공유될 뻔함 — 항상 정확한 원본(`sharedAmountUsd`)에서 다시
+환산하도록 수정. ③ 음성 입력(`startAmountVoiceInput`)이 `parseSpokenAmountToMillions()`의
+결과(항상 Million USD)를 입력칸에 그대로 넣고 있어서 통화가 KRW일 때 자릿수가 완전히 틀어질
+뻔함 — 같은 통화 인지형 변환을 적용. 셋 다 코드를 읽다가 "이 값을 다른 곳에서도 USD로 가정하고
+쓰는 데가 더 없나" 전수 grep하다가 발견함(테스트로 처음 잡은 게 아니라 코드 리뷰로 먼저 잡고
+테스트로 확인한 순서).
+
+**`nav_slider_audit.js` 갱신**: 기존 "타이핑 300 → 슬라이더 위치 ±2 흔들어도 300 유지" 정밀도
+테스트가 "타이핑한 숫자 = Million USD"를 암묵적으로 전제하고 있었는데, 기본 통화가 KRW로
+바뀌면서 그 전제가 깨짐 — 테스트 삭제 대신, 검사 직전에 `setSharedInputCurrency('USD')`로
+명시적으로 통화를 고정해서 원래 검증하려던 불변식(로그스케일 매핑 자체는 안 깨졌는지)을 그대로
+유지함. 추가로 "KRW 통화-인지 파서(`parseAmountInputToUsdMillions`)가 정확한 공식으로 환산
+하는지"를 검증하는 새 케이스도 추가(슬라이더 양자화와 무관하게 순수 변환 공식만 확인). **네거티브
+컨트롤**: `inputUnitsToUsdMillions()`의 KRW 환산식을 일부러 한 줄 주석 처리(항등함수로 망가뜨림)
+→ 이 신규 테스트가 실제로 잡아내는지 확인(잡아냄, `got 1000, expected 67.2...`) → 원복.
+
+**새 i18n 키**: `input.currencyLabel`(통화 선택기 라벨/aria-label, "통화"/"Currency" 등) 1개,
+26개 언어 전부 직접 번역(짧고 흔한 명사라 Gemini 배치 워크플로 없이 이 세션이 직접 번역 — 열네
+번째 세션 문서의 "번역 워크플로"는 대량·미묘한 문구에 쓰는 것으로, 이런 1개짜리 상용 단어까지
+그 무거운 절차를 거칠 필요는 없다고 판단). 통화 선택기 `<option>` 텍스트(플래그+ISO 코드,
+예: "🇻🇳 VND")와 입력칸 단위 라벨("Million USD" 등)은 새 번역 없이 기존 관례(코드/영어 그대로
+노출)를 그대로 따름 — KRW 단위 라벨은 세 탭 전부 기존 `home.reverseUnit` 키(이미 26개 언어
+번역돼있음)를 재사용.
+
+**검증**: `node --check script.js` 통과. `node scripts/build-i18n.js` → `tests/i18n_coverage_audit.js`
+(0건)/`tests/i18n_attr_lint.js`(0건). 회귀 테스트 11개 전부 `ISSUES: 0`(`TOTAL ISSUES: 0`) —
+`nav_slider_audit.js`(신규 케이스 포함)도 포함. Playwright로 (a) ko-KR/`?lang=ko`/390px에서
+KRW 기본값 확인(세 탭 전부 "억원") (b) KRW→USD→KRW 라운드트립 무손실 확인 (c) 연금액 탭에서
+CNY로 전환 시 "Million CNY" 단위·정확한 환산값 확인 (d) 희망액 탭에서 CNY로 미리보기(`¥1.3亿`,
+Intl 압축표기가 중국어 로케일에서 자동으로 억/만 단위를 씀)·직접 입력·확정까지 end-to-end 확인
+(e) VND 선택 시 300px~390px에서 카드/통화 행 오버플로우 없음 (f) 아랍어(`?lang=ar`, RTL) 레이아웃
+확인 (g) 슬라이더 로그스케일 단조성이 KRW 기본값 상태에서도 안 깨짐 확인. 스크린샷도 6장 남김
+(일시불/연금액/희망액 × KRW, 희망액/일시불 × USD, 일시불 × VND).
+
+**의도적으로 범위 밖에 둔 것**: 연금액 탭의 "연금 X → 일시불 환산 Y" 안내 문구
+(`home-announced-convert-note`, `applyHomeAnnouncedMillions()` 안의 26개 언어 템플릿)는 여전히
+항상 "$X M" 형식으로 고정 — 통화가 KRW 등이어도 이 보조 안내문만은 달러 기준으로 보임. 26개
+언어 템플릿 문자열 안의 숫자 치환부만 골라 고치는 작업이 실수 위험 대비 이득이 작다고 판단해서
+제외함(입력칸 자체·단위 라벨·눈금·희망액 탭은 전부 통화를 따름 — 이 보조 안내문 하나만 예외).
+필요하면 다음 세션에서 `formatDisplayCurrencyAmount()`를 재사용해 고칠 수 있음.
+
+변경 파일: `index.html`, `script.js`, `styles.css`, `i18n-source/translations.json`,
+`i18n/*.json`(26개 언어), `tests/nav_slider_audit.js`, `HANDOFF.md`(이 항목 + "프로젝트 개요"·
+"코드 아키텍처 핵심 패턴" 갱신). **`git push` 권한 여전히 없음**(구조적 제약, 재진단 불필요) —
+로컬 커밋 후 zip으로 `SendUserFile` 전달, 사용자가 GitHub 웹 UI로 업로드해야 실제 반영됨.
+다음 세션은 위 5번 항목대로 `git fetch origin main`부터 확인할 것.

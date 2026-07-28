@@ -659,6 +659,35 @@
                 <span class="jackpot-quickfill-usd" id="quickfill-mm-usd"></span>
               </button>
             </div>
+            <!-- 일시불/연금액/희망액 3개 탭이 공유하는 표시 통화 선택기(2026-07-28) — 여기서
+                 고른 통화가 세 탭 모두의 단위/입력 해석에 동시에 적용됨(탭별로 따로 안 고름).
+                 항상 탭 버튼 위에 위치해서 어느 탭을 보고 있어도 눈에 띔. -->
+            <div class="amount-currency-row">
+              <label for="homeCurrencySelect" class="amount-currency-label" data-i18n="input.currencyLabel">통화</label>
+              <select id="homeCurrencySelect" class="amount-currency-select" onchange="setSharedInputCurrency(this.value)" data-i18n-aria-label="input.currencyLabel" aria-label="통화">
+                <option value="KRW" selected>🇰🇷 KRW</option>
+                <option value="USD">🇺🇸 USD</option>
+                <option value="CNY">🇨🇳 CNY</option>
+                <option value="INR">🇮🇳 INR</option>
+                <option value="VND">🇻🇳 VND</option>
+                <option value="IDR">🇮🇩 IDR</option>
+                <option value="PHP">🇵🇭 PHP</option>
+                <option value="THB">🇹🇭 THB</option>
+                <option value="JPY">🇯🇵 JPY</option>
+                <option value="RUB">🇷🇺 RUB</option>
+                <option value="NPR">🇳🇵 NPR</option>
+                <option value="LKR">🇱🇰 LKR</option>
+                <option value="UZS">🇺🇿 UZS</option>
+                <option value="KZT">🇰🇿 KZT</option>
+                <option value="KGS">🇰🇬 KGS</option>
+                <option value="MMK">🇲🇲 MMK</option>
+                <option value="BDT">🇧🇩 BDT</option>
+                <option value="PKR">🇵🇰 PKR</option>
+                <option value="KHR">🇰🇭 KHR</option>
+                <option value="MNT">🇲🇳 MNT</option>
+                <option value="LAK">🇱🇦 LAK</option>
+              </select>
+            </div>
             <div class="amount-input-tabs" id="amountInputTabs" role="tablist">
               <button type="button" class="amount-tab-btn active" role="tab" aria-selected="true" aria-controls="amountTabLump" data-tab="lump" onclick="switchAmountTab('lump')" data-i18n="input.tabLump">일시불</button>
               <button type="button" class="amount-tab-btn" role="tab" aria-selected="false" aria-controls="amountTabAnnounced" data-tab="announced" onclick="switchAmountTab('announced')" data-i18n="input.tabAnnounced">연금액</button>
@@ -668,7 +697,7 @@
             <div class="amount-tab-panel" id="amountTabLump" role="tabpanel">
               <div class="million-input-wrap has-voice-btn">
                 <input type="text" id="homeAmountInput" class="dollar-input" inputmode="decimal" enterkeyhint="done" placeholder="예: 100" data-i18n-placeholder="input.amountPlaceholder" oninput="onHomeAmountTyped()" onfocus="this.select()" onkeydown="if(event.key==='Enter'){ event.preventDefault(); this.blur(); }">
-                <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
+                <span class="million-unit" id="homeAmountUnit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
                 <!-- 지원 브라우저에서만 JS로 보이게 함(initAmountVoiceButtons) — FAQ 검색 음성 버튼과
                      동일 패턴, iOS Safari 등 음성 인식 미지원 브라우저에서는 숨김 -->
                 <button type="button" class="amount-voice-btn" id="homeAmountVoiceBtn" onclick="startAmountVoiceInput('homeAmountInput', onHomeAmountTyped)" aria-label="음성으로 금액 입력" data-i18n-aria-label="a11y.voiceAmount" style="display:none;">
@@ -684,7 +713,7 @@
             <div class="amount-tab-panel" id="amountTabAnnounced" role="tabpanel" style="display:none;">
               <div class="million-input-wrap-secondary has-voice-btn">
                 <input type="text" id="homeAnnouncedInput" class="dollar-input" inputmode="decimal" enterkeyhint="done" placeholder="예: 200" data-i18n-placeholder="input.announcedPlaceholder" oninput="onHomeAnnouncedTyped()" onfocus="this.select()" onkeydown="if(event.key==='Enter'){ event.preventDefault(); this.blur(); }">
-                <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
+                <span class="million-unit" id="homeAnnouncedUnit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
                 <button type="button" class="amount-voice-btn" id="homeAnnouncedVoiceBtn" onclick="startAmountVoiceInput('homeAnnouncedInput', onHomeAnnouncedTyped)" aria-label="음성으로 금액 입력" data-i18n-aria-label="a11y.voiceAmount" style="display:none;">
                   <span aria-hidden="true">🎤</span>
                 </button>
@@ -704,7 +733,7 @@
                 </span>
                 <span class="live-result-mini-edit" id="live-result-mini-edit" style="display:none;">
                   <input type="text" id="miniResultEditInput" class="mini-result-edit-input" inputmode="decimal" onclick="event.stopPropagation()">
-                  <span class="mini-result-edit-unit" data-i18n="home.reverseUnit">억원</span>
+                  <span class="mini-result-edit-unit" id="miniResultEditUnit" data-i18n="home.reverseUnit">억원</span>
                 </span>
               </div>
             </div>

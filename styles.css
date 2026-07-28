@@ -467,6 +467,22 @@
   @keyframes field-autofill-flash{ 0%{ box-shadow:0 0 0 4px rgba(var(--teal-rgb),0.28); } 100%{ box-shadow:0 0 0 0 rgba(var(--teal-rgb),0); } }
   .field-autofill-flash{ animation:field-autofill-flash 700ms ease-out; }
   .million-unit{ font-size:16px; color:var(--text-muted); font-weight:700; white-space:nowrap; padding-right:4px; flex-shrink:0; }
+  /* 일시불/연금액/희망액 3개 탭이 공유하는 표시 통화 선택기(2026-07-28) — 탭 버튼 줄 바로
+     위에 얹어서 어느 탭을 보고 있어도 항상 보이게 함. 기존 국가 select(.input-row select)와
+     같은 네이티브 <select> + 커스텀 화살표 아이콘 패턴을 재사용하되, 폭을 작게 줄여 탭 영역을
+     침범하지 않게 함. min-height는 .country-toggle-btn(46px)보다는 작지만, 네이티브 select는
+     대부분 모바일 브라우저가 자체적으로 탭 영역을 확장해 인식하므로(iOS/Android 공통) 40px도
+     안전한 하한으로 판단함. */
+  .amount-currency-row{ display:flex; align-items:center; justify-content:flex-end; gap:6px; margin-bottom:8px; }
+  .amount-currency-label{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; }
+  .amount-currency-select{
+    height:40px; min-height:40px; border:1.5px solid var(--border); border-radius:18px; padding:0 26px 0 12px;
+    font-size:var(--fs-small); font-weight:700; font-family:inherit; color:var(--text-dark); background:var(--select-bg);
+    cursor:pointer; -webkit-appearance:none; -moz-appearance:none; appearance:none; max-width:132px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23262420' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 10px center; background-size:11px 7px;
+  }
+  .amount-currency-select:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.14); }
   /* 2026-07-27: 음성 입력 버튼을 .million-unit 옆 flex 자리에 나란히 두면, 이미 폭이 빠듯한
      240px 화면에서 버튼(40px)+단위 라벨("M USD", 약 56px)이 전체 폭의 절반 이상을 먹어버려서
      정작 숫자 입력칸이 3자리 숫자도 못 보여줄 만큼 짜부라지는 문제가 있었음(Playwright로 실제

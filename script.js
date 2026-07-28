@@ -339,6 +339,38 @@ const CURRENCY_RATE_CONFIG = [
   { code: 'LAK', apply: (v) => { EXCHANGE_RATE_LAK = Math.round(v); } },
 ];
 const EXCHANGE_RATE_ALL_CODES = ['KRW', ...CURRENCY_RATE_CONFIG.map(c => c.code)];
+
+// 홈 화면 금액 입력 탭(일시불/연금액/희망액) 공용 통화 선택기(2026-07-28)용 메타데이터.
+// CURRENCY_RATE_CONFIG(코드 목록+실시간 갱신 로직)와 updateHomeCalc() 안의 LOCAL_CURRENCY_REF
+// (symbol/flagEmoji/locale, "기타 나라" 참고 환산 노트 전용)가 겹치는 정보를 각자 따로 들고
+// 있었는데, 이 표는 그 둘을 하나로 합친 통화 선택기 전용 소스임(값은 LOCAL_CURRENCY_REF에서
+// 그대로 옮겨왔음 — 이미 검증된 기존 기능인 LOCAL_CURRENCY_REF 자체는 회귀 위험을 피하려고
+// 안 건드림, 나중에 완전히 합치려면 이 표를 기준으로 LOCAL_CURRENCY_REF를 다시 만들면 됨).
+// rate는 실시간 환율 갱신에도 항상 최신값을 반영하도록 고정 숫자가 아니라 조회 함수(get)로 둠.
+// KRW/USD는 CURRENCY_RATE_CONFIG엔 없는 기준 통화라 여기서 직접 채움.
+const CURRENCY_DISPLAY_META = {
+  KRW: { symbol: '₩', flagEmoji: '🇰🇷', locale: 'ko-KR', get: () => EXCHANGE_RATE },
+  USD: { symbol: '$', flagEmoji: '🇺🇸', locale: 'en-US', get: () => 1 },
+  CNY: { symbol: '¥', flagEmoji: '🇨🇳', locale: 'zh-CN', get: () => EXCHANGE_RATE_CNY },
+  INR: { symbol: '₹', flagEmoji: '🇮🇳', locale: 'en-IN', get: () => EXCHANGE_RATE_INR },
+  VND: { symbol: '₫', flagEmoji: '🇻🇳', locale: 'vi-VN', get: () => EXCHANGE_RATE_VND },
+  IDR: { symbol: 'Rp', flagEmoji: '🇮🇩', locale: 'id-ID', get: () => EXCHANGE_RATE_IDR },
+  PHP: { symbol: '₱', flagEmoji: '🇵🇭', locale: 'en-PH', get: () => EXCHANGE_RATE_PHP },
+  THB: { symbol: '฿', flagEmoji: '🇹🇭', locale: 'th-TH', get: () => EXCHANGE_RATE_THB },
+  JPY: { symbol: '¥', flagEmoji: '🇯🇵', locale: 'ja-JP', get: () => EXCHANGE_RATE_JPY },
+  RUB: { symbol: '₽', flagEmoji: '🇷🇺', locale: 'ru-RU', get: () => EXCHANGE_RATE_RUB },
+  NPR: { symbol: 'Rs', flagEmoji: '🇳🇵', locale: 'ne-NP', get: () => EXCHANGE_RATE_NPR },
+  LKR: { symbol: 'Rs', flagEmoji: '🇱🇰', locale: 'si-LK', get: () => EXCHANGE_RATE_LKR },
+  UZS: { symbol: '', flagEmoji: '🇺🇿', locale: 'uz-UZ', get: () => EXCHANGE_RATE_UZS },
+  KZT: { symbol: '', flagEmoji: '🇰🇿', locale: 'kk-KZ', get: () => EXCHANGE_RATE_KZT },
+  KGS: { symbol: '', flagEmoji: '🇰🇬', locale: 'ky-KG', get: () => EXCHANGE_RATE_KGS },
+  MMK: { symbol: 'K', flagEmoji: '🇲🇲', locale: 'my-MM', get: () => EXCHANGE_RATE_MMK },
+  BDT: { symbol: '৳', flagEmoji: '🇧🇩', locale: 'bn-BD', get: () => EXCHANGE_RATE_BDT },
+  PKR: { symbol: 'Rs', flagEmoji: '🇵🇰', locale: 'ur-PK', get: () => EXCHANGE_RATE_PKR },
+  KHR: { symbol: '៛', flagEmoji: '🇰🇭', locale: 'km-KH', get: () => EXCHANGE_RATE_KHR },
+  MNT: { symbol: '₮', flagEmoji: '🇲🇳', locale: 'mn-MN', get: () => EXCHANGE_RATE_MNT },
+  LAK: { symbol: '₭', flagEmoji: '🇱🇦', locale: 'lo-LA', get: () => EXCHANGE_RATE_LAK },
+};
 const EXCHANGE_RATE_SOURCES = [
   { url: 'https://api.frankfurter.app/latest?from=USD&to=' + EXCHANGE_RATE_ALL_CODES.join(','), getRate: (data, code) => data && data.rates && data.rates[code], name: 'Frankfurter (중앙은행 기준환율)', nameEn: 'Frankfurter (central bank reference rate)' },
   { url: 'https://open.er-api.com/v6/latest/USD', getRate: (data, code) => data && data.rates && data.rates[code], name: 'open.er-api.com', nameEn: 'open.er-api.com' },
@@ -387,6 +419,7 @@ async function fetchLiveExchangeRate(force){
         initJackpotCardAmt();
         refreshJackpotDrawerIfOpen();
         updateExchangeRateBadges();
+        refreshAmountInputDisplaysForCurrency(); // KRW/다른 통화로 보이는 입력칸·눈금도 새 환율을 즉시 반영
         return true;
       }
     } catch (e) {
@@ -465,6 +498,18 @@ function updateExchangeRateBadges(failed){
 let sharedAmountUsd = 100000000; // 기본 $100M
 let sharedCountry = 'kr';
 let sharedState = 'AVG';
+// 홈 화면 금액 입력 탭(일시불/연금액/희망액) 3개가 공유하는 "표시 통화" — 한 곳(공용 선택기,
+// #homeCurrencySelect)에서 바꾸면 세 탭 모두 같이 바뀜. 슬라이더/실제 계산 도메인은 항상
+// Million USD로 그대로 두고, 이 값은 입력칸에 타이핑/표시되는 "단위"만 바꾸는 표시 레이어임
+// (2026-07-28). 기본값 KRW: 이 사이트의 주 타겟(한국 거주 40~60대)에게 "Million USD"보다
+// "억원"이 훨씬 익숙하고, formatWon()이 이미 전역적으로 억/조 단위를 쓰며, 희망액 탭은
+// 애초부터 항상 KRW/억원 전용이었던 것과도 일관됨(판단 근거는 HANDOFF.md 참고).
+let sharedInputCurrency = 'KRW';
+// 연금액 탭에 마지막으로 입력된 "정확한" USD 백만 단위 값 — 슬라이더 위치(로그 스케일
+// 반올림으로 정밀도 손실 있음)를 통화 전환 재환산의 원본으로 쓰면 KRW↔다른 통화를 여러 번
+// 오갈 때마다 표시값이 조금씩 틀어지는 문제가 있어서, 일시불 탭의 sharedAmountUsd와 같은
+// 역할로 이 값을 별도로 기억해둠(2026-07-28, 통화 선택기 도입과 함께 추가)
+let sharedAnnouncedUsdMillions = null;
 // 입력창은 처음엔 비워두고 회색 placeholder("예: 100")만 보여주기로 한 디자인 의도가 있는데,
 // syncHomeFromShared()가 탭 이동/실시간 환율 갱신 때마다 무조건 sharedAmountUsd(기본값 100)를
 // 입력창에 채워 넣어서, 로드 직후(환율 fetch가 끝나자마자) placeholder가 진짜 값 "100"으로
@@ -475,7 +520,7 @@ function syncHomeFromShared(){
   const millions = sharedAmountUsd / 1000000;
   // 사용자가 아직 아무 것도 입력/조작하지 않았다면 입력창은 비워둔 채(placeholder만 표시) 유지 —
   // 슬라이더·계산 결과는 계속 sharedAmountUsd 기준으로 정상 동기화됨
-  if (isAmountManuallyEdited) document.getElementById('homeAmountInput').value = millions;
+  if (isAmountManuallyEdited) document.getElementById('homeAmountInput').value = roundAmountForInput(usdMillionsToInputUnits(millions, sharedInputCurrency));
   const slider = document.getElementById('homeAmountSlider');
   setSliderMillions(slider, millions); // updateHomeCalc()가 끝에서 updateSliderFill도 같이 처리함
   document.getElementById('homeCountrySelect').value = sharedCountry;
@@ -5511,7 +5556,7 @@ function setHomeLumpAmountUsd(cashUsd, btn, exactCalc, keepAnnouncedTab){
   isAmountManuallyEdited = true;
   const millions = Math.round(cashUsd / 1000000);
   const input = document.getElementById('homeAmountInput');
-  input.value = millions;
+  input.value = roundAmountForInput(usdMillionsToInputUnits(millions, sharedInputCurrency));
   const slider = document.getElementById('homeAmountSlider');
   setSliderMillions(slider, millions);
   updateHomeCalc(exactCalc ? cashUsd : millions * 1000000);
@@ -5532,8 +5577,9 @@ function fillHomeAmountFromJackpot(game, btn){
   // 예전 값(또는 빈칸)이 보여서 혼란스러움 — 같은 발표 금액(amountUsd) 기준으로 연금액 칸도
   // 같이 채워서 어느 탭으로 봐도 방금 고른 잭팟 숫자와 일치하게 함(2026-07-27 요청)
   const announcedMillions = Math.round(amountUsd / 1000000);
+  sharedAnnouncedUsdMillions = announcedMillions; // 통화 전환 시 재환산의 정확한 원본
   const announcedInput = document.getElementById('homeAnnouncedInput');
-  if (announcedInput) announcedInput.value = announcedMillions;
+  if (announcedInput) announcedInput.value = roundAmountForInput(usdMillionsToInputUnits(announcedMillions, sharedInputCurrency));
   // 연금액 칸에 슬라이더가 생긴 뒤로는(2026-07-27) 이 슬라이더 위치도 같이 맞춰야 텍스트칸과
   // 어긋나지 않음
   const announcedSlider = document.getElementById('homeAnnouncedSlider');
@@ -6374,7 +6420,10 @@ function startAmountVoiceInput(inputId, onTyped){
     const millions = parseSpokenAmountToMillions(transcript, currentLang);
     if (millions !== null && millions > 0) {
       const rounded = Math.min(Math.round(millions * 10000) / 10000, MAX_INPUT_MILLIONS);
-      input.value = String(rounded);
+      // parseSpokenAmountToMillions()의 결과는 항상 Million USD 단위 — 지금 화면 통화가 KRW
+      // 등이면 그대로 넣지 않고 표시 단위로 환산해야 함(2026-07-28, 통화 선택기 도입과 함께 수정.
+      // onTyped()가 곧바로 이 값을 다시 표시 단위 기준으로 재해석하므로 왕복이 서로 맞음)
+      input.value = roundAmountForInput(usdMillionsToInputUnits(rounded, sharedInputCurrency));
       onTyped();
     }
     const lastResult = e.results[e.results.length - 1];
@@ -6491,7 +6540,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sliderUsdMax = Number(homeAmountSlider.dataset.usdMax) || 2000;
     const clampedAmountMillions = Math.min(sliderUsdMax, Math.max(sliderUsdMin, parsedAmount));
     isAmountManuallyEdited = true;
-    document.getElementById('homeAmountInput').value = clampedAmountMillions;
+    document.getElementById('homeAmountInput').value = roundAmountForInput(usdMillionsToInputUnits(clampedAmountMillions, sharedInputCurrency));
     setSliderMillions(homeAmountSlider, clampedAmountMillions);
     updateHomeCalc(clampedAmountMillions * 1000000);
     params.delete('amount');
@@ -6649,6 +6698,143 @@ function parseMillionsInput(str){
   return Math.min(n, MAX_INPUT_MILLIONS);
 }
 
+// ===== 홈 화면 금액 입력 탭 공용 통화 선택기 헬퍼 (2026-07-28) =====
+// 통화 코드 → "1달러가 그 통화로 몇 단위인지"(USD 기준 환율, EXCHANGE_RATE_XXX 변수와 같은 방향)
+function getCurrencyRateVsUsd(code){
+  const meta = CURRENCY_DISPLAY_META[code];
+  return meta ? meta.get() : 1;
+}
+
+// 내부 계산 도메인(항상 Million USD, 슬라이더도 이 도메인)과 화면에 보이는 통화 단위 사이의
+// 변환. KRW는 "억원"(1억원=1e8원) 단위, 그 외(USD 포함)는 "Million <통화>" 단위 — 기존에 이미
+// 있던 두 관례(일시불/연금액 탭의 "Million USD", 희망액 탭의 "억원")를 그대로 일반화한 것.
+function usdMillionsToInputUnits(usdMillions, code){
+  code = code || sharedInputCurrency;
+  if (!Number.isFinite(usdMillions)) return 0;
+  if (code === 'KRW') return usdMillions * EXCHANGE_RATE / 100;
+  return usdMillions * getCurrencyRateVsUsd(code);
+}
+function inputUnitsToUsdMillions(units, code){
+  code = code || sharedInputCurrency;
+  if (!Number.isFinite(units)) return 0;
+  if (code === 'KRW') return units * 100 / EXCHANGE_RATE;
+  const rate = getCurrencyRateVsUsd(code);
+  return rate ? units / rate : units;
+}
+
+// 입력칸에 보여줄 숫자를 너무 지저분한 소수점 없이 다듬음(100 이상은 정수, 10 이상은 소수점
+// 1자리, 그 아래는 소수점 2자리까지) — 기존 UI가 여기저기서 쓰던 반올림 관례를 통화 무관하게
+// 공용 함수로 뽑아낸 것
+function roundAmountForInput(n){
+  if (!Number.isFinite(n)) return 0;
+  if (Math.abs(n) >= 100) return Math.round(n);
+  if (Math.abs(n) >= 10) return Math.round(n * 10) / 10;
+  return Math.round(n * 100) / 100;
+}
+
+// 문자열에서 통화 무관하게 순수 숫자만 뽑아냄(parseMillionsInput과 동일한 정리 규칙) —
+// MAX_INPUT_MILLIONS 클램프는 여기서 하지 않고, 통화를 USD 백만 단위로 환산한 뒤에 적용함
+// (달러 기준 상한이 어느 통화를 고르든 항상 같은 실제 금액을 뜻해야 하므로)
+function parseAmountInputRaw(str){
+  const parts = String(str).replace(/[^0-9.]/g, '').split('.');
+  const sanitized = parts.length > 1 ? parts[0] + '.' + parts[1] : parts[0];
+  const n = Number(sanitized);
+  return isNaN(n) ? 0 : n;
+}
+// 일시불/연금액 탭 입력칸 전용 파서 — 현재 sharedInputCurrency 단위로 타이핑된 값을 내부 계산
+// 도메인(Million USD)으로 환산한다. 컴페어(비교) 탭의 #amountInput은 이 통화 선택기의 영향을
+// 받지 않는 별도 입력칸이라 여전히 parseMillionsInput()을 그대로 씀(의도적으로 범위 밖에 둠).
+function parseAmountInputToUsdMillions(str){
+  const raw = parseAmountInputRaw(str);
+  const usdMillions = inputUnitsToUsdMillions(raw, sharedInputCurrency);
+  return Math.min(usdMillions, MAX_INPUT_MILLIONS);
+}
+
+// 일시불/연금액 입력칸 옆 단위 라벨("Million USD"/"억원" 등) — KRW는 희망액 탭이 예전부터
+// 쓰던 i18n 키(home.reverseUnit, 이미 26개 언어 번역돼있음: 한국어는 "억원", 다른 언어는
+// "(×₩100M)")를 그대로 재사용해서 새 번역 없이 세 탭 모두 같은 문구를 씀. 그 외 통화는
+// "Million USD" 표기 관례(기존에도 언어 무관하게 영어 그대로 노출되던 방식)를 통화 코드만
+// 바꿔 그대로 따름 — 이것도 새 번역 불필요.
+function getAmountUnitLabelParts(code){
+  code = code || sharedInputCurrency;
+  if (code === 'KRW') {
+    const label = resolveI18n('home.reverseUnit') || '억원';
+    return { full: label, short: label };
+  }
+  return { full: 'Million ' + code, short: 'M ' + code };
+}
+
+function updateAmountUnitLabels(){
+  const parts = getAmountUnitLabelParts(sharedInputCurrency);
+  [document.getElementById('homeAmountUnit'), document.getElementById('homeAnnouncedUnit')].forEach(el => {
+    if (!el) return;
+    const full = el.querySelector('.unit-full');
+    const short = el.querySelector('.unit-short');
+    if (full) full.textContent = parts.full;
+    if (short) short.textContent = parts.short;
+  });
+  const reverseUnitEl = document.getElementById('miniResultEditUnit');
+  if (reverseUnitEl) reverseUnitEl.textContent = parts.full;
+}
+
+// 슬라이더 눈금·희망액 미리보기처럼 "타이핑 가능할 필요가 없는" 통화 표시용 — KRW는
+// formatWon()(이미 언어별 억/조·million/billion 자동 전환을 갖춘 검증된 함수)을 그대로
+// 재사용하고, 그 외 통화는 Intl 압축 표기(notation:'compact')를 실제 통화 총액(백만 단위로
+// 미리 나누지 않은 원 단위)에 직접 적용함 — VND/IDR/UZS처럼 환율 자릿수가 큰 통화도 자동으로
+// 짧게 줄어들어("131T" 등) 슬라이더 눈금이 카드 밖으로 넘치는 걸 막아줌
+function formatCompactCurrencyAmount(usdMillions, code){
+  code = code || sharedInputCurrency;
+  if (code === 'KRW') {
+    const eok = usdMillions * EXCHANGE_RATE / 100;
+    return formatWon(eok);
+  }
+  const meta = CURRENCY_DISPLAY_META[code] || CURRENCY_DISPLAY_META.USD;
+  const rawAmount = usdMillions * 1000000 * meta.get();
+  const numStr = rawAmount.toLocaleString(meta.locale, { notation: 'compact', maximumFractionDigits: 1 });
+  return (meta.symbol || code + ' ') + numStr;
+}
+// 희망액(역산) 탭의 "지금 목표 금액" 미리보기 — home-final-amt의 억원(KRW) 값을 받아서 현재
+// 선택된 통화로 보여줌
+function formatEokKrwInDisplayCurrency(eokKrw, code){
+  code = code || sharedInputCurrency;
+  if (code === 'KRW') return formatWon(eokKrw);
+  const usdMillions = eokKrw * 100 / EXCHANGE_RATE;
+  return formatCompactCurrencyAmount(usdMillions, code);
+}
+
+// 통화가 바뀌거나(setSharedInputCurrency) 환율 자체가 바뀔 때(onHomeRateChanged/실시간 환율
+// 갱신) 호출 — 항상 "정확한" 원본 값(sharedAmountUsd/sharedAnnouncedUsdMillions, 슬라이더의
+// 반올림된 위치가 아님)에서 다시 환산하므로, 통화를 여러 번 왔다갔다 해도 표시 오차가 누적되지
+// 않음. 아직 아무 값도 입력 안 한 칸(placeholder만 보이는 빈칸)은 그대로 비워둠.
+function refreshAmountInputDisplaysForCurrency(){
+  const lumpInput = document.getElementById('homeAmountInput');
+  if (lumpInput && lumpInput.value.trim() !== '') {
+    lumpInput.value = roundAmountForInput(usdMillionsToInputUnits(sharedAmountUsd / 1000000, sharedInputCurrency));
+  }
+  const announcedInput = document.getElementById('homeAnnouncedInput');
+  if (announcedInput && announcedInput.value.trim() !== '' && sharedAnnouncedUsdMillions !== null) {
+    announcedInput.value = roundAmountForInput(usdMillionsToInputUnits(sharedAnnouncedUsdMillions, sharedInputCurrency));
+  }
+  const lumpSlider = document.getElementById('homeAmountSlider');
+  if (lumpSlider) renderSliderTicks(lumpSlider);
+  const announcedSlider = document.getElementById('homeAnnouncedSlider');
+  if (announcedSlider) renderSliderTicks(announcedSlider);
+  const miniEl = document.getElementById('live-result-mini-amt');
+  if (miniEl) {
+    const finalEok = parseFloat(document.getElementById('home-final-amt').dataset.eokVal) || 0;
+    miniEl.textContent = formatEokKrwInDisplayCurrency(finalEok, sharedInputCurrency);
+  }
+  updateAmountUnitLabels();
+}
+
+function setSharedInputCurrency(code){
+  if (!CURRENCY_DISPLAY_META[code]) return;
+  sharedInputCurrency = code;
+  const select = document.getElementById('homeCurrencySelect');
+  if (select && select.value !== code) select.value = code;
+  refreshAmountInputDisplaysForCurrency();
+}
+
 function parseRateInput(str){
   // 소수점을 지우면 "1,382.5" 같은 입력이 13825로 10배 뻥튀기되는 버그가 있었음(콤마와 마침표를
   // 구분 없이 한꺼번에 지워버렸기 때문) — parseMillionsInput과 동일하게 마침표는 보존하도록 수정
@@ -6693,7 +6879,7 @@ function onHomeAmountTyped(){
   hideAnnouncedConvertNote(); // 일시불 칸을 직접 고치면 더는 연금 환산값과 일치한다고 보장 못하므로 안내 숨김
   const rawValue = document.getElementById('homeAmountInput').value;
   if (rawValue.trim() !== '') isAmountManuallyEdited = true;
-  const millions = parseMillionsInput(rawValue);
+  const millions = parseAmountInputToUsdMillions(rawValue); // 현재 sharedInputCurrency 단위로 타이핑된 값을 USD 백만 단위로 환산
   const slider = document.getElementById('homeAmountSlider');
   setSliderMillions(slider, millions); // 기본 범위(1천만~20억)를 벗어나는 값이면 범위 자체도 같이 늘림
   // rawValue가 진짜 비어있을 때만 "값 없음"(undefined -> 마지막 유효값 유지)으로 처리하고,
@@ -6711,9 +6897,10 @@ function onHomeAmountTyped(){
 // 여기서는 건드리지 않음(2026-07-27, 일시불 칸에만 있던 슬라이더를 연금액 칸에도 추가하며 분리).
 function applyHomeAnnouncedMillions(announcedMillions){
   isAmountManuallyEdited = true;
+  sharedAnnouncedUsdMillions = announcedMillions; // 통화 전환 시 재환산의 정확한 원본(드리프트 방지)
   const lumpMillions = Math.max(1, Math.round(announcedMillions * CASH_VALUE_RATIO));
   const input = document.getElementById('homeAmountInput');
-  input.value = lumpMillions;
+  input.value = roundAmountForInput(usdMillionsToInputUnits(lumpMillions, sharedInputCurrency));
   const slider = document.getElementById('homeAmountSlider');
   setSliderMillions(slider, lumpMillions);
   updateHomeCalc(lumpMillions * 1000000);
@@ -6763,7 +6950,7 @@ function applyHomeAnnouncedMillions(announcedMillions){
 function onHomeAnnouncedTyped(){
   const rawValue = document.getElementById('homeAnnouncedInput').value;
   if (rawValue.trim() === '') return;
-  const announcedMillions = parseMillionsInput(rawValue);
+  const announcedMillions = parseAmountInputToUsdMillions(rawValue);
   if (isNaN(announcedMillions) || announcedMillions <= 0) return;
   const slider = document.getElementById('homeAnnouncedSlider');
   setSliderMillions(slider, announcedMillions); // 타이핑한 값에 맞춰 슬라이더 위치도 재계산
@@ -6776,7 +6963,7 @@ function onHomeAnnouncedTyped(){
 function onHomeAnnouncedSliderMoved(){
   const slider = document.getElementById('homeAnnouncedSlider');
   const announcedMillions = getSliderMillions(slider);
-  document.getElementById('homeAnnouncedInput').value = announcedMillions;
+  document.getElementById('homeAnnouncedInput').value = roundAmountForInput(usdMillionsToInputUnits(announcedMillions, sharedInputCurrency));
   applyHomeAnnouncedMillions(announcedMillions);
 }
 
@@ -6889,7 +7076,11 @@ function renderSliderTicks(slider){
     mark.className = 'slider-tick-mark';
     const label = document.createElement('span');
     label.className = 'slider-tick-label';
-    label.textContent = resolveI18n(c.key) || c.ko;
+    // USD가 선택된 통화일 때는 기존처럼 26개 언어로 번역된 정적 문구를 그대로 씀(회귀 없음).
+    // 다른 통화가 선택되면 그 정적 문구는 "$" 표기라 안 맞으므로, 실제 통화 총액을 압축
+    // 표기(formatCompactCurrencyAmount)로 계산해서 보여줌 — data-usd-min/max·로그스케일 위치
+    // 계산(sliderMillionsToPos 등)은 그대로 USD 기준이고, 여기 라벨 텍스트만 바뀜.
+    label.textContent = sharedInputCurrency === 'USD' ? (resolveI18n(c.key) || c.ko) : formatCompactCurrencyAmount(c.millions, sharedInputCurrency);
     el.appendChild(mark);
     el.appendChild(label);
     container.appendChild(el);
@@ -6935,7 +7126,7 @@ function onHomeSliderMoved(){
   isAmountManuallyEdited = true;
   const slider = document.getElementById('homeAmountSlider');
   const usdMillions = getSliderMillions(slider);
-  document.getElementById('homeAmountInput').value = usdMillions;
+  document.getElementById('homeAmountInput').value = roundAmountForInput(usdMillionsToInputUnits(usdMillions, sharedInputCurrency));
   updateHomeCalc(usdMillions * 1000000);
 
   // 5억 달러 문턱을 넘나들 때 짧게 진동 (안드로이드 Chrome 등만 지원, 미지원 브라우저는 조용히 무시됨)
@@ -6953,6 +7144,7 @@ function onHomeRateChanged(){
   EXCHANGE_RATE = parseRateInput(document.getElementById('home-rate-input').value);
   updateExchangeRateBadges();
   updateHomeCalc();
+  refreshAmountInputDisplaysForCurrency(); // KRW/다른 통화 표시값이 새 환율을 즉시 반영하도록
   initJackpotCardAmt();
   refreshJackpotDrawerIfOpen();
 }
@@ -7768,7 +7960,11 @@ async function shareGenericPromo(){
 
 async function shareResult(){
   if (!isAmountManuallyEdited) { await shareGenericPromo(); return; }
-  const amountText = document.getElementById('homeAmountInput').value || '100';
+  // 공유 문구/링크(?amount=)는 항상 "Million USD" 기준 숫자를 써야 함(문구 자체가 26개 언어
+  // 전부 "Million USD"로 고정돼있고, 링크를 여는 사람이 어떤 통화를 보고 있었는지도 모르므로) —
+  // 입력칸에 지금 보이는 텍스트(sharedInputCurrency 단위)를 그대로 쓰면 통화가 KRW 등일 때
+  // 완전히 다른 숫자가 공유돼버리므로, 항상 정확한 원본(sharedAmountUsd)에서 다시 환산함
+  const amountText = String(roundAmountForInput((sharedAmountUsd || 100000000) / 1000000));
   const finalAmt = document.getElementById('home-final-amt').textContent;
   const homeCountryVal = document.getElementById('homeCountrySelect').value;
   const country = homeCountryVal === 'us'
@@ -8005,7 +8201,7 @@ function startEditMiniResult(){
   display.style.display = 'none';
   editBox.style.display = 'inline-flex';
   if (hint) hint.style.display = 'none';
-  input.value = Math.round(current억);
+  input.value = roundAmountForInput(usdMillionsToInputUnits(current억 * 100 / EXCHANGE_RATE, sharedInputCurrency));
 
   function finish(){
     input.removeEventListener('keydown', onKeydown);
@@ -8031,7 +8227,14 @@ function cancelEditMiniResult(){
 
 function confirmEditMiniResult(rawValue){
   cancelEditMiniResult();
-  const target억 = parseFloat(String(rawValue).replace(/[^0-9.]/g, ''));
+  // 희망액 탭도 공용 통화 선택기를 따름(2026-07-28) — 입력값을 현재 선택된 통화 단위로 해석해서
+  // USD 백만 단위로 환산한 뒤, 실제 이분탐색 도메인(target억, KRW-억원)은 기존 그대로 둠 —
+  // calcTakeHome()의 결과 자체가 항상 KRW-억 단위라 이 도메인을 바꾸는 게 아니라, "입력 해석"
+  // 레이어만 통화 인지형으로 바꾼 것(리스크를 낮추려고 기존 이분탐색 알고리즘은 그대로 둠)
+  const rawNum = parseAmountInputRaw(String(rawValue));
+  if (!rawNum || rawNum <= 0) return;
+  const targetUsdMillions = inputUnitsToUsdMillions(rawNum, sharedInputCurrency);
+  const target억 = targetUsdMillions * EXCHANGE_RATE / 100;
   if (!target억 || target억 <= 0) return;
 
   const country = document.getElementById('homeCountrySelect').value;
@@ -8055,7 +8258,7 @@ function confirmEditMiniResult(rawValue){
   const requiredUsdM = requiredUsd / 1000000;
 
   const amountInput = document.getElementById('homeAmountInput');
-  amountInput.value = requiredUsdM >= 10 ? Math.round(requiredUsdM) : Math.round(requiredUsdM * 10) / 10;
+  amountInput.value = roundAmountForInput(usdMillionsToInputUnits(requiredUsdM, sharedInputCurrency));
   const slider = document.getElementById('homeAmountSlider');
   slider.value = sliderMillionsToPos(slider, Math.round(requiredUsdM)); // 기존 범위를 벗어나면 clamp만(범위 확장은 안 함)
   updateSliderFill(slider);
@@ -8660,7 +8863,7 @@ function updateHomeCalc(usdOverride){
   // 입력창이 비어있으면(플레이스홀더만 보이는 초기 상태) 0으로 계산하지 않고, 마지막으로
   // 알려진 유효한 금액(sharedAmountUsd, 기본값 $100M)을 그대로 씀 — 환율 재조회·언어전환처럼
   // 다른 이유로 이 함수가 인자 없이 재호출될 때마다 결과가 0으로 튀는 걸 방지
-  const typedValue = parseMillionsInput(document.getElementById('homeAmountInput').value);
+  const typedValue = parseAmountInputToUsdMillions(document.getElementById('homeAmountInput').value);
   const usd = usdOverride !== undefined ? usdOverride : (typedValue > 0 ? typedValue * 1000000 : sharedAmountUsd);
   const country = document.getElementById('homeCountrySelect').value;
   const stateCode = document.getElementById('homeStateSelect').value;
@@ -8690,6 +8893,7 @@ function updateHomeCalc(usdOverride){
     updateSliderFill(announcedSliderEl);
     renderSliderTicks(announcedSliderEl);
   }
+  updateAmountUnitLabels(); // 언어 전환 시(home.reverseUnit 재번역)에도 단위 라벨이 항상 최신 상태를 유지하도록
   const 억 = (usd * EXCHANGE_RATE) / 100000000;
   const r = calcTakeHome(억, country, stateCode);
   const { final, label1, val1, label2, val2, basisSuffix } = r;
@@ -8791,7 +8995,7 @@ function updateHomeCalc(usdOverride){
     animateValueChange(finalEl, prevVal, final, '억원', 1, 250, () => fitAmountFontSize(finalEl));
   }
   const miniEl = document.getElementById('live-result-mini-amt');
-  if (miniEl) miniEl.textContent = formatWon(final);
+  if (miniEl) miniEl.textContent = formatEokKrwInDisplayCurrency(final, sharedInputCurrency); // 희망액 탭도 공용 통화 선택기를 따름
   document.getElementById('home-final-basis').textContent = pickLang(
     formatWon(억) + ' 당첨 기준 · ' + basisSuffix,
     formatWon(억) + ' prize basis · ' + basisSuffix,
