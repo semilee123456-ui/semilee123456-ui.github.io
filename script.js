@@ -3497,7 +3497,14 @@ function renderAmountBreakdownHtml(cashUsd, stateCode){
         uz: `yana ${hiddenCountryCount} davlat`,
        pt: `Mais ${hiddenCountryCount} países`, es: `${hiddenCountryCount} países más`, uk: `Ще ${hiddenCountryCount} країн`, tet: `Rai ${hiddenCountryCount} tan`})}</bdi></summary><div class="jh-amounts-grid">${hiddenGroups.map(g => toAmtItem(g, false)).join('')}</div></details>`
     : '';
-  return primaryHtml + restHtml + hiddenHtml;
+  // "기타 국가"(21개국 목록에 없는 나라) — 위 amtResults/amtGroups 랭킹 집계에는 아예 안 끼우고
+  // (특정 나라가 아니라서 순위 경쟁 대상이 아님) 항상 맨 끝에 별도 칩으로 붙임. basisSuffix는
+  // calcTakeHome()의 'other' 분기가 이미 26개 언어로 번역해둔 문자열이라 새 번역 불필요 —
+  // getProfileShortLabel()과 동일한 방식으로 끝의 부연설명 괄호만 잘라서 짧게 씀
+  const otherResult = calcTakeHome(cashKrw / 100000000, 'other', null);
+  const otherLabel = otherResult.basisSuffix.replace(/\s*[（(][^)）]*[)）]\s*$/, '');
+  const otherHtml = `<div class="jh-amt-other-wrap"><span class="jh-amt-item jh-amt-chip jh-amt-chip-other"><span class="jh-amt-label">🌐 ${otherLabel}</span><span class="jh-amt"><bdi>${formatWon(otherResult.final)}</bdi></span></span></div>`;
+  return primaryHtml + restHtml + hiddenHtml + otherHtml;
 }
 
 function renderJackpotHistory(){
@@ -9997,6 +10004,34 @@ function updateSideBySide(eok, stateCode){
       showMoreBtn.style.display = 'none';
     }
   }
+
+  // "기타 국가"(21개국 목록에 없는 나라, calcTakeHome()의 country==='other' 분기) — 순위 경쟁에
+  // 끼우면 특정 나라가 아닌데 등수가 매겨지는 게 이상해지므로, 위 정렬/그룹핑/"더보기" 카운트
+  // 로직 전부와 무관하게 항상 맨 끝에 별도 고정 카드로 붙임(2026-07-28 홈 토글 전용으로 추가됐던
+  // 걸, 비교 탭에도 노출해달라는 후속 요청으로 추가). 지도 좌표가 없어서 highlightCountryOnMap
+  // 클릭 연동은 일부러 안 붙임
+  const otherResult = calcTakeHome(eok, 'other', null);
+  const otherCard = document.createElement('div');
+  otherCard.className = 'side-card side-card-other';
+  const otherFlagEl = document.createElement('p'); otherFlagEl.className = 'side-card-flag';
+  otherFlagEl.append(makeFlagBadge('🌐'), document.createTextNode(' ' + otherResult.basisSuffix));
+  const otherAmtEl = document.createElement('p'); otherAmtEl.className = 'side-card-amt'; otherAmtEl.textContent = formatWon(otherResult.final);
+  const otherRateEl = document.createElement('p'); otherRateEl.className = 'side-card-rate'; otherRateEl.textContent = otherResult.label2 + ' ' + otherResult.val2;
+  otherCard.append(otherFlagEl, otherAmtEl, otherRateEl);
+  grid.appendChild(otherCard);
+
+  const otherGroupLabel = document.createElement('p'); otherGroupLabel.className = 'side-group-label';
+  otherGroupLabel.append(makeFlagBadge('🌐'), document.createTextNode(' '));
+  appendLabelWithNowrapParen(otherGroupLabel, otherResult.basisSuffix);
+  const otherBGrid = document.createElement('div'); otherBGrid.className = 'side-breakdown-grid';
+  [[otherResult.label1, otherResult.val1], [otherResult.label2, otherResult.val2]].forEach(([label, val]) => {
+    const cell = document.createElement('div'); cell.className = 'side-breakdown-cell';
+    const l = document.createElement('p'); l.className = 'side-breakdown-label'; l.textContent = label;
+    const v = document.createElement('p'); v.className = 'side-breakdown-val'; v.textContent = val;
+    cell.append(l, v);
+    otherBGrid.appendChild(cell);
+  });
+  breakdownContainer.append(otherGroupLabel, otherBGrid);
 
   fixSideCardOrphanRow();
   renderLanguageContentLinks();

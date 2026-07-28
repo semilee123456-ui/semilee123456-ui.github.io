@@ -135,8 +135,15 @@ GitHub 표시에는 영향 없음. 해결 불가능/불필요한 표시상의 �
   토글 맨 아래에 추가됨(`country === 'other'` 분기, `calcTakeHome()`) — 자국 세법 조사 없이도
   확정적인 미국 IRS 비거주자 원천징수 30%만 계산하고, 자국 추가세는 "❓ 확인 필요"로 정직하게
   표시(0원이라 단정하지 않음). 이 옵션은 `COUNTRY_TAX_PROFILES` 배열 안에는 없음(국가별 비교
-  탭·지도·잭팟 랭킹처럼 "진짜 나라 비교"가 전제인 기능에는 안 넣었음, 홈 화면 세금 기준
-  토글에서만 선택 가능) — 국가 수를 셀 때 이 옵션까지 22번째 "국가"로 착각하지 말 것.
+  탭·지도·잭팟 랭킹처럼 "진짜 나라 비교"가 전제인 기능에는 안 넣었음) — 국가 수를 셀 때 이
+  옵션까지 22번째 "국가"로 착각하지 말 것. **2026-07-28 후속 세션에서 노출 범위 확장**: 홈
+  화면 세금 기준 토글에만 있던 걸, (1) 국가별 비교 탭의 지도(`#countryMapWrap`) 바로 아래에
+  "목록에 없는 나라이신가요? → 기타 국가로 계산해보세요" 안내 버튼(`compare.mapOtherNote`,
+  누르면 홈으로 이동+토글 자동 선택) (2) 국가별 비교 탭 카드 그리드(`updateSideBySide()`)와
+  잭팟 히스토리 국가별 금액 목록(`renderAmountBreakdownHtml()`) 양쪽에 "🌐 기타 국가" 카드/칩을
+  **정렬·그룹핑 로직 밖에서 항상 맨 끝에 고정**으로 추가함(순위 경쟁 대상이 아니라서). 지도
+  자체(핀·국경선)는 여전히 21개국 전용으로 안 건드림 — "기타 국가"는 특정 좌표가 없어서 지도에
+  올라가지 않음. 자세한 구현 위치는 아래 "작업 이력"의 해당 세션 항목 참고.
 - **호스팅**: GitHub Pages, 저장소 `semilee123456-ui/semilee123456-ui.github.io`
 - **커스텀 도메인**: `chamtax.com` (Cloudflare Registrar에서 2026-07-23 구매, 원가 등록비
   ~$10.46/yr, 마크업 없음). Cloudflare 네임서버 + A레코드(GitHub Pages IP 4개, "DNS only"/회색
@@ -2350,3 +2357,55 @@ lang_leak_audit.js) 전부 동기화. `index.html` 언어 선택 드롭다운에
 매번 재진단 불필요) 로컬 커밋 후 zip으로 나눠서 `SendUserFile`로 전달 → 사용자가 GitHub 웹
 UI로 업로드하는 방식 그대로 진행. 최종 상태는 사용자가 업로드를 완료했는지에 달려있으므로,
 다음 세션은 반드시 위 5번 항목대로 `git fetch origin main`부터 확인할 것.
+
+### 2026-07-28 (열다섯 번째 세션, `claude/progress-checkpoint-vd08p1` — 서브에이전트로 진행)
+
+**요청 배경**: 바로 앞 세션(열네 번째)이 "기타 국가" 옵션을 홈 화면 세금 기준 토글에만 추가했는데,
+사용자가 이걸 더 넓게 노출해달라고 요청. 메인(오케스트레이팅) 세션이 먼저 코드를 조사해서
+"국가 지도 자체를 건드릴지"·"비교 탭 카드/잭팟 히스토리에서 순위 대상으로 섞을지"를
+`AskUserQuestion`으로 확인받았고(사용자 답: 지도 자체는 그대로, 지도 아래 안내 링크만 추가 /
+카드·칩은 순위 로직 밖에서 항상 맨 끝 고정), 이 확정된 사양을 그대로 서브에이전트에게 위임해서
+구현함.
+
+**구현 3곳**:
+1. **국가 지도 아래 안내 버튼** (`index.html`, `#countryMapWrap`과 `#sideByCountryGrid` 사이):
+   `<button class="compare-map-other-note" onclick="go('home'); setHomeCountry('other');" data-i18n="compare.mapOtherNote">`.
+   `go()`/`setHomeCountry()` 둘 다 기존 함수 그대로 재사용 — 클릭하면 홈 화면으로 이동하면서
+   국가 토글이 "🌐 기타 국가"로 자동 선택됨(Playwright로 클릭 후 토글 버튼에 `active` 클래스가
+   실제로 붙는지 확인). 새 i18n 키 `compare.mapOtherNote` 1개를 26개 언어 전부 번역해서
+   `i18n-source/translations.json`에 추가(용어는 기존 `input.optOther`/`calcTakeHome()`의
+   `other` 분기 `basisSuffix` 번역에서 쓰인 "기타 국가" 표현을 그대로 재사용해 일관성 유지) —
+   `scripts/build-i18n.js` 재실행 후 `tests/i18n_coverage_audit.js` 0건 확인. CSS는
+   `.compare-map-other-note`(점선 테두리, `--teal` 텍스트) 신규.
+2. **국가별 비교 탭 카드 그리드** (`updateSideBySide()`, script.js): `calcTakeHome(eok, 'other', null)`
+   결과로 `.side-card.side-card-other` 카드 1개를 **기존 정렬(`implementedRows.sort`)/그룹핑
+   (동일 실수령액 묶기)/"더보기" 숨김-카운트 로직이 전부 끝난 뒤**(즉 `allCards`/`remaining`
+   계산과 `showMoreBtn` 처리 이후, `fixSideCardOrphanRow()` 호출 전) 별도로 `grid`에 추가 —
+   순위 경쟁·"더보기" 카운트에 전혀 안 끼고 항상 그리드 맨 끝에 보임. `highlightCountryOnMap()`
+   클릭 연동은 의도적으로 안 붙임(지도 좌표가 없어서). 같은 위치에서 "세금은 이렇게
+   빠져나가요" 아코디언(`#sideBreakdownContainer`)에도 매칭되는 항목을 추가. CSS는
+   `.side-card-other`(점선 테두리)로 실제 나라 카드와 시각적으로 구분.
+3. **잭팟 히스토리 국가별 금액 목록** (`renderAmountBreakdownHtml()`, script.js): 기존
+   `amtResults`/`amtGroups` 랭킹 집계에는 아예 안 넣고, `primaryHtml + restHtml + hiddenHtml`
+   계산이 끝난 뒤 `otherHtml`(`.jh-amt-chip.jh-amt-chip-other`)을 별도로 붙여서 반환값 맨
+   끝에 추가. 라벨은 `basisSuffix`에서 `getProfileShortLabel()`과 동일한 정규식으로 괄호
+   부연설명만 잘라 짧게 씀(새 번역 불필요 — `calcTakeHome()`의 `other` 분기가 이미 26개
+   언어로 번역해둔 문자열을 재사용). 이 함수가 잭팟 히스토리 행마다(최대 수백 번) 호출되는
+   구조라 추가 비용은 `calcTakeHome()` 1회 호출뿐으로 최소화. CSS는 `.jh-amt-chip-other`
+   (점선 테두리)로 랭킹 칩들과 구분.
+
+**검증**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js` 포함 회귀 테스트
+11개 전부 재실행 — 전부 `ISSUES: 0`(`TOTAL ISSUES: 0`). Playwright로 모바일 폭(390px)·
+`ko-KR`/`?lang=ko` 기준 (a) 비교 탭 카드 그리드 맨 끝에 점선 테두리 "🌐 기타 국가" 카드가
+실제 계산값과 함께 보이는지 (b) "세금은 이렇게 빠져나가요" 아코디언에도 매칭 항목이 있는지
+(c) 지도 아래 안내 버튼 클릭 시 홈 화면으로 이동 + 토글이 `active` 상태가 되는지 (d) 잭팟
+히스토리 첫 행의 국가별 금액에 "🌐 기타 국가" 칩이 랭킹 칩과 별도로 보이는지 4가지 전부
+직접 확인, 스크린샷도 남김(비교 탭 그리드 + 지도/안내 영역). **네거티브 컨트롤**:
+`grid.appendChild(otherCard);` 줄을 임시로 주석 처리 → 검증 스크립트가 "NO other card in
+sideByCountryGrid"로 실제로 잡아내는지 확인 후 원복.
+
+변경 파일: `index.html`, `script.js`, `styles.css`, `i18n-source/translations.json`,
+`i18n/*.json`(26개 언어), `HANDOFF.md`(이 항목 + "프로젝트 개요" 갱신). **`git push` 권한
+여전히 없음**(구조적 제약, 재진단 불필요) — 로컬 커밋 후 zip으로 `SendUserFile` 전달, 사용자가
+GitHub 웹 UI로 업로드해야 실제 반영됨. 다음 세션은 위 5번 항목대로 `git fetch origin main`부터
+확인할 것.

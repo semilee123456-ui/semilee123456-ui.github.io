@@ -612,6 +612,16 @@
   @media (prefers-reduced-motion: reduce){
     .country-map-callout{ transition:none; }
   }
+  /* 지도의 21개국 중 자기 나라가 없는 방문자를 위한 안내 — "기타 국가"(홈 화면 세금 기준
+     토글)로 바로 이동시켜주는 버튼. 지도 바로 아래, 국가별 카드 그리드 위에 배치해서
+     지도를 훑어본 직후 시선이 자연스럽게 여기로 이어지게 함 (2026-07-28) */
+  .compare-map-other-note{
+    display:block; width:100%; text-align:center; font-family:inherit;
+    font-size:var(--fs-small); font-weight:700; color:var(--teal);
+    background:var(--grad-soft); border:1px dashed rgba(var(--teal-rgb),0.4); border-radius:10px;
+    padding:10px 14px; margin-top:10px; cursor:pointer;
+  }
+  .compare-map-other-note:hover{ background:rgba(var(--teal-rgb),0.12); }
   .side-by-side-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(105px, 1fr)); gap:10px; margin-top:14px; }
   .side-card{ background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:16px; min-width:0; }
   .side-card-span-full{ grid-column:1 / -1; }
@@ -659,6 +669,11 @@
      해서 국기를 가로로 넉넉히 펼치고, 옆에 어색한 빈칸이 생기지 않게 함 */
   .side-card-full{ grid-column:1 / -1; }
   .side-card-full .side-card-flag-group{ gap:5px; }
+  /* "기타 국가" 카드 — 특정 나라가 아니라서 실수령액 순위 경쟁(정렬/그룹핑)에서 완전히
+     제외된 별도 고정 카드임을 점선 테두리로 시각적으로 구분함 (2026-07-28) */
+  .side-card-other{ border-style:dashed; border-color:rgba(var(--ink-rgb),0.28); background:var(--card); }
+  .side-card-other .side-card-flag{ color:var(--text-dark); }
+  .side-card-other .side-card-rate{ margin-top:4px; }
   .side-showmore-btn{
     display:block; width:100%; margin-top:14px; padding:12px; border-radius:12px;
     border:1px solid var(--border); background:var(--bg); color:var(--teal); font-weight:700;
@@ -1481,6 +1496,10 @@
   .jh-amt-chip{ background:var(--input-card-bg); border-radius:8px; padding:7px 10px; min-width:0; }
   .jh-amt-chip .jh-amt-label{ font-size:var(--fs-small); }
   .jh-amt-chip .jh-amt{ font-size:var(--fs-small); color:var(--text-dark); }
+  /* "기타 국가" 칩 — 랭킹 집계(amtResults/amtGroups) 밖에서 항상 맨 끝에 붙는 별도 칩이라
+     점선 테두리 + 위쪽 여백으로 랭킹 칩들과 시각적으로 분리함 (2026-07-28) */
+  .jh-amt-other-wrap{ margin-top:6px; }
+  .jh-amt-chip-other{ display:block; border:1px dashed rgba(var(--ink-rgb),0.28); background:transparent; }
   .jh-amt-item{ display:flex; flex-direction:column; gap:1px; min-width:0; }
   .jh-amt-label{ font-size:var(--fs-small); color:var(--text-muted); }
   .jh-amt{ font-size:var(--fs-note); font-weight:800; color:var(--teal); }
