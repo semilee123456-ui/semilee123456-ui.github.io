@@ -1,0 +1,49 @@
+name: Lottery draw archive backfill
+
+# 파워볼(월/수/토)·메가밀리언즈(화/금) 추첨 다음날 아침(KST) 자동 실행.
+# data.ny.gov 공식 오픈데이터에서 새 회차 당첨번호만 가져와 odds-data.js에 추가함 — 잭팟 금액은
+# 이 워크플로가 손대지 않음(scripts/backfill-lottery.js 상단 주석 참고).
+on:
+  schedule:
+    - cron: '0 22 * * *'  # 매일 22:00 UTC = 07:00 KST(다음날)
+  workflow_dispatch: {}   # 저장소 Actions 탭에서 수동 실행 가능 — 최초 1회는 반드시 이걸로 직접 확인할 것
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lottery-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch new draws and update odds-data.js
+        run: node scripts/backfill-lottery.js
+
+      - name: Syntax check
+        run: node --check odds-data.js
+
+      - name: Integrity check (order/duplicates)
+        run: node tests/draw_archive_integrity_check.js
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet -- odds-data.js; then
+            echo "No changes — nothing to commit."
+            exit 0
+          fi
+          git config user.name "chamtax-bot"
+          git config user.email "actions@github.com"
+          git add odds-data.js
+          git commit -m "chore: auto-backfill lottery draw archive"
+          git push
