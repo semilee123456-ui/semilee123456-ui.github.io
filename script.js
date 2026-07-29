@@ -543,12 +543,18 @@ function goToCompareWithOppositeCountry(){
 
 function syncCompareFromShared(){
   const millions = sharedAmountUsd / 1000000;
-  document.getElementById('amountInput').value = millions;
+  // 2026-07-28 후속 세션: 홈 화면 3탭과 같은 sharedInputCurrency 통화 선택기를 이 탭도 공유하므로
+  // (아래 "국가별 비교 탭 통화 선택기" 항목 참고), 항상 Million USD가 아니라 현재 선택된 통화
+  // 단위로 표시함(usdMillionsToInputUnits) — 슬라이더 내부 도메인(millions, USD 로그스케일)은 안 바뀜.
+  document.getElementById('amountInput').value = roundAmountForInput(usdMillionsToInputUnits(millions, sharedInputCurrency));
   const slider = document.getElementById('compareAmountSlider');
   setSliderMillions(slider, millions);
   updateSliderFill(slider);
   document.getElementById('compareStateSelect').value = sharedState;
   document.getElementById('compare-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR');
+  const compareCurrencySelect = document.getElementById('compareCurrencySelect');
+  if (compareCurrencySelect && compareCurrencySelect.value !== sharedInputCurrency) compareCurrencySelect.value = sharedInputCurrency;
+  updateAmountUnitLabels();
   updateCalc(sharedAmountUsd);
 }
 
@@ -1594,7 +1600,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260727';
+    script.src = 'odds-data.js?v=20260728';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -2873,10 +2879,12 @@ function buildDrawScheduleMore(days){
 // 🎟️ 오늘 잭팟 수동 업데이트 존 — 추첨(파워볼 월/수/토, 메가밀리언즈 화/금) 다음날
 // amountUsd만 공식 사이트 보고 고치면 30초로 끝납니다.
 // ============================================================================
-// 2026-07-25 사용자가 usamega.com 스크린샷으로 확인해서 갱신: 파워볼은 이미 정확($600M, 7/25(토)
-// 추첨 기준), 메가밀리언즈만 갱신($743M → $800M, 7/28(화) 추첨 기준)
+// 2026-07-28 사용자가 채팅으로 공식 결과 직접 전달해서 갱신: 파워볼 $633M → $663M(7/29(수)
+// 추첨 기준 예고 잭팟, 현금가치 $290.4M — 이 객체엔 현금가치 필드가 없어서 amountUsd만 갱신,
+// 화면 표시는 CASH_VALUE_RATIO(58%) 추정치를 그대로 씀). 메가밀리언즈는 $800M로 이미 정확
+// (7/28(화) 추첨 기준 예고 잭팟, 현금가치 $344.2M — 지난 세션에 이미 반영돼있어 변경 없음).
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 633000000 },
+  powerball:    { amountUsd: 663000000 },
   megamillions: { amountUsd: 800000000 },
 };
 
@@ -2891,10 +2899,11 @@ const GAME_NAME_MORE = {
 // 🎱 최신 추첨 당첨번호 — 잭팟 확인할 때 공식 사이트(powerball.com/megamillions.com) 보고 같이 갱신.
 // 재미 요소 + 공유 유도용(사용자 피드백: "사이트가 너무 교과서 같다") — 세금 계산기 본질은 그대로 두고
 // 잭팟 카드 안에 양념처럼 추가한 것이라, 갱신을 깜빡해도 계산기 기능엔 영향 없음.
-// 2026-07-27 사용자가 전달한 스크린샷 + WebSearch(abc10/10tv 등)로 교차검증해서 갱신: 파워볼
-// 7/22 → 7/25 회차(3,4,24,36,47 + 파워볼 17), 메가밀리언즈는 이미 최신(7/24)이라 변경 없음.
+// 2026-07-28 사용자가 채팅으로 공식 결과 직접 전달해서 갱신: 파워볼 7/25 → 7/27 회차
+// (6,26,46,58,65 + 파워볼 25, Power Play 2x는 이 위젯 스코프 밖이라 표시 안 함), 메가밀리언즈는
+// 이미 최신(7/24)이라 변경 없음.
 const LATEST_DRAW = {
-  powerball:    { date: '2026-07-25', numbers: [3, 4, 24, 36, 47], special: 17 },
+  powerball:    { date: '2026-07-27', numbers: [6, 26, 46, 58, 65], special: 25 },
   megamillions: { date: '2026-07-24', numbers: [2, 5, 42, 44, 60], special: 1 },
 };
 
@@ -4602,16 +4611,23 @@ const MN_DUPLICATE_ERROR_MORE = {
 
   pt: `Alguns dos seus números principais estão repetidos — por favor, insira 5 números diferentes`, es: `Algunos de tus números principales están repetidos: por favor, ingresa 5 números diferentes`, uk: `Деякі з основних чисел повторюються — будь ласка, введіть 5 різних чисел`, tet: `Númeru meiu balu ne'ebé ó hatama ne'e repetido — favór hatama númeru 5 ne'ebé diferente`,
 };
-// "🎫 이미지로 저장"(saveMyNumbersAsTicketImage()) 관련 문구 — 캔버스에 직접 그려 넣는 텍스트라
-// data-i18n으로 못 채우고 pickLang()으로 JS에서 문자열만 만들어서 fillText()에 씀
+// "🖼️ 이미지로 저장"(saveMyNumbersAsTicketImage()) 버튼 라벨 — 캔버스에 직접 그려 넣는 텍스트가
+// 아니라 버튼 자체의 textContent라 data-i18n도 쓸 수 있었지만, mn-check-btn 등 이 섹션의 다른
+// 버튼들과 같은 pickLang() 패턴을 그대로 따름(내부 일관성).
+// 2026-07-28 공유 기능 통일 세션: 아이콘을 🎫(티켓)에서 🖼️(이미지)로 바꿈 — 이 버튼과 홈 결과
+// 카드의 "이미지로 저장"(home.saveImageBtn) 버튼이 완전히 같은 동작 계열(캔버스로 그려서
+// 꾸미기 오버레이로 넘기기)인데 서로 다른 아이콘을 쓰고 있었음. 실제 스크린샷으로 나란히 비교해보니
+// 🎫는 작은 노란/황토색 사각형처럼 보여 버튼 배경(옅은 청록 틴트)과 어울리지 않고 두 버튼이 서로
+// 다른 종류의 액션처럼 보였음 — 텍스트 자체가 이미 "이미지로 저장"이라 아이콘도 액션(이미지 저장)을
+// 나타내는 게 콘텐츠(티켓 모양)를 나타내는 것보다 일관성 있다고 판단해 통일함.
 const MN_SAVE_BTN_MORE = {
-  ar: '🎫 حفظ كصورة', bn: '🎫 ছবি হিসেবে সংরক্ষণ', fr: '🎫 Enregistrer en image', hi: '🎫 इमेज के रूप में सेव करें',
-  id: '🎫 Simpan sebagai gambar', ja: '🎫 画像として保存', kk: '🎫 Сурет ретінде сақтау', km: '🎫 រក្សាទុកជារូបភាព',
-  ky: '🎫 Сүрөт катары сактоо', lo: '🎫 ບັນທຶກເປັນຮູບພາບ', mn: '🎫 Зураг болгон хадгалах', my: '🎫 ပုံအဖြစ် သိမ်းမည်',
-  ne: '🎫 तस्बिरको रूपमा सेभ गर्नुहोस्', si: '🎫 රූපයක් ලෙස සුරකින්න', tl: '🎫 I-save bilang larawan', ur: '🎫 تصویر کے طور پر محفوظ کریں',
-  uz: "🎫 Rasm sifatida saqlash",
+  ar: '🖼️ حفظ كصورة', bn: '🖼️ ছবি হিসেবে সংরক্ষণ', fr: '🖼️ Enregistrer en image', hi: '🖼️ इमेज के रूप में सेव करें',
+  id: '🖼️ Simpan sebagai gambar', ja: '🖼️ 画像として保存', kk: '🖼️ Сурет ретінде сақтау', km: '🖼️ រក្សាទុកជារូបភាព',
+  ky: '🖼️ Сүрөт катары сактоо', lo: '🖼️ ບັນທຶກເປັນຮູບພາບ', mn: '🖼️ Зураг болгон хадгалах', my: '🖼️ ပုံအဖြစ် သိမ်းမည်',
+  ne: '🖼️ तस्बिरको रूपमा सेभ गर्नुहोस्', si: '🖼️ රූපයක් ලෙස සුරකින්න', tl: '🖼️ I-save bilang larawan', ur: '🖼️ تصویر کے طور پر محفوظ کریں',
+  uz: "🖼️ Rasm sifatida saqlash",
 
-  pt: `🎫 Salvar como imagem`, es: `🎫 Guardar como imagen`, uk: `🎫 Зберегти як зображення`, tet: `🎫 Guarda nu'udar imajen`,
+  pt: `🖼️ Salvar como imagem`, es: `🖼️ Guardar como imagen`, uk: `🖼️ Зберегти як зображення`, tet: `🖼️ Guarda nu'udar imajen`,
 };
 const MN_TICKET_TITLE_MORE = {
   ar: 'تذكرتي', bn: 'আমার টিকিট', fr: 'Mon billet', hi: 'मेरी टिकट', id: 'Tiket Saya', ja: 'マイチケット',
@@ -4754,7 +4770,7 @@ function updateMyNumbersUi(){
   specialLabelEl.textContent = pickLang('파워볼 번호 (1~26)', 'Powerball number (1–26)', '强力球号码（1~26）', 'Số Powerball (1–26)', 'เลขพาวเวอร์บอล (1-26)', 'Число Powerball (1–26)', MN_SPECIAL_LABEL_MORE);
   btnEl.textContent = pickLang('확인하기', 'Check it', '查看结果', 'Kiểm tra', 'ตรวจสอบ', 'Проверить', MN_BTN_MORE);
   const saveBtnEl = document.getElementById('mn-save-btn');
-  if (saveBtnEl) saveBtnEl.textContent = pickLang('🎫 이미지로 저장', '🎫 Save as image', '🎫 保存为图片', '🎫 Lưu thành ảnh', '🎫 บันทึกเป็นรูปภาพ', '🎫 Сохранить как изображение', MN_SAVE_BTN_MORE);
+  if (saveBtnEl) saveBtnEl.textContent = pickLang('🖼️ 이미지로 저장', '🖼️ Save as image', '🖼️ 保存为图片', '🖼️ Lưu thành ảnh', '🖼️ บันทึกเป็นรูปภาพ', '🖼️ Сохранить как изображение', MN_SAVE_BTN_MORE);
   disclaimerEl.textContent = pickLang(
     '재미로 보는 가상 비교예요 — 실제 당첨 확인이 아니고, 복권 구매를 권하는 것도 아니에요 🙂',
     'Just a fun hypothetical comparison — not a real prize check, and not an endorsement to buy lottery tickets 🙂',
@@ -4872,6 +4888,113 @@ function checkMyNumbersVsHistory(){
 // 함께 삭제함(grep으로 다른 참조 없음을 확인). drawDecorativeBarcode는
 // saveMyNumbersAsTicketImage()가 계속 쓰므로 그대로 유지.)
 
+// 곰 마스코트 아이콘을 Canvas 2D 경로 명령으로 직접 그림(2026-07-28 브랜드 마크 정정 세션 신규).
+// 같은 날 앞선 "공유 기능 통일" 세션이 이 자리에 "🐻" 유니코드 이모지를 실제 로고인 줄 알고
+// 그대로 썼는데, 렌더링해보면 흔한 갈색 털복숭이 곰 얼굴 이모지라 사이트의 실제 마스코트(흰/크림
+// 얼굴 + 청록 테두리 + 검정 점눈 + 분홍 볼 + 작은 청록 미소, index.html 헤더 로고의 인라인
+// `.mascot-mark` SVG, og-image.png도 이 SVG를 그대로 재사용해서 만듦)와 전혀 다른 그림이었음 —
+// "실제 로고와 맞는지"를 그 세션이 확인 안 한 게 원인. 이 함수는 그 실제 SVG(viewBox 0 0 28 28,
+// 타원 4개 + 원 4개 + 베지어 곡선 1개뿐인 단순한 도형)의 좌표를 그대로 옮겨 그린 것 — 비동기
+// 이미지 로딩(new Image() + onload) 방식 대신 이 방식을 택한 이유는, 두 호출부
+// (saveMyNumbersAsTicketImage/saveHomeResultAsImage)가 지금 완전히 동기 함수라 이미지 로딩을
+// 끼워 넣으려면 두 함수와 openAnnotateOverlay() 연결부까지 비동기로 바꿔야 해서 위험이 큰 반면,
+// 도형 자체가 단순해서 Canvas 2D 경로만으로도 원본과 동일하게 재현 가능하기 때문.
+// x0,y0: 아이콘의 좌상단 좌표(스케일 적용 전 기준), size: 아이콘의 가로/세로 픽셀 크기.
+function drawBearMascotIcon(ctx, x0, y0, size){
+  const scale = size / 28; // 원본 SVG viewBox가 0 0 28 28
+  const teal = '#155445';   // 사이트 브랜드 청록(이 두 카드에서 이미 쓰는 값과 동일)
+  const faceFill = '#FFFFFF'; // 헤더 로고 라이트모드 기준(var(--card))과 동일
+  const eyeDark = '#262420';  // 헤더 로고 라이트모드 기준(var(--text-dark))과 동일
+
+  ctx.save();
+  ctx.translate(x0, y0);
+  ctx.scale(scale, scale);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // 귀 2개 — 회전된 타원(원본 SVG의 rotate(-24)/rotate(24) transform과 동일하게 ellipse()의
+  // 회전 인자로 처리)
+  [[6.1, 10.4, -24], [21.9, 10.4, 24]].forEach(([cx, cy, deg]) => {
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 2.7, 4, deg * Math.PI / 180, 0, Math.PI * 2);
+    ctx.fillStyle = faceFill; ctx.fill();
+    ctx.strokeStyle = teal; ctx.lineWidth = 1.7; ctx.stroke();
+  });
+
+  // 얼굴(원)
+  ctx.beginPath();
+  ctx.arc(14, 15.6, 9.7, 0, Math.PI * 2);
+  ctx.fillStyle = faceFill; ctx.fill();
+  ctx.strokeStyle = teal; ctx.lineWidth = 1.8; ctx.stroke();
+
+  // 볼 홍조 2개
+  ctx.fillStyle = 'rgba(240,169,140,0.55)';
+  [[8.5, 17.5], [19.5, 17.5]].forEach(([cx, cy]) => {
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 1.6, 1.05, 0, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // 눈 2개 — 검정 원 + 흰 하이라이트 점
+  [[10.5, 14.4, 11.05, 13.85], [17.5, 14.4, 18.05, 13.85]].forEach(([ex, ey, hx, hy]) => {
+    ctx.beginPath(); ctx.arc(ex, ey, 1.7, 0, Math.PI * 2);
+    ctx.fillStyle = eyeDark; ctx.fill();
+    ctx.beginPath(); ctx.arc(hx, hy, 0.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill();
+  });
+
+  // 코(타원)
+  ctx.beginPath();
+  ctx.ellipse(14, 17.75, 1.85, 1.3, 0, 0, Math.PI * 2);
+  ctx.fillStyle = teal; ctx.fill();
+
+  // 입 — 원본 SVG path "M14 19.1v0.55M9.6 19.8c1.3 2.15 7.5 2.15 8.8 0"를 그대로 옮김
+  // (세로 코 밑 점 + 좌우로 벌어지는 미소 곡선)
+  ctx.beginPath();
+  ctx.moveTo(14, 19.1);
+  ctx.lineTo(14, 19.65);
+  ctx.moveTo(9.6, 19.8);
+  ctx.bezierCurveTo(10.9, 21.95, 17.1, 21.95, 18.4, 19.8);
+  ctx.strokeStyle = teal;
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// 곰 마스코트 아이콘 + "참택스" 워드마크를 함께 그림(2026-07-28 브랜드 마크 정정 세션 신규).
+// 아이콘은 항상 텍스트보다 먼저(읽는 방향 기준 앞쪽에) 오고, 정렬 방향과 무관하게 "블록의 바깥쪽
+// 가장자리"가 x좌표에 맞춰짐 — align='left'면 아이콘 왼쪽 끝이 x, align='right'면 텍스트 오른쪽
+// 끝이 x(이전에 "🐻 참택스" 한 문자열을 fillText할 때와 같은 시각적 결과: 문자열은 항상 내부적으로
+// LTR이라 이모지가 먼저 나오고, textAlign만 카드 왼쪽/오른쪽 어느 모서리에 붙일지 정했음). 호출 후
+// ctx.textAlign은 align 값으로 남아있어 바로 이어지는 다른 fillText(예: 도메인 줄)에도 재사용 가능.
+function drawLogoMark(ctx, text, x, y, align, opts){
+  opts = opts || {};
+  const iconSize = opts.iconSize || 28;
+  const gap = opts.gap || 8;
+  const font = opts.font || "700 30px 'Pretendard', -apple-system, sans-serif";
+  const color = opts.color || '#155445';
+
+  ctx.font = font;
+  const textWidth = ctx.measureText(text).width;
+
+  let iconX0, textX;
+  if (align === 'right') {
+    textX = x; // textAlign='right'로 그리므로 x는 곧 텍스트 블록의 오른쪽 끝
+    iconX0 = x - textWidth - gap - iconSize;
+  } else {
+    iconX0 = x;
+    textX = x + iconSize + gap;
+  }
+
+  drawBearMascotIcon(ctx, iconX0, y - iconSize / 2, iconSize);
+
+  ctx.fillStyle = color;
+  ctx.font = font;
+  ctx.textAlign = align;
+  ctx.fillText(text, textX, y);
+}
+
 // 티켓 하단 장식용 세로줄 바코드 패턴 — 실제 발권 관례를 살짝 흉내낸 것일 뿐 스캔 가능한 진짜
 // 바코드는 아님(정보 없는 순수 장식, 원래 saveMyNumbersAsTicketImage()에만 있던 로직).
 // x0~x1 구간을 seed 기반 의사난수로 채움(같은 seed면 항상 같은 패턴 — 재현 가능).
@@ -4927,13 +5050,16 @@ function saveMyNumbersAsTicketImage(){
   ctx.textBaseline = 'middle';
 
   // 로고 — 헤더 로고와 같은 관례로 언어 상관없이 항상 "참택스"(사이트 어디서나 이 텍스트는
-  // 번역 안 함, 브랜드명이라 고정)
-  ctx.fillStyle = '#155445';
-  ctx.font = "700 30px 'Pretendard', -apple-system, sans-serif";
+  // 번역 안 함, 브랜드명이라 고정). 2026-07-28 공유 기능 통일 세션이 곰 이모지(🐻)를 앞에
+  // 붙였는데, 실제로 렌더링해보면 사이트의 진짜 마스코트(흰/크림 얼굴+청록 테두리+검정 점눈+
+  // 분홍 볼)와 전혀 다른 갈색 곰 얼굴 이모지였음 — 같은 날 바로 다음(이) 세션에서 발견해 이모지
+  // 대신 실제 헤더 로고 SVG를 그대로 옮긴 drawLogoMark()로 교체함(좌표 출처·판단 근거는
+  // drawBearMascotIcon()/drawLogoMark() 정의 옆 주석 참고).
   ctx.textAlign = isRtl ? 'right' : 'left';
-  ctx.fillText('참택스', isRtl ? W - 40 : 40, 56);
+  drawLogoMark(ctx, '참택스', isRtl ? W - 40 : 40, 56, isRtl ? 'right' : 'left');
   ctx.fillStyle = '#8A8371';
   ctx.font = "600 14px 'Pretendard', -apple-system, sans-serif";
+  ctx.textAlign = isRtl ? 'right' : 'left';
   ctx.fillText('chamtax.com', isRtl ? W - 40 : 40, 84);
 
   // 큰 제목("나만의 복권 티켓" 등)
@@ -5048,7 +5174,7 @@ const CHECK_PAYTO_MORE = {
   pt: 'Beneficiário', es: 'Beneficiario', uk: 'Отримувач', tet: "Simu-na'in",
 };
 
-// 홈 결과 카드("얼마 남을까")를 이미지로 저장 — "🎫 이미지로 저장"(내 번호 티켓)과 같은 Canvas
+// 홈 결과 카드("얼마 남을까")를 이미지로 저장 — "🖼️ 이미지로 저장"(내 번호 티켓)과 같은 Canvas
 // 직접 그리기 방식 재사용. 새 텍스트를 pickLang으로 또 다 번역하는 대신, 이미 화면에 렌더링된
 // DOM 값(이미 26개 언어로 번역·포맷 완료된 상태)을 그대로 읽어와서 캔버스에 옮겨 그림 — 새로
 // 번역이 필요한 건 이 이미지에만 있는 문구(하단 참고용 배지 + 새 "받는 사람" 라벨) 뿐.
@@ -5183,13 +5309,17 @@ function saveHomeResultAsImage(){
   ctx.textBaseline = 'middle';
 
   // 로고 — "발행처" 자리(레퍼런스 사진의 "[State] Lottery" 로고 자리를 사이트 자체 브랜드로 대체,
-  // 하드 제약 1번)
-  ctx.fillStyle = '#155445';
-  ctx.font = "700 30px 'Pretendard', -apple-system, sans-serif";
-  ctx.textAlign = anchorAlign;
-  ctx.fillText('참택스', anchorX, 70);
+  // 하드 제약 1번). 2026-07-28 공유 기능 통일 세션이 곰 이모지(🐻)를 앞에 붙였는데, 실제로
+  // 렌더링해보면 사이트의 진짜 마스코트(흰/크림 얼굴+청록 테두리+검정 점눈+분홍 볼)와 전혀 다른
+  // 갈색 곰 얼굴 이모지였음 — 같은 날 바로 다음(이) 세션에서 발견해 이모지 대신 실제 헤더 로고
+  // SVG를 그대로 옮긴 drawLogoMark()로 교체함(자세한 이유·좌표 출처는 saveMyNumbersAsTicketImage()의
+  // 같은 변경 옆 주석 및 drawBearMascotIcon()/drawLogoMark() 정의 옆 주석 참고). 로고는 헤더
+  // 왼쪽(또는 RTL이면 오른쪽) 끝에 단독으로 앵커되어 있어 폭 여유가 크고(cornerMaxW는 반대쪽
+  // basisMini에만 적용됨), 아이콘 하나 추가로 카드 밖으로 넘칠 위험은 없음.
+  drawLogoMark(ctx, '참택스', anchorX, 70, anchorAlign);
   ctx.fillStyle = '#8A8371';
   ctx.font = "600 14px 'Pretendard', -apple-system, sans-serif";
+  ctx.textAlign = anchorAlign;
   ctx.fillText('chamtax.com', anchorX, 96);
 
   // 반대쪽 모서리: 계산 기준 한 줄(basisMini) + 날짜 — 언어별 길이 차이가 커서 폭을 넘으면
@@ -6953,9 +7083,10 @@ function parseAmountInputRaw(str){
   const n = Number(sanitized);
   return isNaN(n) ? 0 : n;
 }
-// 일시불/연금액 탭 입력칸 전용 파서 — 현재 sharedInputCurrency 단위로 타이핑된 값을 내부 계산
-// 도메인(Million USD)으로 환산한다. 컴페어(비교) 탭의 #amountInput은 이 통화 선택기의 영향을
-// 받지 않는 별도 입력칸이라 여전히 parseMillionsInput()을 그대로 씀(의도적으로 범위 밖에 둠).
+// 일시불/연금액 탭 입력칸 + 국가별 비교 탭(#amountInput, 2026-07-28 후속 세션에서 범위 포함)
+// 전용 파서 — 현재 sharedInputCurrency 단위로 타이핑된 값을 내부 계산 도메인(Million USD)으로
+// 환산한다. parseMillionsInput()은 더 이상 이 두 입력칸 어느 쪽에서도 안 쓰이지만(항상 USD로만
+// 해석해서 통화 선택기와 안 맞음), 혹시 모를 외부 참조 대비 함수 자체는 그대로 남겨둠.
 function parseAmountInputToUsdMillions(str){
   const raw = parseAmountInputRaw(str);
   const usdMillions = inputUnitsToUsdMillions(raw, sharedInputCurrency);
@@ -6978,7 +7109,7 @@ function getAmountUnitLabelParts(code){
 
 function updateAmountUnitLabels(){
   const parts = getAmountUnitLabelParts(sharedInputCurrency);
-  [document.getElementById('homeAmountUnit'), document.getElementById('homeAnnouncedUnit')].forEach(el => {
+  [document.getElementById('homeAmountUnit'), document.getElementById('homeAnnouncedUnit'), document.getElementById('compareAmountUnit')].forEach(el => {
     if (!el) return;
     const full = el.querySelector('.unit-full');
     const short = el.querySelector('.unit-short');
@@ -7027,16 +7158,46 @@ function refreshAmountInputDisplaysForCurrency(){
   if (announcedInput && announcedInput.value.trim() !== '' && sharedAnnouncedUsdMillions !== null) {
     announcedInput.value = roundAmountForInput(usdMillionsToInputUnits(sharedAnnouncedUsdMillions, sharedInputCurrency));
   }
+  // 국가별 비교 탭(#amountInput/#compareAmountSlider, 2026-07-28 후속 세션) — 항상 홈 일시불 탭과
+  // 같은 원본(sharedAmountUsd)을 보여주는 별도 화면이라, 홈 탭들과 동일한 패턴으로 여기서 같이
+  // 재계산함. updateCalc() 안에서도 renderSliderTicks(compareAmountSlider)를 이미 부르고 있지만,
+  // 그건 "계산이 실행될 때"만 걸리고 지금처럼 통화만 바뀌고 계산은 그대로인 경우엔 안 타므로 필요.
+  const compareInput = document.getElementById('amountInput');
+  if (compareInput && compareInput.value.trim() !== '') {
+    compareInput.value = roundAmountForInput(usdMillionsToInputUnits(sharedAmountUsd / 1000000, sharedInputCurrency));
+  }
   const lumpSlider = document.getElementById('homeAmountSlider');
   if (lumpSlider) renderSliderTicks(lumpSlider);
   const announcedSlider = document.getElementById('homeAnnouncedSlider');
   if (announcedSlider) renderSliderTicks(announcedSlider);
+  const compareSlider = document.getElementById('compareAmountSlider');
+  if (compareSlider) renderSliderTicks(compareSlider);
   const miniEl = document.getElementById('live-result-mini-amt');
   if (miniEl) {
     const finalEok = parseFloat(document.getElementById('home-final-amt').dataset.eokVal) || 0;
     miniEl.textContent = formatEokKrwInDisplayCurrency(finalEok, sharedInputCurrency);
   }
+  // "연금 X → 일시불 Y" 안내 문구도 통화가 바뀌면 같이 다시 그림(현재 보이는 상태일 때만) —
+  // 안 그러면 통화를 바꾼 뒤에도 이 문구만 이전 통화로 남아있는 불일치가 생김
+  const announcedNote = document.getElementById('home-announced-convert-note');
+  if (announcedNote && announcedNote.style.display !== 'none' && sharedAnnouncedUsdMillions !== null) {
+    const lumpMillions = roundToSignificantFigures(sharedAnnouncedUsdMillions * CASH_VALUE_RATIO, 4);
+    refreshAnnouncedConvertNote(sharedAnnouncedUsdMillions, lumpMillions);
+  }
   updateAmountUnitLabels();
+  // 국가별 비교 카드 그리드(#sideByCountryGrid)도 2026-07-28 추가 세션부터 표시 통화를 반영하므로,
+  // 통화가 바뀔 때마다 다시 그려야 함(예전엔 항상 KRW라 재렌더링이 필요 없었음 — 대신 "이 목록은
+  // 원화 기준이에요"라는 안내 문구(updateCompareGridCurrencyNote())만 토글했는데, 이제 실제로
+  // 통화 변환이 되므로 그 안내 자체가 불필요해져서 제거함). updateSideBySide()는 억(KRW) 단위를
+  // 받으므로 sharedAmountUsd(정확한 원본)에서 다시 환산 — 정렬은 이 함수 내부에서 항상 KRW 실값
+  // 기준으로 이뤄지므로 통화 표시와 무관하게 순위는 그대로 유지됨(위 formatEokKrwInDisplayCurrency
+  // 적용 지점 주석 참고). updateSideBySide() 자체가 그리드/breakdown 컨테이너 없으면 조용히
+  // return하므로, 비교 탭이 지금 안 보이는 상태에서 호출해도 안전함.
+  const compareStateSelect = document.getElementById('compareStateSelect');
+  if (compareStateSelect) {
+    const eokForGrid = (sharedAmountUsd * EXCHANGE_RATE) / 100000000;
+    updateSideBySide(eokForGrid, compareStateSelect.value);
+  }
 }
 
 function setSharedInputCurrency(code){
@@ -7044,6 +7205,11 @@ function setSharedInputCurrency(code){
   sharedInputCurrency = code;
   const select = document.getElementById('homeCurrencySelect');
   if (select && select.value !== code) select.value = code;
+  // 국가별 비교 탭(#compareCurrencySelect, 2026-07-28 후속 세션) — 홈 화면 3탭과 완전히 같은
+  // sharedInputCurrency를 공유하므로, 어느 쪽 선택기에서 바꾸든 나머지 전부(홈 3탭 + 비교 탭)가
+  // 같이 맞춰져야 함. sharedAmountUsd/sharedCountry가 이미 홈↔비교 간 공유되는 것과 같은 원칙.
+  const compareSelect = document.getElementById('compareCurrencySelect');
+  if (compareSelect && compareSelect.value !== code) compareSelect.value = code;
   refreshAmountInputDisplaysForCurrency();
 }
 
@@ -7131,34 +7297,47 @@ function applyHomeAnnouncedMillions(announcedMillions){
 
   // 연금 발표액을 입력했는데 결과엔 "일시불"이라고만 나오면 왜 다른 숫자인지 헷갈릴 수 있어서
   // (사용자가 직접 지적) 결과 위쪽에 "연금 X → 일시불 환산 Y" 환산 과정을 짧게 보여줌
+  // 2026-07-28 후속 세션: 예전엔 이 문구만 통화 선택기와 무관하게 항상 "$X M"(달러) 고정이었음
+  // (열여섯 번째 세션이 문서화해둔 알려진 미해결 항목) — formatCompactCurrencyAmount()(이미
+  // 슬라이더 눈금·희망액 미리보기가 검증되게 쓰고 있는 공용 함수)를 재사용해서 현재 선택된
+  // sharedInputCurrency로 같이 바뀌게 함. 통화가 나중에 바뀌면(refreshAmountInputDisplaysForCurrency)
+  // 이 문구도 같이 다시 그려야 하므로 별도 함수(refreshAnnouncedConvertNote)로 뽑아둠.
+  refreshAnnouncedConvertNote(announcedMillions, lumpMillions);
+}
+
+// applyHomeAnnouncedMillions()와 통화 전환(refreshAmountInputDisplaysForCurrency) 양쪽에서 공유 —
+// "연금 X → 일시불 환산 Y" 안내 문구를 현재 sharedInputCurrency 기준으로 (다시) 그림
+function refreshAnnouncedConvertNote(announcedMillions, lumpMillions){
   const note = document.getElementById('home-announced-convert-note');
   if (note) {
+    const announcedDisplay = formatCompactCurrencyAmount(announcedMillions, sharedInputCurrency);
+    const lumpDisplay = formatCompactCurrencyAmount(lumpMillions, sharedInputCurrency);
     note.textContent = pickLang(
-      `연금 발표 $${announcedMillions}M → 일시불 환산 $${lumpMillions}M 기준`,
-      `Announced (annuity) $${announcedMillions}M → converted to lump sum $${lumpMillions}M`,
-      `年金公布 $${announcedMillions}M → 换算为一次性支付 $${lumpMillions}M`,
-      `Công bố (trả góp) $${announcedMillions}M → quy đổi sang nhận một lần $${lumpMillions}M`,
-      `ประกาศ (รายปี) $${announcedMillions}M → แปลงเป็นเงินก้อน $${lumpMillions}M`,
-      `Объявлено (рента) $${announcedMillions}M → пересчитано в единовременную выплату $${lumpMillions}M`,
+      `연금 발표 ${announcedDisplay} → 일시불 환산 ${lumpDisplay} 기준`,
+      `Announced (annuity) ${announcedDisplay} → converted to lump sum ${lumpDisplay}`,
+      `年金公布 ${announcedDisplay} → 换算为一次性支付 ${lumpDisplay}`,
+      `Công bố (trả góp) ${announcedDisplay} → quy đổi sang nhận một lần ${lumpDisplay}`,
+      `ประกาศ (รายปี) ${announcedDisplay} → แปลงเป็นเงินก้อน ${lumpDisplay}`,
+      `Объявлено (рента) ${announcedDisplay} → пересчитано в единовременную выплату ${lumpDisplay}`,
       {
-        km: `ប្រកាស (ប្រាក់រំលឹក) $${announcedMillions}M → បម្លែងទៅជាដុំតែម្តង $${lumpMillions}M`,
-        ne: `घोषित (वार्षिकी) $${announcedMillions}M → एकमुष्टमा रूपान्तरण $${lumpMillions}M`,
-        id: `Diumumkan (anuitas) $${announcedMillions}M → dikonversi ke sekaligus $${lumpMillions}M`,
-        my: `ကြေညာ (annuity) $${announcedMillions}M → တစ်ကြိမ်တည်းသို့ ပြောင်းလဲ $${lumpMillions}M`,
-        si: `ප්‍රකාශිත (annuity) $${announcedMillions}M → එකවර ගෙවීමට පරිවර්තනය $${lumpMillions}M`,
-        uz: `E'lon qilingan (annuitet) $${announcedMillions}M → bir martalik to'lovga aylantirildi $${lumpMillions}M`,
-        mn: `Зарлагдсан (жилийн төлбөр) $${announcedMillions}M → нэг удаагийн төлбөр рүү хөрвүүлсэн $${lumpMillions}M`,
-        kk: `Жарияланған (аннуитет) $${announcedMillions}M → бір реттік төлемге ауыстырылды $${lumpMillions}M`,
-        ky: `Жарыяланган (аннуитет) $${announcedMillions}M → бир жолку төлөмгө айландырылды $${lumpMillions}M`,
-        ur: `اعلان کردہ (سالانہ اقساط) $${announcedMillions}M → یکمشت میں تبدیل $${lumpMillions}M`,
-        bn: `ঘোষিত (বার্ষিক কিস্তি) $${announcedMillions}M → একবারে প্রদানে রূপান্তরিত $${lumpMillions}M`,
-        lo: `ປະກາດ (ລາຍປີ) $${announcedMillions}M → ແປງເປັນຈ່າຍເທື່ອດຽວ $${lumpMillions}M`,
-        ja: `発表額（年金）$${announcedMillions}M → 一括受取に換算 $${lumpMillions}M`,
-        ar: `المعلن (سنوي) $${announcedMillions}M ← يُحوَّل إلى دفعة واحدة $${lumpMillions}M`,
-        hi: `घोषित (वार्षिकी) $${announcedMillions}M → एकमुश्त में परिवर्तित $${lumpMillions}M`,
-        fr: `Annoncé (rente) $${announcedMillions}M → converti en versement unique $${lumpMillions}M`,
-        tl: `Inanunsyo (annuity) $${announcedMillions}M → na-convert sa lump sum $${lumpMillions}M`,
-       pt: `Anunciado (anuidade) $${announcedMillions}M → convertido para pagamento único $${lumpMillions}M`, es: `Anunciado (anualidad) $${announcedMillions}M → convertido a pago único $${lumpMillions}M`, uk: `Оголошений (аннуїтет) $${announcedMillions}M → конвертовано в одноразову виплату $${lumpMillions}M`, tet: `Anunsia (anuidade) $${announcedMillions}M → konverte ba pagamentu úniku $${lumpMillions}M`}
+        km: `ប្រកាស (ប្រាក់រំលឹក) ${announcedDisplay} → បម្លែងទៅជាដុំតែម្តង ${lumpDisplay}`,
+        ne: `घोषित (वार्षिकी) ${announcedDisplay} → एकमुष्टमा रूपान्तरण ${lumpDisplay}`,
+        id: `Diumumkan (anuitas) ${announcedDisplay} → dikonversi ke sekaligus ${lumpDisplay}`,
+        my: `ကြေညာ (annuity) ${announcedDisplay} → တစ်ကြိမ်တည်းသို့ ပြောင်းလဲ ${lumpDisplay}`,
+        si: `ප්‍රකාශිත (annuity) ${announcedDisplay} → එකවර ගෙවීමට පරිවර්තනය ${lumpDisplay}`,
+        uz: `E'lon qilingan (annuitet) ${announcedDisplay} → bir martalik to'lovga aylantirildi ${lumpDisplay}`,
+        mn: `Зарлагдсан (жилийн төлбөр) ${announcedDisplay} → нэг удаагийн төлбөр рүү хөрвүүлсэн ${lumpDisplay}`,
+        kk: `Жарияланған (аннуитет) ${announcedDisplay} → бір реттік төлемге ауыстырылды ${lumpDisplay}`,
+        ky: `Жарыяланган (аннуитет) ${announcedDisplay} → бир жолку төлөмгө айландырылды ${lumpDisplay}`,
+        ur: `اعلان کردہ (سالانہ اقساط) ${announcedDisplay} → یکمشت میں تبدیل ${lumpDisplay}`,
+        bn: `ঘোষিত (বার্ষিক কিস্তি) ${announcedDisplay} → একবারে প্রদানে রূপান্তরিত ${lumpDisplay}`,
+        lo: `ປະກາດ (ລາຍປີ) ${announcedDisplay} → ແປງເປັນຈ່າຍເທື່ອດຽວ ${lumpDisplay}`,
+        ja: `発表額（年金）${announcedDisplay} → 一括受取に換算 ${lumpDisplay}`,
+        ar: `المعلن (سنوي) ${announcedDisplay} ← يُحوَّل إلى دفعة واحدة ${lumpDisplay}`,
+        hi: `घोषित (वार्षिकी) ${announcedDisplay} → एकमुश्त में परिवर्तित ${lumpDisplay}`,
+        fr: `Annoncé (rente) ${announcedDisplay} → converti en versement unique ${lumpDisplay}`,
+        tl: `Inanunsyo (annuity) ${announcedDisplay} → na-convert sa lump sum ${lumpDisplay}`,
+       pt: `Anunciado (anuidade) ${announcedDisplay} → convertido para pagamento único ${lumpDisplay}`, es: `Anunciado (anualidad) ${announcedDisplay} → convertido a pago único ${lumpDisplay}`, uk: `Оголошений (аннуїтет) ${announcedDisplay} → конвертовано в одноразову виплату ${lumpDisplay}`, tet: `Anunsia (anuidade) ${announcedDisplay} → konverte ba pagamentu úniku ${lumpDisplay}`}
     );
     note.style.display = 'block';
   }
@@ -9291,6 +9470,45 @@ function updateHomeCalc(usdOverride){
       uz: `${usdMillions}M USD yutuq · ${basisSuffix}`,
      pt: `Prêmio de ${usdMillions}M USD · ${basisSuffix}`, es: `Premio de ${usdMillions}M USD · ${basisSuffix}`, uk: `Приз ${usdMillions}M USD · ${basisSuffix}`, tet: `Prémiu ${usdMillions}M USD · ${basisSuffix}`}
   );
+  // 첫 방문자가 아직 금액을 직접 입력하지 않은 기본 상태에서도 이 카드가 이미 오늘 실제
+  // 파워볼 잭팟 기준 결과를 보여주고 있어서, "내가 아무것도 안 했는데 왜 결과가 있지?"로
+  // 헷갈릴 수 있음(2026-07-28 첫방문자 사용성 점검 세션 신규) — 아래 입력칸에 직접 타이핑하는
+  // 순간(isAmountManuallyEdited=true) 이 안내는 사라짐(더 이상 예시가 아니라 본인이 고른 값이므로)
+  const previewNote = document.getElementById('home-preview-note');
+  if (previewNote) {
+    previewNote.style.display = isAmountManuallyEdited ? 'none' : 'block';
+    if (!isAmountManuallyEdited) previewNote.textContent = pickLang(
+      '🎰 오늘 실제 파워볼 잭팟 기준 예시예요 — 아래에서 직접 입력해보세요',
+      "🎰 This is an example based on today's actual Powerball jackpot — try entering your own amount below",
+      '🎰 这是根据今天实际强力球头奖计算的示例 — 请在下方输入您自己的金额',
+      '🎰 Đây là ví dụ dựa trên giải độc đắc Powerball thực tế hôm nay — hãy nhập số tiền của riêng bạn bên dưới',
+      '🎰 นี่คือตัวอย่างจากแจ็คพอต Powerball จริงวันนี้ — ลองกรอกจำนวนเงินของคุณเองด้านล่าง',
+      '🎰 Это пример на основе сегодняшнего реального джекпота Powerball — попробуйте ввести свою сумму ниже',
+      {
+        ar: '🎰 هذا مثال يعتمد على جاكبوت باوربول الفعلي اليوم — جرّب إدخال مبلغك الخاص أدناه',
+        bn: '🎰 এটি আজকের প্রকৃত পাওয়ারবল জ্যাকপটের ভিত্তিতে একটি উদাহরণ — নিচে নিজের পরিমাণ লিখে দেখুন',
+        fr: "🎰 Ceci est un exemple basé sur le jackpot Powerball réel d'aujourd'hui — essayez de saisir votre propre montant ci-dessous",
+        hi: '🎰 यह आज के असली पावरबॉल जैकपॉट पर आधारित एक उदाहरण है — नीचे अपनी खुद की राशि डालकर देखें',
+        id: '🎰 Ini contoh berdasarkan jackpot Powerball asli hari ini — coba masukkan jumlah Anda sendiri di bawah',
+        ja: '🎰 今日の実際のパワーボールジャックポットを例に表示しています — 下で実際の金額を入力してみてください',
+        kk: '🎰 Бұл бүгінгі нақты Powerball джекпотына негізделген мысал — төменде өз соманызды енгізіп көріңіз',
+        km: '🎰 នេះជាឧទាហរណ៍ដោយផ្អែកលើឆ្នោត Powerball ជាក់ស្តែងថ្ងៃនេះ — សូមព្យាយាមបញ្ចូលចំនួនទឹកប្រាក់ផ្ទាល់ខ្លួនរបស់អ្នកខាងក្រោម',
+        ky: '🎰 Бул бүгүнкү чыныгы Powerball джекпотуна негизделген мисал — төмөндө өз сумманызды киргизип көрүңүз',
+        lo: '🎰 ນີ້ແມ່ນຕົວຢ່າງໂດຍອີງໃສ່ແຈັກພອດ Powerball ຕົວຈິງມື້ນີ້ — ລອງໃສ່ຈຳນວນເງິນຂອງທ່ານເອງຢູ່ດ້ານລຸ່ມ',
+        mn: '🎰 Энэ бол өнөөдрийн бодит Powerball жекпотод суурилсан жишээ — доор өөрийн дүнгээ оруулж үзээрэй',
+        my: '🎰 ဤသည်မှာ ယနေ့ အမှန်တကယ် Powerball ဂျက်ပေါ့အပေါ်အခြေခံသောနမူနာဖြစ်သည် — အောက်တွင် သင့်ပမာဏကိုကိုယ်တိုင်ထည့်ကြည့်ပါ',
+        ne: '🎰 यो आजको वास्तविक पावरबल ज्याकपटमा आधारित उदाहरण हो — तलबाट आफ्नो रकम राखेर हेर्नुहोस्',
+        pt: '🎰 Este é um exemplo baseado no jackpot real do Powerball de hoje — tente inserir seu próprio valor abaixo',
+        es: '🎰 Este es un ejemplo basado en el premio mayor real de Powerball de hoy — prueba a ingresar tu propio monto abajo',
+        si: '🎰 මෙය අද ඇති සැබෑ Powerball ජැක්පොට් මත පදනම් වූ උදාහරණයකි — පහතින් ඔබේම මුදල ඇතුළත් කර බලන්න',
+        tl: '🎰 Ito ay halimbawa batay sa aktwal na Powerball jackpot ngayon — subukang ilagay ang sarili mong halaga sa ibaba',
+        uk: '🎰 Це приклад на основі сьогоднішнього реального джекпоту Powerball — спробуйте ввести свою суму нижче',
+        ur: '🎰 یہ آج کے اصل پاور بال جیک پاٹ پر مبنی مثال ہے — نیچے اپنی رقم خود درج کر کے دیکھیں',
+        uz: "🎰 Bu bugungi haqiqiy Powerball jekpotiga asoslangan misol — quyida o'z summangizni kiritib ko'ring",
+        tet: "🎰 Ida ne'e ezemplu bazeia ba jackpot Powerball loloos ohin — koko tau ó-nia valór rasik iha kraik",
+      }
+    );
+  }
   document.getElementById('home-tax1-label').textContent = label1;
   document.getElementById('home-tax1-val').textContent = val1;
   document.getElementById('home-tax2-label').textContent = label2;
@@ -9582,7 +9800,10 @@ function updateHomeCalc(usdOverride){
 function onCompareAmountTyped(){
   const rawValue = document.getElementById('amountInput').value;
   if (rawValue.trim() !== '') isAmountManuallyEdited = true;
-  const millions = parseMillionsInput(rawValue);
+  // 2026-07-28 후속 세션: 홈 일시불 탭(onHomeAmountTyped)과 동일하게 현재 sharedInputCurrency
+  // 단위로 타이핑된 값을 USD 백만 단위로 환산 — 예전엔 parseMillionsInput()으로 항상 "Million
+  // USD"로만 해석했는데, 이제 이 탭도 통화 선택기를 따르므로 그 가정이 더 이상 안 맞음.
+  const millions = parseAmountInputToUsdMillions(rawValue);
   const slider = document.getElementById('compareAmountSlider');
   setSliderMillions(slider, millions);
   updateSliderFill(slider);
@@ -9593,7 +9814,9 @@ function onCompareSliderMoved(){
   isAmountManuallyEdited = true;
   const slider = document.getElementById('compareAmountSlider');
   const usdMillions = getSliderMillions(slider);
-  document.getElementById('amountInput').value = usdMillions;
+  // 슬라이더 내부 도메인은 여전히 Million USD 그대로 — 입력칸에 다시 채워 넣을 때만 현재
+  // 선택된 통화 단위로 환산(usdMillionsToInputUnits)해서 보여줌(onHomeSliderMoved와 동일 패턴).
+  document.getElementById('amountInput').value = roundAmountForInput(usdMillionsToInputUnits(usdMillions, sharedInputCurrency));
   updateSliderFill(slider);
   updateCalc(usdMillions * 1000000);
 }
@@ -9613,7 +9836,11 @@ function updateCalc(usdOverride){
   // 입력창이 비어있을 땐 0으로 계산하지 않고 마지막 유효값(sharedAmountUsd)을 씀 — updateHomeCalc()와
   // 동일한 패턴. 이게 없으면 입력칸을 지웠을 때 실수령액이 0으로 고정되고, 그 상태로 홈 화면에
   // 돌아가도(공유 상태라) 0이 그대로 유지되는 버그가 있었음
-  const typedValue = parseMillionsInput(document.getElementById('amountInput').value);
+  // 2026-07-28 후속 세션: #amountInput도 이제 sharedInputCurrency 단위로 표시되므로, 이 폴백
+  // 파싱도 통화 인지형(parseAmountInputToUsdMillions)으로 바꿔야 함 — usdOverride가 이미 있는
+  // 대부분의 호출(onCompareAmountTyped/onCompareSliderMoved)에선 안 쓰이고, 인자 없이 부르는
+  // 경우(onCompareRateChanged, 언어 전환 등)의 폴백에서만 실제로 쓰임.
+  const typedValue = parseAmountInputToUsdMillions(document.getElementById('amountInput').value);
   const usd = usdOverride !== undefined ? usdOverride : (typedValue > 0 ? typedValue * 1000000 : sharedAmountUsd);
   const stateCode = document.getElementById('compareStateSelect').value;
   sharedAmountUsd = usd;
@@ -10357,7 +10584,12 @@ function updateSideBySide(eok, stateCode){
       card.appendChild(flagsRowEl);
     }
 
-    const amtEl = document.createElement('p'); amtEl.className = 'side-card-amt'; amtEl.textContent = formatWon(result.final);
+    // 2026-07-28 추가 세션: 이전엔 항상 formatWon()(KRW 고정)이었는데, 표시 통화(sharedInputCurrency)를
+    // 반영하도록 변경 — formatEokKrwInDisplayCurrency()는 이미 검증된 헬퍼(희망액 탭 미리보기가
+    // 씀)를 그대로 재사용: KRW면 formatWon() 그대로(회귀 없음), 그 외 통화는 정확한 KRW 원본(eok)을
+    // USD를 거쳐 환산 후 formatCompactCurrencyAmount()로 압축 표기. 정렬(위 implementedRows.sort)은
+    // 이미 KRW 실값(result.final) 기준으로 끝난 뒤라 표시 통화가 바뀌어도 순위는 그대로 유지됨.
+    const amtEl = document.createElement('p'); amtEl.className = 'side-card-amt'; amtEl.textContent = formatEokKrwInDisplayCurrency(result.final, sharedInputCurrency);
     if (gi === 0) {
       // 실수령률 %와 breakdown 막대는 목업상 1위 카드에서만 보여주는 강조 요소 — 나머지
       // 카드는 금액만 담백하게 표시해서 1위 카드와의 시각적 위계 차이를 분명히 함
@@ -10475,7 +10707,8 @@ function updateSideBySide(eok, stateCode){
   otherCard.className = 'side-card side-card-other';
   const otherFlagEl = document.createElement('p'); otherFlagEl.className = 'side-card-flag';
   otherFlagEl.append(makeFlagBadge('🌐'), document.createTextNode(' ' + otherResult.basisSuffix));
-  const otherAmtEl = document.createElement('p'); otherAmtEl.className = 'side-card-amt'; otherAmtEl.textContent = formatWon(otherResult.final);
+  // "기타 국가" 카드도 순위 경쟁 밖이라 정렬에는 영향 없음 — 위 카드들과 동일하게 표시 통화 반영
+  const otherAmtEl = document.createElement('p'); otherAmtEl.className = 'side-card-amt'; otherAmtEl.textContent = formatEokKrwInDisplayCurrency(otherResult.final, sharedInputCurrency);
   const otherRateEl = document.createElement('p'); otherRateEl.className = 'side-card-rate'; otherRateEl.textContent = otherResult.label2 + ' ' + otherResult.val2;
   otherCard.append(otherFlagEl, otherAmtEl, otherRateEl);
   grid.appendChild(otherCard);

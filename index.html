@@ -592,6 +592,13 @@
             <div class="result-seal-row"><span class="result-seal" aria-hidden="true">참</span></div>
             <p class="announced-convert-note" id="home-announced-convert-note" style="display:none;"></p>
             <h2 class="result-hero-label" data-i18n="result.label">💰 일시불 예상 실수령액</h2>
+            <!-- 첫 방문자가 아직 아무것도 입력하지 않은 상태에서도 이 카드가 이미 실제 숫자를
+                 보여주고 있어서(오늘 실제 파워볼 잭팟 기준 기본값), "내가 입력 안 했는데 왜 벌써
+                 결과가 있지?"로 헷갈릴 수 있다고 판단함(2026-07-28 첫방문자 사용성 점검 세션
+                 신규 발견) — isAmountManuallyEdited가 false인 동안(=아직 직접 입력 안 한 기본
+                 상태)에만 짧게 안내하고, 직접 입력하는 순간(updateHomeCalc()에서 토글) 사라짐.
+                 텍스트/토글 로직은 script.js updateHomeCalc() 참고 -->
+            <p class="usd-actual-note" id="home-preview-note" style="display:none; margin-top:0; margin-bottom:6px;"></p>
             <p class="result-hero-amt" id="home-final-amt" role="status" aria-live="polite">805억원</p>
             <div class="tax-impact-compact">
               <span class="tax-impact-before-line"><span class="tax-impact-strike" data-i18n="home.taxBefore">세전</span> <span class="tax-impact-strike" id="tax-impact-before">-</span></span>
@@ -749,6 +756,11 @@
                   <span class="mini-result-edit-unit" id="miniResultEditUnit" data-i18n="home.reverseUnit">억원</span>
                 </span>
               </div>
+              <!-- "희망액" 탭은 다른 두 탭(일시불/연금액)과 달리 "입력 → 결과"가 아니라 거꾸로
+                   "원하는 결과 → 필요한 당첨 금액"을 계산하는 역방향 탭이라, 처음 보는 방문자에게는
+                   무엇을 하는 탭인지 직관적이지 않을 수 있음(2026-07-28 첫방문자 사용성 점검 세션
+                   신규) — 연금액 탭의 input.announcedHint와 같은 자리·스타일로 안내 문구 추가 -->
+              <p class="krw-hint" style="margin:6px 0 0;" data-i18n="input.reverseHint">💡 원하는 실수령액을 입력하면, 세전으로 얼마에 당첨돼야 하는지 거꾸로 계산해드려요</p>
             </div>
 
             <p class="field-label-single" style="margin-top:20px; padding-top:14px; border-top:1px dashed var(--border);" data-i18n="input.basisLabel">세금 계산 기준</p>
@@ -780,6 +792,12 @@
                   <button type="button" class="country-toggle-btn" data-country="la" onclick="setHomeCountry('la')"><span class="flag-badge">LA</span> <span data-i18n="input.optLaos">라오스 기준 ⚠️</span></button>
                   <button type="button" class="country-toggle-btn" data-country="other" onclick="setHomeCountry('other')"><span class="flag-badge">🌐</span> <span data-i18n="input.optOther">기타 국가 (미국 30% 기준)</span></button>
                 </div>
+                <!-- ⚠️ 아이콘이 태국·러시아·파키스탄·캄보디아·몽골·라오스 버튼에 붙어있는데, 그
+                     의미(세율 추정치 또는 조약 정지)는 그 나라를 실제로 선택해야만 basisSuffix로
+                     드러남 — 선택하기 전에는 아이콘만 있고 뜻을 알 방법이 없었음(2026-07-28
+                     첫방문자 사용성 점검 세션에서 발견, "아이콘만 있고 텍스트 설명이 없는" 사례).
+                     펼침 패널 맨 아래에 범례 한 줄 추가 -->
+                <p class="krw-hint" style="margin:8px 0 0;" data-i18n="input.countryWarningNote">⚠️ 표시는 세율 정보가 확정적이지 않거나 최근 바뀐 나라예요 — 정확한 세액은 각국 세무 당국에 확인하세요</p>
               </details>
             </div>
             <!-- 세금 기준 오버레이(openTaxBasisOverlay())가 이 국가 토글 DOM 노드를 통째로
@@ -1028,10 +1046,40 @@
           <h2 class="panel-title" data-i18n="compare.panelTitle">내 손에 들어오는 진짜 돈, 계산해볼까요?</h2>
           <p class="panel-desc" data-i18n-html="compare.panelDesc"><span style="white-space:nowrap">당첨금(달러)을</span> 직접 입력하거나 슬라이더로 조절해보세요 👇</p>
 
+          <!-- 국가별 비교 탭 전용 통화 선택기(2026-07-28 후속 세션) — 홈 화면 일시불/연금액/희망액
+               3개 탭과 완전히 같은 공용 상태(sharedInputCurrency, setSharedInputCurrency 재사용)를
+               공유함. 여기서 고르면 홈 3탭도 같이 바뀌고, 홈에서 고른 통화가 이 탭에 올 때도
+               그대로 반영됨(sharedAmountUsd/sharedCountry와 같은 "홈↔비교 공유 상태" 원칙). -->
+          <div class="amount-currency-row">
+            <label for="compareCurrencySelect" class="amount-currency-label" data-i18n="input.currencyLabel">통화</label>
+            <select id="compareCurrencySelect" class="amount-currency-select" onchange="setSharedInputCurrency(this.value)" data-i18n-aria-label="input.currencyLabel" aria-label="통화">
+              <option value="KRW" selected>🇰🇷 KRW</option>
+              <option value="USD">🇺🇸 USD</option>
+              <option value="CNY">🇨🇳 CNY</option>
+              <option value="INR">🇮🇳 INR</option>
+              <option value="VND">🇻🇳 VND</option>
+              <option value="IDR">🇮🇩 IDR</option>
+              <option value="PHP">🇵🇭 PHP</option>
+              <option value="THB">🇹🇭 THB</option>
+              <option value="JPY">🇯🇵 JPY</option>
+              <option value="RUB">🇷🇺 RUB</option>
+              <option value="NPR">🇳🇵 NPR</option>
+              <option value="LKR">🇱🇰 LKR</option>
+              <option value="UZS">🇺🇿 UZS</option>
+              <option value="KZT">🇰🇿 KZT</option>
+              <option value="KGS">🇰🇬 KGS</option>
+              <option value="MMK">🇲🇲 MMK</option>
+              <option value="BDT">🇧🇩 BDT</option>
+              <option value="PKR">🇵🇰 PKR</option>
+              <option value="KHR">🇰🇭 KHR</option>
+              <option value="MNT">🇲🇳 MNT</option>
+              <option value="LAK">🇱🇦 LAK</option>
+            </select>
+          </div>
           <p class="field-label-single" data-i18n="input.amountLabelFull">당첨금 (일시불 세전 기준)</p>
           <div class="million-input-wrap">
             <input type="text" id="amountInput" class="dollar-input" inputmode="decimal" value="100" oninput="onCompareAmountTyped()" onfocus="this.select()">
-            <span class="million-unit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
+            <span class="million-unit" id="compareAmountUnit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
           </div>
           <div class="slider-track-wrap">
             <input type="range" class="slider" id="compareAmountSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onCompareSliderMoved()">
@@ -1136,9 +1184,15 @@
             </svg>
             <div class="country-map-callout" id="countryMapCallout"></div>
           </div>
-          <button type="button" class="compare-map-other-note" onclick="go('home'); setHomeCountry('other');" data-i18n="compare.mapOtherNote">목록에 없는 나라이신가요? 🌐 기타 국가로 계산해보세요 →</button>
+          <!-- 국가별 비교 카드(#sideByCountryGrid)는 2026-07-28 추가 세션부터 표시 통화
+               (sharedInputCurrency)를 실제로 반영함 — 예전엔 항상 원화(KRW) 고정이라 여기에
+               "이 목록은 원화 기준이에요" 안내 문구(#compareGridCurrencyNote)가 있었지만, 이제
+               진짜 통화 변환이 되므로 그 안내 자체가 불필요해져서 제거함(안내 대신 실제 수정).
+               순위는 여전히 KRW 실값 기준으로 정렬되고 표시 텍스트만 통화별로 바뀜 — 자세한 내용은
+               script.js updateSideBySide()/formatEokKrwInDisplayCurrency() 주석 참고. -->
           <div class="side-by-side-grid" id="sideByCountryGrid" role="status" aria-live="polite"></div>
           <button type="button" class="side-showmore-btn" id="sideShowMoreBtn" onclick="toggleSideShowMore()" style="display:none;"></button>
+          <button type="button" class="compare-map-other-note" onclick="go('home'); setHomeCountry('other');" data-i18n="compare.mapOtherNote">목록에 없는 나라이신가요? 🌐 기타 국가로 계산해보세요 →</button>
 
           <details class="side-breakdown-accordion">
             <summary class="side-breakdown-title" data-i18n="compare.sideBreakdownTitle">세금은 이렇게 빠져나가요</summary>
@@ -1324,7 +1378,7 @@
             <p class="mn-error" id="mn-error" role="alert"></p>
             <div class="mn-btn-row">
               <button type="button" class="cta-btn mn-check-btn" id="mn-check-btn" onclick="checkMyNumbersVsHistory()">확인하기</button>
-              <button type="button" class="share-btn mn-save-btn" id="mn-save-btn" onclick="saveMyNumbersAsTicketImage()">🎫 이미지로 저장</button>
+              <button type="button" class="share-btn mn-save-btn" id="mn-save-btn" onclick="saveMyNumbersAsTicketImage()">🖼️ 이미지로 저장</button>
             </div>
             <p class="foot-note mn-disclaimer" id="mn-disclaimer" style="margin-top:10px; text-align:center;">재미로 보는 가상 비교예요 — 실제 당첨 확인이 아니고, 복권 구매를 권하는 것도 아니에요 🙂</p>
           </div>
