@@ -823,6 +823,12 @@ function formatWon(n){
     if (eok === 0) return jo.toLocaleString('ko-KR') + '조원';
     return jo.toLocaleString('ko-KR') + '조 ' + eok.toLocaleString('ko-KR') + '억원';
   }
+  // 1억원 미만은 정수(억원) 반올림 시 5천만원 미만이 전부 "0억원"으로 보이는 문제가 있어,
+  // 대신 만원 단위로 표시(예: 0.3억원 → "3,000만원")
+  if (Math.abs(n) < 1) {
+    const man = Math.round(n * 10000);
+    return man.toLocaleString('ko-KR') + '만원';
+  }
   // 소수점 없이 정수(억원 단위)로 반올림해서 표시 — 읽기 쉽게 + 천단위 콤마
   const numStr = Math.round(n).toLocaleString('ko-KR');
   return numStr + '억원';
@@ -864,6 +870,12 @@ function formatWonZh(n){
     if (yi === 0) return zhao.toLocaleString('zh-CN') + '万亿韩元';
     return zhao.toLocaleString('zh-CN') + '万亿' + yi.toLocaleString('zh-CN') + '亿韩元';
   }
+  // 1亿韩元 미만은 정수(亿韩元) 반올림 시 5천万 미만이 전부 "0亿韩元"으로 보이는 문제가 있어,
+  // 대신 万 단위로 표시(예: 0.3亿 → "3,000万韩元")
+  if (Math.abs(n) < 1) {
+    const wan = Math.round(n * 10000);
+    return wan.toLocaleString('zh-CN') + '万韩元';
+  }
   return Math.round(n).toLocaleString('zh-CN') + '亿韩元';
 }
 function formatWonJa(n){
@@ -873,6 +885,12 @@ function formatWonJa(n){
     const oku = rounded - cho * 10000;
     if (oku === 0) return cho.toLocaleString('ja-JP') + '兆ウォン';
     return cho.toLocaleString('ja-JP') + '兆' + oku.toLocaleString('ja-JP') + '億ウォン';
+  }
+  // 1億ウォン 미만은 정수(億ウォン) 반올림 시 5千万 미만이 전부 "0億ウォン"으로 보이는 문제가 있어,
+  // 대신 万 단위로 표시(예: 0.3億 → "3,000万ウォン")
+  if (Math.abs(n) < 1) {
+    const man = Math.round(n * 10000);
+    return man.toLocaleString('ja-JP') + '万ウォン';
   }
   return Math.round(n).toLocaleString('ja-JP') + '億ウォン';
 }
@@ -3102,8 +3120,12 @@ function buildDrawScheduleMore(days){
 // ============================================================================
 // 2026-07-28 사용자가 채팅으로 공식 결과 직접 전달해서 갱신: 파워볼 $633M → $663M(7/29(수)
 // 추첨 기준 예고 잭팟, 현금가치 $290.4M — 이 객체엔 현금가치 필드가 없어서 amountUsd만 갱신,
-// 화면 표시는 CASH_VALUE_RATIO(58%) 추정치를 그대로 씀). 메가밀리언즈는 $800M로 이미 정확
-// (7/28(화) 추첨 기준 예고 잭팟, 현금가치 $344.2M — 지난 세션에 이미 반영돼있어 변경 없음).
+// 화면 표시는 CASH_VALUE_RATIO(58%) 추정치를 그대로 씀).
+// ⚠️ 메가밀리언즈 $800M는 7/28(화) 추첨 "예고" 잭팟액이었는데, 2026-07-29 세션 기준 이미 그
+// 추첨이 지나갔음. 사용자가 스크린샷(공식 사이트 결과 페이지)으로 7/28 당첨번호는 전달해줘서
+// LATEST_DRAW/아카이브는 갱신했지만, 같은 화면에 다음 추첨(7/31) 잭팟액이 "Pending"(집계 전)으로
+// 떠 있어서 새 금액 자체가 아직 공식 발표 전임 — 추측으로 덮어쓰지 않고 옛 값 그대로 둠. 다음
+// 세션/사용자가 "Pending"이 실제 금액으로 바뀐 뒤 갱신할 것.
 const JACKPOT_DATA = {
   powerball:    { amountUsd: 663000000 },
   megamillions: { amountUsd: 800000000 },
@@ -3121,11 +3143,12 @@ const GAME_NAME_MORE = {
 // 재미 요소 + 공유 유도용(사용자 피드백: "사이트가 너무 교과서 같다") — 세금 계산기 본질은 그대로 두고
 // 잭팟 카드 안에 양념처럼 추가한 것이라, 갱신을 깜빡해도 계산기 기능엔 영향 없음.
 // 2026-07-28 사용자가 채팅으로 공식 결과 직접 전달해서 갱신: 파워볼 7/25 → 7/27 회차
-// (6,26,46,58,65 + 파워볼 25, Power Play 2x는 이 위젯 스코프 밖이라 표시 안 함), 메가밀리언즈는
-// 이미 최신(7/24)이라 변경 없음.
+// (6,26,46,58,65 + 파워볼 25, Power Play 2x는 이 위젯 스코프 밖이라 표시 안 함). 2026-07-29
+// 사용자가 스크린샷으로 메가밀리언즈 7/28 회차 결과도 전달해서 갱신
+// (34,48,49,59,70 + 메가볼 12).
 const LATEST_DRAW = {
   powerball:    { date: '2026-07-27', numbers: [6, 26, 46, 58, 65], special: 25 },
-  megamillions: { date: '2026-07-24', numbers: [2, 5, 42, 44, 60], special: 1 },
+  megamillions: { date: '2026-07-28', numbers: [34, 48, 49, 59, 70], special: 12 },
 };
 
 
