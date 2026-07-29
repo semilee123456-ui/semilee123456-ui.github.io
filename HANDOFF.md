@@ -197,11 +197,13 @@ scripts/build-i18n.js           translations.json → i18n/*.json 생성 스크�
 tests/               회귀 테스트 스크립트 9개 (아래 "회귀 테스트" 섹션 참고, 2026-07-23에 6개
                      유실 확인·전부 재작성 완료)
 
-*.html (그 외 41개)   언어별/국가별 SEO 랜딩 페이지 — 메인 계산기와 별개, 각자 자체 <style> 안에
+*.html (그 외 70개)   언어별/국가별 SEO 랜딩 페이지 — 메인 계산기와 별개, 각자 자체 <style> 안에
                      자체 :root 색상/폰트 변수를 중복 정의(반복적 버그 원인이었음 — 새
                      디자인 토큰을 바꿀 때 이 페이지들도 같이 확인할 것). title/description/
-                     hreflang/JSON-LD는 41개 전부 정상(2026-07-23 SEO 감사 확인) — 문제는
-                     "알려진 미해결 항목"의 SEO 섹션 참고.
+                     hreflang/JSON-LD는 원래 41개 기준 정상 확인됐었음(2026-07-23 SEO 감사) —
+                     2026-07-29에 `us-lottery-basics*.html` 27개(ko + 26개 언어)가 새로
+                     추가되면서 70개가 됨, 이 신규 페이지들도 hreflang·JSON-LD 정상 확인함(해당
+                     "작업 이력" 항목 참고). 문제는 "알려진 미해결 항목"의 SEO 섹션 참고.
 ```
 
 ### 다국어(i18n) 작업 방법
@@ -593,96 +595,6 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
 
 이보다 오래된 세션 기록은 `HANDOFF-ARCHIVE.md` 참고(특정 과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님).
 
-### 2026-07-28 (서른 번째 세션, `claude/progress-checkpoint-vd08p1` — 서브에이전트로 진행,
-바로 앞(스물아홉 번째) 세션의 스톱갭을 실제 수정으로 대체하는 세션)
-
-**요청 배경**: 바로 앞 세션이 국가별 비교 탭 카드 그리드(`#sideByCountryGrid`, `updateSideBySide()`)
-가 표시 통화(`sharedInputCurrency`)와 무관하게 항상 원화(KRW)로만 나오는 문제를 발견하고, 저위험
-스톱갭으로 "이 목록은 원화 기준이에요"라는 안내 캡션(`#compareGridCurrencyNote`)만 추가했었음.
-사용자가 그 안내를 보고 "안내 말고 진짜 고쳐달라"고 요청 — 카드 숫자 자체가 선택된 통화로
-표시되게 하는 실제 수정.
-
-**핵심 원칙(요청에 명시됨) — 순위(정렬)는 항상 KRW 실값 기준, 표시 텍스트만 통화별로 바뀜**:
-`updateSideBySide()`의 정렬(`implementedRows.sort((a,b)=>b.result.final-a.result.final)`)과
-동일 금액 그룹핑(`groups`)은 이번 세션에서 전혀 안 건드림 — 둘 다 여전히 `result.final`(KRW-억
-단위 실값)만 보고 정렬/그룹핑한 뒤, 그 결과가 다 정해지고 나서야 카드를 만들면서 텍스트만
-통화별로 포맷팅함. 즉 "정렬 후 포맷팅"이라는 기존 파이프라인 순서 자체를 바꾸지 않고, 마지막
-텍스트 렌더링 단계 두 곳(`amtEl.textContent`/`otherAmtEl.textContent`)만 교체함.
-
-**새 함수를 만들지 않고 기존 검증된 헬퍼(`formatEokKrwInDisplayCurrency()`) 재사용**: 코드를
-먼저 조사해보니, 홈 화면 "희망액"(역산) 탭의 미리보기(`#live-result-mini-amt`)가 이미 정확히
-같은 문제(KRW-억 단위 실값을 현재 표시 통화로 "전체 자릿수 그대로" 보여줘야 함, 슬라이더 눈금처럼
-압축 표기가 아니라 결과 숫자 문맥)를 갖고 있었고, 2026-07-28 열여섯 번째 세션(통화 선택기 최초
-구현)이 이미 `formatEokKrwInDisplayCurrency(eokKrw, code)`(script.js)를 만들어 그 자리에 쓰고
-있었음 — KRW면 `formatWon()`(기존 검증된 억/조 단위 로직) 그대로, 그 외 통화는 `usdMillions =
-eokKrw * 100 / EXCHANGE_RATE`로 환산한 뒤 `formatCompactCurrencyAmount()`(슬라이더 눈금이 이미
-쓰던, VND/IDR처럼 자릿수가 큰 통화도 `Intl.NumberFormat({notation:'compact'})`로 자동 압축하는
-헬퍼)를 그대로 호출. 이 두 함수 모두 새로 만들지 않고, 카드 그리드의 `formatWon(result.final)`/
-`formatWon(otherResult.final)` 두 호출을 `formatEokKrwInDisplayCurrency(result.final,
-sharedInputCurrency)`/`formatEokKrwInDisplayCurrency(otherResult.final, sharedInputCurrency)`로
-교체하는 것만으로 끝남(순수 표시 레이어 교체, `calcTakeHome()`/세금 계산 로직은 전혀 안 건드림).
-
-**breakdown 아코디언(`#sideBreakdownContainer`)은 조사만 하고 안 건드림 — 애초에 통화 표시가
-아니었음**: `calcTakeHome()`의 반환값을 전수 확인해보니, `val1`/`val2`(아코디언에 보이는 두
-숫자)는 전부 세율 퍼센트 문자열("-30%" 등, "0원(세액공제로 상계)" 같은 특수 케이스도 통화 기호
-없이 텍스트로만 있음)이지 통화 금액이 아니었음 — 즉 이 함수 안에는 애초에 "통화별로 바뀌어야
-할 금액 표시"가 없어서 수정 대상 자체가 없었음(오해로 스코프를 넓히지 않기 위해 grep으로
-`val1:`/`val2:`가 정의되는 21개국 분기 전부를 직접 대조해서 확인).
-
-**실시간 재렌더링**: 기존엔 `refreshAmountInputDisplaysForCurrency()`(통화 전환 시 호출)가
-그리드를 다시 그릴 이유가 없어서(항상 KRW라 안 바뀌므로) 호출하지 않았는데, 이제 그리드가 통화에
-따라 바뀌므로 이 함수 끝에 `updateSideBySide(eokForGrid, compareStateSelect.value)` 호출을
-추가(`eokForGrid`는 `sharedAmountUsd`에서 다시 정확히 환산 — 슬라이더의 반올림된 위치가 아니라
-원본 기준으로 재계산하는 기존 관례를 그대로 따름). 그리드/breakdown 컨테이너가 없으면
-`updateSideBySide()` 자체가 조용히 return하므로, 비교 탭이 지금 안 보이는 상태에서 호출돼도
-안전함(기존에도 이미 있던 안전장치). `updateCalc()`가 마지막에 `updateSideBySide()`를 부르는
-경로는 그대로 유지 — 통화 변경 경로와 계산 재실행 경로 양쪽 다 최신 상태로 맞음.
-
-**스톱갭 제거 — `#compareGridCurrencyNote`와 `updateCompareGridCurrencyNote()` 삭제**: 진짜
-통화 변환이 되므로 "이 목록은 원화 기준이에요" 안내 자체가 더 이상 사실이 아니게 되어 제거함.
-`index.html`의 `<p id="compareGridCurrencyNote">` 요소, `script.js`의 함수 정의 + 호출 두 곳
-(`refreshAmountInputDisplaysForCurrency()`/`updateCalc()` 끝) 전부 제거. 이 캡션은 `data-i18n`
-키가 아니라 `pickLang()` 인라인 호출이었어서 `i18n-source/translations.json`에 대응 항목이
-없었음 — grep으로 확인 후 번역 파일 쪽은 손댈 게 없음이 확정됨(i18n coverage audit 대상도
-애초에 아니었음).
-
-**검증**: `node --check script.js` 통과. 회귀 테스트 11개 전부 재실행 — 전부 `ISSUES: 0`
-(`TOTAL ISSUES: 0`, i18n 관련 키 변화 없어서 `i18n_coverage_audit.js`도 569개 키 그대로 0건).
-Playwright로 390px/`ko-KR`/`?lang=ko` 기준: (a) 비교 탭에서 $100M 고정 입력 후 카드 순서·금액을
-KRW로 기록(예: 1위 1,041억원) → JPY로 전환 → 카드가 즉시 "¥113.4億" 등으로 바뀜을 확인 →
-**손계산 검증**: 1,041억원 → USD환산(`×100/EXCHANGE_RATE`, 당시 환율 1487.73) ≈ 69.97M USD →
-JPY환산(`×EXCHANGE_RATE_JPY`, 162) ≈ 1,133.5억엔 ≈ 화면에 뜬 "¥113.4億"와 일치 (b) KRW로 다시
-되돌리면 카드 텍스트가 전환 전(JPY 전) 원본과 **정확히 바이트 단위로 일치**(라운드트립 드리프트
-없음, `usdMillions`가 아니라 `sharedAmountUsd` 원본에서 매번 다시 환산하는 기존 관례를 그대로
-따른 결과) (c) KRW→JPY→KRW 전 구간에서 카드 순서(국기 배지 텍스트 배열)가 완전히 동일 — 통화
-표시가 바뀌어도 순위(정렬)는 안 바뀜을 확인 (d) VND(자릿수가 매우 큰 통화)로 전환 후 360px
-뷰포트에서 모든 `.side-card`의 `scrollWidth <= clientWidth` 확인 — 오버플로 0건("₫1,8 NT" 같은
-압축 표기라 실제로도 짧게 나옴). **네거티브 컨트롤**: `git stash`로 이번 수정을 일시적으로
-되돌린 뒤 같은 시나리오 재실행 → JPY를 선택해도 카드가 여전히 "1,041억원"(KRW) 그대로임을
-확인하고, 스톱갭 캡션(`#compareGridCurrencyNote`)이 "💡 아래 국가별 비교 카드는 위 입력창
-통화와 무관하게 항상 원화(KRW) 기준으로 보여드려요"로 여전히 나타남을 재확인(수정 전 실제
-버그·스톱갭 동작 재현) → `git stash pop`으로 복원 → `node --check`/회귀 테스트 재실행으로
-복원이 완전한지 재확인.
-
-**이 세션이 스물아홉 번째 세션의 `#compareGridCurrencyNote` 스톱갭을 대체함**: 안내 문구로
-우회하던 지점을 실제 통화 변환으로 해결했으므로, 스물아홉 번째 세션 항목의 "2. 국가별 비교
-탭 카드 그리드는..." 서술(위쪽, 같은 파일)은 이제 이 세션 이전 상태에 대한 역사적 기록으로만
-유효함 — 다시 "카드가 항상 KRW"라고 되돌리지 말 것.
-
-변경 파일: `script.js`(`updateSideBySide()`의 카드 금액 표시 2곳을 `formatWon()`→
-`formatEokKrwInDisplayCurrency()`로 교체, `updateCompareGridCurrencyNote()` 함수 및 호출 2곳
-삭제, `refreshAmountInputDisplaysForCurrency()`에 그리드 재렌더링 호출 추가), `index.html`
-(`#compareGridCurrencyNote` 요소 제거 + 주석 갱신), `HANDOFF.md`(이 항목 추가 — 날짜별 항목이
-5개가 되어 임계치를 넘으므로, 가장 오래된 스물여섯 번째 세션을 `HANDOFF-ARCHIVE.md`로 이동).
-i18n 키 변경 없음(제거한 캡션이 `data-i18n` 키가 아니었음). "코드 아키텍처 핵심 패턴"의
-`sharedInputCurrency` 항목 중 "`#sideByCountryGrid` 등 국가별 비교 카드/랭킹은 이 표시 통화와
-무관하게 항상 `sharedAmountUsd`(순수 USD 원본)에서 KRW로 계산됨" 서술은 **계산(정렬 기준)은
-여전히 유효하지만 표시는 더 이상 유효하지 않음** — 위 문장을 "카드 순위는 여전히 KRW 실값
-기준으로 정해지지만, 화면에 보이는 숫자 텍스트는 표시 통화를 따름(2026-07-28 서른 번째 세션)"으로
-갱신함. **`git push` 권한 여전히 없음**(구조적 제약, 재진단 불필요) — 로컬 커밋 후 zip으로
-스크래치패드에 묶어 전달, 사용자가 GitHub 웹 UI로 업로드해야 실제 반영됨. 다음 세션은 위 5번
-항목대로 `git fetch origin main`부터 확인할 것.
-
 ### 2026-07-29 (서른한 번째 세션, `claude/progress-checkpoint-vd08p1` — 서브에이전트로 진행)
 
 **요청 배경**: 사이트 운영자가 네이버에서 "참택스"를 검색해 클릭해서 들어왔는데, 사이트가
@@ -930,3 +842,107 @@ free-lessons 페이지 요약 — 세 개 독립 검색 결과 모두 "몽골 �
 권한 여전히 없음**(구조적 제약, 재진단 불필요) — 로컬 커밋 후 zip으로 스크래치패드에 묶어 전달,
 사용자가 GitHub 웹 UI로 업로드해야 실제 반영됨. 다음 세션은 위 5번 항목대로 `git fetch origin
 main`부터 확인할 것.
+
+### 2026-07-29 (`claude/work-so-far-1tmavk` 브랜치, 메인 세션 직접 진행 — 위 서른한/두/세 번째
+세션들과는 별도 브랜치 계열)
+
+**요청 배경**: 하루 종일 이어진 세션. 사용자가 실사용 중 발견한 여러 UI 문제를 스크린샷으로
+지적 → 각각 수정 → 배경 서브에이전트로 사이트 전체 UI/UX 감사 요청 → 감사 결과(진짜 버그
+3건) 수정 → "미국 로또를 아예 모르는 사람도 도움말 보면 알 수 있게 해달라"는 요청으로 신규
+"미국 로또 입문" 랜딩페이지 제작(처음엔 ko/en/zh만) → 실제로는 사이트 어디에도 링크가 안 걸려
+있던 걸 사용자가 지적해서 도움말 탭에 연결 → "나머지 언어도 다 바꿔줄까?"라는 사용자 질문에
+"제가 21개 전부 번역"으로 답변받아 나머지 24개 언어까지 전부 번역. 이 과정에서 백그라운드
+서브에이전트 3개(언어 배치별 번역 담당)가 전부 "월간 사용량 한도" API 에러로 파일을 하나도
+못 쓰고 실패 — 이후로는 서브에이전트 없이 메인 세션이 직접 번역함(24개 언어, 템플릿+데이터
+분리 방식으로 진행, 아래 참고).
+
+**구현 1 — 배경 UI 감사에서 나온 진짜 버그 3건 수정**:
+1. **통화 전환 시 `sharedAmountUsd` 드리프트**: `updateHomeCalc()`/`updateCalc()`가 인자 없이
+   불릴 때(언어 전환·환율 재조회·국가/주 변경 등) 입력창에 "지금 표시된" 텍스트를 다시 파싱해서
+   썼는데, 그 텍스트는 통화 전환 시 이미 반올림·환율변환을 거친 표시값이라 언어를 바꿀 때마다
+   (특히 그날 새로 추가된 "언어 전환 시 통화 자동 전환" 기능과 맞물려) 원본 금액이 조금씩
+   틀어지는 버그였음 — 국가별 비교 카드가 언어에 따라 다르게 병합되는 현상으로 사용자가 먼저
+   알아챔. 두 함수 모두 인자 없이 불릴 땐 항상 `sharedAmountUsd`(정확한 원본)를 그대로 쓰도록
+   수정 — 실제 타이핑 입력 경로는 이미 항상 `usdOverride`를 명시적으로 넘겨서 호출하므로 영향
+   없음.
+2. **`formatWon()`이 20개 언어에서 "million/billion" 영어를 그대로 노출**: en/zh/ja/vi/th/ru
+   6개만 자기 언어 단위가 있고 나머지 20개(km/ne/id/my/si/uz/mn/kk/ky/ur/bn/lo/ar/hi/fr/tl/pt/
+   es/uk/tet)는 전부 `formatWonEn()`으로 몰려서 그 언어 문장 한복판에 영어 단어가 섞여 나오고
+   있었음(사이트 전체 점검에서 발견) — `LANG_UNIT_WORDS` 맵(20개 언어의 million/billion/
+   trillion 자체 번역, `LOCALE_MAP` 재사용)을 추가해 각자 언어로 나오게 함. 프랑스어·스페인어는
+   "billion"이 영어와 다른 크기(10^12)를 가리키는 장주법 언어라 별도 주의(billion 대신 milliard/
+   mil millones 사용).
+3. **금액 입력칸에 이상한 문자를 입력해도 화면에 그대로 남던 문제**: 계산 로직(
+   `parseAmountInputToUsdMillions`)은 이미 숫자만 뽑아내서 정상 계산됐지만, 입력창 자체는
+   타이핑한 문자를 그대로 보여줘서 "입력이 무시된 것처럼" 보였음 — `sanitizeAmountInputLive()`
+   신규 함수로 타이핑할 때마다 숫자·소수점만 남기고 즉시 화면에서도 지우도록 함(홈 일시불/연금액/
+   비교 탭 3곳 모두 적용).
+
+**구현 2 — "1등 당첨되면 어떻게 되는지 한눈에 안 들어온다"는 사용자 피드백 반영**: 확률체감
+탭의 잭팟 계산기(1·2·3단계 스테퍼) 위에 `.jc-flow-intro` 요약 카드 신규 추가("🏆 1등에
+당첨되면 이런 순서로 진행돼요: 발표 금액 확인 → 수령 방식 선택(일시불/연금) → 세금 차감 →
+최종 입금액") — 새 i18n 키 `odds.jcFlowIntro`, 26개 언어 전부 번역해서
+`i18n-source/translations.json`에 추가 후 `node scripts/build-i18n.js`로 재생성.
+
+**구현 3 — "미국 로또 입문" 신규 랜딩페이지, 26개 언어 전부**: `us-lottery-basics.html`(한국어
+원본) + `us-lottery-basics-{lang}.html` 26개(en/zh 포함 전체 지원 언어). 파워볼·메가밀리언즈가
+뭔지, 어떻게 하는지, 확률이 실감 나게 비교, 그런데도 왜 다들 하는지, 한국에서 살 수 있는지(참택스는
+구매 대행 안 함을 명시), 당첨 시 세금 미리보기 + 계산기 CTA, FAQ 4개(BreadcrumbList+FAQPage
+JSON-LD 포함) 순서로 구성. **번역 방식**: 24개 언어(ko/en/zh 제외 나머지)는 HTML 구조를 그대로
+둔 "템플릿+데이터" 방식으로 처리 — 템플릿 파일(`{{PLACEHOLDER}}` 마커) 하나 + 언어별 번역
+텍스트를 담은 Python dict(`data_batch1~5.py`, 스크래치패드) + 채워 넣는 생성 스크립트
+(`gen_basics.py`)로 실제 HTML을 찍어냄(직접 250줄짜리 HTML을 24번 새로 쓰는 것보다 훨씬 안전·
+효율적). 이후 통합 스크립트로 (a) 27개 페이지 전부의 hreflang 블록을 서로 교차 링크하도록 재생성
+(`fix_hreflang.py`), (b) 하단 언어 전환 칩(`.lang-links`)도 27개 언어 전부로 확장
+(`fix_langlinks.py`, 각 언어 표기는 그 언어 고유 문자로) — 화면에서 실제로 잘 wrap되는지
+Playwright 스크린샷으로 확인함, (c) `sitemap.xml`에 24개 URL 신규 등록, (d) 도움말 탭의
+`usLotteryBasicsLink`(FAQ "게임 정보" 카테고리 안, 새 페이지로 연결하는 링크 — 이것도 이번
+세션에 처음 연결함, 그 전엔 페이지만 만들어놓고 사이트 어디서도 안 걸려 있어서 검색엔진으로만
+도달 가능했음) 라우팅을 ko/zh만 자기 페이지, 나머지는 전부 영어로 폴백하던 것에서
+`us-lottery-basics-${currentLang}.html` 패턴으로 바꿔 26개 언어 전부 자기 페이지로 감. 관련
+링크(당첨금 확인·실수령액·TOP5·세금계산 등) 중 이 페이지 자체가 없는 대상 페이지
+(`lottery-jackpot-amount.html`은 ko/en/zh만 있음 등)는 en 폴백 유지, 텍스트만 각 언어로 번역.
+**Gemini 검수용 문서**: 사용자가 "번역하고 검수파일 주면 내가 제미나이한테 보내고 결과 나오면
+갖고올게"라고 요청 — `data_batch1~5.py`와 한국어 원문(`ko_reference.py`)을 대조해서 항목별
+(제목·메타설명·h1·섹션별 본문·표·통계카드·FAQ 등 60여 항목)로 한국어와 각 언어 번역을 나란히
+정리한 마크다운 문서(`us-lottery-basics-translation-review.md`, ~468KB, en/zh는 이미 스크린샷
+검증했으므로 제외하고 24개 언어만 수록)를 생성해 SendUserFile로 전달함 — 아직 제미나이 검수
+결과가 돌아오지 않은 상태(다음 세션에서 사용자가 검수 결과를 갖고 오면 그 지적사항을
+`i18n-source/translations.json`이 아니라 `us-lottery-basics-*.html` 각 파일에 직접 반영할 것,
+이 페이지들은 `data-i18n` 시스템을 안 씀 — 정적 HTML에 언어별로 텍스트가 직접 박혀있음).
+
+**검증**: 3건의 버그 수정 전부 Playwright로 재현 → 수정 → 재확인(드리프트 버그는
+`sharedAmountUsd` 값을 언어 전환 반복 후 정확히 비교, formatWon은 20개 언어 각각
+`million/billion` 리터럴이 안 남아있는지 정규식 검사, 입력창 sanitize는 실제 타이핑 시뮬레이션).
+jc-flow-intro는 한국어 화면 스크린샷으로 레이아웃 확인. 새 랜딩페이지 27개 전부 Playwright로
+열어서 콘솔 에러 0건 확인, hreflang·JSON-LD 전부 유효한 JSON인지 스크립트로 검증, 도움말 탭
+링크가 27개 언어 전부 정확한 파일로 라우팅되는지 확인. 회귀 테스트(`console_error_audit.js`
+161 configs, `broken_link_audit.js` 71 files, `i18n_coverage_audit.js` 569 keys) 전부
+`ISSUES: 0`. **네거티브 컨트롤**: 통화 드리프트 버그는 수정 전 코드로 먼저 재현해서 실제로
+값이 틀어지는 걸 확인한 뒤에 고쳤음(추측성 수정 아님).
+
+**세션 중 발견한 배포 관련 이슈(코드 버그 아님, 기록만)**: 사용자가 GitHub 웹 UI로 업로드하는
+과정에서 두 가지가 있었음 — (1) `.github/workflows/lottery-backfill.yml`이 또 저장소 루트에
+잘못 올라감(반복적으로 발생하는 known issue, 숨김 폴더가 드래그앤드롭에서 안 따라옴 — 이번엔
+"Add file → Create new file"로 경로까지 통째로 입력하는 방법을 안내함), (2) `i18n/id.json`
+파일 하나만 새 번역 키가 빠진 채 업로드됨(원인 불명, 재전달로 해결). 이 세션 동안 사용자가 만든
+자동화 Routine 5개(파워볼/메가밀리언즈 잭팟 체크, 주간/월간/분기별 점검)가 전부 이 대화창이
+아닌 다른 세션에 바인딩되어 있던 것도 발견 — 5개 전부 삭제 후 이 세션(`session_
+013nBm1ucctcZ25XwxszpPLJ`)에 바인딩되도록 재생성함(코드 변경 아니라 이 문서엔 상세 기록 안 함,
+다음 세션이 이 자동화들을 다시 만들 필요는 없음 — Routine은 세션 코드가 아니라 계정 설정이라
+브랜치/커밋과 무관하게 계속 살아있음).
+
+변경 파일: `script.js`(`updateHomeCalc()`/`updateCalc()` 드리프트 수정, `LANG_UNIT_WORDS`+
+`formatWonOther()` 신규, `sanitizeAmountInputLive()` 신규 + 3곳 호출, `usLotteryBasicsLink`
+라우팅 로직 전체 언어 대응), `index.html`(`.jc-flow-intro` 마크업 신규), `styles.css`
+(`.jc-flow-intro` 스타일), `i18n-source/translations.json`(`odds.jcFlowIntro`+
+`faq.basicsGuideLink` 2개 키 × 26개 언어 신규, 실수로 한 번 파일 전체가 압축(minify)돼서
+포맷이 깨졌던 걸 즉시 발견해 원래 1-space indent로 복원함), `i18n/*.json`(재빌드 산출물),
+`sitemap.xml`(신규 URL 24개 + 페이지 개수 갱신), `us-lottery-basics.html`+`us-lottery-basics-
+{26개 언어코드}.html`(신규 27개 파일). `HANDOFF.md`(이 항목 추가 — 날짜별 항목이 5개가 되어
+임계치를 넘으므로, 가장 오래된 서른 번째 세션을 `HANDOFF-ARCHIVE.md`로 이동, `*.html 그 외`
+파일 개수 41→70 갱신). **`git push` 권한 여전히 없음**(구조적 제약, 재진단 불필요) — 로컬
+커밋 후 zip으로 스크래치패드에 묶어 전달, 사용자가 GitHub 웹 UI로 업로드함(세션 중 여러 차례
+실시간으로 업로드 확인함). **다음 세션 할 일**: 사용자가 Gemini 검수 결과를 가져오면
+`us-lottery-basics-*.html` 24개 파일에 직접 반영(데이터 소스는 `data-i18n` 시스템이 아니라 각
+HTML 파일 자체이므로 `translations.json` 안 건드림).
