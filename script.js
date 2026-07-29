@@ -3344,8 +3344,18 @@ function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines, measure
   for (const ch of chars) {
     const testLine = line + ch;
     if (ctx.measureText(testLine).width > maxWidth && line) {
-      if (!measureOnly) ctx.fillText(line, x, curY);
-      line = ch;
+      // 공백으로 단어를 구분하는 언어(영어 등)는 줄바꿈이 항상 글자 단위로만 잘려서 "ann/ounced"처럼
+      // 단어 중간이 끊기는 문제가 있었음(2026-07-29 잭팟 인덱스 공유카드 테스트 중 발견) — 현재
+      // 줄에 공백이 있으면 마지막 공백에서 끊어 단어 단위로 넘김. 공백이 없는 언어(한중일·태국·
+      // 크메르 등)는 lastSpace가 안 잡혀서 기존과 동일하게 글자 단위로 자름(회귀 없음)
+      const lastSpace = line.lastIndexOf(' ');
+      let drawLine = line, carry = ch;
+      if (lastSpace > 0) {
+        drawLine = line.slice(0, lastSpace);
+        carry = line.slice(lastSpace + 1) + ch;
+      }
+      if (!measureOnly) ctx.fillText(drawLine, x, curY);
+      line = carry;
       curY += lineHeight;
       lines++;
       if (maxLines && lines >= maxLines) { line = ''; break; }
@@ -4349,6 +4359,49 @@ function buildCpiMethodologyMore(baseYear){
   
     pt: `※ Esta é uma simulação experimental: os valores são ajustados para o nível de preços de ${baseYear} usando a média anual do CPI-U do Bureau of Labor Statistics dos EUA (All Urban Consumers, 1982-84=100), e depois convertidos com a taxa de câmbio de hoje e as regras fiscais atuais do país selecionado. Não serve como base para declaração fiscal real — prêmios anunciados após ${baseYear} são excluídos, pois a diferença de inflação é insignificante.`, es: `※ Esta es una simulación experimental: los montos se ajustan a los niveles de precios de ${baseYear} usando el promedio anual del CPI-U de la Oficina de Estadísticas Laborales de EE. UU. (All Urban Consumers, 1982-84=100), y luego se convierten con el tipo de cambio de hoy y las normas fiscales actuales del país seleccionado. No es una base para la declaración fiscal real; los acumulados anunciados después de ${baseYear} se excluyen porque la diferencia por inflación es insignificante.`, uk: `※ Це експериментальна симуляція: суми відкориговано до рівня цін ${baseYear} року за допомогою середньорічного індексу CPI-U Бюро статистики праці США (All Urban Consumers, 1982-84=100), а потім конвертовано за сьогоднішнім курсом та чинними податковими правилами обраної країни. Не є підставою для реального подання декларації — джекпоти, оголошені після ${baseYear} року, виключено, оскільки різниця інфляції занадто мала.`, tet: `※ Ne'e simulasaun esperimentál: montante sira ajusta ba nivel presu ${baseYear} uza média anuál CPI-U husi US Bureau of Labor Statistics (All Urban Consumers, 1982-84=100), depois konverte ho taxa kambial loron ne'e nian no regra impostu atuál husi rai ne'ebé hili. La'ós base ba submetasaun impostu reál — jackpot ne'ebé anunsia depois husi ${baseYear} la inklui tanba diferensa inflasaun ki'ik tebes.`,
 };
+}
+// 🖼️ 잭팟 인덱스 랭킹 3종(이월 스트릭/실수령액/물가보정) 공유 카드 버튼 문구 — 짧고 뜻이
+// 분명한 UI 문구라 다른 짧은 상용구(예: input.currencyLabel)와 같은 원칙으로 제미나이 배치
+// 검수 없이 이 세션이 직접 번역함
+const JACKPOT_CARD_FOOTER_MORE = {
+  ar: '👉 شاهد الترتيب الكامل على ChamTax', bn: '👉 ChamTax-এ সম্পূর্ণ র‍্যাঙ্কিং দেখুন',
+  fr: '👉 Voir le classement complet sur ChamTax', hi: '👉 ChamTax पर पूरी रैंकिंग देखें',
+  id: '👉 Lihat peringkat lengkap di ChamTax', ja: '👉 ChamTaxで全ランキングを見る',
+  kk: '👉 ChamTax сайтында толық рейтингті көріңіз', km: '👉 មើលចំណាត់ថ្នាក់ពេញលេញនៅ ChamTax',
+  ky: '👉 ChamTax сайтында толук рейтингди көрүңүз', lo: '👉 ເບິ່ງອັນດັບເຕັມທີ່ ChamTax',
+  mn: '👉 ChamTax дээр бүрэн жагсаалтыг үзэх', my: '👉 ChamTax တွင် အပြည့်အစုံ အဆင့်သတ်မှတ်ချက်ကို ကြည့်ပါ',
+  ne: '👉 ChamTax मा पूरा र‍्यांकिङ हेर्नुहोस्', si: '👉 ChamTax හි සම්පූර්ණ ශ්‍රේණිගත කිරීම බලන්න',
+  tl: '👉 Tingnan ang buong ranking sa ChamTax', ur: '👉 ChamTax پر مکمل رینکنگ دیکھیں',
+  uz: "👉 ChamTax'da to'liq reytingni ko'ring",
+  pt: `👉 Veja o ranking completo no ChamTax`, es: `👉 Mira el ranking completo en ChamTax`, uk: `👉 Перегляньте повний рейтинг на ChamTax`, tet: `👉 Haree ranking kompletu iha ChamTax`,
+};
+
+// 이월 스트릭(ji-rollover)/실수령액(jh-rank)/물가보정(ji-cpi) 랭킹 3곳이 전부 같은
+// .jh-rank-row 구조를 쓰므로, 화면에 이미 렌더링·번역되어 있는 1위 항목의 금액·설명 문구를
+// 그대로 읽어서 카드를 만듦 — 번역 로직을 새로 만들지 않고, 이 세션이 정적 이미지 162장을
+// 미리 만들려던 초기 접근을 버리고 대신 재사용한 것(기존 buildShareCard가 이미 4곳
+// (결과·꿈의당첨·환급체크리스트·회차공유)에서 검증된 채로 있었음). 매번 방금 화면에 표시된
+// 값 그대로라 데이터가 낡을 일이 없고, 방문자 기기 폰트를 그대로 쓰므로 저자원 언어 폰트
+// 문제도 없음
+async function saveJackpotIndexShareCard(listId, titleId, filename){
+  const titleEl = document.getElementById(titleId);
+  const listEl = document.getElementById(listId);
+  if (!titleEl || !listEl) return;
+  const firstRow = listEl.querySelector('.jh-rank-row');
+  if (!firstRow) return;
+  const amtEl = firstRow.querySelector('.jh-rank-amt');
+  const subEl = firstRow.querySelector('.jh-rank-sub');
+  const label = titleEl.textContent;
+  const bigText = amtEl ? amtEl.textContent : '';
+  const subText = subEl ? subEl.textContent : '';
+  const footerText = pickLang(
+    '👉 참택스에서 전체 순위 보기', '👉 See the full ranking on ChamTax', '👉 到ChamTax查看完整排行榜',
+    '👉 Xem bảng xếp hạng đầy đủ trên ChamTax', '👉 ดูอันดับทั้งหมดที่ ChamTax', '👉 Смотрите полный рейтинг на ChamTax',
+    JACKPOT_CARD_FOOTER_MORE
+  );
+  const canvas = buildShareCard({ label, bigText, subText, footerText });
+  if (await tryShareCardImage(canvas, label, `${subText} ${location.href}`)) return;
+  downloadShareCardImage(canvas, filename);
 }
 // ==================== /ChamTax 잭팟 인덱스 ====================
 
