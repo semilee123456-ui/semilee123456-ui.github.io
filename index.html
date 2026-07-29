@@ -618,7 +618,7 @@
               <p class="result-hero-basis-mini" id="home-final-basis-mini">100M USD 당첨 · 한국 거주자</p>
               <p class="foot-note" id="home-trust-line">환율 -</p>
             </div>
-            <details class="calc-detail-toggle" style="margin-top:12px; text-align:left;">
+            <details class="calc-detail-toggle" id="home-annuity-detail" style="margin-top:12px; text-align:left;">
               <summary class="calc-detail-summary" data-i18n-html="odds.jcStep4"><span>💡 일시불 대신 <span style="white-space:nowrap">연금(annuity)으로</span> 받으면?</span></summary>
               <div class="jc-annuity-box">
                 <div class="jc-row"><span id="home-annuity-announced-label">-</span><span class="jc-val" id="home-annuity-announced">-</span></div>
@@ -667,8 +667,37 @@
             </div>
             <!-- 일시불/연금액/희망액 3개 탭이 공유하는 표시 통화 선택기(2026-07-28) — 여기서
                  고른 통화가 세 탭 모두의 단위/입력 해석에 동시에 적용됨(탭별로 따로 안 고름).
-                 항상 탭 버튼 위에 위치해서 어느 탭을 보고 있어도 눈에 띔. -->
+                 항상 탭 버튼 위에 위치해서 어느 탭을 보고 있어도 눈에 띔.
+                 2026-07-29: 세금 계산 기준 국가(homeCountrySelect)도 통화 바로 옆으로 추가함 —
+                 원래는 한참 아래(세금 계산 기준 버튼 그리드 위)에 hidden input으로만 있어서 화면
+                 상단에서는 바꿀 방법이 없었음(사용자 피드백). 버튼 그리드는 그대로 남겨서 원탭
+                 접근성은 유지하고, 이 select는 스크롤 없이 빠르게 바꾸는 용도로 추가 — 국가 코드는
+                 통화 코드(KRW/USD 등)와 같은 방식으로 번역 없이 표기(ISO 코드라 언어 불문 통용). -->
             <div class="amount-currency-row">
+              <select id="homeCountrySelect" class="amount-currency-select" onchange="setHomeCountry(this.value)" data-i18n-aria-label="a11y.selectCountry" aria-label="국가 선택">
+                <option value="kr" selected>🇰🇷 KR</option>
+                <option value="us">🇺🇸 US</option>
+                <option value="cn">🇨🇳 CN</option>
+                <option value="jp">🇯🇵 JP</option>
+                <option value="in">🇮🇳 IN</option>
+                <option value="vn">🇻🇳 VN</option>
+                <option value="id">🇮🇩 ID</option>
+                <option value="ph">🇵🇭 PH</option>
+                <option value="th">🇹🇭 TH</option>
+                <option value="ru">🇷🇺 RU</option>
+                <option value="np">🇳🇵 NP</option>
+                <option value="lk">🇱🇰 LK</option>
+                <option value="uz">🇺🇿 UZ</option>
+                <option value="kz">🇰🇿 KZ</option>
+                <option value="kg">🇰🇬 KG</option>
+                <option value="mm">🇲🇲 MM</option>
+                <option value="bd">🇧🇩 BD</option>
+                <option value="pk">🇵🇰 PK</option>
+                <option value="kh">🇰🇭 KH</option>
+                <option value="mn">🇲🇳 MN</option>
+                <option value="la">🇱🇦 LA</option>
+                <option value="other">🌐 OTHER</option>
+              </select>
               <label for="homeCurrencySelect" class="amount-currency-label" data-i18n="input.currencyLabel">통화</label>
               <select id="homeCurrencySelect" class="amount-currency-select" onchange="setSharedInputCurrency(this.value, true)" data-i18n-aria-label="input.currencyLabel" aria-label="통화">
                 <option value="KRW" selected>🇰🇷 KRW</option>
@@ -750,7 +779,6 @@
             </div>
 
             <p class="field-label-single" style="margin-top:20px; padding-top:14px; border-top:1px dashed var(--border);" data-i18n="input.basisLabel">세금 계산 기준</p>
-            <input type="hidden" id="homeCountrySelect" value="kr">
             <div class="country-toggle" id="homeCountryToggle">
               <button type="button" class="country-toggle-btn active" data-country="kr" onclick="setHomeCountry('kr')"><span class="flag-badge">KR</span> <span data-i18n="input.optKorea">한국 기준</span></button>
               <button type="button" class="country-toggle-btn" data-country="us" onclick="setHomeCountry('us')"><span class="flag-badge">US</span> <span data-i18n="input.optUS">미국 기준</span></button>
@@ -869,7 +897,7 @@
                 <li><b data-i18n="home.flowLumpsumLabel">일시불</b>: <span data-i18n="home.flowLumpsumDesc">한 번에 수령 (총액의 약 45~60%)</span></li>
               </ul>
               <p class="flow-explain-note" data-i18n-html="home.flowExplainNote">ℹ️ 이 계산기는 대부분이 선택하는 <b>일시불(세전)</b> 기준으로 계산돼요.</p>
-              <button type="button" class="annuity-info-link" style="margin-top:8px;" onclick="goToAnnuityInfo()" data-i18n="home.annuityInfoLink">📅 연금 선택 시 차이점 확인하기 →</button>
+              <button type="button" class="annuity-info-link" style="margin-top:8px;" onclick="openHomeAnnuityDetail()" data-i18n="home.annuityInfoLink">📅 연금 선택 시 차이점 확인하기 →</button>
             </div>
             <p class="result-hero-basis" id="home-final-basis" style="margin-top:14px; text-align:center; font-weight:700;">1,503억원 당첨 기준 · 한국 거주자</p>
             <div class="result-grid" style="margin-top:8px; grid-template-columns:1fr 1fr;">
@@ -963,10 +991,10 @@
           <div class="dream-box" style="margin-top:16px; padding-top:16px; border-top:1px dashed var(--border);">
             <p class="dream-intro" data-i18n="home.dreamIntro">당첨되면 제일 먼저 뭐 하실 거예요?</p>
             <div class="dream-options">
-              <button class="dream-option" onclick="pickDream('freedom')" data-i18n-html="home.dreamFreedom"><span class="dream-emoji">🕊️</span> 회사에 사표부터 쓴다</button>
-              <button class="dream-option" onclick="pickDream('family')" data-i18n-html="home.dreamFamily"><span class="dream-emoji">🏠</span> 가족들 집 한 채씩 사준다</button>
-              <button class="dream-option" onclick="pickDream('travel')" data-i18n-html="home.dreamTravel"><span class="dream-emoji">✈️</span> 세계여행부터 떠난다</button>
-              <button class="dream-option" onclick="pickDream('calm')" data-i18n-html="home.dreamCalm"><span class="dream-emoji">💼</span> 그냥 통장만 조용히 확인한다</button>
+              <button class="dream-option" onclick="pickDream('freedom', this)" data-i18n-html="home.dreamFreedom"><span class="dream-emoji">🕊️</span> 회사에 사표부터 쓴다</button>
+              <button class="dream-option" onclick="pickDream('family', this)" data-i18n-html="home.dreamFamily"><span class="dream-emoji">🏠</span> 가족들 집 한 채씩 사준다</button>
+              <button class="dream-option" onclick="pickDream('travel', this)" data-i18n-html="home.dreamTravel"><span class="dream-emoji">✈️</span> 세계여행부터 떠난다</button>
+              <button class="dream-option" onclick="pickDream('calm', this)" data-i18n-html="home.dreamCalm"><span class="dream-emoji">💼</span> 그냥 통장만 조용히 확인한다</button>
             </div>
             <div class="dream-result" id="dream-result" style="display:none;">
               <p class="dream-title" id="dream-title">-</p>
@@ -1170,6 +1198,10 @@
             </svg>
             <div class="country-map-callout" id="countryMapCallout"></div>
           </div>
+          <!-- 2026-07-29: 원래 지도 바로 아래에 붙어야 했는데(인수인계 문서 기준) 실수로 카드
+               그리드 뒤에 붙어있었음 — 그리드 맨 끝에 이미 "기타 국가" 카드가 있어서 바로 그 밑에
+               같은 안내가 또 나오는 중복으로 보였음(사용자 피드백으로 발견). 원래 의도한 자리로 이동 -->
+          <button type="button" class="compare-map-other-note" onclick="go('home'); setHomeCountry('other');" data-i18n="compare.mapOtherNote">목록에 없는 나라이신가요? 🌐 기타 국가로 계산해보세요 →</button>
           <!-- 국가별 비교 카드(#sideByCountryGrid)는 2026-07-28 추가 세션부터 표시 통화
                (sharedInputCurrency)를 실제로 반영함 — 예전엔 항상 원화(KRW) 고정이라 여기에
                "이 목록은 원화 기준이에요" 안내 문구(#compareGridCurrencyNote)가 있었지만, 이제
@@ -1178,7 +1210,6 @@
                script.js updateSideBySide()/formatEokKrwInDisplayCurrency() 주석 참고. -->
           <div class="side-by-side-grid" id="sideByCountryGrid" role="status" aria-live="polite"></div>
           <button type="button" class="side-showmore-btn" id="sideShowMoreBtn" onclick="toggleSideShowMore()" style="display:none;"></button>
-          <button type="button" class="compare-map-other-note" onclick="go('home'); setHomeCountry('other');" data-i18n="compare.mapOtherNote">목록에 없는 나라이신가요? 🌐 기타 국가로 계산해보세요 →</button>
 
           <details class="side-breakdown-accordion">
             <summary class="side-breakdown-title" data-i18n="compare.sideBreakdownTitle">세금은 이렇게 빠져나가요</summary>
@@ -1193,8 +1224,16 @@
           </div>
         </div>
 
+        <!-- 2026-07-29: 홈 화면 상단의 "🌏 한국에 사는 외국인이에요"(언어 골라서 계산기 자체를
+             바로 그 언어로 전환) 카드와 이 목록이 둘 다 "외국인+언어 선택"이라 비슷해 보여서
+             헷갈린다는 사용자 피드백 — 실제로는 목적이 다름(이쪽은 계산기가 아니라 나라별 세금
+             의무 설명 글로 이동, 원래부터 의도된 구조로 버그 아님). 제목 앞에 📖(읽을거리)
+             이모지를 붙여서 "이건 계산기 바로가기가 아니라 읽는 콘텐츠"라는 걸 시각적으로도
+             구분함 — 이모지는 번역이 필요 없어 26개 언어 전체에 안전하게 바로 적용(문장으로 된
+             부제까지 추가하면 새 번역이 26개 언어만큼 필요해서 검증 없이는 위험하다고 판단,
+             제목 문구 자체("~분이라면" 초대형 vs "~이에요" 자기소개형)도 이미 다르므로 이 정도로 우선 정리) -->
         <details class="panel odds-accordion" id="otherLanguagesPanel">
-          <summary class="panel-title-toggle" data-i18n="compare.otherLangTitle">한국에 사는 다른 나라 분이라면</summary>
+          <summary class="panel-title-toggle" data-i18n="compare.otherLangTitle">📖 한국에 사는 다른 나라 분이라면</summary>
           <div id="otherLanguagesList" class="other-lang-list"></div>
         </details>
 
@@ -1385,6 +1424,36 @@
           <div class="howto-box">
             <p class="howto-title" data-i18n="odds.howtoTitle">🎱 먼저, 게임 방식부터</p>
             <p class="howto-text" id="howto-text">파워볼은 <b>일반번호 5개</b> (1~69 중에서) + <b>파워볼 번호 1개</b> (1~26 중에서), 총 6개 숫자를 맞히는 게임이에요. 일반번호를 몇 개 맞혔는지 + 파워볼까지 맞혔는지에 따라 상금이 달라져요.</p>
+            <!-- 2026-07-29: us-lottery-basics 가이드에 있던 파워볼·메가밀리언즈 규칙 비교표를
+                 여기에도 노출(사용자 요청) — 위 howto-text가 한 게임씩만 설명하는 자리라, 둘을
+                 나란히 놓고 보는 용도로 보강 -->
+            <div class="howto-compare-table">
+              <div class="hct-row hct-header">
+                <span></span>
+                <span class="hct-pb" data-i18n="home.powerballName">파워볼</span>
+                <span class="hct-mm" data-i18n="home.megaName">메가밀리언즈</span>
+              </div>
+              <div class="hct-row">
+                <span class="hct-label" data-i18n="odds.compareDrawDays">추첨 요일</span>
+                <span data-i18n="odds.compareDrawDays.pb">월·수·토</span>
+                <span data-i18n="odds.compareDrawDays.mm">화·금</span>
+              </div>
+              <div class="hct-row">
+                <span class="hct-label" data-i18n="odds.comparePickNumbers">숫자 고르기</span>
+                <span data-i18n="odds.comparePickNumbers.pb">1~69 중 5개 + 1~26 중 1개(파워볼)</span>
+                <span data-i18n="odds.comparePickNumbers.mm">1~70 중 5개 + 1~24 중 1개(메가볼)</span>
+              </div>
+              <div class="hct-row">
+                <span class="hct-label" data-i18n="odds.compareJackpotOdds">1등 확률</span>
+                <span data-i18n="odds.compareJackpotOdds.pb">약 1 / 2억 9,220만</span>
+                <span data-i18n="odds.compareJackpotOdds.mm">약 1 / 2억 9,047만</span>
+              </div>
+              <div class="hct-row">
+                <span class="hct-label" data-i18n="odds.compareMinJackpot">최소 잭팟</span>
+                <span data-i18n="odds.compareMinJackpot.pb">2,000만 달러</span>
+                <span data-i18n="odds.compareMinJackpot.mm">2,000만 달러</span>
+              </div>
+            </div>
           </div>
 
           <div class="prize-card jackpot" onclick="toggleJackpotCalc()" style="cursor:pointer;">

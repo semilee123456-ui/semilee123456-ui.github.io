@@ -2119,15 +2119,20 @@ function getJackpotKRW(game){
 }
 
 // jackpot-card-odds-num에 들어가는 "1 / N" 확률 표기 — odds.oddsPowerball 번역키와 같은
-// 스타일(언어별 단위 관례: 억/만, M, 亿, करोड़ 등)로 메가밀리언즈(1/302,575,350)도 맞춤
+// 스타일(언어별 단위 관례: 억/만, M, 亿, करोड़ 등)로 메가밀리언즈(1/290,472,336)도 맞춤.
+// 2026-07-29: 메가밀리언즈가 2025년 4월에 티켓 5달러·번호 매트릭스 개편을 거치면서 확률이
+// 1/302,575,350에서 1/290,472,336으로 바뀌었는데, 이 함수는 그 개편 전 숫자(1/303M 등)가
+// 그대로 남아있었음 — 사이트 콘텐츠 중복 점검(us-lottery-basics 가이드의 같은 문제) 도중
+// 함께 발견. 아래 26개 언어 전부 새 숫자로 갱신(각 언어의 단위 표기 관례는 그대로 유지하고
+// 숫자만 292,201,338→290,472,336 비율로 재계산 — 파워볼 줄과 같은 반올림 자릿수 사용)
 function jackpotOddsText(game){
   if (game === 'megamillions') {
-    return pickLang('1 / 3억 260만', '1 / 303M', '1 / 3.03亿', '1 / 303 triệu', '1 / 303 ล้าน', '1 / 303 млн', {
-      ar: '1 / 303 مليون', bn: '1 / 30 কোটি', fr: '1 / 303 M', hi: '1 / 30 करोड़', id: '1 / 303 juta',
-      ja: '1 / 3.03億', kk: '1 / 303 млн', km: '1 / 303លាន', ky: '1 / 303 млн', lo: '1 / 303 ລ້ານ',
-      mn: '1 / 303 сая', my: '1 / 303 သန်း', ne: '1 / 30.3 करोड', si: '1 / මිලියන 303', tl: '1 / 303M',
-      ur: '1 / 303 ملین', uz: '1 / 303 mln',
-     pt: `1 / 303M`, es: `1 / 303M`, uk: `1 / 303М`, tet: `1 / 303M`});
+    return pickLang('1 / 2억 9,000만', '1 / 290M', '1 / 2.90亿', '1 / 290 triệu', '1 / 290 ล้าน', '1 / 290 млн', {
+      ar: '1 / 290 مليون', bn: '1 / 29 কোটি', fr: '1 / 290 M', hi: '1 / 29 करोड़', id: '1 / 290 juta',
+      ja: '1 / 2.90億', kk: '1 / 290 млн', km: '1 / 290លាន', ky: '1 / 290 млн', lo: '1 / 290 ລ້ານ',
+      mn: '1 / 290 сая', my: '1 / 290 သန်း', ne: '1 / 29.0 करोड', si: '1 / මිලියන 290', tl: '1 / 290M',
+      ur: '1 / 290 ملین', uz: '1 / 290 mln',
+     pt: `1 / 290M`, es: `1 / 290M`, uk: `1 / 290М`, tet: `1 / 290M`});
   }
   return pickLang('1 / 2억 9,200만', '1 / 292M', '1 / 2.92亿', '1 / 292 triệu', '1 / 292 ล้าน', '1 / 292 млн', {
     ar: '1 / 292 مليون', bn: '1 / 29 কোটি', fr: '1 / 292 M', hi: '1 / 29 करोड़', id: '1 / 292 juta',
@@ -3234,9 +3239,12 @@ function buildDrawScheduleMore(days){
 // LATEST_DRAW/아카이브는 갱신했지만, 같은 화면에 다음 추첨(7/31) 잭팟액이 "Pending"(집계 전)으로
 // 떠 있어서 새 금액 자체가 아직 공식 발표 전임 — 추측으로 덮어쓰지 않고 옛 값 그대로 둠. 다음
 // 세션/사용자가 "Pending"이 실제 금액으로 바뀐 뒤 갱신할 것.
+// 2026-07-29: 메가밀리언즈 잭팟이 당첨자가 나와서 5천만 달러로 리셋된 걸 사용자가 스크린샷
+// (USA Mega, Next Jackpot $50 Million · Fri Jul 31)으로 전달해서 갱신 — 이전 값(8억 달러)은
+// 당첨 전 마지막 회차 금액이라 리셋 이후로는 그대로 두면 실제보다 훨씬 부풀려진 잭팟을 보여주게 됨
 const JACKPOT_DATA = {
   powerball:    { amountUsd: 663000000 },
-  megamillions: { amountUsd: 800000000 },
+  megamillions: { amountUsd: 50000000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
@@ -3659,13 +3667,17 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
 
 // 이미지 공유가 가능하면(navigator.canShare({files})) 이미지로 공유하고 true를 반환, 아니면 false를
 // 반환해 호출 쪽에서 기존 텍스트+링크 공유로 대체하게 함. 사용자가 공유 시트를 취소한 경우(AbortError)는
-// 실패가 아니라 "이미 처리됨"으로 보고 true를 반환해 텍스트 폴백으로 이어지지 않게 함
-async function tryShareCardImage(canvas, shareTitle, shareText){
+// 실패가 아니라 "이미 처리됨"으로 보고 true를 반환해 텍스트 폴백으로 이어지지 않게 함.
+// filename은 호출부의 downloadShareCardImage()와 짝을 맞춰서 넘겨받음 — 예전엔 여기서
+// 'chamtax-result.png'로 고정돼 있어서, 잭팟 순위/드림카드/체크리스트 등 어디서 공유해도
+// 파일명이 항상 결과 카드인 것처럼 나오는 사소한 불일치가 있었음(2026-07-29 공유 기능 전체
+// 점검 중 발견)
+async function tryShareCardImage(canvas, shareTitle, shareText, filename){
   if (!navigator.canShare) return false;
   try {
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     if (!blob) return false;
-    const file = new File([blob], 'chamtax-result.png', { type: 'image/png' });
+    const file = new File([blob], filename || 'chamtax-result.png', { type: 'image/png' });
     if (!navigator.canShare({ files: [file] })) return false;
     await navigator.share({ files: [file], title: shareTitle, text: shareText });
     return true;
@@ -3793,7 +3805,7 @@ async function shareLatestDraw(game, btnEl){
   );
   const cardFooter = pickLang(...SHARE_CTA_FOOTER);
   const canvas = buildShareCard({ label: cardLabel, subText: cardSub, footerText: cardFooter, balls: { numbers: draw.numbers, special: draw.special, specialColor } });
-  if (await tryShareCardImage(canvas, gameLabel, shareText)) return;
+  if (await tryShareCardImage(canvas, gameLabel, shareText, 'chamtax-draw-share.png')) return;
   downloadShareCardImage(canvas, 'chamtax-draw-share.png');
 
   if (navigator.share) {
@@ -4512,8 +4524,11 @@ async function saveJackpotIndexShareCard(listId, titleId, filename){
     JACKPOT_CARD_FOOTER_MORE
   );
   const canvas = buildShareCard({ label, bigText, subText, footerText });
-  if (await tryShareCardImage(canvas, label, `${subText} ${location.href}`)) return;
-  downloadShareCardImage(canvas, filename);
+  // 2026-07-29: 원래 tryShareCardImage()(OS 공유 시트) 우선 시도 → 실패 시 다운로드였는데, 이
+  // 버튼은 "공유하기"가 아니라 "이미지로 저장"이라서 홈 화면 결과 저장(saveHomeResultAsImage)·
+  // 내 번호 티켓 저장(saveMyNumbersAsTicketImage)과 다르게 모바일에서 공유 시트가 먼저 뜨는 게
+  // 어색하다는 사용자 피드백으로 발견. 나머지 두 저장 버튼과 동일하게 바로 다운로드로 통일
+  openAnnotateOverlay(canvas, filename);
 }
 // ==================== /ChamTax 잭팟 인덱스 ====================
 
@@ -6211,12 +6226,15 @@ function initJackpotCardAmt(){
   );
 
   // 잭팟 카드 우측 하단의 "1 / N (0.00000034%)" 확률 표기도 게임에 따라 달라져야 하는데
-  // (파워볼 1/292,201,338 vs 메가밀리언즈 1/302,575,350), 예전엔 파워볼 확률이 항상 고정으로
+  // (파워볼 1/292,201,338 vs 메가밀리언즈 1/290,472,336), 예전엔 파워볼 확률이 항상 고정으로
   // 박혀있어서 메가밀리언즈로 토글해도 안 바뀌었음 — 위 금액과 같은 이유로 같이 고침
   const oddsNumEl = document.getElementById('jackpot-card-odds-num');
   const oddsPctEl = document.getElementById('jackpot-card-odds-pct');
   if (oddsNumEl) oddsNumEl.textContent = jackpotOddsText(currentOddsGame);
-  if (oddsPctEl) oddsPctEl.textContent = currentOddsGame === 'megamillions' ? '(0.00000033%)' : '(0.00000034%)';
+  // 2026-07-29: 메가밀리언즈 확률이 1/290,472,336으로 바뀌면서 백분율도 파워볼(1/292,201,338)과
+  // 반올림 후 우연히 같은 문자열이 됨(둘 다 0.00000034%) — 예전 확률(1/302,575,350) 기준
+  // 0.00000033%였던 값을 갱신
+  if (oddsPctEl) oddsPctEl.textContent = '(0.00000034%)';
 
   const pbUsd = Number(document.getElementById('jp-powerball').getAttribute('data-target'));
   const mgUsd = Number(document.getElementById('jp-mega').getAttribute('data-target'));
@@ -6590,6 +6608,17 @@ function goToAnnuityInfo(){
   setTimeout(() => {
     document.querySelector('.prize-card.jackpot').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, 400);
+}
+
+// 홈 화면 결과 카드 안에 있는 "연금 선택 시 차이점 확인하기" 버튼 전용 — goToAnnuityInfo()처럼
+// 확률체감 탭으로 이동하지 않고, 같은 홈 화면 안에 이미 있는 연금 아코디언만 펼치고 스크롤함
+// (2026-07-29, 사용자 피드백으로 발견: 버튼 바로 위에 있는 아코디언을 놔두고 엉뚱하게 다른
+// 탭의 잭팟 계산기로 이동하고 있었음)
+function openHomeAnnuityDetail(){
+  const target = document.getElementById('home-annuity-detail');
+  if (!target) return;
+  target.open = true;
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // 스크롤하면서 각 섹션이 살짝 떠오르며 나타나는 효과. reduced-motion 환경에서는 CSS가 즉시 보이게 처리함
@@ -8707,30 +8736,37 @@ function renderDreamResult(key, finalAmtOverride){
    pt: `Aquele que leva para casa ${finalAmt}`, es: `Quien se lleva a casa ${finalAmt}`, uk: `Той, хто отримує на руки ${finalAmt}`, tet: `Ida ne'ebé lori ba uma ${finalAmt}`});
 }
 
-function pickDream(key){
+function pickDream(key, btnEl){
   if (!DREAM_DATA[key]) return;
   lastPickedDreamKey = key;
   renderDreamResult(key);
   const resultEl = document.getElementById('dream-result');
   resultEl.style.display = 'block';
   resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  fireConfettiBurst();
+  fireConfettiBurst(DREAM_DATA[key].emoji);
+  // 눌린 카드에 바로 살짝 눌렸다 튀어오르는 피드백 — 결과가 뜨기 전에도 "반응했다"는 게 보임
+  if (btnEl) {
+    btnEl.classList.remove('is-picked');
+    void btnEl.offsetWidth; // 강제 리플로우 — 연속으로 같은 카드를 눌러도 매번 다시 재생되게 함
+    btnEl.classList.add('is-picked');
+  }
 }
 
-// 브랜드 컬러 사각 조각 14개가 dream-result 위에서 짧게 떨어지는 연출.
+// 고른 드림 카드의 이모지(🕊️/🏠/✈️/💼)가 dream-result 위에서 짧게 떨어지는 연출(2026-07-29 —
+// 원래는 브랜드 컬러 사각 조각이었는데, 어떤 카드를 골랐는지 이모지로 바로 드러나게 바꿈).
 // prefers-reduced-motion 환경에서는 CSS 쪽에서 애니메이션 자체를 꺼버리므로 여기서는 그냥 만들기만 해도 안전함
-function fireConfettiBurst(){
+function fireConfettiBurst(emoji){
   const target = document.getElementById('dream-result');
   if (!target) return;
-  const colors = ['#155445', '#9C6F1E', '#F0A98C', '#FFFEF9', '#0D3A2F'];
   const rect = target.getBoundingClientRect();
   for (let i = 0; i < 14; i++) {
     const piece = document.createElement('div');
-    piece.className = 'confetti-piece';
+    piece.className = 'confetti-emoji';
+    piece.textContent = emoji || '🎉';
     piece.style.left = (rect.left + window.scrollX + Math.random() * rect.width) + 'px';
     piece.style.top = (rect.top + window.scrollY) + 'px';
-    piece.style.background = colors[i % colors.length];
     piece.style.animationDelay = (Math.random() * 0.15) + 's';
+    piece.style.transform = `rotate(${Math.random() * 40 - 20}deg)`;
     document.body.appendChild(piece);
     setTimeout(() => piece.remove(), 1000);
   }
@@ -8781,7 +8817,7 @@ async function shareDreamResult(btnEl){
   const cardSub = pickLang('너는 당첨되면 뭐부터 할래?', 'What would you do first if you won?', '如果你中奖了，会先做什么？', 'Bạn sẽ làm gì đầu tiên nếu trúng số?', 'คุณจะทำอะไรก่อนถ้าถูกรางวัล?', 'Что бы вы сделали в первую очередь, если бы выиграли?', { ar:'ماذا ستفعل أولاً لو فزت؟', bn:'জিতলে তুমি প্রথমে কী করবে?', fr:'Que ferais-tu en premier si tu gagnais ?', hi:'अगर तुम जीतोगे तो सबसे पहले क्या करोगे?', id:'Kalau kamu menang, apa yang akan kamu lakukan duluan?', ja:'あなたは当たったら最初に何する？', kk:'Сен ұтып алсаң, ең алдымен не істер едің?', km:'បើអ្នកឈ្នះ តើអ្នកនឹងធ្វើអ្វីមុនគេ?', ky:'Сен утуп алсаң, эң оболу эмне кыласың?', lo:'ຖ້າເຈົ້າຖືກລາງວັນ ເຈົ້າຈະເຮັດຫຍັງກ່ອນ?', mn:'Чи хожвол юуг эхлээд хийх вэ?', my:'သင်ဆုမှန်ရင် ဘာကို အရင်လုပ်မလဲ?', ne:'तिमी जित्यौ भने पहिले के गर्छौ?', si:'ඔබ දිනුවොත් මුලින්ම කරන්නේ මොකක්ද?', tl:'Ano ang unang gagawin mo kung manalo ka?', ur:'اگر آپ جیت جائیں تو سب سے پہلے کیا کریں گے؟', uz:"Agar yutib olsang, birinchi bo'lib nima qilasan?" , pt: `O que você faria primeiro se ganhasse?`, es: `¿Qué harías primero si ganaras?`, uk: `Що б ви зробили насамперед, якби виграли?`, tet: `Saida mak ó halo uluk se ó manán?`});
   const cardFooter = pickLang(...SHARE_CTA_FOOTER);
   const canvas = buildShareCard({ label: title, bigText: amt, subText: cardSub, footerText: cardFooter });
-  if (await tryShareCardImage(canvas, shareTitle, shareText)) return;
+  if (await tryShareCardImage(canvas, shareTitle, shareText, 'chamtax-dream-share.png')) return;
   downloadShareCardImage(canvas, 'chamtax-dream-share.png');
 
   if (navigator.share) {
@@ -8810,6 +8846,15 @@ async function shareDreamResult(btnEl){
 // 박힌 카드로 나가버리는 문제가 있었음 — isAmountManuallyEdited가 true일 때(사용자가 직접
 // 입력했거나 슬라이더/퀵필 버튼을 조작한 적 있을 때)만 결과 카드를 공유하고, 그 전에는 특정
 // 금액 없이 사이트 자체를 소개하는 일반 카드로 공유함
+//
+// 2026-07-29: 위 설명은 "일반 카드로 공유"라고 되어 있었지만, 실제 구현은 카드 이미지를 전혀
+// 안 만들고 navigator.share({title,text,url})로 링크만 공유하고 있었음(버그) — 이러면 파일
+// 공유를 지원하는 환경에서도 이미지 없이 텍스트+링크만 나가고, 링크를 받은 메신저/앱이 자동으로
+// 붙이는 미리보기는 index.html의 고정 OG 이미지/설명(예시 금액이 박힌 og-image-hook.png)이라
+// 방금 만든 결과와 전혀 무관한 카드가 뜬다는 사용자 피드백으로 발견. 다른 공유 함수(shareResult/
+// shareDreamResult/shareLatestDraw)와 똑같이 buildShareCard()로 실제 브랜드 카드를 만들고
+// tryShareCardImage()로 이미지 자체를 먼저 공유 시도하도록 맞춤 — 특정 금액 없이 사이트 소개
+// 문구만 담으므로 여전히 "계산도 안 했는데 결과인 척" 하는 문제는 재발하지 않음
 async function shareGenericPromo(){
   const shareTitle = document.querySelector('[data-i18n="hero.tag"]')?.textContent?.trim() || 'ChamTax';
   const heroTitleEl = document.querySelector('[data-i18n-html="hero.title"]');
@@ -8823,6 +8868,11 @@ async function shareGenericPromo(){
   }
   const shareText = heroTitleText ? `${shareTitle} — ${heroTitleText}` : shareTitle;
   const shareUrl = location.href;
+
+  const cardFooter = pickLang(...SHARE_CTA_FOOTER);
+  const canvas = buildShareCard({ label: shareTitle, bigText: heroTitleText, subText: '', footerText: cardFooter });
+  if (await tryShareCardImage(canvas, shareTitle, shareText, 'chamtax-promo-share.png')) return;
+  downloadShareCardImage(canvas, 'chamtax-promo-share.png');
 
   if (navigator.share) {
     try {
@@ -8931,7 +8981,7 @@ async function shareResult(){
      pt: `Se você ganhar $${amountText}M USD · como ${article} ${country}`, es: `Si ganas $${amountText}M USD · como ${article} ${country}`, uk: `Якщо ви виграєте $${amountText}M USD · як ${article} ${country}`, tet: `Se ó manán $${amountText}M USD · nu'udar ${article} ${country}`});
   const cardFooter = pickLang(...SHARE_CTA_FOOTER);
   const canvas = buildShareCard({ label: cardLabel, bigText: finalAmt, subText: cardSub, footerText: cardFooter });
-  if (await tryShareCardImage(canvas, shareTitle, shareText)) return;
+  if (await tryShareCardImage(canvas, shareTitle, shareText, 'chamtax-result-share.png')) return;
   downloadShareCardImage(canvas, 'chamtax-result-share.png');
 
   if (navigator.share) {
@@ -9023,7 +9073,7 @@ async function shareRefundChecklist(){
   const cardSub = pickLang('국세환급금, 5년 지나면 국고로 귀속돼요', 'Unclaimed refunds revert to the treasury after 5 years', '未领取的退税5年后归入国库', 'Tiền hoàn thuế chưa nhận sẽ thuộc về ngân khố sau 5 năm', 'เงินคืนภาษีที่ไม่มีใครรับจะตกเป็นของคลังหลัง 5 ปี', 'Невостребованный возврат налога переходит в казну через 5 лет', { ar:'الأموال المستردة غير المطالب بها تؤول إلى الخزينة بعد 5 سنوات', bn:'দাবি না করা রিফান্ড ৫ বছর পর কোষাগারে চলে যায়', fr:'5 ans après, les remboursements non réclamés reviennent au trésor', hi:'बिना दावे वाले रिफंड 5 साल बाद खजाने में चले जाते हैं', id:'Pengembalian yang tidak diklaim kembali ke kas negara setelah 5 tahun', ja:'未請求の還付金は5年で国庫に帰属します', kk:'Талап етілмеген қайтарымдар 5 жылдан кейін қазынаға өтеді', km:'ការសងប្រាក់ដែលមិនបានទាមទារនឹងត្រលប់ទៅឃ្លាំងសម្បត្តិជាតិវិញបន្ទាប់ពី 5 ឆ្នាំ', ky:'Талап кылынбаган кайтарымдар 5 жылдан кийин казынага өтөт', lo:'ເງິນຄືນທີ່ບໍ່ມີໃຜມາຮັບຈະຕົກເປັນຂອງຄັງຫຼັງ 5 ປີ', mn:'Эзэнгүй буцаан олголт 5 жилийн дараа сан хөмрөгт шилждэг', my:'မတောင်းယူထားတဲ့ ပြန်အမ်းငွေများသည် ၅ နှစ်ကြာလျှင် နိုင်ငံတော်ဘဏ္ဍာသို့ ပြန်ဝင်သွားမည်', ne:'दाबी नगरिएको फिर्ता ५ वर्षपछि सरकारी ढुकुटीमा जान्छ', si:'නොදැනුවත්කම හේතුවෙන් අහිමි වූ ප්‍රතිලාභ වසර 5කට පසු භාණ්ඩාගාරයට පවරයි', tl:'Ang hindi na-claim na refund ay napupunta sa treasury pagkatapos ng 5 taon', ur:'ان کلیمڈ رقم 5 سال بعد خزانے میں چلی جاتی ہے', uz:"Da'vo qilinmagan qaytarilgan mablag' 5 yildan keyin xazinaga o'tadi" , pt: `Restituições não resgatadas retornam ao tesouro após 5 anos`, es: `Los reembolsos no reclamados vuelven al tesoro después de 5 años`, uk: `Незатребувані повернення коштів переходять до скарбниці через 5 років`, tet: `Reembolso la reklama fila ba tesouru depois tinan 5`});
   const cardFooter = pickLang('👉 참택스 FAQ에서 확인하기', '👉 Check it on the ChamTax FAQ', '👉 到ChamTax常见问题确认', '👉 Kiểm tra trên FAQ của ChamTax', '👉 ตรวจสอบที่ FAQ ของ ChamTax', '👉 Проверьте в FAQ ChamTax', { ar:'👉 تحقق منه في الأسئلة الشائعة لـ ChamTax', bn:'👉 ChamTax-এর FAQ-তে দেখুন', fr:'👉 Vérifiez sur la FAQ de ChamTax', hi:'👉 ChamTax के FAQ पर देखें', id:'👉 Cek di FAQ ChamTax', ja:'👉 ChamTaxのFAQでチェック', kk:'👉 ChamTax-тың FAQ бөлімінде қараңыз', km:'👉 ពិនិត្យនៅ FAQ របស់ ChamTax', ky:"👉 ChamTax'тын FAQ'унда текшериңиз", lo:'👉 ກວດສອບທີ່ FAQ ຂອງ ChamTax', mn:'👉 ChamTax-ийн FAQ дээр шалгаарай', my:'👉 ChamTax ရဲ့ FAQ မှာ စစ်ဆေးပါ', ne:'👉 ChamTax को FAQ मा जाँच गर्नुहोस्', si:'👉 ChamTax හි FAQ හි පරීක්ෂා කරන්න', tl:'👉 Tingnan sa FAQ ng ChamTax', ur:'👉 ChamTax کے FAQ پر چیک کریں', uz:"👉 ChamTax'ning FAQ sahifasida tekshiring" , pt: `👉 Confira no FAQ do ChamTax`, es: `👉 Compruébalo en las FAQ de ChamTax`, uk: `👉 Перевірте у FAQ на ChamTax`, tet: `👉 Verifika iha FAQ ChamTax nian`});
   const canvas = buildShareCard({ label: cardLabel, bigText: cardBig, subText: cardSub, footerText: cardFooter });
-  if (await tryShareCardImage(canvas, shareTitle, shareText)) return;
+  if (await tryShareCardImage(canvas, shareTitle, shareText, 'chamtax-refund-checklist-share.png')) return;
   downloadShareCardImage(canvas, 'chamtax-refund-checklist-share.png');
 
   if (navigator.share) {
