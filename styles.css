@@ -629,8 +629,10 @@
     .country-map-callout{ transition:none; }
   }
   /* 지도의 21개국 중 자기 나라가 없는 방문자를 위한 안내 — "기타 국가"(홈 화면 세금 기준
-     토글)로 바로 이동시켜주는 버튼. 지도 바로 아래, 국가별 카드 그리드 위에 배치해서
-     지도를 훑어본 직후 시선이 자연스럽게 여기로 이어지게 함 (2026-07-28) */
+     토글)로 바로 이동시켜주는 버튼. 국가별 카드 그리드(+"더보기" 버튼) 바로 아래, 세금
+     상세 아코디언 위에 배치해서 랭킹 카드를 다 훑어본 뒤 자연스럽게 이어지게 함 — 원래는
+     지도 바로 아래에 있었으나 지도와 카드 그리드 사이 흐름을 끊는다는 피드백으로 이 위치로
+     옮김 (2026-07-28) */
   .compare-map-other-note{
     display:block; width:100%; text-align:center; font-family:inherit;
     font-size:var(--fs-small); font-weight:700; color:var(--teal);
@@ -1505,7 +1507,12 @@
   .jh-game-tag.mm{ background:var(--game-mm-bg); border:1px solid var(--game-mm-border); color:var(--status-amber); }
   .jh-note{ font-size:var(--fs-small); color:var(--text-muted); margin:2px 0 0; }
   .jh-primary-group{ background:rgba(var(--ink-rgb),0.06); border-radius:10px; padding:10px 12px; margin:0 0 6px; }
-  .jh-primary-group .jh-amt-item{ flex-direction:row; justify-content:space-between; align-items:baseline; gap:8px; }
+  /* flex-wrap:wrap 필요 이유(2026-07-28 뱃지 세로 쌓임 버그 수정): 이 컨테이너는 기본이 nowrap이라
+     "N개국 동일" 라벨+금액+국기뱃지 목록(.jh-amt-group-list)을 한 줄에 욱여넣으려다 뱃지 목록에게
+     남는 폭이 거의 없어져서(라벨/금액이 먼저 공간을 차지) 뱃지가 한 줄에 하나씩만 들어가는
+     좁고 긴 세로 열로 찌그러졌었음. wrap을 허용하고 아래 .jh-amt-group-list에 flex-basis:100%를
+     줘서, 뱃지 목록이 항상 자기 줄(라벨/금액 아래)을 새로 차지하며 전체 폭을 쓰게 함. */
+  .jh-primary-group .jh-amt-item{ flex-direction:row; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:8px; }
   .jh-primary-group .jh-amt-label{ font-size:var(--fs-small); font-weight:600; }
   .jh-primary-group .jh-amt{ font-size:17px; }
   .jh-amounts-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px; }
@@ -1524,7 +1531,12 @@
      있었음(날짜조회 카드에 이 배지가 합쳐지며 더 잘 보이게 됨) — 밑줄 대신 다른 토글 배지
      (.jh-more-summary)와 같은 방식으로 teal 색+굵게만으로 클릭 가능함을 표시 */
   button.jh-amt-group-toggle{ font-family:inherit; background:none; border:none; padding:0; text-align:left; cursor:pointer; color:var(--teal); font-weight:700; }
-  .jh-amt-group-list{ flex-wrap:wrap; gap:4px; margin-top:6px; max-width:100%; }
+  /* display:flex는 JS(toggleJhGroupList)가 인라인 style로도 넣어주지만, 여기 CSS에도 명시해서
+     이 클래스만 보고도 flex 컨테이너임을 알 수 있게 함. width/flex-basis:100%가 핵심 —
+     .jh-primary-item(row+wrap) 안에서 이 목록이 라벨/금액과 한 줄을 다투지 않고 항상 자기
+     줄 전체 폭을 차지하게 강제해서, 그 안의 .flag-badge들이 실제로 여러 개씩 가로로 흐르며
+     줄바꿈됨(2026-07-28 세로 한 줄 쌓임 버그 수정). */
+  .jh-amt-group-list{ display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; width:100%; max-width:100%; flex:1 1 100%; }
   .jh-more{ margin-top:8px; }
   .jh-more-summary{
     display:flex; align-items:center; justify-content:center; gap:4px;

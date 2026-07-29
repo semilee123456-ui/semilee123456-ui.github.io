@@ -206,6 +206,50 @@ const navWidths = [300, 320, 344, 360, 375, 390, 412, 428];
         }
       });
     }
+    // ===== "연금 X → 일시불 Y" 환산 안내 문구가 현재 선택된 통화를 따라가는지 (2026-07-28 신규) =====
+    // 예전엔 이 문구만 통화 선택기와 무관하게 항상 "$X M"(달러) 고정이었음(열여섯 번째 세션이
+    // 문서화해둔 알려진 미해결 항목) — formatCompactCurrencyAmount() 재사용으로 고친 것의 회귀
+    // 방지 테스트. (1) 연금액 탭에 입력→노트가 뜬 상태에서 통화를 바꾸면 노트도 같이 바뀌는지,
+    // (2) KRW 선택 시 "$" 기호가 전혀 안 남는지(옛 버그의 핵심 증상)까지 확인.
+    const announcedNoteCheck = await page.evaluate(() => {
+      if (typeof applyHomeAnnouncedMillions !== 'function' || typeof setSharedInputCurrency !== 'function') {
+        return { ok: false, reason: 'applyHomeAnnouncedMillions 또는 setSharedInputCurrency 없음' };
+      }
+      setSharedInputCurrency('USD');
+      applyHomeAnnouncedMillions(500); // $500M 발표
+      const note = document.getElementById('home-announced-convert-note');
+      const usdText = note ? note.textContent : null;
+
+      setSharedInputCurrency('KRW');
+      const krwText = note ? note.textContent : null;
+
+      setSharedInputCurrency('CNY');
+      const cnyText = note ? note.textContent : null;
+
+      // 원복(다음 테스트에 영향 없게)
+      setSharedInputCurrency('USD');
+      const note2 = document.getElementById('home-announced-convert-note');
+      if (note2) note2.style.display = 'none';
+
+      return { ok: true, usdText, krwText, cnyText };
+    });
+    if (!announcedNoteCheck.ok) {
+      issues.push({ type: 'announced-note', problem: announcedNoteCheck.reason });
+    } else {
+      const { usdText, krwText, cnyText } = announcedNoteCheck;
+      if (!usdText || !usdText.includes('$')) {
+        issues.push({ type: 'announced-note', problem: `USD 선택 상태인데 안내 문구에 "$"가 없음: "${usdText}"` });
+      }
+      if (!krwText || krwText.includes('$') || !krwText.includes('억원')) {
+        issues.push({ type: 'announced-note', problem: `KRW로 바꿨는데 안내 문구가 여전히 달러 기준이거나 "억원"이 없음: "${krwText}"` });
+      }
+      if (!cnyText || cnyText.includes('$') || !cnyText.includes('¥')) {
+        issues.push({ type: 'announced-note', problem: `CNY로 바꿨는데 안내 문구가 위안화 기호로 안 바뀜: "${cnyText}"` });
+      }
+      if (krwText === usdText) {
+        issues.push({ type: 'announced-note', problem: '통화를 바꿨는데 안내 문구 텍스트가 전혀 안 바뀜(고정 텍스트로 되돌아간 것으로 의심)' });
+      }
+    }
   } catch (e) {
     issues.push({ type: 'slider', problem: String(e) });
   } finally {
