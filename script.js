@@ -383,6 +383,16 @@ function applyTranslations(){
       : 'korean-abroad-us-lottery-tax.html';
   }
 
+  // "미국 로또 입문" 가이드는 2026-07-29 후속 세션에서 26개 언어 전부 번역됨(처음엔 ko/en/zh
+  // 3개뿐이라 나머지는 전부 영어로 폴백했었음) — 이제 ADDITIONAL_LANGS에 있는 모든 언어가 자기
+  // 언어 페이지를 갖고 있으므로, ko를 제외한 모든 언어는 그대로 `us-lottery-basics-{lang}.html`
+  // 패턴을 따름
+  const usLotteryBasicsLink = document.getElementById('usLotteryBasicsLink');
+  if (usLotteryBasicsLink) {
+    usLotteryBasicsLink.href = (currentLang === 'ko') ? 'us-lottery-basics.html'
+      : `us-lottery-basics-${currentLang}.html`;
+  }
+
   // 언어 전환 시 환율 배지의 상태 문구(title)도 항상 다시 반영 (실패/성공/기본 상태와 무관하게 현재 언어로)
   updateExchangeRateBadges(exchangeRateFetchFailed);
 

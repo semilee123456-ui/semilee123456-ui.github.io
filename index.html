@@ -1855,6 +1855,14 @@
 
           <div class="callout" style="margin-top:14px;" data-i18n-html="faq.sameStoreCallout">💡 <b>"어디서 사면 파워볼이고 어디서 사면 메가밀리언즈예요?"</b>라고 헷갈려하시는 분들 많은데, 사실 같은 가게에서 두 게임 다 팔아요. 계산대에서 원하는 게임 이름만 말하면 돼요.</div>
           <p class="foot-note" style="margin-top:12px;" data-i18n-html="faq.otherGamesNote">참고: 이 둘 말고도 <b>밀리어네어 포 라이프</b>, <b>로또 아메리카</b> 같은 멀티스테이트 게임도 있고 각 주마다 자체 로또도 있지만, 한국에서 화제가 되는 건 이 두 게임뿐이라 저희 사이트는 이 둘만 다뤄요.</p>
+          <!-- 2026-07-29: "미국 로또 입문" 별도 랜딩페이지(us-lottery-basics*.html)를 만들어놓고
+               정작 사이트 안 어디에서도 링크를 안 걸어놔서, 검색엔진으로만 들어올 수 있고 실제
+               방문자는 도움말 탭 안에서 못 찾아가는 상태였음(사용자가 직접 지적) — 이 아코디언
+               바로 위 faq.aGameBasics 답변이 이미 "아래 📚 더 자세히 알아보기 → 기본 용어부터
+               알아볼까요?에서 확인하세요"라고 안내하고 있으니, 그 안내가 실제로 도착하는 이 지점에
+               링크를 둠. href는 jackpotFullLink/introAbroadLink와 같은 패턴으로 applyTranslations()가
+               언어별로 맞춰줌(기본값은 한국어 페이지) -->
+          <a id="usLotteryBasicsLink" class="annuity-info-link" style="margin-top:10px;" href="us-lottery-basics.html" data-i18n="faq.basicsGuideLink">📖 미국 로또, 하나도 모르겠다면? 완전 초보 가이드 보기 →</a>
         </details>
 
         <details class="panel-accordion">
