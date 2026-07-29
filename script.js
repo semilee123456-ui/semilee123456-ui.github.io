@@ -82,6 +82,46 @@ function detectBrowserLanguage(){
   return null;
 }
 
+// 검색엔진에서 "한국어로 검색해서" 들어온 방문자를 감지 (2026-07-29 추가).
+// 계기: 사이트 운영자가 네이버에서 "참택스"를 검색해 들어왔는데, 마침 그 기기의 브라우저/OS
+// 언어가 키르기스어로 설정돼 있어서 detectBrowserLanguage()가 키르기스어를 골라버려 화면이
+// 키르기스어로 뜬 걸 목격함. detectBrowserLanguage() 자체는 "의도된 설계"가 맞음(위 주석 참고 —
+// 한국에 사는 외국인 근로자(EPS 체류자)를 위한 기능이라 없애면 안 됨). 하지만 방문자가 직접
+// 타이핑한 한국어 검색어는 "그 순간의 실제 언어 의도"를 기기 설정보다 더 강하고 직접적으로
+// 보여주는 신호임(기기 언어는 다른 사람이 예전에 설정해뒀거나, 여러 언어를 쓰는 사람이 최근 잠깐
+// 바꿔둔 값일 수 있어 항상 "지금 이 사람이 쓰는 언어"를 뜻하진 않음) — 그래서 이 신호가 있을 때는
+// detectBrowserLanguage()보다 먼저 한국어를 확정한다.
+//
+// 구현: document.referrer(직전 페이지 URL, 없으면 빈 문자열)를 URL로 파싱해서 쿼리스트링의 모든
+// 파라미터 "값"을 검사하고, 그중 하나라도 한글이 있으면 true. 네이버는 query=, 구글은 q=,
+// 다음/빙/야후는 q= 또는 p= 등 검색엔진마다 검색어 파라미터 이름이 제각각이라, 몇 개 이름만
+// 하드코딩하면 새로 생기거나 덜 알려진 엔진을 놓치기 쉬움 — 대신 파라미터 "이름"은 아예 보지
+// 않고 모든 값을 훑어서 한글 포함 여부만 확인하는 쪽이 훨씬 단순하고 엔진에 무관하게 동작함.
+// URLSearchParams가 %XX 퍼센트 인코딩과 '+'(공백 관례) 둘 다 파싱 시점에 이미 디코딩해서 값을
+// 돌려주므로 별도 decodeURIComponent 호출은 필요 없음.
+// 한글 범위: 완성형 음절(가~힣, U+AC00~U+D7A3)이 실제로 거의 모든 경우를 커버하지만, 조합 중인
+// 자모(U+1100~U+11FF)·호환용 자모(U+3130~U+318F)까지 넉넉히 포함해서 예외적인 인코딩도 잡음.
+// referrer가 없는 경우(북마크·주소창 직접 입력·브라우저 프라이버시 설정으로 리퍼러 생략 — 전부
+// 흔한 정상 상황, 에러 아님)나 URL 파싱이 실패하는 경우(리퍼러 값이 비정상)는 조용히 false를
+// 반환해서 기존 detectBrowserLanguage() 흐름으로 그대로 넘어가게 함 — 이 함수는 기존 자동감지를
+// 대체하는 게 아니라 그 앞에 끼워 넣는 "추가" 신호일 뿐임. 외부 API 호출은 전혀 없음(이 프로젝트의
+// "IP 지오로케이션 같은 외부 API 없이 동작" 원칙과 일관됨, detectBrowserLanguage() 주석 참고).
+function arrivedViaKoreanSearchQuery(){
+  const ref = document.referrer;
+  if (!ref) return false;
+  try {
+    const refUrl = new URL(ref);
+    const HANGUL_RE = /[가-힣ᄀ-ᇿ㄰-㆏]/;
+    for (const value of refUrl.searchParams.values()) {
+      if (HANGUL_RE.test(value)) return true;
+    }
+    return false;
+  } catch (e) {
+    // referrer가 유효한 URL이 아닌 등 예상 밖 값 — 신호 없음으로 취급하고 기존 흐름 유지
+    return false;
+  }
+}
+
 // 한국어는 I18N_CACHE에 아예 들어있지 않음 (HTML의 기본 텍스트 자체가 한국어라 번역이 필요 없음).
 // 그 외 언어는 i18n/<lang>.json이 로드되기 전이면 아직 undefined를 반환하고, 그동안 화면은
 // 한국어 기본 텍스트를 그대로 보여줌 — 로드가 끝나면 applyTranslations()가 다시 돌며 갱신됨.
@@ -6807,9 +6847,17 @@ document.addEventListener('DOMContentLoaded', () => {
 //    의사가 항상 우선함)
 // 2) 영어/중국어 랜딩페이지(korean-abroad-lottery-tax.html, china-resident-us-lottery-tax.html 등)에서
 //    "index.html?lang=en" 처럼 붙어서 들어온 URL 파라미터
-// 3) 브라우저/OS 설정 언어 자동 감지(navigator.language) — 방문자 나라를 직접 조회하는 대신
-//    이 방법을 씀(외부 API 불필요, 즉시 동작, 언어별 세금 정보 사이트 특성상 더 정확한 신호)
-// 4) 위 셋 다 없으면 그대로 기본값(한국어) 유지
+// 3) 검색엔진에서 한국어로 검색해서 들어온 경우 한국어로 시작 (2026-07-29 추가,
+//    arrivedViaKoreanSearchQuery() 참고) — 방문자가 방금 직접 타이핑한 검색어가, 기기에 예전부터
+//    설정돼 있었을 수 있는 언어값보다 "지금 이 사람의 실제 언어 의도"를 더 직접적으로 보여준다는
+//    판단. 아래 4번(기기 자동감지)보다 먼저 검사하되, 위 1~2번(사용자의 명시적 선택)은 절대 덮지
+//    않음 — 예를 들어 "?lang=vi"로 들어온 링크는 그 리퍼러에 우연히 한글이 섞여 있어도 여전히
+//    베트남어로 뜸(2번이 이미 처리해서 이 분기까지 오지 않음).
+// 4) 브라우저/OS 설정 언어 자동 감지(navigator.language) — 방문자 나라를 직접 조회하는 대신
+//    이 방법을 씀(외부 API 불필요, 즉시 동작, 언어별 세금 정보 사이트 특성상 더 정확한 신호).
+//    한국 거주 외국인 근로자(EPS 체류자) 등을 위한 기능이라 3번이 생겼다고 없애면 안 됨 — 3번은
+//    "검색으로 들어온 경우"에만 끼어드는 추가 신호일 뿐, 이 자동감지 자체를 대체하지 않음.
+// 5) 위 넷 다 없으면 그대로 기본값(한국어) 유지
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(location.search);
   const urlLang = params.get('lang');
@@ -6825,6 +6873,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 새서, 한국어가 아닌 브라우저에서 열면 링크가 지정한 한국어 대신 엉뚱한 언어로 뜨는
     // 버그였음(현재는 이 링크를 실제로 쓰는 페이지가 없어 드러나진 않았지만 잠재 버그였음)
     setLanguage(urlLang);
+  } else if (arrivedViaKoreanSearchQuery()) {
+    // 검색엔진 리퍼러 쿼리스트링에 한글이 있으면(예: 네이버에서 "참택스" 검색) 기기 언어
+    // 자동감지보다 우선해서 한국어로 시작 — 위 arrivedViaKoreanSearchQuery() 정의부 주석 참고
+    setLanguage('ko');
   } else {
     const detected = detectBrowserLanguage();
     if (detected) setLanguage(detected);
