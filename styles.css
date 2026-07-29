@@ -178,11 +178,33 @@
      (실사용자 데스크톱 스크린샷으로 확인). 640px로 좁혔더니 이번엔 반대로 2560px급 넓은
      모니터에서 카드 양옆에 배경만 과도하게 남는다는 지적이 나와서, 버튼 늘어짐과 여백 과다
      사이의 절충값으로 900px로 재조정함(모바일 레이아웃은 max-width가 화면 폭보다 커서
-     영향 없음, 회귀 테스트가 다루는 240~430px 범위 밖이라 줄바꿈 위험도 없음) */
+     영향 없음, 회귀 테스트가 다루는 240~430px 범위 밖이라 줄바꿈 위험도 없음).
+     2026-07-29: 900px 고정값도 "모니터 사이즈가 다 다른데 여전히 여백이 너무 많다"고 재차
+     지적받음(사용자가 "몇 번이나 말했다"고 함) — 고정 픽셀 하나로는 1440px 노트북부터
+     3440px 울트라와이드까지 다 만족시킬 수 없다는 게 근본 문제라고 판단, 이번엔 숫자를 또
+     바꾸는 대신 뷰포트에 비례해서 늘어나는 clamp()로 바꿈(최소 900px 밑으로는 안 좁아짐 —
+     기존에 이미 검증된 하한 유지, 최대 1200px까지 화면 폭의 78%만큼 커짐). 다만 이렇게
+     페이지 배경만 넓히면 2026-07-27에 1140px에서 문제됐던 "버튼이 절반을 가로지르는" 증상이
+     다시 생길 위험이 있어서, 이번엔 그 원인이었던 버튼류(.cta-btn/.share-btn 등)에 별도
+     max-width를 줘서 카드 배경은 넓어지되 실제 버튼/입력 요소는 계속 편한 폭을 유지하게
+     분리함(아래 관련 규칙 참고) — Playwright로 1440/1920/2560/3440px 전부 스크린샷 확인 후 반영 */
   .page{
     background:var(--bg); padding:28px 28px 36px; min-height:200px;
-    width:100%; max-width:900px; margin:0 auto; border-radius:14px; overflow:hidden;
+    width:100%; max-width:clamp(900px, 78vw, 1200px); margin:0 auto; border-radius:14px; overflow:hidden;
     box-shadow:0 1px 3px rgba(var(--ink-rgb),0.08), 0 8px 24px rgba(var(--ink-rgb),0.06);
+  }
+
+  /* 2026-07-29: 위 .page가 900px→clamp(...,1200px)로 넓어지면서, 2026-07-27에 1140px에서
+     문제됐던 것과 같은 이유로 버튼 한 줄·입력 행이 다시 늘어져 보일 위험이 있는 지점만
+     골라서 카드 배경과 별개로 편한 폭(640px — 이 사이트가 다른 곳(서브페이지 5개의
+     .wrap)에서도 이미 "적당한 읽기 폭"으로 쓰는 값)으로 가운데 정렬함. .page 자체가 900px
+     미만일 땐(대부분의 노트북 화면) 이 규칙이 아무 영향을 안 줌(카드 폭 자체가 이미 640px보다
+     좁을 수 있어 max-width가 그냥 무시됨) */
+  @media (min-width:901px){
+    .cta-btn, .home-result-btn-row, .mn-btn-row, .input-row, .check-date-row{
+      max-width:640px; margin-left:auto; margin-right:auto;
+    }
+    .share-btn{ max-width:640px; margin-left:auto; margin-right:auto; }
   }
 
   .nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; row-gap:8px; column-gap:10px; }
@@ -749,7 +771,14 @@
   .side-breakdown-cell{ background:var(--bg); border-radius:10px; padding:12px; min-width:0; }
   .side-breakdown-label{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 4px; font-weight:500; }
   .side-breakdown-val{ font-size:18px; font-weight:700; color:var(--text-dark); margin:0; font-variant-numeric:tabular-nums; }
-  @media (max-width:340px){
+  /* 2026-07-29: 국가별 비교 카드 그리드(.side-by-side-grid)가 휴대폰 폭(약 390px 안팎)에서
+     "카드 너비가 들쭉날쭉하다"는 지적(사용자 스크린샷 2장으로 확인) — 같은 값끼리 묶인 카드는
+     전체 폭(위 side-card-full 관련 주석 참고, 여러 나라 이름이 좁은 칸에서 줄바꿈되는 걸 막기
+     위한 의도된 설계)인데, 단일 국가 카드는 2열 절반 폭이라 한 화면에 전체폭/절반폭이 섞여
+     보임. 카드 내용·그룹핑 로직은 그대로 두고, 이 1열 모드가 켜지는 기준만 340px→520px로
+     올려서 대부분의 휴대폰 폭에서 전부 1열(항상 전체 폭)로 통일되게 함 — 태블릿/데스크톱처럼
+     화면이 넓어 폭 차이가 덜 두드러지는 곳은 기존처럼 2열 그리드 유지 */
+  @media (max-width:520px){
     .side-by-side-grid, .side-breakdown-grid{ grid-template-columns:1fr; }
   }
   .result-cell{ background:var(--bg); border-radius:8px; padding:12px; }
@@ -1520,9 +1549,10 @@
   .jh-amt-chip .jh-amt-label{ font-size:var(--fs-small); }
   .jh-amt-chip .jh-amt{ font-size:var(--fs-small); color:var(--text-dark); }
   /* "기타 국가" 칩 — 랭킹 집계(amtResults/amtGroups) 밖에서 항상 맨 끝에 붙는 별도 칩이라
-     점선 테두리 + 위쪽 여백으로 랭킹 칩들과 시각적으로 분리함 (2026-07-28) */
-  .jh-amt-other-wrap{ margin-top:6px; }
-  .jh-amt-chip-other{ display:block; border:1px dashed rgba(var(--ink-rgb),0.28); background:transparent; }
+     점선 테두리로만 랭킹 칩들과 구분함 (2026-07-28). 2026-07-29: display:block으로 혼자 전체
+     줄을 차지해서 유독 커 보인다는 지적으로, 나머지 칩들과 같은 2열 그리드 안에 나란히
+     들어가도록 바꿈(script.js renderAmountBreakdownHtml() 참고) — 점선 테두리만 남겨 구분 유지 */
+  .jh-amt-chip-other{ border:1px dashed rgba(var(--ink-rgb),0.28); background:transparent; }
   .jh-amt-item{ display:flex; flex-direction:column; gap:1px; min-width:0; }
   .jh-amt-label{ font-size:var(--fs-small); color:var(--text-muted); }
   .jh-amt{ font-size:var(--fs-note); font-weight:800; color:var(--teal); }
@@ -1669,6 +1699,10 @@
   .jc-row.jc-final .jc-val{ color:var(--teal); }
   .jc-note{ font-size:var(--fs-small); color:var(--text-muted); margin:10px 0 0; line-height:1.6; }
   .jc-note b{ color:var(--text-dark); }
+  .jc-flow-intro{
+    font-size:var(--fs-small); font-weight:600; color:var(--text-dark); line-height:1.6;
+    background:rgba(var(--teal-rgb),0.08); border-radius:10px; padding:10px 12px; margin:0 0 10px;
+  }
   .jc-annuity-box{ margin-top:6px; background:var(--bg); border-radius:8px; padding:10px 12px; }
   .jc-annuity-box .jc-row{ border-bottom:1px solid var(--border); padding:8px 0; }
   .jc-annuity-box .jc-row:last-of-type{ border-bottom:none; }

@@ -59,6 +59,13 @@ function setLanguage(lang, isManual){
   }
   currentLang = lang;
   if (isManual) { try { localStorage.setItem('chamtax_lang', lang); } catch (e) {} }
+  // 언어를 바꾸면 그 언어권에서 자연스러운 통화로 같이 맞춰줌(2026-07-29, 사용자 요청) —
+  // LANG_TO_CURRENCY에 없는 언어(여러 나라에 걸쳐 쓰여서 통화를 단정 못 하는 아랍어 등)는
+  // 건드리지 않고, 사용자가 통화를 한 번이라도 직접 고른 적 있으면(isCurrencyManuallyEdited)
+  // 그 뒤로는 언어를 바꿔도 통화는 그대로 둠(isAmountManuallyEdited와 같은 원칙)
+  if (!isCurrencyManuallyEdited && LANG_TO_CURRENCY[lang]) {
+    setSharedInputCurrency(LANG_TO_CURRENCY[lang]);
+  }
   // 번역 JSON을 불러오는 동안에는 화면이 기존 언어(보통 한국어 기본 텍스트) 그대로 보이다가,
   // 로드가 끝나면 applyTranslations()가 다시 실행되며 새 언어로 바뀜 — 언어 전환 버튼은
   // onclick="setLanguage(...)"처럼 이 Promise를 기다리지 않고 바로 다음 동작(예: 화면 이동)으로
@@ -323,7 +330,11 @@ function applyTranslations(){
   if (toggleBtn) toggleBtn.value = currentLang;
 
   const activeView = document.querySelector('.view.on');
-  if (activeView) applyCurrentViewTitle(activeView.id.replace('view-', ''));
+  if (activeView) {
+    const activeViewName = activeView.id.replace('view-', '');
+    applyCurrentViewTitle(activeViewName);
+    applyCurrentViewDescription(activeViewName);
+  }
 
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
@@ -726,6 +737,20 @@ let sharedState = 'AVG';
 // "억원"이 훨씬 익숙하고, formatWon()이 이미 전역적으로 억/조 단위를 쓰며, 희망액 탭은
 // 애초부터 항상 KRW/억원 전용이었던 것과도 일관됨(판단 근거는 HANDOFF.md 참고).
 let sharedInputCurrency = 'KRW';
+// 통화 선택기(#homeCurrencySelect/#compareCurrencySelect)를 사용자가 직접 건드린 적 있으면
+// true(2026-07-29 언어→통화 자동 연동 추가와 함께 신규) — isAmountManuallyEdited와 같은 원칙:
+// 한 번이라도 직접 골랐으면 그 뒤로 언어를 바꿔도 자동 전환이 그 선택을 덮어쓰지 않게 함
+let isCurrencyManuallyEdited = false;
+// 언어 코드 → 그 언어권에서 가장 자연스러운 통화 코드. 1국가 1언어로 깔끔하게 대응되는
+// 언어만 넣음(예: 크메르어→캄보디아 리엘). 여러 나라에 걸쳐 쓰이는 언어(아랍어·프랑스어·
+// 스페인어·포르투갈어·우크라이나어)는 "이 통화다"라고 단정할 근거가 없어서 일부러 뺌 —
+// 이 목록에 없으면 setLanguage()가 통화를 건드리지 않고 그대로 둠
+const LANG_TO_CURRENCY = {
+  ko: 'KRW', en: 'USD', zh: 'CNY', vi: 'VND', th: 'THB', ru: 'RUB',
+  km: 'KHR', ne: 'NPR', id: 'IDR', my: 'MMK', si: 'LKR', uz: 'UZS',
+  mn: 'MNT', kk: 'KZT', ky: 'KGS', ur: 'PKR', bn: 'BDT', lo: 'LAK',
+  ja: 'JPY', hi: 'INR', tl: 'PHP',
+};
 // 연금액 탭에 마지막으로 입력된 "정확한" USD 백만 단위 값 — 슬라이더 위치(로그 스케일
 // 반올림으로 정밀도 손실 있음)를 통화 전환 재환산의 원본으로 쓰면 KRW↔다른 통화를 여러 번
 // 오갈 때마다 표시값이 조금씩 틀어지는 문제가 있어서, 일시불 탭의 sharedAmountUsd와 같은
@@ -811,7 +836,11 @@ function formatWon(n){
   // 이 분기 어디에도 안 걸려서 "억원"이라는 한국식 단위가 그대로 노출되고 있었음 — "억"은
   // 한국·중국·일본에서만 통용되는 단위라 다른 언어 화자에게는 숫자 크기 자체가 안 와닿는 문제였음.
   // 완벽한 현지 단위(예: 힌디·벵골어의 lakh/crore)까지 만들진 못했지만, 최소한 "억"보다는
-  // 훨씬 널리 통하는 영어식 million/billion 표기로 통일해서 최소한의 가독성을 보장함
+  // 훨씬 널리 통하는 영어식 million/billion 표기로 통일해서 최소한의 가독성을 보장함.
+  // 2026-07-29: 이후 한 단계 더 나아가, 이 20개 언어도 "million/billion"이라는 영어 단어 자체가
+  // 그 언어 문장 한복판에 그대로 섞여 나오는 문제(사이트 전체 점검에서 발견)를 고쳐 각 언어의
+  // 고유 단위 번역(LANG_UNIT_WORDS)을 쓰게 함 — 매핑에 없는 언어만 formatWonEn()으로 폴백
+  if (typeof currentLang !== 'undefined' && LANG_UNIT_WORDS[currentLang]) return formatWonOther(n);
   if (typeof currentLang !== 'undefined' && currentLang !== 'ko') return formatWonEn(n);
   // "11,218억원"처럼 억 단위 숫자를 3자리 콤마로만 묶으면, 한국어 화자도 조 단위로 넘어갔는지
   // 확인하려면 4자리씩(만/억/조) 다시 끊어 읽어야 해서 한눈에 안 들어옴(사용자가 스크린샷으로 직접
@@ -859,6 +888,41 @@ function formatWonEn(n){ return formatWonIntl(n, ['million', 'billion', 'trillio
 function formatWonVi(n){ return formatWonIntl(n, ['triệu', 'tỷ', 'nghìn tỷ'], 'vi-VN'); }
 function formatWonTh(n){ return formatWonIntl(n, ['ล้าน', 'พันล้าน', 'ล้านล้าน'], 'th-TH'); }
 function formatWonRu(n){ return formatWonIntl(n, ['млн', 'млрд', 'трлн'], 'ru-RU'); }
+// en/vi/th/ru를 제외한 나머지 20개 언어(ADDITIONAL_LANGS 중 zh/ja는 자체 억 단위 포맷터가 따로
+// 있어서 제외)는 예전엔 formatWon()이 전부 formatWonEn()으로 몰아서 "million/billion" 같은 영어
+// 단어가 그 언어 문장 한복판에 그대로 섞여 나오는 문제가 있었음(2026-07-29 사이트 전체 점검에서
+// 아랍어·크메르어 화면 캡처로 확인). hi/bn/ne/ur처럼 원래 lakh/crore(10^5/10^7) 체계를 쓰는
+// 언어도, 완벽한 현지 단위 대신 위 formatWonEn()과 같은 이유로 훨씬 널리 통하는 million/billion/
+// trillion의 그 언어 번역(또는 흔히 쓰이는 외래어 표기)으로 통일함. 숫자 자체의 그룹핑·자릿수
+// 표기(아랍 숫자냐 그 언어 고유 숫자냐 등)는 LOCALE_MAP을 그대로 재사용해 사이트 다른 곳(예:
+// jc-jackpot 금액 표시)과 일관되게 둠 — 이 함수만 다른 로케일 규칙을 새로 만들지 않음.
+// 프랑스어·스페인어는 "million" 뒤 단위가 영어와 다른 크기를 가리키는 장주법(long scale) 언어라
+// 특히 주의: 프랑스어 billion=10^12(영어 trillion과 같음, 그래서 10^9엔 milliard를 씀), 스페인어
+// billón도 10^12(그래서 10^9엔 "mil millones"를 씀) — 그대로 번역기를 돌리면 1000배 틀린 값처럼
+// 읽히는 실수가 흔해서 여기 명시해둠.
+const LANG_UNIT_WORDS = {
+  km: ['លាន', 'ប៊ីលាន', 'ទ្រីលាន'],
+  ne: ['मिलियन', 'बिलियन', 'ट्रिलियन'],
+  id: ['juta', 'miliar', 'triliun'],
+  my: ['သန်း', 'ဘီလီယံ', 'ထရီလီယံ'],
+  si: ['මිලියන', 'බිලියන', 'ට්‍රිලියන'],
+  uz: ['million', 'milliard', 'trillion'],
+  mn: ['сая', 'тэрбум', 'их наяд'],
+  kk: ['миллион', 'миллиард', 'триллион'],
+  ky: ['миллион', 'миллиард', 'триллион'],
+  ur: ['ملین', 'بلین', 'ٹریلین'],
+  bn: ['মিলিয়ন', 'বিলিয়ন', 'ট্রিলিয়ন'],
+  lo: ['ລ້ານ', 'ພັນລ້ານ', 'ລ້ານລ້ານ'],
+  ar: ['مليون', 'مليار', 'تريليون'],
+  hi: ['मिलियन', 'बिलियन', 'ट्रिलियन'],
+  fr: ['million', 'milliard', 'billion'], // 프랑스어 장주법: billion=10^12
+  tl: ['milyon', 'bilyon', 'trilyon'],
+  pt: ['milhão', 'bilhão', 'trilhão'],
+  es: ['millón', 'mil millones', 'billón'], // 스페인어 장주법: billón=10^12라 10^9엔 "mil millones"
+  uk: ['мільйон', 'мільярд', 'трильйон'],
+  tet: ['millaun', 'bilaun', 'trilaun'],
+};
+function formatWonOther(n){ return formatWonIntl(n, LANG_UNIT_WORDS[currentLang], LOCALE_MAP[currentLang] || 'en-US'); }
 // 중국어·일본어도 한국어와 같은 이유(억 단위 숫자를 3자리 콤마로만 묶으면 万亿/兆 단위를 넘었는지
 // 한눈에 안 들어옴)로 1조(=10,000억) 이상이면 상위 단위를 앞에 분리해서 보여줌 — usdToKrwLabel()의
 // 잭팟 퀵필 라벨에 이미 있던 "N万亿M亿" 표기 방식과 통일함(소수점 근사 대신 정확한 값을 그대로 보여줌)
@@ -1776,6 +1840,39 @@ function applyCurrentViewTitle(view){
   document.title = cleanLabel ? `${cleanLabel} | ChamTax` : entry.ko;
 }
 
+// <meta name="description">가 언어 전환과 무관하게 HTML에 박힌 한국어 문구로 항상 고정돼있던
+// 문제(2026-07-29, "언어별 SEO 노출" 점검 중 발견 — <title>/<html lang>은 이미 언어별로
+// 갱신되고 있었는데 이 태그만 빠져있었음). 구글이 검색결과 스니펫에 이 태그를 그대로 쓸 수도
+// 있어서, hreflang으로 다른 언어 검색결과에 노출되더라도 스니펫은 한국어로 보이는 불일치가
+// 있었음. PAGE_TITLES와 같은 원칙: ko/en/zh(가장 트래픽이 큰 3개 핵심 언어)만 직접 새로
+// 써주고, 나머지 언어는 새 번역 리스크 없이 이미 검증된 hero.tag+hero.title(광고 문구용으로
+// 이미 쓰이는 짧은 문장들)을 조합해서 최소한 그 언어로는 보이게 함 — 완벽한 맞춤 설명은
+// 아니지만 "한국어 고정" 문제는 해결됨
+const PAGE_DESCRIPTIONS = {
+  home: {
+    ko: '미국 복권(파워볼·메가밀리언즈) 당첨 시 세금과 실수령액을 확인해보세요. 한국 거주자 이중과세, 미국 비거주자 원천징수까지 한 번에 계산해볼 수 있어요.',
+    en: 'Calculate US Powerball & Mega Millions after-tax take-home instantly — nonresident withholding, Korea double-taxation, and more, all in one place.',
+    zh: '立即计算美国强力球·超级百万彩票中奖后的税后实得金额 — 涵盖非居民预扣税、韩国双重征税等。',
+  },
+};
+
+function applyCurrentViewDescription(view){
+  const metaEl = document.querySelector('meta[name="description"]');
+  if (!metaEl) return;
+  const entry = PAGE_DESCRIPTIONS[view];
+  if (entry && entry[currentLang]) { metaEl.setAttribute('content', entry[currentLang]); return; }
+  if (entry && currentLang === 'ko') { metaEl.setAttribute('content', entry.ko); return; }
+  // 커스텀 문구가 없는 화면/언어는 hero.tag(짧은 태그라인)+hero.title(질문형 한 줄, <br> 포함이라
+  // 공백으로 치환)을 이어붙여 최소한의 설명형 문장을 만듦 — 둘 다 이미 22개 언어 전부 채워진
+  // 검증된 키라 새 번역 없이 안전하게 재사용 가능
+  const tag = resolveI18n('hero.tag');
+  const titleHtml = resolveI18n('hero.title');
+  const titleText = titleHtml ? titleHtml.replace(/<br\s*\/?>/gi, ' ').trim() : '';
+  const combined = [tag, titleText].filter(Boolean).join(' — ');
+  if (combined) { metaEl.setAttribute('content', combined); return; }
+  if (entry) metaEl.setAttribute('content', entry.ko);
+}
+
 function go(view){
   document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
   document.getElementById('view-' + view).classList.add('on');
@@ -1784,6 +1881,7 @@ function go(view){
   document.getElementById('nav-odds').classList.toggle('active', view === 'odds');
   document.getElementById('nav-faq').classList.toggle('active', view === 'faq');
   applyCurrentViewTitle(view);
+  applyCurrentViewDescription(view);
 
   // 도움말(FAQ) 검색 플로팅 버튼은 이미 도착해있는 도움말 화면에서까지 떠 있을 필요가 없어서
   // 그 화면에서만 숨김 (다른 모든 화면에서는 계속 떠 있음)
@@ -3790,7 +3888,6 @@ function renderAmountBreakdownHtml(cashUsd, stateCode){
   });
   const [primaryGroup, ...restVisibleGroups] = visibleGroups;
   const primaryHtml = primaryGroup ? `<div class="jh-primary-group">${toAmtItem(primaryGroup, true)}</div>` : '';
-  const restHtml = restVisibleGroups.length ? `<div class="jh-amounts-grid">${restVisibleGroups.map(g => toAmtItem(g, false)).join('')}</div>` : '';
   const hiddenCountryCount = hiddenGroups.reduce((sum, g) => sum + g.items.length, 0);
   // 이 문구 안 숫자가 영어 등 라틴 문자와 섞여 있는데, RTL(아랍어/우르두어) 페이지 안에서
   // 별도 방향 지정 없이 그대로 두면 브라우저 bidi 알고리즘이 어순을 반대로 뒤집어버림
@@ -3808,11 +3905,16 @@ function renderAmountBreakdownHtml(cashUsd, stateCode){
   // "기타 국가"(21개국 목록에 없는 나라) — 위 amtResults/amtGroups 랭킹 집계에는 아예 안 끼우고
   // (특정 나라가 아니라서 순위 경쟁 대상이 아님) 항상 맨 끝에 별도 칩으로 붙임. basisSuffix는
   // calcTakeHome()의 'other' 분기가 이미 26개 언어로 번역해둔 문자열이라 새 번역 불필요 —
-  // getProfileShortLabel()과 동일한 방식으로 끝의 부연설명 괄호만 잘라서 짧게 씀
+  // getProfileShortLabel()과 동일한 방식으로 끝의 부연설명 괄호만 잘라서 짧게 씀.
+  // 2026-07-29: 예전엔 이 칩 하나만 display:block으로 자기 줄 전체를 차지해서, 위 2열 그리드
+  // 칩들 옆에서 유독 크고 두드러져 보인다는 지적(사용자가 실제 렌더링 텍스트를 그대로 붙여넣어
+  // 지적함) — 다른 나라 칩들과 똑같이 restVisibleGroups와 한 그리드 안에 넣어서 크기를 통일함
+  // (점선 테두리만 남겨서 "순위 대상이 아닌 별도 항목"이라는 구분은 유지)
   const otherResult = calcTakeHome(cashKrw / 100000000, 'other', null);
   const otherLabel = otherResult.basisSuffix.replace(/\s*[（(][^)）]*[)）]\s*$/, '');
-  const otherHtml = `<div class="jh-amt-other-wrap"><span class="jh-amt-item jh-amt-chip jh-amt-chip-other"><span class="jh-amt-label">🌐 ${otherLabel}</span><span class="jh-amt"><bdi>${formatWon(otherResult.final)}</bdi></span></span></div>`;
-  return primaryHtml + restHtml + hiddenHtml + otherHtml;
+  const otherChipHtml = `<span class="jh-amt-item jh-amt-chip jh-amt-chip-other"><span class="jh-amt-label">🌐 ${otherLabel}</span><span class="jh-amt"><bdi>${formatWon(otherResult.final)}</bdi></span></span>`;
+  const restHtml = `<div class="jh-amounts-grid">${restVisibleGroups.map(g => toAmtItem(g, false)).join('')}${otherChipHtml}</div>`;
+  return primaryHtml + restHtml + hiddenHtml;
 }
 
 function renderJackpotHistory(){
@@ -5508,11 +5610,11 @@ const CHECK_PAYTO_MORE = {
 // 5. "당첨/WINNER" 같은 새 문구를 추가로 만들지 않음 — resultLabelText는 이미 화면에서
 //    "💰 일시불 예상 실수령액"처럼 "예상"이라는 프레이밍을 쓰고 있는 기존 문구라 그대로 재사용.
 
-// #home-check-date-input(index.html, "이미지로 저장" 버튼 바로 위)에 사용자가 직접 입력한 값을
-// 캔버스에 그려도 안전한 "YYYY-MM-DD" 문자열로 정제함(2026-07-28 후속 세션 신규). 비어있거나,
-// 자릿수가 안 맞거나, "2026-02-30"처럼 달력에 실제로 없는 날짜면 전부 오늘 날짜로 대체함(기존
-// saveHomeResultAsImage()가 항상 오늘 날짜를 고정으로 그리던 것과 같은 기본 동작 유지) — 잘못된
-// 문자열이 그대로 캔버스에 그려져 깨진/뭉개진 글자로 보이는 일이 없게 하는 방어 함수.
+// 카드에 그려질 날짜를 안전한 "YYYY-MM-DD" 문자열로 정제함. 2026-07-28에는 사용자가 직접
+// 날짜를 입력하는 칸(#home-check-date-input)이 있었으나 2026-07-29 사용자 요청으로 그 입력칸
+// 자체를 없앰 — 이제 호출부(saveHomeResultAsImage 등)가 항상 빈 문자열을 넘기므로 이 함수는
+// 사실상 "항상 오늘 날짜"를 반환함. 잘못된 문자열이 캔버스에 그대로 그려져 깨진 글자로 보이는
+// 일을 막는 방어 로직 자체는 그대로 남겨둠(향후 다시 수동 입력을 붙이더라도 안전하도록).
 function sanitizeCheckDateForCanvas(rawValue){
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -5526,16 +5628,6 @@ function sanitizeCheckDateForCanvas(rawValue){
   if (parsed.getFullYear() !== y || parsed.getMonth() !== mo - 1 || parsed.getDate() !== d) return todayStr;
   return `${String(y).padStart(4, '0')}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 }
-
-// 페이지 로드 시 #home-check-date-input을 빈 칸이 아니라 오늘 날짜로 미리 채워둠 — "날짜로
-// 당첨번호 찾아보기" select에서 이미 확인된 교훈(빈 date 입력칸은 아이폰 사파리 등에서 완전히
-// 텅 빈 것처럼 보여 사용자가 뭘 입력해야 할지 헷갈려함, 2026-07-22)과 같은 이유로 기본값을 채움
-document.addEventListener('DOMContentLoaded', () => {
-  const el = document.getElementById('home-check-date-input');
-  if (!el) return;
-  const today = new Date();
-  el.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-});
 
 function saveHomeResultAsImage(){
   const isRtl = RTL_LANGS.includes(currentLang);
@@ -5620,9 +5712,9 @@ function saveHomeResultAsImage(){
   ctx.fillText('chamtax.com', anchorX, 96);
 
   // 반대쪽 모서리: 계산 기준 한 줄(basisMini) + 날짜 — 언어별 길이 차이가 커서 폭을 넘으면
-  // 폰트를 줄임(fitFontSize). 날짜는 2026-07-28 후속 세션부터 항상 오늘 날짜를 고정으로 그리는
-  // 대신, 사용자가 #home-check-date-input(index.html, 이 버튼 바로 위)에 직접 입력한 값을 읽어옴
-  // — 비어있거나 형식이 잘못됐으면 sanitizeCheckDateForCanvas()가 오늘 날짜로 대체함(아래 함수 참고)
+  // 폰트를 줄임(fitFontSize). 날짜는 항상 오늘 날짜(2026-07-29부터 수동 입력칸 자체를 없앰 —
+  // #home-check-date-input이 더 이상 없어서 아래는 항상 빈 값을 sanitizeCheckDateForCanvas()에
+  // 넘기고, 그 함수가 빈 값을 오늘 날짜로 처리함)
   const dateInputEl = document.getElementById('home-check-date-input');
   const dateStr = sanitizeCheckDateForCanvas(dateInputEl ? dateInputEl.value : '');
   ctx.fillStyle = '#262420';
@@ -7125,14 +7217,24 @@ document.addEventListener('DOMContentLoaded', () => {
   let savedLang = null;
   try { savedLang = localStorage.getItem('chamtax_lang'); } catch (e) {}
 
-  if (savedLang === 'ko' || SUPPORTED_LANGS.includes(savedLang)) {
-    setLanguage(savedLang);
-  } else if (urlLang === 'ko' || SUPPORTED_LANGS.includes(urlLang)) {
+  if (urlLang === 'ko' || SUPPORTED_LANGS.includes(urlLang)) {
     // 'ko'는 언어 파일이 따로 없는 기본값이라 SUPPORTED_LANGS 목록엔 없는데, 그 때문에
     // "?lang=ko"로 명시적으로 들어온 링크가 이 분기를 못 타고 그 아래 브라우저 자동감지로
     // 새서, 한국어가 아닌 브라우저에서 열면 링크가 지정한 한국어 대신 엉뚱한 언어로 뜨는
     // 버그였음(현재는 이 링크를 실제로 쓰는 페이지가 없어 드러나진 않았지만 잠재 버그였음)
+    //
+    // 2026-07-29: 이 분기를 저장된 언어(savedLang)보다 먼저 검사하도록 순서를 바꿈 — 예전엔
+    // savedLang이 있으면 urlLang을 아예 안 보고 무시했는데, 그러면 "예전에 한 번이라도 언어를
+    // 수동으로 바꾼 적 있는 재방문자"가 26개 언어별 랜딩페이지(cambodian_in_korea_lottery_tax.html
+    // 등)의 "계산기 열기 →"(index.html?lang=km 같은 링크)를 눌러도 그 명시적 클릭이 무시되고
+    // 예전에 저장된 언어로 그대로 뜨는 실사용자 버그였음(사용자가 직접 재현해서 확인). "방금
+    // 이 링크를 클릭한 것"도 검색어 신호(위 3번)와 같은 원리로 "지금 이 사람의 실제 의도"를
+    // 저장된 예전 값보다 더 강하게 보여주는 신호라고 봐서 우선순위를 올림. 아래에서 적용 직후
+    // ?lang=을 URL에서 지우므로(기존 로직 그대로 유지), 이후 새로고침이나 수동 토글에는 전혀
+    // 영향 없음 — 딱 이 최초 진입 한 번만 우선 적용됨
     setLanguage(urlLang);
+  } else if (savedLang === 'ko' || SUPPORTED_LANGS.includes(savedLang)) {
+    setLanguage(savedLang);
   } else {
     const searchQueryLang = detectSearchQueryLanguage();
     if (searchQueryLang) {
@@ -7399,6 +7501,20 @@ function parseAmountInputRaw(str){
   const n = Number(sanitized);
   return isNaN(n) ? 0 : n;
 }
+// parseAmountInputRaw()는 계산용으로 숫자만 뽑아내지만, 입력칸에 보이는 텍스트 자체는 그대로
+// 둬서 "-abc123" 같은 글자를 타이핑해도(숫자가 아닌 부분은 계산에서 무시될 뿐) 화면엔 지저분한
+// 문자열이 계속 남아있는 문제가 있었음(2026-07-29 사이트 전체 점검에서 발견 — 크래시는 없지만
+// 눈으로 보기엔 입력이 무시된 것처럼 보임). 금액 입력칸은 음수·문자가 애초에 의미 없으므로,
+// 타이핑할 때마다 숫자+소수점 하나만 남기고 바로 화면에서도 지워서 파싱 결과와 표시가 항상
+// 일치하게 함. 이미 깨끗한 입력이면 값을 그대로 두어(불필요한 재대입 방지) 커서 위치가
+// 안 튀게 함.
+function sanitizeAmountInputLive(inputEl){
+  if (!inputEl) return;
+  const raw = inputEl.value;
+  const parts = raw.replace(/[^0-9.]/g, '').split('.');
+  const clean = parts.length > 1 ? parts[0] + '.' + parts.slice(1).join('') : parts[0];
+  if (clean !== raw) inputEl.value = clean;
+}
 // 일시불/연금액 탭 입력칸 + 국가별 비교 탭(#amountInput, 2026-07-28 후속 세션에서 범위 포함)
 // 전용 파서 — 현재 sharedInputCurrency 단위로 타이핑된 값을 내부 계산 도메인(Million USD)으로
 // 환산한다. parseMillionsInput()은 더 이상 이 두 입력칸 어느 쪽에서도 안 쓰이지만(항상 USD로만
@@ -7513,11 +7629,21 @@ function refreshAmountInputDisplaysForCurrency(){
   if (compareStateSelect) {
     const eokForGrid = (sharedAmountUsd * EXCHANGE_RATE) / 100000000;
     updateSideBySide(eokForGrid, compareStateSelect.value);
+    // updateCalc()가 계산이 실제로 실행될 때만 이 둘을 갱신하는 것과 같은 이유로, 통화만
+    // 바뀌고 계산은 그대로인 경우(이 함수)에도 같이 맞춰줘야 함 — 안 그러면 통화를 KRW로
+    // 바꿔도 이 힌트/제목이 다음 재계산 전까지 이전 통화 그대로 남아있는 불일치가 생김
+    const compareKrwAmtWrap = document.getElementById('compare-krw-amt-wrap');
+    if (compareKrwAmtWrap) compareKrwAmtWrap.style.display = sharedInputCurrency === 'KRW' ? 'none' : '';
+    const titleAmtEl = document.getElementById('compare-side-title-amt');
+    if (titleAmtEl) titleAmtEl.textContent = formatEokKrwInDisplayCurrency(eokForGrid, sharedInputCurrency) + ' · ';
   }
+  const homeKrwAmtWrap = document.getElementById('home-krw-amt-wrap');
+  if (homeKrwAmtWrap) homeKrwAmtWrap.style.display = sharedInputCurrency === 'KRW' ? 'none' : '';
 }
 
-function setSharedInputCurrency(code){
+function setSharedInputCurrency(code, isManual){
   if (!CURRENCY_DISPLAY_META[code]) return;
+  if (isManual) isCurrencyManuallyEdited = true;
   sharedInputCurrency = code;
   const select = document.getElementById('homeCurrencySelect');
   if (select && select.value !== code) select.value = code;
@@ -7571,6 +7697,7 @@ function hideAnnouncedConvertNote(){
 
 function onHomeAmountTyped(){
   hideAnnouncedConvertNote(); // 일시불 칸을 직접 고치면 더는 연금 환산값과 일치한다고 보장 못하므로 안내 숨김
+  sanitizeAmountInputLive(document.getElementById('homeAmountInput'));
   const rawValue = document.getElementById('homeAmountInput').value;
   if (rawValue.trim() !== '') isAmountManuallyEdited = true;
   const millions = parseAmountInputToUsdMillions(rawValue); // 현재 sharedInputCurrency 단위로 타이핑된 값을 USD 백만 단위로 환산
@@ -7660,6 +7787,7 @@ function refreshAnnouncedConvertNote(announcedMillions, lumpMillions){
 }
 
 function onHomeAnnouncedTyped(){
+  sanitizeAmountInputLive(document.getElementById('homeAnnouncedInput'));
   const rawValue = document.getElementById('homeAnnouncedInput').value;
   if (rawValue.trim() === '') return;
   const announcedMillions = parseAmountInputToUsdMillions(rawValue);
@@ -9611,11 +9739,15 @@ const COUNTRY_TAX_DISCLAIMERS = {
 };
 
 function updateHomeCalc(usdOverride){
-  // 입력창이 비어있으면(플레이스홀더만 보이는 초기 상태) 0으로 계산하지 않고, 마지막으로
-  // 알려진 유효한 금액(sharedAmountUsd, 기본값 $100M)을 그대로 씀 — 환율 재조회·언어전환처럼
-  // 다른 이유로 이 함수가 인자 없이 재호출될 때마다 결과가 0으로 튀는 걸 방지
-  const typedValue = parseAmountInputToUsdMillions(document.getElementById('homeAmountInput').value);
-  const usd = usdOverride !== undefined ? usdOverride : (typedValue > 0 ? typedValue * 1000000 : sharedAmountUsd);
+  // usdOverride 없이 호출되는 경우(환율 재조회·언어전환·국가/주 변경·URL 파라미터 반영 등)는
+  // 전부 "입력값은 그대로, 다른 이유로 화면만 다시 그려줘"가 의도라 항상 sharedAmountUsd(정확한
+  // 원본)를 써야 함. 예전엔 입력창에 지금 표시된 텍스트를 다시 파싱해서 썼는데, 그 텍스트는
+  // 통화 전환 시 이미 반올림·환율변환을 거친 표시값이라, 언어를 바꿀 때마다(setLanguage가
+  // applyTranslations를 거쳐 이 함수를 인자 없이 호출함) sharedAmountUsd가 조금씩 틀어지는
+  // 버그가 있었음(2026-07-29 발견 — 예: 3억 8,500만 → 3억 8,501만 6,098로 드리프트). 실제
+  // 타이핑 입력(onHomeAmountTyped 등)은 이미 항상 usdOverride를 명시적으로 넘겨서 호출하므로
+  // 이 변경으로 타이핑 반영이 늦어지는 부작용은 없음.
+  const usd = usdOverride !== undefined ? usdOverride : sharedAmountUsd;
   const country = document.getElementById('homeCountrySelect').value;
   const stateCode = document.getElementById('homeStateSelect').value;
   sharedAmountUsd = usd;
@@ -9649,6 +9781,13 @@ function updateHomeCalc(usdOverride){
   const r = calcTakeHome(억, country, stateCode);
   const { final, label1, val1, label2, val2, basisSuffix } = r;
 
+  // 표시 통화가 이미 KRW면 입력칸 자체가 이미 "억원" 단위라, 바로 아래 이 힌트가 콤마 포맷만
+  // 다른 채 똑같은 숫자를 또 보여주는 중복이었음(2026-07-29 사용자가 스크린샷으로 지적 —
+  // "1312"(입력칸, 콤마 없음) 바로 밑에 "≈ 1,312억원"(콤마 있음)이 겹쳐 보임) — 그럴 땐
+  // "≈ X억원 · " 부분만 숨기고, 환율 직접 조정 UI(rate-input)는 그대로 남김(내부 계산은
+  // 통화 표시와 무관하게 항상 USD→KRW 환율을 씀)
+  const homeKrwAmtWrap = document.getElementById('home-krw-amt-wrap');
+  if (homeKrwAmtWrap) homeKrwAmtWrap.style.display = sharedInputCurrency === 'KRW' ? 'none' : '';
   document.getElementById('home-krw-amt').textContent = formatWon(억);
 
   const trustLine = document.getElementById('home-trust-line');
@@ -9786,45 +9925,6 @@ function updateHomeCalc(usdOverride){
       uz: `${usdMillions}M USD yutuq · ${basisSuffix}`,
      pt: `Prêmio de ${usdMillions}M USD · ${basisSuffix}`, es: `Premio de ${usdMillions}M USD · ${basisSuffix}`, uk: `Приз ${usdMillions}M USD · ${basisSuffix}`, tet: `Prémiu ${usdMillions}M USD · ${basisSuffix}`}
   );
-  // 첫 방문자가 아직 금액을 직접 입력하지 않은 기본 상태에서도 이 카드가 이미 오늘 실제
-  // 파워볼 잭팟 기준 결과를 보여주고 있어서, "내가 아무것도 안 했는데 왜 결과가 있지?"로
-  // 헷갈릴 수 있음(2026-07-28 첫방문자 사용성 점검 세션 신규) — 아래 입력칸에 직접 타이핑하는
-  // 순간(isAmountManuallyEdited=true) 이 안내는 사라짐(더 이상 예시가 아니라 본인이 고른 값이므로)
-  const previewNote = document.getElementById('home-preview-note');
-  if (previewNote) {
-    previewNote.style.display = isAmountManuallyEdited ? 'none' : 'block';
-    if (!isAmountManuallyEdited) previewNote.textContent = pickLang(
-      '🎰 오늘 실제 파워볼 잭팟 기준 예시예요 — 아래에서 직접 입력해보세요',
-      "🎰 This is an example based on today's actual Powerball jackpot — try entering your own amount below",
-      '🎰 这是根据今天实际强力球头奖计算的示例 — 请在下方输入您自己的金额',
-      '🎰 Đây là ví dụ dựa trên giải độc đắc Powerball thực tế hôm nay — hãy nhập số tiền của riêng bạn bên dưới',
-      '🎰 นี่คือตัวอย่างจากแจ็คพอต Powerball จริงวันนี้ — ลองกรอกจำนวนเงินของคุณเองด้านล่าง',
-      '🎰 Это пример на основе сегодняшнего реального джекпота Powerball — попробуйте ввести свою сумму ниже',
-      {
-        ar: '🎰 هذا مثال يعتمد على جاكبوت باوربول الفعلي اليوم — جرّب إدخال مبلغك الخاص أدناه',
-        bn: '🎰 এটি আজকের প্রকৃত পাওয়ারবল জ্যাকপটের ভিত্তিতে একটি উদাহরণ — নিচে নিজের পরিমাণ লিখে দেখুন',
-        fr: "🎰 Ceci est un exemple basé sur le jackpot Powerball réel d'aujourd'hui — essayez de saisir votre propre montant ci-dessous",
-        hi: '🎰 यह आज के असली पावरबॉल जैकपॉट पर आधारित एक उदाहरण है — नीचे अपनी खुद की राशि डालकर देखें',
-        id: '🎰 Ini contoh berdasarkan jackpot Powerball asli hari ini — coba masukkan jumlah Anda sendiri di bawah',
-        ja: '🎰 今日の実際のパワーボールジャックポットを例に表示しています — 下で実際の金額を入力してみてください',
-        kk: '🎰 Бұл бүгінгі нақты Powerball джекпотына негізделген мысал — төменде өз соманызды енгізіп көріңіз',
-        km: '🎰 នេះជាឧទាហរណ៍ដោយផ្អែកលើឆ្នោត Powerball ជាក់ស្តែងថ្ងៃនេះ — សូមព្យាយាមបញ្ចូលចំនួនទឹកប្រាក់ផ្ទាល់ខ្លួនរបស់អ្នកខាងក្រោម',
-        ky: '🎰 Бул бүгүнкү чыныгы Powerball джекпотуна негизделген мисал — төмөндө өз сумманызды киргизип көрүңүз',
-        lo: '🎰 ນີ້ແມ່ນຕົວຢ່າງໂດຍອີງໃສ່ແຈັກພອດ Powerball ຕົວຈິງມື້ນີ້ — ລອງໃສ່ຈຳນວນເງິນຂອງທ່ານເອງຢູ່ດ້ານລຸ່ມ',
-        mn: '🎰 Энэ бол өнөөдрийн бодит Powerball жекпотод суурилсан жишээ — доор өөрийн дүнгээ оруулж үзээрэй',
-        my: '🎰 ဤသည်မှာ ယနေ့ အမှန်တကယ် Powerball ဂျက်ပေါ့အပေါ်အခြေခံသောနမူနာဖြစ်သည် — အောက်တွင် သင့်ပမာဏကိုကိုယ်တိုင်ထည့်ကြည့်ပါ',
-        ne: '🎰 यो आजको वास्तविक पावरबल ज्याकपटमा आधारित उदाहरण हो — तलबाट आफ्नो रकम राखेर हेर्नुहोस्',
-        pt: '🎰 Este é um exemplo baseado no jackpot real do Powerball de hoje — tente inserir seu próprio valor abaixo',
-        es: '🎰 Este es un ejemplo basado en el premio mayor real de Powerball de hoy — prueba a ingresar tu propio monto abajo',
-        si: '🎰 මෙය අද ඇති සැබෑ Powerball ජැක්පොට් මත පදනම් වූ උදාහරණයකි — පහතින් ඔබේම මුදල ඇතුළත් කර බලන්න',
-        tl: '🎰 Ito ay halimbawa batay sa aktwal na Powerball jackpot ngayon — subukang ilagay ang sarili mong halaga sa ibaba',
-        uk: '🎰 Це приклад на основі сьогоднішнього реального джекпоту Powerball — спробуйте ввести свою суму нижче',
-        ur: '🎰 یہ آج کے اصل پاور بال جیک پاٹ پر مبنی مثال ہے — نیچے اپنی رقم خود درج کر کے دیکھیں',
-        uz: "🎰 Bu bugungi haqiqiy Powerball jekpotiga asoslangan misol — quyida o'z summangizni kiritib ko'ring",
-        tet: "🎰 Ida ne'e ezemplu bazeia ba jackpot Powerball loloos ohin — koko tau ó-nia valór rasik iha kraik",
-      }
-    );
-  }
   document.getElementById('home-tax1-label').textContent = label1;
   document.getElementById('home-tax1-val').textContent = val1;
   document.getElementById('home-tax2-label').textContent = label2;
@@ -10114,6 +10214,7 @@ function updateHomeCalc(usdOverride){
 }
 
 function onCompareAmountTyped(){
+  sanitizeAmountInputLive(document.getElementById('amountInput'));
   const rawValue = document.getElementById('amountInput').value;
   if (rawValue.trim() !== '') isAmountManuallyEdited = true;
   // 2026-07-28 후속 세션: 홈 일시불 탭(onHomeAmountTyped)과 동일하게 현재 sharedInputCurrency
@@ -10149,15 +10250,13 @@ function onCompareRateChanged(){
 }
 
 function updateCalc(usdOverride){
-  // 입력창이 비어있을 땐 0으로 계산하지 않고 마지막 유효값(sharedAmountUsd)을 씀 — updateHomeCalc()와
-  // 동일한 패턴. 이게 없으면 입력칸을 지웠을 때 실수령액이 0으로 고정되고, 그 상태로 홈 화면에
-  // 돌아가도(공유 상태라) 0이 그대로 유지되는 버그가 있었음
-  // 2026-07-28 후속 세션: #amountInput도 이제 sharedInputCurrency 단위로 표시되므로, 이 폴백
-  // 파싱도 통화 인지형(parseAmountInputToUsdMillions)으로 바꿔야 함 — usdOverride가 이미 있는
-  // 대부분의 호출(onCompareAmountTyped/onCompareSliderMoved)에선 안 쓰이고, 인자 없이 부르는
-  // 경우(onCompareRateChanged, 언어 전환 등)의 폴백에서만 실제로 쓰임.
-  const typedValue = parseAmountInputToUsdMillions(document.getElementById('amountInput').value);
-  const usd = usdOverride !== undefined ? usdOverride : (typedValue > 0 ? typedValue * 1000000 : sharedAmountUsd);
+  // usdOverride 없이 호출되는 경우(환율 재조회·언어전환 등)는 updateHomeCalc()와 동일한 이유로
+  // 항상 sharedAmountUsd(정확한 원본)를 써야 함 — 입력창에 지금 표시된 텍스트를 다시 파싱하면,
+  // 통화 전환으로 이미 반올림·환율변환된 값을 또 반올림하게 되어 언어를 바꿀 때마다
+  // sharedAmountUsd가 조금씩 틀어지는 버그가 있었음(2026-07-29, updateHomeCalc()와 같은 원인으로
+  // 함께 발견·수정). 실제 타이핑 입력(onCompareAmountTyped 등)은 항상 usdOverride를 명시적으로
+  // 넘겨서 호출하므로 이 변경으로 타이핑 반영이 늦어지는 부작용은 없음.
+  const usd = usdOverride !== undefined ? usdOverride : sharedAmountUsd;
   const stateCode = document.getElementById('compareStateSelect').value;
   sharedAmountUsd = usd;
   sharedState = stateCode;
@@ -10173,14 +10272,22 @@ function updateCalc(usdOverride){
   renderSliderTicks(document.getElementById('compareAmountSlider'));
   const 억 = (usd * EXCHANGE_RATE) / 100000000;
 
+  // 표시 통화가 이미 KRW면 입력칸 자체가 이미 "억원" 단위라, 바로 아래 이 힌트가 콤마 포맷만
+  // 다른 채 똑같은 숫자를 또 보여주는 중복이었음(2026-07-29 사용자가 스크린샷으로 지적 —
+  // 홈 탭과 같은 문제, updateHomeCalc()의 home-krw-amt-wrap과 동일한 원칙) — 그럴 땐
+  // "≈ X억원 · " 부분만 숨기고, 환율 직접 조정 UI(rate-input)는 그대로 남김
+  const compareKrwAmtWrap = document.getElementById('compare-krw-amt-wrap');
+  if (compareKrwAmtWrap) compareKrwAmtWrap.style.display = sharedInputCurrency === 'KRW' ? 'none' : '';
   document.getElementById('compare-krw-amt').textContent = formatWon(억);
 
   // "나라별로 나란히 놓고 보면" 표가 위 입력창이랑 연결돼 보이지 않는다는 지적(사용자가 직접
   // 스크린샷으로 지적) — 제목 아래 별도 문장 대신, 제목 자체에 금액을 붙여서 굵은 제목만 훑어도
   // 바로 기준이 보이게 함("100M USD 당첨 · 한국 거주자"처럼 이미 쓰는 "금액 · 라벨" 표기 재사용,
-  // 언어별 문장을 새로 안 만들어도 됨)
-  const usdMillionsForNote = Math.round(usd / 1000000).toLocaleString(LOCALE_MAP[currentLang] || 'ko-KR');
-  document.getElementById('compare-side-title-amt').textContent = usdMillionsForNote + 'M USD · ';
+  // 언어별 문장을 새로 안 만들어도 됨). 2026-07-29: 통화를 KRW/VND 등으로 바꿔도 이 제목만
+  // 항상 "M USD" 고정이라 위 입력칸·힌트와 통화가 또 안 맞는 문제가 있었음 — formatWon()/
+  // formatCompactCurrencyAmount()를 이미 쓰는 다른 통화 인지형 표시들과 같은 원칙으로 통일
+  const titleAmtStr = formatEokKrwInDisplayCurrency(억, sharedInputCurrency);
+  document.getElementById('compare-side-title-amt').textContent = titleAmtStr + ' · ';
 
   updateSideBySide(억, stateCode);
 }

@@ -16213,5 +16213,33 @@
   "es": "Búsqueda por voz",
   "uk": "Голосовий пошук",
   "tet": "Peskuiza lia"
+ },
+ "odds.jcFlowIntro": {
+  "en": "🏆 If you win the jackpot, here's what happens: check the announced amount → choose lump sum or annuity → tax is deducted → you get the final amount",
+  "zh": "🏆 如果中头奖，流程是这样的：确认公布金额 → 选择领取方式（一次性/分期）→ 扣除税金 → 得到最终到账金额",
+  "vi": "🏆 Nếu trúng jackpot, quy trình sẽ là: xem số tiền công bố → chọn cách nhận (một lần/trả góp) → trừ thuế → nhận số tiền cuối cùng",
+  "th": "🏆 ถ้าถูกแจ็คพอต ขั้นตอนจะเป็นแบบนี้: ดูยอดเงินที่ประกาศ → เลือกวิธีรับเงิน (เงินก้อน/รายปี) → หักภาษี → ได้ยอดเงินสุทธิสุดท้าย",
+  "ru": "🏆 Если вы выиграли джекпот, вот что происходит: смотрите объявленную сумму → выбираете способ получения (единовременно/аннуитет) → удерживается налог → вы получаете итоговую сумму",
+  "ar": "🏆 إذا فزت بالجاكبوت، إليك ما يحدث: تحقق من المبلغ المعلن ← اختر طريقة الاستلام (دفعة واحدة/تقسيط سنوي) ← يُخصم الضريبة ← تحصل على المبلغ النهائي",
+  "bn": "🏆 জ্যাকপট জিতলে যা ঘটে: ঘোষিত পরিমাণ দেখুন → গ্রহণের পদ্ধতি বেছে নিন (এককালীন/বার্ষিক কিস্তি) → কর কাটা হয় → চূড়ান্ত পরিমাণ পাবেন",
+  "fr": "🏆 Si vous gagnez le jackpot, voici ce qui se passe : vérifiez le montant annoncé → choisissez le mode de paiement (versement unique/rente) → l'impôt est déduit → vous recevez le montant final",
+  "hi": "🏆 अगर आप जैकपॉट जीतते हैं, तो ऐसे होता है: घोषित राशि देखें → भुगतान का तरीका चुनें (एकमुश्त/वार्षिकी) → टैक्स कटता है → अंतिम राशि मिलती है",
+  "id": "🏆 Jika kamu memenangkan jackpot, begini alurnya: lihat jumlah yang diumumkan → pilih cara penerimaan (sekaligus/cicilan tahunan) → pajak dipotong → kamu dapat jumlah akhir",
+  "ja": "🏆 ジャックポットに当選すると、こんな流れになります: 発表額を確認 → 受け取り方法を選択(一括/年金) → 税金が引かれる → 最終的な入金額が決まる",
+  "kk": "🏆 Джекпотты ұтып алсаңыз, мынадай реттілік болады: жарияланған соманы қараңыз → алу тәсілін таңдаңыз (бір реттік/жылдық) → салық шегеріледі → соңғы сома алынады",
+  "km": "🏆 ប្រសិនបើអ្នកឈ្នះជេកផត នេះជាលំដាប់ដែលកើតឡើង៖ ពិនិត្យចំនួនប្រកាស → ជ្រើសរើសវិធីទទួល (មួយដង/ជាប្រចាំឆ្នាំ) → ពន្ធត្រូវបានកាត់ → អ្នកទទួលបានចំនួនចុងក្រោយ",
+  "ky": "🏆 Джекпотту утуп алсаңыз, мындай тартип болот: жарыяланган суманы караңыз → алуу ыкмасын тандаңыз (бир жолку/жылдык) → салык кармалат → акыркы сумманы аласыз",
+  "lo": "🏆 ຖ້າທ່ານຖືກແຈັກພອດ, ນີ້ແມ່ນລຳດັບຂັ້ນຕອນ: ກວດເບິ່ງຈຳນວນທີ່ປະກາດ → ເລືອກວິທີຮັບເງິນ (ເທື່ອດຽວ/ລາຍປີ) → ຫັກພາສີ → ໄດ້ຮັບຈຳນວນສຸດທ້າຍ",
+  "mn": "🏆 Жекпотыг хожсон бол ийм дараалалтай явна: зарласан дүнг харах → авах хэлбэрээ сонгох (нэг удаа/жил бүр) → татвар суутгагдана → эцсийн дүнг авна",
+  "my": "🏆 ဂျက်ပေါ့ကို အနိုင်ရရင် ဒီလိုအဆင့်ဆင့် ဖြစ်ပါတယ်: ကြေညာထားတဲ့ ပမာဏကို စစ်ဆေးပါ → ရယူမည့်နည်းလမ်းကို ရွေးပါ (တစ်ခါတည်း/နှစ်စဉ်) → အခွန်နုတ်ယူသည် → နောက်ဆုံးရမည့်ပမာဏကို ရရှိသည်",
+  "ne": "🏆 ज्याकपोट जित्नुभयो भने, यसरी अगाडि बढ्छ: घोषित रकम हेर्नुहोस् → प्राप्तिको तरिका छान्नुहोस् (एकमुष्ट/वार्षिक किस्ता) → कर कटौती हुन्छ → अन्तिम रकम प्राप्त हुन्छ",
+  "si": "🏆 ඔබ ජැක්පොට් දිනුවහොත් සිදුවන්නේ මෙයයි: ප්‍රකාශිත මුදල පරීක්ෂා කරන්න → ලබාගැනීමේ ක්‍රමය තෝරන්න (එකවර/වාර්ෂික) → බදු අඩු කෙරේ → අවසාන මුදල ලැබේ",
+  "tl": "🏆 Kapag napanalunan mo ang jackpot, ganito ang mangyayari: tingnan ang inanunsyong halaga → piliin ang paraan ng pagtanggap (isang bagsakan/taunang hulog) → babawasan ng buwis → makukuha ang huling halaga",
+  "ur": "🏆 اگر آپ جیک پاٹ جیت جائیں تو یہ ترتیب ہوتی ہے: اعلان کردہ رقم دیکھیں → وصولی کا طریقہ منتخب کریں (یکمشت/سالانہ) → ٹیکس کٹتا ہے → حتمی رقم ملتی ہے",
+  "uz": "🏆 Jekpotni yutib olsangiz, tartib shunday bo'ladi: e'lon qilingan summani ko'ring → olish usulini tanlang (bir martalik/yillik) → soliq ushlab qolinadi → yakuniy summani olasiz",
+  "pt": "🏆 Se você ganhar o jackpot, é assim que funciona: veja o valor anunciado → escolha a forma de recebimento (à vista/anuidade) → o imposto é deduzido → você recebe o valor final",
+  "es": "🏆 Si ganas el premio mayor, así es como funciona: revisa el monto anunciado → elige la forma de cobro (pago único/anualidad) → se descuenta el impuesto → recibes el monto final",
+  "uk": "🏆 Якщо ви виграли джекпот, ось що відбувається: перевірте оголошену суму → оберіть спосіб отримання (одноразово/ануїтет) → утримується податок → ви отримуєте кінцеву суму",
+  "tet": "🏆 Se ó manán jackpot, ne'e mak akontese: hare montante ne'ebé anunsia → hili dalan atu simu (dahuluk ka anuál) → taxa kotu → simu montante final"
  }
 }
