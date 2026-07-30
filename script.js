@@ -3665,74 +3665,17 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
   return canvas;
 }
 
-// 이미지 공유가 가능하면(navigator.canShare({files})) 이미지로 공유하고 true를 반환, 아니면 false를
-// 반환해 호출 쪽에서 기존 텍스트+링크 공유로 대체하게 함. 사용자가 공유 시트를 취소한 경우(AbortError)는
-// 실패가 아니라 "이미 처리됨"으로 보고 true를 반환해 텍스트 폴백으로 이어지지 않게 함.
-// filename은 호출부의 downloadShareCardImage()와 짝을 맞춰서 넘겨받음 — 예전엔 여기서
-// 'chamtax-result.png'로 고정돼 있어서, 잭팟 순위/드림카드/체크리스트 등 어디서 공유해도
-// 파일명이 항상 결과 카드인 것처럼 나오는 사소한 불일치가 있었음(2026-07-29 공유 기능 전체
-// 점검 중 발견)
-async function tryShareCardImage(canvas, shareTitle, shareText, filename){
-  if (!navigator.canShare) return false;
-  try {
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-    if (!blob) return false;
-    const file = new File([blob], filename || 'chamtax-result.png', { type: 'image/png' });
-    if (!navigator.canShare({ files: [file] })) return false;
-    await navigator.share({ files: [file], title: shareTitle, text: shareText });
-    return true;
-  } catch (e) {
-    if (e && e.name === 'AbortError') return true;
-    return false;
-  }
-}
+// 2026-07-29: "공유하기" 버튼들이 카드 이미지를 만들어 파일로 공유 시도하던
+// tryShareCardImage()/실패 시 다운로드해두던 downloadShareCardImage() 둘 다 이 시점부터
+// 안 쓰임(사용자 요청으로 공유하기는 텍스트+링크만 남기고 카드 생성 자체를 없앰, 아래
+// shareLatestDraw 주석 참고) — 둘 다 삭제함. buildShareCard()는 "이미지로 저장"(갤러리에
+// 저장하는 별개 기능, saveJackpotIndexShareCard() 등)에서는 계속 쓰이므로 그대로 둠.
 
-// tryShareCardImage()가 실패해서(파일 공유 미지원 브라우저 — 카카오톡 인앱 등) 텍스트+링크
-// 공유로 폴백하면, 메신저가 링크의 고정된 og:image로 실제 결과와 무관한 일반 홍보 카드를
-// 자동으로 붙여버리는 문제가 있었음(2026-07-25 사용자 스크린샷으로 신고). 링크 자체는 클릭
-// 유입을 위해 그대로 유지하되, 폴백 직전에 실제 결과가 담긴 카드 이미지를 미리 갤러리에
-// 저장해둬서 사용자가 원하면 그 이미지를 채팅에 직접 첨부할 수 있게 함
-function downloadShareCardImage(canvas, filename){
-  try {
-    const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
-    link.download = filename;
-    link.click();
-  } catch (e) {
-    // 다운로드 자체가 막힌 환경 — 조용히 무시, 텍스트+링크 공유는 그대로 진행됨
-  }
-}
-
-// 위 다운로드 폴백이 실행된 뒤의 "복사 완료" 토스트 — 이미지도 같이 저장됐다는 걸 알려줘야
-// 사용자가 그 이미지를 찾아서 같이 보낼 수 있음(기존 COPY_DONE_MORE 문구는 이 사실을 안 알려줌)
+// 클립보드 복사 폴백 성공 시 뜨는 토스트. 2026-07-29 이전엔 "결과 이미지도 같이 저장됐다"고
+// 안내했는데(이미지 카드를 자동으로 다운로드해두던 시절 문구), 카드 이미지 생성 자체를
+// 없앤 뒤로는 더 이상 사실이 아니게 되어 COPY_DONE_MORE와 같은 단순한 문구로 교체함
 function shareFallbackCopyToast(){
-  return pickLang(
-    '✅ 복사 완료! 저장된 결과 이미지도 함께 보내보세요',
-    '✅ Copied! We also saved a result image — send that along too',
-    '✅ 已复制！也保存了结果图片，一起发送吧',
-    '✅ Đã sao chép! Ảnh kết quả cũng đã được lưu, hãy gửi kèm nhé',
-    '✅ คัดลอกแล้ว! เราบันทึกภาพผลลัพธ์ไว้ด้วย ลองส่งไปด้วยกัน',
-    '✅ Скопировано! Мы также сохранили изображение с результатом — отправьте и его',
-    {
-      ar: '✅ تم النسخ! لقد حفظنا أيضًا صورة للنتيجة — أرسلها أيضًا',
-      bn: '✅ কপি সম্পন্ন! ফলাফলের একটি ছবিও সংরক্ষণ করা হয়েছে — সেটাও পাঠান',
-      fr: '✅ Copié ! Nous avons aussi enregistré une image du résultat — envoyez-la aussi',
-      hi: '✅ कॉपी पूरा हुआ! रिज़ल्ट की एक इमेज भी सेव कर दी है — उसे भी भेजें',
-      id: '✅ Disalin! Kami juga menyimpan gambar hasilnya — kirim itu juga',
-      ja: '✅ コピー完了！結果の画像も保存しました。それも送ってみてください',
-      kk: '✅ Көшірілді! Нәтиже суретін де сақтадық — соны да жіберіңіз',
-      km: '✅ ចម្លងរួចរាល់! យើងបានរក្សាទុករូបភាពលទ្ធផលផងដែរ — សូមផ្ញើវាផងដែរ',
-      ky: '✅ Көчүрүлдү! Натыйжа сүрөтүн да сактап койдук — аны да жибериңиз',
-      lo: '✅ ສຳເນົາສຳເລັດ! ພວກເຮົາໄດ້ບັນທຶກຮູບຜົນລັບໄວ້ນຳ — ລອງສົ່ງອັນນັ້ນນຳ',
-      mn: '✅ Хуулж дууслаа! Үр дүнгийн зургийг мөн хадгалсан — үүнийг ч бас илгээгээрэй',
-      my: '✅ ကူးယူပြီးပါပြီ! ရလဒ်ပုံကိုလည်း သိမ်းထားပါတယ် — ဒါကိုလည်း ပို့ကြည့်ပါ',
-      ne: '✅ प्रतिलिपि पूरा भयो! नतिजाको तस्बिर पनि सेभ गरिएको छ — त्यो पनि पठाउनुहोस्',
-      si: '✅ පිටපත් කිරීම සම්පූර්ණයි! ප්‍රතිඵල රූපයක්ද සුරකින ලදී — එයද එවන්න',
-      tl: '✅ Nakumpleto ang pag-copy! Na-save din namin ang larawan ng resulta — ipadala rin iyon',
-      ur: '✅ کاپی مکمل! نتیجے کی ایک تصویر بھی محفوظ کر دی ہے — وہ بھی بھیجیں',
-      uz: "✅ Nusxalash tugadi! Natija rasmini ham saqladik — uni ham yuboring",
-     pt: `✅ Copiado! Também salvamos uma imagem do resultado — envie-a também`, es: `✅ ¡Copiado! También guardamos una imagen del resultado: envíala también`, uk: `✅ Скопійовано! Ми також зберегли зображення результату — надішліть і його`, tet: `✅ Kopiatu tiha! Ami guarda mós imajen rezultadu — haruka mós ne'e`}
-  );
+  return pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
 }
 
 async function shareLatestDraw(game, btnEl){
@@ -3778,36 +3721,10 @@ async function shareLatestDraw(game, btnEl){
   );
   const shareUrl = location.href;
 
-  const specialColor = game === 'powerball' ? '#C0392B' : '#9C6F1E';
-  const cardLabel = pickLang(
-    `🎱 최근 ${gameLabel} 당첨번호`, `🎱 Latest ${gameLabel} numbers`, `🎱 最新${gameLabel}开奖号码`,
-    `🎱 Số trúng ${gameLabel} gần nhất`, `🎱 เลข ${gameLabel} ล่าสุด`, `🎱 Последние номера ${gameLabel}`,
-    {
-      ar: `🎱 آخر أرقام ${gameLabel}`, bn: `🎱 সর্বশেষ ${gameLabel} নম্বর`, fr: `🎱 Derniers numéros ${gameLabel}`,
-      hi: `🎱 नवीनतम ${gameLabel} नंबर`, id: `🎱 Nomor ${gameLabel} terbaru`, ja: `🎱 最新の${gameLabel}当選番号`,
-      kk: `🎱 ${gameLabel}-дің соңғы сандары`, km: `🎱 លេខ${gameLabel}ថ្មីៗ`, ky: `🎱 ${gameLabel}дин акыркы сандары`,
-      lo: `🎱 ເລກ ${gameLabel} ລ່າສຸດ`, mn: `🎱 ${gameLabel}-ийн сүүлийн дугаар`, my: `🎱 နောက်ဆုံး ${gameLabel} ဂဏန်းများ`,
-      ne: `🎱 पछिल्लो ${gameLabel} नम्बरहरू`, si: `🎱 නවතම ${gameLabel} අංක`, tl: `🎱 Pinakabagong ${gameLabel} numbers`,
-      ur: `🎱 تازہ ترین ${gameLabel} نمبرز`, uz: `🎱 Oxirgi ${gameLabel} raqamlari`,
-     pt: `🎱 Últimos números do ${gameLabel}`, es: `🎱 Últimos números de ${gameLabel}`, uk: `🎱 Останні номери ${gameLabel}`, tet: `🎱 Númeru foin lalais ${gameLabel}`}
-  );
-  const cardSub = pickLang(
-    `다음 추첨 잭팟은 $${jackpotMillions}M!`, `Next jackpot is $${jackpotMillions}M!`, `下期奖金 $${jackpotMillions}M！`,
-    `Jackpot kỳ tới là $${jackpotMillions}M!`, `แจ็คพอตงวดหน้า $${jackpotMillions}M!`, `Следующий джекпот $${jackpotMillions}M!`,
-    {
-      ar: `الجاكبوت القادم $${jackpotMillions}M!`, bn: `পরবর্তী জ্যাকপট $${jackpotMillions}M!`, fr: `Prochain jackpot $${jackpotMillions}M !`,
-      hi: `अगला जैकपॉट $${jackpotMillions}M!`, id: `Jackpot berikutnya $${jackpotMillions}M!`, ja: `次回のジャックポットは$${jackpotMillions}M！`,
-      kk: `Келесі джекпот $${jackpotMillions}M!`, km: `ជេកផតបន្ទាប់ $${jackpotMillions}M!`, ky: `Кийинки джекпот $${jackpotMillions}M!`,
-      lo: `ແຈັກພອດຄັ້ງຕໍ່ໄປ $${jackpotMillions}M!`, mn: `Дараагийн жекпот $${jackpotMillions}M!`, my: `နောက်ဂျက်ပေါ့ $${jackpotMillions}M!`,
-      ne: `अर्को ज्याकपोट $${jackpotMillions}M!`, si: `ඊළඟ ජැක්පොට් $${jackpotMillions}M!`, tl: `Ang susunod na jackpot ay $${jackpotMillions}M!`,
-      ur: `اگلا جیک پاٹ $${jackpotMillions}M!`, uz: `Keyingi jekpot $${jackpotMillions}M!`,
-     pt: `O próximo prêmio é de $${jackpotMillions}M!`, es: `¡El próximo acumulado es de $${jackpotMillions}M!`, uk: `Наступний джекпот — $${jackpotMillions}M!`, tet: `Jackpot oin mak $${jackpotMillions}M!`}
-  );
-  const cardFooter = pickLang(...SHARE_CTA_FOOTER);
-  const canvas = buildShareCard({ label: cardLabel, subText: cardSub, footerText: cardFooter, balls: { numbers: draw.numbers, special: draw.special, specialColor } });
-  if (await tryShareCardImage(canvas, gameLabel, shareText, 'chamtax-draw-share.png')) return;
-  downloadShareCardImage(canvas, 'chamtax-draw-share.png');
-
+  // 2026-07-29: 이전엔 여기서 buildShareCard()로 이미지 카드를 만들어 파일 공유부터 시도했는데,
+  // 사용자가 "다른 사이트들처럼" 카드 없이 링크만 공유하길 원함(카드 없이 링크 공유가 대부분
+  // 사이트의 일반적인 방식이고, 카드 이미지에 쓰던 🐻 이모지가 기기별 폰트에 따라 실제 로고와
+  // 다르게 보이는 문제도 있었음) — 이미지 생성 없이 바로 텍스트+링크 공유로 감
   if (navigator.share) {
     try {
       await navigator.share({ title: gameLabel, text: shareText, url: shareUrl });
@@ -6747,6 +6664,13 @@ function faqFloatBtnCollidesWithText(btn){
     const stack = document.elementsFromPoint(x, y);
     for (const el of stack) {
       if (el === btn || btn.contains(el)) continue;
+      // 2026-07-29: "일시불 대신 연금(annuity)으로 받으면?" 아코디언 제목 위에서 이 버튼이
+      // 흐려지는 게 거슬린다는 사용자 피드백(스크린샷) — 원래 이 충돌 감지는 "뒤에 깔린 읽을
+      // 수 없게 되는 글(문단 등)을 가리지 않게" 하려는 목적인데, 버튼·링크·아코디언 제목
+      // (<summary>)처럼 그 자체가 누르는 대상인 컨트롤과 겹치는 것까지 같은 취급을 받고
+      // 있었음. 이런 요소는 계속 읽어야 하는 콘텐츠가 아니라 한눈에 훑고 누르는 대상이라
+      // 겹쳐도 "글이 가려져서 못 읽음" 문제가 아니므로 충돌 판정에서 제외
+      if (el.closest('button, a, summary, [role="button"]')) continue;
       // 버튼 자신에 도달하기 전에 카드 배경(:before/배경 전용 요소)만 있으면 계속 더 아래(뒤)
       // 요소를 확인 — 실제로 눈에 보이는 글자가 있는 leaf 요소를 만나면 그때 충돌로 판단
       const text = (el.textContent || '').trim();
@@ -8814,12 +8738,7 @@ async function shareDreamResult(btnEl){
   const shareUrl = location.href;
   const shareTitle = pickLang('당첨되면 나는?', 'What would I do if I won?', '如果中奖了，我会……', 'Nếu trúng số tôi sẽ?', 'ถ้าถูกรางวัลฉันจะ?', 'Что бы я сделал, если бы выиграл?', { ar:'ماذا سأفعل لو فزت؟', bn:'জিতলে আমি কী করব?', fr:'Que ferais-je si je gagnais ?', hi:'अगर मैं जीत जाऊं तो क्या करूंगा?', id:'Apa yang akan kulakukan kalau menang?', ja:'当たったら私は何をする？', kk:'Ұтып алсам не істер едім?', km:'តើខ្ញុំនឹងធ្វើអ្វី ប្រសិនបើឈ្នះ?', ky:'Утуп алсам эмне кылмакмын?', lo:'ຖ້າຂ້ອຍຖືກລາງວັນ ຂ້ອຍຈະເຮັດຫຍັງ?', mn:'Хожвол би юу хийх вэ?', my:'ဆုမှန်ရင် ငါဘာလုပ်မလဲ?', ne:'जितें भने म के गर्छु?', si:'මම දිනුවොත් මොකද කරන්නේ?', tl:'Ano ang gagawin ko kung manalo ako?', ur:'اگر میں جیت جاؤں تو کیا کروں گا؟', uz:'Agar yutib olsam, nima qilaman?' , pt: `O que eu faria se ganhasse?`, es: `¿Qué haría si ganara?`, uk: `Що б я зробив(-ла), якби виграв(-ла)?`, tet: `Saida mak ha'u halo se ha'u manán?`});
 
-  const cardSub = pickLang('너는 당첨되면 뭐부터 할래?', 'What would you do first if you won?', '如果你中奖了，会先做什么？', 'Bạn sẽ làm gì đầu tiên nếu trúng số?', 'คุณจะทำอะไรก่อนถ้าถูกรางวัล?', 'Что бы вы сделали в первую очередь, если бы выиграли?', { ar:'ماذا ستفعل أولاً لو فزت؟', bn:'জিতলে তুমি প্রথমে কী করবে?', fr:'Que ferais-tu en premier si tu gagnais ?', hi:'अगर तुम जीतोगे तो सबसे पहले क्या करोगे?', id:'Kalau kamu menang, apa yang akan kamu lakukan duluan?', ja:'あなたは当たったら最初に何する？', kk:'Сен ұтып алсаң, ең алдымен не істер едің?', km:'បើអ្នកឈ្នះ តើអ្នកនឹងធ្វើអ្វីមុនគេ?', ky:'Сен утуп алсаң, эң оболу эмне кыласың?', lo:'ຖ້າເຈົ້າຖືກລາງວັນ ເຈົ້າຈະເຮັດຫຍັງກ່ອນ?', mn:'Чи хожвол юуг эхлээд хийх вэ?', my:'သင်ဆုမှန်ရင် ဘာကို အရင်လုပ်မလဲ?', ne:'तिमी जित्यौ भने पहिले के गर्छौ?', si:'ඔබ දිනුවොත් මුලින්ම කරන්නේ මොකක්ද?', tl:'Ano ang unang gagawin mo kung manalo ka?', ur:'اگر آپ جیت جائیں تو سب سے پہلے کیا کریں گے؟', uz:"Agar yutib olsang, birinchi bo'lib nima qilasan?" , pt: `O que você faria primeiro se ganhasse?`, es: `¿Qué harías primero si ganaras?`, uk: `Що б ви зробили насамперед, якби виграли?`, tet: `Saida mak ó halo uluk se ó manán?`});
-  const cardFooter = pickLang(...SHARE_CTA_FOOTER);
-  const canvas = buildShareCard({ label: title, bigText: amt, subText: cardSub, footerText: cardFooter });
-  if (await tryShareCardImage(canvas, shareTitle, shareText, 'chamtax-dream-share.png')) return;
-  downloadShareCardImage(canvas, 'chamtax-dream-share.png');
-
+  // 2026-07-29: 카드 이미지 생성 없이 텍스트+링크만 공유하도록 단순화(위 shareLatestDraw 주석 참고)
   if (navigator.share) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
@@ -8843,18 +8762,12 @@ async function shareDreamResult(btnEl){
 
 // 아직 금액을 입력/조작한 적 없는 기본 상태(입력칸은 placeholder만 있고 실제 값은 비어있음)에서
 // 공유하면, 계산해본 적도 없는 기본값(100M USD)이 마치 실제로 나온 결과인 것처럼 특정 금액이
-// 박힌 카드로 나가버리는 문제가 있었음 — isAmountManuallyEdited가 true일 때(사용자가 직접
-// 입력했거나 슬라이더/퀵필 버튼을 조작한 적 있을 때)만 결과 카드를 공유하고, 그 전에는 특정
-// 금액 없이 사이트 자체를 소개하는 일반 카드로 공유함
-//
-// 2026-07-29: 위 설명은 "일반 카드로 공유"라고 되어 있었지만, 실제 구현은 카드 이미지를 전혀
-// 안 만들고 navigator.share({title,text,url})로 링크만 공유하고 있었음(버그) — 이러면 파일
-// 공유를 지원하는 환경에서도 이미지 없이 텍스트+링크만 나가고, 링크를 받은 메신저/앱이 자동으로
-// 붙이는 미리보기는 index.html의 고정 OG 이미지/설명(예시 금액이 박힌 og-image-hook.png)이라
-// 방금 만든 결과와 전혀 무관한 카드가 뜬다는 사용자 피드백으로 발견. 다른 공유 함수(shareResult/
-// shareDreamResult/shareLatestDraw)와 똑같이 buildShareCard()로 실제 브랜드 카드를 만들고
-// tryShareCardImage()로 이미지 자체를 먼저 공유 시도하도록 맞춤 — 특정 금액 없이 사이트 소개
-// 문구만 담으므로 여전히 "계산도 안 했는데 결과인 척" 하는 문제는 재발하지 않음
+// 나가버리는 문제가 있었음 — isAmountManuallyEdited가 true일 때(사용자가 직접 입력했거나
+// 슬라이더/퀵필 버튼을 조작한 적 있을 때)만 결과를 공유하고, 그 전에는 특정 금액 없이 사이트
+// 자체를 소개하는 텍스트+링크로 공유함(2026-07-29: 한때 이 함수만 카드 이미지 생성 로직이
+// 빠져있던 버그를 buildShareCard() 추가로 고쳤었는데, 같은 날 사용자가 카드 이미지 자체를
+// 아예 없애고 링크만 공유하는 방식으로 바꿔달라고 요청해서 다시 텍스트+링크만 남김 — 아래
+// shareLatestDraw 주석 참고, 카드 관련 재작업 이력)
 async function shareGenericPromo(){
   const shareTitle = document.querySelector('[data-i18n="hero.tag"]')?.textContent?.trim() || 'ChamTax';
   const heroTitleEl = document.querySelector('[data-i18n-html="hero.title"]');
@@ -8869,11 +8782,7 @@ async function shareGenericPromo(){
   const shareText = heroTitleText ? `${shareTitle} — ${heroTitleText}` : shareTitle;
   const shareUrl = location.href;
 
-  const cardFooter = pickLang(...SHARE_CTA_FOOTER);
-  const canvas = buildShareCard({ label: shareTitle, bigText: heroTitleText, subText: '', footerText: cardFooter });
-  if (await tryShareCardImage(canvas, shareTitle, shareText, 'chamtax-promo-share.png')) return;
-  downloadShareCardImage(canvas, 'chamtax-promo-share.png');
-
+  // 2026-07-29: 카드 이미지 생성 없이 텍스트+링크만 공유하도록 단순화(위 shareLatestDraw 주석 참고)
   if (navigator.share) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
@@ -8959,31 +8868,9 @@ async function shareResult(){
   // 라벨 어순을 홈 화면 결과 카드(result.label, "일시불 예상 실수령액")와 맞춤 — 예전엔
   // "예상 실수령액 (일시불 기준)"으로 어순이 달라서, 공유받은 사람이 화면과 다른 걸 보는 줄
   // 헷갈릴 수 있었음(2026-07-25 카피 검수 지적)
-  const cardLabel = pickLang('💰 일시불 예상 실수령액', '💰 Lump-sum estimated take-home', '💰 一次性预计实得金额', '💰 Số tiền thực nhận ước tính trả một lần', '💰 เงินที่คาดว่าจะได้รับจริงแบบจ่ายครั้งเดียว', '💰 Единовременная ожидаемая сумма на руки', { ar:'💰 صافي الدخل المتوقع بدفعة واحدة', bn:'💰 একবারে প্রদানের আনুমানিক প্রকৃত আয়', fr:'💰 Revenu net estimé en paiement unique', hi:'💰 एकमुश्त अनुमानित हाथ में आने वाली राशि', id:'💰 Perkiraan take-home sekaligus', ja:'💰 一時金の予想手取り額', kk:'💰 Бір жолғы төлемнің болжамды қолға тиетін сомасы', km:'💰 ចំណូលសុទ្ធប៉ាន់ស្មានទូទាត់តែម្តង', ky:'💰 Бир жолку төлөмдүн болжолдуу кол алдырма акчасы', lo:'💰 ເງິນທີ່ຄາດວ່າຈະໄດ້ຮັບຈິງແບບຈ່າຍເທື່ອດຽວ', mn:'💰 Нэг удаагийн төлбөрийн тооцоолсон гарт орох дүн', my:'💰 တစ်ကြိမ်တည်း ခန့်မှန်းလက်ခံရရှိမှု', ne:'💰 एकमुष्ट अनुमानित हातमा पर्ने रकम', si:'💰 එකවර ගෙවීමේ ඇස්තමේන්තුගත අත් ලාභය', tl:'💰 Lump-sum na tinatayang take-home', ur:'💰 یکمشت متوقع ہاتھ میں آنے والی رقم', uz:"💰 Bir martalik to'lovning taxminiy qo'lga tegadigan summasi" , pt: `💰 Valor líquido estimado para pagamento único`, es: `💰 Monto neto estimado para pago único`, uk: `💰 Орієнтовна сума на руки при одноразовій виплаті`, tet: `💰 Estimativa lori ba uma pagamentu úniku`});
-  const cardSub = pickLang(`${amountText} Million USD 당첨 시 · ${country} 기준`, `If you win $${amountText}M USD · as ${article} ${country}`, `如果中了${amountText} Million USD · 按${country}计算`, `Nếu trúng ${amountText} Million USD · theo ${country}`, `ถ้าถูก ${amountText} Million USD · ตาม${country}`, `Если выиграть ${amountText} Million USD · как ${country}`, {
-      ar: `عند الفوز بـ ${amountText} مليون دولار · بصفتك ${country}`,
-      bn: `${amountText} মিলিয়ন USD জিতলে · ${country} হিসেবে`,
-      fr: `En cas de gain de ${amountText} millions USD · en tant que ${country}`,
-      hi: `${amountText} मिलियन USD जीतने पर · ${country} के रूप में`,
-      id: `Jika menang $${amountText}M USD · sebagai ${country}`,
-      ja: `${amountText} Million USD当選時 · ${country}として`,
-      kk: `${amountText} млн USD ұтқанда · ${country} ретінде`,
-      km: `ប្រសិនបើឈ្នះ ${amountText} លានដុល្លារ · ក្នុងនាម${country}`,
-      ky: `${amountText} млн USD утканда · ${country} катары`,
-      lo: `ຖ້າຖືກ ${amountText} ລ້ານໂດລາ · ໃນຖານະ${country}`,
-      mn: `${amountText} сая доллар хожвол · ${country} хувьд`,
-      my: `${amountText} သန်း USD ဆွတ်ခူးရင် · ${country} အနေနဲ့`,
-      ne: `${amountText} मिलियन USD जित्दा · ${country} को रूपमा`,
-      si: `${amountText} මිලියන USD දිනුවොත් · ${country} ලෙස`,
-      tl: `Kung mananalo ng $${amountText}M USD · bilang ${country}`,
-      ur: `${amountText} ملین USD جیتنے پر · ${country} کے طور پر`,
-      uz: `${amountText} million USD yutganda · ${country} sifatida`,
-     pt: `Se você ganhar $${amountText}M USD · como ${article} ${country}`, es: `Si ganas $${amountText}M USD · como ${article} ${country}`, uk: `Якщо ви виграєте $${amountText}M USD · як ${article} ${country}`, tet: `Se ó manán $${amountText}M USD · nu'udar ${article} ${country}`});
-  const cardFooter = pickLang(...SHARE_CTA_FOOTER);
-  const canvas = buildShareCard({ label: cardLabel, bigText: finalAmt, subText: cardSub, footerText: cardFooter });
-  if (await tryShareCardImage(canvas, shareTitle, shareText, 'chamtax-result-share.png')) return;
-  downloadShareCardImage(canvas, 'chamtax-result-share.png');
-
+  // 2026-07-29: 카드 이미지 생성 없이 텍스트+링크만 공유하도록 단순화(위 shareLatestDraw 주석
+  // 참고) — shareUrl에 이미 ?amount=/?country=/?state=가 실려있어서, 링크를 받은 사람이
+  // 클릭하면 이 결과 그대로가 뜸(카드 이미지가 대신하던 역할을 링크 자체가 함)
   if (navigator.share) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
@@ -9068,14 +8955,7 @@ async function shareRefundChecklist(){
      pt: `Encontre dinheiro que você não sabia que tinha — checklist`, es: `Encuentra dinero que no sabías que tenías: lista de verificación`, uk: `Знайдіть гроші, про які ви не знали — чекліст`, tet: `Buka osan ne'ebé ó la hatene katak ó iha — lista verifikasaun`}
   );
 
-  const cardLabel = pickLang('🔍 나도 모르게 놓친 돈이 있을까?', '🔍 Did I miss money I didn’t know about?', '🔍 我是不是漏掉了什么钱？', '🔍 Mình có bỏ sót khoản tiền nào không?', '🔍 ฉันพลาดเงินที่ไม่รู้ว่ามีไหม?', '🔍 Не упустил ли я деньги, о которых не знал?', { ar:'🔍 هل فاتني مال لم أكن أعرف عنه؟', bn:'🔍 আমি কি না জেনে কোনো টাকা মিস করেছি?', fr:"🔍 Ai-je manqué de l'argent sans le savoir ?", hi:'🔍 क्या मुझसे कोई पैसा छूट गया जिसके बारे में पता ही नहीं था?', id:'🔍 Apakah aku melewatkan uang yang tidak kutahu?', ja:'🔍 知らないうちに逃したお金があるかも？', kk:'🔍 Білмей қалдырған ақшам бар ма?', km:'🔍 តើខ្ញុំបានខកខានលុយដែលខ្ញុំមិនដឹងដែរឬទេ?', ky:'🔍 Билбей калтырган акчам барбы?', lo:'🔍 ຂ້ອຍພາດເງິນທີ່ບໍ່ຮູ້ບໍ?', mn:'🔍 Мэдэлгүй алдсан мөнгө байна уу?', my:'🔍 မသိလိုက်ဘဲ လက်လွှတ်ခဲ့တဲ့ငွေ ရှိလား?', ne:'🔍 मलाई थाहा नभएको छुटेको पैसा छ त?', si:'🔍 මට නොදැනුවත්ව මුදල් අහිමි වුණාද?', tl:'🔍 May napalampas ba akong perang hindi ko alam?', ur:'🔍 کیا مجھ سے کوئی پیسہ چھوٹ گیا جس کا مجھے علم نہیں تھا؟', uz:"🔍 Bilmagan holda o'tkazib yuborgan pulim bormikan?" , pt: `🔍 Deixei passar algum dinheiro que não sabia?`, es: `🔍 ¿Me perdí dinero que no sabía que tenía?`, uk: `🔍 Чи пропустив(-ла) я гроші, про які не знав(-ла)?`, tet: `🔍 Ha'u hakat lakon osan ne'ebé ha'u la hatene?`});
-  const cardBig = pickLang('10분 체크리스트', '10-min checklist', '10分钟清单', 'Danh sách 10 phút', 'เช็คลิสต์ 10 นาที', '10-минутный чек-лист', { ar:'قائمة 10 دقائق', bn:'১০ মিনিটের চেকলিস্ট', fr:'Checklist de 10 min', hi:'10 मिनट की चेकलिस्ट', id:'Checklist 10 menit', ja:'10分チェックリスト', kk:'10 минуттық чек-парақ', km:'បញ្ជីត្រួតពិនិត្យ 10 នាទី', ky:'10 мүнөттүк текшерүү тизмеси', lo:'ລາຍການກວດສອບ 10 ນາທີ', mn:'10 минутын чеклист', my:'၁၀ မိနစ် စစ်ဆေးစာရင်း', ne:'१० मिनेट चेकलिस्ट', si:'මිනිත්තු 10 විමර්ශන ලැයිස්තුව', tl:'10-minutong checklist', ur:'10 منٹ کی چیک لسٹ', uz:"10 daqiqalik tekshiruv ro'yxati" , pt: `Checklist de 10 min`, es: `Lista de 10 min`, uk: `10-хвилинний чекліст`, tet: `Lista verifikasaun menutu 10`});
-  const cardSub = pickLang('국세환급금, 5년 지나면 국고로 귀속돼요', 'Unclaimed refunds revert to the treasury after 5 years', '未领取的退税5年后归入国库', 'Tiền hoàn thuế chưa nhận sẽ thuộc về ngân khố sau 5 năm', 'เงินคืนภาษีที่ไม่มีใครรับจะตกเป็นของคลังหลัง 5 ปี', 'Невостребованный возврат налога переходит в казну через 5 лет', { ar:'الأموال المستردة غير المطالب بها تؤول إلى الخزينة بعد 5 سنوات', bn:'দাবি না করা রিফান্ড ৫ বছর পর কোষাগারে চলে যায়', fr:'5 ans après, les remboursements non réclamés reviennent au trésor', hi:'बिना दावे वाले रिफंड 5 साल बाद खजाने में चले जाते हैं', id:'Pengembalian yang tidak diklaim kembali ke kas negara setelah 5 tahun', ja:'未請求の還付金は5年で国庫に帰属します', kk:'Талап етілмеген қайтарымдар 5 жылдан кейін қазынаға өтеді', km:'ការសងប្រាក់ដែលមិនបានទាមទារនឹងត្រលប់ទៅឃ្លាំងសម្បត្តិជាតិវិញបន្ទាប់ពី 5 ឆ្នាំ', ky:'Талап кылынбаган кайтарымдар 5 жылдан кийин казынага өтөт', lo:'ເງິນຄືນທີ່ບໍ່ມີໃຜມາຮັບຈະຕົກເປັນຂອງຄັງຫຼັງ 5 ປີ', mn:'Эзэнгүй буцаан олголт 5 жилийн дараа сан хөмрөгт шилждэг', my:'မတောင်းယူထားတဲ့ ပြန်အမ်းငွေများသည် ၅ နှစ်ကြာလျှင် နိုင်ငံတော်ဘဏ္ဍာသို့ ပြန်ဝင်သွားမည်', ne:'दाबी नगरिएको फिर्ता ५ वर्षपछि सरकारी ढुकुटीमा जान्छ', si:'නොදැනුවත්කම හේතුවෙන් අහිමි වූ ප්‍රතිලාභ වසර 5කට පසු භාණ්ඩාගාරයට පවරයි', tl:'Ang hindi na-claim na refund ay napupunta sa treasury pagkatapos ng 5 taon', ur:'ان کلیمڈ رقم 5 سال بعد خزانے میں چلی جاتی ہے', uz:"Da'vo qilinmagan qaytarilgan mablag' 5 yildan keyin xazinaga o'tadi" , pt: `Restituições não resgatadas retornam ao tesouro após 5 anos`, es: `Los reembolsos no reclamados vuelven al tesoro después de 5 años`, uk: `Незатребувані повернення коштів переходять до скарбниці через 5 років`, tet: `Reembolso la reklama fila ba tesouru depois tinan 5`});
-  const cardFooter = pickLang('👉 참택스 FAQ에서 확인하기', '👉 Check it on the ChamTax FAQ', '👉 到ChamTax常见问题确认', '👉 Kiểm tra trên FAQ của ChamTax', '👉 ตรวจสอบที่ FAQ ของ ChamTax', '👉 Проверьте в FAQ ChamTax', { ar:'👉 تحقق منه في الأسئلة الشائعة لـ ChamTax', bn:'👉 ChamTax-এর FAQ-তে দেখুন', fr:'👉 Vérifiez sur la FAQ de ChamTax', hi:'👉 ChamTax के FAQ पर देखें', id:'👉 Cek di FAQ ChamTax', ja:'👉 ChamTaxのFAQでチェック', kk:'👉 ChamTax-тың FAQ бөлімінде қараңыз', km:'👉 ពិនិត្យនៅ FAQ របស់ ChamTax', ky:"👉 ChamTax'тын FAQ'унда текшериңиз", lo:'👉 ກວດສອບທີ່ FAQ ຂອງ ChamTax', mn:'👉 ChamTax-ийн FAQ дээр шалгаарай', my:'👉 ChamTax ရဲ့ FAQ မှာ စစ်ဆေးပါ', ne:'👉 ChamTax को FAQ मा जाँच गर्नुहोस्', si:'👉 ChamTax හි FAQ හි පරීක්ෂා කරන්න', tl:'👉 Tingnan sa FAQ ng ChamTax', ur:'👉 ChamTax کے FAQ پر چیک کریں', uz:"👉 ChamTax'ning FAQ sahifasida tekshiring" , pt: `👉 Confira no FAQ do ChamTax`, es: `👉 Compruébalo en las FAQ de ChamTax`, uk: `👉 Перевірте у FAQ на ChamTax`, tet: `👉 Verifika iha FAQ ChamTax nian`});
-  const canvas = buildShareCard({ label: cardLabel, bigText: cardBig, subText: cardSub, footerText: cardFooter });
-  if (await tryShareCardImage(canvas, shareTitle, shareText, 'chamtax-refund-checklist-share.png')) return;
-  downloadShareCardImage(canvas, 'chamtax-refund-checklist-share.png');
-
+  // 2026-07-29: 카드 이미지 생성 없이 텍스트+링크만 공유하도록 단순화(위 shareLatestDraw 주석 참고)
   if (navigator.share) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });

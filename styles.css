@@ -57,7 +57,12 @@
        거의 묻혀 보이던 버그(디자인 검수로 발견, 2026-07-25) — 위 --ink-rgb와 같은 패턴으로
        변수화해서 다크모드 블록에서 함께 뒤집음 */
     --teal-rgb: 21,84,69;
-    --body-bg:#D9CDA8;
+    /* 2026-07-29: 원래 --bg(#F7F1E0)보다 더 진한 톤이라 넓은 화면에서 .page 바깥 여백에
+       이질적인 두 번째 색(카키톤)이 보였음 — 모니터마다 .page 폭이 달라 정확히 안 보이게
+       맞추기 어렵다는 사용자 피드백으로, 아예 --bg와 같은 값으로 통일해서 구분 자체를 없앰
+       (카드(--card)는 --bg와 여전히 다른 톤이라 2026-07-27에 고친 "카드가 배경과 안
+       구분된다" 문제는 그대로 유지됨 — 이번엔 바깥 3번째 단만 없앤 것) */
+    --body-bg:#F7F1E0;
     --select-bg:#FDFBF5;
     --chip-bg:#F1EDE0;
     --input-card-bg:#F9F5EB;
@@ -89,7 +94,7 @@
       --ink-rgb: 237,232,218;
       --navyblue-rgb: 124,155,209;
       --teal-rgb: 58,169,138;
-      --body-bg:#0C0A09;
+      --body-bg:#1E1A16;
       --select-bg:#2A2723;
       --chip-bg:#2E2B26;
       --input-card-bg:#221F1B;
@@ -204,7 +209,6 @@
     .cta-btn, .home-result-btn-row, .mn-btn-row, .input-row, .check-date-row{
       max-width:640px; margin-left:auto; margin-right:auto;
     }
-    .share-btn{ max-width:640px; margin-left:auto; margin-right:auto; }
   }
 
   .nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; row-gap:8px; column-gap:10px; }
@@ -833,8 +837,25 @@
     position:absolute; width:8px; height:8px; border-radius:2px; pointer-events:none; z-index:999;
     animation:confetti-fall 0.9s ease-out forwards;
   }
+  /* 2026-07-29: 색종이 사각 조각 대신, 고른 카드의 이모지(🕊️/🏠/✈️/💼)가 떨어지는 버전
+     (사용자 요청 — "재미로 보기" 섹션을 더 재밌게). 같은 낙하 키프레임 재사용 */
+  .confetti-emoji{
+    position:absolute; font-size:22px; line-height:1; pointer-events:none; z-index:999;
+    animation:confetti-fall 0.9s ease-out forwards;
+  }
   @media (prefers-reduced-motion: reduce){
-    .confetti-piece{ display:none; }
+    .confetti-piece, .confetti-emoji{ display:none; }
+  }
+  /* 드림 카드를 눌렀을 때 바로 살짝 눌렸다 튀어오르는 느낌 — 결과가 뜨기 전에도 "눌렀다"는
+     반응이 바로 보이게 함 */
+  @keyframes dream-option-pop{
+    0%{ transform:scale(1); }
+    40%{ transform:scale(0.94); }
+    100%{ transform:scale(1); }
+  }
+  .dream-option.is-picked{ animation:dream-option-pop 0.32s ease; }
+  @media (prefers-reduced-motion: reduce){
+    .dream-option.is-picked{ animation:none; }
   }
 
   .hint{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); margin-top:12px; }
@@ -1283,6 +1304,21 @@
   .us-state-compare-toggle{ margin:8px 0; }
   .us-state-compare-summary{ font-size:var(--fs-small); color:var(--teal); font-weight:700; cursor:pointer; list-style:none; padding:6px 0; }
   .us-state-compare-summary::-webkit-details-marker{ display:none; }
+  /* 파워볼 vs 메가밀리언즈 규칙 비교표(2026-07-29) — us-lottery-basics 가이드 페이지에 이미
+     있던 표를 확률체감 탭의 "먼저, 게임 방식부터" 박스 바로 아래로도 노출. 게임별 색(빨강=
+     파워볼/호박색=메가밀리언즈)은 .jackpot-quickfill-btn-pb/mm과 동일한 관례 재사용 */
+  .howto-compare-table{ margin-top:10px; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--card); }
+  /* min-width:0 필수 — CSS 그리드 자식은 기본 min-width:auto라 콘텐츠 고유 폭 밑으로
+     줄어들지 않아서, 240px처럼 아주 좁은 화면에서 긴 영어 문장("5 numbers (1-70) + 1 Mega
+     Ball (1-24)")이 줄바꿈 대신 카드 밖으로 튀어나감(2026-07-29 QA에서 audit_odds_compare.js로
+     발견) */
+  .hct-row{ display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:6px; padding:8px 10px; font-size:var(--fs-small); border-bottom:1px dashed var(--border); }
+  .hct-row > *{ min-width:0; overflow-wrap:break-word; }
+  .hct-row:last-child{ border-bottom:none; }
+  .hct-header{ font-weight:700; background:var(--bg); }
+  .hct-label{ color:var(--text-muted); font-weight:600; }
+  .hct-pb{ color:var(--status-red); }
+  .hct-mm{ color:var(--status-amber); }
   .us-state-compare-table{ max-height:320px; overflow-y:auto; margin-top:4px; border:1px solid var(--border); border-radius:10px; padding:2px 10px; background:var(--bg); }
   .us-state-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:7px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-small); }
   .us-state-row:last-child{ border-bottom:none; }
