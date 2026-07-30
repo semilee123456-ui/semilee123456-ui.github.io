@@ -672,31 +672,38 @@
                  원래는 한참 아래(세금 계산 기준 버튼 그리드 위)에 hidden input으로만 있어서 화면
                  상단에서는 바꿀 방법이 없었음(사용자 피드백). 버튼 그리드는 그대로 남겨서 원탭
                  접근성은 유지하고, 이 select는 스크롤 없이 빠르게 바꾸는 용도로 추가 — 국가 코드는
-                 통화 코드(KRW/USD 등)와 같은 방식으로 번역 없이 표기(ISO 코드라 언어 불문 통용). -->
+                 통화 코드(KRW/USD 등)와 같은 방식으로 번역 없이 표기(ISO 코드라 언어 불문 통용).
+                 2026-07-30: 라벨 없이 국기 이모지+코드만 있어서 통화 select와 나란히 놓였을 때
+                 "이게 뭘 고르는 셀렉트인지" 구분이 안 됐고, 특히 일부 OS(Windows 등)의 네이티브
+                 <select><option>은 국기 이모지를 지원 안 해서 그냥 코드 문자로 깨져 나와
+                 "KR KR"처럼 중복으로 보이는 문제가 있었음(사용자 스크린샷으로 확인) — 통화
+                 select와 동일한 "라벨 + <select>" 패턴으로 통일하고, 어차피 안 그려지는 국기
+                 이모지는 옵션 텍스트에서 아예 뺌(코드만 남김). -->
             <div class="amount-currency-row">
+              <label for="homeCountrySelect" class="amount-currency-label" data-i18n="home.countryLabel">국가</label>
               <select id="homeCountrySelect" class="amount-currency-select" onchange="setHomeCountry(this.value)" data-i18n-aria-label="a11y.selectCountry" aria-label="국가 선택">
-                <option value="kr" selected>🇰🇷 KR</option>
-                <option value="us">🇺🇸 US</option>
-                <option value="cn">🇨🇳 CN</option>
-                <option value="jp">🇯🇵 JP</option>
-                <option value="in">🇮🇳 IN</option>
-                <option value="vn">🇻🇳 VN</option>
-                <option value="id">🇮🇩 ID</option>
-                <option value="ph">🇵🇭 PH</option>
-                <option value="th">🇹🇭 TH</option>
-                <option value="ru">🇷🇺 RU</option>
-                <option value="np">🇳🇵 NP</option>
-                <option value="lk">🇱🇰 LK</option>
-                <option value="uz">🇺🇿 UZ</option>
-                <option value="kz">🇰🇿 KZ</option>
-                <option value="kg">🇰🇬 KG</option>
-                <option value="mm">🇲🇲 MM</option>
-                <option value="bd">🇧🇩 BD</option>
-                <option value="pk">🇵🇰 PK</option>
-                <option value="kh">🇰🇭 KH</option>
-                <option value="mn">🇲🇳 MN</option>
-                <option value="la">🇱🇦 LA</option>
-                <option value="other">🌐 OTHER</option>
+                <option value="kr" selected>KR</option>
+                <option value="us">US</option>
+                <option value="cn">CN</option>
+                <option value="jp">JP</option>
+                <option value="in">IN</option>
+                <option value="vn">VN</option>
+                <option value="id">ID</option>
+                <option value="ph">PH</option>
+                <option value="th">TH</option>
+                <option value="ru">RU</option>
+                <option value="np">NP</option>
+                <option value="lk">LK</option>
+                <option value="uz">UZ</option>
+                <option value="kz">KZ</option>
+                <option value="kg">KG</option>
+                <option value="mm">MM</option>
+                <option value="bd">BD</option>
+                <option value="pk">PK</option>
+                <option value="kh">KH</option>
+                <option value="mn">MN</option>
+                <option value="la">LA</option>
+                <option value="other">OTHER</option>
               </select>
               <label for="homeCurrencySelect" class="amount-currency-label" data-i18n="input.currencyLabel">통화</label>
               <select id="homeCurrencySelect" class="amount-currency-select" onchange="setSharedInputCurrency(this.value, true)" data-i18n-aria-label="input.currencyLabel" aria-label="통화">
@@ -897,9 +904,18 @@
                 <li><b data-i18n="home.flowLumpsumLabel">일시불</b>: <span data-i18n="home.flowLumpsumDesc">한 번에 수령 (총액의 약 45~60%)</span></li>
               </ul>
               <p class="flow-explain-note" data-i18n-html="home.flowExplainNote">ℹ️ 이 계산기는 대부분이 선택하는 <b>일시불(세전)</b> 기준으로 계산돼요.</p>
-              <button type="button" class="annuity-info-link" style="margin-top:8px;" onclick="openHomeAnnuityDetail()" data-i18n="home.annuityInfoLink">📅 연금 선택 시 차이점 확인하기 →</button>
             </div>
-            <p class="result-hero-basis" id="home-final-basis" style="margin-top:14px; text-align:center; font-weight:700;">1,503억원 당첨 기준 · 한국 거주자</p>
+            <!-- 2026-07-30: 이 문단 바로 위에 있던 "📅 연금 선택 시 차이점 확인하기 →" 버튼(openHomeAnnuityDetail())을
+                 지움 — 그 버튼이 여는 아코디언(#home-annuity-detail)이 이미 결과 카드 상단에서 펼치지
+                 않고도 바로 보이는 자리에 있어서, "결과 더 자세히 보기"까지 펼쳐야만 나오는 이 버튼은
+                 이미 보인 걸 또 안내하는 것뿐이었음(사용자 피드백으로 발견).
+                 같은 조사 중 이 자리에 있던 <p id="home-final-basis">("OOO원 당첨 기준 · 거주자")도
+                 삭제함 — 겹쳐 보인다길래 문구부터 손보려다가, styles.css:1049에 `#home-final-basis{
+                 display:none; }`라는 무조건 숨김 규칙이 있어서 이 문단은 <details>를 열어도 사용자
+                 눈에 실제로 보인 적이 없었다는 걸 발견함(즉 "화면에 두 번 보인다"는 제보 자체가
+                 소스만 보고 낸 오판이었음, 실제로 보이는 중복은 없었음). 어차피 안 보이던 죽은
+                 마크업이라 문구를 고치는 대신 통째로 삭제 — script.js의 해당 textContent 대입
+                 코드와 styles.css의 이 숨김 규칙도 같이 지움 -->
             <div class="result-grid" style="margin-top:8px; grid-template-columns:1fr 1fr;">
               <div class="result-cell">
                 <p class="result-label" id="home-tax1-label">미국 연방세 (비거주자)</p>
@@ -1200,8 +1216,14 @@
           </div>
           <!-- 2026-07-29: 원래 지도 바로 아래에 붙어야 했는데(인수인계 문서 기준) 실수로 카드
                그리드 뒤에 붙어있었음 — 그리드 맨 끝에 이미 "기타 국가" 카드가 있어서 바로 그 밑에
-               같은 안내가 또 나오는 중복으로 보였음(사용자 피드백으로 발견). 원래 의도한 자리로 이동 -->
-          <button type="button" class="compare-map-other-note" onclick="go('home'); setHomeCountry('other');" data-i18n="compare.mapOtherNote">목록에 없는 나라이신가요? 🌐 기타 국가로 계산해보세요 →</button>
+               같은 안내가 또 나오는 중복으로 보였음(사용자 피드백으로 발견). 원래 의도한 자리로 이동
+               2026-07-30: 위치를 옮겨도 여전히 "같은 걸 두 번 안내"하는 느낌이 남는다는 후속 피드백
+               — 누르면 홈 화면으로 이동시키던 걸(setHomeCountry('other')), 사실 같은 비교 탭 안
+               그리드 맨 끝에 이미 그 계산값이 있는 카드(#sideOtherCountryCard)로 그냥 스크롤만
+               해주도록 바꿈(scrollToOtherCountryCard()) — 탭을 벗어나지 않고 바로 아래로
+               이어지므로 "딴 데 가서 계산해보라"는 안내 자체가 필요 없어짐. 문구도 "계산해보세요"→
+               "아래 카드를 확인해보세요"로 26개 언어 전부 갱신. -->
+          <button type="button" class="compare-map-other-note" onclick="scrollToOtherCountryCard()" data-i18n="compare.mapOtherNote">목록에 없는 나라이신가요? 🌐 아래 기타 국가 카드를 확인해보세요 →</button>
           <!-- 국가별 비교 카드(#sideByCountryGrid)는 2026-07-28 추가 세션부터 표시 통화
                (sharedInputCurrency)를 실제로 반영함 — 예전엔 항상 원화(KRW) 고정이라 여기에
                "이 목록은 원화 기준이에요" 안내 문구(#compareGridCurrencyNote)가 있었지만, 이제
@@ -1234,6 +1256,11 @@
              제목 문구 자체("~분이라면" 초대형 vs "~이에요" 자기소개형)도 이미 다르므로 이 정도로 우선 정리) -->
         <details class="panel odds-accordion" id="otherLanguagesPanel">
           <summary class="panel-title-toggle" data-i18n="compare.otherLangTitle">📖 한국에 사는 다른 나라 분이라면</summary>
+          <!-- 2026-07-29 세션이 보류했던 "부제 문장 추가"를 여기서 반영 — 목록 항목이 국기+언어명
+               링크뿐이라(스크린리더 전용 aria-label에만 "계산기 아님" 안내가 있었음) 눌러보기
+               전까지는 이게 계산기 바로가기인지 읽을거리인지 시각적으로 안 드러났음. 이제 펼치면
+               바로 이 문장이 보이므로 26개 언어 전부에 새로 번역함(compare.otherLangSub). -->
+          <p class="panel-desc" data-i18n="compare.otherLangSub">누르면 계산기가 아니라, 그 나라의 세금 안내 글로 이동해요.</p>
           <div id="otherLanguagesList" class="other-lang-list"></div>
         </details>
 

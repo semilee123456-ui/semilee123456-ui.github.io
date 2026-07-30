@@ -1,3 +1,8 @@
+// 2026-07-30: 셀렉트 대상에 .input-card를 추가함 — 국가 select에 라벨을 붙였을 때(홈
+// 화면 통화/국가 select 줄) 영어 라벨("Country"/"Currency")이 한글보다 길어서 카드 왼쪽 밖으로
+// 삐져나가는 실제 렌더링 버그가 있었는데, 이 감사가 그때까지 .panel/.trust-panel 등만 보고
+// .input-card는 안 봐서 못 잡았음(Playwright 스크린샷으로 직접 확인하다가 뒤늦게 발견) — 같은
+// 사각지대가 남지 않도록 여기 포함시킴
 const { chromium } = require('playwright');
 const widths = [240, 280, 320, 344, 375, 390, 393, 412, 430];
 
@@ -18,7 +23,7 @@ const widths = [240, 280, 320, 344, 375, 390, 393, 412, 430];
         const result = await page.evaluate(() => {
           const pageOverflow = document.documentElement.scrollWidth - document.documentElement.clientWidth;
           const escapes = [];
-          document.querySelectorAll('.panel, .trust-panel, .fun-toggle, .more-details-toggle').forEach(card => {
+          document.querySelectorAll('.panel, .trust-panel, .fun-toggle, .more-details-toggle, .input-card').forEach(card => {
             const cr = card.getBoundingClientRect();
             if (cr.width === 0) return;
             card.querySelectorAll('*').forEach(child => {

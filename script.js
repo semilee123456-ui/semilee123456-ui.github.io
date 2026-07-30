@@ -9826,25 +9826,10 @@ function updateHomeCalc(usdOverride){
   }
   const miniEl = document.getElementById('live-result-mini-amt');
   if (miniEl) miniEl.textContent = formatEokKrwInDisplayCurrency(final, sharedInputCurrency); // 희망액 탭도 공용 통화 선택기를 따름
-  document.getElementById('home-final-basis').textContent = pickLang(
-    formatWon(억) + ' 당첨 기준 · ' + basisSuffix,
-    formatWon(억) + ' prize basis · ' + basisSuffix,
-    formatWon(억) + ' 中奖基准 · ' + basisSuffix,
-    formatWon(억) + ' cơ sở trúng thưởng · ' + basisSuffix,
-    formatWon(억) + ' เกณฑ์เงินรางวัล · ' + basisSuffix,
-    formatWon(억) + ' основа приза · ' + basisSuffix,
-    {
-      ar: formatWon(억) + ' أساس الجائزة · ' + basisSuffix, bn: formatWon(억) + ' পুরস্কারের ভিত্তি · ' + basisSuffix,
-      fr: formatWon(억) + ' base du prix · ' + basisSuffix, hi: formatWon(억) + ' पुरस्कार आधार · ' + basisSuffix,
-      id: formatWon(억) + ' basis kemenangan · ' + basisSuffix, ja: formatWon(억) + ' 当選基準・' + basisSuffix,
-      kk: formatWon(억) + ' жүлде негізі · ' + basisSuffix, km: formatWon(억) + ' មូលដ្ឋានពានរង្វាន់ · ' + basisSuffix,
-      ky: formatWon(억) + ' байге негизи · ' + basisSuffix, lo: formatWon(억) + ' ພື້ນຖານລາງວັນ · ' + basisSuffix,
-      mn: formatWon(억) + ' шагналын үндэслэл · ' + basisSuffix, my: formatWon(억) + ' ဆုငွေအခြေခံ · ' + basisSuffix,
-      ne: formatWon(억) + ' पुरस्कार आधार · ' + basisSuffix, si: formatWon(억) + ' ත්‍යාග පදනම · ' + basisSuffix,
-      tl: formatWon(억) + ' basehan ng premyo · ' + basisSuffix, ur: formatWon(억) + ' انعام کی بنیاد · ' + basisSuffix,
-      uz: formatWon(억) + ' yutuq asosi · ' + basisSuffix,
-    }
-  );
+  // 2026-07-30: 이 자리에 있던 #home-final-basis textContent 대입을 지움 — index.html의 해당
+  // <p>가 styles.css의 `#home-final-basis{ display:none; }` 규칙으로 항상 숨겨져 있어서 실제로는
+  // 아무도 본 적 없는 죽은 엘리먼트였음(발견 경위는 index.html의 관련 주석 참고). HTML 엘리먼트
+  // 자체를 지웠으므로 이 대입도 같이 제거.
   const usdMillions = Math.round(usd / 1000000).toLocaleString(LOCALE_MAP[currentLang] || 'ko-KR');
   document.getElementById('home-final-basis-mini').textContent = pickLang(
     `${usdMillions}M USD 당첨 · ${basisSuffix}`,
@@ -10839,6 +10824,21 @@ function renderLanguageContentLinks(){
   });
 }
 
+// 국가별 비교 탭의 "목록에 없는 나라이신가요?" 배너 전용(2026-07-30) — 예전엔 홈 화면으로
+// 이동시켜 setHomeCountry('other')를 호출했는데, 같은 비교 탭 그리드 맨 끝에 이미 "기타 국가"
+// 카드(#sideOtherCountryCard, updateSideBySide() 참고)가 있어서 탭을 벗어날 필요가 없었음(사용자
+// 피드백 — 배너와 카드가 같은 내용을 두 번 안내하는 것처럼 보인다고 지적). 그 카드로 스크롤만
+// 하고, field-autofill-flash(기존 금액 자동완성 때 쓰던 반짝임 효과)를 재사용해 어디로
+// 스크롤됐는지 눈에 띄게 함
+function scrollToOtherCountryCard(){
+  const card = document.getElementById('sideOtherCountryCard');
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  card.classList.remove('field-autofill-flash');
+  void card.offsetWidth;
+  card.classList.add('field-autofill-flash');
+}
+
 function updateSideBySide(eok, stateCode){
   const grid = document.getElementById('sideByCountryGrid');
   const breakdownContainer = document.getElementById('sideBreakdownContainer');
@@ -11067,6 +11067,7 @@ function updateSideBySide(eok, stateCode){
   // 클릭 연동은 일부러 안 붙임
   const otherResult = calcTakeHome(eok, 'other', null);
   const otherCard = document.createElement('div');
+  otherCard.id = 'sideOtherCountryCard';
   otherCard.className = 'side-card side-card-other';
   const otherFlagEl = document.createElement('p'); otherFlagEl.className = 'side-card-flag';
   otherFlagEl.append(makeFlagBadge('🌐'), document.createTextNode(' ' + otherResult.basisSuffix));

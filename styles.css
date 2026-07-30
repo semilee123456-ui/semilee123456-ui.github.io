@@ -499,7 +499,13 @@
      침범하지 않게 함. min-height는 .country-toggle-btn(46px)보다는 작지만, 네이티브 select는
      대부분 모바일 브라우저가 자체적으로 탭 영역을 확장해 인식하므로(iOS/Android 공통) 40px도
      안전한 하한으로 판단함. */
-  .amount-currency-row{ display:flex; align-items:center; justify-content:flex-end; gap:6px; margin-bottom:8px; }
+  /* 2026-07-30: 국가 select에 라벨을 추가하면서(라벨 2개+select 2개, 총 4개 아이템) 영어처럼
+     "Country"/"Currency"라벨이 한글 "국가"/"통화"보다 긴 언어에서 한 줄에 다 안 들어가는 경우가
+     생김 — flex-wrap 없이 justify-content:flex-end만 있으면 넘치는 만큼 왼쪽 카드 밖으로
+     삐져나가 보이는 실제 렌더링 버그가 있었음(Playwright 스크린샷으로 발견, 소스 코드만
+     봐서는 못 잡음). flex-wrap:wrap을 추가해 안 들어가면 "라벨+select" 한 쌍씩 다음 줄로
+     넘어가게 함(줄바꿈돼도 각 줄이 flex-end로 오른쪽 정렬되어 자연스러움) */
+  .amount-currency-row{ display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:6px; margin-bottom:8px; }
   .amount-currency-label{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; }
   .amount-currency-select{
     height:40px; min-height:40px; border:1.5px solid var(--border); border-radius:18px; padding:0 26px 0 12px;
@@ -1012,7 +1018,6 @@
     font-variant-numeric:tabular-nums; white-space:nowrap; clear:both;
     color:var(--teal); text-shadow:none; line-height:1.25;
   }
-  .result-hero-basis{ font-size:var(--fs-note); color:var(--text-muted); margin:4px 0 0; }
   .result-meta-group{ margin-top:16px; padding-top:10px; border-top:1px dashed rgba(var(--ink-rgb),0.12); display:flex; flex-direction:column; align-items:center; gap:2px; }
   .result-hero-basis-mini{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; }
   .sim-note{ font-size:var(--fs-small); color:var(--text-muted); text-align:left; margin:6px 0 0; line-height:1.5; }
@@ -1046,7 +1051,6 @@
   .live-result-mini:hover, .live-result-mini:focus-within{ box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.14); }
   .live-result-mini:hover{ border-color:var(--teal); }
   .live-result-mini span:first-child{ font-size:var(--fs-note); color:var(--text-muted); font-weight:600; min-width:0; overflow-wrap:break-word; }
-  #home-final-basis{ display:none; }
   .live-result-mini-display{ display:inline-flex; align-items:center; gap:6px; }
   .live-result-mini-amt{ white-space:nowrap; font-size:var(--fs-emphasis); font-weight:800; color:var(--teal); font-variant-numeric:tabular-nums; }
   .live-result-mini-edit{ display:inline-flex; align-items:center; gap:6px; }
@@ -2145,7 +2149,7 @@
      항상 올바른 순서(예: "79.7 billion")로 만들어지는데, 그 텍스트가 RTL 문단 안에 그냥 놓이면
      브라우저가 시각적으로 재배열해버림. unicode-bidi:plaintext를 주면 각 텍스트 노드가 자기 안의
      첫 "강한" 방향 문자 기준으로 독립적으로 방향을 판단해서, 원래 순서 그대로 보이게 됨 */
-  html[dir="rtl"] .result-hero-amt, html[dir="rtl"] .result-hero-basis, html[dir="rtl"] .result-hero-basis-mini,
+  html[dir="rtl"] .result-hero-amt, html[dir="rtl"] .result-hero-basis-mini,
   html[dir="rtl"] .tax-impact-before-line, html[dir="rtl"] .tax-impact-diff-big, html[dir="rtl"] #tax-impact-before,
   html[dir="rtl"] #tax-impact-after, html[dir="rtl"] #sticky-result-amt,
   html[dir="rtl"] .jc-step-val, html[dir="rtl"] .jc-step-val-big, html[dir="rtl"] .jc-note,
