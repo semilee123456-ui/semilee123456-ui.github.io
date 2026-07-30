@@ -536,19 +536,22 @@
   .unit-short{ display:none; }
   .input-card-headline{ font-size:18px; font-weight:800; color:var(--text-dark); margin:0 0 4px; }
   .country-toggle{ display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 14px; }
-  .country-toggle-more{ flex:1 1 100%; }
+  .country-toggle-more{ flex:1 1 100%; min-width:0; }
   .country-toggle-more-summary{
     font-size:var(--fs-small); color:var(--teal); font-weight:700; cursor:pointer; list-style:none;
     padding:10px 0; text-align:center;
   }
   .country-toggle-more-summary::-webkit-details-marker{ display:none; }
-  .country-toggle-more-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px; }
+  /* minmax(0,1fr) 필수 — 그냥 1fr만 쓰면 트랙 최소폭이 칸 안 콘텐츠의 min-content로 잡혀서,
+     240px처럼 아주 좁은 화면에서 국가명이 안 줄어들고 그리드 전체가 카드 밖으로 삐져나갔음
+     (2026-07-30 발견) */
+  .country-toggle-more-grid{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-top:4px; }
   .country-toggle-btn{
-    flex:1 1 calc(50% - 4px); min-height:46px; border-radius:11px; border:2px solid var(--border); background:var(--card);
+    flex:1 1 calc(50% - 4px); min-width:0; min-height:46px; border-radius:11px; border:2px solid var(--border); background:var(--card);
     color:var(--text-dark); font-family:inherit; font-size:16px; font-weight:800; cursor:pointer;
     transition:border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
     display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0 4px;
-    text-align:center; line-height:1.2; padding:6px 4px;
+    text-align:center; line-height:1.2; padding:6px 4px; overflow-wrap:break-word;
   }
   .country-toggle-btn.active{ border-color:var(--teal); background:rgba(var(--teal-rgb),0.08); color:var(--teal); }
   .country-toggle-btn .flag-badge{ background:var(--text-dark); }
