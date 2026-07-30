@@ -486,7 +486,7 @@
       <!-- HOME VIEW -->
       <div class="view on" id="view-home">
         <div class="hero" style="padding-bottom:8px;">
-          <p class="hero-category-tag" data-i18n="hero.tag">🧮 미국 복권 세금 계산기</p>
+          <p class="hero-category-tag" data-i18n="hero.tag">미국 복권 세금 계산기</p>
           <h1 class="hero-amount" data-i18n-html="hero.title">내 통장에는<br>실제로 얼마 들어올까?</h1>
         </div>
 
@@ -593,7 +593,7 @@
           <div class="result-hero">
             <div class="result-seal-row"><span class="result-seal" aria-hidden="true">참</span></div>
             <p class="announced-convert-note" id="home-announced-convert-note" style="display:none;"></p>
-            <h2 class="result-hero-label" data-i18n="result.label">💰 일시불 예상 실수령액</h2>
+            <h2 class="result-hero-label" data-i18n="result.label">일시불 예상 실수령액</h2>
             <p class="result-hero-amt" id="home-final-amt" role="status" aria-live="polite">805억원</p>
             <div class="tax-impact-compact">
               <span class="tax-impact-before-line"><span class="tax-impact-strike" data-i18n="home.taxBefore">세전</span> <span class="tax-impact-strike" id="tax-impact-before">-</span></span>
@@ -609,14 +609,19 @@
             </p>
             <p class="milestone-badge" id="home-milestone" style="display:none;"></p>
             <span class="milestone-burst" id="milestone-burst"></span>
-            <p class="usd-actual-note" id="home-usd-note" style="display:none; margin-top:4px;"></p>
-            <p class="usd-actual-note" id="home-cny-note" style="display:none; margin-top:4px;"></p>
-            <p class="usd-actual-note" id="home-inr-note" style="display:none; margin-top:4px;"></p>
-            <p class="usd-actual-note" id="home-other-note" style="display:none; margin-top:4px;"></p>
-            <p class="usd-actual-note" id="home-country-disclaimer" style="display:none; margin-top:8px; color:var(--status-amber); font-weight:600;"></p>
-            <div class="result-meta-group">
-              <p class="result-hero-basis-mini" id="home-final-basis-mini">100M USD 당첨 · 한국 거주자</p>
-              <p class="foot-note" id="home-trust-line">환율 -</p>
+            <!-- 2026-07-30: 환율/계산 기준/통화별 안내문처럼 "핵심 숫자는 아니지만 있으면 좋은"
+                 보조 정보를 옅은 배경의 작은 박스 하나로 묶음 — 실수령액 헤드라인과 시각적
+                 무게를 명확히 구분해달라는 피드백(제미나이 검수 + 사용자 확인) 반영 -->
+            <div class="result-tertiary-box">
+              <p class="usd-actual-note" id="home-usd-note" style="display:none; margin-top:4px;"></p>
+              <p class="usd-actual-note" id="home-cny-note" style="display:none; margin-top:4px;"></p>
+              <p class="usd-actual-note" id="home-inr-note" style="display:none; margin-top:4px;"></p>
+              <p class="usd-actual-note" id="home-other-note" style="display:none; margin-top:4px;"></p>
+              <p class="usd-actual-note" id="home-country-disclaimer" style="display:none; margin-top:8px; color:var(--status-amber); font-weight:600;"></p>
+              <div class="result-meta-group">
+                <p class="result-hero-basis-mini" id="home-final-basis-mini">100M USD 당첨 · 한국 거주자</p>
+                <p class="foot-note" id="home-trust-line">환율 -</p>
+              </div>
             </div>
             <details class="calc-detail-toggle" id="home-annuity-detail" style="margin-top:12px; text-align:left;">
               <summary class="calc-detail-summary" data-i18n-html="odds.jcStep4"><span>💡 일시불 대신 <span style="white-space:nowrap">연금(annuity)으로</span> 받으면?</span></summary>
@@ -645,8 +650,8 @@
                  sanitizeCheckDateForCanvas('')가 빈 값을 오늘 날짜로 처리하는 기존 폴백을 그대로
                  사용 — dateInputEl이 없어도 안전하게 동작하도록 이미 null 체크되어 있었음) -->
             <div class="home-result-btn-row">
-              <button type="button" class="share-btn" id="home-share-btn" onclick="shareResult()" data-i18n="home.shareDreamBtn">📤 이 결과 공유하기</button>
-              <button type="button" class="share-btn" id="home-save-image-btn" onclick="saveHomeResultAsImage()" data-i18n="home.saveImageBtn">🖼️ 이미지로 저장</button>
+              <button type="button" class="share-btn" id="home-share-btn" onclick="shareResult()" data-i18n="home.shareDreamBtn">이 결과 공유하기</button>
+              <button type="button" class="share-btn" id="home-save-image-btn" onclick="saveHomeResultAsImage()" data-i18n="home.saveImageBtn">이미지로 저장</button>
             </div>
           </div>
 
@@ -680,55 +685,59 @@
                  select와 동일한 "라벨 + <select>" 패턴으로 통일하고, 어차피 안 그려지는 국기
                  이모지는 옵션 텍스트에서 아예 뺌(코드만 남김). -->
             <div class="amount-currency-row">
-              <label for="homeCountrySelect" class="amount-currency-label" data-i18n="home.countryLabel">국가</label>
-              <select id="homeCountrySelect" class="amount-currency-select" onchange="setHomeCountry(this.value)" data-i18n-aria-label="a11y.selectCountry" aria-label="국가 선택">
-                <option value="kr" selected>KR</option>
-                <option value="us">US</option>
-                <option value="cn">CN</option>
-                <option value="jp">JP</option>
-                <option value="in">IN</option>
-                <option value="vn">VN</option>
-                <option value="id">ID</option>
-                <option value="ph">PH</option>
-                <option value="th">TH</option>
-                <option value="ru">RU</option>
-                <option value="np">NP</option>
-                <option value="lk">LK</option>
-                <option value="uz">UZ</option>
-                <option value="kz">KZ</option>
-                <option value="kg">KG</option>
-                <option value="mm">MM</option>
-                <option value="bd">BD</option>
-                <option value="pk">PK</option>
-                <option value="kh">KH</option>
-                <option value="mn">MN</option>
-                <option value="la">LA</option>
-                <option value="other">OTHER</option>
-              </select>
-              <label for="homeCurrencySelect" class="amount-currency-label" data-i18n="input.currencyLabel">통화</label>
-              <select id="homeCurrencySelect" class="amount-currency-select" onchange="setSharedInputCurrency(this.value, true)" data-i18n-aria-label="input.currencyLabel" aria-label="통화">
-                <option value="KRW" selected>🇰🇷 KRW</option>
-                <option value="USD">🇺🇸 USD</option>
-                <option value="CNY">🇨🇳 CNY</option>
-                <option value="INR">🇮🇳 INR</option>
-                <option value="VND">🇻🇳 VND</option>
-                <option value="IDR">🇮🇩 IDR</option>
-                <option value="PHP">🇵🇭 PHP</option>
-                <option value="THB">🇹🇭 THB</option>
-                <option value="JPY">🇯🇵 JPY</option>
-                <option value="RUB">🇷🇺 RUB</option>
-                <option value="NPR">🇳🇵 NPR</option>
-                <option value="LKR">🇱🇰 LKR</option>
-                <option value="UZS">🇺🇿 UZS</option>
-                <option value="KZT">🇰🇿 KZT</option>
-                <option value="KGS">🇰🇬 KGS</option>
-                <option value="MMK">🇲🇲 MMK</option>
-                <option value="BDT">🇧🇩 BDT</option>
-                <option value="PKR">🇵🇰 PKR</option>
-                <option value="KHR">🇰🇭 KHR</option>
-                <option value="MNT">🇲🇳 MNT</option>
-                <option value="LAK">🇱🇦 LAK</option>
-              </select>
+              <div class="amount-currency-pair">
+                <label for="homeCountrySelect" class="amount-currency-label" data-i18n="home.countryLabel">국가</label>
+                <select id="homeCountrySelect" class="amount-currency-select" onchange="setHomeCountry(this.value)" data-i18n-aria-label="a11y.selectCountry" aria-label="국가 선택">
+                  <option value="kr" selected>KR</option>
+                  <option value="us">US</option>
+                  <option value="cn">CN</option>
+                  <option value="jp">JP</option>
+                  <option value="in">IN</option>
+                  <option value="vn">VN</option>
+                  <option value="id">ID</option>
+                  <option value="ph">PH</option>
+                  <option value="th">TH</option>
+                  <option value="ru">RU</option>
+                  <option value="np">NP</option>
+                  <option value="lk">LK</option>
+                  <option value="uz">UZ</option>
+                  <option value="kz">KZ</option>
+                  <option value="kg">KG</option>
+                  <option value="mm">MM</option>
+                  <option value="bd">BD</option>
+                  <option value="pk">PK</option>
+                  <option value="kh">KH</option>
+                  <option value="mn">MN</option>
+                  <option value="la">LA</option>
+                  <option value="other">OTHER</option>
+                </select>
+              </div>
+              <div class="amount-currency-pair">
+                <label for="homeCurrencySelect" class="amount-currency-label" data-i18n="input.currencyLabel">통화</label>
+                <select id="homeCurrencySelect" class="amount-currency-select" onchange="setSharedInputCurrency(this.value, true)" data-i18n-aria-label="input.currencyLabel" aria-label="통화">
+                  <option value="KRW" selected>🇰🇷 KRW</option>
+                  <option value="USD">🇺🇸 USD</option>
+                  <option value="CNY">🇨🇳 CNY</option>
+                  <option value="INR">🇮🇳 INR</option>
+                  <option value="VND">🇻🇳 VND</option>
+                  <option value="IDR">🇮🇩 IDR</option>
+                  <option value="PHP">🇵🇭 PHP</option>
+                  <option value="THB">🇹🇭 THB</option>
+                  <option value="JPY">🇯🇵 JPY</option>
+                  <option value="RUB">🇷🇺 RUB</option>
+                  <option value="NPR">🇳🇵 NPR</option>
+                  <option value="LKR">🇱🇰 LKR</option>
+                  <option value="UZS">🇺🇿 UZS</option>
+                  <option value="KZT">🇰🇿 KZT</option>
+                  <option value="KGS">🇰🇬 KGS</option>
+                  <option value="MMK">🇲🇲 MMK</option>
+                  <option value="BDT">🇧🇩 BDT</option>
+                  <option value="PKR">🇵🇰 PKR</option>
+                  <option value="KHR">🇰🇭 KHR</option>
+                  <option value="MNT">🇲🇳 MNT</option>
+                  <option value="LAK">🇱🇦 LAK</option>
+                </select>
+              </div>
             </div>
             <div class="amount-input-tabs" id="amountInputTabs" role="tablist">
               <button type="button" class="amount-tab-btn active" role="tab" aria-selected="true" aria-controls="amountTabLump" data-tab="lump" onclick="switchAmountTab('lump')" data-i18n="input.tabLump">일시불</button>
@@ -785,6 +794,16 @@
               <p class="krw-hint" style="margin:6px 0 0;" data-i18n="input.reverseHint">💡 원하는 실수령액을 입력하면, 세전으로 얼마에 당첨돼야 하는지 거꾸로 계산해드려요</p>
             </div>
 
+            <!-- 2026-07-30: 세금 계산 기준(국가 토글) + (미국 한정) 주(State) 설정을 "고급 설정"
+                 으로 묶어 기본 접힘 처리 — 입력 카드 하나가 금액 입력 + 통화 + 국가 + 세금 기준까지
+                 다 하고 있어 너무 길다는 피드백(제미나이 검수 + 사용자 확인) 반영. 대부분 방문자는
+                 기본값(한국 거주자)을 그대로 쓰므로 이 국가 버튼 그리드+주 설정만 기본 접어두고,
+                 통화/국가 select(위 amount-currency-row)는 금액 입력과 붙어있는 게 자연스러워
+                 그대로 둠. openTaxBasisOverlay()가 #homeCountryToggle을 임시로 옮겼다가
+                 #homeCountryTogglePlaceholder 자리로 되돌리는 로직은 placeholder.parentNode
+                 기준이라 이 안에 중첩돼있어도 그대로 동작함 -->
+            <details class="calc-detail-toggle input-advanced-toggle" style="margin-top:16px;">
+              <summary class="calc-detail-summary" data-i18n="input.advancedSettingsToggle">세금 계산 기준 자세히 설정</summary>
             <p class="field-label-single" style="margin-top:20px; padding-top:14px; border-top:1px dashed var(--border);" data-i18n="input.basisLabel">세금 계산 기준</p>
             <div class="country-toggle" id="homeCountryToggle">
               <button type="button" class="country-toggle-btn active" data-country="kr" onclick="setHomeCountry('kr')"><span class="flag-badge">KR</span> <span data-i18n="input.optKorea">한국 기준</span></button>
@@ -890,12 +909,13 @@
             <p class="filing-label" id="home-filing-label" style="display:none;" data-i18n="compare.filingLabel">미국 거주자 신고 상태</p>
             <p class="filing-note-small" id="home-filing-small" style="display:none;" data-i18n="compare.filingSmall">💬 복권 당첨금처럼 큰 금액에서는 싱글/기혼 여부와 상관없이 결과가 거의 동일해요 (구간 차이가 전체 금액의 0.1% 미만이라서요)</p>
             <p class="filing-note" id="home-filing-note" style="display:none; margin-top:8px;">💡 한국 거주자는 어느 <span style="white-space:nowrap">주(State)에서</span> 당첨되든 미국 비거주자 <span style="white-space:nowrap">원천징수(30%)가</span> 동일하게 적용돼요 — 주세는 따로 계산하지 않아도 돼요.</p>
+            </details>
 
             <p class="krw-hint" style="margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);"><span id="home-krw-amt-wrap">≈ <span id="home-krw-amt">1,503억원</span> · </span><span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="home-rate-input" value="1,503.4" inputmode="decimal" oninput="onHomeRateChanged()"><span data-i18n="common.won">원</span></p>
           </div>
 
           <details class="calc-detail-toggle">
-            <summary class="calc-detail-summary" data-i18n="home.detailSummary">🔍 결과 더 자세히 보기</summary>
+            <summary class="calc-detail-summary" data-i18n="home.detailSummary">결과 더 자세히 보기</summary>
             <span id="tax-impact-after" style="display:none;"></span>
             <div class="detail-note-box" style="background:var(--bg); border-radius:10px; padding:12px 14px; margin-top:10px;">
               <p class="flow-explain-title" data-i18n="home.flowExplainTitle">💡 미국 로또는 두 가지 방식으로 받아요</p>
@@ -973,7 +993,7 @@
               <p class="draw-date-label" id="draw-date-powerball">-</p>
               <div class="draw-balls" id="draw-balls-powerball"></div>
               <div class="jp-actions-row">
-                <button type="button" class="share-btn" onclick="shareLatestDraw('powerball', this)" data-i18n="home.shareDrawBtn">📤 당첨번호 공유하기</button>
+                <button type="button" class="share-btn" onclick="shareLatestDraw('powerball', this)" data-i18n="home.shareDrawBtn">당첨번호 공유하기</button>
                 <a class="jp-official-link" href="https://www.powerball.com" target="_blank" rel="noopener noreferrer" data-i18n="home.officialLink">🔗 공식 사이트에서 확인</a>
               </div>
             </div>
@@ -988,7 +1008,7 @@
               <p class="draw-date-label" id="draw-date-megamillions">-</p>
               <div class="draw-balls" id="draw-balls-megamillions"></div>
               <div class="jp-actions-row">
-                <button type="button" class="share-btn" onclick="shareLatestDraw('megamillions', this)" data-i18n="home.shareDrawBtn">📤 당첨번호 공유하기</button>
+                <button type="button" class="share-btn" onclick="shareLatestDraw('megamillions', this)" data-i18n="home.shareDrawBtn">당첨번호 공유하기</button>
                 <a class="jp-official-link" href="https://www.megamillions.com" target="_blank" rel="noopener noreferrer" data-i18n="home.officialLink">🔗 공식 사이트에서 확인</a>
               </div>
             </div>
@@ -1016,7 +1036,7 @@
               <p class="dream-title" id="dream-title">-</p>
               <p class="dream-desc" id="dream-desc">-</p>
               <p class="dream-amt" id="dream-amt">-</p>
-              <button class="share-btn" onclick="shareDreamResult(this)" data-i18n="home.shareDreamBtn">📤 이 결과 공유하기</button>
+              <button class="share-btn" onclick="shareDreamResult(this)" data-i18n="home.shareDreamBtn">이 결과 공유하기</button>
             </div>
           </div>
         </details>
@@ -1081,6 +1101,7 @@
                공유함. 여기서 고르면 홈 3탭도 같이 바뀌고, 홈에서 고른 통화가 이 탭에 올 때도
                그대로 반영됨(sharedAmountUsd/sharedCountry와 같은 "홈↔비교 공유 상태" 원칙). -->
           <div class="amount-currency-row">
+           <div class="amount-currency-pair">
             <label for="compareCurrencySelect" class="amount-currency-label" data-i18n="input.currencyLabel">통화</label>
             <select id="compareCurrencySelect" class="amount-currency-select" onchange="setSharedInputCurrency(this.value, true)" data-i18n-aria-label="input.currencyLabel" aria-label="통화">
               <option value="KRW" selected>🇰🇷 KRW</option>
@@ -1105,6 +1126,7 @@
               <option value="MNT">🇲🇳 MNT</option>
               <option value="LAK">🇱🇦 LAK</option>
             </select>
+           </div>
           </div>
           <p class="field-label-single" data-i18n="input.amountLabelFull">당첨금 (일시불 세전 기준)</p>
           <div class="million-input-wrap">
@@ -1399,7 +1421,7 @@
           <p class="panel-desc" id="jh-rank-desc">발표 잭팟(연금) 순위가 아니라, 한국 거주자가 오늘 세율로 실제 받는 금액 기준 TOP 10이에요</p>
           <button type="button" class="annuity-info-link" id="jh-rank-change-basis-link" onclick="openTaxBasisOverlay()" style="margin-bottom:8px;">🔧 세금 기준 바꾸기 →</button>
           <div id="jh-rank-list" class="jh-rank-list"></div>
-          <button type="button" class="share-btn" onclick="saveJackpotIndexShareCard('jh-rank-list','jh-rank-title','chamtax-jackpot-takehome-share.png')" data-i18n="home.saveImageBtn">🖼️ 이미지로 저장</button>
+          <button type="button" class="share-btn" onclick="saveJackpotIndexShareCard('jh-rank-list','jh-rank-title','chamtax-jackpot-takehome-share.png')" data-i18n="home.saveImageBtn">이미지로 저장</button>
 
           <!-- 🏆 ChamTax 잭팟 인덱스(2026-07-24 신규) — 이월 스트릭 + 물가보정 실질가치 랭킹.
                둘 다 script.js의 renderJackpotIndexRollover()/renderJackpotIndexCpiRanking()가
@@ -1410,12 +1432,12 @@
           <p class="panel-title-toggle" style="cursor:default; padding-right:0; margin-top:22px; padding-top:16px; border-top:1px dashed var(--border);" id="ji-rollover-title">🎢 역대 최장 이월(Rollover) 기록은?</p>
           <p class="panel-desc" id="ji-rollover-desc">1등 당첨자가 안 나와 잭팟이 계속 불어난 회차만 모았어요 — 연속 회차 수 기준 TOP 10</p>
           <div id="ji-rollover-list" class="jh-rank-list"></div>
-          <button type="button" class="share-btn" onclick="saveJackpotIndexShareCard('ji-rollover-list','ji-rollover-title','chamtax-jackpot-rollover-share.png')" data-i18n="home.saveImageBtn">🖼️ 이미지로 저장</button>
+          <button type="button" class="share-btn" onclick="saveJackpotIndexShareCard('ji-rollover-list','ji-rollover-title','chamtax-jackpot-rollover-share.png')" data-i18n="home.saveImageBtn">이미지로 저장</button>
 
           <p class="panel-title-toggle" style="cursor:default; padding-right:0; margin-top:22px; padding-top:16px; border-top:1px dashed var(--border);" id="ji-cpi-title">📈 물가를 반영하면, 그때 그 잭팟은 지금 얼마?</p>
           <p class="panel-desc" id="ji-cpi-desc">발표 당시 금액이 아니라, 미국 소비자물가지수(CPI-U)로 오늘 가치로 환산한 뒤 실수령액을 다시 계산했어요</p>
           <div id="ji-cpi-list" class="jh-rank-list"></div>
-          <button type="button" class="share-btn" onclick="saveJackpotIndexShareCard('ji-cpi-list','ji-cpi-title','chamtax-jackpot-cpi-share.png')" data-i18n="home.saveImageBtn">🖼️ 이미지로 저장</button>
+          <button type="button" class="share-btn" onclick="saveJackpotIndexShareCard('ji-cpi-list','ji-cpi-title','chamtax-jackpot-cpi-share.png')" data-i18n="home.saveImageBtn">이미지로 저장</button>
           <p class="jh-note" id="ji-cpi-methodology">※ 미국 노동통계국(BLS) CPI-U(전체 도시 소비자, 1982-84=100) 연평균 지수로 2024년 물가 기준까지 보정한 뒤, 오늘 환율과 선택하신 세금 기준의 현행 세율을 적용한 체험용 시뮬레이션이에요. 실제 세무 신고 기준이 아니며, 2024년 이후 발표된 잭팟은 물가 차이가 작아 이 랭킹에서 제외했어요.</p>
           <button type="button" class="annuity-info-link" id="ji-cpi-change-basis-link" onclick="openTaxBasisOverlay()" style="margin-top:4px;">🔧 세금 기준 바꾸기 →</button>
 
@@ -1476,8 +1498,8 @@
               </div>
               <div class="hct-row">
                 <span class="hct-label" data-i18n="odds.compareJackpotOdds">1등 확률</span>
-                <span data-i18n="odds.compareJackpotOdds.pb">약 1 / 2억 9,220만</span>
-                <span data-i18n="odds.compareJackpotOdds.mm">약 1 / 2억 9,047만</span>
+                <span data-i18n="odds.compareJackpotOdds.pb">약 1 / 2억 9,220만</span>
+                <span data-i18n="odds.compareJackpotOdds.mm">약 1 / 2억 9,047만</span>
               </div>
               <div class="hct-row">
                 <span class="hct-label" data-i18n="odds.compareMinJackpot">최소 잭팟</span>
@@ -1815,7 +1837,7 @@
               </a>
             </div>
             <p class="qty-a" style="margin-top:10px;" data-i18n-html="faq.checklistFooter">저희가 직접 조회는 못 해드려요(주민등록번호 인증이 필요한 정부 시스템이라) — 대신 진짜 공식 채널로 바로 연결해드렸어요. 10분이면 확인 끝나요.</p>
-            <button class="share-btn" id="refund-share-btn" style="margin-top:10px;" onclick="shareRefundChecklist()" data-i18n="faq.shareChecklist">📤 이거 친구한테 공유하기</button>
+            <button class="share-btn" id="refund-share-btn" style="margin-top:10px;" onclick="shareRefundChecklist()" data-i18n="faq.shareChecklist">이거 친구한테 공유하기</button>
           </div>
           <details class="faq-item" data-cat="tax">
             <summary class="faq-q" data-i18n="faq.q11">한 번에 받는 게 나아요, 나눠 받는 게 나아요?</summary>
