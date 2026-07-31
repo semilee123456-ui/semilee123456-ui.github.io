@@ -5728,6 +5728,10 @@ const CHECK_PAYTO_MORE = {
 // (#annotateDateInput)으로 옮기면서 모달을 열고 닫아도 값이 유지되도록 모듈 전역 변수로 뺌 —
 // 빈 문자열이면 sanitizeCheckDateForCanvas가 오늘 날짜로 처리(기존 폴백 그대로).
 let checkCardDateOverride = '';
+// 2026-07-31: 날짜 자체를 카드에 아예 안 넣고 싶은 사용자를 위한 스위치(모달
+// #annotateDateSkipCheckbox) — true면 buildHomeResultCheckCanvas()가 날짜·수표번호 줄을
+// 통째로 생략함.
+let checkCardDateHidden = false;
 
 // 카드에 그려질 날짜를 안전한 "YYYY-MM-DD" 문자열로 정제함. 잘못된 문자열이 캔버스에 그대로
 // 그려져 깨진 글자로 보이는 일을 막는 방어 로직(빈 값이나 존재하지 않는 날짜는 오늘 날짜로 폴백).
@@ -5820,18 +5824,23 @@ function buildHomeResultCheckCanvas(){
   // 밴드 아래 첫 줄: 계산 기준 한 줄(basisMini, 왼쪽) + 날짜·수표번호(오른쪽) — 언어별 길이
   // 차이가 커서 폭을 넘으면 폰트를 줄임(fitFontSize). 날짜는 기본 오늘 날짜, "꾸며서 저장하기"
   // 모달 안 #annotateDateInput에서 사용자가 바꾸면 checkCardDateOverride에 반영됨(위 선언 참고).
-  const dateStr = sanitizeCheckDateForCanvas(checkCardDateOverride);
   const metaY = cardY + bandH + 32;
   ctx.fillStyle = '#262420';
   ctx.textAlign = anchorAlign;
   fitFontSize(ctx, basisMini, 700, 16, 11, cornerMaxW * 1.4);
   ctx.fillText(basisMini, anchorX, metaY);
-  // 수표 번호(No.) — 2026-07-31 하드 제약 #3 완화(위 안전장치 문단 참고)의 일부. 실제 은행
-  // 라우팅/계좌번호가 아니라 오늘 날짜에서 뽑은 장식용 일련번호일 뿐이라 기능이 없음.
-  ctx.fillStyle = '#8A8371';
-  ctx.font = "600 13px 'Pretendard', -apple-system, sans-serif";
-  ctx.textAlign = oppositeAlign;
-  ctx.fillText(dateStr + '  ·  No. ' + dateStr.replace(/-/g, '').slice(2), oppositeX, metaY);
+  // 2026-07-31: 날짜 자체를 아예 안 넣고 싶은 사용자를 위해 "날짜 표시 안 함" 체크박스 추가
+  // (모달 #annotateDateSkipCheckbox) — checkCardDateHidden이 true면 날짜·수표번호 줄을
+  // 통째로 생략함(다른 요소 좌표는 그대로 둠 — 빈 자리는 자연스러운 여백이 됨).
+  if (!checkCardDateHidden) {
+    const dateStr = sanitizeCheckDateForCanvas(checkCardDateOverride);
+    // 수표 번호(No.) — 2026-07-31 하드 제약 #3 완화(위 안전장치 문단 참고)의 일부. 실제 은행
+    // 라우팅/계좌번호가 아니라 오늘 날짜에서 뽑은 장식용 일련번호일 뿐이라 기능이 없음.
+    ctx.fillStyle = '#8A8371';
+    ctx.font = "600 13px 'Pretendard', -apple-system, sans-serif";
+    ctx.textAlign = oppositeAlign;
+    ctx.fillText(dateStr + '  ·  No. ' + dateStr.replace(/-/g, '').slice(2), oppositeX, metaY);
+  }
 
   // 헤더 구분선
   ctx.strokeStyle = '#E3E6EA';
@@ -5962,18 +5971,27 @@ function saveHomeResultAsImage(){
   openAnnotateOverlay(canvas, 'chamtax-result.png', { dateEditable: true });
 }
 
-// 2026-07-31: "꾸며서 저장하기" 모달 안 #annotateDateInput이 바뀔 때마다 호출 — 수표 카드를
-// 새 날짜로 다시 그려서 base 캔버스만 교체함. openAnnotateOverlay()를 통째로 다시 부르면
+// 2026-07-31: "꾸며서 저장하기" 모달 안 날짜 입력/"날짜 표시 안 함" 체크박스가 바뀔 때마다
+// 수표 카드를 다시 그려서 base 캔버스만 교체함 — openAnnotateOverlay()를 통째로 다시 부르면
 // annotateActions/펜·텍스트가 초기화되므로, 여기서는 base만 직접 다시 그림(사용자가 이미
 // 그려둔 낙서를 안 지우기 위함).
-function onAnnotateDateChanged(value){
-  checkCardDateOverride = value;
+function rebuildCheckCardBase(){
   const canvas = buildHomeResultCheckCanvas();
   annotateSourceCanvas = canvas;
   const base = document.getElementById('annotateBaseCanvas');
   if (!base) return;
   base.width = canvas.width; base.height = canvas.height;
   base.getContext('2d').drawImage(canvas, 0, 0);
+}
+function onAnnotateDateChanged(value){
+  checkCardDateOverride = value;
+  rebuildCheckCardBase();
+}
+function onAnnotateDateSkipChanged(checked){
+  checkCardDateHidden = checked;
+  const dateInput = document.getElementById('annotateDateInput');
+  if (dateInput) dateInput.disabled = checked;
+  rebuildCheckCardBase();
 }
 
 // "이미지로 저장" 캔버스(위 saveMyNumbersAsTicketImage/saveHomeResultAsImage가 만든 결과물)를
@@ -6021,7 +6039,12 @@ function openAnnotateOverlay(sourceCanvas, filename, opts){
     dateRow.classList.toggle('show', !!opts.dateEditable);
     if (opts.dateEditable) {
       const dateInput = document.getElementById('annotateDateInput');
-      if (dateInput) dateInput.value = checkCardDateOverride || sanitizeCheckDateForCanvas('');
+      if (dateInput) {
+        dateInput.value = checkCardDateOverride || sanitizeCheckDateForCanvas('');
+        dateInput.disabled = checkCardDateHidden;
+      }
+      const skipCheckbox = document.getElementById('annotateDateSkipCheckbox');
+      if (skipCheckbox) skipCheckbox.checked = checkCardDateHidden;
     }
   }
   overlay.classList.add('show');
