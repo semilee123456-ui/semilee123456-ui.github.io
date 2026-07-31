@@ -2115,6 +2115,10 @@
      둠 — .mn-btn-row(내 번호 티켓 이미지 버튼 줄)와 같은 flex 2등분 패턴 재사용 */
   .home-result-btn-row{ display:flex; gap:8px; margin-top:12px; }
   .home-result-btn-row .share-btn{ flex:1; min-width:0; margin-top:0; }
+  /* 2026-07-31: 읽어주기 버튼을 텍스트 없이 아이콘만 있는 작은 정사각형으로 — 공유하기/저장하기와
+     같은 폭으로 3등분하면 "이 결과 공유하기"가 줄바꿈으로 깨지는 문제가 실제로 확인돼서, 이
+     버튼만 flex:1 대신 고정 폭을 줌(다른 두 버튼은 그대로 폭을 나눠 가짐) */
+  .home-result-btn-row .tts-btn-icon{ flex:0 0 44px; width:44px; padding:11px 0; font-size:17px; }
   /* "이미지로 저장" 캔버스에 그려질 날짜를 사용자가 직접 정하는 입력칸(2026-07-28) —
      .amount-currency-row와 같은 "라벨 오른쪽 + 입력요소" 정렬 패턴을 재사용함 */
   .check-date-row{ display:flex; align-items:center; justify-content:flex-end; gap:6px; margin:10px 0 0; }
