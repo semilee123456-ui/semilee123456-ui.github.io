@@ -19,6 +19,36 @@ import { ImageResponse } from 'workers-og';
 const SITE_ORIGIN = 'https://chamtax.com';
 const MAX_LEN = 40; // 카드에 들어갈 텍스트 길이 상한(비정상적으로 긴 값으로 카드가 깨지는 것 방지)
 
+// 2026-07-31: workers-og(=satori 기반)는 기본 내장 폰트가 라틴 문자만 지원해서, 카드 안 한글이
+// 전부 네모(tofu)로 깨져 나오는 버그가 실제로 발견됨(사용자 카카오톡 스크린샷으로 확인 — 숫자/%는
+// 멀쩡한데 한글만 깨짐). 카드에 실제로 쓰이는 글자만 Google Fonts에서 그때그때 받아와서
+// (전체 폰트 파일은 커서 매 요청마다 받기엔 무겁고, 굳이 다 받을 필요도 없음) 렌더링에 씀.
+const STATIC_CARD_LABELS = [
+  '참택스 · chamtax.com', '일시불 예상 실수령액', '세전 ', '실수령', '세금',
+  '· 미국 복권 세금 계산기', '참', '확인하기', '한국 거주자',
+].join('');
+
+// Google Fonts CSS2 API는 User-Agent에 따라 다른 포맷을 내려줌(최신 브라우저 UA엔 woff2) —
+// workers-og(satori)는 ttf/otf/woff만 읽을 수 있고 woff2는 못 읽으므로, 구형 UA를 보내서
+// 일부러 예전 포맷(ttf)을 받아냄. text= 파라미터로 실제 쓰이는 글자만 넘겨서 응답을 작게 유지함.
+async function fetchKoreanFontSubset(text) {
+  const uniqueChars = Array.from(new Set(text.split(''))).join('');
+  if (!uniqueChars) return null;
+  const cssUrl = `https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700&text=${encodeURIComponent(uniqueChars)}`;
+  const cssRes = await fetch(cssUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
+    },
+  });
+  if (!cssRes.ok) return null;
+  const css = await cssRes.text();
+  const match = css.match(/src:\s*url\(([^)]+)\)/);
+  if (!match) return null;
+  const fontRes = await fetch(match[1]);
+  if (!fontRes.ok) return null;
+  return fontRes.arrayBuffer();
+}
+
 function clean(value, fallback) {
   if (typeof value !== 'string' || value.trim() === '') return fallback;
   return value.trim().slice(0, MAX_LEN);
@@ -76,17 +106,29 @@ function buildCardHtml({ finalText, beforeText, country, takePct }) {
 
 async function handleOgImage(url) {
   const params = parseCardParams(url.searchParams);
+  let fonts = [];
+  try {
+    const cardText = STATIC_CARD_LABELS + params.finalText + params.beforeText + params.country;
+    const fontData = await fetchKoreanFontSubset(cardText);
+    if (fontData) fonts = [{ name: 'Noto Sans KR', data: fontData, weight: 700, style: 'normal' }];
+  } catch (e) {
+    // 폰트를 못 받아와도(네트워크 문제 등) 카드 생성 자체는 계속 진행 — 이 경우 한글이 다시
+    // 깨질 수 있지만, 카드 자체가 안 뜨는 것보단 나음
+  }
   try {
     return new ImageResponse(buildCardHtml(params), {
       width: 1200,
       height: 630,
+      fonts,
       headers: { 'Cache-Control': 'public, max-age=86400' },
     });
   } catch (err) {
-    // 카드 생성이 실패해도 깨진 이미지 대신 최소한의 안전한 카드로 대체(전체 실패보다 나음)
+    // 카드 생성이 실패해도 깨진 이미지 대신 최소한의 안전한 카드로 대체(전체 실패보다 나음).
+    // 위에서 이미 받아둔 한글 폰트(fonts)가 있으면 여기서도 그대로 재사용 — 없으면(폰트 자체를
+    // 못 받아온 경우) 빈 배열이라 기본 폰트로 렌더되고 "참택스"는 다시 깨질 수 있음
     return new ImageResponse(
       `<div style="display:flex;width:1200px;height:630px;background:#155445;color:#ffffff;align-items:center;justify-content:center;font-size:48px;font-family:sans-serif;">참택스 · chamtax.com</div>`,
-      { width: 1200, height: 630 }
+      { width: 1200, height: 630, fonts }
     );
   }
 }
