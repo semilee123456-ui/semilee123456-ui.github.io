@@ -20,7 +20,11 @@
 // Worker의 배포 주소. og-share-worker/README.md 안내대로 배포한 뒤 여기 채워 넣을 것 —
 // 비워두면(기본값) 예전처럼 카드 없이 링크+텍스트만 공유됨(아무 것도 깨지지 않음, 안전한 기본값).
 // 예: 'https://chamtax-og-share.내계정.workers.dev'
-const OG_SHARE_WORKER_BASE = 'https://semilee123456-ui-github-io.semilee123456.workers.dev';
+// 2026-07-31: workers.dev 공유 서브도메인은 카카오톡 등 링크 미리보기 봇이 접속할 때 실제 Worker
+// 코드 대신 Cloudflare 자체 홍보 페이지("Cloudflare Workers - Global Serverless...")를 보여주는
+// 문제가 실사용자 스크린샷으로 확인됨(브라우저로 직접 열면 정상 동작 — 봇 트래픽에서만 발생).
+// og.chamtax.com 커스텀 도메인을 Cloudflare 대시보드에서 Worker에 연결해서 해결.
+const OG_SHARE_WORKER_BASE = 'https://og.chamtax.com';
 
 let currentLang = 'ko';
 let resultBarAnimatedIn = false; // 홈 실수령/세금 비율 막대가 최초 1회만 0%→목표값 애니메이션되도록 하는 플래그
