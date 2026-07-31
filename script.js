@@ -3846,23 +3846,22 @@ function shareFallbackCopyToast(){
 // 같이 고칠 것. label/main/sub/badge/title/desc는 전부 호출부에서 이미 26개 언어로 번역된
 // 문자열을 그대로 넘겨받음(이 함수 자체는 새 번역을 만들지 않음) — lang만 현재 화면 언어
 // (currentLang)를 실어보내서 Worker가 카드 폰트를 그 언어 스크립트에 맞게 골라 받아오게 함.
-function wrapWithOgShareCard(shareUrl, { label, main, sub, taxpct, badge, title, desc } = {}){
+function wrapWithOgShareCard(shareUrl, { label, main, sub, taxpct, badge } = {}){
   if (!OG_SHARE_WORKER_BASE || !main) return shareUrl;
   const p = new URLSearchParams({ main, to: shareUrl, lang: currentLang || 'ko' });
   if (label) p.set('label', label);
   if (sub) p.set('sub', sub);
   if (badge) p.set('badge', badge);
-  if (title) p.set('title', title);
-  // 2026-07-31: 호출부들이 desc에 navigator.share용 긴 바이럴 문장(shareText, "나 미국
-  // 복권(...)...확인해봐(참고용 시뮬레이션이에요)")을 그대로 넘겨서, URL 하나에 같은 정보가
-  // (label/main/badge로 이미 실려있는데) 문장 형태로 또 중복되어 실렸음 — 사용자가 카카오톡
-  // PC 앱에 붙여넣었을 때 링크가 몇 줄짜리 텍스트 덩어리로 보일 만큼 김을 직접 확인·제보.
-  // OG 설명(desc)은 미리보기에서 제목 밑에 작게 보조로만 쓰이는 자리라 굳이 전체 문장일
-  // 필요가 없음 — label/main/badge를 짧게 조합해서 쓰고, desc는 그 셋이 하나도 없을 때만
-  // (드묾) 폴백으로 짧게 잘라 씀. 결과적으로 URL 길이가 크게 줄어듦.
-  const shortDesc = [label, main, badge].filter(Boolean).join(' · ');
-  if (shortDesc) p.set('desc', shortDesc.slice(0, 80));
-  else if (desc) p.set('desc', desc.slice(0, 80));
+  // 2026-08-01: title/desc 파라미터를 아예 안 보내기로 함 — 실사용자가 실제 카카오톡
+  // "나와의 채팅"에 붙여넣기로 재현해보니, 카카오톡이 이 URL을 아예 "링크"로 인식조차 못 하고
+  // (파란 밑줄도 안 붙고 그냥 긴 텍스트로 표시) 카드 자체를 시도조차 안 하는 게 확인됨 — 반면
+  // 카카오 공식 디버거(developers.kakao.com/tool/debugger/sharing)는 같은 URL을 문제없이
+  // 스크랩함(길이 제한이 없는 도구라서). 즉 원인은 서버/Worker가 아니라 URL 길이 자체
+  // (label/sub/badge/title/desc가 전부 한글이라 퍼센트인코딩되면 글자당 9자로 불어나서
+  // 500~700자까지 늘어났었음) — title/desc는 label/main/badge와 내용이 중복되므로(desc는
+  // 바로 위 세 값을 합친 것에 불과했고, title은 고정 사이트 문구), Worker(og-share-worker/
+  // src/index.js의 handleSharePage)가 이미 이 둘이 없을 때 main/label/sub로 자동 채우는
+  // 폴백을 갖고 있어서 그냥 안 보내도 카드 내용은 동일하게 유지됨 — URL만 크게 짧아짐.
   if (typeof taxpct === 'number' && !Number.isNaN(taxpct)) p.set('taxpct', String(taxpct));
   // 카카오톡 등 링크 미리보기 봇은 같은 URL을 한 번 스크랩하면 상당 기간(수 시간~며칠) 그
   // 결과를 캐시해서 재사용함 — 매번 "한 번도 안 본 새 URL"처럼 보이게 캐시무효화 타임스탬프를
@@ -3932,8 +3931,6 @@ async function shareLatestDraw(game, btnEl){
     label: gameLabel,
     main: `${numbersText} + ${specialLabel} ${draw.special}`,
     sub: `${nextJackpotLabel} $${jackpotMillions}M`,
-    title: gameLabel,
-    desc: shareText,
   });
 
   if (navigator.share) {
@@ -9386,8 +9383,6 @@ async function shareDreamResult(btnEl){
     label: shareTitle,
     main: title,
     sub: amt,
-    title: shareTitle,
-    desc: shareText,
   });
 
   if (navigator.share) {
@@ -9536,8 +9531,6 @@ async function shareResult(){
     sub: beforeText ? `${taxBeforeLabelText} ${beforeText}`.trim() : '',
     badge: country,
     taxpct: Number.isNaN(takePct) ? undefined : 100 - takePct,
-    title: shareTitle,
-    desc: shareText,
   });
 
   if (navigator.share) {
@@ -9629,8 +9622,6 @@ async function shareRefundChecklist(){
   // 체크리스트 자체를 소개하는 거라 label/sub 없이 shareTitle을 그대로 main으로 씀(새 번역 없음).
   shareUrl = wrapWithOgShareCard(shareUrl, {
     main: shareTitle,
-    title: shareTitle,
-    desc: shareText,
   });
 
   if (navigator.share) {

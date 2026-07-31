@@ -196,10 +196,14 @@ function handleSharePage(url) {
   if (params.takePct !== null) imgParams.set('taxpct', String(100 - params.takePct));
   const ogImageUrl = `${url.origin}/api/og.png?${imgParams.toString()}`;
 
-  // title/desc는 script.js가 이미 계산해서 넘겨준 값(=navigator.share에도 쓰는, 이미 26개
-  // 언어로 번역된 문구)을 그대로 씀 — 이 Worker 안에서 새로 문구를 조립하지 않음. 혹시
-  // 빠뜨리고 안 넘어왔으면 label/main으로 최소한의 대체 문구만 구성.
-  const title = clean(url.searchParams.get('title'), `${params.main}${params.label ? ' · ' + params.label : ''}`, 200);
+  // 2026-08-01: script.js가 더 이상 title/desc를 안 보냄(URL 길이 문제로 제거함, 아래 참고) —
+  // 이 Worker가 label/main/sub만으로 항상 자체 조립함. (예전엔 title/desc를 script.js가 만들어
+  // 넘겨줬는데, 실사용자가 카카오톡 "나와의 채팅"에 직접 붙여넣어 재현해보니 label/sub/badge/
+  // title/desc가 전부 한글이라 퍼센트인코딩되면 500~700자까지 늘어나서 카카오톡이 아예
+  // "링크"로 인식조차 못 하는 게 확인됨 — 반면 길이 제한이 없는 카카오 공식 디버거는 같은
+  // URL을 문제없이 스크랩함. desc는 애초에 label/main/badge를 합친 것과 내용이 겹쳤고, title도
+  // 고정 사이트 문구라 아래 폴백만으로 내용 손실 없이 URL을 크게 줄일 수 있음.)
+  const title = clean(url.searchParams.get('title'), `${params.main}${params.label ? ' · ' + params.label : ''} · ChamTax`, 200);
   const description = clean(url.searchParams.get('desc'), params.sub || params.label || 'ChamTax', 200);
   const titleEsc = escapeHtml(title);
   const descEsc = escapeHtml(description);
