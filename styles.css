@@ -1979,6 +1979,10 @@
   .annotate-tool-btn-ghost{ background:none; }
   .annotate-tool-btn-ghost:disabled{ opacity:0.4; cursor:default; }
   .annotate-color-row{ display:flex; gap:6px; margin-left:auto; }
+  /* 수표 카드에서만 쓰는 날짜 입력 — openAnnotateOverlay()가 dateEditable 옵션일 때만 .show를
+     붙임(기본은 숨김, 랭킹/이월/CPI/티켓처럼 날짜를 안 쓰는 카드에서는 계속 안 보임) */
+  .annotate-date-row{ display:none; justify-content:flex-start; }
+  .annotate-date-row.show{ display:flex; }
   .annotate-color-swatch{
     width:26px; height:26px; border-radius:50%; border:2px solid var(--border); cursor:pointer; padding:0;
   }

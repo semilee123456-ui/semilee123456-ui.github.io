@@ -105,7 +105,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.js?v=20260731-10" defer></script>
+<script src="script.js?v=20260731-11" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -905,18 +905,10 @@
                  (#home-detail-toggle) 안으로 옮겨서 그 안의 중첩 토글(.jh-more)로 합침 —
                  자세한 이유는 #home-detail-toggle 옆 주석 참고 -->
             <!-- 2026-07-29: "카드에 표시할 날짜" 수동 입력칸을 매번 직접 입력해야 하는 게 번거롭다는
-                 사용자 요청으로 제거했었음(script.js의 sanitizeCheckDateForCanvas('')가 빈 값을
-                 오늘 날짜로 처리하는 폴백은 그대로 남겨둠). 2026-07-31 다시 요청 — 이번엔 "매번
-                 입력"이 아니라 "오늘 날짜가 기본이고, 원할 때만 펼쳐서 원하는 날짜로 바꾸는" 형태로
-                 되돌림(<details>로 접어둬서 평소엔 안 보임 → 예전 불편함 반복 안 됨). 입력칸 id는
-                 script.js가 이미 찾고 있던 그 id(home-check-date-input) 그대로라 JS 쪽은 안 건드림. -->
-            <details class="calc-detail-toggle" style="margin-top:10px;">
-              <summary class="calc-detail-summary" data-i18n="checkDate.toggle" data-i18n-ko="📅 받고 싶은 날짜로 바꾸기">📅 받고 싶은 날짜로 바꾸기</summary>
-              <div class="check-date-row">
-                <label class="check-date-label" for="home-check-date-input" data-i18n="checkDate.label" data-i18n-ko="이 돈을 받고 싶은 날짜">이 돈을 받고 싶은 날짜</label>
-                <input type="date" class="check-date-input" id="home-check-date-input">
-              </div>
-            </details>
+                 사용자 요청으로 제거했었음. 2026-07-31 다시 요청해서 <details> 토글로 여기 붙였다가,
+                 "이미지로 저장" 눌러서 뜨는 꾸며서 저장하기 모달과 떨어져 있어서 뭐 하는 칸인지
+                 알아보기 어렵다는 재지적을 받아 그 모달 안(#annotateDateRow)으로 옮김 — 이 자리엔
+                 아무것도 안 남김. -->
             <div class="home-result-btn-row">
               <button type="button" class="share-btn" id="home-share-btn" onclick="shareResult()" data-i18n="home.shareDreamBtn">이 결과 공유하기</button>
               <button type="button" class="share-btn" id="home-save-image-btn" onclick="saveHomeResultAsImage()" data-i18n="home.saveImageBtn">이미지로 저장</button>
@@ -2584,6 +2576,15 @@
           <span class="annotate-color-row" id="annotateColorRow"></span>
           <button type="button" class="annotate-tool-btn annotate-tool-btn-ghost" id="annotateUndoBtn" onclick="undoAnnotateAction()" data-i18n="annotate.undo">↩️ 실행 취소</button>
           <button type="button" class="annotate-tool-btn annotate-tool-btn-ghost" id="annotateClearBtn" onclick="clearAnnotateActions()" data-i18n="annotate.clear">🗑️ 지우기</button>
+        </div>
+        <!-- 2026-07-31: 수표 카드(saveHomeResultAsImage)에서만 쓰는 "받고 싶은 날짜" 입력 —
+             처음엔 메인 화면에 접힌 토글로 뒀는데, 이 모달과 떨어져 있어서 뭐 하는 칸인지
+             알아보기 어렵다는 지적을 받아 바로 아래 미리보기와 붙여서 여기로 옮김. 카드에
+             날짜가 없는 다른 4종(랭킹/이월/CPI/티켓) 저장 시에는 openAnnotateOverlay()가
+             .show를 안 붙여서 숨김. -->
+        <div class="check-date-row annotate-date-row" id="annotateDateRow">
+          <label class="check-date-label" for="annotateDateInput" data-i18n="checkDate.label" data-i18n-ko="📅 받고 싶은 날짜">📅 받고 싶은 날짜</label>
+          <input type="date" class="check-date-input" id="annotateDateInput" oninput="onAnnotateDateChanged(this.value)">
         </div>
         <div class="annotate-canvas-wrap" id="annotateCanvasWrap">
           <canvas id="annotateBaseCanvas"></canvas>
