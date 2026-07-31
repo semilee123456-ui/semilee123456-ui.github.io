@@ -3804,7 +3804,16 @@ function wrapWithOgShareCard(shareUrl, { label, main, sub, taxpct, badge, title,
   if (sub) p.set('sub', sub);
   if (badge) p.set('badge', badge);
   if (title) p.set('title', title);
-  if (desc) p.set('desc', desc.slice(0, 140));
+  // 2026-07-31: 호출부들이 desc에 navigator.share용 긴 바이럴 문장(shareText, "나 미국
+  // 복권(...)...확인해봐(참고용 시뮬레이션이에요)")을 그대로 넘겨서, URL 하나에 같은 정보가
+  // (label/main/badge로 이미 실려있는데) 문장 형태로 또 중복되어 실렸음 — 사용자가 카카오톡
+  // PC 앱에 붙여넣었을 때 링크가 몇 줄짜리 텍스트 덩어리로 보일 만큼 김을 직접 확인·제보.
+  // OG 설명(desc)은 미리보기에서 제목 밑에 작게 보조로만 쓰이는 자리라 굳이 전체 문장일
+  // 필요가 없음 — label/main/badge를 짧게 조합해서 쓰고, desc는 그 셋이 하나도 없을 때만
+  // (드묾) 폴백으로 짧게 잘라 씀. 결과적으로 URL 길이가 크게 줄어듦.
+  const shortDesc = [label, main, badge].filter(Boolean).join(' · ');
+  if (shortDesc) p.set('desc', shortDesc.slice(0, 80));
+  else if (desc) p.set('desc', desc.slice(0, 80));
   if (typeof taxpct === 'number' && !Number.isNaN(taxpct)) p.set('taxpct', String(taxpct));
   // 카카오톡 등 링크 미리보기 봇은 같은 URL을 한 번 스크랩하면 상당 기간(수 시간~며칠) 그
   // 결과를 캐시해서 재사용함 — 매번 "한 번도 안 본 새 URL"처럼 보이게 캐시무효화 타임스탬프를
