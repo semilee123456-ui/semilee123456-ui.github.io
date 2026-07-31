@@ -5878,9 +5878,11 @@ function saveHomeResultAsImage(){
   // 대신 그 자리를 실제 수표에 흔한 MEMO/서명란 장식으로 채워서(GPT/Gemini 3차 검수 반영)
   // "수표"라는 장르가 더 빨리 읽히게 함. 왼쪽엔 MEMO(고정 문구라 사용자가 못 바꿈), 오른쪽엔
   // 빈 서명 밑줄 + "예시용·실제 서명 아님" 라벨.
-  // 2026-07-31 디자인팀 반영 가이드: bandY 380→330으로 당김 — 결과 라벨을 지우면서 생긴
-  // 빈 공간을 메움.
-  const bandY = 330, bandMidGap = 30;
+  // 2026-07-31 디자인팀 반영 가이드가 준 330은 헤더 밴드 추가 전 기준이라, 실제로 반영해보니
+  // MEMO 줄과 아래 참고용 배지(bannerY0=470) 사이에 96px 빈 공간이 남아 콘텐츠가 카드 위쪽에
+  // 쏠려 보이는 문제가 있었음(사용자가 실제 다운로드해보고 직접 제보) — 386으로 조정해서
+  // 금액(y=256)~MEMO, MEMO~배지 사이 여백을 비슷하게 맞춤.
+  const bandY = 386, bandMidGap = 30;
   ctx.textAlign = 'left';
   ctx.fillStyle = '#8A8371';
   ctx.font = "600 12px 'Pretendard', -apple-system, sans-serif";
