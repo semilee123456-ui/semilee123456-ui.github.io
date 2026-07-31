@@ -16,6 +16,12 @@
 //   4) 무엇보다, 150개 넘는 문구의 실제 번역 작업이 코드 작업보다 훨씬 큼
 // 실제 언어가 확정되기 전엔 구조를 미리 넓히지 않기로 결정함 (2026년 7월) — 근거 없이
 // 짐작한 구조가 실제 필요와 안 맞을 위험이 구조를 안 짜두는 비용보다 크다고 판단.
+// 공유 링크의 카카오톡 등 미리보기 카드에 실제 계산 결과(예: "223억원")를 반영해주는 서버리스
+// Worker의 배포 주소. og-share-worker/README.md 안내대로 배포한 뒤 여기 채워 넣을 것 —
+// 비워두면(기본값) 예전처럼 카드 없이 링크+텍스트만 공유됨(아무 것도 깨지지 않음, 안전한 기본값).
+// 예: 'https://chamtax-og-share.내계정.workers.dev'
+const OG_SHARE_WORKER_BASE = '';
+
 let currentLang = 'ko';
 let resultBarAnimatedIn = false; // 홈 실수령/세금 비율 막대가 최초 1회만 0%→목표값 애니메이션되도록 하는 플래그
 // 언어 코드 -> Intl 로케일 문자열(숫자 포맷 toLocaleString 등에 공용으로 씀)
@@ -9240,7 +9246,19 @@ async function shareResult(){
     const shareStateVal = document.getElementById('homeStateSelect').value;
     if (shareStateVal) shareUrlObj.searchParams.set('state', shareStateVal);
   }
-  const shareUrl = shareUrlObj.toString();
+    let shareUrl = shareUrlObj.toString();
+  // OG_SHARE_WORKER_BASE가 설정돼 있으면(og-share-worker/README.md 참고), 카카오톡 등 링크
+  // 미리보기 카드에 실제 결과(finalAmt)가 반영되도록 공유 URL을 그 Worker의 리다이렉트 페이지로ㄴ
+  // 감싸서 보냄 — 사람이 클릭하면 0초 만에 원래 shareUrl(위 계산기 페이지)로 그대로 이동하고,
+  // 미리보기 봇만 이 페이지의 동적 og:image를 읽음. 미설정 시 예전처럼 shareUrl 그대로 사용.
+  if (OG_SHARE_WORKER_BASE) {
+    const beforeText = document.getElementById('tax-impact-before')?.textContent || '';
+    const takePctRaw = document.getElementById('result-visual-take-pct')?.textContent || '';
+    const takePct = parseInt(takePctRaw, 10);
+    const cardParams = new URLSearchParams({ final: finalAmt, before: beforeText, country, to: shareUrl });
+    if (!Number.isNaN(takePct)) cardParams.set('taxpct', String(100 - takePct));
+    shareUrl = `${OG_SHARE_WORKER_BASE.replace(/\/$/, '')}/s?${cardParams.toString()}`;
+    }
   const shareTitle = pickLang('미국 복권 세금 계산기 - 참택스', 'US Lottery Tax Calculator - ChamTax', '美国彩票税金计算器 - ChamTax', 'Máy tính thuế xổ số Mỹ - ChamTax', 'เครื่องคำนวณภาษีลอตเตอรีสหรัฐฯ - ChamTax', 'Калькулятор налога на американскую лотерею - ChamTax', { ar:'حاسبة ضريبة اليانصيب الأمريكي - ChamTax', bn:'মার্কিন লটারি ট্যাক্স ক্যালকুলেটর - ChamTax', fr:"Calculateur d'impôt sur la loterie américaine - ChamTax", hi:'अमेरिकी लॉटरी टैक्स कैलकुलेटर - ChamTax', id:'Kalkulator Pajak Lotre AS - ChamTax', ja:'アメリカ宝くじ税金計算機 - ChamTax', kk:'АҚШ лотереясының салық калькуляторы - ChamTax', km:'ម៉ាស៊ីនគណនាពន្ធឆ្នោតអាមេរិក - ChamTax', ky:'АКШ лотереясынын салык калькулятору - ChamTax', lo:'ເຄື່ອງຄິດໄລ່ພາສີລອດເຕີຣີອາເມລິກາ - ChamTax', mn:'АНУ-ын лотерейн татварын тооцоолуур - ChamTax', my:'အမေရိကန်ထီအခွန် တွက်ချက်စက် - ChamTax', ne:'अमेरिकी लटरी कर क्यालकुलेटर - ChamTax', si:'ඇමරිකානු ලොතරැයි බදු ගණකය - ChamTax', tl:'US Lottery Tax Calculator - ChamTax', ur:'امریکی لاٹری ٹیکس کیلکولیٹر - ChamTax', uz:"AQSh lotereyasi soliq kalkulyatori - ChamTax" , pt: `Calculadora de Imposto sobre Loteria dos EUA - ChamTax`, es: `Calculadora de Impuestos de Lotería de EE. UU. - ChamTax`, uk: `Калькулятор лотерейного податку США - ChamTax`, tet: `Kalkuladora Impostu Lotaria EUA - ChamTax`});
 
   // 라벨 어순을 홈 화면 결과 카드(result.label, "일시불 예상 실수령액")와 맞춤 — 예전엔
