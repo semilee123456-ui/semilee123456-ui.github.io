@@ -5723,11 +5723,14 @@ const CHECK_PAYTO_MORE = {
 // 5. "당첨/WINNER" 같은 새 문구를 추가로 만들지 않음 — resultLabelText는 이미 화면에서
 //    "💰 일시불 예상 실수령액"처럼 "예상"이라는 프레이밍을 쓰고 있는 기존 문구라 그대로 재사용.
 
-// 카드에 그려질 날짜를 안전한 "YYYY-MM-DD" 문자열로 정제함. 2026-07-28에는 사용자가 직접
-// 날짜를 입력하는 칸(#home-check-date-input)이 있었으나 2026-07-29 사용자 요청으로 그 입력칸
-// 자체를 없앰 — 이제 호출부(saveHomeResultAsImage 등)가 항상 빈 문자열을 넘기므로 이 함수는
-// 사실상 "항상 오늘 날짜"를 반환함. 잘못된 문자열이 캔버스에 그대로 그려져 깨진 글자로 보이는
-// 일을 막는 방어 로직 자체는 그대로 남겨둠(향후 다시 수동 입력을 붙이더라도 안전하도록).
+// 2026-07-31: "받고 싶은 날짜" 입력값 — 처음엔 메인 화면 토글, 그 다음엔 이 자체를 DOM
+// input(#home-check-date-input)에서 읽었는데, 최종적으로 "꾸며서 저장하기" 모달 안
+// (#annotateDateInput)으로 옮기면서 모달을 열고 닫아도 값이 유지되도록 모듈 전역 변수로 뺌 —
+// 빈 문자열이면 sanitizeCheckDateForCanvas가 오늘 날짜로 처리(기존 폴백 그대로).
+let checkCardDateOverride = '';
+
+// 카드에 그려질 날짜를 안전한 "YYYY-MM-DD" 문자열로 정제함. 잘못된 문자열이 캔버스에 그대로
+// 그려져 깨진 글자로 보이는 일을 막는 방어 로직(빈 값이나 존재하지 않는 날짜는 오늘 날짜로 폴백).
 function sanitizeCheckDateForCanvas(rawValue){
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -5742,7 +5745,7 @@ function sanitizeCheckDateForCanvas(rawValue){
   return `${String(y).padStart(4, '0')}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 }
 
-function saveHomeResultAsImage(){
+function buildHomeResultCheckCanvas(){
   const isRtl = RTL_LANGS.includes(currentLang);
   const finalAmt = document.getElementById('home-final-amt').textContent;
   const basisMini = document.getElementById('home-final-basis-mini').textContent;
@@ -5815,11 +5818,9 @@ function saveHomeResultAsImage(){
   ctx.restore(); // 클립 해제
 
   // 밴드 아래 첫 줄: 계산 기준 한 줄(basisMini, 왼쪽) + 날짜·수표번호(오른쪽) — 언어별 길이
-  // 차이가 커서 폭을 넘으면 폰트를 줄임(fitFontSize). 날짜는 항상 오늘 날짜(2026-07-29부터
-  // 수동 입력칸 자체를 없앰 — #home-check-date-input이 더 이상 없어서 아래는 항상 빈 값을
-  // sanitizeCheckDateForCanvas()에 넘기고, 그 함수가 빈 값을 오늘 날짜로 처리함)
-  const dateInputEl = document.getElementById('home-check-date-input');
-  const dateStr = sanitizeCheckDateForCanvas(dateInputEl ? dateInputEl.value : '');
+  // 차이가 커서 폭을 넘으면 폰트를 줄임(fitFontSize). 날짜는 기본 오늘 날짜, "꾸며서 저장하기"
+  // 모달 안 #annotateDateInput에서 사용자가 바꾸면 checkCardDateOverride에 반영됨(위 선언 참고).
+  const dateStr = sanitizeCheckDateForCanvas(checkCardDateOverride);
   const metaY = cardY + bandH + 32;
   ctx.fillStyle = '#262420';
   ctx.textAlign = anchorAlign;
@@ -5953,7 +5954,26 @@ function saveHomeResultAsImage(){
   fitFontSize(ctx, disclaimer, 700, 18, 12, bannerW - 40);
   ctx.fillText(disclaimer, W / 2, bannerY0 + bannerH / 2 + 1);
 
-  openAnnotateOverlay(canvas, 'chamtax-result.png');
+  return canvas;
+}
+
+function saveHomeResultAsImage(){
+  const canvas = buildHomeResultCheckCanvas();
+  openAnnotateOverlay(canvas, 'chamtax-result.png', { dateEditable: true });
+}
+
+// 2026-07-31: "꾸며서 저장하기" 모달 안 #annotateDateInput이 바뀔 때마다 호출 — 수표 카드를
+// 새 날짜로 다시 그려서 base 캔버스만 교체함. openAnnotateOverlay()를 통째로 다시 부르면
+// annotateActions/펜·텍스트가 초기화되므로, 여기서는 base만 직접 다시 그림(사용자가 이미
+// 그려둔 낙서를 안 지우기 위함).
+function onAnnotateDateChanged(value){
+  checkCardDateOverride = value;
+  const canvas = buildHomeResultCheckCanvas();
+  annotateSourceCanvas = canvas;
+  const base = document.getElementById('annotateBaseCanvas');
+  if (!base) return;
+  base.width = canvas.width; base.height = canvas.height;
+  base.getContext('2d').drawImage(canvas, 0, 0);
 }
 
 // "이미지로 저장" 캔버스(위 saveMyNumbersAsTicketImage/saveHomeResultAsImage가 만든 결과물)를
@@ -5971,7 +5991,8 @@ let annotatePenWidth = 6;
 let annotateFontSize = 32;
 const ANNOTATE_COLORS = ['#C0392B', '#262420', '#155445', '#F4B740', '#FFFFFF'];
 
-function openAnnotateOverlay(sourceCanvas, filename){
+function openAnnotateOverlay(sourceCanvas, filename, opts){
+  opts = opts || {};
   const overlay = document.getElementById('annotateOverlay');
   const base = document.getElementById('annotateBaseCanvas');
   const draw = document.getElementById('annotateOverlayCanvas');
@@ -5992,6 +6013,17 @@ function openAnnotateOverlay(sourceCanvas, filename){
   setAnnotateTool('pen');
   updateAnnotateUndoClearState();
   setupAnnotateCanvasEvents(draw);
+  // 2026-07-31: 수표 카드(saveHomeResultAsImage)에서만 "받고 싶은 날짜" 입력을 보여줌 — 처음엔
+  // 메인 화면에 따로 뒀는데 이 모달과 떨어져 있어서 뭔지 알아보기 어렵다는 지적을 받아 미리보기
+  // 바로 위로 옮김. 다른 4종 카드를 저장할 땐 opts.dateEditable이 없어서 계속 숨겨져 있음.
+  const dateRow = document.getElementById('annotateDateRow');
+  if (dateRow) {
+    dateRow.classList.toggle('show', !!opts.dateEditable);
+    if (opts.dateEditable) {
+      const dateInput = document.getElementById('annotateDateInput');
+      if (dateInput) dateInput.value = checkCardDateOverride || sanitizeCheckDateForCanvas('');
+    }
+  }
   overlay.classList.add('show');
 }
 
