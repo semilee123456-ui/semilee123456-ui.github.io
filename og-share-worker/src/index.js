@@ -148,8 +148,16 @@ function buildCardHtml({ label, main, sub, badge, takePct }) {
   </div>`;
 }
 
+// buildCardHtml()이 파라미터와 무관하게 항상 그려넣는 고정 문구/기호 — 브랜드 줄
+// ("ChamTax · chamtax.com")과 로고 원 안의 "C", 세율 바 밑 "● 46%" 같은 불릿·퍼센트 기호.
+// loadCardFonts()가 label/main/sub/badge(그때그때 다른 동적 값)만 보고 폰트 서브셋을
+// 받아왔더니, 이 고정 문구들의 글자가 서브셋에 아예 없어서 항상 네모(tofu)로 깨지는 버그가
+// 실사용자 스크린샷으로 발견됨(금액·라벨 등 동적 글자는 멀쩡한데 브랜드 줄만 깨짐) — 두
+// 자리 숫자 퍼센트가 항상 나오는 것도 아니라서 0-9 전체를 안전하게 포함시킴.
+const STATIC_CARD_CHARS = 'ChamTax · chamtax.com0123456789%●';
+
 async function loadCardFonts(params) {
-  const cardText = params.label + params.main + params.sub + params.badge;
+  const cardText = params.label + params.main + params.sub + params.badge + STATIC_CARD_CHARS;
   try {
     const fontData = await fetchFontSubset(cardText, params.lang);
     if (fontData) return [{ name: fontFamilyForLang(params.lang), data: fontData, weight: 700, style: 'normal' }];
