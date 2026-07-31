@@ -3760,6 +3760,29 @@ function shareFallbackCopyToast(){
   return pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
 }
 
+// 2026-07-31: 공유 버튼 4개(이 결과 공유하기/당첨번호 공유하기/재미로 보기 결과/환급
+// 체크리스트)가 전부 같은 방식으로 동적 OG 카드(Cloudflare Worker)를 쓰도록 공통 로직을 하나로
+// 모음 — og-share-worker/src/index.js의 /s 라우트가 기대하는 파라미터 스키마와 반드시 맞춰서
+// 같이 고칠 것. label/main/sub/badge/title/desc는 전부 호출부에서 이미 26개 언어로 번역된
+// 문자열을 그대로 넘겨받음(이 함수 자체는 새 번역을 만들지 않음) — lang만 현재 화면 언어
+// (currentLang)를 실어보내서 Worker가 카드 폰트를 그 언어 스크립트에 맞게 골라 받아오게 함.
+function wrapWithOgShareCard(shareUrl, { label, main, sub, taxpct, badge, title, desc } = {}){
+  if (!OG_SHARE_WORKER_BASE || !main) return shareUrl;
+  const p = new URLSearchParams({ main, to: shareUrl, lang: currentLang || 'ko' });
+  if (label) p.set('label', label);
+  if (sub) p.set('sub', sub);
+  if (badge) p.set('badge', badge);
+  if (title) p.set('title', title);
+  if (desc) p.set('desc', desc.slice(0, 140));
+  if (typeof taxpct === 'number' && !Number.isNaN(taxpct)) p.set('taxpct', String(taxpct));
+  // 카카오톡 등 링크 미리보기 봇은 같은 URL을 한 번 스크랩하면 상당 기간(수 시간~며칠) 그
+  // 결과를 캐시해서 재사용함 — 매번 "한 번도 안 본 새 URL"처럼 보이게 캐시무효화 타임스탬프를
+  // 붙임(실제 사용자 제보로 발견된 문제). Worker의 handleSharePage는 이 파라미터를 안 읽으므로
+  // 리다이렉트(to=) 동작에는 전혀 영향 없음.
+  p.set('t', Date.now().toString(36));
+  return `${OG_SHARE_WORKER_BASE.replace(/\/$/, '')}/s?${p.toString()}`;
+}
+
 async function shareLatestDraw(game, btnEl){
   const draw = LATEST_DRAW[game];
   const jackpotMillions = Math.round(JACKPOT_DATA[game].amountUsd / 1000000);
@@ -3801,12 +3824,29 @@ async function shareLatestDraw(game, btnEl){
       uz: `🎱 Oxirgi ${gameLabel} raqamlari: ${numbersText} + ${specialLabel} ${draw.special} / Keyingi jekpot $${jackpotMillions}M! ChamTax'da ko'ring`,
      pt: `🎱 Últimos números do ${gameLabel}: ${numbersText} + ${specialLabel} ${draw.special} / Próximo prêmio é de $${jackpotMillions}M! Confira no ChamTax`, es: `🎱 Últimos números de ${gameLabel}: ${numbersText} + ${specialLabel} ${draw.special} / ¡El próximo acumulado es de $${jackpotMillions}M! Míralo en ChamTax`, uk: `🎱 Останні номери ${gameLabel}: ${numbersText} + ${specialLabel} ${draw.special} / Наступний джекпот — $${jackpotMillions}M! Перевірте на ChamTax`, tet: `🎱 Númeru foin lalais ${gameLabel}: ${numbersText} + ${specialLabel} ${draw.special} / Jackpot oin mak $${jackpotMillions}M! Haree iha ChamTax`}
   );
-  const shareUrl = location.href;
+  let shareUrl = location.href;
 
   // 2026-07-29: 이전엔 여기서 buildShareCard()로 이미지 카드를 만들어 파일 공유부터 시도했는데,
   // 사용자가 "다른 사이트들처럼" 카드 없이 링크만 공유하길 원함(카드 없이 링크 공유가 대부분
   // 사이트의 일반적인 방식이고, 카드 이미지에 쓰던 🐻 이모지가 기기별 폰트에 따라 실제 로고와
-  // 다르게 보이는 문제도 있었음) — 이미지 생성 없이 바로 텍스트+링크 공유로 감
+  // 다르게 보이는 문제도 있었음) — 이미지 생성 없이 바로 텍스트+링크 공유로 감.
+  // 2026-07-31: 다시 OG_SHARE_WORKER_BASE 동적 카드로 감쌈(위 shareResult 주석 참고) — "다음
+  // 잭팟" 라벨만 여기서 처음 쓰여서 새로 번역함, 나머지는 이미 있는 값 재사용.
+  const nextJackpotLabel = pickLang('다음 잭팟', 'Next jackpot', '下期奖金', 'Jackpot kỳ tới', 'แจ็คพอตงวดหน้า', 'Следующий джекпот', {
+    ar: 'الجاكبوت القادم', bn: 'পরবর্তী জ্যাকপট', fr: 'Prochain jackpot', hi: 'अगला जैकपॉट', id: 'Jackpot berikutnya',
+    ja: '次回のジャックポット', kk: 'Келесі джекпот', km: 'ជេកផតបន្ទាប់', ky: 'Кийинки джекпот', lo: 'ແຈັກພອດຄັ້ງຕໍ່ໄປ',
+    mn: 'Дараагийн жекпот', my: 'နောက်ဂျက်ပေါ့', ne: 'अर्को ज्याकपोट', si: 'ඊළඟ ජැක්පොට්', tl: 'Susunod na jackpot',
+    ur: 'اگلا جیک پاٹ', uz: "Keyingi jekpot",
+    pt: 'Próximo prêmio', es: 'Próximo acumulado', uk: 'Наступний джекпот', tet: 'Jackpot oin',
+  });
+  shareUrl = wrapWithOgShareCard(shareUrl, {
+    label: gameLabel,
+    main: `${numbersText} + ${specialLabel} ${draw.special}`,
+    sub: `${nextJackpotLabel} $${jackpotMillions}M`,
+    title: gameLabel,
+    desc: shareText,
+  });
+
   if (navigator.share) {
     try {
       await navigator.share({ title: gameLabel, text: shareText, url: shareUrl });
@@ -9119,10 +9159,20 @@ async function shareDreamResult(btnEl){
       uz: `Men [${title}]! ${amt}. Agar yutib olsang, birinchi bo'lib nima qilasan?`,
      pt: `Eu sou [${title}]! ${amt}. O que você faria primeiro se ganhasse?`, es: `¡Soy [${title}]! ${amt}. ¿Qué harías primero si ganaras?`, uk: `Я — [${title}]! ${amt}. Що б ви зробили насамперед, якби виграли?`, tet: `Ha'u [${title}]! ${amt}. Saida mak ó halo uluk se ó manán?`}
   );
-  const shareUrl = location.href;
+  let shareUrl = location.href;
   const shareTitle = pickLang('당첨되면 나는?', 'What would I do if I won?', '如果中奖了，我会……', 'Nếu trúng số tôi sẽ?', 'ถ้าถูกรางวัลฉันจะ?', 'Что бы я сделал, если бы выиграл?', { ar:'ماذا سأفعل لو فزت؟', bn:'জিতলে আমি কী করব?', fr:'Que ferais-je si je gagnais ?', hi:'अगर मैं जीत जाऊं तो क्या करूंगा?', id:'Apa yang akan kulakukan kalau menang?', ja:'当たったら私は何をする？', kk:'Ұтып алсам не істер едім?', km:'តើខ្ញុំនឹងធ្វើអ្វី ប្រសិនបើឈ្នះ?', ky:'Утуп алсам эмне кылмакмын?', lo:'ຖ້າຂ້ອຍຖືກລາງວັນ ຂ້ອຍຈະເຮັດຫຍັງ?', mn:'Хожвол би юу хийх вэ?', my:'ဆုမှန်ရင် ငါဘာလုပ်မလဲ?', ne:'जितें भने म के गर्छु?', si:'මම දිනුවොත් මොකද කරන්නේ?', tl:'Ano ang gagawin ko kung manalo ako?', ur:'اگر میں جیت جاؤں تو کیا کروں گا؟', uz:'Agar yutib olsam, nima qilaman?' , pt: `O que eu faria se ganhasse?`, es: `¿Qué haría si ganara?`, uk: `Що б я зробив(-ла), якби виграв(-ла)?`, tet: `Saida mak ha'u halo se ha'u manán?`});
 
   // 2026-07-29: 카드 이미지 생성 없이 텍스트+링크만 공유하도록 단순화(위 shareLatestDraw 주석 참고)
+  // 2026-07-31: 다시 OG_SHARE_WORKER_BASE 동적 카드로 감쌈 — title/amt는 이미 화면(#dream-title/
+  // #dream-amt)에 보이는 텍스트를 그대로 씀, 새 번역 없음.
+  shareUrl = wrapWithOgShareCard(shareUrl, {
+    label: shareTitle,
+    main: title,
+    sub: amt,
+    title: shareTitle,
+    desc: shareText,
+  });
+
   if (navigator.share) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
@@ -9246,26 +9296,7 @@ async function shareResult(){
     const shareStateVal = document.getElementById('homeStateSelect').value;
     if (shareStateVal) shareUrlObj.searchParams.set('state', shareStateVal);
   }
-    let shareUrl = shareUrlObj.toString();
-  // OG_SHARE_WORKER_BASE가 설정돼 있으면(og-share-worker/README.md 참고), 카카오톡 등 링크
-  // 미리보기 카드에 실제 결과(finalAmt)가 반영되도록 공유 URL을 그 Worker의 리다이렉트 페이지로ㄴ
-  // 감싸서 보냄 — 사람이 클릭하면 0초 만에 원래 shareUrl(위 계산기 페이지)로 그대로 이동하고,
-  // 미리보기 봇만 이 페이지의 동적 og:image를 읽음. 미설정 시 예전처럼 shareUrl 그대로 사용.
-  if (OG_SHARE_WORKER_BASE) {
-    const beforeText = document.getElementById('tax-impact-before')?.textContent || '';
-    const takePctRaw = document.getElementById('result-visual-take-pct')?.textContent || '';
-    const takePct = parseInt(takePctRaw, 10);
-    const cardParams = new URLSearchParams({ final: finalAmt, before: beforeText, country, to: shareUrl });
-    if (!Number.isNaN(takePct)) cardParams.set('taxpct', String(100 - takePct));
-    // 2026-07-31: 카카오톡 등 링크 미리보기 봇은 같은 URL을 한 번 스크랩하면 상당 기간(수 시간~
-    // 며칠) 그 결과를 캐시해서 재사용함 — 같은 금액을 두 번 이상 공유하면(또는 우연히 이전에
-    // 테스트했던 것과 같은 파라미터 조합이면) 실제 카드 대신 예전에 캐시된 카드를 그대로 보여줄
-    // 수 있음("공유해도 항상 기존과 똑같이 나온다"는 사용자 제보). 짧은 타임스탬프를 붙여서
-    // 매번 "한 번도 안 본 새 URL"로 만들어 이 캐시를 우회함 — Worker의 handleSharePage는 이
-    // 파라미터를 안 읽고 무시하므로 리다이렉트 동작(to=)에는 전혀 영향 없음.
-    cardParams.set('t', Date.now().toString(36));
-    shareUrl = `${OG_SHARE_WORKER_BASE.replace(/\/$/, '')}/s?${cardParams.toString()}`;
-    }
+  let shareUrl = shareUrlObj.toString();
   const shareTitle = pickLang('미국 복권 세금 계산기 - 참택스', 'US Lottery Tax Calculator - ChamTax', '美国彩票税金计算器 - ChamTax', 'Máy tính thuế xổ số Mỹ - ChamTax', 'เครื่องคำนวณภาษีลอตเตอรีสหรัฐฯ - ChamTax', 'Калькулятор налога на американскую лотерею - ChamTax', { ar:'حاسبة ضريبة اليانصيب الأمريكي - ChamTax', bn:'মার্কিন লটারি ট্যাক্স ক্যালকুলেটর - ChamTax', fr:"Calculateur d'impôt sur la loterie américaine - ChamTax", hi:'अमेरिकी लॉटरी टैक्स कैलकुलेटर - ChamTax', id:'Kalkulator Pajak Lotre AS - ChamTax', ja:'アメリカ宝くじ税金計算機 - ChamTax', kk:'АҚШ лотереясының салық калькуляторы - ChamTax', km:'ម៉ាស៊ីនគណនាពន្ធឆ្នោតអាមេរិក - ChamTax', ky:'АКШ лотереясынын салык калькулятору - ChamTax', lo:'ເຄື່ອງຄິດໄລ່ພາສີລອດເຕີຣີອາເມລິກາ - ChamTax', mn:'АНУ-ын лотерейн татварын тооцоолуур - ChamTax', my:'အမေရိကန်ထီအခွန် တွက်ချက်စက် - ChamTax', ne:'अमेरिकी लटरी कर क्यालकुलेटर - ChamTax', si:'ඇමරිකානු ලොතරැයි බදු ගණකය - ChamTax', tl:'US Lottery Tax Calculator - ChamTax', ur:'امریکی لاٹری ٹیکس کیلکولیٹر - ChamTax', uz:"AQSh lotereyasi soliq kalkulyatori - ChamTax" , pt: `Calculadora de Imposto sobre Loteria dos EUA - ChamTax`, es: `Calculadora de Impuestos de Lotería de EE. UU. - ChamTax`, uk: `Калькулятор лотерейного податку США - ChamTax`, tet: `Kalkuladora Impostu Lotaria EUA - ChamTax`});
 
   // 라벨 어순을 홈 화면 결과 카드(result.label, "일시불 예상 실수령액")와 맞춤 — 예전엔
@@ -9273,7 +9304,25 @@ async function shareResult(){
   // 헷갈릴 수 있었음(2026-07-25 카피 검수 지적)
   // 2026-07-29: 카드 이미지 생성 없이 텍스트+링크만 공유하도록 단순화(위 shareLatestDraw 주석
   // 참고) — shareUrl에 이미 ?amount=/?country=/?state=가 실려있어서, 링크를 받은 사람이
-  // 클릭하면 이 결과 그대로가 뜸(카드 이미지가 대신하던 역할을 링크 자체가 함)
+  // 클릭하면 이 결과 그대로가 뜸.
+  // 2026-07-31: 여기에 OG_SHARE_WORKER_BASE 동적 카드 감싸기를 추가함(위 shareUrl은 그대로
+  // 리다이렉트 대상(to=)으로만 쓰이고, 실제 카카오톡 등에 노출되는 건 이 감싼 URL) — label/sub는
+  // 화면에 이미 보이는(=이미 번역된) 텍스트를 그대로 가져다 씀, 새 번역 없음.
+  const resultLabelText = document.querySelector('.result-hero-label')?.textContent || '';
+  const taxBeforeLabelText = document.querySelector('[data-i18n="home.taxBefore"]')?.textContent || '';
+  const beforeText = document.getElementById('tax-impact-before')?.textContent || '';
+  const takePctRaw = document.getElementById('result-visual-take-pct')?.textContent || '';
+  const takePct = parseInt(takePctRaw, 10);
+  shareUrl = wrapWithOgShareCard(shareUrl, {
+    label: resultLabelText,
+    main: finalAmt,
+    sub: beforeText ? `${taxBeforeLabelText} ${beforeText}`.trim() : '',
+    badge: country,
+    taxpct: Number.isNaN(takePct) ? undefined : 100 - takePct,
+    title: shareTitle,
+    desc: shareText,
+  });
+
   if (navigator.share) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
@@ -9328,7 +9377,7 @@ async function shareRefundChecklist(){
       uz: "Men ushbu tekshiruv ro'yxati orqali da'vo qilinmagan pulim bor-yo'qligini tekshirdim. Koreyada har yili yuzlab milliard von da'vo qilinmagan soliq qaytarilishi yo'qolib ketar ekan (5 yildan keyin xazinaga o'tadi). ChamTax'ning FAQ sahifasida tekshirish atigi 10 daqiqa oladi!",
      pt: `Verifiquei se tinha dinheiro não resgatado usando este checklist. Aparentemente, centenas de bilhões de wones em restituições de impostos não resgatadas ficam esquecidos todos os anos na Coreia (retornando ao tesouro após 5 anos). Leva 10 minutos para verificar no FAQ do ChamTax!`, es: `Comprobé si tenía dinero no reclamado usando esta lista. Al parecer, cientos de miles de millones de wones en reembolsos de impuestos no reclamados se quedan sin reclamar cada año en Corea (vuelven al tesoro tras 5 años). ¡Lleva 10 minutos verificarlo en el FAQ de ChamTax!`, uk: `Я перевірив(-ла), чи є в мене незатребувані гроші, за допомогою цього списку. Виявляється, сотні мільярдів вон незатребуваних повернень податків щороку залишаються в Кореї (переходять до скарбниці через 5 років). Перевірка займає 10 хвилин у FAQ на ChamTax!`, tet: `Ha'u verifika se ha'u iha osan ne'ebé la reklama uza lista verifikasaun ne'e. Dalaruma meiu atus biliaun won husi reembolso impostu la reklama horik la reklama tinan-tinan iha Korea (fila ba tesouru depois tinan 5). Foti menutu 10 hodi verifika iha FAQ ChamTax nian!`}
   );
-  const shareUrl = location.href;
+  let shareUrl = location.href;
   const btn = document.getElementById('refund-share-btn');
   const shareTitle = pickLang(
     '나도 모르는 잠자는 내 돈 찾기 체크리스트',
@@ -9359,6 +9408,14 @@ async function shareRefundChecklist(){
   );
 
   // 2026-07-29: 카드 이미지 생성 없이 텍스트+링크만 공유하도록 단순화(위 shareLatestDraw 주석 참고)
+  // 2026-07-31: 다시 OG_SHARE_WORKER_BASE 동적 카드로 감쌈 — 이 공유는 특정 계산 결과가 아니라
+  // 체크리스트 자체를 소개하는 거라 label/sub 없이 shareTitle을 그대로 main으로 씀(새 번역 없음).
+  shareUrl = wrapWithOgShareCard(shareUrl, {
+    main: shareTitle,
+    title: shareTitle,
+    desc: shareText,
+  });
+
   if (navigator.share) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
