@@ -9257,6 +9257,13 @@ async function shareResult(){
     const takePct = parseInt(takePctRaw, 10);
     const cardParams = new URLSearchParams({ final: finalAmt, before: beforeText, country, to: shareUrl });
     if (!Number.isNaN(takePct)) cardParams.set('taxpct', String(100 - takePct));
+    // 2026-07-31: 카카오톡 등 링크 미리보기 봇은 같은 URL을 한 번 스크랩하면 상당 기간(수 시간~
+    // 며칠) 그 결과를 캐시해서 재사용함 — 같은 금액을 두 번 이상 공유하면(또는 우연히 이전에
+    // 테스트했던 것과 같은 파라미터 조합이면) 실제 카드 대신 예전에 캐시된 카드를 그대로 보여줄
+    // 수 있음("공유해도 항상 기존과 똑같이 나온다"는 사용자 제보). 짧은 타임스탬프를 붙여서
+    // 매번 "한 번도 안 본 새 URL"로 만들어 이 캐시를 우회함 — Worker의 handleSharePage는 이
+    // 파라미터를 안 읽고 무시하므로 리다이렉트 동작(to=)에는 전혀 영향 없음.
+    cardParams.set('t', Date.now().toString(36));
     shareUrl = `${OG_SHARE_WORKER_BASE.replace(/\/$/, '')}/s?${cardParams.toString()}`;
     }
   const shareTitle = pickLang('미국 복권 세금 계산기 - 참택스', 'US Lottery Tax Calculator - ChamTax', '美国彩票税金计算器 - ChamTax', 'Máy tính thuế xổ số Mỹ - ChamTax', 'เครื่องคำนวณภาษีลอตเตอรีสหรัฐฯ - ChamTax', 'Калькулятор налога на американскую лотерею - ChamTax', { ar:'حاسبة ضريبة اليانصيب الأمريكي - ChamTax', bn:'মার্কিন লটারি ট্যাক্স ক্যালকুলেটর - ChamTax', fr:"Calculateur d'impôt sur la loterie américaine - ChamTax", hi:'अमेरिकी लॉटरी टैक्स कैलकुलेटर - ChamTax', id:'Kalkulator Pajak Lotre AS - ChamTax', ja:'アメリカ宝くじ税金計算機 - ChamTax', kk:'АҚШ лотереясының салық калькуляторы - ChamTax', km:'ម៉ាស៊ីនគណនាពន្ធឆ្នោតអាមេរិក - ChamTax', ky:'АКШ лотереясынын салык калькулятору - ChamTax', lo:'ເຄື່ອງຄິດໄລ່ພາສີລອດເຕີຣີອາເມລິກາ - ChamTax', mn:'АНУ-ын лотерейн татварын тооцоолуур - ChamTax', my:'အမေရိကန်ထီအခွန် တွက်ချက်စက် - ChamTax', ne:'अमेरिकी लटरी कर क्यालकुलेटर - ChamTax', si:'ඇමරිකානු ලොතරැයි බදු ගණකය - ChamTax', tl:'US Lottery Tax Calculator - ChamTax', ur:'امریکی لاٹری ٹیکس کیلکولیٹر - ChamTax', uz:"AQSh lotereyasi soliq kalkulyatori - ChamTax" , pt: `Calculadora de Imposto sobre Loteria dos EUA - ChamTax`, es: `Calculadora de Impuestos de Lotería de EE. UU. - ChamTax`, uk: `Калькулятор лотерейного податку США - ChamTax`, tet: `Kalkuladora Impostu Lotaria EUA - ChamTax`});
