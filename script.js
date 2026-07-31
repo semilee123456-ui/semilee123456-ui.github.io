@@ -5665,12 +5665,18 @@ const CHECK_PAYTO_MORE = {
 //    연결됨)로 이 빈칸에 자기 이름을 직접 써넣는 흐름. 얼굴 실루엣 같은 장식 요소는 레이아웃
 //    복잡도·언어별 여백 확보 리스크 대비 얻는 게 작다고 판단해 이번 리디자인에선 넣지 않음
 //    (요청 원문에 "선택사항"이라고 명시돼있어서 의도적으로 생략 — 다음 세션이 원하면 추가 가능).
-// 3. 실제 발행 가능한 수표처럼 보일 요소(계좌번호·라우팅번호·MICR·서명란) 전부 없음 — "받는
-//    사람" 빈칸 + 큰 금액만 장르 관습으로 넣고, 그 외 기능적 요소는 일절 안 그림.
-// 4. 참고용 배지는 카드 폭 전체에 가까운 띠(banner) 형태로 카드 맨 아래에 둬서(이전 버전은
-//    작은 알약 배지) 가로로 훨씬 넓어진 캔버스에서도 절대 작아 보이거나 잘리지 않게 함 — 오히려
-//    수표 모양이 실제 금융 서류를 연상시키는 정도가 티켓보다 크다고 판단해 크기(14px→18px)와
-//    두께(굵게)를 이전보다 키움.
+// 3. [2026-07-31 사용자가 명시적으로 완화 승인 — GPT/Gemini 3차 검수의 "수표다움을 더 강화하자"
+//    제안을 받아들임] 계좌번호·라우팅번호·MICR은 여전히 절대 안 그림(이 셋은 실제로 "돈을 받는
+//    데" 쓰이는 기능적 요소라서 그대로 유지). 다만 시각적 장르 신호로 MEMO 줄과 서명란을
+//    장식으로 추가함 — MEMO는 사용자가 문구를 바꿀 수 없게 고정 문구를 캔버스에 직접 그려
+//    넣고, 서명란은 라벨에 "예시용·실제 서명 아님"을 작게 병기해 실제 서명으로 오인될 여지를
+//    없앰. 즉 "돈을 실제로 받을 수 있게 만드는 요소"는 여전히 금지, "수표처럼 보이는 장식"만
+//    완화한 것 — 아래 실제 코드(MEMO/서명란 블록) 참고.
+// 4. [2026-07-31 사용자 승인 — 톤 완화] 참고용 배지는 여전히 카드 폭 전체에 가까운 띠(banner)
+//    형태로 카드 맨 아래에 두고 크기·두께(18px, 굵게)도 그대로 유지함(절대 작아 보이거나
+//    잘리지 않게). 다만 색상만 경고성 빨강(#C0392B)에서 브랜드 톤과 어울리는 차분한 안내색으로
+//    낮춤 — "이건 실제가 아니다"라는 정보는 여전히 크고 분명하게 전달하되, 시각적으로 "경고
+//    문구"처럼 불안감을 주지는 않게 함.
 // 5. "당첨/WINNER" 같은 새 문구를 추가로 만들지 않음 — resultLabelText는 이미 화면에서
 //    "💰 일시불 예상 실수령액"처럼 "예상"이라는 프레이밍을 쓰고 있는 기존 문구라 그대로 재사용.
 
@@ -5698,8 +5704,6 @@ function saveHomeResultAsImage(){
   const resultLabelText = document.querySelector('.result-hero-label').textContent;
   const finalAmt = document.getElementById('home-final-amt').textContent;
   const basisMini = document.getElementById('home-final-basis-mini').textContent;
-  const beforeTax = document.getElementById('tax-impact-before').textContent;
-  const taxDiff = document.getElementById('tax-impact-diff').textContent;
 
   const SCALE = 2;
   // 실제 "대형 기념 수표"는 세로보다 훨씬 넓은 포스터보드 형태(대략 2:1 이상) — 기존 900x620
@@ -5789,6 +5793,12 @@ function saveHomeResultAsImage(){
   ctx.font = "600 13px 'Pretendard', -apple-system, sans-serif";
   ctx.fillText(dateStr, oppositeX, 90);
 
+  // 수표 번호(No.) 코너 태그 — 2026-07-31 하드 제약 #3 완화(위 안전장치 문단 참고)의 일부.
+  // 실제 은행 라우팅/계좌번호가 아니라 오늘 날짜에서 뽑은 장식용 일련번호일 뿐이라 기능이 없음.
+  ctx.fillStyle = '#ACA595';
+  ctx.font = "500 10px 'Pretendard', -apple-system, sans-serif";
+  ctx.fillText('No. ' + dateStr.replace(/-/g, '').slice(2), oppositeX, 106);
+
   // 헤더 구분선
   ctx.strokeStyle = '#E3E6EA';
   ctx.lineWidth = 1.5;
@@ -5834,21 +5844,61 @@ function saveHomeResultAsImage(){
   ctx.fillText(resultLabelText, W / 2, 300);
   ctx.direction = 'ltr'; // 이후 draw 호출에 영향 안 주도록 기본값 복원
 
-  // before→after 세전/세후 금액 줄 — 2026-07-28 세 번째 후속 세션에서 실수령/세금 비율 막대(빨강
-  // 배경+초록 채움)와 그 옆 퍼센트 텍스트 줄을 제거함(사용자 요청 — 카드 정보가 너무 빽빽해
-  // 보인다는 판단). 막대가 있던 자리를 빈 공백으로 남기지 않고, 결과 라벨(y=300)과 아래 참고용
-  // 배지(bannerY0=470) 사이 남은 공간(170px)의 정중앙(y=386)으로 이 줄만 끌어올려 자연스럽게
-  // 다시 채움 — 막대 삭제 전 이 줄의 자리(y=406)보다 살짝 위, 막대 자리(y=328~372)보다는 아래.
-  ctx.textAlign = 'center';
-  const beforeAfterLine = `${beforeTax} → ${taxDiff}`;
-  ctx.fillStyle = '#544E42';
-  fitFontSize(ctx, beforeAfterLine, 600, 18, 13, cardW - PAD * 2);
-  ctx.fillText(beforeAfterLine, W / 2, 386);
+  // MEMO 줄 + 서명란 — 2026-07-31 하드 제약 #3 완화(사용자 승인, 위 안전장치 문단 참고). 기존
+  // "세전 → 세후차액" 줄(beforeTax/taxDiff)은 사용자 요청으로 이 카드에서 아예 뺌 — 그 정보는
+  // 화면 위쪽 tax-impact-compact와 "결과 더 자세히 보기" 안에 이미 있어서 카드에는 안 옮김.
+  // 대신 그 자리를 실제 수표에 흔한 MEMO/서명란 장식으로 채워서(GPT/Gemini 3차 검수 반영)
+  // "수표"라는 장르가 더 빨리 읽히게 함. 왼쪽엔 MEMO(고정 문구라 사용자가 못 바꿈), 오른쪽엔
+  // 빈 서명 밑줄 + "예시용·실제 서명 아님" 라벨.
+  const bandY = 380, bandMidGap = 30;
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#8A8371';
+  ctx.font = "600 12px 'Pretendard', -apple-system, sans-serif";
+  const memoLabel = pickLang('MEMO', 'MEMO', '备注', 'Ghi chú', 'บันทึก', 'ПРИМЕЧАНИЕ', undefined);
+  ctx.fillText(memoLabel, leftX, bandY);
+  ctx.fillStyle = '#262420';
+  ctx.font = "500 13px 'Pretendard', -apple-system, sans-serif";
+  const memoText = pickLang(
+    '세후 예상 실수령액 시뮬레이션',
+    'After-tax take-home simulation',
+    '税后预计到手金额模拟',
+    'Mô phỏng số tiền thực nhận sau thuế',
+    'จำลองยอดรับสุทธิหลังหักภาษี',
+    'Симуляция суммы на руки после налога',
+    undefined
+  );
+  fitFontSize(ctx, memoText, 500, 13, 10, (W / 2 - bandMidGap) - leftX);
+  ctx.fillText(memoText, leftX, bandY + 20);
+  ctx.strokeStyle = 'rgba(138,131,113,0.45)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(leftX, bandY + 28);
+  ctx.lineTo(W / 2 - bandMidGap, bandY + 28);
+  ctx.stroke();
 
-  // 참고용 배지 — 이전 버전(작은 알약 배지)과 달리 카드 폭 전체에 가까운 띠(banner)로 키움(하드
-  // 제약 4번: 수표 모양이 실제 금융 서류를 연상시킬 위험이 티켓보다 커서, 오히려 이 배지를
-  // 축소하지 않고 더 눈에 띄게 함). 카드 바닥까지 항상 16px 이상 여유를 둬서 어떤 언어에서도
-  // 잘리지 않게 함.
+  ctx.beginPath();
+  ctx.moveTo(W / 2 + bandMidGap, bandY + 28);
+  ctx.lineTo(rightX, bandY + 28);
+  ctx.stroke();
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#8A8371';
+  ctx.font = "600 11px 'Pretendard', -apple-system, sans-serif";
+  const signLabel = pickLang(
+    '서명(예시용) · 실제 서명 아님',
+    'Signature (sample) · not a real signature',
+    '签名(示例) · 非真实签名',
+    'Chữ ký (mẫu) · không phải chữ ký thật',
+    'ลายเซ็น (ตัวอย่าง) · ไม่ใช่ลายเซ็นจริง',
+    'Подпись (образец) · не настоящая подпись',
+    undefined
+  );
+  fitFontSize(ctx, signLabel, 600, 11, 9, rightX - (W / 2 + bandMidGap));
+  ctx.fillText(signLabel, rightX, bandY + 44);
+
+  // 참고용 배지 — 크기·두께(카드 폭 전체에 가까운 띠, 18px 굵게)는 하드 제약 4번 그대로 유지
+  // (절대 작아 보이거나 잘리지 않게). 2026-07-31 사용자 승인으로 색상만 경고성 빨강에서
+  // 브랜드 톤에 맞는 차분한 안내색으로 낮춤 — "실제 아님" 정보 자체의 눈에 띔은 그대로 두되,
+  // 시각적으로 경고문처럼 불안감을 주지 않게 함.
   const disclaimer = pickLang(
     '참고용 시뮬레이션 결과 · 실제 세무 신고 기준 아님',
     'Reference simulation only · not an official tax filing',
@@ -5859,14 +5909,14 @@ function saveHomeResultAsImage(){
     RESULT_IMG_DISCLAIMER_MORE
   );
   const bannerX = cardX + 14, bannerW = cardW - 28, bannerY0 = cardY + cardH - 70, bannerH = 54;
-  ctx.fillStyle = 'rgba(192,57,43,0.10)';
-  ctx.strokeStyle = '#C0392B';
+  ctx.fillStyle = 'rgba(21,84,69,0.06)';
+  ctx.strokeStyle = '#B9AF98';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.roundRect(bannerX, bannerY0, bannerW, bannerH, 10);
   ctx.fill();
   ctx.stroke();
-  ctx.fillStyle = '#C0392B';
+  ctx.fillStyle = '#5B5648';
   ctx.textAlign = 'center';
   fitFontSize(ctx, disclaimer, 700, 18, 12, bannerW - 40);
   ctx.fillText(disclaimer, W / 2, bannerY0 + bannerH / 2 + 1);
