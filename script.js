@@ -592,6 +592,51 @@ let exchangeRateIsLive = false; // 실시간 fetch 성공 여부 표시용
 let exchangeRateFetchFailed = false; // 실시간 fetch를 "시도했지만 실패"했는지 여부 — 이걸 알아야 "기본값을 아직 안 써봤음"과 "가져오려다 실패해서 기본값 씀"을 구분해서 보여줄 수 있음
 let isRateManuallyEdited = false; // 유저가 환율을 직접 수정했는지 여부 — true면 비동기 fetch가 뒤늦게 와도 덮어쓰지 않음
 
+// 2026-07-31: "위안화도 계속 바뀌는데 직접 고칠 수 있게 해야 하지 않냐"는 사용자 지적 —
+// 홈 결과의 cny/inr/otherNote(참고용 외화 환산)는 지금까지 EXCHANGE_RATE_CNY 등을 실시간
+// 조회 실패 시 고정 기본값으로만 썼음(KRW의 home-rate-input과 달리 직접 고치는 UI가 없었음).
+// 19개 통화 각각 별도 입력칸을 만드는 대신, 현재 선택된 국가에 해당하는 통화 하나만 공유
+// 입력칸(#home-foreign-rate-input)에 연결해서 재사용 — activeForeignCurrencyCode가 "지금 이
+// 입력칸이 어느 통화를 가리키는지" 추적함.
+let activeForeignCurrencyCode = null;
+function showForeignRateEditor(code, rate){
+  activeForeignCurrencyCode = code;
+  const row = document.getElementById('home-foreign-rate-row');
+  const input = document.getElementById('home-foreign-rate-input');
+  const codeEl = document.getElementById('home-foreign-rate-code');
+  if (!row || !input || !codeEl) return;
+  // 사용자가 지금 이 칸에 타이핑 중이면(activeElement) 값을 덮어쓰지 않음 — home-rate-input의
+  // 기존 패턴과 동일(타이핑 도중 재계산이 커서 위치를 흩트리지 않도록)
+  if (document.activeElement !== input) input.value = rate.toLocaleString('en-US', { maximumFractionDigits: 4 });
+  codeEl.textContent = code;
+  row.style.display = 'block';
+}
+function hideForeignRateEditor(){
+  activeForeignCurrencyCode = null;
+  const row = document.getElementById('home-foreign-rate-row');
+  if (row) row.style.display = 'none';
+}
+// KRW용 parseRateInput()은 500~3000 범위를 벗어나면 오타로 보고 되돌리는데(원/달러 환율
+// 상식 범위), 위안화(6대)·인도네시아 루피아(만 단위) 등은 통화마다 자릿수가 완전히 달라서
+// 그 범위를 그대로 쓸 수 없음 — 양수인지만 확인하고, 아니면 직전 값으로 되돌림.
+function parseForeignRateInput(str, currentValue){
+  const cleaned = str.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  const sanitized = parts.length > 1 ? parts[0] + '.' + parts.slice(1).join('') : parts[0];
+  const n = Number(sanitized);
+  return isNaN(n) || n <= 0 ? currentValue : n;
+}
+function onForeignRateChanged(){
+  if (!activeForeignCurrencyCode) return;
+  const cfg = CURRENCY_RATE_CONFIG.find(c => c.code === activeForeignCurrencyCode);
+  if (!cfg) return;
+  const input = document.getElementById('home-foreign-rate-input');
+  const currentGetter = CURRENCY_DISPLAY_META[activeForeignCurrencyCode];
+  const currentValue = currentGetter ? currentGetter.get() : 0;
+  cfg.apply(parseForeignRateInput(input.value, currentValue));
+  updateHomeCalc();
+}
+
 // fetch에 타임아웃을 걸어주는 헬퍼 — 해외(느린 회선/일부 API 접속 제한 지역)에서
 // 요청이 응답 없이 무한 대기하는 것을 막고, 정해진 시간 안에 실패 처리로 넘어가게 함
 function fetchWithTimeout(url, ms){
@@ -10494,6 +10539,24 @@ function updateHomeCalc(usdOverride){
   const taxImpactPct = 억 > 0 ? Math.round(100 - (final / 억 * 100)) : 0;
   document.getElementById('tax-impact-before').textContent = formatWon(억);
   document.getElementById('tax-impact-after').textContent = formatWon(final);
+
+  // 2026-07-31: 입력 카드 안, 환율 안내 줄 옆에 실수령액 미리보기를 추가함 — "수정하려고
+  // 위아래로 왔다갔다 할 때 결과가 안 보인다"는 지적에 대해, 이미 만든 스크롤 배지(결과를
+  // 스크롤로 지나친 뒤에만 뜸)와 다르게 이건 애초에 결과 쪽으로 한 번도 안 내려가도 입력하면서
+  // 바로 감을 잡게 해줌 — 새 박스를 만들지 않고 기존 환율 안내 줄(.krw-hint) 하나를 확장.
+  const inputPreviewEl = document.getElementById('home-input-preview');
+  if (inputPreviewEl && 억 > 0) {
+    const previewPct = Math.max(0, Math.min(100, 100 - taxImpactPct));
+    inputPreviewEl.textContent = pickLang(
+      ` · 실수령 ${formatWon(final)} (예상 ${previewPct}%)`,
+      ` · take-home ${formatWon(final)} (est. ${previewPct}%)`,
+      ` · 到手 ${formatWon(final)}（预计 ${previewPct}%）`,
+      ` · thực nhận ${formatWon(final)} (ước tính ${previewPct}%)`,
+      ` · รับจริง ${formatWon(final)} (ประมาณ ${previewPct}%)`,
+      ` · на руки ${formatWon(final)} (ок. ${previewPct}%)`,
+      undefined
+    );
+  }
   // 세전→세후 차액(빨간 -46% 줄)은 바로 위 home-final-amt(카운트업)와 달리 값이 바뀔 때마다
   // 그냥 텍스트가 스냅되기만 해서 밋밋하다는 지적("실수령 세금에 애니 넣어줘") — flex-box
   // 카드에 쓴 것과 같은 pop 리트리거 패턴(remove→강제 reflow→add)을 그대로 재사용함.
@@ -10571,6 +10634,9 @@ function updateHomeCalc(usdOverride){
        pt: `💵 Você realmente recebe em USD ($${finalUsd.toLocaleString('en-US')}) diretamente — o valor em KRW é apenas para comparação com a base da Coreia`, es: `💵 Realmente recibes USD ($${finalUsd.toLocaleString('en-US')}) directamente; la cifra en KRW es solo para comparar con la base de Corea`, uk: `💵 Ви насправді отримуєте USD ($${finalUsd.toLocaleString('en-US')}) напряму — сума у KRW наведена лише для порівняння з корейською базою`, tet: `💵 Ó simu USD ($${finalUsd.toLocaleString('en-US')}) diretu duni — númeru KRW ba komparasaun de'it ho base Korea`}
     );
     usdNote.style.display = 'block';
+    // 아래 cny/inr/other 세 분기 중 실제로 해당하는 것 하나만 showForeignRateEditor()를
+    // 부르므로, 매번 여기서 일단 숨겨서 이전 국가의 편집기가 남아있지 않게 함.
+    hideForeignRateEditor();
 
     // 중국 거주자는 실제 생활 통화가 위안화라, 달러 수령액만 보여주면 감이 잘 안 옴 —
     // 위안화 참고 환산액도 같이 보여줌(실시간 환율 시도, 실패 시 기본값 사용 — KRW와 동일한 방식)
@@ -10604,6 +10670,7 @@ function updateHomeCalc(usdOverride){
          pt: `💴 Isso dá aproximadamente ¥${finalCny.toLocaleString('en-US')} CNY (taxa de câmbio de referência)`, es: `💴 Eso es aprox. ¥${finalCny.toLocaleString('en-US')} CNY (tipo de cambio de referencia)`, uk: `💴 Це приблизно ¥${finalCny.toLocaleString('en-US')} CNY (довідковий курс валют)`, tet: `💴 Ne'e maizumenus ¥${finalCny.toLocaleString('en-US')} CNY (taxa kambial referánsia)`}
       );
       cnyNote.style.display = 'block';
+      showForeignRateEditor('CNY', EXCHANGE_RATE_CNY);
     } else {
       cnyNote.style.display = 'none';
     }
@@ -10639,6 +10706,7 @@ function updateHomeCalc(usdOverride){
          pt: `🇮🇳 Isso dá aproximadamente ₹${finalInr.toLocaleString('en-IN')} INR (taxa de câmbio de referência)`, es: `🇮🇳 Eso es aprox. ₹${finalInr.toLocaleString('en-IN')} INR (tipo de cambio de referencia)`, uk: `🇮🇳 Це приблизно ₹${finalInr.toLocaleString('en-IN')} INR (довідковий курс валют)`, tet: `🇮🇳 Ne'e maizumenus ₹${finalInr.toLocaleString('en-IN')} INR (taxa kambial referánsia)`}
       );
       inrNote.style.display = 'block';
+      showForeignRateEditor('INR', EXCHANGE_RATE_INR);
     } else {
       inrNote.style.display = 'none';
     }
@@ -10695,6 +10763,7 @@ function updateHomeCalc(usdOverride){
          pt: `${ref.flagEmoji} Isso dá aproximadamente ${ref.symbol}${finalLocal.toLocaleString('en-US')} ${ref.code} (taxa de câmbio de referência)`, es: `${ref.flagEmoji} Eso es aprox. ${ref.symbol}${finalLocal.toLocaleString('en-US')} ${ref.code} (tipo de cambio de referencia)`, uk: `${ref.flagEmoji} Це приблизно ${ref.symbol}${finalLocal.toLocaleString('en-US')} ${ref.code} (довідковий курс валют)`, tet: `${ref.flagEmoji} Ne'e maizumenus ${ref.symbol}${finalLocal.toLocaleString('en-US')} ${ref.code} (taxa kambial referánsia)`}
       );
       otherNote.style.display = 'block';
+      showForeignRateEditor(ref.code, ref.rate);
     } else if (otherNote) {
       otherNote.style.display = 'none';
     }
@@ -10703,6 +10772,7 @@ function updateHomeCalc(usdOverride){
     cnyNote.style.display = 'none';
     inrNote.style.display = 'none';
     if (otherNote) otherNote.style.display = 'none';
+    hideForeignRateEditor();
   }
 
   const showFiling = (country === 'us');
