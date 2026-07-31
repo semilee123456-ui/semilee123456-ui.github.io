@@ -6815,6 +6815,12 @@ function setupStickyResultBadge(){
 
   let resultOutOfView = false;
   let pastRelevantZone = false;
+  // 2026-07-31: 결과를 한 번 본 뒤 "입력값 고치려고 위로 다시 스크롤"하면 배지가 안 떠서
+  // 수정하는 동안 지금 결과가 뭐였는지 안 보인다는 지적(사용자가 직접 확인) — 아래 top<0 조건
+  // 하나만으로는 "결과를 아직 한 번도 못 본 상태(위쪽)"와 "이미 본 결과를 고치러 다시 올라간
+  // 상태(역시 위쪽)"를 구분 못 해서 생긴 문제. 결과가 한 번이라도 화면에 걸쳤으면
+  // hasSeenResult를 계속 true로 남겨서, 그 뒤로는 위/아래 어느 방향으로 벗어나도 배지가 뜨게 함.
+  let hasSeenResult = false;
   const updateVisibility = () => {
     const isHomeActive = document.getElementById('view-home').classList.contains('on');
     badge.classList.toggle('is-visible', isHomeActive && resultOutOfView && !pastRelevantZone);
@@ -6823,12 +6829,14 @@ function setupStickyResultBadge(){
   _stickyResultObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.target === target) {
+        if (entry.isIntersecting) hasSeenResult = true;
         // !isIntersecting만 보면 "아직 결과까지 스크롤 안 내려간 상태"(예: 맨 위 "나는 어떤
         // 경우일까요?" 섹션)도 "화면 밖"으로 잡혀서, 결과를 한 번도 본 적 없는데 배지부터 뜨는
         // 문제가 있었음(2026-07-24, 320px 실기기 스크린샷으로 발견 — 배지가 realAbroadSelect
         // 드롭다운을 완전히 가려서 클릭도 안 됐음). top이 0보다 작을 때(=결과가 화면 위쪽으로
-        // 이미 지나감)만 "지나쳐서 안 보이는 것"으로 간주 — 아직 안 내려가서 안 보이는 것과 구분함
-        resultOutOfView = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+        // 이미 지나감)거나, 이미 한 번은 본 결과라면(hasSeenResult) "지나쳐서 안 보이는 것"으로
+        // 간주 — 처음부터 안 내려가서 안 보이는 것과만 구분함
+        resultOutOfView = !entry.isIntersecting && (hasSeenResult || entry.boundingClientRect.top < 0);
       } else if (entry.target === zoneEnd) {
         pastRelevantZone = entry.boundingClientRect.bottom < 0;
       }
