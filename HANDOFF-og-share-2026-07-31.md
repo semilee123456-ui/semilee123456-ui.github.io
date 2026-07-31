@@ -153,6 +153,50 @@ GitHub 연동으로 자동 재배포되므로, 이 커밋이 push되면 별도 �
    카드가 맞게 뜨는지 확인. 이 자체가 맞으면 Worker/script.js 쪽은 정상이고, 카카오 캐시
    문제로 좁혀짐.
 
+## 2026-07-31 네 번째 라운드 — 공유 버튼 4개 전부 동적 카드로 확장, 다국어 폰트 지원 추가
+
+사용자가 카카오톡 스크린샷으로 "재미로 보기" 결과 공유("나는 [✈️ 지구 한 바퀴 클럽]!...")도
+여전히 고정 카드로 나가는 걸 확인시켜줌 — 확인해보니 `OG_SHARE_WORKER_BASE`를 실제로 쓰는
+건 `shareResult()`(홈 결과) 하나뿐이고, 나머지 3개 공유 함수(`shareLatestDraw`/최근 당첨번호,
+`shareDreamResult`/재미로 보기, `shareRefundChecklist`/환급 체크리스트)는 처음부터 안 쓰고
+있었음. 사용자가 "전부 고쳐줘, 다른 언어도 다 되게" 요청.
+
+**설계**: Worker를 특정 화면 전용(`final`/`before`/`taxpct`/`country`) 스키마에서 범용
+스키마(`label`/`main`/`sub`/`taxpct`/`badge`/`title`/`desc`/`lang`)로 다시 씀 — 4개 공유
+함수가 전부 이 하나의 스키마로 카드를 만듦. **새 번역은 딱 1개만 추가함**("다음 잭팟",
+`shareLatestDraw`용) — 나머지 필드는 전부 각 함수가 이미 화면에 표시 중인(=이미 26개 언어로
+번역된) DOM 텍스트나 이미 계산해둔 변수를 그대로 재사용함(예: `.result-hero-label`
+textContent, `#dream-title`/`#dream-amt` textContent, 기존 `shareTitle`/`shareText`
+변수). 공통 로직은 `wrapWithOgShareCard(shareUrl, {...})` 헬퍼 하나로 모음
+(`shareFallbackCopyToast()` 바로 아래, script.js).
+
+**다국어 폰트**: 이 사이트가 27개 언어(ko+26)를 지원하는데 Noto Sans KR 하나만 받아오면
+한글 아닌 다른 스크립트(태국어·아랍어·크메르어 등)를 공유했을 때 또 tofu가 남 — 클라이언트가
+공유 시점의 화면 언어(`currentLang`)를 `lang=` 파라미터로 같이 보내고, Worker의
+`LANG_FONT_FAMILY` 맵이 언어별로 알맞은 Google Fonts 패밀리를 골라 받아오도록 확장함
+(한글=Noto Sans KR, 중국어=Noto Sans SC, 일본어=Noto Sans JP, 태국어=Noto Sans Thai,
+아랍어=Noto Naskh Arabic, 우르두어=Noto Nastaliq Urdu, 힌디/네팔어=Noto Sans Devanagari,
+벵골어=Noto Sans Bengali, 크메르어=Noto Sans Khmer, 미얀마어=Noto Sans Myanmar,
+싱할라어=Noto Sans Sinhala, 라오어=Noto Sans Lao, 나머지 라틴/키릴 계열 언어는 전부 기본
+Noto Sans 하나로 커버). 브랜드 로고 요소("참"이 원래 한글 1글자였음)도 언어 무관하게 항상
+안전하도록 "C"(라틴)로 바꾸고, 브랜드 텍스트도 "참택스 · chamtax.com" 대신 "ChamTax ·
+chamtax.com"(라틴)으로 통일 — 이렇게 안 하면 예를 들어 태국어 공유인데 카드 브랜드 로고만
+한글 폰트가 없어서 깨지는 경우가 생김.
+
+**검증**: `node --check`(script.js)/`node --input-type=module --check`(Worker, ESM) 둘 다
+통과, Playwright로 4개 공유 함수 전부(홈 결과 ko/th 2개 언어, 최근 당첨번호, 재미로 보기,
+환급 체크리스트) 실제로 실행해서 `navigator.share`에 전달되는 최종 `url`을 캡처 —
+label/main/sub/badge/lang/taxpct 필드가 각 케이스마다 정확한 값(예: 태국어 공유 시
+`lang=th`, 실수령액도 태국어 단위 "พันล้าน"으로)으로 채워지는 것 확인. `home_audit`/
+`wrap_audit`/`console_error_audit`/`faq_audit`/`nav_slider_audit` 전부 0 이슈.
+
+**이번에도 실제 배포된 Worker에서는 검증 못 함**(이 샌드박스 외부 네트워크 차단, 위 라운드들과
+동일한 제약) — 특히 Google Fonts에서 Noto Sans KR 이외의 패밀리(태국어/아랍어 등)도 실제로
+정상적으로 받아와지는지, `family` 쿼리 파라미터에 공백을 `+`로 바꾸는 처리(`replace(/ /g,
+'+')`)가 "Noto Naskh Arabic"처럼 단어가 3개인 패밀리명에서도 문제없는지는 다음 세션(또는
+사용자의 실제 재테스트)이 확인해야 함. `script.js` 캐시 버전은 `?v=20260731-4`로 또 올림
+(이번에도 잊지 않고 올렸음 — 위 "세 번째 진단 라운드"에서 이거 빼먹어서 생긴 사고 참고).
+
 ## 알아둘 것
 
 - `script.js`는 1.7MB라 `push_files`/`create_or_update_file`로 통째로 못 올림 — 항상
