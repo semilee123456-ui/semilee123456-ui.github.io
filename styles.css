@@ -18,11 +18,16 @@
     --mint:#1F6E5C;
     --indigo:#35507A;    /* 쪽빛 — 서브 포인트 (버튼 hover, 보조 강조) */
     --gold:#9C6F1E;      /* 금색 — 재물운 상징, 아주 소량만 사용(도장·소형 강조) */
-    --bg:#F7F1E0;        /* 웜 아이보리(한지톤) — 갈색 비선호 데이터 반영해 밝게 */
+    /* 2026-07-30: 원래 웜 아이보리(#F7F1E0, 한지톤) 배경이 세금·금융 계산기치고 "블로그/개인
+       사이트" 느낌을 준다는 지적(제미나이 검수 + 사용자 자체 재검토, 토스·카카오뱅크·네이버페이
+       등 대형 금융 서비스는 거의 다 흰색+연한 쿨그레이 배경을 쓴다는 근거) — 페이지 배경/보더를
+       중성 쿨그레이로 바꿈. 크림톤 자체를 없앤 게 아니라 "배경"에서 "강조 영역"(입력 카드
+       --input-card-bg 등)으로 용도를 옮긴 것 — 저 강조용 크림 변수들은 그대로 둠 */
+    --bg:#F4F5F7;
     --card:#FFFFFF;
     --text-dark:#262420; /* 먹빛 */
     --text-muted:#544E42;
-    --border:#E8E2D3;    /* 웜톤 보더 (기존 회색 대신) */
+    --border:#E3E6EA;    /* 쿨그레이 보더(2026-07-30, 위 --bg 배경 전환과 짝) */
 
     --fs-hero:42px;    /* 결과 숫자 */
     --fs-h1:28px;      /* 메인 제목 */
@@ -62,9 +67,9 @@
        맞추기 어렵다는 사용자 피드백으로, 아예 --bg와 같은 값으로 통일해서 구분 자체를 없앰
        (카드(--card)는 --bg와 여전히 다른 톤이라 2026-07-27에 고친 "카드가 배경과 안
        구분된다" 문제는 그대로 유지됨 — 이번엔 바깥 3번째 단만 없앤 것) */
-    --body-bg:#F7F1E0;
-    --select-bg:#FDFBF5;
-    --chip-bg:#F1EDE0;
+    --body-bg:#F4F5F7;
+    --select-bg:#FFFFFF;
+    --chip-bg:#EEF0F2;
     --input-card-bg:#F9F5EB;
     --btn-hover-teal:#0F4238;
     --alert-red-bg:#FBEEEC;
@@ -121,12 +126,12 @@
      --text-muted를 --text-dark에 단순히 변수로 연결하는 방식은 쓰지 않음 — text-dark 값이 나중에
      바뀌면 같이 틀어질 수 있어서, 지금 시점의 실제 hex 값을 기준으로 저시력 사용자를 위해
      명암비가 확실히 오르는 톤을 직접 골라 넣음).
-     --text-muted: 라이트 7.31:1→10.67:1(#F7F1E0 배경 기준), 다크 7.58:1→12.04:1(#1E1A16 배경 기준)
-     --border: 라이트 1.15:1→3.14:1, 다크 1.53:1→3.77:1 (WCAG 비텍스트 명암비 권장 3:1 이상으로)
-     (2026-07-27 --bg 값 변경에 맞춰 수치 재계산 — 배경이 바뀌어도 고대비 모드가 여전히
-     3:1 이상을 만족하는지 매번 재확인할 것) */
+     --text-muted: 라이트 7.56:1→11.04:1(#F4F5F7 배경 기준), 다크 7.58:1→12.04:1(#1E1A16 배경 기준)
+     --border: 라이트 1.15:1→3.55:1, 다크 1.53:1→3.77:1 (WCAG 비텍스트 명암비 권장 3:1 이상으로)
+     (2026-07-30 --bg 값을 쿨그레이(#F4F5F7)로 변경하면서 재계산 — 배경이 바뀌어도 고대비 모드가
+     여전히 3:1 이상을 만족하는지 매번 재확인할 것) */
   :root[data-contrast="high"]{
-      --text-muted:#3A362C; --border:#93876F;
+      --text-muted:#3A362C; --border:#7D8288;
   }
   :root[data-theme="dark"][data-contrast="high"]{
       --text-muted:#DDD7C8; --border:#7A756A;
@@ -496,9 +501,11 @@
   /* 일시불/연금액/희망액 3개 탭이 공유하는 표시 통화 선택기(2026-07-28) — 탭 버튼 줄 바로
      위에 얹어서 어느 탭을 보고 있어도 항상 보이게 함. 기존 국가 select(.input-row select)와
      같은 네이티브 <select> + 커스텀 화살표 아이콘 패턴을 재사용하되, 폭을 작게 줄여 탭 영역을
-     침범하지 않게 함. min-height는 .country-toggle-btn(46px)보다는 작지만, 네이티브 select는
-     대부분 모바일 브라우저가 자체적으로 탭 영역을 확장해 인식하므로(iOS/Android 공통) 40px도
-     안전한 하한으로 판단함. */
+     침범하지 않게 함. 원래 40px였던 이유는 네이티브 select가 대부분 모바일 브라우저에서
+     자체적으로 탭 영역을 확장해 인식해서(iOS/Android 공통) 기능적으로는 안전한 하한이었기
+     때문 — 2026-07-30에 48px로 올림(제미나이 검수 + 사용자 재검토, "40~60대 기준 시각적으로도
+     충분히 커 보여야 신뢰감·터치 안정감이 생긴다"는 피드백 반영, 기능적 하한과 별개로 실제
+     보이는 크기 자체를 키운 것) */
   /* 2026-07-30: 국가 select에 라벨을 추가하면서(라벨 2개+select 2개, 총 4개 아이템) 영어처럼
      "Country"/"Currency"라벨이 한글 "국가"/"통화"보다 긴 언어에서 한 줄에 다 안 들어가는 경우가
      생김 — flex-wrap 없이 justify-content:flex-end만 있으면 넘치는 만큼 왼쪽 카드 밖으로
@@ -506,15 +513,78 @@
      봐서는 못 잡음). flex-wrap:wrap을 추가해 안 들어가면 "라벨+select" 한 쌍씩 다음 줄로
      넘어가게 함(줄바꿈돼도 각 줄이 flex-end로 오른쪽 정렬되어 자연스러움) */
   .amount-currency-row{ display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:6px; margin-bottom:8px; }
+  /* 2026-07-30: 홈 화면은 국가+통화 두 쌍이 한 row에 같이 들어있는데, 둘을 합친 너비가 좁은
+     폰(390px)에서 한 줄에 안 들어가 각자 오른쪽 정렬된 채 두 줄로 쌓임 — 왼쪽에 큰 빈 공간이
+     생겨 "떠있는" 느낌이 든다는 실제 스크린샷 피드백. 이 조합에서만 2단 그리드로 나란히
+     배치함(비교 탭은 통화 하나뿐이라 위 기본 .amount-currency-row 그대로 둬야 함 — 그래서
+     별도 클래스로 범위를 좁힘) */
+  /* 2026-07-30: 국가/통화 select 쌍을 감싸는 카드 — 배경/테두리를 공유해서 두 select가
+     따로 떠있는 알약이 아니라 "하나의 설정 묶음"처럼 보이게 함. 안에 짧은 설명 캡션
+     (.amount-currency-hint)을 붙여 "국가=세율 기준, 통화=표시 단위만"이라는 역할 차이를
+     명시함(사용자가 반복해서 "이거 헷갈리지 않아?"라고 물어본 데 대한 대응) */
+  .amount-currency-group{
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:10px 12px; margin-bottom:10px;
+  }
+  .amount-currency-group .amount-currency-row,
+  .amount-currency-group .amount-currency-row-2col{ margin-bottom:6px; }
+  .amount-currency-hint{
+    margin:0; font-size:var(--fs-small); color:var(--text-muted); line-height:1.4;
+  }
+  .amount-currency-hint b{ color:var(--text-dark); font-weight:700; }
+  /* 2026-07-31: "국가+통화 나란히 2단 그리드"가 390~500px대 대부분의 실제 폰 폭에서
+     스크린샷·실측 둘 다로 확인된 심각한 버그를 냈음 — 카드 폭을 정확히 반으로 갈라 각 칸이
+     ~115px밖에 안 되는데, 그 안에서 라벨("Currency" 등 영어 기준 70px)이 절반 넘게 먹어버려서
+     정작 선택된 값("🇺🇸 USD" 같은 국기+코드, 필요폭 ~100px)이 들어갈 자리가 40px도 안 남음 —
+     그 결과 통화 값이 국기 이모지 하나만 보이고 코드 텍스트("USD")가 통째로 잘려 안 보이는
+     실제 버그가 한국어·영어·러시아어 등 언어를 가리지 않고 재현됨(폭 320~500px 전 구간,
+     540px 이상에서야 겨우 정상화됨 — Playwright로 폭별 scrollWidth/clientWidth 실측 확인).
+     "2단 그리드로 나란히 놓으면 예뻐 보인다"는 미관 판단이 "값이 아예 안 보인다"는 기능
+     붕괴를 냈던 것 — 기본값은 각 쌍이 카드 전체 폭을 쓰는 1줄짜리 행 2개로 되돌리고
+     (justify-content:space-between으로 라벨은 왼쪽, 값은 오른쪽 끝까지 넓게 써서 예전
+     "왼쪽 빈 공간" 문제도 같이 피함), 2단 그리드는 실측으로 안전 확인된 560px 이상
+     (태블릿/데스크톱)에서만 켬 */
+  .amount-currency-row-2col .amount-currency-pair{ display:flex; align-items:center; justify-content:space-between; gap:6px; width:100%; min-width:0; }
+  .amount-currency-row-2col .amount-currency-pair + .amount-currency-pair{ margin-top:8px; }
+  /* flex 자식은 기본적으로 min-width:auto라 select가 넓게 자리를 요구하면 라벨("국가"/"통화")
+     까지 같이 눌려서 "국/가"처럼 두 글자짜리 라벨마저 줄바꿈되는 회귀가 있었음(실제 스크린샷으로
+     확인) — 라벨은 절대 줄어들지 않게 고정하고, select만 남는 폭을 나눠 갖게 함 */
+  .amount-currency-row-2col .amount-currency-label{ flex:0 0 auto; white-space:nowrap; }
+  .amount-currency-row-2col .amount-currency-select{ flex:0 1 auto; min-width:0; max-width:none; }
+  @media (min-width:560px){
+    .amount-currency-row-2col{ display:grid; grid-template-columns:1fr 1fr; gap:8px 10px; margin-bottom:8px; }
+    .amount-currency-row-2col .amount-currency-pair + .amount-currency-pair{ margin-top:0; }
+  }
   .amount-currency-label{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; }
   .amount-currency-select{
-    height:40px; min-height:40px; border:1.5px solid var(--border); border-radius:18px; padding:0 26px 0 12px;
+    height:48px; min-height:48px; border:1.5px solid var(--border); border-radius:18px; padding:0 26px 0 12px;
     font-size:var(--fs-small); font-weight:700; font-family:inherit; color:var(--text-dark); background:var(--select-bg);
     cursor:pointer; -webkit-appearance:none; -moz-appearance:none; appearance:none; max-width:132px;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23262420' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat:no-repeat; background-position:right 10px center; background-size:11px 7px;
   }
   .amount-currency-select:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.14); }
+  /* 국가/통화 select 3개 위에 얹는 커스텀 트리거(2026-07-30, openSelectSheet() 바텀시트용) — 진짜
+     <select>(.select-sheet-native)는 흐름에 그대로 남겨 wrap 크기의 기준이 되게 하고, 시각적으로만
+     투명 처리함. 그 위에 겹치는 트리거 버튼(.select-sheet-trigger, position:absolute)이 실제 보이는
+     탭 대상 — select는 opacity:0일 뿐 pointer-events:none이라 마우스로는 절대 안 닿지만, 키보드
+     Tab으로는 여전히 정상 도달·조작 가능(스크린리더는 이 select를 그대로 보고 읽음). 두 요소 모두
+     .amount-currency-select 클래스를 공유해서 폰트·높이·테두리·화살표 아이콘이 완전히 동일하게 보임 */
+  .select-sheet-wrap{ position:relative; display:inline-block; }
+  .select-sheet-native{ opacity:0; pointer-events:none; }
+  .select-sheet-trigger{
+    position:absolute; inset:0; width:100%; height:100%; z-index:1;
+    display:flex; align-items:center; justify-content:flex-start; text-align:start;
+    overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+  }
+  .select-sheet-trigger:active{ transform:scale(0.98); }
+  /* 2-col 그리드(홈 화면 국가+통화 나란히 배치)에서는 select가 더는 직접 flex 자식이 아니라
+     wrap 안에 감싸여 있으므로, 원래 select가 받던 flex:1 1 auto(남는 폭 나눠 갖기)를 wrap
+     자신에게 옮기고, select 자체도 wrap 폭에 꽉 차도록 강제함(이 컨텍스트에 한정 — 비교 탭 등
+     기본 .amount-currency-row에서는 select 원래 폭(max-width:132px)이 wrap 크기를 그대로
+     결정하므로 이 오버라이드가 필요 없음) */
+  .amount-currency-row-2col .amount-currency-pair > .select-sheet-wrap{ flex:1 1 auto; min-width:0; display:block; }
+  .amount-currency-row-2col .select-sheet-native{ width:100%; max-width:none; }
   /* 2026-07-27: 음성 입력 버튼을 .million-unit 옆 flex 자리에 나란히 두면, 이미 폭이 빠듯한
      240px 화면에서 버튼(40px)+단위 라벨("M USD", 약 56px)이 전체 폭의 절반 이상을 먹어버려서
      정작 숫자 입력칸이 3자리 숫자도 못 보여줄 만큼 짜부라지는 문제가 있었음(Playwright로 실제
@@ -547,13 +617,18 @@
      (2026-07-30 발견) */
   .country-toggle-more-grid{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-top:4px; }
   .country-toggle-btn{
-    flex:1 1 calc(50% - 4px); min-width:0; min-height:46px; border-radius:11px; border:2px solid var(--border); background:var(--card);
+    flex:1 1 calc(50% - 4px); min-width:0; min-height:48px; border-radius:11px; border:2px solid var(--border); background:var(--card);
     color:var(--text-dark); font-family:inherit; font-size:16px; font-weight:800; cursor:pointer;
     transition:border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
     display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0 4px;
     text-align:center; line-height:1.2; padding:6px 4px; overflow-wrap:break-word;
   }
   .country-toggle-btn.active{ border-color:var(--teal); background:rgba(var(--teal-rgb),0.08); color:var(--teal); }
+  /* 버튼 자체는 min-width:0인데, 그 안의 국가명 <span>은 flex item 기본값(min-width:auto)이라
+     내용물(글자) 폭 밑으로는 절대 안 줄어들어서 위 overflow-wrap:break-word가 사실상 무의미했음
+     (크메르어 등 복합어·공백 없는 언어에서 좁은 폭일 때 버튼 밖으로 글자가 튀어나오는 원인이었음,
+     2026-07-31 실측으로 확인). span에도 min-width:0을 줘야 줄바꿈이 실제로 걸림 */
+  .country-toggle-btn > span{ min-width:0; }
   .country-toggle-btn .flag-badge{ background:var(--text-dark); }
   .country-toggle-btn.active .flag-badge{ background:var(--teal); }
   .rate-input{
@@ -700,6 +775,10 @@
     margin:0 0 8px;
   }
   .side-card-detail-link{ display:inline-block; margin-top:8px; font-size:var(--fs-small); font-weight:700; color:var(--teal); text-decoration:none; }
+  /* 이 클래스는 원래 <a>(자세히 보기 링크) 전용이었는데, 1위 카드의 읽어주기 버튼도 같은
+     모양을 쓰면서 <button>에 붙는 경우가 생김 — 버튼 기본 테두리/배경만 지워서 링크와
+     똑같아 보이게 함 */
+  button.side-card-detail-link{ background:none; border:none; padding:0; font-family:inherit; cursor:pointer; }
   .side-card-hidden-extra{ display:none; }
   .side-card-flags-row{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 8px; }
   .side-card-flag-group{ display:flex; flex-wrap:wrap; gap:3px; margin:0; }
@@ -790,8 +869,14 @@
      위한 의도된 설계)인데, 단일 국가 카드는 2열 절반 폭이라 한 화면에 전체폭/절반폭이 섞여
      보임. 카드 내용·그룹핑 로직은 그대로 두고, 이 1열 모드가 켜지는 기준만 340px→520px로
      올려서 대부분의 휴대폰 폭에서 전부 1열(항상 전체 폭)로 통일되게 함 — 태블릿/데스크톱처럼
-     화면이 넓어 폭 차이가 덜 두드러지는 곳은 기존처럼 2열 그리드 유지 */
-  @media (max-width:520px){
+     화면이 넓어 폭 차이가 덜 두드러지는 곳은 기존처럼 2열 그리드 유지.
+     2026-07-30: "태블릿(768px)에서는 안 봤다"는 실제 지적 — `repeat(auto-fill,
+     minmax(105px,1fr))`가 768px에서는 자동으로 3열이 되는데, 여러 나라 묶음 카드(.side-card-full,
+     한 줄 통째로 차지)와 단일 국가 카드(3분의 1 폭)가 화면 하나에 뒤섞여 풀와이드→풀와이드→
+     3열→풀와이드→혼자 남은 줄처럼 불규칙하게 보임 — 위 520px 사례와 근본적으로 같은 문제라
+     같은 해법(1열 강제)을 그대로 확장 적용. 기준을 이 사이트가 이미 "데스크톱 시작점"으로
+     쓰는 901px 바로 아래(900px)까지 올려서, 진짜 데스크톱 폭에서만 다열 그리드가 되게 함 */
+  @media (max-width:900px){
     .side-by-side-grid, .side-breakdown-grid{ grid-template-columns:1fr; }
   }
   .result-cell{ background:var(--bg); border-radius:8px; padding:12px; }
@@ -913,7 +998,11 @@
     font-weight:700; background:none; border:none; cursor:pointer; margin-top:6px; padding:12px 0; box-sizing:border-box;
   }
   .annuity-info-link:hover{ text-decoration:underline; }
-  
+  /* 2026-07-30: 음성으로 읽어주기(TTS) 버튼 — .annuity-info-link 위에 덧붙이는 상태 표시만 추가.
+     "말하는 중"일 땐 마이크 버튼(.amount-voice-btn.listening)과 헷갈리지 않도록 다른 색(호박색)을
+     씀 — 마이크는 "듣고 있음", 이건 "말하고 있음"이라 teal 하나로 겹치면 방향이 헷갈릴 수 있음 */
+  .tts-btn.speaking{ color:var(--status-amber); }
+
   .source-links{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); margin:6px 0 0; }
   .source-links a{ color:var(--teal); font-weight:400; text-decoration:none; }
   
@@ -1023,6 +1112,16 @@
   }
   .result-meta-group{ margin-top:16px; padding-top:10px; border-top:1px dashed rgba(var(--ink-rgb),0.12); display:flex; flex-direction:column; align-items:center; gap:2px; }
   .result-hero-basis-mini{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; }
+  /* 실수령액 헤드라인과 대비를 주기 위한 "보조 정보 묶음" 박스(2026-07-30) — 환율/계산 기준/
+     통화별 안내문처럼 핵심은 아니지만 있으면 좋은 정보를 옅은 배경 + 작은 폰트로 낮춤.
+     내부 .result-meta-group은 이 박스가 이미 배경으로 구분을 주므로 자체 상단 구분선은 뺌 */
+  .result-tertiary-box{
+    background:rgba(var(--ink-rgb),0.035); border-radius:10px; padding:4px 12px 10px; margin-top:12px;
+  }
+  .result-tertiary-box .result-meta-group{ margin-top:0; padding-top:8px; border-top:none; }
+  .result-tertiary-box .result-hero-basis-mini{ font-size:14px; }
+  .result-tertiary-box .foot-note{ font-size:14px; }
+  .result-tertiary-box .usd-actual-note{ font-size:14px; }
   .sim-note{ font-size:var(--fs-small); color:var(--text-muted); text-align:left; margin:6px 0 0; line-height:1.5; }
   .usd-actual-note{
     font-size:var(--fs-small); color:var(--navy); font-weight:700; text-align:center; margin:4px 0 0;
@@ -1099,6 +1198,17 @@
      발견하면 붙이는 클래스 — 스크롤이 멈춘 위치에서도 뒤 텍스트를 가리지 않도록 그 순간만
      흐리게(완전히 사라지지 않아 "버튼이 있었는데 갑자기 없어짐" 혼란은 피함) */
   .faq-float-wrap.is-colliding{ opacity:0.16; pointer-events:none; }
+  /* 2026-07-30: script.js의 faqFloatBtnCollisionState()가 이 버튼 밑에 진짜 버튼/링크/
+     아코디언 제목이 있다고 판단하면 붙이는 클래스 — 위 is-colliding과 달리 흐리게 하진
+     않음(2026-07-29 피드백대로 컨트롤 위에서 흐려지는 건 거슬려 보였음), 대신 탭만
+     통과시켜서 이 플로팅 버튼이 뒤에 깔린 진짜 컨트롤의 탭을 가로채지 않게 함(UX 점검
+     서브에이전트가 발견한 문제) */
+  .faq-float-wrap.is-over-control{ pointer-events:none; }
+  /* 2026-07-30: 제미나이/GPT 검수(12번 항목)가 공통으로 추천한 "스크롤 중 자동 숨김" —
+     아래로 스크롤할 땐 살짝 내려가며 숨겨서 다른 컨트롤과 겹칠 상황 자체를 줄임(위
+     is-over-control 방어 코드는 그래도 겹치는 드문 경우의 안전망으로 계속 둠). 위로
+     스크롤하거나 스크롤이 멈추면(script.js의 settleTimer) 다시 나타남 */
+  .faq-float-wrap.is-scroll-hidden{ opacity:0; pointer-events:none; transform:translateY(16px) scale(0.9); }
   .faq-float-wrap.is-hidden{ display:none; }
   .faq-float-btn{
     position:relative; display:inline-flex; align-items:center; gap:6px; min-height:44px;
@@ -1319,7 +1429,10 @@
      줄어들지 않아서, 240px처럼 아주 좁은 화면에서 긴 영어 문장("5 numbers (1-70) + 1 Mega
      Ball (1-24)")이 줄바꿈 대신 카드 밖으로 튀어나감(2026-07-29 QA에서 audit_odds_compare.js로
      발견) */
-  .hct-row{ display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:6px; padding:8px 10px; font-size:var(--fs-small); border-bottom:1px dashed var(--border); }
+  /* 라벨 열(추첨 요일/숫자 고르기 등)은 짧은 단어라 좁아도 되는데, 값 열(실제 숫자·확률·요일)이
+     더 긴 내용을 담아야 해서 예전엔 라벨 열이 더 넓게(1.1fr) 잡혀있던 게 거꾸로였음 — 좁은
+     화면에서 값 열이 필요 이상으로 줄바꿈되던 원인 중 하나(2026-07-30 발견) */
+  .hct-row{ display:grid; grid-template-columns:0.8fr 1.1fr 1.1fr; gap:6px; padding:8px 10px; font-size:var(--fs-small); border-bottom:1px dashed var(--border); }
   .hct-row > *{ min-width:0; overflow-wrap:break-word; }
   .hct-row:last-child{ border-bottom:none; }
   .hct-header{ font-weight:700; background:var(--bg); }
@@ -1586,11 +1699,15 @@
      줘서, 뱃지 목록이 항상 자기 줄(라벨/금액 아래)을 새로 차지하며 전체 폭을 쓰게 함. */
   .jh-primary-group .jh-amt-item{ flex-direction:row; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:8px; }
   .jh-primary-group .jh-amt-label{ font-size:var(--fs-small); font-weight:600; }
-  .jh-primary-group .jh-amt{ font-size:17px; }
+  /* 2026-07-30: 예전엔 17px(=--fs-note)라 아래 .jh-amt-chip의 16px(=--fs-small)과 1px밖에
+     차이가 안 나서, 우연히 금액이 같은 그룹이 있으면(특히 "🌐 기타 국가" 칩) 마치 같은 숫자가
+     두 번 찍힌 것처럼 보인다는 지적(사용자 스크린샷) — 대표 그룹 폰트를 눈에 띄게 키워서
+     "이게 메인 답, 아래 칩들은 부가 정보"라는 위계를 명확히 함 */
+  .jh-primary-group .jh-amt{ font-size:21px; }
   .jh-amounts-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px; }
   .jh-amt-chip{ background:var(--input-card-bg); border-radius:8px; padding:7px 10px; min-width:0; }
   .jh-amt-chip .jh-amt-label{ font-size:var(--fs-small); }
-  .jh-amt-chip .jh-amt{ font-size:var(--fs-small); color:var(--text-dark); }
+  .jh-amt-chip .jh-amt{ font-size:var(--fs-small); font-weight:700; color:var(--text-muted); }
   /* "기타 국가" 칩 — 랭킹 집계(amtResults/amtGroups) 밖에서 항상 맨 끝에 붙는 별도 칩이라
      점선 테두리로만 랭킹 칩들과 구분함 (2026-07-28). 2026-07-29: display:block으로 혼자 전체
      줄을 차지해서 유독 커 보인다는 지적으로, 나머지 칩들과 같은 2열 그리드 안에 나란히
@@ -1775,6 +1892,55 @@
     font-size:var(--fs-small); font-weight:700; color:var(--text-muted); cursor:pointer; padding:4px;
   }
   .tax-basis-overlay-body .country-toggle{ margin:0; }
+
+  /* 국가/통화 select 3개 공용 검색형 바텀시트(2026-07-30, openSelectSheet()) — 배경 딤은
+     tax-basis-overlay와 같은 원리, 하단에서 슬라이드업하는 시트 모양·타이밍은 FAQ 오버레이
+     (.faq-overlay-mode .faq-sheet-content)와 같은 키프레임(faqBackdropFadeIn/faqSheetSlideUp)을
+     그대로 재사용함 — 이 사이트가 오버레이마다 새 애니메이션을 만들지 않고 기존 걸 재사용하는
+     관례를 그대로 따름. z-index는 tax-basis-overlay(2100)보다 위, annotate-overlay(2200)보다
+     아래로 둠(이 시트가 열려있는 동안 다른 오버레이 위에서 추가로 뜰 일은 없지만, 혹시 몰라
+     기존 오버레이들 사이 순서를 지킴) */
+  .select-sheet-overlay{ display:none; }
+  .select-sheet-overlay.show{
+    display:flex; align-items:flex-end; justify-content:center; position:fixed; inset:0; z-index:2150;
+    background:rgba(15,13,10,0.5); animation:faqBackdropFadeIn 0.18s ease;
+  }
+  .select-sheet-backdrop{ position:absolute; inset:0; }
+  .select-sheet-panel{
+    position:relative; width:100%; max-width:480px; max-height:78vh; display:flex; flex-direction:column;
+    background:var(--bg); border-radius:20px 20px 0 0; box-shadow:0 -12px 32px rgba(0,0,0,0.28);
+    padding:10px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+    animation:faqSheetSlideUp 0.22s cubic-bezier(0.16,1,0.3,1);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .select-sheet-overlay.show{ animation:none; }
+    .select-sheet-panel{ animation:none; }
+  }
+  .select-sheet-handle{ width:36px; height:4px; border-radius:2px; background:var(--border); margin:0 auto 8px; flex-shrink:0; }
+  .select-sheet-header{
+    display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; flex-shrink:0;
+    font-size:var(--fs-body); font-weight:800; color:var(--text-dark);
+  }
+  .select-sheet-close{
+    display:flex; align-items:center; gap:4px; background:none; border:none; font-family:inherit;
+    font-size:var(--fs-small); font-weight:700; color:var(--text-muted); cursor:pointer; padding:4px;
+  }
+  .select-sheet-search{
+    width:100%; height:44px; min-height:44px; border:1.5px solid var(--border); border-radius:12px; padding:0 14px;
+    font-size:16px; font-family:inherit; color:var(--text-dark); background:var(--card); margin:0 0 8px; flex-shrink:0;
+  }
+  .select-sheet-search:focus{ outline:none; border-color:var(--teal); }
+  .select-sheet-list{ overflow-y:auto; -webkit-overflow-scrolling:touch; flex:1 1 auto; min-height:0; }
+  /* 48px 최소 터치 타깃 — 이 세션에서 이미 확립된 관례(.amount-currency-select/.country-toggle-btn과
+     동일한 하한, 40-60대 타깃이라 시각적으로도 충분히 커 보여야 한다는 기존 결정 재사용) */
+  .select-sheet-item{
+    display:flex; align-items:center; width:100%; min-height:48px; padding:10px 12px; margin:0 0 4px;
+    border:1.5px solid var(--border); border-radius:12px; background:var(--card); color:var(--text-dark);
+    font-family:inherit; font-size:var(--fs-body); font-weight:700; text-align:start; cursor:pointer;
+  }
+  .select-sheet-item:last-child{ margin-bottom:0; }
+  .select-sheet-item.active{ border-color:var(--teal); background:rgba(var(--teal-rgb),0.08); color:var(--teal); }
+  .select-sheet-no-result{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); padding:16px 0; flex-shrink:0; }
 
   /* "이미지로 저장" 캔버스를 펜/텍스트로 꾸며서 저장하는 오버레이(openAnnotateOverlay()) —
      .tax-basis-overlay와 같은 배경 덮기 + 가운데 카드 패턴 재사용, z-index만 그 위(2200)로 둠 */
@@ -2042,7 +2208,9 @@
     .game-compare{ grid-template-columns:1fr; }
     .cards-row{ grid-template-columns:1fr !important; }
     .trust-grid{ grid-template-columns:1fr 1fr; row-gap:16px; }
-    .slider::-webkit-slider-thumb{ width:24px; height:24px; }
+    /* 2026-07-30: 24px→28px로 확대(제미나이 검수 + 사용자 재검토, 40~60대 기준 손잡이가
+       작아 손가락으로 잡기 어렵다는 지적) */
+    .slider::-webkit-slider-thumb{ width:28px; height:28px; }
     .slider{ height:6px; }
     .prize-card.jackpot{ padding:16px; }
     .prize-card{ padding:12px 14px; }
@@ -2145,6 +2313,13 @@
     .result-seal{ width:34px; height:34px; font-size:10px; }
     .calc-detail-toggle, .fun-toggle{ padding-left:10px; padding-right:10px; }
     .calc-detail-summary{ margin:0 -10px; padding:12px 10px; }
+    /* 2026-07-30: 국가+통화 2단 그리드(.amount-currency-row-2col)는 390px 폰에서 나란히
+       배치하려고 만든 건데, 이 극단적으로 좁은 화면(≤300px)에서는 각 칸이 너무 좁아져서
+       select가 자기 칸 밖으로 15px 넘게 삐져나감(home_audit.js가 240px에서 실제로 잡아냄) —
+       이 폭에서만 다시 세로로 쌓아서(각 쌍이 폭 전체를 씀) 여유를 줌 */
+    .amount-currency-row-2col{ display:block; }
+    .amount-currency-row-2col .amount-currency-pair{ margin-bottom:6px; }
+    .amount-currency-row-2col .amount-currency-pair:last-child{ margin-bottom:0; }
   }
 
   /* 아랍어·우르두어(RTL)에서 "79.7 billion ₩"처럼 숫자+영단어 조합이 브라우저의 기본 양방향(bidi)

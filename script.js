@@ -423,6 +423,7 @@ function applyTranslations(){
   updateMyNumbersUi();
   renderNumberFrequencyStats();
   adjustNavIconVisibility();
+  fitCountryToggleButtons();
 }
 
 // nav 버튼(비교/확률/도움말)에 아이콘을 추가(2026-07-25, 시각 밀도 개선)하면서 폭이 조금
@@ -440,6 +441,42 @@ function adjustNavIconVisibility(){
   const fits = Math.abs(links.getBoundingClientRect().top - settings.getBoundingClientRect().top) < 10;
   if (!fits) nav.classList.add('nav-icons-tight');
 }
+
+// 21개 국가 기준 토글 버튼(.country-toggle-btn)은 캄보디아/몽골 등 일부 언어에서 복합어가 길고
+// 자연스러운 줄바꿈 지점이 없어서, 갤럭시 폴드 접은 상태(~344px) 같은 좁은 폭에서 글자가 버튼
+// 테두리를 넘어가는 경우가 있었음(사용자가 크메르어 스크린샷으로 직접 확인). 사이트 전체 최소
+// 글자크기(--fs-small: 16px, 40~60대 가독성 연구 기준)를 CSS로 일괄 낮추는 건 그 원칙과
+// 충돌하므로, adjustNavIconVisibility()와 같은 방식으로 "실제 렌더링 폭을 재서 안 맞을 때만"
+// 해당 버튼 하나에만 글자를 조금씩 줄임(다른 언어·버튼은 전혀 영향 없음)
+function fitCountryToggleButtons(){
+  const minFontSize = 12; // 여기까지 줄여도 안 맞으면 그냥 줄바꿈(overflow-wrap)에 맡김
+  document.querySelectorAll('.country-toggle-btn').forEach(btn => {
+    btn.style.fontSize = ''; // 언어 재전환 시 이전에 줄여둔 값부터 다시 시작하지 않도록 리셋
+    // 이 버튼은 "세금 계산 기준 자세히 설정"과 "다른 나라 기준 더보기" 두 겹의 <details> 안에
+    // 있어서, 접혀있는 동안엔 display:none이라 scrollWidth/clientWidth가 둘 다 0으로 읽힘 —
+    // 그 상태로 판단하면 아무 문제 없다고 잘못 판단하고 넘어가버림. clientWidth가 0이면 아직
+    // 실제로 렌더링되지 않은 것이므로 건너뛰고, 나중에 details가 열릴 때(아래 toggle 리스너)
+    // 다시 이 함수가 불려서 그때 실제 폭으로 판단함
+    if (btn.clientWidth === 0) return;
+    let guard = 0;
+    while (btn.scrollWidth > btn.clientWidth + 1 && guard < 6) {
+      const current = parseFloat(getComputedStyle(btn).fontSize);
+      if (current <= minFontSize) break;
+      btn.style.fontSize = Math.max(minFontSize, current - 1) + 'px';
+      guard++;
+    }
+  });
+}
+// 국가 토글 버튼은 "세금 계산 기준 자세히 설정" / "다른 나라 기준 더보기" 두 <details> 안에
+// 접혀서 시작하므로, 언어 전환·리사이즈 시점엔 아직 안 보여서 폭 측정이 무의미할 때가 많음.
+// 방문자가 실제로 그 details를 펼치는 순간에도 다시 재계산해야 함 — 'toggle' 이벤트는 버블링을
+// 안 해서 document에 capture:true로 걸어야 어떤 details를 열든 다 잡을 수 있음(위
+// updateFaqFloatBtnVisibility의 document.addEventListener('toggle', ..., true)와 동일한 이유)
+document.addEventListener('toggle', (e) => {
+  if (e.target && e.target.open && (e.target.classList.contains('input-advanced-toggle') || e.target.classList.contains('country-toggle-more'))) {
+    fitCountryToggleButtons();
+  }
+}, true);
 // 웹폰트(Pretendard)가 초기 측정 이후에 늦게 로드되면 글자 폭이 바뀌어 판단이 틀어질 수 있어서,
 // 폰트 로드 완료 시점에 한 번 더 재확인
 if (document.fonts && document.fonts.ready) {
@@ -1965,6 +2002,22 @@ function renderOddsTabDataWhenReady(){
   }).catch(err => console.error('[odds-data]', err));
 }
 
+// "나는 어떤 경우일까요?" 패널은 첫 방문자에게만 기본 펼침으로 보여줌(2026-07-25 결정,
+// 재외국민/외국인 방문자가 자기 경우를 못 찾고 이탈하는 것 방지) — 다만 매번 다시 펼쳐서
+// 보여주면 재방문자에게는 첫 화면이 불필요하게 길어 보인다는 피드백(2026-07-30, 모바일
+// 정보 밀도 점검)을 받아, 한 번이라도 이 패널을 본 적 있는 사람에게는 다음 방문부터 기본
+// 접힘으로 시작하게 함. localStorage 접근 실패(사파일 프라이빗 모드 등)는 조용히 무시 —
+// 실패해도 "매번 펼쳐 보이는" 기존 동작으로만 되돌아갈 뿐 기능이 깨지진 않음
+function collapseIntroPersonaForReturningVisitors(){
+  const accordion = document.getElementById('introPersonaAccordion');
+  if (!accordion) return;
+  try {
+    if (localStorage.getItem('introPersonaSeen')) accordion.open = false;
+    else localStorage.setItem('introPersonaSeen', '1');
+  } catch(e) {}
+}
+document.addEventListener('DOMContentLoaded', collapseIntroPersonaForReturningVisitors);
+
 // "나는 어떤 경우일까요?" 안내 배너에서 "한국에 살아요" 카드를 누르면, 배너를 접고
 // 바로 아래 입력창으로 스크롤해줌 — 이미 홈 화면에 있으니 페이지 이동은 필요 없음
 function goToCalculatorInput(){
@@ -3134,17 +3187,28 @@ function updateDrawCountdown(){
   // Intl로 "지금 이 순간의 동부시간 요일/시/분"만 읽어오면 되므로, 서머타임(EDT/EST) 오프셋을
   // 직접 계산할 필요가 없어 미래 시각을 UTC로 역산하는 것보다 훨씬 단순하고 안전함
   function getEasternNow(){
-    const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/New_York', weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
-    }).formatToParts(new Date());
-    const map = {};
-    parts.forEach(p => { if (p.type !== 'literal') map[p.type] = p.value; });
-    const WEEKDAY_NUM = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
-    // 자정(00시)이 "24"로 나오는 로케일 표기 대응 — 24는 다음날 00시와 같음
-    return {
-      dow: WEEKDAY_NUM[map.weekday], minutesOfDay: (Number(map.hour) % 24) * 60 + Number(map.minute),
-      year: Number(map.year), month: Number(map.month), day: Number(map.day)
-    };
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York', weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
+      }).formatToParts(new Date());
+      const map = {};
+      parts.forEach(p => { if (p.type !== 'literal') map[p.type] = p.value; });
+      const WEEKDAY_NUM = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+      const dow = WEEKDAY_NUM[map.weekday];
+      // 2026-07-30: 위 매핑이 실패하면(dow가 undefined) 아래 nextDrawInfo()의 while 루프가
+      // 절대 못 끝날 수 있음(타임존 데이터가 없는 일부 환경에서 Intl이 예상과 다른 값을 줄 때) —
+      // 여기서 바로 걸러서 로컬 시각 폴백으로 넘김
+      if (dow === undefined || Number.isNaN(Number(map.hour)) || Number.isNaN(Number(map.year))) throw new Error('bad Intl parts');
+      // 자정(00시)이 "24"로 나오는 로케일 표기 대응 — 24는 다음날 00시와 같음
+      return {
+        dow, minutesOfDay: (Number(map.hour) % 24) * 60 + Number(map.minute),
+        year: Number(map.year), month: Number(map.month), day: Number(map.day)
+      };
+    } catch (e) {
+      // 타임존 데이터가 없는 환경 대비 폴백(정확한 미국 동부시간은 아니지만 최소한 멈추지는 않음)
+      const now = new Date();
+      return { dow: now.getDay(), minutesOfDay: now.getHours() * 60 + now.getMinutes(), year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
+    }
   }
   // D-day 배지는 요일까지만 보여줌 — 스크린샷을 나중에 다시 보거나 남에게 카톡으로 전달해도
   // "화" 같은 요일 표기는 날짜(7.20.)보다 한눈에 들어오고, "오늘 N시간 후"처럼 시시각각 낡는
@@ -3160,7 +3224,9 @@ function updateDrawCountdown(){
       return `D-DAY (${formatDrawWeekday(year, month, day, 0)})`;
     }
     let diff = 1;
-    while (!drawDays.includes((dow + diff) % 7)) diff++;
+    // 방어 코드: dow가 NaN/undefined면(위 getEasternNow()의 폴백을 뚫고 들어온 경우 등)
+    // 이 루프가 절대 안 끝날 수 있음 — 한 바퀴(7)를 넘기지 않게 강제 제한
+    while (!drawDays.includes((dow + diff) % 7) && diff < 8) diff++;
     return `D-${diff} (${formatDrawWeekday(year, month, day, diff)})`;
   }
   // 위 D-day 배지("D-2 (토)")는 "다음 특정 추첨일"을 보여주는 것이고, 이건 그와 별개로
@@ -3243,7 +3309,7 @@ function buildDrawScheduleMore(days){
 // (USA Mega, Next Jackpot $50 Million · Fri Jul 31)으로 전달해서 갱신 — 이전 값(8억 달러)은
 // 당첨 전 마지막 회차 금액이라 리셋 이후로는 그대로 두면 실제보다 훨씬 부풀려진 잭팟을 보여주게 됨
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 663000000 },
+  powerball:    { amountUsd: 707000000 },
   megamillions: { amountUsd: 50000000 },
 };
 
@@ -3261,9 +3327,13 @@ const GAME_NAME_MORE = {
 // 2026-07-28 사용자가 채팅으로 공식 결과 직접 전달해서 갱신: 파워볼 7/25 → 7/27 회차
 // (6,26,46,58,65 + 파워볼 25, Power Play 2x는 이 위젯 스코프 밖이라 표시 안 함). 2026-07-29
 // 사용자가 스크린샷으로 메가밀리언즈 7/28 회차 결과도 전달해서 갱신
-// (34,48,49,59,70 + 메가볼 12).
+// (34,48,49,59,70 + 메가볼 12). 2026-07-30 사용자가 usamega.com 스크린샷으로 파워볼
+// 7/27 → 7/29 회차 결과 전달해서 갱신(30,36,40,42,57 + 파워볼 2, Power Play 2x·더블플레이는
+// 이 위젯 스코프 밖). 메가밀리언즈는 같은 스크린샷에도 7/28 회차 그대로(다음 추첨 7/31 아직
+// 안 함)라 안 바꿈 — 위 JACKPOT_DATA.powerball도 같은 스크린샷의 "Next Jackpot $707
+// Million"으로 같이 갱신함.
 const LATEST_DRAW = {
-  powerball:    { date: '2026-07-27', numbers: [6, 26, 46, 58, 65], special: 25 },
+  powerball:    { date: '2026-07-29', numbers: [30, 36, 40, 42, 57], special: 2 },
   megamillions: { date: '2026-07-28', numbers: [34, 48, 49, 59, 70], special: 12 },
 };
 
@@ -3535,7 +3605,7 @@ function layoutShareContent(ctx, { label, bigText, subText, balls }, { anchorX, 
       let bx = isRTL ? (anchorX - r) : (anchorX + r);
       const step = isRTL ? -gap : gap;
       balls.numbers.forEach(n => {
-        drawShareBall(ctx, bx, by, r, n, '#FFFEF9', '#262420', '#E8E2D3');
+        drawShareBall(ctx, bx, by, r, n, '#FFFFFF', '#262420', '#E3E6EA');
         bx += step;
       });
       drawShareBall(ctx, bx, by, r, balls.special, balls.specialColor, '#FFFFFF', balls.specialColor);
@@ -3569,8 +3639,8 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
 
   // 배경 — 완전 평면 크림색 대신 살짝 톤 다운되는 세로 그러데이션으로 은은한 깊이감을 줌
   const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-  bgGrad.addColorStop(0, '#F1EDE0');
-  bgGrad.addColorStop(1, '#FAF6EC');
+  bgGrad.addColorStop(0, '#EEF0F2');
+  bgGrad.addColorStop(1, '#F8F9FA');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, W, H);
 
@@ -3582,7 +3652,7 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
   ctx.shadowBlur = 36;
   ctx.shadowOffsetY = 14;
   canvasRoundRectPath(ctx, cardX, cardY, cardW, cardH, cardR);
-  ctx.fillStyle = '#FFFEF9';
+  ctx.fillStyle = '#FFFFFF';
   ctx.fill();
   ctx.restore();
 
@@ -3615,18 +3685,24 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
   ctx.arc(cardX + cardW - 128, cardY + 16, 44, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = `800 38px ${SHARE_CARD_FONT}`;
+  // 2026-07-30: 여기 있던 "🐻 참택스 · ChamTax" 텍스트 fillText를 실제 로고를 그대로 그리는
+  // drawLogoMark()/drawBearMascotIcon()로 교체 — 저 두 함수는 2026-07-28 세션이 이미
+  // saveMyNumbersAsTicketImage()/saveHomeResultAsImage()에 적용해뒀는데, buildShareCard()
+  // (saveJackpotIndexShareCard()가 씀)는 그때 안 고쳐서 이모지 폰트 의존 문제가 남아있었음
   ctx.textBaseline = 'middle';
-  ctx.textAlign = isRTL ? 'right' : 'left';
-  const wordmarkX = isRTL ? (cardX + cardW - 56) : (cardX + 56);
-  ctx.fillText('🐻 참택스 · ChamTax', wordmarkX, cardY + bandH / 2);
+  drawLogoMark(
+    ctx, '참택스 · ChamTax',
+    isRTL ? (cardX + cardW - 56) : (cardX + 56),
+    cardY + bandH / 2,
+    isRTL ? 'right' : 'left',
+    { iconSize: 48, gap: 14, font: `800 38px ${SHARE_CARD_FONT}`, color: '#FFFFFF' }
+  );
 
   ctx.restore(); // 클립 해제
 
   canvasRoundRectPath(ctx, cardX, cardY, cardW, cardH, cardR);
   ctx.lineWidth = 2;
-  ctx.strokeStyle = '#E8E2D3';
+  ctx.strokeStyle = '#E3E6EA';
   ctx.stroke();
 
   // ---- 콘텐츠 영역: 밴드 아래 ~ 푸터 위 사이 공간에서 실제 내용 블록을 세로 중앙 정렬 ----
@@ -3646,7 +3722,7 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
   layoutShareContent(ctx, { label, bigText, subText, balls }, { ...layoutOpts, startY, draw: true });
 
   // ---- 푸터: 얇은 구분선 + CTA 문구 + 도메인, 카드 하단에 고정 ----
-  ctx.strokeStyle = '#E8E2D3';
+  ctx.strokeStyle = '#E3E6EA';
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(contentX, cardY + cardH - footerH + 18);
@@ -4962,13 +5038,13 @@ const MN_DUPLICATE_ERROR_MORE = {
 // 다른 종류의 액션처럼 보였음 — 텍스트 자체가 이미 "이미지로 저장"이라 아이콘도 액션(이미지 저장)을
 // 나타내는 게 콘텐츠(티켓 모양)를 나타내는 것보다 일관성 있다고 판단해 통일함.
 const MN_SAVE_BTN_MORE = {
-  ar: '🖼️ حفظ كصورة', bn: '🖼️ ছবি হিসেবে সংরক্ষণ', fr: '🖼️ Enregistrer en image', hi: '🖼️ इमेज के रूप में सेव करें',
-  id: '🖼️ Simpan sebagai gambar', ja: '🖼️ 画像として保存', kk: '🖼️ Сурет ретінде сақтау', km: '🖼️ រក្សាទុកជារូបភាព',
-  ky: '🖼️ Сүрөт катары сактоо', lo: '🖼️ ບັນທຶກເປັນຮູບພາບ', mn: '🖼️ Зураг болгон хадгалах', my: '🖼️ ပုံအဖြစ် သိမ်းမည်',
-  ne: '🖼️ तस्बिरको रूपमा सेभ गर्नुहोस्', si: '🖼️ රූපයක් ලෙස සුරකින්න', tl: '🖼️ I-save bilang larawan', ur: '🖼️ تصویر کے طور پر محفوظ کریں',
-  uz: "🖼️ Rasm sifatida saqlash",
+  ar: 'حفظ كصورة', bn: 'ছবি হিসেবে সংরক্ষণ', fr: 'Enregistrer en image', hi: 'इमेज के रूप में सेव करें',
+  id: 'Simpan sebagai gambar', ja: '画像として保存', kk: 'Сурет ретінде сақтау', km: 'រក្សាទុកជារូបភាព',
+  ky: 'Сүрөт катары сактоо', lo: 'ບັນທຶກເປັນຮູບພາບ', mn: 'Зураг болгон хадгалах', my: 'ပုံအဖြစ် သိမ်းမည်',
+  ne: 'तस्बिरको रूपमा सेभ गर्नुहोस्', si: 'රූපයක් ලෙස සුරකින්න', tl: 'I-save bilang larawan', ur: 'تصویر کے طور پر محفوظ کریں',
+  uz: "Rasm sifatida saqlash",
 
-  pt: `🖼️ Salvar como imagem`, es: `🖼️ Guardar como imagen`, uk: `🖼️ Зберегти як зображення`, tet: `🖼️ Guarda nu'udar imajen`,
+  pt: `Salvar como imagem`, es: `Guardar como imagen`, uk: `Зберегти як зображення`, tet: `Guarda nu'udar imajen`,
 };
 const MN_TICKET_TITLE_MORE = {
   ar: 'تذكرتي', bn: 'আমার টিকিট', fr: 'Mon billet', hi: 'मेरी टिकट', id: 'Tiket Saya', ja: 'マイチケット',
@@ -5111,7 +5187,7 @@ function updateMyNumbersUi(){
   specialLabelEl.textContent = pickLang('파워볼 번호 (1~26)', 'Powerball number (1–26)', '强力球号码（1~26）', 'Số Powerball (1–26)', 'เลขพาวเวอร์บอล (1-26)', 'Число Powerball (1–26)', MN_SPECIAL_LABEL_MORE);
   btnEl.textContent = pickLang('확인하기', 'Check it', '查看结果', 'Kiểm tra', 'ตรวจสอบ', 'Проверить', MN_BTN_MORE);
   const saveBtnEl = document.getElementById('mn-save-btn');
-  if (saveBtnEl) saveBtnEl.textContent = pickLang('🖼️ 이미지로 저장', '🖼️ Save as image', '🖼️ 保存为图片', '🖼️ Lưu thành ảnh', '🖼️ บันทึกเป็นรูปภาพ', '🖼️ Сохранить как изображение', MN_SAVE_BTN_MORE);
+  if (saveBtnEl) saveBtnEl.textContent = pickLang('이미지로 저장', 'Save as image', '保存为图片', 'Lưu thành ảnh', 'บันทึกเป็นรูปภาพ', 'Сохранить как изображение', MN_SAVE_BTN_MORE);
   disclaimerEl.textContent = pickLang(
     '재미로 보는 가상 비교예요 — 실제 당첨 확인이 아니고, 복권 구매를 권하는 것도 아니에요 🙂',
     'Just a fun hypothetical comparison — not a real prize check, and not an endorsement to buy lottery tickets 🙂',
@@ -5382,9 +5458,9 @@ function saveMyNumbersAsTicketImage(){
   ctx.scale(SCALE, SCALE);
 
   // 배경 + 테두리 (styles.css .ticket-mock-card와 같은 톤)
-  ctx.fillStyle = '#FFFEF9';
+  ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = '#E8E2D3';
+  ctx.strokeStyle = '#E3E6EA';
   ctx.lineWidth = 2;
   ctx.strokeRect(6, 6, W - 12, H - 12);
 
@@ -5601,7 +5677,7 @@ function saveHomeResultAsImage(){
   // "은행 서류" 느낌의 정형화된 테두리를 냄 — 실제 위변조 방지 무늬(길로셰)를 흉내내진 않음(과한
   // 금융서류 흉내는 하드 제약 3번과 충돌할 위험이 있어 일부러 단순한 이중 룰 선까지만).
   const cardX = 20, cardY = 20, cardW = W - cardX * 2, cardH = H - cardY * 2;
-  ctx.fillStyle = '#FFFEF9';
+  ctx.fillStyle = '#FFFFFF';
   ctx.beginPath();
   ctx.roundRect(cardX, cardY, cardW, cardH, 14);
   ctx.fill();
@@ -5668,7 +5744,7 @@ function saveHomeResultAsImage(){
   ctx.fillText(dateStr, oppositeX, 90);
 
   // 헤더 구분선
-  ctx.strokeStyle = '#E8E2D3';
+  ctx.strokeStyle = '#E3E6EA';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.moveTo(cardX + 30, 118);
@@ -6598,8 +6674,12 @@ function setupStickyResultBadge(){
   // 결과 카드 밑에 입력창·슬라이더·세금 상세까지가 "관련 구간"이고, 그 밑 탐색 카드부터는
   // 배지랑 상관없는 콘텐츠임 — 이 구간을 완전히 지나쳐 스크롤하면(잭팟 이력·탐색 카드 등이
   // 보일 때) 배지가 그 위에 계속 떠서 글자를 가리는 문제가 있었음(사용자가 스크린샷으로 지적) —
-  // .calc-detail-toggle이 화면 위로 완전히 넘어가면 배지도 같이 숨김
-  const zoneEnd = document.querySelector('.calc-detail-toggle');
+  // "결과 더 자세히 보기"(#home-detail-toggle)가 화면 위로 완전히 넘어가면 배지도 같이 숨김.
+  // 2026-07-30: 예전엔 .calc-detail-toggle 클래스로 첫 매치를 찾았는데, 연금 아코디언
+  // 병합 전엔 우연히 그게 이 결과 구간의 끝이었을 뿐 — 다른 .calc-detail-toggle(예: 세금
+  // 계산 기준 자세히 설정)이 이후 추가되며 querySelector가 엉뚱한 걸 집을 위험이 있어
+  // 전용 id로 명시함
+  const zoneEnd = document.getElementById('home-detail-toggle');
   const badge = document.getElementById('sticky-result-badge');
   const amtEl = document.getElementById('sticky-result-amt');
   if (!target || !badge || !amtEl || badge.dataset.bound) return;
@@ -6650,17 +6730,26 @@ const FAQ_FLOAT_SCROLL_THRESHOLD = 150;
 // 정할 수 있어도 "하필 그 자리에 뭐가 있는지"는 알 수 없음 — document.elementsFromPoint()로
 // 버튼이 차지하는 실제 화면 영역 밑에 글자가 있는 텍스트 요소가 있는지 직접 확인해서, 있으면
 // 그 순간만 흐리게 비활성화함(버튼 자체를 없애지 않아 스크롤이 멈추면 곧바로 다시 씀 가능)
-function faqFloatBtnCollidesWithText(btn){
+// 2026-07-30: 이 검사가 원래 "흐리게 할지(is-colliding)" 하나만 판단했는데, 그 안에서
+// button/a/summary 같은 실제 컨트롤은 흐림 판정에서 제외해버려서(아래 주석 참고) 그
+// 컨트롤 위에서는 pointer-events가 계속 auto로 남아있었음 — 그 결과 이 플로팅 버튼이 뒤에
+// 깔린 진짜 버튼/아코디언 제목의 탭을 그대로 가로채는 문제가 있었음(홈 화면 FAQ 카드,
+// 오즈 화면 아코디언에서 실제로 재현됨, UX 점검 서브에이전트가 발견). "흐리게 보일지"와
+// "탭을 통과시킬지"는 서로 다른 질문이라 분리함 — 컨트롤과 겹칠 땐 흐리게 하진 않되(2026-07-29
+// 피드백대로 그대로 유지) 탭은 통과시켜서 밑에 있는 진짜 버튼이 눌리게 함
+function faqFloatBtnCollisionState(btn){
   const rect = btn.getBoundingClientRect();
-  if (!rect.width || !rect.height) return false;
+  if (!rect.width || !rect.height) return { overText: false, overControl: false };
   const points = [
     [rect.left + rect.width * 0.5, rect.top + 2],
     [rect.left + rect.width * 0.5, rect.bottom - 2],
     [rect.left + 4, rect.top + rect.height * 0.5],
     [rect.right - 4, rect.top + rect.height * 0.5],
   ];
-  return points.some(([x, y]) => {
-    if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) return false;
+  let overText = false;
+  let overControl = false;
+  for (const [x, y] of points) {
+    if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) continue;
     const stack = document.elementsFromPoint(x, y);
     for (const el of stack) {
       if (el === btn || btn.contains(el)) continue;
@@ -6669,8 +6758,9 @@ function faqFloatBtnCollidesWithText(btn){
       // 수 없게 되는 글(문단 등)을 가리지 않게" 하려는 목적인데, 버튼·링크·아코디언 제목
       // (<summary>)처럼 그 자체가 누르는 대상인 컨트롤과 겹치는 것까지 같은 취급을 받고
       // 있었음. 이런 요소는 계속 읽어야 하는 콘텐츠가 아니라 한눈에 훑고 누르는 대상이라
-      // 겹쳐도 "글이 가려져서 못 읽음" 문제가 아니므로 충돌 판정에서 제외
-      if (el.closest('button, a, summary, [role="button"]')) continue;
+      // 겹쳐도 "글이 가려져서 못 읽음" 문제가 아니므로 흐림 판정에서는 계속 제외하되,
+      // overControl로 표시해서 최소한 탭은 통과시킴(바로 아래 updateFaqFloatBtnVisibility 참고)
+      if (el.closest('button, a, summary, [role="button"]')) { overControl = true; continue; }
       // 버튼 자신에 도달하기 전에 카드 배경(:before/배경 전용 요소)만 있으면 계속 더 아래(뒤)
       // 요소를 확인 — 실제로 눈에 보이는 글자가 있는 leaf 요소를 만나면 그때 충돌로 판단
       const text = (el.textContent || '').trim();
@@ -6678,10 +6768,11 @@ function faqFloatBtnCollidesWithText(btn){
       // el 자신이 텍스트를 직접 담은 노드인지(자식 요소가 아니라 텍스트 노드가 바로 있는지) 확인 —
       // 아니면 큰 컨테이너(예: .page 전체)가 우연히 그 지점에 있다고 항상 걸리는 오탐이 생김
       const hasDirectText = Array.from(el.childNodes).some(n => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
-      if (hasDirectText) return true;
+      if (hasDirectText) { overText = true; break; }
     }
-    return false;
-  });
+    if (overText) break;
+  }
+  return { overText, overControl };
 }
 
 function updateFaqFloatBtnVisibility(){
@@ -6689,8 +6780,12 @@ function updateFaqFloatBtnVisibility(){
   if (!wrap) return;
   const scrolledEnough = window.scrollY > FAQ_FLOAT_SCROLL_THRESHOLD;
   wrap.classList.toggle('is-visible', scrolledEnough);
-  if (!scrolledEnough) { wrap.classList.remove('is-colliding'); return; }
-  wrap.classList.toggle('is-colliding', faqFloatBtnCollidesWithText(wrap));
+  if (!scrolledEnough) { wrap.classList.remove('is-colliding', 'is-over-control'); return; }
+  const { overText, overControl } = faqFloatBtnCollisionState(wrap);
+  wrap.classList.toggle('is-colliding', overText);
+  // is-colliding이 이미 pointer-events:none을 주므로, 텍스트와도 겹친 경우엔 굳이 별도
+  // 클래스가 필요 없음 — 흐려지진 않지만 탭은 통과시켜야 하는 "컨트롤과만 겹친" 경우에만 부여
+  wrap.classList.toggle('is-over-control', overControl && !overText);
 }
 
 function setupFaqFloatBtnScrollVisibility(){
@@ -6699,12 +6794,25 @@ function setupFaqFloatBtnScrollVisibility(){
   btn.dataset.scrollBound = '1';
   let ticking = false;
   let settleTimer = null;
+  // 2026-07-30: 제미나이 검수(12번 항목)가 추천한 "스크롤 중 자동 숨김" 패턴 추가 — 아래로
+  // 스크롤할 땐 이 버튼을 잠깐 숨겨서 다른 컨트롤과 겹칠 일 자체를 줄이고(위 is-over-control
+  // 방어 코드와 별개로 애초에 안 겹치게), 위로 스크롤하거나 스크롤이 멈추면(기존 settleTimer
+  // 재사용) 다시 보이게 함. 아주 작은 스크롤 흔들림(모멘텀 스크롤 끝자락 등)에 매번
+  // 반응하면 버튼이 깜빡여서, 최소 이동량(SCROLL_HIDE_DELTA)을 넘을 때만 방향을 갱신함
+  let lastScrollY = window.scrollY;
+  const SCROLL_HIDE_DELTA = 4;
   // 스크롤 중엔 보이기/숨기기(임계값 기준)만 매 프레임 즉시 반영하고, "지금 밑에 글자가
   // 있는지" 충돌 검사(faqFloatBtnCollidesWithText, 무거운 elementsFromPoint 호출)는 스크롤이
   // 실제로 멈춘 뒤에만 한 번 함 — 원래는 이것도 매 프레임 같이 돌렸는데, 스크롤 중에 버튼
   // 밑을 스쳐가는 글자마다 옅어졌다 진해졌다 하며 깜빡이는 문제(2026-07-25 지적)로 분리함
   const updateShowHideOnly = () => {
-    const scrolledEnough = window.scrollY > FAQ_FLOAT_SCROLL_THRESHOLD;
+    const currentY = window.scrollY;
+    const delta = currentY - lastScrollY;
+    if (Math.abs(delta) > SCROLL_HIDE_DELTA) {
+      btn.classList.toggle('is-scroll-hidden', delta > 0); // 아래로 스크롤 중이면 숨김
+      lastScrollY = currentY;
+    }
+    const scrolledEnough = currentY > FAQ_FLOAT_SCROLL_THRESHOLD;
     btn.classList.toggle('is-visible', scrolledEnough);
     if (!scrolledEnough) btn.classList.remove('is-colliding');
   };
@@ -6714,7 +6822,11 @@ function setupFaqFloatBtnScrollVisibility(){
       requestAnimationFrame(() => { ticking = false; updateShowHideOnly(); });
     }
     clearTimeout(settleTimer);
-    settleTimer = setTimeout(updateFaqFloatBtnVisibility, 150);
+    settleTimer = setTimeout(() => {
+      // 스크롤이 멈추면 마지막 방향과 무관하게 항상 다시 보이게 함(기존 충돌 재검사와 같은 타이밍)
+      btn.classList.remove('is-scroll-hidden');
+      updateFaqFloatBtnVisibility();
+    }, 150);
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   // 잭팟 계산 드로어(details/summary)나 "일시불 대신 연금으로" 같은 아코디언을 열고 닫으면
@@ -6764,6 +6876,128 @@ function closeTaxBasisOverlay(){
   if (toggle && placeholder && placeholder.parentNode) placeholder.parentNode.insertBefore(toggle, placeholder);
 }
 
+// ===== 국가/통화 select 3개(#homeCountrySelect/#homeCurrencySelect/#compareCurrencySelect) 공용
+// 검색형 바텀시트(2026-07-30) =====
+// 외부 UX 검수가 21개짜리 네이티브 <select>를 모바일 OS 피커로 스크롤하는 게 40-60대 타깃에게
+// 번거롭다고 지적해서 추가. 진짜 <select>는 그대로 두고(index.html의 .select-sheet-native 참고 —
+// onchange 배선·값 읽기 코드가 이미 사이트 곳곳에 있어서 절대 안 건드림), 그 위에 얹은 커스텀
+// 트리거(.select-sheet-trigger)를 누르면 이 시트가 뜸. 항목을 고르면 select.value를 실제로
+// 설정하고 진짜 'change' 이벤트를 dispatch함(직접 setHomeCountry()/setSharedInputCurrency()를
+// 호출하지 않는 이유: 나중에 이 select에 또 다른 change 리스너가 추가돼도 이 시트 경로만 빠지는
+// 회귀를 원천 차단하기 위함 — 네이티브 select로 고를 때와 완전히 같은 경로를 타야 함).
+
+// 통화 select(homeCurrencySelect/compareCurrencySelect)는 옵션 코드 자체가 이미 통용되는 이름이라
+// 별도 번역이 필요 없지만(ISO 코드), "베트남"이라고 쳐도 VND를 찾을 수 있게 하려고 같은 나라의
+// 국가 select 검색어를 재사용함(새 i18n 키를 추가하지 않고 기존 #homeCountryToggle 버튼의
+// 이미 번역된 텍스트를 그대로 읽어옴)
+const CURRENCY_TO_COUNTRY_FOR_SEARCH = {
+  KRW:'kr', USD:'us', CNY:'cn', INR:'in', VND:'vn', IDR:'id', PHP:'ph', THB:'th', JPY:'jp', RUB:'ru',
+  NPR:'np', LKR:'lk', UZS:'uz', KZT:'kz', KGS:'kg', MMK:'mm', BDT:'bd', PKR:'pk', KHR:'kh', MNT:'mn', LAK:'la',
+};
+
+// #homeCountryToggle 버튼들(21개 국가 + 기타)은 openTaxBasisOverlay()가 팝오버 안으로 옮겨도
+// id는 그대로라 어디에 있든 이 셀렉터로 찾아짐 — 이미 applyTranslations()가 현재 언어로 계속
+// 갱신해주는 살아있는 DOM 텍스트를 그대로 검색어로 재사용(새 자료구조·새 번역 유지보수 없음)
+function countrySearchTextFor(countryCode){
+  const btn = document.querySelector('#homeCountryToggle .country-toggle-btn[data-country="' + countryCode + '"]');
+  return btn ? btn.textContent.trim() : '';
+}
+
+function currencySearchTextFor(currencyCode){
+  const countryCode = CURRENCY_TO_COUNTRY_FOR_SEARCH[currencyCode];
+  return countryCode ? countrySearchTextFor(countryCode) : '';
+}
+
+// 트리거 버튼에 보이는 라벨은 항상 실제 select의 현재 선택된 <option> 텍스트를 그대로 씀(국가는
+// 코드만, 통화는 국기+코드 — 새 표기 규칙을 만들지 않고 이미 있는 <option> 텍스트를 그대로 재사용).
+// setHomeCountry()/setSharedInputCurrency()가 select.value를 직접 바꾸는 경로(이 시트를 거치지
+// 않고 #homeCountryToggle 버튼을 직접 눌렀거나 ?country= 쿼리로 초기화된 경우 등)에도 라벨이
+// 어긋나지 않도록, 그 두 함수 끝에서도 이 함수를 호출함
+function syncSelectSheetTrigger(selectId){
+  const select = document.getElementById(selectId);
+  const trigger = document.getElementById(selectId + 'Trigger');
+  if (!select || !trigger) return;
+  const label = trigger.querySelector('.select-sheet-trigger-label');
+  const opt = select.options[select.selectedIndex];
+  if (label) label.textContent = opt ? opt.textContent : '';
+}
+
+function initSelectSheetTriggers(){
+  ['homeCountrySelect', 'homeCurrencySelect', 'compareCurrencySelect'].forEach(syncSelectSheetTrigger);
+}
+document.addEventListener('DOMContentLoaded', initSelectSheetTriggers);
+
+let selectSheetTargetId = null;
+
+function openSelectSheet(selectId){
+  const select = document.getElementById(selectId);
+  const overlay = document.getElementById('selectSheetOverlay');
+  const listEl = document.getElementById('selectSheetList');
+  const searchEl = document.getElementById('selectSheetSearch');
+  const titleEl = document.getElementById('selectSheetTitle');
+  if (!select || !overlay || !listEl || !searchEl) return;
+  selectSheetTargetId = selectId;
+  // 시트 제목은 이 select 옆에 이미 붙어있는 <label>(국가/통화, 이미 26개 언어로 번역돼있음)을
+  // 그대로 재사용 — 새 타이틀 문구를 따로 만들 필요 없음
+  const labelEl = document.querySelector('label[for="' + selectId + '"]');
+  if (titleEl) titleEl.textContent = labelEl ? labelEl.textContent.trim() : '';
+  const isCountrySelect = selectId === 'homeCountrySelect';
+  listEl.innerHTML = '';
+  Array.from(select.options).forEach(opt => {
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'select-sheet-item' + (opt.value === select.value ? ' active' : '');
+    row.setAttribute('role', 'option');
+    row.setAttribute('aria-selected', opt.value === select.value ? 'true' : 'false');
+    // 화면엔 기존 <option> 텍스트를 그대로만 보여줌(국가는 코드만, 통화는 국기+코드 — 요구사항대로
+    // 새 시각 정보를 추가하지 않음). 검색은 코드/값 + 번역된 국가명까지 포함해서 넓게 매칭함
+    row.textContent = opt.textContent;
+    const searchExtra = isCountrySelect ? countrySearchTextFor(opt.value) : currencySearchTextFor(opt.value);
+    row.dataset.search = (opt.textContent + ' ' + opt.value + ' ' + searchExtra).toLowerCase();
+    row.onclick = () => pickSelectSheetItem(opt.value);
+    listEl.appendChild(row);
+  });
+  searchEl.value = '';
+  filterSelectSheet();
+  overlay.classList.add('show');
+  // 시트가 슬라이드업하는 도중 바로 포커스를 주면 스크롤 점프가 겹쳐 보일 수 있어 애니메이션
+  // 시간(0.22s)만큼 살짝 늦춤 — faqSearch 포커스와 같은 타이밍 관례(openFaqSearchFloat 참고)
+  setTimeout(() => searchEl.focus(), 50);
+}
+
+function closeSelectSheet(){
+  const overlay = document.getElementById('selectSheetOverlay');
+  if (overlay) overlay.classList.remove('show');
+  selectSheetTargetId = null;
+}
+
+function filterSelectSheet(){
+  const listEl = document.getElementById('selectSheetList');
+  const searchEl = document.getElementById('selectSheetSearch');
+  const noResultEl = document.getElementById('selectSheetNoResult');
+  if (!listEl || !searchEl) return;
+  const q = searchEl.value.trim().toLowerCase();
+  let visibleCount = 0;
+  Array.from(listEl.children).forEach(row => {
+    const match = !q || row.dataset.search.includes(q);
+    row.style.display = match ? '' : 'none';
+    if (match) visibleCount++;
+  });
+  if (noResultEl) noResultEl.style.display = visibleCount === 0 ? 'block' : 'none';
+}
+
+// 선택 확정 — 진짜 select의 값을 바꾸고 실제 change 이벤트를 dispatch해서 기존
+// onchange="setHomeCountry(this.value)"/"setSharedInputCurrency(this.value, true)" 배선이
+// 네이티브 select로 직접 고를 때와 완전히 같은 경로로 호출되게 함(핵심 요구사항 — 이 시트만의
+// 별도 상태 갱신 로직을 만들지 않음)
+function pickSelectSheetItem(value){
+  const select = document.getElementById(selectSheetTargetId);
+  if (!select) { closeSelectSheet(); return; }
+  select.value = value;
+  select.dispatchEvent(new Event('change', { bubbles: true }));
+  closeSelectSheet();
+}
+
 // 어느 화면에서든 뜨는 #faqFloatBtn용 — go('faq')로 실제 탭을 전환하면 사용자가 보던 화면
 // (입력값·스크롤 위치)에서 완전히 벗어나고, 닫은 뒤 다시 보기 힘들다는 피드백이 있었음. 그래서
 // 탭 전환 없이 #view-faq를 현재 화면 위에 덮어씌우는 오버레이로만 띄움 — 닫으면 클래스만
@@ -6787,7 +7021,7 @@ function closeFaqOverlay(){
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeFaqOverlay(); closeTaxBasisOverlay(); }
+  if (e.key === 'Escape') { closeFaqOverlay(); closeTaxBasisOverlay(); closeSelectSheet(); }
 });
 
 // "궁금해요" 플로팅 버튼 자체가 거슬리는 사람을 위한 영구 닫기(2026-07-27) — 세션이 아니라
@@ -6882,6 +7116,9 @@ const FAQ_VOICE_LANG_MAP = {
   km: 'km-KH', ne: 'ne-NP', id: 'id-ID', my: 'my-MM', si: 'si-LK', uz: 'uz-UZ',
   mn: 'mn-MN', kk: 'kk-KZ', ky: 'ky-KG', ur: 'ur-PK', bn: 'bn-BD', lo: 'lo-LA',
   ja: 'ja-JP', ar: 'ar-SA', hi: 'hi-IN', fr: 'fr-FR', tl: 'fil-PH',
+  // 2026-07-30: 음성으로 읽어주기(TTS) 추가하면서 이 지도를 그것에도 재사용하다가 빠진 3개 언어
+  // 발견(원래도 음성 검색에서 이 3개는 'ko-KR'로 잘못 폴백되고 있었음) — 같이 채움
+  pt: 'pt-PT', es: 'es-ES', uk: 'uk-UA', tet: 'pt-PT',
 };
 
 function initFaqVoiceButton(){
@@ -6933,6 +7170,83 @@ function initAmountVoiceButtons(){
     btn.style.display = '';
   });
 }
+
+// ===== 음성으로 읽어주기(Web Speech API TTS, 2026-07-30) =====
+// "사이트에 음성 읽어주기 있지 않나?" 확인 요청 → 없었음(위 두 섹션은 전부 "말하면 받아쓰는"
+// 음성 입력이지 "글을 읽어주는" TTS가 아니었음) — 핵심 결과(홈 실수령액, 비교 탭 1위 카드)와
+// FAQ 답변에만 추가함. 이미 화면에 pickLang()/i18n으로 렌더링된 텍스트를 그대로 읽으므로
+// 이 기능 자체를 위한 새 번역 문장이 따로 필요 없음(버튼 라벨만 예외)
+const speechSynthesisSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+let activeTtsUtterance = null;
+let activeTtsBtn = null;
+
+function stopReadingAloud(){
+  if (speechSynthesisSupported) window.speechSynthesis.cancel();
+  if (activeTtsBtn) activeTtsBtn.classList.remove('speaking');
+  activeTtsUtterance = null;
+  activeTtsBtn = null;
+}
+
+// getText: 문자열 또는 "지금 화면에 보이는 텍스트를 즉석에서 모아주는 함수" — 버튼을 누르는
+// 시점의 최신 언어/결과값을 읽어야 하므로, 미리 문자열로 굳혀두지 않고 클릭 때마다 새로 계산함
+function toggleReadAloud(getText, btn){
+  if (!speechSynthesisSupported) return;
+  const wasSameBtn = activeTtsBtn === btn;
+  if (activeTtsUtterance) { stopReadingAloud(); if (wasSameBtn) return; }
+  const text = (typeof getText === 'function' ? getText() : (getText || '')).trim();
+  if (!text) return;
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = FAQ_VOICE_LANG_MAP[currentLang] || 'ko-KR';
+  utter.rate = 0.95;
+  utter.onend = stopReadingAloud;
+  utter.onerror = stopReadingAloud;
+  activeTtsUtterance = utter;
+  activeTtsBtn = btn || null;
+  if (btn) btn.classList.add('speaking');
+  window.speechSynthesis.speak(utter);
+}
+
+// 홈 결과 카드("일시불 예상 실수령액" 헤드라인) 읽어주기 — 라벨·금액·계산 기준을 화면에
+// 보이는 그대로 이어붙여 읽음(새 문구를 따로 만들지 않고 이미 렌더링된 DOM 텍스트 재사용)
+function readHomeResultAloud(btn){
+  toggleReadAloud(() => {
+    const parts = [
+      document.querySelector('#view-home .result-hero-label')?.textContent,
+      document.getElementById('home-final-amt')?.textContent,
+      document.getElementById('home-final-basis-mini')?.textContent,
+    ];
+    return parts.filter(Boolean).join('. ');
+  }, btn);
+}
+
+function initResultTtsButtons(){
+  document.querySelectorAll('.tts-btn').forEach(btn => {
+    if (!speechSynthesisSupported) { btn.style.display = 'none'; return; }
+    btn.style.display = '';
+  });
+}
+document.addEventListener('DOMContentLoaded', initResultTtsButtons);
+
+// FAQ 답변마다 "읽어주기" 버튼을 붙임 — HTML에 30개 가까이 똑같은 버튼을 반복해서 적어두는
+// 대신, 이미 있는 .faq-a 뒤에 한 번만 동적으로 삽입함. data-i18n-html로 언어가 바뀔 때마다
+// .faq-a의 innerHTML 자체는 새로 그려지지만, 이 버튼은 .faq-a의 형제(다음 요소)라 그때마다
+// 같이 지워지지 않음
+function initFaqTtsButtons(){
+  if (!speechSynthesisSupported) return;
+  document.querySelectorAll('.faq-item > .faq-a').forEach(ans => {
+    if (ans.nextElementSibling && ans.nextElementSibling.classList.contains('faq-tts-btn')) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'annuity-info-link tts-btn faq-tts-btn';
+    btn.setAttribute('data-i18n', 'a11y.readAloudBtn');
+    btn.textContent = '🔊 읽어주기';
+    // textContent를 쓰면 <br><br>이 그냥 사라져서 문장이 붙어버림(예: "정산돼요.👉 한국") —
+    // innerText는 렌더링된 줄바꿈을 개행으로 남겨서 TTS가 문장 사이에 자연스럽게 끊어 읽음
+    btn.addEventListener('click', () => toggleReadAloud(() => ans.innerText, btn));
+    ans.insertAdjacentElement('afterend', btn);
+  });
+}
+document.addEventListener('DOMContentLoaded', initFaqTtsButtons);
 
 // ===== 음성 인식 금액 파싱(2026-07-27, "오천만원처럼 말해도 되게" 요청) =====
 // 입력칸은 항상 "USD 백만 단위"를 기대하는데, 실제로 말할 때는 두 가지 문제가 있었음:
@@ -7233,6 +7547,28 @@ document.addEventListener('DOMContentLoaded', () => {
     params.delete('country');
     const newSearch2 = params.toString();
     history.replaceState(null, '', location.pathname + (newSearch2 ? '?' + newSearch2 : '') + location.hash);
+
+    // 2026-07-30: "?country="는 랜딩페이지가 "이 사람은 한국과 무관하게 자기 나라 기준이
+    // 필요하다"고 이미 확정해서 보낸 확실한 신호(예: china-resident-us-lottery-tax.html)라,
+    // 언어만 보고 페르소나 순서를 추측해서 바꾸는 것과 달리 안전하게 강조할 수 있음(추측 아님) —
+    // "나는 어떤 경우일까요?" 패널에서 "🌐 한국이 아닌 다른 나라에 살아요" 행의 국가 select를
+    // 이미 맞는 값으로 세팅해두고(사용자가 또 고를 필요 없게), 재방문자 기본 접힘(2026-07-30
+    // 앞선 세션에서 추가)과 무관하게 패널을 강제로 펼쳐서 그 행이 실제로 보이게 함
+    const realAbroadSelect = document.getElementById('realAbroadSelect');
+    const matchingOption = realAbroadSelect && Array.from(realAbroadSelect.options)
+      .find(opt => opt.value.split('|')[0] === urlCountry);
+    if (matchingOption) {
+      realAbroadSelect.value = matchingOption.value;
+      const introAccordion = document.getElementById('introPersonaAccordion');
+      if (introAccordion) introAccordion.open = true;
+      const personaRow = document.getElementById('realAbroadPersonaRow');
+      if (personaRow) {
+        personaRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        personaRow.classList.remove('field-autofill-flash');
+        void personaRow.offsetWidth;
+        personaRow.classList.add('field-autofill-flash');
+      }
+    }
   }
 
   // shareResult()가 공유 시 넣어주는 "?amount=250" 같은 파라미터를 되돌려 채워줌 — 공유 링크를
@@ -7320,6 +7656,9 @@ window.addEventListener('resize', () => {
       // 혼자 남은 카드가 있는지 다시 판단해야 함
       fixSideCardOrphanRow();
       adjustNavIconVisibility();
+      // 갤럭시 폴드처럼 실제로 접고 펴면서 폭이 동적으로 바뀌는 기기가 있어서, 언어 전환 시뿐
+      // 아니라 리사이즈 시에도 국가 토글 버튼이 여전히 맞는지 재확인해야 함
+      fitCountryToggleButtons();
       // 슬라이더 눈금 겹침 판정은 실제 렌더링 폭 기준이라, 창 폭이 바뀌면 다시 확인해야 함
       renderSliderTicks(document.getElementById('homeAmountSlider'));
       renderSliderTicks(document.getElementById('compareAmountSlider'));
@@ -7339,19 +7678,53 @@ function fitAmountFontSize(el){
   const container = el.parentElement;
   if (!container) return;
   el.style.fontSize = ''; // CSS clamp 기본값으로 리셋
+  el.style.whiteSpace = ''; // 아래 마지막 방어선에서 wrap을 허용했었다면 이전 상태 되돌림
   const computed = getComputedStyle(el);
   const fontSize = parseFloat(computed.fontSize);
   const minFontSize = 20; // 아무리 길어도 이 밑으로는 안 줄임 (그 이하는 가독성 문제)
   const safetyMargin = 22; // 기기별 폰트 렌더링(서브픽셀 anti-aliasing, 폰트 로딩 전/후 폭 차이 등) 오차를 감안한 여유폭.
   // 이전엔 14px였는데, 딱 안 넘치는 수준이라 "билл" 등 긴 단위가 붙으면 폭을 꽉 채워 답답해 보인다는
   // 피드백이 있어서 시각적 여유를 더 확보하도록 확대함
-  const availableWidth = container.clientWidth - safetyMargin; // 읽기 1회(불가피한 리플로우 1회)
+  // 2026-07-30: 실제 원인 발견 — container.clientWidth엔 컨테이너 자신의 좌우 padding이
+  // 포함돼 있는데(.result-hero는 좌우 20px씩, 총 40px), el(자식 <p>)은 그 padding "안쪽"
+  // 콘텐츠 박스만큼만 실제로 쓸 수 있음. 기존 코드는 이 40px을 안 빼고 clientWidth를 그대로
+  // 써서, 매번 실제 가용 폭보다 넓게 계산하고 있었음 — 영어 "billion"처럼 긴 단위가 붙었을 때
+  // 카드 밖으로 삐져나오는 진짜 원인이었음(사용자 스크린샷으로 확인, Playwright 실측으로
+  // elWidth(260)가 container의 padding 뺀 콘텐츠 폭과 정확히 일치하는 것까지 검증함)
+  const containerStyle = getComputedStyle(container);
+  const containerPadding = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+  const availableWidth = container.clientWidth - containerPadding - safetyMargin; // 읽기 1회(불가피한 리플로우 1회)
   if (!_measureCanvasCtx) _measureCanvasCtx = document.createElement('canvas').getContext('2d');
   _measureCanvasCtx.font = `${computed.fontWeight} ${fontSize}px ${computed.fontFamily}`;
   const textWidth = _measureCanvasCtx.measureText(el.textContent).width;
   if (textWidth > availableWidth) {
     const scaled = Math.floor(fontSize * (availableWidth / textWidth));
     el.style.fontSize = Math.max(minFontSize, scaled) + 'px'; // 쓰기 1회(불가피한 리플로우 1회)
+  }
+  // 위 캔버스 측정은 추정일 뿐이라 실제 기기의 폰트 렌더링과 서브픽셀 단위로 어긋날 수 있음 —
+  // 그렇다고 scrollWidth를 "반복"해서 다시 재는 방식은 안 씀. 아래 주석(예전 구현 관련)에
+  // 나오듯 이 함수는 폰트 로딩이 끝나는 시점에 국가별 비교 카드(.side-card-amt) 8~20개에
+  // 한꺼번에 돌 수 있는데, scrollWidth/getBoundingClientRect처럼 레이아웃을 강제로 다시
+  // 계산시키는 속성을 반복 조회하면(예전엔 최대 30번) 리플로우가 카드 수만큼 곱해져 수백 번
+  // 몰려서 화면이 눈에 띄게 멈칫하는 문제가 실제로 있었음(그래서 캔버스 측정 방식으로 바꾼 것) —
+  // 같은 문제를 되살리지 않으려고, 반복 없이 딱 한 번만 실제 렌더링 폭(scrollWidth)을 다시 확인함
+  const stillOverflowing = el.scrollWidth > availableWidth;
+  // 위 캔버스 추정이 부족했던 경우, 실제 폭 기준으로 한 번 더 보정(반복 아님 — 계산 한 번)
+  if (stillOverflowing) {
+    const currentPx = parseFloat(getComputedStyle(el).fontSize);
+    if (currentPx > minFontSize) {
+      const ratio = availableWidth / el.scrollWidth;
+      el.style.fontSize = Math.max(minFontSize, Math.floor(currentPx * ratio)) + 'px';
+    }
+  }
+  // 마지막 방어선: 위 보정 뒤에도(가독성 하한 20px에 막혀서) 여전히 안 들어가는 경우가 실제로
+  // 있음(영어 "billion"이 붙는 헤드라인은 글자 자체가 너무 길어서 — 사용자 스크린샷으로 확인) —
+  // 이때는 nowrap을 풀어서 카드 밖으로 넘치는 대신 2줄로 자연스럽게 줄바꿈되게 함. 칸 밖으로
+  // 삐져나오는 것보단 2줄이 되는 게 훨씬 낫다는, 이 사이트에서 반복되는 판단 기준을 여기에도
+  // 그대로 적용함 — 대부분(안 넘치는 경우)은 stillOverflowing이 false라 아래 scrollWidth를
+  // 아예 안 읽음(단락 평가로 건너뜀), 실제로 넘쳤던 드문 경우에만 보정 후 상태를 한 번 더 확인함
+  if (stillOverflowing && el.scrollWidth > availableWidth) {
+    el.style.whiteSpace = 'normal';
   }
 }
 
@@ -7616,6 +7989,11 @@ function setSharedInputCurrency(code, isManual){
   const compareSelect = document.getElementById('compareCurrencySelect');
   if (compareSelect && compareSelect.value !== code) compareSelect.value = code;
   refreshAmountInputDisplaysForCurrency();
+  // select.value를 이 함수가 직접 설정하는 경로(예: 다른 탭에서 이미 바뀐 값과 동기화)라 네이티브
+  // change 이벤트가 안 나가는데, 커스텀 트리거 버튼(select-sheet-trigger)의 라벨은 그와 무관하게
+  // 항상 실제 select 값과 일치해야 함 — 2026-07-30 바텀시트 선택기 추가분
+  syncSelectSheetTrigger('homeCurrencySelect');
+  syncSelectSheetTrigger('compareCurrencySelect');
 }
 
 function parseRateInput(str){
@@ -9088,6 +9466,10 @@ function setHomeCountry(country){
   document.querySelectorAll('#homeCountryToggle .country-toggle-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.country === country);
   });
+  // #homeCountryToggle 버튼을 직접 눌렀거나 ?country= 쿼리로 초기화된 경우처럼 select.value를
+  // 이 함수가 직접 설정하는 경로에도 커스텀 트리거 버튼 라벨이 항상 맞게 갱신되도록 함
+  // (2026-07-30 바텀시트 선택기 추가분)
+  syncSelectSheetTrigger('homeCountrySelect');
   updateHomeCalc();
   filterFaq(); // FAQ가 세금 기준(KR/US/CN)에 따라 관련 없는 질문은 숨기므로, 기준 바뀔 때마다 다시 걸러줌
   // 확률체감 탭의 실수령액 랭킹(jh-rank-list)/물가보정 랭킹(ji-cpi-list)도 sharedCountry를 따라
@@ -10514,6 +10896,19 @@ const COLLAPSE_COUNTRIES_MORE = {
   pt: `Recolher ▴`, es: `Replegar ▴`, uk: `Згорнути ▴`, tet: `Habit ▴`,
 };
 
+// 국가별 비교 탭 "🌐 기타 국가" 카드를 접어서 숨기는 토글의 요약 문구(2026-07-30, "실제
+// 랭킹 카드들과 나란히 펼쳐진 채로 있으니 너무 눈에 띈다" 지적으로 추가)
+const OTHER_COUNTRY_TOGGLE_MORE = {
+  ar:'🌐 لا ترى بلدك؟', bn:'🌐 আপনার দেশ দেখতে পাচ্ছেন না?', fr:'🌐 Vous ne voyez pas votre pays ?',
+  hi:'🌐 अपना देश नहीं दिख रहा?', id:'🌐 Tidak melihat negara Anda?', ja:'🌐 あなたの国が見つかりませんか？',
+  kk:'🌐 Еліңізді таппадыңыз ба?', km:'🌐 មិនឃើញប្រទេសរបស់អ្នកមែនទេ?', ky:'🌐 Өлкөңүздү таппай жатасызбы?',
+  lo:'🌐 ບໍ່ເຫັນປະເທດຂອງທ່ານບໍ?', mn:'🌐 Улсаа олсонгүй юу?', my:'🌐 သင့်နိုင်ငံကို မတွေ့ဘူးလား?',
+  ne:'🌐 तपाईंको देश देखिएन?', si:'🌐 ඔබේ රට පේන්නේ නැද්ද?', tl:'🌐 Hindi mo makita ang bansa mo?',
+  ur:'🌐 اپنا ملک نہیں دیکھ رہے؟', uz:"🌐 Davlatingizni topolmayapsizmi?",
+
+  pt: `🌐 Não vê o seu país?`, es: `🌐 ¿No ves tu país?`, uk: `🌐 Не бачите свою країну?`, tet: `🌐 La haree nasaun ó nian?`,
+};
+
 // 한국/미국 거주자 결과를 나란히(select와 무관하게 항상 둘 다) 보여주는 비교 카드용 계산
 // 국가 비교 카드에 표시할 나라 목록 — 새 나라를 추가할 때는 이 배열에 항목만 추가하면
 // 카드·breakdown이 자동으로 늘어남(HTML/CSS를 따로 손댈 필요 없음).
@@ -10833,6 +11228,10 @@ function renderLanguageContentLinks(){
 function scrollToOtherCountryCard(){
   const card = document.getElementById('sideOtherCountryCard');
   if (!card) return;
+  // 2026-07-30: 카드가 <details>(.side-other-toggle) 안에 기본 접힘으로 들어가면서, 배너를
+  // 눌렀을 때 접힌 채로 스크롤만 되면 아무것도 안 보이는 것처럼 보임 — 스크롤 전에 먼저 펼침
+  const toggle = card.closest('details');
+  if (toggle) toggle.open = true;
   card.scrollIntoView({ behavior: 'smooth', block: 'center' });
   card.classList.remove('field-autofill-flash');
   void card.offsetWidth;
@@ -10970,6 +11369,24 @@ function updateSideBySide(eok, stateCode){
       const amtRowEl = document.createElement('div'); amtRowEl.className = 'side-card-amt-row';
       amtRowEl.append(amtEl, rateEl);
       card.append(amtRowEl, barEl);
+      // 2026-07-30: 음성으로 읽어주기 — 카드 전체가 클릭 가능(지도 핀 강조)이라 버튼 클릭이
+      // 카드 클릭으로도 잡히지 않게 stopPropagation. 1위 카드에만 붙임(나머지 카드까지 다
+      // 붙이면 그리드가 다시 빽빽해짐)
+      if (speechSynthesisSupported) {
+        // 이 카드는 언어가 바뀔 때마다 grid.innerHTML=''로 통째로 지워지고 다시 그려지므로
+        // (updateSideBySide 맨 앞부분 참고), data-i18n 속성을 달아봐야 이미 사라진 뒤라 의미가
+        // 없음 — 이 함수의 다른 라벨들(bestBadge, rateEl 등)과 같은 방식으로, 만들 때 바로
+        // resolveI18n()으로 현재 언어 문구를 채움
+        const ttsBtn = document.createElement('button');
+        ttsBtn.type = 'button';
+        ttsBtn.className = 'side-card-detail-link tts-btn';
+        ttsBtn.textContent = resolveI18n('a11y.readAloudBtn') || '🔊 읽어주기';
+        ttsBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleReadAloud(() => [getGroupSameLabel(rows), amtEl.textContent, rateEl.textContent].filter(Boolean).join('. '), ttsBtn);
+        });
+        card.appendChild(ttsBtn);
+      }
     } else {
       card.append(amtEl);
     }
@@ -11065,7 +11482,24 @@ function updateSideBySide(eok, stateCode){
   // 로직 전부와 무관하게 항상 맨 끝에 별도 고정 카드로 붙임(2026-07-28 홈 토글 전용으로 추가됐던
   // 걸, 비교 탭에도 노출해달라는 후속 요청으로 추가). 지도 좌표가 없어서 highlightCountryOnMap
   // 클릭 연동은 일부러 안 붙임
+  // 2026-07-30: 실제 21개국 랭킹 카드들과 나란히 항상 펼쳐진 카드로 보이니 "목록에 없는 나라"
+  // 안내치고 너무 눈에 띈다는 지적 — 완전히 지우면 21개국 밖 방문자에게 줄 정보가 아예 없어지므로
+  // (위 배너가 가리키는 대상이기도 함) 삭제 대신 <details>로 접어서 기본은 숨기되, 배너 클릭
+  // (scrollToOtherCountryCard()) 시엔 펼쳐지게 함
   const otherResult = calcTakeHome(eok, 'other', null);
+  const otherToggle = document.createElement('details');
+  // .side-card-span-full은 안 씀 — fixSideCardOrphanRow()가 그 클래스를 "마지막 줄에 혼자
+  // 남았을 때만" 조건부로 붙였다 뗐다 해서, 이 토글처럼 항상 전체 폭이어야 하는 요소엔 안 맞음.
+  // 이미 있는 .side-card-full(무조건 grid-column:1/-1, "국기 여러 개 묶인 카드"용으로 만들어진
+  // 클래스라 fixSideCardOrphanRow()가 안 건드림)을 그대로 재사용함
+  otherToggle.className = 'calc-detail-toggle side-card-full side-other-toggle';
+  const otherSummary = document.createElement('summary');
+  otherSummary.className = 'calc-detail-summary';
+  otherSummary.textContent = pickLang(
+    '🌐 목록에 없는 나라이신가요?', '🌐 Don\'t see your country?', '🌐 没看到您的国家？',
+    '🌐 Không thấy quốc gia của bạn?', '🌐 ไม่เห็นประเทศของคุณใช่ไหม?', '🌐 Не видите свою страну?',
+    OTHER_COUNTRY_TOGGLE_MORE
+  );
   const otherCard = document.createElement('div');
   otherCard.id = 'sideOtherCountryCard';
   otherCard.className = 'side-card side-card-other';
@@ -11075,7 +11509,8 @@ function updateSideBySide(eok, stateCode){
   const otherAmtEl = document.createElement('p'); otherAmtEl.className = 'side-card-amt'; otherAmtEl.textContent = formatEokKrwInDisplayCurrency(otherResult.final, sharedInputCurrency);
   const otherRateEl = document.createElement('p'); otherRateEl.className = 'side-card-rate'; otherRateEl.textContent = otherResult.label2 + ' ' + otherResult.val2;
   otherCard.append(otherFlagEl, otherAmtEl, otherRateEl);
-  grid.appendChild(otherCard);
+  otherToggle.append(otherSummary, otherCard);
+  grid.appendChild(otherToggle);
 
   const otherGroupLabel = document.createElement('p'); otherGroupLabel.className = 'side-group-label';
   otherGroupLabel.append(makeFlagBadge('🌐'), document.createTextNode(' '));
