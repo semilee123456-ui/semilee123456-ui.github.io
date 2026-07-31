@@ -1,0 +1,16 @@
+{
+  "name": "chamtax-og-share-worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "참택스(ChamTax) 공유 링크용 동적 OG 카드 생성 Worker. 메인 사이트(chamtax.com, GitHub Pages)와는 완전히 분리된 별도 배포 — 실패해도 본 사이트에는 영향 없음.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  },
+  "dependencies": {
+    "workers-og": "^0.0.25"
+  }
+}
