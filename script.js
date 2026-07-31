@@ -8457,6 +8457,12 @@ const SLIDER_TICK_CANDIDATES = [
   { millions: 1000, key: 'home.sliderTick1000', ko: '10억 달러' },
   { millions: 5000, key: 'home.sliderTick5000', ko: '50억 달러' },
 ];
+// 2026-07-31: 통화가 KRW일 때 눈금 라벨이 USD 후보값(예: 2억 달러)을 환율로 그대로 환산해서
+// "286억원"/"715억원"/"2,859억원"처럼 딱 안 떨어지는 숫자로 나오는 게 눈에 거슬린다는 지적
+// (디자인 검토 중 발견) — KRW 전용으로 애초에 "100억/500억/1,000억/1조"처럼 깔끔한 원화
+// 자체 단위 후보를 따로 두고, USD 후보를 환산하는 대신 이 목록을 그대로 씀. 단위는 "억원"
+// (formatWon()의 n 인자와 동일) — 100조까지 넓게 잡아서 슬라이더 범위가 커져도 커버함.
+const SLIDER_TICK_CANDIDATES_KRW_EOK = [100, 500, 1000, 5000, 10000, 30000, 50000, 100000, 300000, 500000, 1000000];
 
 // 하드코딩된 %(2026-07-24 이전 방식) 대신, 지금 슬라이더의 실제 usd-min/usd-max 범위 안에
 // 드는 후보만 골라서 그리고, 실제 렌더링된 위치를 측정해 겹치는 라벨은 제거함(언어·글자 길이·
@@ -8485,9 +8491,15 @@ function renderSliderTicks(slider){
   renderSliderMinorTicks(container);
   const usdMin = Number(slider.dataset.usdMin) || 10;
   const usdMax = Number(slider.dataset.usdMax) || 2000;
+  // 2026-07-31: KRW일 땐 USD 후보를 환산한 어중간한 숫자 대신, 원화 자체의 딱 떨어지는 후보
+  // (SLIDER_TICK_CANDIDATES_KRW_EOK)를 millions로 환산해서 씀 — 다른 통화는 기존 방식 그대로.
+  const isKrw = sharedInputCurrency === 'KRW';
+  const rawCandidates = isKrw
+    ? SLIDER_TICK_CANDIDATES_KRW_EOK.map(eok => ({ millions: eok * 100 / EXCHANGE_RATE, eok }))
+    : SLIDER_TICK_CANDIDATES;
   // 트랙 맨 끝(0%/100%)에 딱 붙은 눈금은 슬라이더 손잡이·트랙 테두리와 겹쳐 읽기 힘드므로,
   // 끝에서 살짝 안쪽으로 들어온 후보만 채택(로그 스케일이라 %가 아니라 배수로 여유를 둠)
-  const candidates = SLIDER_TICK_CANDIDATES.filter(c => c.millions > usdMin * 1.3 && c.millions < usdMax / 1.3);
+  const candidates = rawCandidates.filter(c => c.millions > usdMin * 1.3 && c.millions < usdMax / 1.3);
   if (!candidates.length) return;
 
   const elements = candidates.map(c => {
@@ -8501,10 +8513,12 @@ function renderSliderTicks(slider){
     const label = document.createElement('span');
     label.className = 'slider-tick-label';
     // USD가 선택된 통화일 때는 기존처럼 26개 언어로 번역된 정적 문구를 그대로 씀(회귀 없음).
-    // 다른 통화가 선택되면 그 정적 문구는 "$" 표기라 안 맞으므로, 실제 통화 총액을 압축
-    // 표기(formatCompactCurrencyAmount)로 계산해서 보여줌 — data-usd-min/max·로그스케일 위치
-    // 계산(sliderMillionsToPos 등)은 그대로 USD 기준이고, 여기 라벨 텍스트만 바뀜.
-    label.textContent = sharedInputCurrency === 'USD' ? (resolveI18n(c.key) || c.ko) : formatCompactCurrencyAmount(c.millions, sharedInputCurrency);
+    // KRW는 위에서 만든 딱 떨어지는 eok 후보를 formatWon()으로 그대로 표기. 그 외 통화는 실제
+    // 통화 총액을 압축 표기(formatCompactCurrencyAmount)로 계산해서 보여줌 — data-usd-min/max·
+    // 로그스케일 위치 계산(sliderMillionsToPos 등)은 그대로 USD 기준이고, 여기 라벨 텍스트만 바뀜.
+    label.textContent = sharedInputCurrency === 'USD' ? (resolveI18n(c.key) || c.ko)
+      : isKrw ? formatWon(c.eok)
+      : formatCompactCurrencyAmount(c.millions, sharedInputCurrency);
     el.appendChild(mark);
     el.appendChild(label);
     container.appendChild(el);

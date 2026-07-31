@@ -105,7 +105,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.js?v=20260731-14" defer></script>
+<script src="script.js?v=20260731-15" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -696,7 +696,7 @@
                 </span>
               </div>
             </div>
-            <p class="amount-currency-hint" data-i18n-html="home.countryCurrencyHint">국가는 <b>세금 계산 기준</b>이고, 통화는 <b>화면 표시 단위</b>만 바꿔요.</p>
+            <p class="amount-currency-hint" data-i18n-html="home.countryCurrencyHint">국가=<b>세금 기준</b> · 통화=<b>표시 단위</b></p>
             </div>
             <div class="amount-input-tabs" id="amountInputTabs" role="tablist">
               <button type="button" class="amount-tab-btn active" role="tab" aria-selected="true" aria-controls="amountTabLump" data-tab="lump" onclick="switchAmountTab('lump')" data-i18n="input.tabLump">일시불</button>
