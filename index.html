@@ -100,12 +100,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.css?v=20260726">
+<link rel="stylesheet" href="styles.css?v=20260731-2">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.js?v=20260726" defer></script>
+<script src="script.js?v=20260731" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -892,20 +892,10 @@
             </p>
             <p class="milestone-badge" id="home-milestone" style="display:none;"></p>
             <span class="milestone-burst" id="milestone-burst"></span>
-            <!-- 2026-07-30: 환율/계산 기준/통화별 안내문처럼 "핵심 숫자는 아니지만 있으면 좋은"
-                 보조 정보를 옅은 배경의 작은 박스 하나로 묶음 — 실수령액 헤드라인과 시각적
-                 무게를 명확히 구분해달라는 피드백(제미나이 검수 + 사용자 확인) 반영 -->
-            <div class="result-tertiary-box">
-              <p class="usd-actual-note" id="home-usd-note" style="display:none; margin-top:4px;"></p>
-              <p class="usd-actual-note" id="home-cny-note" style="display:none; margin-top:4px;"></p>
-              <p class="usd-actual-note" id="home-inr-note" style="display:none; margin-top:4px;"></p>
-              <p class="usd-actual-note" id="home-other-note" style="display:none; margin-top:4px;"></p>
-              <p class="usd-actual-note" id="home-country-disclaimer" style="display:none; margin-top:8px; color:var(--status-amber); font-weight:600;"></p>
-              <div class="result-meta-group">
-                <p class="result-hero-basis-mini" id="home-final-basis-mini">100M USD 당첨 · 한국 거주자</p>
-                <p class="foot-note" id="home-trust-line">환율 -</p>
-              </div>
-            </div>
+            <!-- 2026-07-31 디자인팀 핸드오프: result-tertiary-box(환율/계산 기준 등 보조 정보)를
+                 "결과 더 자세히 보기"(#home-detail-toggle) 안으로 이동 — 첫 화면엔 핵심 숫자(실수령액,
+                 세전→세후, 비율 바)만 남기고 부가정보는 펼쳐야 보이게 해서 정보 밀도를 낮춤.
+                 id·script.js 로직은 전혀 안 바꾸고 DOM 위치만 이동(아래 #home-detail-toggle 참고) -->
             <!-- 2026-07-30: "음성 읽어주기 없나?" 확인 요청 → 없어서 추가함. 핵심 결과(이 실수령액
                  헤드라인)에만 붙이고 그 아래 재미 위젯 등에는 안 붙임 — 안 그러면 오늘 낮에 정리한
                  "복잡하고 정보 몰림" 문제가 되돌아옴. speechSynthesis 미지원 브라우저는 JS가
@@ -927,6 +917,19 @@
           <details class="calc-detail-toggle" id="home-detail-toggle">
             <summary class="calc-detail-summary" data-i18n="home.detailSummary">결과 더 자세히 보기</summary>
             <span id="tax-impact-after" style="display:none;"></span>
+            <!-- 2026-07-31 디자인팀 핸드오프: 위 .result-hero 안에 있던 부가정보 박스를 여기로 이동
+                 (원래 위치 참고) — id·script.js 로직은 전혀 안 바꾸고 DOM 위치만 옮김 -->
+            <div class="result-tertiary-box" style="margin-top:0;">
+              <p class="usd-actual-note" id="home-usd-note" style="display:none; margin-top:4px;"></p>
+              <p class="usd-actual-note" id="home-cny-note" style="display:none; margin-top:4px;"></p>
+              <p class="usd-actual-note" id="home-inr-note" style="display:none; margin-top:4px;"></p>
+              <p class="usd-actual-note" id="home-other-note" style="display:none; margin-top:4px;"></p>
+              <p class="usd-actual-note" id="home-country-disclaimer" style="display:none; margin-top:8px; color:var(--status-amber); font-weight:600;"></p>
+              <div class="result-meta-group">
+                <p class="result-hero-basis-mini" id="home-final-basis-mini">100M USD 당첨 · 한국 거주자</p>
+                <p class="foot-note" id="home-trust-line">환율 -</p>
+              </div>
+            </div>
             <!-- 2026-07-30: "연금(annuity)으로 받으면?" 아코디언(예전엔 result-hero 안에 별도
                  최상위 <details>로 따로 있었음)을 이 안으로 옮겨서 중첩 토글(.jh-more, 30년
                  지급표 보기와 같은 패턴)로 합침 — "결과 더 자세히 보기"와 "연금 옵션 보기"가

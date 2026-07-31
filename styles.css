@@ -27,7 +27,10 @@
     --card:#FFFFFF;
     --text-dark:#262420; /* 먹빛 */
     --text-muted:#544E42;
-    --border:#E3E6EA;    /* 쿨그레이 보더(2026-07-30, 위 --bg 배경 전환과 짝) */
+    /* 2026-07-31: 기존 --border(#E3E6EA)는 --bg 대비 1.15:1, --card 대비 1.25:1로 카드/입력칸
+       경계가 거의 안 보이는 수준이었음(가독성·가시성 검수 지적) — WCAG 비텍스트 최소 권장치
+       3:1 이상(--bg 대비 3.13:1, --card 대비 3.42:1)이 되도록 톤을 유지한 채 어둡게 조정 */
+    --border:#828C97;
 
     --fs-hero:42px;    /* 결과 숫자 */
     --fs-h1:28px;      /* 메인 제목 */
@@ -40,7 +43,7 @@
 
     --grad-soft: linear-gradient(150deg, #EAF3EE 0%, #FCFBF6 55%, #FFFFFF 100%);
     --grad-amber: linear-gradient(150deg, #FBF1DE 0%, #FFFFFF 100%);
-    --shadow-card: 0 1px 0 rgba(var(--ink-rgb),0.06);
+    --shadow-card: 0 2px 10px rgba(var(--ink-rgb),0.09); /* 2026-07-31: 카드 경계 가시성 보강용으로 약간 입체감 추가 */
     --shadow-btn: 0 6px 14px rgba(var(--teal-rgb),0.22);
     --status-red:#C0392B;
     --status-red-rgb: 192,57,43;
@@ -87,10 +90,14 @@
      방문에도 유지됨. 기본값은 항상 라이트모드 */
   :root[data-theme="dark"]{
       --navy:#EDE8DA; --teal:#3AA98A; --seafoam:#3AA98A; --mint:#4CC2A0; --indigo:#7C9BD1; --gold:#D6AC55;
-      --bg:#1E1A16; --card:#39332B; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#3D3A34;
+      /* 2026-07-31: --card(#39332B)가 --bg(#1E1A16) 대비 1.39:1로 거의 구분이 안 되고,
+         --border도 --card 대비 1.10:1로 카드 안에서조차 경계가 안 보임(가독성·가시성 검수 지적) —
+         카드를 한 단계 밝게, 보더를 더 밝게 올려 --bg 대비 3.02:1, --card 대비 1.84:1로 개선
+         (갈색/카키 계열로 번지지 않도록 톤은 그대로 유지) */
+      --bg:#1E1A16; --card:#453E34; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#6E6558;
       --grad-soft: linear-gradient(150deg, #1E2622 0%, #201E1A 55%, #201E1A 100%);
       --grad-amber: linear-gradient(150deg, #2A2318 0%, #201E1A 100%);
-      --shadow-card: 0 1px 0 rgba(0,0,0,0.3);
+      --shadow-card: 0 2px 12px rgba(0,0,0,0.4);
       --shadow-btn: 0 6px 14px rgba(58,169,138,0.28);
       --status-red:#E2776C;
       --status-red-rgb: 226,119,108;
@@ -131,10 +138,10 @@
      (2026-07-30 --bg 값을 쿨그레이(#F4F5F7)로 변경하면서 재계산 — 배경이 바뀌어도 고대비 모드가
      여전히 3:1 이상을 만족하는지 매번 재확인할 것) */
   :root[data-contrast="high"]{
-      --text-muted:#3A362C; --border:#7D8288;
+      --text-muted:#3A362C; --border:#6B7580;
   }
   :root[data-theme="dark"][data-contrast="high"]{
-      --text-muted:#DDD7C8; --border:#7A756A;
+      --text-muted:#DDD7C8; --border:#8A8071;
   }
   *{box-sizing:border-box;}
   /* 키보드로 탭 이동할 때(스크린리더·저시력 사용자 포함) 지금 포커스가 어디 있는지 브랜드 색으로
@@ -182,6 +189,11 @@
   /* 브라우저 기본 텍스트 선택 색(진한 파랑)은 사이트 팔레트에 아예 없는 색이라, 입력칸 숫자를
      길게 눌러 선택했을 때 디자인이 완전히 깨진 것처럼 보임 — 톤을 청록 계열로 맞춤 */
   ::selection{ background:rgba(var(--teal-rgb),0.25); color:var(--text-dark); }
+
+  /* 브랜드 색과 무관한 브라우저 기본 링크색(파랑)이 클래스 없는 <a>에 그대로 남아있던 부분을 방지 —
+     개별 링크 클래스가 이미 있는 곳은 그대로 우선 적용되고, 여기는 폴백 기본값만 정의함 */
+  a{ color:var(--teal); }
+  a:hover{ color:var(--btn-hover-teal); }
 
   /* 2026-07-27: 1140px는 이 사이트(모바일 전용으로 설계된 계산기 UI)에는 너무 넓어서, 큰
      모니터에서는 버튼 한 줄·입력칸 한 줄이 화면 절반을 가로지르듯 늘어나 부자연스럽다는 지적
@@ -529,7 +541,7 @@
   .amount-currency-group .amount-currency-row,
   .amount-currency-group .amount-currency-row-2col{ margin-bottom:6px; }
   .amount-currency-hint{
-    margin:0; font-size:var(--fs-small); color:var(--text-muted); line-height:1.4;
+    margin:0; font-size:var(--fs-small); color:var(--text-muted); line-height:1.55;
   }
   .amount-currency-hint b{ color:var(--text-dark); font-weight:700; }
   /* 2026-07-31: "국가+통화 나란히 2단 그리드"가 390~500px대 대부분의 실제 폰 폭에서
@@ -1036,7 +1048,7 @@
   .draw-balls{ display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
   .draw-ball{
     display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
-    width:24px; height:24px; border-radius:50%; font-size:11px; font-weight:800;
+    width:26px; height:26px; border-radius:50%; font-size:12px; font-weight:800;
     background:var(--card); color:var(--text-dark); border:1.5px solid var(--border);
     font-variant-numeric:tabular-nums;
   }
@@ -1110,7 +1122,7 @@
     font-variant-numeric:tabular-nums; white-space:nowrap; clear:both;
     color:var(--teal); text-shadow:none; line-height:1.25;
   }
-  .result-meta-group{ margin-top:16px; padding-top:10px; border-top:1px dashed rgba(var(--ink-rgb),0.12); display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .result-meta-group{ margin-top:16px; padding-top:10px; border-top:1px dashed rgba(var(--ink-rgb),0.12); display:flex; flex-direction:column; align-items:center; gap:7px; }
   .result-hero-basis-mini{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; }
   /* 실수령액 헤드라인과 대비를 주기 위한 "보조 정보 묶음" 박스(2026-07-30) — 환율/계산 기준/
      통화별 안내문처럼 핵심은 아니지만 있으면 좋은 정보를 옅은 배경 + 작은 폰트로 낮춤.
@@ -2310,7 +2322,7 @@
     .footer-links button{ font-size:16px; }
     .panel{ padding:10px; }
     .refund-link-buttons{ grid-template-columns:1fr; }
-    .result-seal{ width:34px; height:34px; font-size:10px; }
+    .result-seal{ width:36px; height:36px; font-size:11px; }
     .calc-detail-toggle, .fun-toggle{ padding-left:10px; padding-right:10px; }
     .calc-detail-summary{ margin:0 -10px; padding:12px 10px; }
     /* 2026-07-30: 국가+통화 2단 그리드(.amount-currency-row-2col)는 390px 폰에서 나란히
