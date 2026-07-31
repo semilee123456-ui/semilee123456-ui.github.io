@@ -76,6 +76,15 @@ function setLanguage(lang, isManual){
   if (!isCurrencyManuallyEdited && LANG_TO_CURRENCY[lang]) {
     setSharedInputCurrency(LANG_TO_CURRENCY[lang]);
   }
+  // 2026-08-01: 통화와 같은 원칙으로 세금 계산 기준 국가도 언어를 따라 자동으로 맞춰줌 — 다만
+  // 세금 계산 결과 자체를 바꾸는 값이라 통화보다 리스크가 커서, isManual=false로 호출해
+  // "아직 확인 안 된 추측"으로 표시하고(countryWasAutoGuessed), updateHomeCalc()가 그동안
+  // "자동으로 맞췄어요, 확인해주세요" 안내를 계속 노출하게 함(#home-country-autoguess-hint 참고).
+  // 사용자가 국가를 한 번이라도 직접 고르면(isCountryManuallyEdited) 그 뒤로는 언어를 다시
+  // 바꿔도 이 자동 전환이 그 선택을 덮어쓰지 않음
+  if (!isCountryManuallyEdited && LANG_TO_COUNTRY[lang]) {
+    setHomeCountry(LANG_TO_COUNTRY[lang], false);
+  }
   // 번역 JSON을 불러오는 동안에는 화면이 기존 언어(보통 한국어 기본 텍스트) 그대로 보이다가,
   // 로드가 끝나면 applyTranslations()가 다시 실행되며 새 언어로 바뀜 — 언어 전환 버튼은
   // onclick="setLanguage(...)"처럼 이 Promise를 기다리지 않고 바로 다음 동작(예: 화면 이동)으로
@@ -843,6 +852,17 @@ let sharedInputCurrency = 'KRW';
 // true(2026-07-29 언어→통화 자동 연동 추가와 함께 신규) — isAmountManuallyEdited와 같은 원칙:
 // 한 번이라도 직접 골랐으면 그 뒤로 언어를 바꿔도 자동 전환이 그 선택을 덮어쓰지 않게 함
 let isCurrencyManuallyEdited = false;
+// 세금 기준 국가(#homeCountrySelect·country-toggle-btn)를 사용자가 직접 고르거나, ?country=
+// URL 파라미터·"사는 나라를 골라서 바로 보기" 선택기처럼 확실한 신호로 이미 정해진 적 있으면
+// true(2026-08-01, 언어→국가 자동 연동 추가와 함께 신규) — isCurrencyManuallyEdited와 같은 원칙.
+// setHomeCountry(country, isManual)의 isManual 기본값이 true라, 이 플래그를 명시적으로 안
+// 건드리는 유일한 호출부는 아래 setLanguage()의 언어 기반 자동 추정뿐임
+let isCountryManuallyEdited = false;
+// 현재 sharedCountry 값이 사용자가 직접 고른 게 아니라 언어 기반 추정으로만 정해진 상태인지 —
+// true인 동안 updateHomeCalc()가 "자동으로 맞췄어요, 확인해주세요" 안내를 노출함(#home-country-
+// autoguess-hint). setHomeCountry()가 isManual=true로 호출되는 순간(사용자가 직접 국가를
+// 고르거나, ?country= URL 파라미터처럼 확실한 신호가 온 순간) false로 꺼짐
+let countryWasAutoGuessed = false;
 // 언어 코드 → 그 언어권에서 가장 자연스러운 통화 코드. 1국가 1언어로 깔끔하게 대응되는
 // 언어만 넣음(예: 크메르어→캄보디아 리엘). 여러 나라에 걸쳐 쓰이는 언어(아랍어·프랑스어·
 // 스페인어·포르투갈어·우크라이나어)는 "이 통화다"라고 단정할 근거가 없어서 일부러 뺌 —
@@ -852,6 +872,24 @@ const LANG_TO_CURRENCY = {
   km: 'KHR', ne: 'NPR', id: 'IDR', my: 'MMK', si: 'LKR', uz: 'UZS',
   mn: 'MNT', kk: 'KZT', ky: 'KGS', ur: 'PKR', bn: 'BDT', lo: 'LAK',
   ja: 'JPY', hi: 'INR', tl: 'PHP',
+};
+// 언어 코드 → COUNTRY_TAX_PROFILES에 실제로 있는, 그 언어가 가리키는 세금 기준 국가
+// (2026-08-01 추가, "사이트 타겟을 한국인에서 전 세계로 넓히면서 통화는 언어 따라 자동
+// 전환되는데 세금 기준 국가는 항상 한국 고정"이라는 비대칭을 해소하기 위함). LANG_TO_CURRENCY와
+// 같은 원칙으로 "이 21개국 목록 안에서" 1언어=1국가로 깔끔하게 대응되는 언어만 넣음 — 위 통화
+// 표에서 일부러 뺀 아랍어·프랑스어·스페인어·포르투갈어·우크라이나어·테툼어는 애초에 대응되는
+// 나라가 이 21개국 목록에 없어서 여기도 자연히 제외됨(모호해서가 아니라 해당사항이 없음).
+// 러시아어는 카자흐스탄·키르기스스탄·우즈베키스탄에서도 널리 쓰이지만, 그 나라들은 이미 자체
+// 언어 코드(kk/ky/uz)가 따로 있어 그 언어를 쓰는 사람에겐 그쪽이 먼저 잡히므로, 러시아어
+// 자체는 통화 표와 같은 원칙으로 러시아에 대응시킴. 세금 계산 결과에 직접 영향을 주는 값이라
+// 통화보다 훨씬 신중해야 함 — 그래서 반드시 isCountryManuallyEdited로 사용자의 직접 선택을
+// 덮어쓰지 않게 하고, 계산기 화면에도 "추측된 값이니 확인하라"는 안내를 같이 노출함
+// (updateHomeCalc() 쪽 country-toggle-hint 참고).
+const LANG_TO_COUNTRY = {
+  ko: 'kr', en: 'us', zh: 'cn', vi: 'vn', th: 'th', ru: 'ru',
+  km: 'kh', ne: 'np', id: 'id', my: 'mm', si: 'lk', uz: 'uz',
+  mn: 'mn', kk: 'kz', ky: 'kg', ur: 'pk', bn: 'bd', lo: 'la',
+  ja: 'jp', hi: 'in', tl: 'ph',
 };
 // 연금액 탭에 마지막으로 입력된 "정확한" USD 백만 단위 값 — 슬라이더 위치(로그 스케일
 // 반올림으로 정밀도 손실 있음)를 통화 전환 재환산의 원본으로 쓰면 KRW↔다른 통화를 여러 번
@@ -9751,7 +9789,17 @@ function confirmEditMiniResult(rawValue){
   updateSliderFill(slider);
   updateHomeCalc(requiredUsd);
 }
-function setHomeCountry(country){
+function setHomeCountry(country, isManual = true){
+  // 2026-08-01: isManual 기본값 true라 기존 모든 호출부(버튼 onclick, select onchange,
+  // ?country= URL 파라미터, goToRealAbroad 등)는 코드 수정 없이 그대로 "확실한 신호"로
+  // 취급됨 — 언어 기반 자동 추정(setLanguage() 안)만 명시적으로 isManual=false를 넘겨서
+  // "확인 전 추측"임을 표시함
+  if (isManual) {
+    isCountryManuallyEdited = true;
+    countryWasAutoGuessed = false;
+  } else {
+    countryWasAutoGuessed = true;
+  }
   document.getElementById('homeCountrySelect').value = country;
   document.querySelectorAll('#homeCountryToggle .country-toggle-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.country === country);
@@ -10819,6 +10867,51 @@ function updateHomeCalc(usdOverride){
         );
   }
   filingNote.style.display = showFiling ? 'none' : 'block';
+
+  // 2026-08-01: 언어 기반 세금 기준 자동 추정(LANG_TO_COUNTRY, setLanguage() 참고) 결과를
+  // 사용자가 아직 직접 확인(수동 선택)하지 않았으면 항상 보이는 자리에 안내함 — 통화 자동
+  // 전환과 달리 이 값은 세금 계산 결과 자체를 바꾸므로, 조용히 자동 적용만 하고 끝내면 확신
+  // 있게 틀린 세금 결과를 보여줄 위험이 있음(2026-08-01 세션에서 이 위험을 이유로 처음엔
+  // 자동 전환 자체를 보류하기로 했다가, 이 안내 문구를 조건으로 다시 추가하기로 함)
+  const autoGuessHint = document.getElementById('home-country-autoguess-hint');
+  if (autoGuessHint) {
+    if (countryWasAutoGuessed) {
+      autoGuessHint.textContent = pickLang(
+        '🌐 언어 설정을 보고 자동으로 맞췄어요 — 다른 나라 기준이면 아래 "세금 계산 기준 자세히 설정"에서 바꿔주세요',
+        '🌐 Auto-set based on your language — if this isn’t your country, change it below under "Tax calculation basis"',
+        '🌐 已根据您的语言设置自动匹配 — 如果不是您所在的国家，请在下方"税收计算基准详细设置"中更改',
+        '🌐 Đã tự động chọn theo ngôn ngữ của bạn — nếu không đúng quốc gia, hãy đổi bên dưới ở "Cài đặt chi tiết cơ sở tính thuế"',
+        '🌐 ตั้งค่าอัตโนมัติตามภาษาของคุณ — หากไม่ใช่ประเทศของคุณ ให้เปลี่ยนด้านล่างใน "ตั้งค่ารายละเอียดฐานการคำนวณภาษี"',
+        '🌐 Автоматически подобрано по вашему языку — если это не ваша страна, измените ниже в разделе «Подробная настройка налоговой базы»',
+        {
+          km: '🌐 បានកំណត់ដោយស្វ័យប្រវត្តិតាមភាសារបស់អ្នក — ប្រសិនបើមិនមែនប្រទេសរបស់អ្នកទេ សូមផ្លាស់ប្តូរខាងក្រោមក្នុង "ការកំណត់លម្អិតមូលដ្ឋានគណនាពន្ធ"',
+          ne: '🌐 तपाईंको भाषाको आधारमा स्वतः सेट गरियो — यदि यो तपाईंको देश होइन भने, तलको "कर गणना आधार विस्तृत सेटिङ" मा परिवर्तन गर्नुहोस्',
+          id: '🌐 Diatur otomatis berdasarkan bahasa Anda — jika ini bukan negara Anda, ubah di bawah pada "Pengaturan detail dasar perhitungan pajak"',
+          my: '🌐 သင့်ဘာသာစကားအလိုက် အလိုအလျောက်သတ်မှတ်ထားသည် — ၎င်းသည် သင့်နိုင်ငံမဟုတ်ပါက အောက်ရှိ "အခွန်တွက်ချက်မှုအခြေခံအသေးစိတ်ဆက်တင်" တွင်ပြောင်းပါ',
+          si: '🌐 ඔබේ භාෂාව මත පදනම්ව ස්වයංක්‍රීයව සකසන ලදී — මෙය ඔබේ රට නොවේ නම්, පහත "බදු ගණන කිරීමේ පදනම විස්තරාත්මක සැකසුම්" තුළ වෙනස් කරන්න',
+          uz: "🌐 Tilingiz asosida avtomatik sozlandi — bu sizning davlatingiz bo'lmasa, quyida \"Soliq hisoblash bazasini batafsil sozlash\" bo'limida o'zgartiring",
+          mn: '🌐 Таны хэлний тохиргоог үндэслэн автоматаар тохируулсан — энэ нь таны улс биш бол доорх "Татвар тооцох суурийг дэлгэрэнгүй тохируулах"-аас өөрчилнө үү',
+          kk: '🌐 Тіліңізге қарай автоматты түрде орнатылды — бұл сіздің еліңіз болмаса, төмендегі «Салық есептеу базасын егжей-тегжейлі баптау» бөлімінен өзгертіңіз',
+          ky: '🌐 Тилиңизге жараша автоматтык түрдө коюлду — бул сиздин өлкөңүз болбосо, төмөндөгү "Салык эсептөө базасын кеңири ырастоо"дон өзгөртүңүз',
+          ur: '🌐 آپ کی زبان کی بنیاد پر خودکار طور پر سیٹ کیا گیا ہے — اگر یہ آپ کا ملک نہیں ہے تو نیچے "ٹیکس کیلکولیشن کی بنیاد کی تفصیلی ترتیبات" میں تبدیل کریں',
+          bn: '🌐 আপনার ভাষার ভিত্তিতে স্বয়ংক্রিয়ভাবে সেট করা হয়েছে — এটি আপনার দেশ না হলে, নিচে "কর গণনার ভিত্তি বিস্তারিত সেটিং"-এ পরিবর্তন করুন',
+          lo: '🌐 ຕັ້ງຄ່າອັດຕະໂນມັດຕາມພາສາຂອງທ່ານ — ຖ້າບໍ່ແມ່ນປະເທດຂອງທ່ານ, ໃຫ້ປ່ຽນຢູ່ດ້ານລຸ່ມໃນ "ຕັ້ງຄ່າລາຍລະອຽດພື້ນຖານການຄິດໄລ່ພາສີ"',
+          ja: '🌐 言語設定に基づいて自動設定しました — お住まいの国と違う場合は、下の「税金計算基準の詳細設定」で変更してください',
+          ar: '🌐 تم الضبط تلقائيًا بناءً على لغتك — إذا لم يكن هذا بلدك، فقم بالتغيير أدناه في "إعدادات أساس حساب الضريبة التفصيلية"',
+          hi: '🌐 आपकी भाषा के आधार पर स्वचालित रूप से सेट किया गया है — यदि यह आपका देश नहीं है, तो नीचे "कर गणना आधार विस्तृत सेटिंग" में बदलें',
+          fr: "🌐 Réglé automatiquement selon votre langue — si ce n'est pas votre pays, changez-le ci-dessous dans « Paramètres détaillés de la base de calcul fiscal »",
+          tl: '🌐 Awtomatikong na-set batay sa iyong wika — kung hindi ito ang bansa mo, palitan sa ibaba sa "Detalyadong setting ng batayan ng pagkalkula ng buwis"',
+          pt: '🌐 Definido automaticamente com base no seu idioma — se este não for o seu país, altere abaixo em "Configuração detalhada da base de cálculo de impostos"',
+          es: '🌐 Configurado automáticamente según tu idioma — si este no es tu país, cámbialo abajo en "Configuración detallada de la base de cálculo de impuestos"',
+          uk: '🌐 Автоматично налаштовано за вашою мовою — якщо це не ваша країна, змініть нижче в розділі «Детальні налаштування бази розрахунку податку»',
+          tet: '🌐 Configura automátiku bazeia ba o-nia lian — se ida ne’e la’ós o-nia nasaun, muda iha kraik iha "Configurasaun detallu baze kálkulu impostu"',
+        }
+      );
+      autoGuessHint.style.display = 'block';
+    } else {
+      autoGuessHint.style.display = 'none';
+    }
+  }
 
   // 세율 자체 또는 실제 적용 여부가 불확실한 나라만 별도 경고 배너로 표시 — 목록은 COUNTRY_TAX_DISCLAIMERS 참고
   const countryDisclaimer = document.getElementById('home-country-disclaimer');
