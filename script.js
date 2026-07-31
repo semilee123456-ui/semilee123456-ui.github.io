@@ -3632,9 +3632,15 @@ function layoutShareContent(ctx, { label, bigText, subText, balls }, { anchorX, 
 // ar/ur(RTL_LANGS)일 땐 정렬·공 배치를 오른쪽 기준으로 미러링함
 function buildShareCard({ label, bigText, subText, footerText, balls }){
   const W = 1000, H = 760, pad = 48;
+  // 2026-07-31: 수표 카드(saveHomeResultAsImage)·복권 티켓(saveMyNumbersAsTicketImage)은 이미
+  // SCALE=2로 레티나 대응 중인데 이 함수만 빠져있던 걸 발견해서 같은 패턴으로 맞춤 — 실제 픽셀
+  // 크기만 2배로 키우고 이후 그리기 좌표는 전부 기존 W/H 논리 단위 그대로 써도 되도록
+  // ctx.scale()로 흡수함(아래 그리기 코드는 한 줄도 안 바꿈).
+  const SCALE = 2;
   const canvas = document.createElement('canvas');
-  canvas.width = W; canvas.height = H;
+  canvas.width = W * SCALE; canvas.height = H * SCALE;
   const ctx = canvas.getContext('2d');
+  ctx.scale(SCALE, SCALE);
 
   const isRTL = (typeof RTL_LANGS !== 'undefined') && (typeof currentLang !== 'undefined') && RTL_LANGS.includes(currentLang);
 
