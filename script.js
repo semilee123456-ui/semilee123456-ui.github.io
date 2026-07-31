@@ -3656,7 +3656,8 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, W, H);
 
-  const cardX = pad, cardY = pad, cardW = W - pad * 2, cardH = H - pad * 2, cardR = 32;
+  // 2026-07-31 디자인팀 반영 가이드: 모서리 반경 32→20으로(5장 전체 통일 값)
+  const cardX = pad, cardY = pad, cardW = W - pad * 2, cardH = H - pad * 2, cardR = 20;
 
   // 카드 그림자(별도 pass) — 밋밋한 흰 사각형이 캔버스 위에 붙어 있는 느낌 대신 살짝 떠 있는 느낌을 줌
   ctx.save();
@@ -3707,7 +3708,7 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
     isRTL ? (cardX + cardW - 56) : (cardX + 56),
     cardY + bandH / 2,
     isRTL ? 'right' : 'left',
-    { iconSize: 48, gap: 14, font: `800 38px ${SHARE_CARD_FONT}`, color: '#FFFFFF' }
+    { iconSize: 48, gap: 14, font: `800 38px ${SHARE_CARD_FONT}`, color: '#FFFFFF', onDarkBg: true }
   );
 
   ctx.restore(); // 클립 해제
@@ -3718,12 +3719,13 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
   ctx.stroke();
 
   // ---- 콘텐츠 영역: 밴드 아래 ~ 푸터 위 사이 공간에서 실제 내용 블록을 세로 중앙 정렬 ----
+  // 2026-07-31 디자인팀 반영 가이드: 헤더 밴드 바로 아래 여백을 44→22px로 좁혀서 더 타이트하게
   const padX = 56;
   const contentX = cardX + padX;
   const contentW = cardW - padX * 2;
   const anchorX = isRTL ? (cardX + cardW - padX) : contentX;
-  const footerH = 116;
-  const contentTop = cardY + bandH + 44;
+  const footerH = 172;
+  const contentTop = cardY + bandH + 22;
   const contentBottom = cardY + cardH - footerH;
   const contentAreaH = contentBottom - contentTop;
 
@@ -3733,7 +3735,7 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
   const startY = contentTop + Math.max(0, (contentAreaH - blockH) / 2);
   layoutShareContent(ctx, { label, bigText, subText, balls }, { ...layoutOpts, startY, draw: true });
 
-  // ---- 푸터: 얇은 구분선 + CTA 문구 + 도메인, 카드 하단에 고정 ----
+  // ---- 푸터: 얇은 구분선 + CTA 문구 + 도메인, 그 아래 참고용 안내 밴드 ----
   ctx.strokeStyle = '#E3E6EA';
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -3745,10 +3747,33 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = '#155445';
   ctx.font = `700 28px ${SHARE_CARD_FONT}`;
-  ctx.fillText(footerText, anchorX, H - pad - 62);
+  ctx.fillText(footerText, anchorX, cardY + cardH - footerH + 60);
   ctx.fillStyle = '#544E42';
   ctx.font = `500 24px ${SHARE_CARD_FONT}`;
-  ctx.fillText('chamtax.com', anchorX, H - pad - 28);
+  ctx.fillText('chamtax.com', anchorX, cardY + cardH - footerH + 94);
+
+  // 참고용 안내 밴드 — 2026-07-31 디자인팀 반영 가이드: 캡션 텍스트가 아니라 카드 폭 전체를
+  // 채우는 배경색 밴드(#EAF2ED/#155445)로, 1번(수표) 카드와 톤을 통일. 문구는 1번 카드의
+  // 면책 문구(RESULT_IMG_DISCLAIMER_MORE)를 그대로 재사용 — 새 번역을 만들지 않음.
+  const disclaimer = pickLang(
+    '참고용 시뮬레이션 결과 · 실제 세무 신고 기준 아님',
+    'Reference simulation only · not an official tax filing',
+    '仅供参考的模拟结果 · 非正式报税依据',
+    'Chỉ là kết quả mô phỏng tham khảo · không phải căn cứ khai thuế chính thức',
+    'ผลจำลองเพื่ออ้างอิงเท่านั้น · ไม่ใช่เกณฑ์การยื่นภาษีอย่างเป็นทางการ',
+    'Только справочное моделирование · не является официальной налоговой декларацией',
+    RESULT_IMG_DISCLAIMER_MORE
+  );
+  const bannerX = cardX + 14, bannerW = cardW - 28, bannerY0 = cardY + cardH - 62, bannerH = 46;
+  ctx.beginPath();
+  ctx.fillStyle = '#EAF2ED';
+  ctx.roundRect(bannerX, bannerY0, bannerW, bannerH, 10);
+  ctx.fill();
+  ctx.fillStyle = '#155445';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  fitFontSize(ctx, disclaimer, 700, 17, 12, bannerW - 40);
+  ctx.fillText(disclaimer, W / 2, bannerY0 + bannerH / 2 + 1);
 
   return canvas;
 }
@@ -5456,27 +5481,25 @@ function drawLogoMark(ctx, text, x, y, align, opts){
     textX = x + iconSize + gap;
   }
 
+  // 2026-07-31: 마스코트 아이콘(drawBearMascotIcon)은 실제 사이트 헤더와 똑같이 "청록 테두리
+  // + 흰 얼굴"로 그려짐 — 밝은 배경 위에서만 테두리가 또렷하게 보임. buildShareCard()/
+  // saveHomeResultAsImage()의 청록 그러데이션 헤더 밴드 위에 그대로 쓰면 테두리가 배경에
+  // 묻혀서 이목구비 경계가 흐릿해지는 문제가 실제로 있었음(사용자가 직접 확인·제보) — 아이콘
+  // 뒤에 옅은 흰색 배지 원을 깔아서, 밴드 색과 무관하게 항상 "밝은 배경 위 아이콘"과 동일한
+  // 대비를 보장함.
+  if (opts.onDarkBg) {
+    ctx.beginPath();
+    ctx.arc(iconX0 + iconSize / 2, y, iconSize / 2 + 4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.94)';
+    ctx.fill();
+  }
+
   drawBearMascotIcon(ctx, iconX0, y - iconSize / 2, iconSize);
 
   ctx.fillStyle = color;
   ctx.font = font;
   ctx.textAlign = align;
   ctx.fillText(text, textX, y);
-}
-
-// 티켓 하단 장식용 세로줄 바코드 패턴 — 실제 발권 관례를 살짝 흉내낸 것일 뿐 스캔 가능한 진짜
-// 바코드는 아님(정보 없는 순수 장식, 원래 saveMyNumbersAsTicketImage()에만 있던 로직).
-// x0~x1 구간을 seed 기반 의사난수로 채움(같은 seed면 항상 같은 패턴 — 재현 가능).
-function drawDecorativeBarcode(ctx, x0, x1, y, h, seed, color){
-  ctx.fillStyle = color || '#262420';
-  let barX = x0;
-  let s = seed;
-  while (barX < x1) {
-    s = (s * 9301 + 49297) % 233280;
-    const w = 1 + (s % 3);
-    ctx.fillRect(barX, y, w, h);
-    barX += w + 3;
-  }
 }
 
 // 텍스트가 maxWidth를 넘으면 폰트 크기를 minSize까지 1px씩 줄여서 항상 카드 안에 들어오게 함
@@ -5509,34 +5532,45 @@ function saveMyNumbersAsTicketImage(){
   const ctx = canvas.getContext('2d');
   ctx.scale(SCALE, SCALE);
 
-  // 배경 + 테두리 (styles.css .ticket-mock-card와 같은 톤)
+  // 2026-07-31 디자인팀 반영 가이드: 평평한 흰 배경+얇은 테두리 대신 다른 카드들과 통일된
+  // 둥근 모서리(20px) 카드로 바꾸고, 로고를 상단 그러데이션 헤더 밴드로 옮김.
+  const cardR = 20;
+  ctx.beginPath();
+  ctx.roundRect(0, 0, W, H, cardR);
+  ctx.save();
+  ctx.clip();
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = '#E3E6EA';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(6, 6, W - 12, H - 12);
+
+  const bandH = 76;
+  const bandGrad = ctx.createLinearGradient(0, 0, W, bandH);
+  bandGrad.addColorStop(0, '#155445');
+  bandGrad.addColorStop(1, '#1F6E5C');
+  ctx.fillStyle = bandGrad;
+  ctx.fillRect(0, 0, W, bandH);
 
   ctx.textBaseline = 'middle';
+  drawLogoMark(ctx, '참택스 · ChamTax', isRtl ? W - 32 : 32, bandH / 2, isRtl ? 'right' : 'left', {
+    iconSize: 30, gap: 10, font: "800 22px 'Pretendard', -apple-system, sans-serif", color: '#FFFFFF', onDarkBg: true
+  });
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = "700 15px 'Pretendard', -apple-system, sans-serif";
+  ctx.textAlign = isRtl ? 'left' : 'right';
+  ctx.fillText('chamtax.com', isRtl ? 32 : W - 32, bandH / 2);
 
-  // 로고 — 헤더 로고와 같은 관례로 언어 상관없이 항상 "참택스"(사이트 어디서나 이 텍스트는
-  // 번역 안 함, 브랜드명이라 고정). 2026-07-28 공유 기능 통일 세션이 곰 이모지(🐻)를 앞에
-  // 붙였는데, 실제로 렌더링해보면 사이트의 진짜 마스코트(흰/크림 얼굴+청록 테두리+검정 점눈+
-  // 분홍 볼)와 전혀 다른 갈색 곰 얼굴 이모지였음 — 같은 날 바로 다음(이) 세션에서 발견해 이모지
-  // 대신 실제 헤더 로고 SVG를 그대로 옮긴 drawLogoMark()로 교체함(좌표 출처·판단 근거는
-  // drawBearMascotIcon()/drawLogoMark() 정의 옆 주석 참고).
-  ctx.textAlign = isRtl ? 'right' : 'left';
-  drawLogoMark(ctx, '참택스', isRtl ? W - 40 : 40, 56, isRtl ? 'right' : 'left');
-  ctx.fillStyle = '#8A8371';
-  ctx.font = "600 14px 'Pretendard', -apple-system, sans-serif";
-  ctx.textAlign = isRtl ? 'right' : 'left';
-  ctx.fillText('chamtax.com', isRtl ? W - 40 : 40, 84);
+  ctx.restore(); // 클립 해제
+  ctx.strokeStyle = '#E3E6EA';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(1, 1, W - 2, H - 2, cardR);
+  ctx.stroke();
 
   // 큰 제목("나만의 복권 티켓" 등)
   const title = pickLang('나만의 복권 티켓', 'My Lottery Ticket', '我的彩票', 'Vé số của tôi', 'ตั๋วลอตเตอรี่ของฉัน', 'Мой лотерейный билет', MN_TICKET_TITLE_MORE);
   ctx.fillStyle = '#262420';
   ctx.font = "800 26px 'Pretendard', -apple-system, sans-serif";
   ctx.textAlign = isRtl ? 'right' : 'left';
-  ctx.fillText(title, isRtl ? W - 40 : 40, 130);
+  ctx.fillText(title, isRtl ? W - 40 : 40, bandH + 40);
 
   // 번호 공(일반 5개 + 파워볼 1개) — 항상 가운데 정렬, 왼쪽부터 순서대로(방향 무관 — 숫자 순서 자체가
   // 의미 있는 정보라 RTL이어도 안 뒤집음, 실제 복권 번호 표기 관례를 따름)
@@ -5544,7 +5578,7 @@ function saveMyNumbersAsTicketImage(){
   const ballR = 34, ballGap = 20;
   const totalW = balls.length * (ballR * 2) + (balls.length - 1) * ballGap;
   let bx = (W - totalW) / 2 + ballR;
-  const by = 220;
+  const by = bandH + 124;
   balls.forEach((n, i) => {
     ctx.beginPath();
     ctx.arc(bx, by, ballR, 0, Math.PI * 2);
@@ -5564,30 +5598,33 @@ function saveMyNumbersAsTicketImage(){
   ctx.fillStyle = '#8A8371';
   ctx.font = "600 15px 'Pretendard', -apple-system, sans-serif";
   ctx.textAlign = 'center';
-  ctx.fillText(`${dateStr}  ·  ${selfPick}`, W / 2, 290);
+  ctx.fillText(`${dateStr}  ·  ${selfPick}`, W / 2, bandH + 188);
 
-  // 가상 티켓 배지 — 실제 구매 티켓으로 오해되지 않도록 눈에 띄게 표시(사이트의 "구매·중개 NO"
-  // 원칙과 일관되게 유지하기 위해 필수)
+  // 2026-07-31 디자인팀 반영 가이드: 스캔 가능해 보이는 바코드 장식 삭제 — 모노스페이스
+  // "Ticket ID" 코드 한 줄로 교체. 실물 바코드보다 "이건 가짜 티켓"이라는 신호가 더 잘
+  // 읽힌다는 검수 의견 반영. 번호 조합에서 결정론적으로 뽑아서(진짜 랜덤이 아님) 같은 번호로
+  // 다시 저장해도 항상 같은 ID가 나옴(barcodeSeed와 같은 패턴).
+  const barcodeSeed = mainNums.reduce((a, b) => a + b, specialNum);
+  const ticketSerial = String(10000 + ((barcodeSeed * 7919) % 90000)).slice(0, 5);
+  const ticketId = `Ticket ID: KR-${dateStr.replace(/-/g, '')}-${ticketSerial}`;
+  ctx.fillStyle = '#8A8371';
+  ctx.font = "500 15px 'Menlo', 'Consolas', monospace";
+  ctx.textAlign = 'center';
+  ctx.fillText(ticketId, W / 2, bandH + 224);
+
+  // 가상 티켓 배지 — 2026-07-31 디자인팀 반영 가이드: "실제 구매 아님" 경고 성격은 다른
+  // 카드의 참고용 배지와 달리 그대로 빨간 톤 유지(의도적) — 대신 알약 배지가 아니라 카드 폭
+  // 전체 밴드로 통일해서 1~4번 카드와 같은 프레임 언어로 맞춤.
   const disclaimer = pickLang('재미로 만든 가상 티켓 · 실제 구매 아님', 'Fun mock ticket · not a real purchase', '仅供娱乐的虚拟彩票 · 非真实购买', 'Vé số ảo cho vui · không phải giao dịch mua thật', 'ตั๋วจำลองเพื่อความบันเทิง · ไม่ใช่การซื้อจริง', 'Шуточный билет для развлечения · не настоящая покупка', MN_TICKET_DISCLAIMER_MORE);
-  const badgeY = 340, badgeH = 34;
-  ctx.font = "700 14px 'Pretendard', -apple-system, sans-serif";
-  const badgeW = Math.min(W - 80, ctx.measureText(disclaimer).width + 48);
-  ctx.fillStyle = 'rgba(192,57,43,0.1)';
-  ctx.strokeStyle = '#C0392B';
-  ctx.lineWidth = 1.5;
-  const bxLeft = (W - badgeW) / 2;
+  const bannerX = 14, bannerW = W - 28, bannerY0 = H - 56, bannerH = 40;
   ctx.beginPath();
-  ctx.roundRect(bxLeft, badgeY, badgeW, badgeH, 17);
+  ctx.fillStyle = '#FDECEC';
+  ctx.roundRect(bannerX, bannerY0, bannerW, bannerH, 10);
   ctx.fill();
-  ctx.stroke();
   ctx.fillStyle = '#C0392B';
   ctx.textAlign = 'center';
-  ctx.fillText(disclaimer, W / 2, badgeY + badgeH / 2 + 1);
-
-  // 바코드 장식(공유 헬퍼 drawDecorativeBarcode — 스캔 가능한 진짜 바코드 아님, 위 정의 참고)
-  const barY = 400, barH = 28;
-  const barcodeSeed = mainNums.reduce((a, b) => a + b, specialNum);
-  drawDecorativeBarcode(ctx, 60, W - 60, barY, barH, barcodeSeed, '#262420');
+  fitFontSize(ctx, disclaimer, 700, 15, 11, bannerW - 32);
+  ctx.fillText(disclaimer, W / 2, bannerY0 + bannerH / 2 + 1);
 
   openAnnotateOverlay(canvas, 'chamtax-my-ticket.png');
 }
@@ -5707,7 +5744,6 @@ function sanitizeCheckDateForCanvas(rawValue){
 
 function saveHomeResultAsImage(){
   const isRtl = RTL_LANGS.includes(currentLang);
-  const resultLabelText = document.querySelector('.result-hero-label').textContent;
   const finalAmt = document.getElementById('home-final-amt').textContent;
   const basisMini = document.getElementById('home-final-basis-mini').textContent;
 
@@ -5729,126 +5765,112 @@ function saveHomeResultAsImage(){
   ctx.fillStyle = outerGrad;
   ctx.fillRect(0, 0, W, H);
 
-  // 안쪽 카드(사이트 기존 크림톤) + 이중 테두리(바깥 굵은 브랜드 그린 선 + 안쪽 얇은 금색 선)로
-  // "은행 서류" 느낌의 정형화된 테두리를 냄 — 실제 위변조 방지 무늬(길로셰)를 흉내내진 않음(과한
-  // 금융서류 흉내는 하드 제약 3번과 충돌할 위험이 있어 일부러 단순한 이중 룰 선까지만).
-  const cardX = 20, cardY = 20, cardW = W - cardX * 2, cardH = H - cardY * 2;
+  // 2026-07-31 디자인팀 반영 가이드: 이중 테두리(그린+골드)와 코너 브래킷("증서" 느낌)을
+  // 걷어내고, 2·3·4번 카드(buildShareCard)와 같은 그림자+둥근 모서리(20px) 카드 프레임으로
+  // 통일 — 5장 전체가 하나의 브랜드 카드 시스템으로 보이게 하는 게 목적. 대신 카드 맨 위에
+  // 그러데이션 헤더 밴드(로고+브랜드명, 아래)를 새로 넣어서 "발행처" 신호는 여기로 옮김.
+  const cardX = 20, cardY = 20, cardW = W - cardX * 2, cardH = H - cardY * 2, cardR = 20;
+  ctx.save();
+  ctx.shadowColor = 'rgba(38,36,32,0.16)';
+  ctx.shadowBlur = 30;
+  ctx.shadowOffsetY = 12;
+  ctx.beginPath();
+  ctx.roundRect(cardX, cardY, cardW, cardH, cardR);
   ctx.fillStyle = '#FFFFFF';
-  ctx.beginPath();
-  ctx.roundRect(cardX, cardY, cardW, cardH, 14);
   ctx.fill();
-  ctx.strokeStyle = '#155445';
-  ctx.lineWidth = 3;
-  ctx.stroke();
-  ctx.strokeStyle = '#D9B65A';
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.roundRect(cardX + 7, cardY + 7, cardW - 14, cardH - 14, 10);
-  ctx.stroke();
+  ctx.restore();
 
-  // 네 모서리 코너 브래킷 — "증서/서류" 느낌을 문양 없이 순수 선으로만 표현(특정 기관 직인·
-  // 문장이 아닌 일반적인 코너 장식)
-  const tick = 20;
-  [[cardX, cardY, 1, 1], [cardX + cardW, cardY, -1, 1], [cardX, cardY + cardH, 1, -1], [cardX + cardW, cardY + cardH, -1, -1]].forEach(([cx, cy, dx, dy]) => {
-    ctx.strokeStyle = '#155445';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(cx + dx * 14, cy + dy * 2);
-    ctx.lineTo(cx + dx * 2, cy + dy * 2);
-    ctx.lineTo(cx + dx * 2, cy + dy * 14);
-    ctx.stroke();
-  });
+  // 헤더 밴드는 카드의 둥근 위쪽 모서리를 벗어나면 안 되므로 카드 모양으로 클립
+  ctx.beginPath();
+  ctx.roundRect(cardX, cardY, cardW, cardH, cardR);
+  ctx.save();
+  ctx.clip();
 
   const PAD = 42;
   const leftX = cardX + PAD, rightX = cardX + cardW - PAD;
-  // 로고(발행처) 쪽 자리와, 그 반대쪽(레퍼런스 사진의 "게임 로고+날짜" 자리 — 여기선 계산 기준 한
-  // 줄 + 날짜) 자리를 방향에 따라 서로 바꿔줌(RTL이면 로고가 오른쪽, 기준/날짜가 왼쪽)
   const anchorX = isRtl ? rightX : leftX;
   const oppositeX = isRtl ? leftX : rightX;
   const anchorAlign = isRtl ? 'right' : 'left';
   const oppositeAlign = isRtl ? 'left' : 'right';
   const cornerMaxW = (W / 2) - PAD - 30; // 헤더 좌우 각 구역이 중앙과 겹치지 않게 하는 폭 상한
 
+  // 상단 그러데이션 헤더 밴드 — 왼쪽 로고(발행처 자리, 하드 제약 1번: 사이트 자체 브랜드만),
+  // 오른쪽 chamtax.com. buildShareCard()의 상단 밴드와 같은 색(#155445→#1F6E5C)으로 맞춤.
+  const bandH = 98;
+  const bandGrad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + bandH);
+  bandGrad.addColorStop(0, '#155445');
+  bandGrad.addColorStop(1, '#1F6E5C');
+  ctx.fillStyle = bandGrad;
+  ctx.fillRect(cardX, cardY, cardW, bandH);
+
   ctx.textBaseline = 'middle';
+  drawLogoMark(ctx, '참택스 · ChamTax', anchorX, cardY + bandH / 2, anchorAlign, {
+    iconSize: 36, gap: 12, font: "800 28px 'Pretendard', -apple-system, sans-serif", color: '#FFFFFF', onDarkBg: true
+  });
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = "700 18px 'Pretendard', -apple-system, sans-serif";
+  ctx.textAlign = oppositeAlign;
+  ctx.fillText('chamtax.com', oppositeX, cardY + bandH / 2);
 
-  // 로고 — "발행처" 자리(레퍼런스 사진의 "[State] Lottery" 로고 자리를 사이트 자체 브랜드로 대체,
-  // 하드 제약 1번). 2026-07-28 공유 기능 통일 세션이 곰 이모지(🐻)를 앞에 붙였는데, 실제로
-  // 렌더링해보면 사이트의 진짜 마스코트(흰/크림 얼굴+청록 테두리+검정 점눈+분홍 볼)와 전혀 다른
-  // 갈색 곰 얼굴 이모지였음 — 같은 날 바로 다음(이) 세션에서 발견해 이모지 대신 실제 헤더 로고
-  // SVG를 그대로 옮긴 drawLogoMark()로 교체함(자세한 이유·좌표 출처는 saveMyNumbersAsTicketImage()의
-  // 같은 변경 옆 주석 및 drawBearMascotIcon()/drawLogoMark() 정의 옆 주석 참고). 로고는 헤더
-  // 왼쪽(또는 RTL이면 오른쪽) 끝에 단독으로 앵커되어 있어 폭 여유가 크고(cornerMaxW는 반대쪽
-  // basisMini에만 적용됨), 아이콘 하나 추가로 카드 밖으로 넘칠 위험은 없음.
-  drawLogoMark(ctx, '참택스', anchorX, 70, anchorAlign);
-  ctx.fillStyle = '#8A8371';
-  ctx.font = "600 14px 'Pretendard', -apple-system, sans-serif";
-  ctx.textAlign = anchorAlign;
-  ctx.fillText('chamtax.com', anchorX, 96);
+  ctx.restore(); // 클립 해제
 
-  // 반대쪽 모서리: 계산 기준 한 줄(basisMini) + 날짜 — 언어별 길이 차이가 커서 폭을 넘으면
-  // 폰트를 줄임(fitFontSize). 날짜는 항상 오늘 날짜(2026-07-29부터 수동 입력칸 자체를 없앰 —
-  // #home-check-date-input이 더 이상 없어서 아래는 항상 빈 값을 sanitizeCheckDateForCanvas()에
-  // 넘기고, 그 함수가 빈 값을 오늘 날짜로 처리함)
+  // 밴드 아래 첫 줄: 계산 기준 한 줄(basisMini, 왼쪽) + 날짜·수표번호(오른쪽) — 언어별 길이
+  // 차이가 커서 폭을 넘으면 폰트를 줄임(fitFontSize). 날짜는 항상 오늘 날짜(2026-07-29부터
+  // 수동 입력칸 자체를 없앰 — #home-check-date-input이 더 이상 없어서 아래는 항상 빈 값을
+  // sanitizeCheckDateForCanvas()에 넘기고, 그 함수가 빈 값을 오늘 날짜로 처리함)
   const dateInputEl = document.getElementById('home-check-date-input');
   const dateStr = sanitizeCheckDateForCanvas(dateInputEl ? dateInputEl.value : '');
+  const metaY = cardY + bandH + 32;
   ctx.fillStyle = '#262420';
-  ctx.textAlign = oppositeAlign;
-  fitFontSize(ctx, basisMini, 700, 15, 11, cornerMaxW);
-  ctx.fillText(basisMini, oppositeX, 64);
+  ctx.textAlign = anchorAlign;
+  fitFontSize(ctx, basisMini, 700, 16, 11, cornerMaxW * 1.4);
+  ctx.fillText(basisMini, anchorX, metaY);
+  // 수표 번호(No.) — 2026-07-31 하드 제약 #3 완화(위 안전장치 문단 참고)의 일부. 실제 은행
+  // 라우팅/계좌번호가 아니라 오늘 날짜에서 뽑은 장식용 일련번호일 뿐이라 기능이 없음.
   ctx.fillStyle = '#8A8371';
   ctx.font = "600 13px 'Pretendard', -apple-system, sans-serif";
-  ctx.fillText(dateStr, oppositeX, 90);
-
-  // 수표 번호(No.) 코너 태그 — 2026-07-31 하드 제약 #3 완화(위 안전장치 문단 참고)의 일부.
-  // 실제 은행 라우팅/계좌번호가 아니라 오늘 날짜에서 뽑은 장식용 일련번호일 뿐이라 기능이 없음.
-  ctx.fillStyle = '#ACA595';
-  ctx.font = "500 10px 'Pretendard', -apple-system, sans-serif";
-  ctx.fillText('No. ' + dateStr.replace(/-/g, '').slice(2), oppositeX, 106);
+  ctx.textAlign = oppositeAlign;
+  ctx.fillText(dateStr + '  ·  No. ' + dateStr.replace(/-/g, '').slice(2), oppositeX, metaY);
 
   // 헤더 구분선
   ctx.strokeStyle = '#E3E6EA';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(cardX + 30, 118);
-  ctx.lineTo(cardX + cardW - 30, 118);
+  ctx.moveTo(cardX + 30, metaY + 22);
+  ctx.lineTo(cardX + cardW - 30, metaY + 22);
   ctx.stroke();
 
   // "받는 사람" 줄 — 진짜 빈 수표처럼 라벨 옆에 밑줄만 그어진 빈칸을 둠(하드 제약 2번: 실제
   // 인물 이름/사진을 넣지 않고, 사용자가 이후 "꾸며서 저장하기" 펜/텍스트 오버레이로 직접
   // 채워넣게 함). 라벨 폭을 측정해서 빈칸 시작 위치를 정확히 계산 — 방향에 따라 좌우 반전.
+  const payToY = metaY + 50, payToLineY = payToY + 14;
   ctx.fillStyle = '#262420';
   ctx.textAlign = anchorAlign;
   const payToLabel = pickLang('받는 사람', 'PAY TO THE ORDER OF', '收款人', 'Người nhận', 'ผู้รับ', 'ПОЛУЧАТЕЛЬ', CHECK_PAYTO_MORE);
   fitFontSize(ctx, payToLabel, 700, 18, 13, cornerMaxW * 1.6);
   const payToLabelW = ctx.measureText(payToLabel).width;
-  ctx.fillText(payToLabel, anchorX, 172);
+  ctx.fillText(payToLabel, anchorX, payToY);
   ctx.strokeStyle = 'rgba(138,131,113,0.65)';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   if (isRtl) {
-    ctx.moveTo(leftX + 10, 186);
-    ctx.lineTo(rightX - payToLabelW - 16, 186);
+    ctx.moveTo(leftX + 10, payToLineY);
+    ctx.lineTo(rightX - payToLabelW - 16, payToLineY);
   } else {
-    ctx.moveTo(leftX + payToLabelW + 16, 186);
-    ctx.lineTo(rightX - 10, 186);
+    ctx.moveTo(leftX + payToLabelW + 16, payToLineY);
+    ctx.lineTo(rightX - 10, payToLineY);
   }
   ctx.stroke();
 
   // 실수령액 — 이 이미지의 시각적 중심(하드 제약 "유지할 것" 항목: 기존 이상 크기·굵기 유지),
   // 넓어진 캔버스에 맞춰 살짝 더 키움(58px→66px). 폭을 넘으면 fitFontSize로 방어.
+  // 2026-07-31 디자인팀 반영 가이드: 바로 아래 있던 "일시불 예상 실수령액" 캡션(resultLabelText)
+  // 삭제 — 그 역할은 아래 MEMO 줄("세후 예상 실수령액 시뮬레이션")이 이미 겸하고 있어서 중복
+  // 이었음. 금액 자체의 y좌표(256)는 그대로 유지.
   ctx.fillStyle = '#155445';
   ctx.textAlign = 'center';
   fitFontSize(ctx, finalAmt, 800, 66, 40, cardW - PAD * 2);
   ctx.fillText(finalAmt, W / 2, 256);
-
-  // 결과 라벨 — 화면에 이미 "예상 실수령액"처럼 표기된 기존 문구를 그대로 재사용(하드 제약 5번:
-  // 새 "당첨/WINNER" 문구를 만들지 않음). RTL에서 이모지+문장이 섞인 문자열이 어긋나 보였던
-  // 이전 세션의 발견(직접 확인한 실제 버그) 그대로 ctx.direction을 명시.
-  ctx.direction = isRtl ? 'rtl' : 'ltr';
-  ctx.fillStyle = '#262420';
-  fitFontSize(ctx, resultLabelText, 700, 24, 15, cardW - PAD * 2);
-  ctx.fillText(resultLabelText, W / 2, 300);
-  ctx.direction = 'ltr'; // 이후 draw 호출에 영향 안 주도록 기본값 복원
 
   // MEMO 줄 + 서명란 — 2026-07-31 하드 제약 #3 완화(사용자 승인, 위 안전장치 문단 참고). 기존
   // "세전 → 세후차액" 줄(beforeTax/taxDiff)은 사용자 요청으로 이 카드에서 아예 뺌 — 그 정보는
@@ -5856,7 +5878,9 @@ function saveHomeResultAsImage(){
   // 대신 그 자리를 실제 수표에 흔한 MEMO/서명란 장식으로 채워서(GPT/Gemini 3차 검수 반영)
   // "수표"라는 장르가 더 빨리 읽히게 함. 왼쪽엔 MEMO(고정 문구라 사용자가 못 바꿈), 오른쪽엔
   // 빈 서명 밑줄 + "예시용·실제 서명 아님" 라벨.
-  const bandY = 380, bandMidGap = 30;
+  // 2026-07-31 디자인팀 반영 가이드: bandY 380→330으로 당김 — 결과 라벨을 지우면서 생긴
+  // 빈 공간을 메움.
+  const bandY = 330, bandMidGap = 30;
   ctx.textAlign = 'left';
   ctx.fillStyle = '#8A8371';
   ctx.font = "600 12px 'Pretendard', -apple-system, sans-serif";
