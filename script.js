@@ -5578,7 +5578,7 @@ function saveMyNumbersAsTicketImage(){
   const ballR = 34, ballGap = 20;
   const totalW = balls.length * (ballR * 2) + (balls.length - 1) * ballGap;
   let bx = (W - totalW) / 2 + ballR;
-  const by = bandH + 124;
+  const by = bandH + 140;
   balls.forEach((n, i) => {
     ctx.beginPath();
     ctx.arc(bx, by, ballR, 0, Math.PI * 2);
@@ -5598,7 +5598,7 @@ function saveMyNumbersAsTicketImage(){
   ctx.fillStyle = '#8A8371';
   ctx.font = "600 15px 'Pretendard', -apple-system, sans-serif";
   ctx.textAlign = 'center';
-  ctx.fillText(`${dateStr}  ·  ${selfPick}`, W / 2, bandH + 188);
+  ctx.fillText(`${dateStr}  ·  ${selfPick}`, W / 2, bandH + 210);
 
   // 2026-07-31 디자인팀 반영 가이드: 스캔 가능해 보이는 바코드 장식 삭제 — 모노스페이스
   // "Ticket ID" 코드 한 줄로 교체. 실물 바코드보다 "이건 가짜 티켓"이라는 신호가 더 잘
@@ -5610,7 +5610,7 @@ function saveMyNumbersAsTicketImage(){
   ctx.fillStyle = '#8A8371';
   ctx.font = "500 15px 'Menlo', 'Consolas', monospace";
   ctx.textAlign = 'center';
-  ctx.fillText(ticketId, W / 2, bandH + 224);
+  ctx.fillText(ticketId, W / 2, bandH + 256);
 
   // 가상 티켓 배지 — 2026-07-31 디자인팀 반영 가이드: "실제 구매 아님" 경고 성격은 다른
   // 카드의 참고용 배지와 달리 그대로 빨간 톤 유지(의도적) — 대신 알약 배지가 아니라 카드 폭
