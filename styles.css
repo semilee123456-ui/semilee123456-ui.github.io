@@ -1981,8 +1981,14 @@
   .annotate-color-row{ display:flex; gap:6px; margin-left:auto; }
   /* 수표 카드에서만 쓰는 날짜 입력 — openAnnotateOverlay()가 dateEditable 옵션일 때만 .show를
      붙임(기본은 숨김, 랭킹/이월/CPI/티켓처럼 날짜를 안 쓰는 카드에서는 계속 안 보임) */
-  .annotate-date-row{ display:none; justify-content:flex-start; }
+  .annotate-date-row{ display:none; justify-content:flex-start; flex-wrap:wrap; row-gap:6px; }
   .annotate-date-row.show{ display:flex; }
+  /* 2026-07-31: 날짜 자체를 카드에 안 넣고 싶은 사람을 위한 체크박스 — 켜면 입력칸을 흐리게
+     비활성화하고(#annotateDateInput:disabled), 카드에서 날짜·수표번호 줄이 통째로 빠짐
+     (script.js buildHomeResultCheckCanvas의 checkCardDateHidden 분기 참고) */
+  .annotate-date-skip{ display:flex; align-items:center; gap:4px; font-size:var(--fs-small); color:var(--text-muted); cursor:pointer; margin-left:auto; }
+  .annotate-date-skip input[type="checkbox"]{ width:16px; height:16px; cursor:pointer; accent-color:var(--teal); }
+  .check-date-input:disabled{ opacity:0.5; cursor:not-allowed; }
   .annotate-color-swatch{
     width:26px; height:26px; border-radius:50%; border:2px solid var(--border); cursor:pointer; padding:0;
   }
