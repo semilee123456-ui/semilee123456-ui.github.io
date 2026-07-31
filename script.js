@@ -20,7 +20,7 @@
 // Worker의 배포 주소. og-share-worker/README.md 안내대로 배포한 뒤 여기 채워 넣을 것 —
 // 비워두면(기본값) 예전처럼 카드 없이 링크+텍스트만 공유됨(아무 것도 깨지지 않음, 안전한 기본값).
 // 예: 'https://chamtax-og-share.내계정.workers.dev'
-const OG_SHARE_WORKER_BASE = '';
+const OG_SHARE_WORKER_BASE = 'https://semilee123456-ui-github-io.semilee123456.workers.dev';
 
 let currentLang = 'ko';
 let resultBarAnimatedIn = false; // 홈 실수령/세금 비율 막대가 최초 1회만 0%→목표값 애니메이션되도록 하는 플래그
