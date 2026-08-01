@@ -1458,7 +1458,7 @@ function renderUsStateCompareTable(amountEok){
     .sort((a, b) => b.final - a.final);
   container.innerHTML = rows.map(row => {
     const ratePct = (row.rate * 100).toFixed(row.rate * 100 % 1 === 0 ? 0 : 2);
-    return `<div class="us-state-row${row.code === currentState ? ' is-current' : ''}"><span class="us-state-row-name">${row.label} <span class="us-state-row-rate">(${ratePct}%)</span></span><span class="us-state-row-amt"><bdi>${formatWon(row.final)}</bdi></span></div>`;
+    return `<div class="us-state-row${row.code === currentState ? ' is-current' : ''}"><span class="us-state-row-name">${row.label} <span class="us-state-row-rate">(${ratePct}%)</span></span><span class="us-state-row-amt"><bdi>${formatEokKrwInDisplayCurrency(row.final, sharedInputCurrency)}</bdi></span></div>`;
   }).join('');
 }
 
@@ -4055,14 +4055,14 @@ function renderAmountBreakdownHtml(cashUsd, stateCode){
   const toAmtItem = (group, isPrimary) => {
     const wrapCls = isPrimary ? 'jh-amt-item jh-primary-item' : 'jh-amt-item jh-amt-chip';
     if (group.items.length === 1) {
-      return `<span class="${wrapCls}"><span class="jh-amt-label">${group.items[0].label}</span><span class="jh-amt"><bdi>${formatWon(group.items[0].final)}</bdi></span></span>`;
+      return `<span class="${wrapCls}"><span class="jh-amt-label">${group.items[0].label}</span><span class="jh-amt"><bdi>${formatEokKrwInDisplayCurrency(group.items[0].final, sharedInputCurrency)}</bdi></span></span>`;
     }
     const groupLabel = pickLang(`${group.items.length}개국 동일`, `Same for ${group.items.length} countries`, `${group.items.length}个国家相同`, `Giống nhau ở ${group.items.length} nước`, `เท่ากันใน ${group.items.length} ประเทศ`, `Одинаково для ${group.items.length} стран`, buildSameCountMore(group.items.length));
     const listId = `jh-grp-${jhGroupCounter++}`;
     const countryBadges = group.items.map(i => `<span class="flag-badge" title="${i.label}">${i.flagCode}</span>`).join('');
     return `<span class="${wrapCls}">
       <button type="button" class="jh-amt-label jh-amt-group-toggle" onclick="toggleJhGroupList('${listId}')">${groupLabel} ▾</button>
-      <span class="jh-amt"><bdi>${formatWon(group.items[0].final)}</bdi></span>
+      <span class="jh-amt"><bdi>${formatEokKrwInDisplayCurrency(group.items[0].final, sharedInputCurrency)}</bdi></span>
       <span class="jh-amt-group-list" id="${listId}" style="display:none;">${countryBadges}</span>
     </span>`;
   };
@@ -4097,7 +4097,7 @@ function renderAmountBreakdownHtml(cashUsd, stateCode){
   // (점선 테두리만 남겨서 "순위 대상이 아닌 별도 항목"이라는 구분은 유지)
   const otherResult = calcTakeHome(cashKrw / 100000000, 'other', null);
   const otherLabel = otherResult.basisSuffix.replace(/\s*[（(][^)）]*[)）]\s*$/, '');
-  const otherChipHtml = `<span class="jh-amt-item jh-amt-chip jh-amt-chip-other"><span class="jh-amt-label">🌐 ${otherLabel}</span><span class="jh-amt"><bdi>${formatWon(otherResult.final)}</bdi></span></span>`;
+  const otherChipHtml = `<span class="jh-amt-item jh-amt-chip jh-amt-chip-other"><span class="jh-amt-label">🌐 ${otherLabel}</span><span class="jh-amt"><bdi>${formatEokKrwInDisplayCurrency(otherResult.final, sharedInputCurrency)}</bdi></span></span>`;
   const restHtml = `<div class="jh-amounts-grid">${restVisibleGroups.map(g => toAmtItem(g, false)).join('')}${otherChipHtml}</div>`;
   return primaryHtml + restHtml + hiddenHtml;
 }
@@ -4286,7 +4286,7 @@ function renderJackpotTakeHomeRanking(){
     // RTL 언어(아랍어·우르두어)에서 방향 지정 없는 금액 문자열이 브라우저 bidi 알고리즘에
     // 의해 어순이 뒤집혀 보이는 문제(위 아키텍처 패턴 섹션의 nowrap span 사례와 같은 종류의
     // bidi 버그) — <bdi>로 감싸서 항상 하나의 방향 단위로 렌더링되게 함(2026-07-24 발견·수정)
-    const announcedAmt = `<bdi>${formatWon(announcedKrw / 100000000)}</bdi>`;
+    const announcedAmt = `<bdi>${formatEokKrwInDisplayCurrency(announcedKrw / 100000000, sharedInputCurrency)}</bdi>`;
     const announcedLine = pickLang(
       `발표액 ${announcedAmt}`, `Announced ${announcedAmt}`,
       `发布金额 ${announcedAmt}`, `Công bố ${announcedAmt}`,
@@ -4300,7 +4300,7 @@ function renderJackpotTakeHomeRanking(){
           <span class="jh-rank-date">${entry.date}</span>
           <span class="jh-game-tag ${gameTagClass}">${gameTagEmoji} ${gameLabel}</span>
         </div>
-        <div class="jh-rank-amt"><bdi>${formatWon(takeHome)}</bdi></div>
+        <div class="jh-rank-amt"><bdi>${formatEokKrwInDisplayCurrency(takeHome, sharedInputCurrency)}</bdi></div>
         <div class="jh-rank-sub">${announcedLine}</div>
         <button type="button" class="jh-rank-cta" onclick="fillHomeAmountFromRanking(${Math.round(cashUsd)})">${rankCtaLabel}</button>
       </div>
@@ -4409,7 +4409,7 @@ function renderJackpotIndexRollover(){
           <span class="jh-rank-date"><bdi>${s.startDate} ~ ${s.endDate}</bdi></span>
           <span class="jh-game-tag ${gameTagClass}">${gameTagEmoji} ${gameLabel}</span>
         </div>
-        <div class="jh-rank-amt"><bdi>${formatWon(peakKrw / 100000000)}</bdi></div>
+        <div class="jh-rank-amt"><bdi>${formatEokKrwInDisplayCurrency(peakKrw / 100000000, sharedInputCurrency)}</bdi></div>
         <div class="jh-rank-sub"><bdi>${streakLine}</bdi></div>
       </div>
     </div>`;
@@ -4553,7 +4553,7 @@ function renderJackpotIndexCpiRanking(){
     const gameTagClass = entry.game === 'powerball' ? 'pb' : 'mm';
     const gameTagEmoji = entry.game === 'powerball' ? '🔴' : '🟡';
     const rankBadge = medals[i] || `${i + 1}`;
-    const originalAmt = `<bdi>${formatWon((originalCashUsd * EXCHANGE_RATE) / 100000000)}</bdi>`;
+    const originalAmt = `<bdi>${formatEokKrwInDisplayCurrency((originalCashUsd * EXCHANGE_RATE) / 100000000, sharedInputCurrency)}</bdi>`;
     const originalLine = pickLang(
       `${year}년 발표액 ${originalAmt}`, `Announced in ${year}: ${originalAmt}`,
       `${year}年发布金额 ${originalAmt}`, `Công bố năm ${year}: ${originalAmt}`,
@@ -4567,7 +4567,7 @@ function renderJackpotIndexCpiRanking(){
           <span class="jh-rank-date"><bdi>${entry.date}</bdi></span>
           <span class="jh-game-tag ${gameTagClass}">${gameTagEmoji} ${gameLabel}</span>
         </div>
-        <div class="jh-rank-amt"><bdi>${formatWon(takeHome)}</bdi></div>
+        <div class="jh-rank-amt"><bdi>${formatEokKrwInDisplayCurrency(takeHome, sharedInputCurrency)}</bdi></div>
         <div class="jh-rank-sub">${originalLine}</div>
         <button type="button" class="jh-rank-cta" onclick="fillHomeAmountFromRanking(${Math.round(cpiAdjustedCashUsd)})">${rankCtaLabel2}</button>
       </div>
@@ -4926,7 +4926,7 @@ function renderDateLookupResult(dateStr){
   // 국가별 실수령액까지 바로 보여줘서, 번호 조회와 금액 조회를 각각 다른 곳에서 찾아볼 필요가
   // 없게 함 — 두 섹션이 따로 있던 걸 하나로 합쳐달라는 요청 반영(2026-07-22)
   const amountHtml = draw.amountUsd
-    ? `<p class="dl-amt">${pickLang('발표 잭팟', 'Announced jackpot', '发布头奖', 'Jackpot công bố', 'แจ็คพอตที่ประกาศ', 'Объявленный джекпот', DL_JACKPOT_LABEL_MORE)}: <bdi>${formatWon(draw.amountUsd * EXCHANGE_RATE / 100000000)}</bdi></p>${renderAmountBreakdownHtml(draw.cashUsd || draw.amountUsd * CASH_VALUE_RATIO, draw.stateCode)}`
+    ? `<p class="dl-amt">${pickLang('발표 잭팟', 'Announced jackpot', '发布头奖', 'Jackpot công bố', 'แจ็คพอตที่ประกาศ', 'Объявленный джекпот', DL_JACKPOT_LABEL_MORE)}: <bdi>${formatEokKrwInDisplayCurrency(draw.amountUsd * EXCHANGE_RATE / 100000000, sharedInputCurrency)}</bdi></p>${renderAmountBreakdownHtml(draw.cashUsd || draw.amountUsd * CASH_VALUE_RATIO, draw.stateCode)}`
     : `<p class="dl-no-amt">${pickLang('이 회차는 잭팟 금액 데이터가 없어요(당첨번호만 있어요)', 'No jackpot amount for this draw (numbers only)', '这一期没有头奖金额数据（仅有开奖号码）', 'Kỳ quay này không có dữ liệu jackpot (chỉ có số trúng)', 'งวดนี้ไม่มีข้อมูลจำนวนแจ็คพอต (มีแค่เลขที่ออก)', 'Для этого розыгрыша нет суммы джекпота (только числа)', DL_NO_AMT_MORE)}</p>`;
 
   resultEl.innerHTML = `<div class="jackpot-history-row">
@@ -6468,7 +6468,7 @@ const CASH_VALUE_RATIO = 0.58; // 일시불(lump sum)은 발표된 연금 기준
 function initJackpotCardAmt(){
   const krw = getJackpotKRW();
   // formatWon()이 이미 언어별(ko/en/zh/vi/th/ru) 단위 변환·표기를 전부 처리하므로 재사용
-  document.getElementById('jackpot-card-amt').textContent = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE) + formatWon((krw * CASH_VALUE_RATIO) / 100000000);
+  document.getElementById('jackpot-card-amt').textContent = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE) + formatEokKrwInDisplayCurrency((krw * CASH_VALUE_RATIO) / 100000000, sharedInputCurrency);
   // "일시불 세전"이라고만 하면 아래 펼쳤을 때 나오는 1단계(발표액)와 헷갈린다는 지적이 있어서,
   // 2단계 문구("일시불 선택 시")랑 표현을 맞춰서 "이 숫자는 일시불을 고를 때의 금액"이라는 걸 명확히 함
   document.getElementById('jackpot-card-amt-note').textContent = pickLang(
@@ -6517,7 +6517,7 @@ function initJackpotCardAmt(){
   // (이전엔 "M USD (원화)" 한 줄로 합쳐서 어느 게 중요한 숫자인지 안 와닿는다는 지적)
   const quickfillMainLabel = (usd) => {
     const cashUsd = usd * CASH_VALUE_RATIO;
-    return formatWon((cashUsd * EXCHANGE_RATE) / 100000000);
+    return formatEokKrwInDisplayCurrency((cashUsd * EXCHANGE_RATE) / 100000000, sharedInputCurrency);
   };
   // 디자인 시안의 보조 문구 예시("$316M · 일시불")를 그대로 따름 — 기존 "ko/zh는 $ 생략" 규칙은
   // 이전의 "M USD가 주역인 한 줄 표기" 맥락에서 나온 것이라, 원화가 주역이 된 이 새 보조 캡션에는
@@ -6668,13 +6668,13 @@ function renderAnnuityFromCash(cashKrw, usdMillionsLabel, idPrefix, scheduleList
      pt: `📢 Total do prêmio anunciado (convertido de um pagamento único de ${usdMillionsLabel}M USD)`, es: `📢 Total del acumulado anunciado (convertido de un pago único de ${usdMillionsLabel}M USD)`, uk: `📢 Оголошений джекпот загалом (конвертовано з одноразової виплати ${usdMillionsLabel}M USD)`, tet: `📢 Totál jackpot ne'ebé anunsia (konverte husi pagamentu úniku ${usdMillionsLabel}M USD)`}
   );
   const announcedEl = document.getElementById(idPrefix + '-announced');
-  if (announcedEl) announcedEl.textContent = about + formatWon(announcedKrw / 100000000);
+  if (announcedEl) announcedEl.textContent = about + formatEokKrwInDisplayCurrency(announcedKrw / 100000000, sharedInputCurrency);
   const yearEl = document.getElementById(idPrefix + '-year');
-  if (yearEl) yearEl.textContent = about + formatWon(perYearKrw / 100000000);
+  if (yearEl) yearEl.textContent = about + formatEokKrwInDisplayCurrency(perYearKrw / 100000000, sharedInputCurrency);
   const yearNetEl = document.getElementById(idPrefix + '-year-net');
-  if (yearNetEl) yearNetEl.textContent = about + formatWon(rYear.final);
+  if (yearNetEl) yearNetEl.textContent = about + formatEokKrwInDisplayCurrency(rYear.final, sharedInputCurrency);
   const monthNetEl = document.getElementById(idPrefix + '-month-net');
-  if (monthNetEl) monthNetEl.textContent = about + formatWon(rYear.final / 12);
+  if (monthNetEl) monthNetEl.textContent = about + formatEokKrwInDisplayCurrency(rYear.final / 12, sharedInputCurrency);
   renderAnnuitySchedule(announcedKrw, scheduleListId);
   return announcedKrw;
 }
@@ -6732,9 +6732,9 @@ function refreshJackpotDrawerIfOpen(){
        pt: `💡 O cartão de prêmio acima mostra o valor real anunciado hoje, enquanto os passos abaixo são baseados em ${jcAmountUsdM}M USD (você pode alterar isso — não tem relação com impostos). Os números diferem por esse motivo, não por causa de impostos`, es: `💡 La tarjeta de acumulado de arriba muestra el monto real anunciado hoy, mientras que los pasos a continuación se basan en ${jcAmountUsdM}M USD (puedes cambiar esto, no está relacionado con los impuestos). Los números difieren por esa razón, no por los impuestos`, uk: `💡 Картка джекпоту вище показує фактичну оголошену суму на сьогодні, тоді як кроки нижче розраховані на основі ${jcAmountUsdM}M USD (ви можете це змінити — це не пов'язано з податками). Числа відрізняються саме з цієї причини, а не через податки`, tet: `💡 Kartão jackpot iha leten hatudu montante reál ne'ebé anunsia loron ne'e, bainhira pasu iha kraik baseia iha ${jcAmountUsdM}M USD (ó bele muda ne'e — la iha ligasaun ho impostu). Númeru sira diferente tanba rezan ne'e, la'ós tanba impostu`}
     );
 
-    document.getElementById('jc-jackpot').textContent = about + formatWon(announcedKrw / 100000000);
-    document.getElementById('jc-cash').textContent = about + formatWon(cashKrw / 100000000);
-    document.getElementById('jc-final').textContent = about + formatWon(r.final);
+    document.getElementById('jc-jackpot').textContent = about + formatEokKrwInDisplayCurrency(announcedKrw / 100000000, sharedInputCurrency);
+    document.getElementById('jc-cash').textContent = about + formatEokKrwInDisplayCurrency(cashKrw / 100000000, sharedInputCurrency);
+    document.getElementById('jc-final').textContent = about + formatEokKrwInDisplayCurrency(r.final, sharedInputCurrency);
     document.getElementById('jc-note-basis').textContent = pickLang(
       `한국 거주자 기준 (미국 원천징수 30% + 한국 세금 적용, 환율 약 ${EXCHANGE_RATE.toLocaleString('ko-KR')}원 반영)`,
       `Korea resident basis (30% US withholding + Korean tax, ~${EXCHANGE_RATE.toLocaleString('en-US')} KRW/USD)`,
@@ -6807,8 +6807,8 @@ function renderAnnuitySchedule(announcedKrw, targetId){
     const r = calcTakeHome(row.grossKrw / 100000000, 'kr');
     return `<div class="annuity-schedule-row">
       <span>${row.year}</span>
-      <span><bdi>${formatWon(row.grossKrw / 100000000)}</bdi></span>
-      <span class="annuity-schedule-net"><bdi>${formatWon(r.final)}</bdi></span>
+      <span><bdi>${formatEokKrwInDisplayCurrency(row.grossKrw / 100000000, sharedInputCurrency)}</bdi></span>
+      <span class="annuity-schedule-net"><bdi>${formatEokKrwInDisplayCurrency(r.final, sharedInputCurrency)}</bdi></span>
     </div>`;
   }).join('');
 }
@@ -8029,7 +8029,12 @@ function animateValueChange(el, fromVal, toVal, suffix, decimals, duration, onDo
     // 알아서 골라주므로, 여기서 suffix를 직접 붙이지 않고 항상 formatWon을 거치게 함.
     // (예전엔 이 함수가 '억원'을 하드코딩해서 직접 붙이고 있어서, 영어 모드로 전환해도
     // 애니메이션되는 숫자만 "6,107.8억원"처럼 한국어 단위가 그대로 남아있던 버그가 있었음)
-    el.textContent = formatWon(value);
+    // 2026-08-01: 이 함수는 home-final-amt(홈 화면 결과 히어로)에만 쓰이는데, 그 히어로가
+    // formatWon()(₩ 고정)만 써서 표시 통화를 VND 등으로 바꿔도 제일 큰 숫자는 항상 원화로
+    // 나오는 문제가 있었음(비교 탭은 2026-07-28에 이미 formatEokKrwInDisplayCurrency로
+    // 고쳐졌는데 홈 탭 히어로만 그때 빠짐) — 같은 헬퍼로 통일해서 KRW는 회귀 없이 그대로,
+    // 그 외 통화는 애니메이션 도중에도 선택된 통화로 보이게 함
+    el.textContent = formatEokKrwInDisplayCurrency(value, sharedInputCurrency);
     el.dataset.eokVal = value; // 다음 애니메이션의 시작값을 이 값에서 읽음(아래 설명 참고)
     if (progress >= 1) {
       _activeAnimations.delete(el);
@@ -8672,7 +8677,7 @@ function onHomeRateChanged(){
 function updateFunSummary(finalEok){
   const el = document.getElementById('fun-summary');
   if (!el) return;
-  const amt = formatWon(finalEok);
+  const amt = formatEokKrwInDisplayCurrency(finalEok, sharedInputCurrency);
   el.textContent = pickLang(
     `🤑 ${amt}이면 얼마나 살 수 있을까요? (재미로 보기)`,
     `🤑 What could ${amt} buy? (just for fun)`,
@@ -10489,31 +10494,31 @@ function updateHomeCalc(usdOverride){
            pt: `Baseado em dados oficiais de ${authorityText} · Alíquotas de 2026 · taxa ${rateStr} KRW/USD`, es: `Basado en datos oficiales de ${authorityText} · Tasas fiscales de 2026 · tipo de cambio ${rateStr} KRW/USD`, uk: `На основі офіційних даних ${authorityText} · Податкові ставки 2026 року · курс ${rateStr} KRW/USD`, tet: `Baseia iha dadus ofisiál ${authorityText} · Taxa impostu 2026 · taxa ${rateStr} KRW/USD`}
         )
       : pickLang(
-          `${authorityText} 공식 자료 기반 · 2026년 세율 (원화 환산은 비교용)`,
-          `Based on ${authorityText} official data · 2026 tax rates (KRW figure is for comparison only)`,
-          `基于${authorityText}官方数据 · 2026年税率（韩元金额仅供对比参考）`,
-          `Dựa trên dữ liệu chính thức của ${authorityText} · thuế suất 2026 (số liệu KRW chỉ để so sánh)`,
-          `อ้างอิงข้อมูลทางการจาก ${authorityText} · อัตราภาษีปี 2026 (ตัวเลขวอนใช้เพื่อเปรียบเทียบเท่านั้น)`,
-          `На основе официальных данных ${authorityText} · налоговые ставки 2026 (сумма в вонах — только для сравнения)`,
+          `${authorityText} 공식 자료 기반 · 2026년 세율 (화면 금액은 참고용 환산)`,
+          `Based on ${authorityText} official data · 2026 tax rates (amount shown is a reference conversion)`,
+          `基于${authorityText}官方数据 · 2026年税率（显示金额仅为参考换算值）`,
+          `Dựa trên dữ liệu chính thức của ${authorityText} · thuế suất 2026 (số tiền hiển thị chỉ là giá trị quy đổi tham khảo)`,
+          `อ้างอิงข้อมูลทางการจาก ${authorityText} · อัตราภาษีปี 2026 (จำนวนที่แสดงเป็นเพียงค่าแปลงเพื่อการอ้างอิง)`,
+          `На основе официальных данных ${authorityText} · налоговые ставки 2026 (показанная сумма — справочная конвертация)`,
           {
-            ar: `استنادًا إلى بيانات ${authorityText} الرسمية · معدلات ضريبة 2026 (رقم الوون للمقارنة فقط)`,
-            bn: `${authorityText}-এর সরকারি তথ্যের ভিত্তিতে · ২০২৬ করহার (ওন অঙ্কটি শুধু তুলনার জন্য)`,
-            fr: `Basé sur les données officielles de ${authorityText} · taux d'imposition 2026 (le montant en KRW est indiqué à titre de comparaison)`,
-            hi: `${authorityText} के आधिकारिक डेटा पर आधारित · 2026 कर दरें (KRW आंकड़ा केवल तुलना के लिए)`,
-            id: `Berdasarkan data resmi ${authorityText} · tarif pajak 2026 (angka KRW hanya untuk perbandingan)`,
-            ja: `${authorityText}の公式データに基づく · 2026年税率（ウォン表示は比較用）`,
-            kk: `${authorityText} ресми деректері негізінде · 2026 салық мөлшерлемелері (вон сомасы тек салыстыру үшін)`,
-            km: `ផ្អែកលើទិន្នន័យផ្លូវការរបស់ ${authorityText} · អត្រាពន្ធឆ្នាំ 2026 (តួលេខវ៉ុនសម្រាប់តែប្រៀបធៀបប៉ុណ្ណោះ)`,
-            ky: `${authorityText} расмий маалыматтарынын негизинде · 2026 салык коэффициенттери (вон суммасы салыштыруу үчүн гана)`,
-            lo: `ອີງໃສ່ຂໍ້ມູນທາງການຂອງ ${authorityText} · ອັດຕາພາສີປີ 2026 (ຈຳນວນວອນສຳລັບປຽບທຽບເທົ່ານັ້ນ)`,
-            mn: `${authorityText}-ийн албан ёсны мэдээлэлд үндэслэсэн · 2026 оны татварын хувь (воны дүн зөвхөн харьцуулахад)`,
-            my: `${authorityText} ၏ တရားဝင်အချက်အလက်ကို အခြေခံသည် · 2026 အခွန်နှုန်း (ဝမ်းပမာဏသည် နှိုင်းယှဉ်ရန်သာဖြစ်သည်)`,
-            ne: `${authorityText} को आधिकारिक डेटामा आधारित · 2026 कर दर (वोन अंक केवल तुलनाका लागि)`,
-            si: `${authorityText} හි නිල දත්ත මත පදනම්ව · 2026 බදු අනුපාත (වොන් අගය සංසන්දනය සඳහා පමණි)`,
-            tl: `Batay sa opisyal na datos ng ${authorityText} · 2026 tax rates (ang KRW figure ay para sa paghahambing lamang)`,
-            ur: `${authorityText} کے سرکاری ڈیٹا پر مبنی · 2026 ٹیکس کی شرحیں (وون کا ہندسہ صرف موازنے کے لیے)`,
-            uz: `${authorityText} rasmiy ma'lumotlariga asoslangan · 2026 soliq stavkalari (von summasi faqat taqqoslash uchun)`,
-           pt: `Baseado em dados oficiais de ${authorityText} · Alíquotas de 2026 (o valor em KRW é apenas para comparação)`, es: `Basado en datos oficiales de ${authorityText} · Tasas fiscales de 2026 (la cifra en KRW es solo para comparación)`, uk: `На основі офіційних даних ${authorityText} · Податкові ставки 2026 року (сума у KRW наведена лише для порівняння)`, tet: `Baseia iha dadus ofisiál ${authorityText} · Taxa impostu 2026 (númeru KRW ba komparasaun de'it)`}
+            ar: `استنادًا إلى بيانات ${authorityText} الرسمية · معدلات ضريبة 2026 (المبلغ المعروض هو تحويل مرجعي)`,
+            bn: `${authorityText}-এর সরকারি তথ্যের ভিত্তিতে · ২০২৬ করহার (দেখানো পরিমাণ একটি রেফারেন্স রূপান্তর)`,
+            fr: `Basé sur les données officielles de ${authorityText} · taux d'imposition 2026 (le montant affiché est une conversion de référence)`,
+            hi: `${authorityText} के आधिकारिक डेटा पर आधारित · 2026 कर दरें (दिखाई गई राशि एक संदर्भ रूपांतरण है)`,
+            id: `Berdasarkan data resmi ${authorityText} · tarif pajak 2026 (jumlah yang ditampilkan adalah konversi referensi)`,
+            ja: `${authorityText}の公式データに基づく · 2026年税率（表示金額は参考換算値）`,
+            kk: `${authorityText} ресми деректері негізінде · 2026 салық мөлшерлемелері (көрсетілген сома — анықтамалық айырбас)`,
+            km: `ផ្អែកលើទិន្នន័យផ្លូវការរបស់ ${authorityText} · អត្រាពន្ធឆ្នាំ 2026 (ចំនួនទឹកប្រាក់ដែលបង្ហាញគឺជាការប្តូរប្រាក់សម្រាប់យោង)`,
+            ky: `${authorityText} расмий маалыматтарынын негизинде · 2026 салык коэффициенттери (көрсөтүлгөн сумма — маалымдама конверсия)`,
+            lo: `ອີງໃສ່ຂໍ້ມູນທາງການຂອງ ${authorityText} · ອັດຕາພາສີປີ 2026 (ຈຳນວນທີ່ສະແດງແມ່ນການແປງເພື່ອອ້າງອີງ)`,
+            mn: `${authorityText}-ийн албан ёсны мэдээлэлд үндэслэсэн · 2026 оны татварын хувь (харагдаж буй дүн нь лавлагаа хөрвүүлэлт)`,
+            my: `${authorityText} ၏ တရားဝင်အချက်အလက်ကို အခြေခံသည် · 2026 အခွန်နှုန်း (ပြသထားသောပမာဏသည် ရည်ညွှန်းအတွက်သာလဲလှယ်ထားခြင်းဖြစ်သည်)`,
+            ne: `${authorityText} को आधिकारिक डेटामा आधारित · 2026 कर दर (देखाइएको रकम सन्दर्भका लागि गरिएको रूपान्तरण हो)`,
+            si: `${authorityText} හි නිල දත්ත මත පදනම්ව · 2026 බදු අනුපාත (පෙන්වා ඇති මුදල යොමු කිරීම සඳහා පරිවර්තනයකි)`,
+            tl: `Batay sa opisyal na datos ng ${authorityText} · 2026 tax rates (ang halagang ipinapakita ay reference conversion)`,
+            ur: `${authorityText} کے سرکاری ڈیٹا پر مبنی · 2026 ٹیکس کی شرحیں (دکھائی گئی رقم ایک حوالہ جاتی تبدیلی ہے)`,
+            uz: `${authorityText} rasmiy ma'lumotlariga asoslangan · 2026 soliq stavkalari (ko'rsatilgan summa ma'lumot uchun konvertatsiya)`,
+           pt: `Baseado em dados oficiais de ${authorityText} · Alíquotas de 2026 (o valor mostrado é uma conversão de referência)`, es: `Basado en datos oficiales de ${authorityText} · Tasas fiscales de 2026 (el monto mostrado es una conversión de referencia)`, uk: `На основі офіційних даних ${authorityText} · Податкові ставки 2026 року (показана сума є довідковою конвертацією)`, tet: `Baseia iha dadus ofisiál ${authorityText} · Taxa impostu 2026 (valór ne'ebé hatudu sá de'it konversaun referénsia)`}
         );
   }
 
@@ -10537,7 +10542,7 @@ function updateHomeCalc(usdOverride){
   const prevVal = parseFloat(finalEl.dataset.eokVal) || 0;
   if (homeResultFirstRender) {
     // 최초 1회 — 카운트업 없이 바로 최종 숫자를 보여줌 (0에서 세는 걸 보고 헷갈리지 않게)
-    finalEl.textContent = formatWon(final);
+    finalEl.textContent = formatEokKrwInDisplayCurrency(final, sharedInputCurrency);
     finalEl.dataset.eokVal = final;
     fitAmountFontSize(finalEl);
     homeResultFirstRender = false;
@@ -10576,8 +10581,10 @@ function updateHomeCalc(usdOverride){
   document.getElementById('home-tax2-val').textContent = val2;
 
   const taxImpactPct = 억 > 0 ? Math.round(100 - (final / 억 * 100)) : 0;
-  document.getElementById('tax-impact-before').textContent = formatWon(억);
-  document.getElementById('tax-impact-after').textContent = formatWon(final);
+  // 2026-08-01: 바로 위 히어로(home-final-amt)를 표시 통화 기준으로 바꿨는데 이 세전/세후
+  // 비교 줄만 원화로 남아있으면 같은 카드 안에서 통화가 서로 안 맞아 보임 — 같이 맞춤
+  document.getElementById('tax-impact-before').textContent = formatEokKrwInDisplayCurrency(억, sharedInputCurrency);
+  document.getElementById('tax-impact-after').textContent = formatEokKrwInDisplayCurrency(final, sharedInputCurrency);
 
   // 2026-07-31: 입력 카드 안, 환율 안내 줄 옆에 실수령액 미리보기를 추가함 — "수정하려고
   // 위아래로 왔다갔다 할 때 결과가 안 보인다"는 지적에 대해, 이미 만든 스크롤 배지(결과를
@@ -10601,7 +10608,7 @@ function updateHomeCalc(usdOverride){
   // 카드에 쓴 것과 같은 pop 리트리거 패턴(remove→강제 reflow→add)을 그대로 재사용함.
   // 최초 렌더링(placeholder "-" 상태)에서는 애니메이션 없이 바로 값을 채움
   const taxDiffEl = document.getElementById('tax-impact-diff');
-  const newTaxDiffText = '-' + formatWon(억 - final) + ` (${taxImpactPct}%)`;
+  const newTaxDiffText = '-' + formatEokKrwInDisplayCurrency(억 - final, sharedInputCurrency) + ` (${taxImpactPct}%)`;
   const shouldPopTaxDiff = taxDiffEl.textContent !== '-' && taxDiffEl.textContent !== newTaxDiffText;
   taxDiffEl.textContent = newTaxDiffText;
   if (shouldPopTaxDiff) {
@@ -10645,32 +10652,36 @@ function updateHomeCalc(usdOverride){
     // 그 나라 통화 기준으로 계산됨 — 여기 보이는 원화 금액은 한국 기준과 비교하기 위한 표시일 뿐이라
     // 실수령률(final/억)을 그대로 USD 원금에 곱해서 실제 달러 수령액을 구함 (국가별 세율 하드코딩 없이 공통 처리)
     const finalUsd = Math.round(usd * (final / 억));
+    // 2026-08-01: 예전엔 히어로가 항상 원화로 고정 표시돼서 "원화는 한국 기준과 비교하기 위한
+    // 참고용"이라는 문구가 맞았는데, 이제 히어로가 선택된 표시 통화(VND 등)를 따르게 되면서
+    // "원화(KRW)"라고 콕 집어 말하는 게 더 이상 화면에 실제로 보이는 숫자와 안 맞을 수 있음 —
+    // "화면에 보이는 금액은 참고용 환산값"이라는, 어떤 통화를 고르든 항상 맞는 표현으로 일반화함
     usdNote.textContent = pickLang(
-      `💵 실제로는 달러($${finalUsd.toLocaleString('en-US')})로 그대로 받아요 — 원화는 한국 기준과 비교하기 위한 참고용이에요`,
-      `💵 You actually receive USD ($${finalUsd.toLocaleString('en-US')}) directly — the KRW figure is just for comparison with the Korea basis`,
-      `💵 实际上会直接以美元（$${finalUsd.toLocaleString('en-US')}）收到 —— 韩元金额仅供与韩国标准对比参考`,
-      `💵 Thực tế bạn nhận trực tiếp bằng đô la ($${finalUsd.toLocaleString('en-US')}) — số tiền KRW chỉ để so sánh với tiêu chuẩn Hàn Quốc`,
-      `💵 คุณจะได้รับเป็นดอลลาร์ ($${finalUsd.toLocaleString('en-US')}) โดยตรง — ตัวเลขวอนใช้เพื่อเปรียบเทียบกับเกณฑ์เกาหลีเท่านั้น`,
-      `💵 На самом деле вы получаете доллары ($${finalUsd.toLocaleString('en-US')}) напрямую — сумма в вонах приведена только для сравнения с корейской базой`,
+      `💵 실제로는 미국에서 달러($${finalUsd.toLocaleString('en-US')})로 그대로 받아요 — 화면에 보이는 금액은 참고용으로 환산한 값이에요`,
+      `💵 You actually receive USD ($${finalUsd.toLocaleString('en-US')}) directly from the US — the amount shown here is a reference conversion`,
+      `💵 实际上会直接以美元（$${finalUsd.toLocaleString('en-US')}）从美国收到 —— 这里显示的金额只是参考换算值`,
+      `💵 Thực tế bạn nhận trực tiếp bằng đô la ($${finalUsd.toLocaleString('en-US')}) từ Mỹ — số tiền hiển thị ở đây chỉ là giá trị quy đổi tham khảo`,
+      `💵 คุณจะได้รับเป็นดอลลาร์ ($${finalUsd.toLocaleString('en-US')}) โดยตรงจากสหรัฐฯ — จำนวนเงินที่แสดงตรงนี้เป็นเพียงค่าแปลงเพื่อการอ้างอิง`,
+      `💵 На самом деле вы получаете доллары ($${finalUsd.toLocaleString('en-US')}) напрямую из США — показанная здесь сумма — лишь справочная конвертация`,
       {
-        ar: `💵 في الواقع تحصل على دولارات ($${finalUsd.toLocaleString('en-US')}) مباشرة — رقم الوون هو فقط للمقارنة مع الأساس الكوري`,
-        bn: `💵 আপনি আসলে সরাসরি ডলার ($${finalUsd.toLocaleString('en-US')}) পাবেন — ওন অঙ্কটি শুধু কোরিয়ার ভিত্তির সাথে তুলনার জন্য`,
-        fr: `💵 Vous recevez en réalité directement des USD ($${finalUsd.toLocaleString('en-US')}) — le chiffre en KRW sert uniquement à comparer avec la base coréenne`,
-        hi: `💵 आपको असल में सीधे डॉलर ($${finalUsd.toLocaleString('en-US')}) मिलते हैं — KRW आंकड़ा सिर्फ कोरिया आधार से तुलना के लिए है`,
-        id: `💵 Kamu sebenarnya menerima USD ($${finalUsd.toLocaleString('en-US')}) langsung — angka KRW hanya untuk perbandingan dengan dasar Korea`,
-        ja: `💵 実際にはドル（$${finalUsd.toLocaleString('en-US')}）でそのまま受け取ります — ウォン表示は韓国基準との比較用です`,
-        kk: `💵 Іс жүзінде сіз доллармен ($${finalUsd.toLocaleString('en-US')}) тікелей аласыз — вон сомасы Корея негізімен салыстыру үшін ғана`,
-        km: `💵 តាមពិតអ្នកទទួលបានជាដុល្លារ ($${finalUsd.toLocaleString('en-US')}) ដោយផ្ទាល់ — តួលេខវ៉ុនគឺសម្រាប់ប្រៀបធៀបជាមួយមូលដ្ឋានកូរ៉េប៉ុណ្ណោះ`,
-        ky: `💵 Чындыгында сиз түз эле доллар ($${finalUsd.toLocaleString('en-US')}) аласыз — вон суммасы Корея негизи менен салыштыруу үчүн гана`,
-        lo: `💵 ຕົວຈິງແລ້ວທ່ານໄດ້ຮັບເປັນໂດລາ ($${finalUsd.toLocaleString('en-US')}) ໂດຍກົງ — ຈຳນວນວອນແມ່ນສຳລັບປຽບທຽບກັບພື້ນຖານເກົາຫຼີເທົ່ານັ້ນ`,
-        mn: `💵 Та бодит байдал дээр доллараар ($${finalUsd.toLocaleString('en-US')}) шууд авна — воны дүн зөвхөн Солонгосын суурьтай харьцуулахад зориулагдсан`,
-        my: `💵 အမှန်တကယ်တွင် ဒေါ်လာ ($${finalUsd.toLocaleString('en-US')}) ကို တိုက်ရိုက်ရရှိမည် — ဝမ်းပမာဏသည် ကိုရီးယားအခြေခံနှင့် နှိုင်းယှဉ်ရန်အတွက်သာဖြစ်သည်`,
-        ne: `💵 वास्तवमा तपाईंले सिधै डलर ($${finalUsd.toLocaleString('en-US')}) पाउनुहुन्छ — वोन अंक कोरिया आधारसँग तुलना गर्नका लागि मात्र हो`,
-        si: `💵 ඔබ ඇත්ත වශයෙන්ම ඩොලර් ($${finalUsd.toLocaleString('en-US')}) සෘජුවම ලබා ගනී — වොන් අගය කොරියානු පදනම සමඟ සංසන්දනය සඳහා පමණි`,
-        tl: `💵 Sa totoo lang, direktang tatanggap ka ng USD ($${finalUsd.toLocaleString('en-US')}) — ang KRW figure ay para lang sa paghahambing sa batayan ng Korea`,
-        ur: `💵 آپ کو دراصل ڈالر ($${finalUsd.toLocaleString('en-US')}) براہ راست ملتے ہیں — وون کا ہندسہ صرف کوریائی بنیاد سے موازنے کے لیے ہے`,
-        uz: `💵 Aslida siz to'g'ridan-to'g'ri dollar ($${finalUsd.toLocaleString('en-US')}) olasiz — von raqami faqat Koreya bazasi bilan taqqoslash uchun`,
-       pt: `💵 Você realmente recebe em USD ($${finalUsd.toLocaleString('en-US')}) diretamente — o valor em KRW é apenas para comparação com a base da Coreia`, es: `💵 Realmente recibes USD ($${finalUsd.toLocaleString('en-US')}) directamente; la cifra en KRW es solo para comparar con la base de Corea`, uk: `💵 Ви насправді отримуєте USD ($${finalUsd.toLocaleString('en-US')}) напряму — сума у KRW наведена лише для порівняння з корейською базою`, tet: `💵 Ó simu USD ($${finalUsd.toLocaleString('en-US')}) diretu duni — númeru KRW ba komparasaun de'it ho base Korea`}
+        ar: `💵 في الواقع تحصل على دولارات ($${finalUsd.toLocaleString('en-US')}) مباشرة من الولايات المتحدة — المبلغ المعروض هنا هو مجرد تحويل مرجعي`,
+        bn: `💵 আপনি আসলে সরাসরি যুক্তরাষ্ট্র থেকে ডলার ($${finalUsd.toLocaleString('en-US')}) পাবেন — এখানে দেখানো পরিমাণ শুধু একটি রেফারেন্স রূপান্তর`,
+        fr: `💵 Vous recevez en réalité directement des USD ($${finalUsd.toLocaleString('en-US')}) depuis les États-Unis — le montant affiché ici est une conversion de référence`,
+        hi: `💵 आपको असल में अमेरिका से सीधे डॉलर ($${finalUsd.toLocaleString('en-US')}) मिलते हैं — यहां दिखाई गई राशि केवल एक संदर्भ रूपांतरण है`,
+        id: `💵 Kamu sebenarnya menerima USD ($${finalUsd.toLocaleString('en-US')}) langsung dari AS — jumlah yang ditampilkan di sini hanyalah konversi referensi`,
+        ja: `💵 実際には米国からドル（$${finalUsd.toLocaleString('en-US')}）でそのまま受け取ります — ここに表示されている金額は参考換算値です`,
+        kk: `💵 Іс жүзінде сіз АҚШ-тан доллармен ($${finalUsd.toLocaleString('en-US')}) тікелей аласыз — мұнда көрсетілген сома — жай ғана анықтамалық айырбас`,
+        km: `💵 តាមពិតអ្នកទទួលបានជាដុល្លារ ($${finalUsd.toLocaleString('en-US')}) ដោយផ្ទាល់ពីសហរដ្ឋអាមេរិក — ចំនួនទឹកប្រាក់ដែលបង្ហាញនៅទីនេះគ្រាន់តែជាការប្តូរប្រាក់សម្រាប់យោង`,
+        ky: `💵 Чындыгында сиз АКШдан түз эле доллар ($${finalUsd.toLocaleString('en-US')}) аласыз — бул жерде көрсөтүлгөн сумма жөн гана маалымдама конверсия`,
+        lo: `💵 ຕົວຈິງແລ້ວທ່ານໄດ້ຮັບເປັນໂດລາ ($${finalUsd.toLocaleString('en-US')}) ໂດຍກົງຈາກສະຫະລັດ — ຈຳນວນທີ່ສະແດງຢູ່ນີ້ແມ່ນພຽງແຕ່ການແປງເພື່ອອ້າງອີງ`,
+        mn: `💵 Та бодит байдал дээр АНУ-аас доллараар ($${finalUsd.toLocaleString('en-US')}) шууд авна — энд харагдаж буй дүн нь зөвхөн лавлагаа хөрвүүлэлт юм`,
+        my: `💵 အမှန်တကယ်တွင် အမေရိကန်မှ ဒေါ်လာ ($${finalUsd.toLocaleString('en-US')}) ကို တိုက်ရိုက်ရရှိမည် — ဤနေရာတွင်ပြသထားသောပမာဏသည် ရည်ညွှန်းအတွက်သာလဲလှယ်ထားခြင်းဖြစ်သည်`,
+        ne: `💵 वास्तवमा तपाईंले अमेरिकाबाट सिधै डलर ($${finalUsd.toLocaleString('en-US')}) पाउनुहुन्छ — यहाँ देखाइएको रकम केवल सन्दर्भका लागि गरिएको रूपान्तरण हो`,
+        si: `💵 ඔබ ඇත්ත වශයෙන්ම ඇමරිකාවෙන් ඩොලර් ($${finalUsd.toLocaleString('en-US')}) සෘජුවම ලබා ගනී — මෙහි පෙන්වා ඇති මුදල යොමු කිරීම සඳහා පරිවර්තනයක් පමණි`,
+        tl: `💵 Sa totoo lang, direktang tatanggap ka ng USD ($${finalUsd.toLocaleString('en-US')}) mula sa US — ang halagang ipinapakita dito ay reference conversion lamang`,
+        ur: `💵 آپ کو دراصل امریکہ سے سیدھا ڈالر ($${finalUsd.toLocaleString('en-US')}) ملتے ہیں — یہاں دکھائی گئی رقم صرف حوالہ جاتی تبدیلی ہے`,
+        uz: `💵 Aslida siz AQShdan to'g'ridan-to'g'ri dollar ($${finalUsd.toLocaleString('en-US')}) olasiz — bu yerda ko'rsatilgan summa faqat ma'lumot uchun konvertatsiya`,
+       pt: `💵 Você realmente recebe em USD ($${finalUsd.toLocaleString('en-US')}) diretamente dos EUA — o valor mostrado aqui é apenas uma conversão de referência`, es: `💵 Realmente recibes USD ($${finalUsd.toLocaleString('en-US')}) directamente desde EE. UU.; el monto mostrado aquí es solo una conversión de referencia`, uk: `💵 Ви насправді отримуєте USD ($${finalUsd.toLocaleString('en-US')}) напряму зі США — показана тут сума є лише довідковою конвертацією`, tet: `💵 Ó simu USD ($${finalUsd.toLocaleString('en-US')}) diretu duni husi EUA — valór ne'ebé hatudu iha ne'e sá de'it konversaun referénsia`}
     );
     usdNote.style.display = 'block';
     // 아래 cny/inr/other 세 분기 중 실제로 해당하는 것 하나만 showForeignRateEditor()를
@@ -10925,7 +10936,7 @@ function updateHomeCalc(usdOverride){
     }
   }
 
-  refreshDreamResultIfOpen(formatWon(final));
+  refreshDreamResultIfOpen(formatEokKrwInDisplayCurrency(final, sharedInputCurrency));
 }
 
 function onCompareAmountTyped(){
