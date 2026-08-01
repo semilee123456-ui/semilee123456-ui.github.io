@@ -607,23 +607,32 @@ let isRateManuallyEdited = false; // 유저가 환율을 직접 수정했는지 
 // 19개 통화 각각 별도 입력칸을 만드는 대신, 현재 선택된 국가에 해당하는 통화 하나만 공유
 // 입력칸(#home-foreign-rate-input)에 연결해서 재사용 — activeForeignCurrencyCode가 "지금 이
 // 입력칸이 어느 통화를 가리키는지" 추적함.
+// 2026-08-01: 비교 탭에는 이 편집창 자체가 아예 없어서 IDR/JPY 등을 골라도 그 통화 환율을
+// 고칠 방법이 없었음(사용자 지적) — sharedInputCurrency가 홈/비교 탭 공유 상태인 것과 같은
+// 원칙으로, 이 편집창도 두 탭(home-/compare- 접두어) 모두에 동시에 반영하도록 확장함
+// (home-rate-input/compare-rate-input이 이미 EXCHANGE_RATE 하나를 공유하는 것과 동일 패턴).
 let activeForeignCurrencyCode = null;
+const FOREIGN_RATE_EDITOR_PREFIXES = ['home', 'compare'];
 function showForeignRateEditor(code, rate){
   activeForeignCurrencyCode = code;
-  const row = document.getElementById('home-foreign-rate-row');
-  const input = document.getElementById('home-foreign-rate-input');
-  const codeEl = document.getElementById('home-foreign-rate-code');
-  if (!row || !input || !codeEl) return;
-  // 사용자가 지금 이 칸에 타이핑 중이면(activeElement) 값을 덮어쓰지 않음 — home-rate-input의
-  // 기존 패턴과 동일(타이핑 도중 재계산이 커서 위치를 흩트리지 않도록)
-  if (document.activeElement !== input) input.value = rate.toLocaleString('en-US', { maximumFractionDigits: 4 });
-  codeEl.textContent = code;
-  row.style.display = 'block';
+  FOREIGN_RATE_EDITOR_PREFIXES.forEach(prefix => {
+    const row = document.getElementById(`${prefix}-foreign-rate-row`);
+    const input = document.getElementById(`${prefix}-foreign-rate-input`);
+    const codeEl = document.getElementById(`${prefix}-foreign-rate-code`);
+    if (!row || !input || !codeEl) return;
+    // 사용자가 지금 이 칸에 타이핑 중이면(activeElement) 값을 덮어쓰지 않음 — home-rate-input의
+    // 기존 패턴과 동일(타이핑 도중 재계산이 커서 위치를 흩트리지 않도록)
+    if (document.activeElement !== input) input.value = rate.toLocaleString('en-US', { maximumFractionDigits: 4 });
+    codeEl.textContent = code;
+    row.style.display = 'block';
+  });
 }
 function hideForeignRateEditor(){
   activeForeignCurrencyCode = null;
-  const row = document.getElementById('home-foreign-rate-row');
-  if (row) row.style.display = 'none';
+  FOREIGN_RATE_EDITOR_PREFIXES.forEach(prefix => {
+    const row = document.getElementById(`${prefix}-foreign-rate-row`);
+    if (row) row.style.display = 'none';
+  });
 }
 // KRW용 parseRateInput()은 500~3000 범위를 벗어나면 오타로 보고 되돌리는데(원/달러 환율
 // 상식 범위), 위안화(6대)·인도네시아 루피아(만 단위) 등은 통화마다 자릿수가 완전히 달라서
@@ -635,15 +644,19 @@ function parseForeignRateInput(str, currentValue){
   const n = Number(sanitized);
   return isNaN(n) || n <= 0 ? currentValue : n;
 }
-function onForeignRateChanged(){
+// inputEl: 실제로 타이핑한 입력 요소(home-foreign-rate-input 또는 compare-foreign-rate-input) —
+// 어느 탭에서 고쳤든 같은 CURRENCY_RATE_CONFIG를 갱신하고 두 탭 다 다시 그림(showForeignRateEditor가
+// 나머지 탭 입력칸도 같이 동기화함, activeElement 가드 덕분에 지금 타이핑 중인 칸은 안 건드림)
+function onForeignRateChanged(inputEl){
   if (!activeForeignCurrencyCode) return;
   const cfg = CURRENCY_RATE_CONFIG.find(c => c.code === activeForeignCurrencyCode);
   if (!cfg) return;
-  const input = document.getElementById('home-foreign-rate-input');
+  const input = inputEl || document.getElementById('home-foreign-rate-input');
   const currentGetter = CURRENCY_DISPLAY_META[activeForeignCurrencyCode];
   const currentValue = currentGetter ? currentGetter.get() : 0;
   cfg.apply(parseForeignRateInput(input.value, currentValue));
   updateHomeCalc();
+  updateCalc();
 }
 
 // fetch에 타임아웃을 걸어주는 헬퍼 — 해외(느린 회선/일부 API 접속 제한 지역)에서
