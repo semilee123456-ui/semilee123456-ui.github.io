@@ -2390,3 +2390,17 @@ fr/hi/tl/ja/uk)를 직접 로드해서 홈/비교/확률체감/FAQ를 눌러가�
 **검증**: `node --check`, `tests/lang_leak_audit.js`(104개, 0)·`console_error_audit.js`
 (161개, 0)·`audit_odds_compare.js`(40개, 0)·`wrap_audit.js`(28개, 0) 전부 클린. PR #32
 squash merge 완료.
+
+**(D) 같은 세션 후속 — "언어 100% 다 됐냐" 질문에 재확인, 실제로 안 됐던 것 발견·완성(PR #34)**:
+사용자가 직접 물어봐서 `tests/i18n_coverage_audit.js`를 다시 돌려봤더니 여전히 2건
+(`checkDate.label`/`checkDate.skip`, "이미지로 저장" 카드 꾸미기 모달의 날짜 라벨)이 남아있었음
+— 이 2건은 여러 세션에 걸쳐 "기존 베이스라인이라 무관"이라고만 기록되고 실제로 채워진 적이
+없었음(한국어 폴백만 계속 노출되고 있었음, `data-i18n-ko` 속성으로 조용히 가려져 있어서
+눈에 잘 안 띄었던 것으로 보임). 26개 언어 전부 번역해서 `i18n-source/translations.json`에
+추가 후 `node scripts/build-i18n.js` 재빌드 — 이제 `i18n_coverage_audit.js`가 진짜
+`ISSUES: 0`. **다음 세션은 "i18n_coverage_audit이 2건 나오는 게 정상"이라고 더 이상 여기지
+말 것** — 실제로 완전히 채워졌으니 앞으로 이 테스트에서 이슈가 나오면 진짜 새 문제임.
+
+**검증**: JSON 유효성·`node scripts/build-i18n.js`(746개 키) 통과, Playwright로 영어 화면에서
+실제 모달 열어 번역 확인, `i18n_coverage_audit.js`(0)·`lang_leak_audit.js`(104개, 0)·
+`console_error_audit.js`(161개, 0)·`home_audit.js`(18개, 0) 전부 클린. PR #34 squash merge 완료.
