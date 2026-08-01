@@ -4856,17 +4856,54 @@ function setupDateLookup(){
 
   // 연/월이 바뀌면 그 달의 실제 일수에 맞게 일 select부터 다시 채운 뒤 조회를 새로 함
   const onYearOrMonthChanged = () => {
+    daySel.dataset.userPicked = '1';
     populateDlDaySelect(daySel, Number(yearSel.value), Number(monthSel.value), Number(daySel.value));
     onDlDateChanged();
   };
   yearSel.addEventListener('change', onYearOrMonthChanged);
   monthSel.addEventListener('change', onYearOrMonthChanged);
-  daySel.addEventListener('change', onDlDateChanged);
+  daySel.addEventListener('change', () => { daySel.dataset.userPicked = '1'; onDlDateChanged(); });
 
   // 처음엔 빈 채로 두는 게 의도였는데, 아이폰 사파리는 빈 date input에 "mm/dd/yyyy" 같은
   // 안내 텍스트조차 안 보여줘서 완전히 텅 빈 칸처럼 보이는 문제가 있었음(스크린샷으로 확인,
   // 2026-07-22) — 오늘 날짜로 기본값을 채워서 처음부터 뭔가 보이게 하고, 그 날짜 결과도 바로 보여줌
   renderDateLookupResult(getDlSelectedDate());
+
+  // 2026-08-01: 사용자 피드백 — 기본값을 "오늘"로 두면, 그날 추첨이 아직 아카이브에 반영되기
+  // 전(추첨 후 며칠의 반영 지연이 있음, odds-data.js 자동 백필 봇 참고)엔 첫 화면부터 "기록
+  // 없음"만 보여서 매번 허탕치는 인상을 줌. 실제로 아카이브에 있는 가장 최근 날짜로 자동
+  // 이동시켜서 첫 화면부터 진짜 결과가 보이게 함 — 사용자가 이미 직접 날짜를 골랐다면
+  // (dataset.userPicked) 건드리지 않음. 데이터가 아직 로딩 중이면 로드 완료 후 한 번만 시도
+  const jumpToLatestArchivedDate = () => {
+    if (daySel.dataset.userPicked) return;
+    const latest = getMostRecentArchivedDrawDate();
+    if (!latest || getDlSelectedDate() === latest) return;
+    const [ly, lm, ld] = latest.split('-').map(Number);
+    yearSel.value = String(ly);
+    monthSel.value = String(lm);
+    populateDlDaySelect(daySel, ly, lm, ld);
+    renderDateLookupResult(getDlSelectedDate());
+  };
+  if (typeof JACKPOT_HISTORY !== 'undefined') {
+    jumpToLatestArchivedDate();
+  } else {
+    ensureOddsDataLoaded().then(jumpToLatestArchivedDate).catch(() => {});
+  }
+}
+
+// 위 jumpToLatestArchivedDate가 쓰는 헬퍼 — 당첨번호 아카이브 2개(파워볼/메가밀리언즈)가 잭팟
+// 아카이브보다 반영이 더 빠르므로(금액 확정엔 추가 시간이 걸림) 4개 아카이브 전부의 마지막
+// 항목 중 가장 늦은 날짜를 씀. 각 배열은 auto-backfill 봇이 항상 뒤에 이어붙이는 구조라
+// 마지막 원소가 곧 최신 날짜임(전수 스캔 불필요)
+function getMostRecentArchivedDrawDate(){
+  if (typeof JACKPOT_HISTORY === 'undefined') return null;
+  const archives = [POWERBALL_DRAW_ARCHIVE, MEGAMILLIONS_DRAW_ARCHIVE, POWERBALL_JACKPOT_ARCHIVE, MEGAMILLIONS_JACKPOT_ARCHIVE];
+  let latest = null;
+  for (const arr of archives) {
+    const last = arr[arr.length - 1];
+    if (last && (!latest || last[0] > latest)) latest = last[0];
+  }
+  return latest;
 }
 
 function renderDateLookupResult(dateStr){
