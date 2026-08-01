@@ -9549,6 +9549,33 @@ async function shareGenericPromo(){
   }
 }
 
+// 공유 문구(shareResult)에서 "150 Million USD"처럼 영어 단위를 그대로 박아넣으면 한국어/중국어/
+// 일본어 문장 한복판에서 어색하게 읽힘(2026-08-01 외부 검수 지적) — 직접 검증 가능한 이 4개
+// 언어(ko/en/zh/ja)만 각자 화자에게 자연스러운 단위(억/万/億/million)로 바꿔줌. 나머지 23개
+// 언어는 이미 각 언어 고유의 million 표현을 쓰고 있어(Triệu/млн/millones 등) 이 헬퍼를 타지 않음.
+function formatUsdMillionsNatural(amountMillions, lang){
+  const usd = amountMillions * 1000000;
+  const abs = Math.abs(usd);
+  if (lang === 'ko' || lang === 'zh' || lang === 'ja') {
+    const locale = lang === 'ko' ? 'ko-KR' : (lang === 'zh' ? 'zh-CN' : 'ja-JP');
+    const zhaoWord = lang === 'ko' ? '조' : (lang === 'zh' ? '万亿' : '兆');
+    const eokWord = lang === 'ko' ? '억' : (lang === 'zh' ? '亿' : '億');
+    const manWord = lang === 'ko' ? '만' : '万';
+    const dollarWord = lang === 'ko' ? '달러' : (lang === 'zh' ? '美元' : 'ドル');
+    const sep = lang === 'ko' ? ' ' : ''; // 한국어는 "1억 달러"처럼 띄어씀, 중국어/일본어는 "1亿美元"처럼 붙여씀
+    let numStr, unit;
+    if (abs >= 1e12) { numStr = (usd / 1e12).toLocaleString(locale, { maximumFractionDigits: 1 }); unit = zhaoWord; }
+    else if (abs >= 1e8) { numStr = (usd / 1e8).toLocaleString(locale, { maximumFractionDigits: 1 }); unit = eokWord; }
+    else if (abs >= 1e4) { numStr = (usd / 1e4).toLocaleString(locale, { maximumFractionDigits: 1 }); unit = manWord; }
+    else { numStr = Math.round(usd).toLocaleString(locale); unit = ''; }
+    return numStr + unit + sep + dollarWord;
+  }
+  // en
+  if (abs >= 1e9) return '$' + (usd / 1e9).toLocaleString('en-US', { maximumFractionDigits: 1 }) + ' billion';
+  if (abs >= 1e6) return '$' + (usd / 1e6).toLocaleString('en-US', { maximumFractionDigits: 1 }) + ' million';
+  return '$' + Math.round(usd).toLocaleString('en-US');
+}
+
 async function shareResult(){
   if (!isAmountManuallyEdited) { await shareGenericPromo(); return; }
   // 공유 문구/링크(?amount=)는 항상 "Million USD" 기준 숫자를 써야 함(문구 자체가 26개 언어
@@ -9556,6 +9583,11 @@ async function shareResult(){
   // 입력칸에 지금 보이는 텍스트(sharedInputCurrency 단위)를 그대로 쓰면 통화가 KRW 등일 때
   // 완전히 다른 숫자가 공유돼버리므로, 항상 정확한 원본(sharedAmountUsd)에서 다시 환산함
   const amountText = String(roundAmountForInput((sharedAmountUsd || 100000000) / 1000000));
+  const amountMillionsNum = parseFloat(amountText) || 0;
+  const amountTextKo = formatUsdMillionsNatural(amountMillionsNum, 'ko');
+  const amountTextEn = formatUsdMillionsNatural(amountMillionsNum, 'en');
+  const amountTextZh = formatUsdMillionsNatural(amountMillionsNum, 'zh');
+  const amountTextJa = formatUsdMillionsNatural(amountMillionsNum, 'ja');
   const finalAmt = document.getElementById('home-final-amt').textContent;
   const homeCountryVal = document.getElementById('homeCountrySelect').value;
   const country = homeCountryVal === 'us'
@@ -9567,9 +9599,9 @@ async function shareResult(){
     : pickLang('한국 거주자', 'Korea resident', '韩国居民', 'Cư dân Hàn Quốc', 'ผู้พำนักในเกาหลี', 'Резидент Кореи', buildCountryMore('kr'));
   const article = homeCountryVal === 'in' ? 'an' : 'a'; // "an India resident" vs "a US/China/Korea resident"
   const shareText = pickLang(
-    `나 미국 복권(${amountText} Million USD) 당첨되면 ${country} 기준 ${finalAmt} 실수령! 너도 얼마 받을 수 있는지 참택스에서 확인해봐 (참고용 시뮬레이션이에요)`,
-    `If I won the US lottery (${amountText} Million USD), my take-home as ${article} ${country} would be about ${finalAmt}. See how much you'd actually keep after tax on ChamTax! (This is a reference simulation)`,
-    `如果中了美国彩票（${amountText} Million USD），按${country}计算实得金额大约是${finalAmt}。来ChamTax算算你扣税后实际能拿到多少吧！（仅供参考的模拟计算）`,
+    `나 미국 복권(${amountTextKo}) 당첨되면 ${country} 기준 ${finalAmt} 실수령! 너도 얼마 받을 수 있는지 참택스에서 확인해봐 (참고용 시뮬레이션이에요)`,
+    `If I won the US lottery (${amountTextEn}), my take-home as ${article} ${country} would be about ${finalAmt}. See how much you'd actually keep after tax on ChamTax! (This is a reference simulation)`,
+    `如果中了美国彩票（${amountTextZh}），按${country}计算实得金额大约是${finalAmt}。来ChamTax算算你扣税后实际能拿到多少吧！（仅供参考的模拟计算）`,
     `Nếu trúng xổ số Mỹ (${amountText} Million USD), số tiền thực nhận theo ${country} sẽ khoảng ${finalAmt}. Xem bạn thực sự giữ lại bao nhiêu sau thuế trên ChamTax! (Đây là kết quả mô phỏng tham khảo)`,
     `ถ้าถูกลอตเตอรีสหรัฐฯ (${amountText} Million USD) เงินที่ได้รับจริงตาม${country}จะอยู่ที่ประมาณ ${finalAmt} ลองดูว่าคุณจะเหลือเงินจริงเท่าไหร่หลังหักภาษีที่ ChamTax! (นี่เป็นผลจำลองเพื่ออ้างอิง)`,
     `Если бы я выиграл в американскую лотерею (${amountText} Million USD), моя сумма на руки как ${country} составила бы около ${finalAmt}. Узнайте, сколько реально останется после налогов на ChamTax! (Это справочное моделирование)`,
@@ -9579,7 +9611,7 @@ async function shareResult(){
       fr: `Si je gagnais à la loterie américaine (${amountText} millions USD), mon revenu net en tant que ${country} serait d'environ ${finalAmt}. Découvrez combien il vous resterait réellement après impôt sur ChamTax ! (Ceci est une simulation de référence)`,
       hi: `अगर मैं अमेरिकी लॉटरी (${amountText} मिलियन USD) जीतूं, तो ${country} के रूप में मेरी हाथ में आने वाली राशि लगभग ${finalAmt} होगी। टैक्स कटने के बाद असल में कितना बचता है, यह ChamTax पर देखें! (यह एक संदर्भ सिमुलेशन है)`,
       id: `Kalau aku menang lotre AS (${amountText} Juta USD), take-home-ku sebagai ${country} akan sekitar ${finalAmt}. Lihat berapa yang benar-benar tersisa setelah pajak di ChamTax! (Ini simulasi referensi)`,
-      ja: `もしアメリカの宝くじ（${amountText} Million USD）に当たったら、${country}としての手取り額は約${finalAmt}になります。税金を引いた後に実際いくら残るかChamTaxで計算してみてください！（参考シミュレーションです）`,
+      ja: `もしアメリカの宝くじ（${amountTextJa}）に当たったら、${country}としての手取り額は約${finalAmt}になります。税金を引いた後に実際いくら残るかChamTaxで計算してみてください！（参考シミュレーションです）`,
       kk: `Егер мен АҚШ лотереясында (${amountText} млн USD) ұтып алсам, ${country} ретінде қолыма тиетін сома шамамен ${finalAmt} болар еді. Салықтан кейін нақты қанша қалатынын ChamTax-та есептеп көріңіз! (Бұл анықтамалық модельдеу)`,
       km: `ប្រសិនបើខ្ញុំឈ្នះឆ្នោតអាមេរិក (${amountText} លានដុល្លារ) ចំណូលសុទ្ធរបស់ខ្ញុំក្នុងនាម${country}នឹងមានប្រហែល ${finalAmt}។ សូមមើលថាតើអ្នកនឹងនៅសល់ប៉ុន្មានពិតប្រាកដបន្ទាប់ពីបង់ពន្ធនៅ ChamTax! (នេះជាការក្លែងធ្វើសម្រាប់យោង)`,
       ky: `Эгер мен АКШ лотереясында (${amountText} млн USD) утуп алсам, ${country} катары кол алдырма акчам болжол менен ${finalAmt} болмок. Салыктан кийин чын-чынына канча калаарын ChamTax'та эсептеп көрүңүз! (Бул шилтемелик моделдөө)`,
