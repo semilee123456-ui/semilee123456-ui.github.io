@@ -3160,7 +3160,7 @@ function setOddsGame(game){
   // 실제 잭팟에 맞춰 다시 맞춤 — 안 하면 위 카드(방금 바뀐 게임)와 계산기 드로어(이전 게임 기준
   // 기본값)가 또 서로 다른 숫자를 보여주는, 위와 똑같은 종류의 혼란이 재발함
   if (!isAmountManuallyEdited) {
-    const defaultUsd = JACKPOT_DATA[game].amountUsd * CASH_VALUE_RATIO;
+    const defaultUsd = getJackpotCashUsd(game);
     updateHomeCalc(defaultUsd);
     updateCalc(defaultUsd);
   }
@@ -3401,9 +3401,12 @@ function buildDrawScheduleMore(days){
 // 2026-07-29: 메가밀리언즈 잭팟이 당첨자가 나와서 5천만 달러로 리셋된 걸 사용자가 스크린샷
 // (USA Mega, Next Jackpot $50 Million · Fri Jul 31)으로 전달해서 갱신 — 이전 값(8억 달러)은
 // 당첨 전 마지막 회차 금액이라 리셋 이후로는 그대로 두면 실제보다 훨씬 부풀려진 잭팟을 보여주게 됨
+// cashUsd: 공식 사이트가 발표한 실제 일시불 현금가치(확인 가능하면 채움) — 없으면 화면 표시 시
+// CASH_VALUE_RATIO(58%) 추정치로 대체됨(getJackpotCashUsd() 참고). 공식 발표는 추첨 직전까지
+// 계속 갱신되니 "확인 필요" 없이 확실할 때만 채우고, 애매하면 비워서 추정치를 쓰게 둘 것.
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 707000000 },
-  megamillions: { amountUsd: 60000000 },
+  powerball:    { amountUsd: 707000000, cashUsd: 307300000 },
+  megamillions: { amountUsd: 60000000, cashUsd: 25500000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
@@ -6502,10 +6505,18 @@ function applyJackpotData(){
 
 const CASH_VALUE_RATIO = 0.58; // 일시불(lump sum)은 발표된 연금 기준 잭팟의 약 45~60% (현재가치 할인) — 중간값 사용, 화면 표시 문구와 일치
 
+// JACKPOT_DATA(오늘의 광고 잭팟)의 실제 일시불 현금가치를 구함 — 공식 발표값(cashUsd)이 있으면
+// 그걸 쓰고, 없으면 CASH_VALUE_RATIO 추정치로 대체(JACKPOT_HISTORY의 cashUsd 폴백 패턴과 동일).
+// 홈 카운트업/퀵필/잭팟카드/세후계산 기본값 4곳이 전부 이 함수를 거치므로 한 곳만 고치면 전체 반영됨
+function getJackpotCashUsd(game){
+  const entry = JACKPOT_DATA[game];
+  return entry.cashUsd || entry.amountUsd * CASH_VALUE_RATIO;
+}
+
 function initJackpotCardAmt(){
-  const krw = getJackpotKRW();
   // formatWon()이 이미 언어별(ko/en/zh/vi/th/ru) 단위 변환·표기를 전부 처리하므로 재사용
-  document.getElementById('jackpot-card-amt').textContent = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE) + formatEokKrwInDisplayCurrency((krw * CASH_VALUE_RATIO) / 100000000, sharedInputCurrency);
+  const cardCashUsd = getJackpotCashUsd(currentOddsGame);
+  document.getElementById('jackpot-card-amt').textContent = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE) + formatEokKrwInDisplayCurrency((cardCashUsd * EXCHANGE_RATE) / 100000000, sharedInputCurrency);
   // "일시불 세전"이라고만 하면 아래 펼쳤을 때 나오는 1단계(발표액)와 헷갈린다는 지적이 있어서,
   // 2단계 문구("일시불 선택 시")랑 표현을 맞춰서 "이 숫자는 일시불을 고를 때의 금액"이라는 걸 명확히 함
   document.getElementById('jackpot-card-amt-note').textContent = pickLang(
@@ -6552,23 +6563,23 @@ function initJackpotCardAmt(){
   // 버튼에는 실제로 입력창에 채워질 값(M USD)과 그 원화 감(약 -억원)을 같이 보여줌
   // 디자인 3차 개선: 버튼 안에서 원화 금액을 큰 글씨 주역으로, USD는 참고용 보조 문구로 분리
   // (이전엔 "M USD (원화)" 한 줄로 합쳐서 어느 게 중요한 숫자인지 안 와닿는다는 지적)
-  const quickfillMainLabel = (usd) => {
-    const cashUsd = usd * CASH_VALUE_RATIO;
+  const quickfillMainLabel = (cashUsd) => {
     return formatEokKrwInDisplayCurrency((cashUsd * EXCHANGE_RATE) / 100000000, sharedInputCurrency);
   };
   // 디자인 시안의 보조 문구 예시("$316M · 일시불")를 그대로 따름 — 기존 "ko/zh는 $ 생략" 규칙은
   // 이전의 "M USD가 주역인 한 줄 표기" 맥락에서 나온 것이라, 원화가 주역이 된 이 새 보조 캡션에는
   // 적용하지 않고 모든 언어에서 $ 기호를 붙임(디자인 3차 개선)
-  const quickfillSubLabel = (usd) => {
-    const cashUsd = usd * CASH_VALUE_RATIO;
+  const quickfillSubLabel = (cashUsd) => {
     const millions = Math.round(cashUsd / 1000000);
     const lumpSumWord = pickLang('일시불', 'lump-sum', '一次性', 'trả một lần', 'จ่ายครั้งเดียว', 'единовременно', LUMP_SUM_WORD_MORE);
     return `($${millions}M · ${lumpSumWord})`;
   };
-  document.getElementById('quickfill-pb-amt').textContent = quickfillMainLabel(pbUsd);
-  document.getElementById('quickfill-pb-usd').textContent = quickfillSubLabel(pbUsd);
-  document.getElementById('quickfill-mm-amt').textContent = quickfillMainLabel(mgUsd);
-  document.getElementById('quickfill-mm-usd').textContent = quickfillSubLabel(mgUsd);
+  const pbCashUsd = getJackpotCashUsd('powerball');
+  const mgCashUsd = getJackpotCashUsd('megamillions');
+  document.getElementById('quickfill-pb-amt').textContent = quickfillMainLabel(pbCashUsd);
+  document.getElementById('quickfill-pb-usd').textContent = quickfillSubLabel(pbCashUsd);
+  document.getElementById('quickfill-mm-amt').textContent = quickfillMainLabel(mgCashUsd);
+  document.getElementById('quickfill-mm-usd').textContent = quickfillSubLabel(mgCashUsd);
 }
 
 // 홈 화면 일시불 입력칸/슬라이더에 특정 현금가치(USD)를 채워넣는 공통 로직 — 잭팟 퀵필 버튼
@@ -6614,7 +6625,7 @@ function setHomeLumpAmountUsd(cashUsd, btn, exactCalc, keepAnnouncedTab){
 
 function fillHomeAmountFromJackpot(game, btn){
   const amountUsd = JACKPOT_DATA[game].amountUsd;
-  const cashUsd = amountUsd * CASH_VALUE_RATIO;
+  const cashUsd = getJackpotCashUsd(game);
   setHomeLumpAmountUsd(cashUsd, btn, false, true);
   // 일시불 칸만 채우고 연금액 칸은 그대로 두면, 탭을 "연금액"으로 바꿨을 때 이 잭팟과 무관한
   // 예전 값(또는 빈칸)이 보여서 혼란스러움 — 같은 발표 금액(amountUsd) 기준으로 연금액 칸도
@@ -7773,7 +7784,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 입력한 값처럼 읽어버려서 바로 위 updateHomeCalc()가 막 설정한 기본값을 곧장 덮어써버림
   // (실제로 이 문제로 아래 기본값 계산이 무효화되는 걸 콘솔 트레이스로 확인함) — 두 함수에
   // 반드시 같은 값을 명시적으로 넘겨서 어느 쪽이 나중에 불려도 항상 같은 기본값으로 맞춰지게 함
-  const defaultStartUsd = JACKPOT_DATA.powerball.amountUsd * CASH_VALUE_RATIO;
+  const defaultStartUsd = getJackpotCashUsd('powerball');
   updateHomeCalc(defaultStartUsd); updateCalc(defaultStartUsd);
   initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); renderFilingDday(); setupFaqFloatBtnScrollVisibility(); adjustNavIconVisibility();
 });
