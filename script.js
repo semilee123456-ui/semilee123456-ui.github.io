@@ -76,6 +76,15 @@ function setLanguage(lang, isManual){
   if (!isCurrencyManuallyEdited && LANG_TO_CURRENCY[lang]) {
     setSharedInputCurrency(LANG_TO_CURRENCY[lang]);
   }
+  // 2026-08-01: 통화와 같은 원칙으로 세금 계산 기준 국가도 언어를 따라 자동으로 맞춰줌 — 다만
+  // 세금 계산 결과 자체를 바꾸는 값이라 통화보다 리스크가 커서, isManual=false로 호출해
+  // "아직 확인 안 된 추측"으로 표시하고(countryWasAutoGuessed), updateHomeCalc()가 그동안
+  // "자동으로 맞췄어요, 확인해주세요" 안내를 계속 노출하게 함(#home-country-autoguess-hint 참고).
+  // 사용자가 국가를 한 번이라도 직접 고르면(isCountryManuallyEdited) 그 뒤로는 언어를 다시
+  // 바꿔도 이 자동 전환이 그 선택을 덮어쓰지 않음
+  if (!isCountryManuallyEdited && LANG_TO_COUNTRY[lang]) {
+    setHomeCountry(LANG_TO_COUNTRY[lang], false);
+  }
   // 번역 JSON을 불러오는 동안에는 화면이 기존 언어(보통 한국어 기본 텍스트) 그대로 보이다가,
   // 로드가 끝나면 applyTranslations()가 다시 실행되며 새 언어로 바뀜 — 언어 전환 버튼은
   // onclick="setLanguage(...)"처럼 이 Promise를 기다리지 않고 바로 다음 동작(예: 화면 이동)으로
@@ -843,6 +852,17 @@ let sharedInputCurrency = 'KRW';
 // true(2026-07-29 언어→통화 자동 연동 추가와 함께 신규) — isAmountManuallyEdited와 같은 원칙:
 // 한 번이라도 직접 골랐으면 그 뒤로 언어를 바꿔도 자동 전환이 그 선택을 덮어쓰지 않게 함
 let isCurrencyManuallyEdited = false;
+// 세금 기준 국가(#homeCountrySelect·country-toggle-btn)를 사용자가 직접 고르거나, ?country=
+// URL 파라미터·"사는 나라를 골라서 바로 보기" 선택기처럼 확실한 신호로 이미 정해진 적 있으면
+// true(2026-08-01, 언어→국가 자동 연동 추가와 함께 신규) — isCurrencyManuallyEdited와 같은 원칙.
+// setHomeCountry(country, isManual)의 isManual 기본값이 true라, 이 플래그를 명시적으로 안
+// 건드리는 유일한 호출부는 아래 setLanguage()의 언어 기반 자동 추정뿐임
+let isCountryManuallyEdited = false;
+// 현재 sharedCountry 값이 사용자가 직접 고른 게 아니라 언어 기반 추정으로만 정해진 상태인지 —
+// true인 동안 updateHomeCalc()가 "자동으로 맞췄어요, 확인해주세요" 안내를 노출함(#home-country-
+// autoguess-hint). setHomeCountry()가 isManual=true로 호출되는 순간(사용자가 직접 국가를
+// 고르거나, ?country= URL 파라미터처럼 확실한 신호가 온 순간) false로 꺼짐
+let countryWasAutoGuessed = false;
 // 언어 코드 → 그 언어권에서 가장 자연스러운 통화 코드. 1국가 1언어로 깔끔하게 대응되는
 // 언어만 넣음(예: 크메르어→캄보디아 리엘). 여러 나라에 걸쳐 쓰이는 언어(아랍어·프랑스어·
 // 스페인어·포르투갈어·우크라이나어)는 "이 통화다"라고 단정할 근거가 없어서 일부러 뺌 —
@@ -852,6 +872,24 @@ const LANG_TO_CURRENCY = {
   km: 'KHR', ne: 'NPR', id: 'IDR', my: 'MMK', si: 'LKR', uz: 'UZS',
   mn: 'MNT', kk: 'KZT', ky: 'KGS', ur: 'PKR', bn: 'BDT', lo: 'LAK',
   ja: 'JPY', hi: 'INR', tl: 'PHP',
+};
+// 언어 코드 → COUNTRY_TAX_PROFILES에 실제로 있는, 그 언어가 가리키는 세금 기준 국가
+// (2026-08-01 추가, "사이트 타겟을 한국인에서 전 세계로 넓히면서 통화는 언어 따라 자동
+// 전환되는데 세금 기준 국가는 항상 한국 고정"이라는 비대칭을 해소하기 위함). LANG_TO_CURRENCY와
+// 같은 원칙으로 "이 21개국 목록 안에서" 1언어=1국가로 깔끔하게 대응되는 언어만 넣음 — 위 통화
+// 표에서 일부러 뺀 아랍어·프랑스어·스페인어·포르투갈어·우크라이나어·테툼어는 애초에 대응되는
+// 나라가 이 21개국 목록에 없어서 여기도 자연히 제외됨(모호해서가 아니라 해당사항이 없음).
+// 러시아어는 카자흐스탄·키르기스스탄·우즈베키스탄에서도 널리 쓰이지만, 그 나라들은 이미 자체
+// 언어 코드(kk/ky/uz)가 따로 있어 그 언어를 쓰는 사람에겐 그쪽이 먼저 잡히므로, 러시아어
+// 자체는 통화 표와 같은 원칙으로 러시아에 대응시킴. 세금 계산 결과에 직접 영향을 주는 값이라
+// 통화보다 훨씬 신중해야 함 — 그래서 반드시 isCountryManuallyEdited로 사용자의 직접 선택을
+// 덮어쓰지 않게 하고, 계산기 화면에도 "추측된 값이니 확인하라"는 안내를 같이 노출함
+// (updateHomeCalc() 쪽 country-toggle-hint 참고).
+const LANG_TO_COUNTRY = {
+  ko: 'kr', en: 'us', zh: 'cn', vi: 'vn', th: 'th', ru: 'ru',
+  km: 'kh', ne: 'np', id: 'id', my: 'mm', si: 'lk', uz: 'uz',
+  mn: 'mn', kk: 'kz', ky: 'kg', ur: 'pk', bn: 'bd', lo: 'la',
+  ja: 'jp', hi: 'in', tl: 'ph',
 };
 // 연금액 탭에 마지막으로 입력된 "정확한" USD 백만 단위 값 — 슬라이더 위치(로그 스케일
 // 반올림으로 정밀도 손실 있음)를 통화 전환 재환산의 원본으로 쓰면 KRW↔다른 통화를 여러 번
@@ -9751,7 +9789,17 @@ function confirmEditMiniResult(rawValue){
   updateSliderFill(slider);
   updateHomeCalc(requiredUsd);
 }
-function setHomeCountry(country){
+function setHomeCountry(country, isManual = true){
+  // 2026-08-01: isManual 기본값 true라 기존 모든 호출부(버튼 onclick, select onchange,
+  // ?country= URL 파라미터, goToRealAbroad 등)는 코드 수정 없이 그대로 "확실한 신호"로
+  // 취급됨 — 언어 기반 자동 추정(setLanguage() 안)만 명시적으로 isManual=false를 넘겨서
+  // "확인 전 추측"임을 표시함
+  if (isManual) {
+    isCountryManuallyEdited = true;
+    countryWasAutoGuessed = false;
+  } else {
+    countryWasAutoGuessed = true;
+  }
   document.getElementById('homeCountrySelect').value = country;
   document.querySelectorAll('#homeCountryToggle .country-toggle-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.country === country);
@@ -10820,6 +10868,51 @@ function updateHomeCalc(usdOverride){
   }
   filingNote.style.display = showFiling ? 'none' : 'block';
 
+  // 2026-08-01: 언어 기반 세금 기준 자동 추정(LANG_TO_COUNTRY, setLanguage() 참고) 결과를
+  // 사용자가 아직 직접 확인(수동 선택)하지 않았으면 항상 보이는 자리에 안내함 — 통화 자동
+  // 전환과 달리 이 값은 세금 계산 결과 자체를 바꾸므로, 조용히 자동 적용만 하고 끝내면 확신
+  // 있게 틀린 세금 결과를 보여줄 위험이 있음(2026-08-01 세션에서 이 위험을 이유로 처음엔
+  // 자동 전환 자체를 보류하기로 했다가, 이 안내 문구를 조건으로 다시 추가하기로 함)
+  const autoGuessHint = document.getElementById('home-country-autoguess-hint');
+  if (autoGuessHint) {
+    if (countryWasAutoGuessed) {
+      autoGuessHint.textContent = pickLang(
+        '🌐 언어 설정을 보고 자동으로 맞췄어요 — 다른 나라 기준이면 아래 "세금 계산 기준 자세히 설정"에서 바꿔주세요',
+        '🌐 Auto-set based on your language — if this isn’t your country, change it below under "Tax calculation basis"',
+        '🌐 已根据您的语言设置自动匹配 — 如果不是您所在的国家，请在下方"税收计算基准详细设置"中更改',
+        '🌐 Đã tự động chọn theo ngôn ngữ của bạn — nếu không đúng quốc gia, hãy đổi bên dưới ở "Cài đặt chi tiết cơ sở tính thuế"',
+        '🌐 ตั้งค่าอัตโนมัติตามภาษาของคุณ — หากไม่ใช่ประเทศของคุณ ให้เปลี่ยนด้านล่างใน "ตั้งค่ารายละเอียดฐานการคำนวณภาษี"',
+        '🌐 Автоматически подобрано по вашему языку — если это не ваша страна, измените ниже в разделе «Подробная настройка налоговой базы»',
+        {
+          km: '🌐 បានកំណត់ដោយស្វ័យប្រវត្តិតាមភាសារបស់អ្នក — ប្រសិនបើមិនមែនប្រទេសរបស់អ្នកទេ សូមផ្លាស់ប្តូរខាងក្រោមក្នុង "ការកំណត់លម្អិតមូលដ្ឋានគណនាពន្ធ"',
+          ne: '🌐 तपाईंको भाषाको आधारमा स्वतः सेट गरियो — यदि यो तपाईंको देश होइन भने, तलको "कर गणना आधार विस्तृत सेटिङ" मा परिवर्तन गर्नुहोस्',
+          id: '🌐 Diatur otomatis berdasarkan bahasa Anda — jika ini bukan negara Anda, ubah di bawah pada "Pengaturan detail dasar perhitungan pajak"',
+          my: '🌐 သင့်ဘာသာစကားအလိုက် အလိုအလျောက်သတ်မှတ်ထားသည် — ၎င်းသည် သင့်နိုင်ငံမဟုတ်ပါက အောက်ရှိ "အခွန်တွက်ချက်မှုအခြေခံအသေးစိတ်ဆက်တင်" တွင်ပြောင်းပါ',
+          si: '🌐 ඔබේ භාෂාව මත පදනම්ව ස්වයංක්‍රීයව සකසන ලදී — මෙය ඔබේ රට නොවේ නම්, පහත "බදු ගණන කිරීමේ පදනම විස්තරාත්මක සැකසුම්" තුළ වෙනස් කරන්න',
+          uz: "🌐 Tilingiz asosida avtomatik sozlandi — bu sizning davlatingiz bo'lmasa, quyida \"Soliq hisoblash bazasini batafsil sozlash\" bo'limida o'zgartiring",
+          mn: '🌐 Таны хэлний тохиргоог үндэслэн автоматаар тохируулсан — энэ нь таны улс биш бол доорх "Татвар тооцох суурийг дэлгэрэнгүй тохируулах"-аас өөрчилнө үү',
+          kk: '🌐 Тіліңізге қарай автоматты түрде орнатылды — бұл сіздің еліңіз болмаса, төмендегі «Салық есептеу базасын егжей-тегжейлі баптау» бөлімінен өзгертіңіз',
+          ky: '🌐 Тилиңизге жараша автоматтык түрдө коюлду — бул сиздин өлкөңүз болбосо, төмөндөгү "Салык эсептөө базасын кеңири ырастоо"дон өзгөртүңүз',
+          ur: '🌐 آپ کی زبان کی بنیاد پر خودکار طور پر سیٹ کیا گیا ہے — اگر یہ آپ کا ملک نہیں ہے تو نیچے "ٹیکس کیلکولیشن کی بنیاد کی تفصیلی ترتیبات" میں تبدیل کریں',
+          bn: '🌐 আপনার ভাষার ভিত্তিতে স্বয়ংক্রিয়ভাবে সেট করা হয়েছে — এটি আপনার দেশ না হলে, নিচে "কর গণনার ভিত্তি বিস্তারিত সেটিং"-এ পরিবর্তন করুন',
+          lo: '🌐 ຕັ້ງຄ່າອັດຕະໂນມັດຕາມພາສາຂອງທ່ານ — ຖ້າບໍ່ແມ່ນປະເທດຂອງທ່ານ, ໃຫ້ປ່ຽນຢູ່ດ້ານລຸ່ມໃນ "ຕັ້ງຄ່າລາຍລະອຽດພື້ນຖານການຄິດໄລ່ພາສີ"',
+          ja: '🌐 言語設定に基づいて自動設定しました — お住まいの国と違う場合は、下の「税金計算基準の詳細設定」で変更してください',
+          ar: '🌐 تم الضبط تلقائيًا بناءً على لغتك — إذا لم يكن هذا بلدك، فقم بالتغيير أدناه في "إعدادات أساس حساب الضريبة التفصيلية"',
+          hi: '🌐 आपकी भाषा के आधार पर स्वचालित रूप से सेट किया गया है — यदि यह आपका देश नहीं है, तो नीचे "कर गणना आधार विस्तृत सेटिंग" में बदलें',
+          fr: "🌐 Réglé automatiquement selon votre langue — si ce n'est pas votre pays, changez-le ci-dessous dans « Paramètres détaillés de la base de calcul fiscal »",
+          tl: '🌐 Awtomatikong na-set batay sa iyong wika — kung hindi ito ang bansa mo, palitan sa ibaba sa "Detalyadong setting ng batayan ng pagkalkula ng buwis"',
+          pt: '🌐 Definido automaticamente com base no seu idioma — se este não for o seu país, altere abaixo em "Configuração detalhada da base de cálculo de impostos"',
+          es: '🌐 Configurado automáticamente según tu idioma — si este no es tu país, cámbialo abajo en "Configuración detallada de la base de cálculo de impuestos"',
+          uk: '🌐 Автоматично налаштовано за вашою мовою — якщо це не ваша країна, змініть нижче в розділі «Детальні налаштування бази розрахунку податку»',
+          tet: '🌐 Configura automátiku bazeia ba o-nia lian — se ida ne’e la’ós o-nia nasaun, muda iha kraik iha "Configurasaun detallu baze kálkulu impostu"',
+        }
+      );
+      autoGuessHint.style.display = 'block';
+    } else {
+      autoGuessHint.style.display = 'none';
+    }
+  }
+
   // 세율 자체 또는 실제 적용 여부가 불확실한 나라만 별도 경고 배너로 표시 — 목록은 COUNTRY_TAX_DISCLAIMERS 참고
   const countryDisclaimer = document.getElementById('home-country-disclaimer');
   if (countryDisclaimer) {
@@ -11232,25 +11325,25 @@ const OTHER_COUNTRY_TOGGLE_MORE = {
 const COUNTRY_TAX_PROFILES = [
   { code: 'kr', flagCode: 'KR', label: '한국 거주자', labelEn: 'Korea resident', labelZh: '韩国居民', labelVi: 'Cư dân Hàn Quốc', labelTh: 'ผู้พำนักในเกาหลี', labelRu: 'Резидент Кореи', implemented: true, needsState: false, more: buildCountryMore('kr') },
   { code: 'us', flagCode: 'US', label: '미국 거주자', labelEn: 'US resident', labelZh: '美国居民', labelVi: 'Cư dân Mỹ', labelTh: 'ผู้พำนักในสหรัฐฯ', labelRu: 'Резидент США', implemented: true, needsState: true, more: buildCountryMore('us') },
-  { code: 'vn', flagCode: 'VN', label: '베트남 거주자 (실제 베트남 거주 기준)', labelEn: 'Vietnam resident (living in Vietnam)', labelZh: '越南居民（实际住在越南）', labelVi: 'Cư dân Việt Nam (sống thực tế tại Việt Nam)', labelTh: 'ผู้พำนักในเวียดนาม (อาศัยอยู่จริงในเวียดนาม)', labelRu: 'Резидент Вьетнама (проживающий во Вьетнаме)', implemented: true, needsState: false, more: buildCountryMore('vn') },
+  { code: 'vn', flagCode: 'VN', label: '베트남 거주자 (실제 베트남 거주 기준)', labelEn: 'Vietnam resident (living in Vietnam)', labelZh: '越南居民（实际住在越南）', labelVi: 'Cư dân Việt Nam (sống thực tế tại Việt Nam)', labelTh: 'ผู้พำนักในเวียดนาม (อาศัยอยู่จริงในเวียดนาม)', labelRu: 'Резидент Вьетнама (проживающий во Вьетнаме)', implemented: true, needsState: false, detailPage: 'vietnam-resident-us-lottery-tax.html', detailLabel: 'Tiếng Việt →', more: buildCountryMore('vn') },
   { code: 'cn', flagCode: 'CN', label: '중국 거주자 (실제 중국 거주 기준)', labelEn: 'China resident (living in China)', labelZh: '中国居民（实际住在中国）', labelVi: 'Cư dân Trung Quốc (sống thực tế tại Trung Quốc)', labelTh: 'ผู้พำนักในจีน (อาศัยอยู่จริงในจีน)', labelRu: 'Резидент Китая (проживающий в Китае)', implemented: true, needsState: false, detailPage: 'china-resident-us-lottery-tax.html', detailLabel: '中文详情 →', more: buildCountryMore('cn') },
-  { code: 'in', flagCode: 'IN', label: '인도 거주자 (실제 인도 거주 기준)', labelEn: 'India resident (living in India)', labelZh: '印度居民（实际住在印度）', labelVi: 'Cư dân Ấn Độ (sống thực tế tại Ấn Độ)', labelTh: 'ผู้พำนักในอินเดีย (อาศัยอยู่จริงในอินเดีย)', labelRu: 'Резидент Индии (проживающий в Индии)', implemented: true, needsState: false, more: buildCountryMore('in') },
-  { code: 'id', flagCode: 'ID', label: '인도네시아 거주자 (실제 인도네시아 거주 기준)', labelEn: 'Indonesia resident (living in Indonesia)', labelZh: '印尼居民（实际住在印尼）', labelVi: 'Cư dân Indonesia (sống thực tế tại Indonesia)', labelTh: 'ผู้พำนักในอินโดนีเซีย (อาศัยอยู่จริงในอินโดนีเซีย)', labelRu: 'Резидент Индонезии (проживающий в Индонезии)', implemented: true, needsState: false, more: buildCountryMore('id') },
-  { code: 'ph', flagCode: 'PH', label: '필리핀 거주자 (실제 필리핀 거주 기준, 근사치)', labelEn: 'Philippines resident (living in Philippines, approximate)', labelZh: '菲律宾居民（实际住在菲律宾，估算值）', labelVi: 'Cư dân Philippines (sống thực tế tại Philippines, ước tính)', labelTh: 'ผู้พำนักในฟิลิปปินส์ (อาศัยอยู่จริงในฟิลิปปินส์, ค่าประมาณ)', labelRu: 'Резидент Филиппин (проживающий на Филиппинах, приблизительно)', implemented: true, needsState: false, more: buildCountryMore('ph', 'approx') },
-  { code: 'th', flagCode: 'TH', label: '태국 거주자 (실제 태국 거주 기준, 추정치 ⚠️)', labelEn: 'Thailand resident (living in Thailand, unverified estimate ⚠️)', labelZh: '泰国居民（实际住在泰国，估算值⚠️）', labelVi: 'Cư dân Thái Lan (sống thực tế tại Thái Lan, ước tính ⚠️)', labelTh: 'ผู้พำนักในไทย (อาศัยอยู่จริงในไทย, ค่าประมาณ ⚠️)', labelRu: 'Резидент Таиланда (проживающий в Таиланде, оценка ⚠️)', implemented: true, needsState: false, more: buildCountryMore('th', 'estimate') },
-  { code: 'jp', flagCode: 'JP', label: '일본 거주자 (실제 일본 거주 기준)', labelEn: 'Japan resident (living in Japan)', labelZh: '日本居民（实际住在日本）', labelVi: 'Cư dân Nhật Bản (sống thực tế tại Nhật Bản)', labelTh: 'ผู้พำนักในญี่ปุ่น (อาศัยอยู่จริงในญี่ปุ่น)', labelRu: 'Резидент Японии (проживающий в Японии)', implemented: true, needsState: false, more: buildCountryMore('jp') },
-  { code: 'ru', flagCode: 'RU', label: '러시아 거주자 (실제 러시아 거주 기준, 조약 정지 ⚠️)', labelEn: 'Russia resident (living in Russia, treaty suspended ⚠️)', labelZh: '俄罗斯居民（实际住在俄罗斯，条约暂停⚠️）', labelVi: 'Cư dân Nga (sống thực tế tại Nga, hiệp định bị đình chỉ ⚠️)', labelTh: 'ผู้พำนักในรัสเซีย (อาศัยอยู่จริงในรัสเซีย, สนธิสัญญาระงับ ⚠️)', labelRu: 'Резидент России (проживающий в России, договор приостановлен ⚠️)', implemented: true, needsState: false, more: buildCountryMore('ru', 'treatySuspended') },
-  { code: 'np', flagCode: 'NP', label: '네팔 거주자 (실제 네팔 거주 기준)', labelEn: 'Nepal resident (living in Nepal)', labelZh: '尼泊尔居民（实际住在尼泊尔）', labelVi: 'Cư dân Nepal (sống thực tế tại Nepal)', labelTh: 'ผู้พำนักในเนปาล (อาศัยอยู่จริงในเนปาล)', labelRu: 'Резидент Непала (проживающий в Непале)', implemented: true, needsState: false, more: buildCountryMore('np') },
-  { code: 'lk', flagCode: 'LK', label: '스리랑카 거주자 (실제 스리랑카 거주 기준, 근사치)', labelEn: 'Sri Lanka resident (living in Sri Lanka, approximate)', labelZh: '斯里兰卡居民（实际住在斯里兰卡，估算值）', labelVi: 'Cư dân Sri Lanka (sống thực tế tại Sri Lanka, ước tính)', labelTh: 'ผู้พำนักในศรีลังกา (อาศัยอยู่จริงในศรีลังกา, ค่าประมาณ)', labelRu: 'Резидент Шри-Ланки (проживающий в Шри-Ланке, приблизительно)', implemented: true, needsState: false, more: buildCountryMore('lk', 'approx') },
-  { code: 'uz', flagCode: 'UZ', label: '우즈베키스탄 거주자 (실제 우즈베키스탄 거주 기준)', labelEn: 'Uzbekistan resident (living in Uzbekistan)', labelZh: '乌兹别克斯坦居民（实际住在乌兹别克斯坦）', labelVi: 'Cư dân Uzbekistan (sống thực tế tại Uzbekistan)', labelTh: 'ผู้พำนักในอุซเบกิสถาน (อาศัยอยู่จริงในอุซเบกิสถาน)', labelRu: 'Резидент Узбекистана (проживающий в Узбекистане)', implemented: true, needsState: false, more: buildCountryMore('uz') },
-  { code: 'kz', flagCode: 'KZ', label: '카자흐스탄 거주자 (실제 카자흐스탄 거주 기준)', labelEn: 'Kazakhstan resident (living in Kazakhstan)', labelZh: '哈萨克斯坦居民（实际住在哈萨克斯坦）', labelVi: 'Cư dân Kazakhstan (sống thực tế tại Kazakhstan)', labelTh: 'ผู้พำนักในคาซัคสถาน (อาศัยอยู่จริงในคาซัคสถาน)', labelRu: 'Резидент Казахстана (проживающий в Казахстане)', implemented: true, needsState: false, more: buildCountryMore('kz') },
-  { code: 'kg', flagCode: 'KG', label: '키르기스스탄 거주자 (실제 키르기스스탄 거주 기준)', labelEn: 'Kyrgyzstan resident (living in Kyrgyzstan)', labelZh: '吉尔吉斯斯坦居民（实际住在吉尔吉斯斯坦）', labelVi: 'Cư dân Kyrgyzstan (sống thực tế tại Kyrgyzstan)', labelTh: 'ผู้พำนักในคีร์กีซสถาน (อาศัยอยู่จริงในคีร์กีซสถาน)', labelRu: 'Резидент Кыргызстана (проживающий в Кыргызстане)', implemented: true, needsState: false, more: buildCountryMore('kg') },
-  { code: 'mm', flagCode: 'MM', label: '미얀마 거주자 (실제 미얀마 거주 기준, 근사치)', labelEn: 'Myanmar resident (living in Myanmar, approximate)', labelZh: '缅甸居民（实际住在缅甸，估算值）', labelVi: 'Cư dân Myanmar (sống thực tế tại Myanmar, ước tính)', labelTh: 'ผู้พำนักในเมียนมา (อาศัยอยู่จริงในเมียนมา, ค่าประมาณ)', labelRu: 'Резидент Мьянмы (проживающий в Мьянме, приблизительно)', implemented: true, needsState: false, more: buildCountryMore('mm', 'approx') },
-  { code: 'bd', flagCode: 'BD', label: '방글라데시 거주자 (실제 방글라데시 거주 기준)', labelEn: 'Bangladesh resident (living in Bangladesh)', labelZh: '孟加拉国居民（实际住在孟加拉国）', labelVi: 'Cư dân Bangladesh (sống thực tế tại Bangladesh)', labelTh: 'ผู้พำนักในบังกลาเทศ (อาศัยอยู่จริงในบังกลาเทศ)', labelRu: 'Резидент Бангладеш (проживающий в Бангладеш)', implemented: true, needsState: false, more: buildCountryMore('bd') },
-  { code: 'pk', flagCode: 'PK', label: '파키스탄 거주자 (실제 파키스탄 거주 기준, 추정치 ⚠️)', labelEn: 'Pakistan resident (living in Pakistan, unverified estimate ⚠️)', labelZh: '巴基斯坦居民（实际住在巴基斯坦，估算值⚠️）', labelVi: 'Cư dân Pakistan (sống thực tế tại Pakistan, ước tính ⚠️)', labelTh: 'ผู้พำนักในปากีสถาน (อาศัยอยู่จริงในปากีสถาน, ค่าประมาณ ⚠️)', labelRu: 'Резидент Пакистана (проживающий в Пакистане, оценка ⚠️)', implemented: true, needsState: false, more: buildCountryMore('pk', 'estimate') },
-  { code: 'kh', flagCode: 'KH', label: '캄보디아 거주자 (실제 캄보디아 거주 기준, 추정치 ⚠️)', labelEn: 'Cambodia resident (living in Cambodia, unverified estimate ⚠️)', labelZh: '柬埔寨居民（实际住在柬埔寨，估算值⚠️）', labelVi: 'Cư dân Campuchia (sống thực tế tại Campuchia, ước tính ⚠️)', labelTh: 'ผู้พำนักในกัมพูชา (อาศัยอยู่จริงในกัมพูชา, ค่าประมาณ ⚠️)', labelRu: 'Резидент Камбоджи (проживающий в Камбодже, оценка ⚠️)', implemented: true, needsState: false, more: buildCountryMore('kh', 'estimate') },
-  { code: 'mn', flagCode: 'MN', label: '몽골 거주자 (실제 몽골 거주 기준, 추정치 ⚠️)', labelEn: 'Mongolia resident (living in Mongolia, unverified estimate ⚠️)', labelZh: '蒙古居民（实际住在蒙古，估算值⚠️）', labelVi: 'Cư dân Mông Cổ (sống thực tế tại Mông Cổ, ước tính ⚠️)', labelTh: 'ผู้พำนักในมองโกเลีย (อาศัยอยู่จริงในมองโกเลีย, ค่าประมาณ ⚠️)', labelRu: 'Резидент Монголии (проживающий в Монголии, оценка ⚠️)', implemented: true, needsState: false, more: buildCountryMore('mn', 'estimate') },
-  { code: 'la', flagCode: 'LA', label: '라오스 거주자 (실제 라오스 거주 기준, 추정치 ⚠️)', labelEn: 'Laos resident (living in Laos, unverified estimate ⚠️)', labelZh: '老挝居民（实际住在老挝，估算值⚠️）', labelVi: 'Cư dân Lào (sống thực tế tại Lào, ước tính ⚠️)', labelTh: 'ผู้พำนักในลาว (อาศัยอยู่จริงในลาว, ค่าประมาณ ⚠️)', labelRu: 'Резидент Лаоса (проживающий в Лаосе, оценка ⚠️)', implemented: true, needsState: false, more: buildCountryMore('la', 'estimate') },
+  { code: 'in', flagCode: 'IN', label: '인도 거주자 (실제 인도 거주 기준)', labelEn: 'India resident (living in India)', labelZh: '印度居民（实际住在印度）', labelVi: 'Cư dân Ấn Độ (sống thực tế tại Ấn Độ)', labelTh: 'ผู้พำนักในอินเดีย (อาศัยอยู่จริงในอินเดีย)', labelRu: 'Резидент Индии (проживающий в Индии)', implemented: true, needsState: false, detailPage: 'india-resident-us-lottery-tax.html', detailLabel: 'हिन्दी →', more: buildCountryMore('in') },
+  { code: 'id', flagCode: 'ID', label: '인도네시아 거주자 (실제 인도네시아 거주 기준)', labelEn: 'Indonesia resident (living in Indonesia)', labelZh: '印尼居民（实际住在印尼）', labelVi: 'Cư dân Indonesia (sống thực tế tại Indonesia)', labelTh: 'ผู้พำนักในอินโดนีเซีย (อาศัยอยู่จริงในอินโดนีเซีย)', labelRu: 'Резидент Индонезии (проживающий в Индонезии)', implemented: true, needsState: false, detailPage: 'indonesia-resident-us-lottery-tax.html', detailLabel: 'Bahasa Indonesia →', more: buildCountryMore('id') },
+  { code: 'ph', flagCode: 'PH', label: '필리핀 거주자 (실제 필리핀 거주 기준, 근사치)', labelEn: 'Philippines resident (living in Philippines, approximate)', labelZh: '菲律宾居民（实际住在菲律宾，估算值）', labelVi: 'Cư dân Philippines (sống thực tế tại Philippines, ước tính)', labelTh: 'ผู้พำนักในฟิลิปปินส์ (อาศัยอยู่จริงในฟิลิปปินส์, ค่าประมาณ)', labelRu: 'Резидент Филиппин (проживающий на Филиппинах, приблизительно)', implemented: true, needsState: false, detailPage: 'philippines-resident-us-lottery-tax.html', detailLabel: 'Tagalog →', more: buildCountryMore('ph', 'approx') },
+  { code: 'th', flagCode: 'TH', label: '태국 거주자 (실제 태국 거주 기준, 추정치 ⚠️)', labelEn: 'Thailand resident (living in Thailand, unverified estimate ⚠️)', labelZh: '泰国居民（实际住在泰国，估算值⚠️）', labelVi: 'Cư dân Thái Lan (sống thực tế tại Thái Lan, ước tính ⚠️)', labelTh: 'ผู้พำนักในไทย (อาศัยอยู่จริงในไทย, ค่าประมาณ ⚠️)', labelRu: 'Резидент Таиланда (проживающий в Таиланде, оценка ⚠️)', implemented: true, needsState: false, detailPage: 'thailand-resident-us-lottery-tax.html', detailLabel: 'ภาษาไทย →', more: buildCountryMore('th', 'estimate') },
+  { code: 'jp', flagCode: 'JP', label: '일본 거주자 (실제 일본 거주 기준)', labelEn: 'Japan resident (living in Japan)', labelZh: '日本居民（实际住在日本）', labelVi: 'Cư dân Nhật Bản (sống thực tế tại Nhật Bản)', labelTh: 'ผู้พำนักในญี่ปุ่น (อาศัยอยู่จริงในญี่ปุ่น)', labelRu: 'Резидент Японии (проживающий в Японии)', implemented: true, needsState: false, detailPage: 'japan-resident-us-lottery-tax.html', detailLabel: '日本語 →', more: buildCountryMore('jp') },
+  { code: 'ru', flagCode: 'RU', label: '러시아 거주자 (실제 러시아 거주 기준, 조약 정지 ⚠️)', labelEn: 'Russia resident (living in Russia, treaty suspended ⚠️)', labelZh: '俄罗斯居民（实际住在俄罗斯，条约暂停⚠️）', labelVi: 'Cư dân Nga (sống thực tế tại Nga, hiệp định bị đình chỉ ⚠️)', labelTh: 'ผู้พำนักในรัสเซีย (อาศัยอยู่จริงในรัสเซีย, สนธิสัญญาระงับ ⚠️)', labelRu: 'Резидент России (проживающий в России, договор приостановлен ⚠️)', implemented: true, needsState: false, detailPage: 'russia-resident-us-lottery-tax.html', detailLabel: 'Русский →', more: buildCountryMore('ru', 'treatySuspended') },
+  { code: 'np', flagCode: 'NP', label: '네팔 거주자 (실제 네팔 거주 기준)', labelEn: 'Nepal resident (living in Nepal)', labelZh: '尼泊尔居民（实际住在尼泊尔）', labelVi: 'Cư dân Nepal (sống thực tế tại Nepal)', labelTh: 'ผู้พำนักในเนปาล (อาศัยอยู่จริงในเนปาล)', labelRu: 'Резидент Непала (проживающий в Непале)', implemented: true, needsState: false, detailPage: 'nepal-resident-us-lottery-tax.html', detailLabel: 'नेपाली →', more: buildCountryMore('np') },
+  { code: 'lk', flagCode: 'LK', label: '스리랑카 거주자 (실제 스리랑카 거주 기준, 근사치)', labelEn: 'Sri Lanka resident (living in Sri Lanka, approximate)', labelZh: '斯里兰卡居民（实际住在斯里兰卡，估算值）', labelVi: 'Cư dân Sri Lanka (sống thực tế tại Sri Lanka, ước tính)', labelTh: 'ผู้พำนักในศรีลังกา (อาศัยอยู่จริงในศรีลังกา, ค่าประมาณ)', labelRu: 'Резидент Шри-Ланки (проживающий в Шри-Ланке, приблизительно)', implemented: true, needsState: false, detailPage: 'srilanka-resident-us-lottery-tax.html', detailLabel: 'සිංහල →', more: buildCountryMore('lk', 'approx') },
+  { code: 'uz', flagCode: 'UZ', label: '우즈베키스탄 거주자 (실제 우즈베키스탄 거주 기준)', labelEn: 'Uzbekistan resident (living in Uzbekistan)', labelZh: '乌兹别克斯坦居民（实际住在乌兹别克斯坦）', labelVi: 'Cư dân Uzbekistan (sống thực tế tại Uzbekistan)', labelTh: 'ผู้พำนักในอุซเบกิสถาน (อาศัยอยู่จริงในอุซเบกิสถาน)', labelRu: 'Резидент Узбекистана (проживающий в Узбекистане)', implemented: true, needsState: false, detailPage: 'uzbekistan-resident-us-lottery-tax.html', detailLabel: "O'zbek →", more: buildCountryMore('uz') },
+  { code: 'kz', flagCode: 'KZ', label: '카자흐스탄 거주자 (실제 카자흐스탄 거주 기준)', labelEn: 'Kazakhstan resident (living in Kazakhstan)', labelZh: '哈萨克斯坦居民（实际住在哈萨克斯坦）', labelVi: 'Cư dân Kazakhstan (sống thực tế tại Kazakhstan)', labelTh: 'ผู้พำนักในคาซัคสถาน (อาศัยอยู่จริงในคาซัคสถาน)', labelRu: 'Резидент Казахстана (проживающий в Казахстане)', implemented: true, needsState: false, detailPage: 'kazakhstan-resident-us-lottery-tax.html', detailLabel: 'Қазақша →', more: buildCountryMore('kz') },
+  { code: 'kg', flagCode: 'KG', label: '키르기스스탄 거주자 (실제 키르기스스탄 거주 기준)', labelEn: 'Kyrgyzstan resident (living in Kyrgyzstan)', labelZh: '吉尔吉斯斯坦居民（实际住在吉尔吉斯斯坦）', labelVi: 'Cư dân Kyrgyzstan (sống thực tế tại Kyrgyzstan)', labelTh: 'ผู้พำนักในคีร์กีซสถาน (อาศัยอยู่จริงในคีร์กีซสถาน)', labelRu: 'Резидент Кыргызстана (проживающий в Кыргызстане)', implemented: true, needsState: false, detailPage: 'kyrgyzstan-resident-us-lottery-tax.html', detailLabel: 'Кыргызча →', more: buildCountryMore('kg') },
+  { code: 'mm', flagCode: 'MM', label: '미얀마 거주자 (실제 미얀마 거주 기준, 근사치)', labelEn: 'Myanmar resident (living in Myanmar, approximate)', labelZh: '缅甸居民（实际住在缅甸，估算值）', labelVi: 'Cư dân Myanmar (sống thực tế tại Myanmar, ước tính)', labelTh: 'ผู้พำนักในเมียนมา (อาศัยอยู่จริงในเมียนมา, ค่าประมาณ)', labelRu: 'Резидент Мьянмы (проживающий в Мьянме, приблизительно)', implemented: true, needsState: false, detailPage: 'myanmar-resident-us-lottery-tax.html', detailLabel: 'မြန်မာ →', more: buildCountryMore('mm', 'approx') },
+  { code: 'bd', flagCode: 'BD', label: '방글라데시 거주자 (실제 방글라데시 거주 기준)', labelEn: 'Bangladesh resident (living in Bangladesh)', labelZh: '孟加拉国居民（实际住在孟加拉国）', labelVi: 'Cư dân Bangladesh (sống thực tế tại Bangladesh)', labelTh: 'ผู้พำนักในบังกลาเทศ (อาศัยอยู่จริงในบังกลาเทศ)', labelRu: 'Резидент Бангладеш (проживающий в Бангладеш)', implemented: true, needsState: false, detailPage: 'bangladesh-resident-us-lottery-tax.html', detailLabel: 'বাংলা →', more: buildCountryMore('bd') },
+  { code: 'pk', flagCode: 'PK', label: '파키스탄 거주자 (실제 파키스탄 거주 기준, 추정치 ⚠️)', labelEn: 'Pakistan resident (living in Pakistan, unverified estimate ⚠️)', labelZh: '巴基斯坦居民（实际住在巴基斯坦，估算值⚠️）', labelVi: 'Cư dân Pakistan (sống thực tế tại Pakistan, ước tính ⚠️)', labelTh: 'ผู้พำนักในปากีสถาน (อาศัยอยู่จริงในปากีสถาน, ค่าประมาณ ⚠️)', labelRu: 'Резидент Пакистана (проживающий в Пакистане, оценка ⚠️)', implemented: true, needsState: false, detailPage: 'pakistan-resident-us-lottery-tax.html', detailLabel: 'اردو →', more: buildCountryMore('pk', 'estimate') },
+  { code: 'kh', flagCode: 'KH', label: '캄보디아 거주자 (실제 캄보디아 거주 기준, 추정치 ⚠️)', labelEn: 'Cambodia resident (living in Cambodia, unverified estimate ⚠️)', labelZh: '柬埔寨居民（实际住在柬埔寨，估算值⚠️）', labelVi: 'Cư dân Campuchia (sống thực tế tại Campuchia, ước tính ⚠️)', labelTh: 'ผู้พำนักในกัมพูชา (อาศัยอยู่จริงในกัมพูชา, ค่าประมาณ ⚠️)', labelRu: 'Резидент Камбоджи (проживающий в Камбодже, оценка ⚠️)', implemented: true, needsState: false, detailPage: 'cambodia-resident-us-lottery-tax.html', detailLabel: 'ខ្មែរ →', more: buildCountryMore('kh', 'estimate') },
+  { code: 'mn', flagCode: 'MN', label: '몽골 거주자 (실제 몽골 거주 기준, 추정치 ⚠️)', labelEn: 'Mongolia resident (living in Mongolia, unverified estimate ⚠️)', labelZh: '蒙古居民（实际住在蒙古，估算值⚠️）', labelVi: 'Cư dân Mông Cổ (sống thực tế tại Mông Cổ, ước tính ⚠️)', labelTh: 'ผู้พำนักในมองโกเลีย (อาศัยอยู่จริงในมองโกเลีย, ค่าประมาณ ⚠️)', labelRu: 'Резидент Монголии (проживающий в Монголии, оценка ⚠️)', implemented: true, needsState: false, detailPage: 'mongolia-resident-us-lottery-tax.html', detailLabel: 'Монгол →', more: buildCountryMore('mn', 'estimate') },
+  { code: 'la', flagCode: 'LA', label: '라오스 거주자 (실제 라오스 거주 기준, 추정치 ⚠️)', labelEn: 'Laos resident (living in Laos, unverified estimate ⚠️)', labelZh: '老挝居民（实际住在老挝，估算值⚠️）', labelVi: 'Cư dân Lào (sống thực tế tại Lào, ước tính ⚠️)', labelTh: 'ผู้พำนักในลาว (อาศัยอยู่จริงในลาว, ค่าประมาณ ⚠️)', labelRu: 'Резидент Лаоса (проживающий в Лаосе, оценка ⚠️)', implemented: true, needsState: false, detailPage: 'laos-resident-us-lottery-tax.html', detailLabel: 'ລາວ →', more: buildCountryMore('la', 'estimate') },
 ];
 
 // 나라별 비교 카드가 텍스트/숫자로만 나열돼서 폰에서 심심하다는 피드백 — 카드를 탭하면 이
