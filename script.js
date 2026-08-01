@@ -1031,11 +1031,18 @@ function formatWonIntl(n, units, locale){
   } else if (abs >= 1e9) {
     numStr = (krw / 1e9).toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
     unit = units[1];
-  } else {
+  } else if (abs >= 1e6) {
     numStr = (krw / 1e6).toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 1 });
     unit = units[0];
+  } else {
+    // 2026-08-01: 100만원 미만은 이 분기가 원래 없어서 항상 위 else(million 단위)로 떨어져
+    // "₩ 0 million"처럼 보이는 버그가 있었음(등수별 상금표를 formatWon() 기반으로 바꾸며
+    // $4~$100처럼 아주 작은 금액을 처음 통과시켜보다가 발견) — formatCompactCurrencyAmount()의
+    // 같은 임계값 분기와 동일한 방식으로 단위 없이 원 단위 숫자를 그대로 보여줌
+    numStr = Math.round(krw).toLocaleString(locale);
+    unit = '';
   }
-  return '₩ ' + numStr + ' ' + unit;
+  return '₩ ' + numStr + (unit ? ' ' + unit : '');
 }
 function formatWonEn(n){ return formatWonIntl(n, ['million', 'billion', 'trillion'], 'en-US'); }
 function formatWonVi(n){ return formatWonIntl(n, ['triệu', 'tỷ', 'nghìn tỷ'], 'vi-VN'); }
@@ -3104,30 +3111,6 @@ const ABOUT_PREFIX_MORE = {
 
   pt: `Cerca de `, es: `Aproximadamente `, uk: `Близько `, tet: `Maizumenus `,
 };
-// SMALL_KRW_LABEL의 "약 " + 금액(K/M/B 약어) 문구용 — 약어(₩1.5B 등)는 대부분 언어에서 라틴 문자
-// 그대로 통용되므로, ABOUT_PREFIX_MORE에 약어만 이어붙여 17개 언어 more 객체를 만듦
-function buildSmallKrwMore(abbrev){
-  const more = {};
-  Object.keys(ABOUT_PREFIX_MORE).forEach(lang => { more[lang] = ABOUT_PREFIX_MORE[lang] + abbrev; });
-  return more;
-}
-
-// usdToKrwLabel()은 억/조 단위 잭팟급 금액 전용(내부적으로 1억으로 나눠서 million/billion 표기를
-// 계산하므로, $4~$500처럼 작은 상금엔 그대로 못 씀) — 등수별 상금은 액수 종류가 한정적이라
-// USD 금액을 key로 하는 별도 소액용 표를 둠
-const SMALL_KRW_LABEL = {
-  1000000: ['약 15억원','About ₩1.5B','约15亿韩元','Khoảng 1,5 tỷ KRW','ประมาณ 1.5 พันล้านวอน','Около 1,5 млрд вон', buildSmallKrwMore('₩1.5B')],
-  50000:   ['약 7,500만원','About ₩75M','约7500万韩元','Khoảng 75 triệu KRW','ประมาณ 75 ล้านวอน','Около 75 млн вон', buildSmallKrwMore('₩75M')],
-  10000:   ['약 1,490만원','About ₩14.9M','约1490万韩元','Khoảng 14,9 triệu KRW','ประมาณ 14.9 ล้านวอน','Около 14,9 млн вон', buildSmallKrwMore('₩14.9M')],
-  500:     ['약 74만원','About ₩740K','约74万韩元','Khoảng 740 nghìn KRW','ประมาณ 740,000 วอน','Около 740 тыс. вон', buildSmallKrwMore('₩740K')],
-  200:     ['약 30만원','About ₩300K','约30万韩元','Khoảng 300 nghìn KRW','ประมาณ 300,000 วอน','Около 300 тыс. вон', buildSmallKrwMore('₩300K')],
-  100:     ['약 15만원','About ₩150K','约15万韩元','Khoảng 150 nghìn KRW','ประมาณ 150,000 วอน','Около 150 тыс. вон', buildSmallKrwMore('₩150K')],
-  10:      ['약 1만 5,000원','About ₩15K','约1.5万韩元','Khoảng 15 nghìn KRW','ประมาณ 15,000 วอน','Около 15 тыс. вон', buildSmallKrwMore('₩15K')],
-  7:       ['약 1만원','About ₩10K','约1万韩元','Khoảng 10 nghìn KRW','ประมาณ 10,000 วอน','Около 10 тыс. вон', buildSmallKrwMore('₩10K')],
-  5:       ['약 7,400원','About ₩7.4K','约7400韩元','Khoảng 7.400 KRW','ประมาณ 7,400 วอน','Около 7 400 вон', buildSmallKrwMore('₩7.4K')],
-  4:       ['약 6,000원','About ₩6K','约6000韩元','Khoảng 6.000 KRW','ประมาณ 6,000 วอน','Около 6 000 вон', buildSmallKrwMore('₩6K')],
-};
-
 function renderPrizeTiers(){
   const container = document.getElementById('odds-prize-tiers');
   if (!container) return;
@@ -3135,7 +3118,13 @@ function renderPrizeTiers(){
   container.innerHTML = tiers.map(t => {
     const matchLabel = pickLang(...t.match);
     const explainHtml = t.explain ? `<p class="prize-explain">${pickLang(...SPECIAL_MISSED_LABEL[currentOddsGame])}</p>` : '';
-    const krwLabel = pickLang(...SMALL_KRW_LABEL[t.usd]);
+    // 2026-08-01: 예전엔 이 금액이 SMALL_KRW_LABEL(USD 금액별로 미리 계산해둔 원화 문자열
+    // 하드코딩 표)이었음 — 실시간 환율도 안 쓰고 선택한 통화(sharedInputCurrency)도 전혀 안 봐서,
+    // IDR/JPY 등을 골라도 이 표만 항상 원화로 나오던 버그(사용자 지적). 사이트 다른 곳과 같은
+    // formatEokKrwInDisplayCurrency()로 교체 — 상금 종류가 10가지뿐이라 표를 미리 만들 필요
+    // 없이 그때그때 계산해도 비용 문제 없음
+    const krwLabel = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE)
+      + formatEokKrwInDisplayCurrency(t.usd * EXCHANGE_RATE / 100000000, sharedInputCurrency);
     return `<div class="prize-card">
       <div class="prize-left">
         <p class="prize-match">${matchLabel}</p>
@@ -8401,6 +8390,13 @@ function setSharedInputCurrency(code, isManual){
   // 동일한 문제라 같이 호출함
   updateHomeCalc();
   updateCalc();
+  // 확률체감 탭이 열려있을 때 통화만 바꿔도 잭팟 카드/등수별 상금표/잭팟 드로어가 이전 통화
+  // 그대로 남던 문제도 같은 원인·같은 해법 — onHomeRateChanged() 등이 이미 부르는 4종 세트와
+  // 동일하게 맞춤(2026-08-01, 등수별 상금표는 이날 formatWon 하드코딩에서 통화 인지형으로
+  // 같이 고침)
+  initJackpotCardAmt();
+  renderPrizeTiers();
+  refreshJackpotDrawerIfOpen();
   refreshAmountInputDisplaysForCurrency();
   // select.value를 이 함수가 직접 설정하는 경로(예: 다른 탭에서 이미 바뀐 값과 동기화)라 네이티브
   // change 이벤트가 안 나가는데, 커스텀 트리거 버튼(select-sheet-trigger)의 라벨은 그와 무관하게
