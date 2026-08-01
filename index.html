@@ -962,7 +962,7 @@
             <p class="usd-actual-note" id="home-other-note" style="display:none; margin-top:4px;"></p>
             <p class="usd-actual-note" id="home-foreign-rate-row" style="display:none; margin-top:4px;">
               <span data-i18n="common.exchangeRate">환율</span>
-              <input type="text" class="rate-input" id="home-foreign-rate-input" inputmode="decimal" oninput="onForeignRateChanged()">
+              <input type="text" class="rate-input" id="home-foreign-rate-input" inputmode="decimal" oninput="onForeignRateChanged(this)">
               <span id="home-foreign-rate-code"></span>
             </p>
             <p class="milestone-badge" id="home-milestone" style="display:none;"></p>
@@ -1261,6 +1261,14 @@
             <div class="slider-ticks" aria-hidden="true"></div>
           </div>
           <p class="krw-hint"><span id="compare-krw-amt-wrap">≈ <span id="compare-krw-amt">1,503억원</span> · </span><span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="compare-rate-input" value="1,503.4" inputmode="decimal" oninput="onCompareRateChanged()"><span data-i18n="common.won">원</span> <button type="button" class="rate-live-badge" onclick="retryLiveExchangeRate(this)" title="기본값 사용 중 · 탭하면 실시간 환율로 갱신" aria-label="환율 새로고침" data-i18n-aria-label="common.refreshRate"><span aria-hidden="true">🔄</span></button></p>
+          <!-- 2026-08-01: 홈 탭의 home-foreign-rate-row와 같은 목적 — 통화가 KRW/USD가 아닐 때
+               (예: IDR/JPY) 그 통화 환율을 이 탭에서도 바로 고칠 수 있게 함. sharedInputCurrency는
+               홈/비교 탭이 공유하므로 showForeignRateEditor()가 이 요소도 같이 채움 -->
+          <p class="krw-hint" id="compare-foreign-rate-row" style="display:none; margin-top:4px;">
+            <span data-i18n="common.exchangeRate">환율</span>
+            <input type="text" class="rate-input" id="compare-foreign-rate-input" inputmode="decimal" oninput="onForeignRateChanged(this)">
+            <span id="compare-foreign-rate-code"></span>
+          </p>
 
           <p class="filing-label" id="compare-state-label"><span class="flag-badge">US</span> <span data-i18n-html="compare.stateLabel">미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9% 로 크게 달라요 · 연방세는 별도로 합산돼요)</span></span></p>
           <div class="input-row" style="margin-bottom:4px;" id="compare-state-row">
