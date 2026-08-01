@@ -8210,6 +8210,26 @@ function formatCompactCurrencyAmount(usdMillions, code){
   const meta = CURRENCY_DISPLAY_META[code] || CURRENCY_DISPLAY_META.USD;
   const rawAmount = usdMillions * 1000000 * meta.get();
   const abs = Math.abs(rawAmount);
+  // 2026-08-01: 위 8개 통화("억" 누출) 수정 직후 사용자가 외부 검수를 한 번 더 받아보니,
+  // 이번엔 중국어/일본어(CNY/JPY 등 KRW 아닌 통화)에서 "billion" 같은 영어 단위가 새로
+  // 새는 회귀 버그가 발견됨 — 원인: 이 함수가 예전엔 Intl 압축표기(notation:'compact')에
+  // 기대고 있었는데, zh-CN/ja-JP 로케일은 마침 ICU 데이터가 좋아서 자동으로 万/亿/兆,
+  // 万/億/兆를 만들어주고 있었음(다른 8개 통화처럼 깨지지 않았음) — 그런데 위 수정에서
+  // Intl compact notation 자체를 아예 안 쓰기로 하면서, 中/日어의 1000 단위 아닌 10000
+  // 단위(万/亿/兆) 체계를 처리 못 하는 unitWordsForCurrentLang()의 영어 폴백을 타게
+  // 됐던 것. formatWonZh()/formatWonJa()는 "원(한국 돈)" 전용이라 그대로 재사용 못 해서,
+  // 같은 10000진법 로직만 통화 기호를 받는 형태로 여기 별도로 반영함.
+  if (currentLang === 'zh' || currentLang === 'ja') {
+    const locale = currentLang === 'zh' ? 'zh-CN' : 'ja-JP';
+    const wan = currentLang === 'zh' ? '万' : '万';
+    const yi = currentLang === 'zh' ? '亿' : '億';
+    const zhao = currentLang === 'zh' ? '万亿' : '兆';
+    const sym = meta.symbol || code + ' ';
+    if (abs >= 1e12) return sym + (rawAmount / 1e12).toLocaleString(locale, { maximumFractionDigits: 1 }) + zhao;
+    if (abs >= 1e8) return sym + (rawAmount / 1e8).toLocaleString(locale, { maximumFractionDigits: 1 }) + yi;
+    if (abs >= 1e4) return sym + (rawAmount / 1e4).toLocaleString(locale, { maximumFractionDigits: 1 }) + wan;
+    return sym + Math.round(rawAmount).toLocaleString(locale);
+  }
   const [millionWord, billionWord, trillionWord] = unitWordsForCurrentLang();
   let numStr, unit;
   if (abs >= 1e12) {
@@ -9571,7 +9591,7 @@ async function shareResult(){
       tl: `Kung mananalo ako sa lottery ng US (${amountText} Million USD), ang take-home ko bilang ${country} ay magiging humigit-kumulang ${finalAmt}. Tingnan kung magkano talaga ang matitira pagkatapos ng buwis sa ChamTax! (Ito ay isang reference simulation)`,
       ur: `اگر میں امریکی لاٹری (${amountText} ملین USD) جیت جاؤں تو ${country} کے طور پر میری ہاتھ میں آنے والی رقم تقریباً ${finalAmt} ہوگی۔ ٹیکس کٹنے کے بعد واقعی کتنا بچتا ہے یہ ChamTax پر حساب لگائیں! (یہ ایک حوالہ سیمولیشن ہے)`,
       uz: `Agar men AQSh lotereyasida (${amountText} million USD) yutsam, ${country} sifatida qo'lga tegadigan summam taxminan ${finalAmt} bo'lardi. Soliqdan keyin haqiqatda qancha qolishini ChamTax'da hisoblab ko'ring! (Bu ma'lumot uchun simulyatsiya)`,
-     pt: `Se eu ganhasse a loteria dos EUA (${amountText} milhões de USD), meu valor líquido como ${article} ${country} seria de cerca de ${finalAmt}. Veja quanto você realmente manteria após os impostos no ChamTax! (Esta é uma simulação de referência)`, es: `Si ganara la lotería de EE. UU. (${amountText} millones de USD), mi monto neto como ${article} ${country} sería de aprox. ${finalAmt}. ¡Mira cuánto te quedarías realmente después de impuestos en ChamTax! (Esta es una simulación de referencia)`, uk: `Якби я виграв(-ла) у лотерею США (${amountText} млн доларів США), моя сума на руки як ${article} ${country} становила б близько ${finalAmt}. Перевірте, скільки ви насправді залишите собі після податків на ChamTax! (Це довідкова симуляція)`, tet: `Se ha'u manán lotaria EUA (${amountText} Millaun USD), ha'u-nia lori ba uma nu'udar ${article} ${country} maizumenus ${finalAmt}. Haree hira mak ó sei guarda duni ho impostu hotu iha ChamTax! (Ne'e simulasaun referánsia)`}
+     pt: `Se eu ganhasse a loteria dos EUA (${amountText} milhões de USD), meu valor líquido como ${country} seria de cerca de ${finalAmt}. Veja quanto você realmente manteria após os impostos no ChamTax! (Esta é uma simulação de referência)`, es: `Si ganara la lotería de EE. UU. (${amountText} millones de USD), mi monto neto como ${country} sería de aprox. ${finalAmt}. ¡Mira cuánto te quedarías realmente después de impuestos en ChamTax! (Esta es una simulación de referencia)`, uk: `Якби я виграв(-ла) у лотерею США (${amountText} млн доларів США), моя сума на руки як ${country} становила б близько ${finalAmt}. Перевірте, скільки ви насправді залишите собі після податків на ChamTax! (Це довідкова симуляція)`, tet: `Se ha'u manán lotaria EUA (${amountText} Millaun USD), ha'u-nia lori ba uma nu'udar ${country} maizumenus ${finalAmt}. Haree hira mak ó sei guarda duni ho impostu hotu iha ChamTax! (Ne'e simulasaun referánsia)`}
   );
   // 공유 링크를 받은 사람이 빈 계산기가 아니라 나와 같은 결과를 바로 보게 하려면, 현재 계산기
   // 상태(금액/국가/주)를 URL 쿼리 파라미터로 실어 보내야 함 — DOMContentLoaded의 대칭 처리부가
