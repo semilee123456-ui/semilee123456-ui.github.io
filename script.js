@@ -3403,7 +3403,7 @@ function buildDrawScheduleMore(days){
 // 당첨 전 마지막 회차 금액이라 리셋 이후로는 그대로 두면 실제보다 훨씬 부풀려진 잭팟을 보여주게 됨
 const JACKPOT_DATA = {
   powerball:    { amountUsd: 707000000 },
-  megamillions: { amountUsd: 50000000 },
+  megamillions: { amountUsd: 60000000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
@@ -3427,7 +3427,7 @@ const GAME_NAME_MORE = {
 // Million"으로 같이 갱신함.
 const LATEST_DRAW = {
   powerball:    { date: '2026-07-29', numbers: [30, 36, 40, 42, 57], special: 2 },
-  megamillions: { date: '2026-07-28', numbers: [34, 48, 49, 59, 70], special: 12 },
+  megamillions: { date: '2026-07-31', numbers: [4, 18, 26, 43, 51], special: 4 },
 };
 
 
