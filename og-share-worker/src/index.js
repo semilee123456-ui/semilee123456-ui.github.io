@@ -23,7 +23,11 @@
 import { ImageResponse } from 'workers-og';
 
 const SITE_ORIGIN = 'https://chamtax.com';
-const MAX_LEN = 60; // 카드에 들어갈 텍스트 길이 상한(비정상적으로 긴 값으로 카드가 깨지는 것 방지)
+// 2026-08-01: 60자였을 때 스페인어(64자)·테툼어(61자)·인도네시아어(62자) 환급 체크리스트
+// 공유 문구가 단어 중간에서 그대로 잘리는 걸 발견(예: "...lista de verificaci"로 잘림) —
+// 실제 캡처된 27개 언어 문구 중 가장 긴 것(64자) 기준으로 여유를 두고 80으로 올림. 그래도
+// 비정상적으로 긴 값(공격/오입력)에 대한 안전장치 역할은 유지됨.
+const MAX_LEN = 80; // 카드에 들어갈 텍스트 길이 상한(비정상적으로 긴 값으로 카드가 깨지는 것 방지)
 
 // 2026-07-31: workers-og(=satori 기반)의 기본 내장 폰트는 라틴 문자만 지원해서, 카드 안
 // 비라틴 문자(한글 등)가 전부 네모(tofu)로 깨져 나오는 버그가 실제로 발견됨(사용자 카카오톡
@@ -117,15 +121,25 @@ function mainFontSize(text) {
   return 96;
 }
 
-function buildCardHtml({ label, main, sub, badge, takePct }) {
+// 2026-08-01: 카카오톡 공유 카드 검수 중 아랍어(ar)·우르두어(ur) 카드가 오른쪽에서 왼쪽으로
+// 읽는 언어인데도 왼쪽 정렬로 그대로 나온다는 지적을 받아 확인함 — buildCardHtml()에
+// direction/text-align이 전혀 없어서 항상 LTR로 그려지고 있었음. 이 두 언어일 때만 컨테이너에
+// direction:rtl + 텍스트 정렬을 오른쪽으로 바꾸고, 절대좌표로 고정된 badge(국가 배지)도
+// right→left로 반전시켜 카드의 "끝"(RTL 기준 왼쪽)에 자연스럽게 붙게 함.
+const RTL_LANGS = ['ar', 'ur'];
+
+function buildCardHtml({ label, main, sub, badge, takePct, lang }) {
   const hasBar = takePct !== null;
   const taxPct = hasBar ? 100 - takePct : null;
   const l = escapeHtml(label);
   const m = escapeHtml(main);
   const s = escapeHtml(sub);
   const bd = escapeHtml(badge);
+  const isRtl = RTL_LANGS.includes(lang);
+  const dirStyle = isRtl ? 'direction:rtl;text-align:right;' : '';
+  const badgeSideStyle = isRtl ? 'left:70px;' : 'right:70px;';
   return `
-  <div style="display:flex;flex-direction:column;width:1200px;height:630px;background:#F4F5F7;padding:70px;font-family:sans-serif;position:relative;">
+  <div style="display:flex;flex-direction:column;width:1200px;height:630px;background:#F4F5F7;padding:70px;font-family:sans-serif;position:relative;${dirStyle}">
     <div style="display:flex;align-items:center;gap:14px;">
       <div style="display:flex;width:56px;height:56px;border-radius:28px;background:#155445;color:#ffffff;align-items:center;justify-content:center;font-size:28px;font-weight:800;">C</div>
       <div style="display:flex;font-size:26px;color:#544E42;font-weight:600;">ChamTax · chamtax.com</div>
@@ -141,10 +155,10 @@ function buildCardHtml({ label, main, sub, badge, takePct }) {
       <div style="display:flex;width:${taxPct}%;height:100%;background:#C0392B;"></div>
     </div>
     <div style="display:flex;gap:28px;margin-top:18px;font-size:24px;color:#262420;">
-      <div style="display:flex;">● ${takePct}%</div>
-      <div style="display:flex;">● ${taxPct}%</div>
+      <div style="display:flex;"><span style="color:#155445;">●</span> ${takePct}%</div>
+      <div style="display:flex;"><span style="color:#C0392B;">●</span> ${taxPct}%</div>
     </div>` : ''}
-    ${bd ? `<div style="display:flex;position:absolute;bottom:56px;right:70px;font-size:22px;color:#828C97;">${bd}</div>` : ''}
+    ${bd ? `<div style="display:flex;position:absolute;bottom:56px;${badgeSideStyle}font-size:22px;color:#828C97;">${bd}</div>` : ''}
   </div>`;
 }
 

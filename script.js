@@ -8177,11 +8177,30 @@ function updateAmountUnitLabels(){
   if (reverseUnitEl) reverseUnitEl.textContent = parts.full;
 }
 
+// 2026-08-01: formatWon()이 이미 쓰는 언어별 million/billion/trillion 단위 단어를 그대로
+// 재사용(새 사전 안 만듦) — currentLang이 en/vi/th/ru면 그 전용 배열, LANG_UNIT_WORDS에 있는
+// 20개 언어는 거기서, 나머지(ko/zh/ja 등 이 함수가 원래 안 쓰던 언어)는 영어로 폴백.
+function unitWordsForCurrentLang(){
+  if (currentLang === 'en') return ['million', 'billion', 'trillion'];
+  if (currentLang === 'vi') return ['triệu', 'tỷ', 'nghìn tỷ'];
+  if (currentLang === 'th') return ['ล้าน', 'พันล้าน', 'ล้านล้าน'];
+  if (currentLang === 'ru') return ['млн', 'млрд', 'трлн'];
+  if (typeof currentLang !== 'undefined' && LANG_UNIT_WORDS[currentLang]) return LANG_UNIT_WORDS[currentLang];
+  return ['million', 'billion', 'trillion'];
+}
 // 슬라이더 눈금·희망액 미리보기처럼 "타이핑 가능할 필요가 없는" 통화 표시용 — KRW는
 // formatWon()(이미 언어별 억/조·million/billion 자동 전환을 갖춘 검증된 함수)을 그대로
-// 재사용하고, 그 외 통화는 Intl 압축 표기(notation:'compact')를 실제 통화 총액(백만 단위로
-// 미리 나누지 않은 원 단위)에 직접 적용함 — VND/IDR/UZS처럼 환율 자릿수가 큰 통화도 자동으로
-// 짧게 줄어들어("131T" 등) 슬라이더 눈금이 카드 밖으로 넘치는 걸 막아줌
+// 재사용함. 그 외 통화는 예전엔 Intl 압축 표기(notation:'compact')를 그대로 썼는데, 실제
+// 카카오톡 공유 카드 검수 중 사용자가 크메르어·네팔어·미얀마어·싱할라어·몽골어·카자흐어·
+// 키르기스어·라오어(NPR/LKR/MMK/KHR/MNT/KZT/KGS/LAK 통화) 카드에서 "억"이라는 한글 단위가
+// 그대로 섞여 나오는 걸 발견해서 재현·조사함(2026-08-01) — 원인은 이 8개 통화가 쓰는 BCP-47
+// 로케일(예: km-KH)이 이 Chromium 빌드의 ICU 압축표기(compact notation) 데이터가 부실해서,
+// Intl이 브라우저/OS에 설정된 로케일(예: 방문자 기기가 한국어로 설정돼있으면 ko-KR)로 조용히
+// 폴백하는 버그였음(플레인 grouping 포맷은 이 문제가 없고 compact notation에서만 재현됨,
+// Playwright로 브라우저 컨텍스트 로케일을 ko-KR/en-US로 바꿔가며 직접 검증함) — 사이트 대상이
+// 한국에 사는 외국인도 포함이라 실제로 자주 벌어질 조합. Intl의 compact notation에 더 이상
+// 기대지 않고, formatWon()과 같은 원리로 직접 크기(백만/십억/조)를 나눠 계산하고 단위 단어는
+// unitWordsForCurrentLang()에서 가져와 브라우저 로케일과 무관하게 항상 올바른 언어로 나오게 함.
 function formatCompactCurrencyAmount(usdMillions, code){
   code = code || sharedInputCurrency;
   if (code === 'KRW') {
@@ -8190,8 +8209,23 @@ function formatCompactCurrencyAmount(usdMillions, code){
   }
   const meta = CURRENCY_DISPLAY_META[code] || CURRENCY_DISPLAY_META.USD;
   const rawAmount = usdMillions * 1000000 * meta.get();
-  const numStr = rawAmount.toLocaleString(meta.locale, { notation: 'compact', maximumFractionDigits: 1 });
-  return (meta.symbol || code + ' ') + numStr;
+  const abs = Math.abs(rawAmount);
+  const [millionWord, billionWord, trillionWord] = unitWordsForCurrentLang();
+  let numStr, unit;
+  if (abs >= 1e12) {
+    numStr = (rawAmount / 1e12).toLocaleString(meta.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    unit = trillionWord;
+  } else if (abs >= 1e9) {
+    numStr = (rawAmount / 1e9).toLocaleString(meta.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    unit = billionWord;
+  } else if (abs >= 1e6) {
+    numStr = (rawAmount / 1e6).toLocaleString(meta.locale, { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+    unit = millionWord;
+  } else {
+    numStr = Math.round(rawAmount).toLocaleString(meta.locale);
+    unit = '';
+  }
+  return (meta.symbol || code + ' ') + numStr + (unit ? ' ' + unit : '');
 }
 // 희망액(역산) 탭의 "지금 목표 금액" 미리보기 — home-final-amt의 억원(KRW) 값을 받아서 현재
 // 선택된 통화로 보여줌
