@@ -786,6 +786,14 @@
     display:inline-block; padding:3px 10px; border-radius:20px; border:1px solid var(--teal);
     margin:0 0 8px;
   }
+  /* 사용자가 지금 홈 화면에서 고른 국가 카드를 눈에 띄게 표시 — 1위 카드(teal)와 겹쳐도
+     구분되도록 --gold 계열로 통일(위 --gold-chip-bg/border와 같은 "다른 그룹" 색 구분 원칙) */
+  .side-card-mine{ outline:2px solid var(--gold-chip-border); outline-offset:-1px; }
+  .side-card-mine-badge{
+    font-size:var(--fs-small); font-weight:800; color:var(--gold); background:var(--gold-chip-bg);
+    display:inline-block; padding:3px 10px; border-radius:20px; border:1px solid var(--gold-chip-border);
+    margin:0 0 8px;
+  }
   .side-card-detail-link{ display:inline-block; margin-top:8px; font-size:var(--fs-small); font-weight:700; color:var(--teal); text-decoration:none; }
   /* 이 클래스는 원래 <a>(자세히 보기 링크) 전용이었는데, 1위 카드의 읽어주기 버튼도 같은
      모양을 쓰면서 <button>에 붙는 경우가 생김 — 버튼 기본 테두리/배경만 지워서 링크와

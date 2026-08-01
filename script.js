@@ -11702,6 +11702,21 @@ function updateSideBySide(eok, stateCode){
 
     const card = document.createElement('div');
     card.className = 'side-card';
+    // 2026-08-01: 사용자가 "홈 화면 결과랑 비교 탭 숫자가 왜 다르냐"고 물어봐서 확인해보니
+    // 실제로는 같은 나라 기준이면 항상 일치하는데(홈/비교 둘 다 calcTakeHome() 공유), 정렬된
+    // 목록 맨 위(다른 나라의 더 유리한 결과)를 "내 결과"로 착각하기 쉬운 UX가 원인이었음 —
+    // 내가 지금 홈 화면에서 고른 나라(sharedCountry)와 일치하는 카드에 "내 기준" 표시를 추가해서
+    // 어느 카드가 자신의 결과인지 한눈에 구분되게 함(1위 카드와 겹쳐도 둘 다 보임).
+    const isMyBasis = rows.some(r => r.profile.code === sharedCountry);
+    if (isMyBasis) {
+      card.classList.add('side-card-mine');
+      const mineBadge = document.createElement('p');
+      mineBadge.className = 'side-card-mine-badge';
+      mineBadge.textContent = pickLang('✅ 내 기준', '✅ My selection', '✅ 我的选择', '✅ Lựa chọn của tôi', '✅ ตัวเลือกของฉัน', '✅ Мой выбор', {
+        ar:'✅ اختياري', bn:'✅ আমার নির্বাচন', fr:'✅ Ma sélection', hi:'✅ मेरा चयन', id:'✅ Pilihan saya', ja:'✅ 自分の選択', kk:'✅ Менің таңдауым', km:'✅ ជម្រើសរបស់ខ្ញុំ', ky:'✅ Менин тандоом', lo:'✅ ການເລືອກຂອງຂ້ອຍ', mn:'✅ Миний сонголт', my:'✅ ကျွန်ုပ်ရွေးချယ်မှု', ne:'✅ मेरो छनोट', si:'✅ මගේ තේරීම', tl:'✅ Ang pinili ko', ur:'✅ میرا انتخاب', uz:"✅ Mening tanlovim"
+      , pt: `✅ Minha seleção`, es: `✅ Mi selección`, uk: `✅ Мій вибір`, tet: `✅ Ha'u nia hili`});
+      card.appendChild(mineBadge);
+    }
     if (gi === 0) {
       card.classList.add('side-card-best');
       const bestBadge = document.createElement('p');
