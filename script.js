@@ -8379,6 +8379,12 @@ function setSharedInputCurrency(code, isManual){
   // 같이 맞춰져야 함. sharedAmountUsd/sharedCountry가 이미 홈↔비교 간 공유되는 것과 같은 원칙.
   const compareSelect = document.getElementById('compareCurrencySelect');
   if (compareSelect && compareSelect.value !== code) compareSelect.value = code;
+  // 2026-08-01: 지금까지 통화만 바꾸면 입력칸/슬라이더 눈금(refreshAmountInputDisplaysForCurrency)만
+  // 새로 그려지고, 정작 결과 히어로(home-final-amt)·환율 안내 줄(≈ X · 환율 Y)·외화 환율 편집창은
+  // updateHomeCalc() 안에서만 갱신되는데 그게 안 불려서 예전 통화 그대로 남아있는 버그가 있었음
+  // (사용자가 국가=KR·통화=IDR로 바꿔도 결과 줄이 계속 원화로 나온다고 스크린샷으로 지적) —
+  // onHomeRateChanged() 등 다른 통화/환율 변경 지점과 같은 패턴으로 여기서도 명시적으로 호출함
+  updateHomeCalc();
   refreshAmountInputDisplaysForCurrency();
   // select.value를 이 함수가 직접 설정하는 경로(예: 다른 탭에서 이미 바뀐 값과 동기화)라 네이티브
   // change 이벤트가 안 나가는데, 커스텀 트리거 버튼(select-sheet-trigger)의 라벨은 그와 무관하게
@@ -10727,13 +10733,14 @@ function updateHomeCalc(usdOverride){
   const inputPreviewEl = document.getElementById('home-input-preview');
   if (inputPreviewEl && 억 > 0) {
     const previewPct = Math.max(0, Math.min(100, 100 - taxImpactPct));
+    const previewAmt = formatEokKrwInDisplayCurrency(final, sharedInputCurrency);
     inputPreviewEl.textContent = pickLang(
-      ` · 실수령 ${formatWon(final)} (예상 ${previewPct}%)`,
-      ` · take-home ${formatWon(final)} (est. ${previewPct}%)`,
-      ` · 到手 ${formatWon(final)}（预计 ${previewPct}%）`,
-      ` · thực nhận ${formatWon(final)} (ước tính ${previewPct}%)`,
-      ` · รับจริง ${formatWon(final)} (ประมาณ ${previewPct}%)`,
-      ` · на руки ${formatWon(final)} (ок. ${previewPct}%)`,
+      ` · 실수령 ${previewAmt} (예상 ${previewPct}%)`,
+      ` · take-home ${previewAmt} (est. ${previewPct}%)`,
+      ` · 到手 ${previewAmt}（预计 ${previewPct}%）`,
+      ` · thực nhận ${previewAmt} (ước tính ${previewPct}%)`,
+      ` · รับจริง ${previewAmt} (ประมาณ ${previewPct}%)`,
+      ` · на руки ${previewAmt} (ок. ${previewPct}%)`,
       undefined
     );
   }
@@ -10818,9 +10825,6 @@ function updateHomeCalc(usdOverride){
        pt: `💵 Você realmente recebe em USD ($${finalUsd.toLocaleString('en-US')}) diretamente dos EUA — o valor mostrado aqui é apenas uma conversão de referência`, es: `💵 Realmente recibes USD ($${finalUsd.toLocaleString('en-US')}) directamente desde EE. UU.; el monto mostrado aquí es solo una conversión de referencia`, uk: `💵 Ви насправді отримуєте USD ($${finalUsd.toLocaleString('en-US')}) напряму зі США — показана тут сума є лише довідковою конвертацією`, tet: `💵 Ó simu USD ($${finalUsd.toLocaleString('en-US')}) diretu duni husi EUA — valór ne'ebé hatudu iha ne'e sá de'it konversaun referénsia`}
     );
     usdNote.style.display = 'block';
-    // 아래 cny/inr/other 세 분기 중 실제로 해당하는 것 하나만 showForeignRateEditor()를
-    // 부르므로, 매번 여기서 일단 숨겨서 이전 국가의 편집기가 남아있지 않게 함.
-    hideForeignRateEditor();
 
     // 중국 거주자는 실제 생활 통화가 위안화라, 달러 수령액만 보여주면 감이 잘 안 옴 —
     // 위안화 참고 환산액도 같이 보여줌(실시간 환율 시도, 실패 시 기본값 사용 — KRW와 동일한 방식)
@@ -10854,7 +10858,6 @@ function updateHomeCalc(usdOverride){
          pt: `💴 Isso dá aproximadamente ¥${finalCny.toLocaleString('en-US')} CNY (taxa de câmbio de referência)`, es: `💴 Eso es aprox. ¥${finalCny.toLocaleString('en-US')} CNY (tipo de cambio de referencia)`, uk: `💴 Це приблизно ¥${finalCny.toLocaleString('en-US')} CNY (довідковий курс валют)`, tet: `💴 Ne'e maizumenus ¥${finalCny.toLocaleString('en-US')} CNY (taxa kambial referánsia)`}
       );
       cnyNote.style.display = 'block';
-      showForeignRateEditor('CNY', EXCHANGE_RATE_CNY);
     } else {
       cnyNote.style.display = 'none';
     }
@@ -10890,7 +10893,6 @@ function updateHomeCalc(usdOverride){
          pt: `🇮🇳 Isso dá aproximadamente ₹${finalInr.toLocaleString('en-IN')} INR (taxa de câmbio de referência)`, es: `🇮🇳 Eso es aprox. ₹${finalInr.toLocaleString('en-IN')} INR (tipo de cambio de referencia)`, uk: `🇮🇳 Це приблизно ₹${finalInr.toLocaleString('en-IN')} INR (довідковий курс валют)`, tet: `🇮🇳 Ne'e maizumenus ₹${finalInr.toLocaleString('en-IN')} INR (taxa kambial referánsia)`}
       );
       inrNote.style.display = 'block';
-      showForeignRateEditor('INR', EXCHANGE_RATE_INR);
     } else {
       inrNote.style.display = 'none';
     }
@@ -10947,7 +10949,6 @@ function updateHomeCalc(usdOverride){
          pt: `${ref.flagEmoji} Isso dá aproximadamente ${ref.symbol}${finalLocal.toLocaleString('en-US')} ${ref.code} (taxa de câmbio de referência)`, es: `${ref.flagEmoji} Eso es aprox. ${ref.symbol}${finalLocal.toLocaleString('en-US')} ${ref.code} (tipo de cambio de referencia)`, uk: `${ref.flagEmoji} Це приблизно ${ref.symbol}${finalLocal.toLocaleString('en-US')} ${ref.code} (довідковий курс валют)`, tet: `${ref.flagEmoji} Ne'e maizumenus ${ref.symbol}${finalLocal.toLocaleString('en-US')} ${ref.code} (taxa kambial referánsia)`}
       );
       otherNote.style.display = 'block';
-      showForeignRateEditor(ref.code, ref.rate);
     } else if (otherNote) {
       otherNote.style.display = 'none';
     }
@@ -10956,6 +10957,18 @@ function updateHomeCalc(usdOverride){
     cnyNote.style.display = 'none';
     inrNote.style.display = 'none';
     if (otherNote) otherNote.style.display = 'none';
+  }
+
+  // 2026-08-01: 환율 편집창은 "어느 나라를 세금 기준으로 골랐는지"가 아니라 "지금 화면에 실제로
+  // 보이는 통화가 뭔지"(sharedInputCurrency)를 기준으로 띄움 — 예전엔 country에 묶여있어서
+  // 국가=한국·통화=IDR처럼 국가와 표시 통화를 다르게 조합하면(둘은 원래 독립적으로 고를 수 있음)
+  // 화면 숫자는 IDR로 정확히 나오는데 그 환율을 고칠 입력창은 아예 안 뜨는 구멍이 있었음
+  // (사용자가 스크린샷으로 지적). KRW/USD는 각각 home-rate-input과 "환율=1" 고정이라 이 공용
+  // 편집창 대상이 아님.
+  const displayMeta = CURRENCY_DISPLAY_META[sharedInputCurrency];
+  if (displayMeta && sharedInputCurrency !== 'KRW' && sharedInputCurrency !== 'USD') {
+    showForeignRateEditor(sharedInputCurrency, displayMeta.get());
+  } else {
     hideForeignRateEditor();
   }
 
