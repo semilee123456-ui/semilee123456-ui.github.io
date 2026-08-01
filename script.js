@@ -8383,8 +8383,11 @@ function setSharedInputCurrency(code, isManual){
   // 새로 그려지고, 정작 결과 히어로(home-final-amt)·환율 안내 줄(≈ X · 환율 Y)·외화 환율 편집창은
   // updateHomeCalc() 안에서만 갱신되는데 그게 안 불려서 예전 통화 그대로 남아있는 버그가 있었음
   // (사용자가 국가=KR·통화=IDR로 바꿔도 결과 줄이 계속 원화로 나온다고 스크린샷으로 지적) —
-  // onHomeRateChanged() 등 다른 통화/환율 변경 지점과 같은 패턴으로 여기서도 명시적으로 호출함
+  // onHomeRateChanged() 등 다른 통화/환율 변경 지점과 같은 패턴으로 여기서도 명시적으로 호출함.
+  // 비교 탭(updateCalc)도 같은 "≈ X · 환율 Y" 힌트 줄을 자체적으로 갖고 있어(compare-krw-amt)
+  // 동일한 문제라 같이 호출함
   updateHomeCalc();
+  updateCalc();
   refreshAmountInputDisplaysForCurrency();
   // select.value를 이 함수가 직접 설정하는 경로(예: 다른 탭에서 이미 바뀐 값과 동기화)라 네이티브
   // change 이벤트가 안 나가는데, 커스텀 트리거 버튼(select-sheet-trigger)의 라벨은 그와 무관하게
@@ -10593,7 +10596,9 @@ function updateHomeCalc(usdOverride){
   // 통화 표시와 무관하게 항상 USD→KRW 환율을 씀)
   const homeKrwAmtWrap = document.getElementById('home-krw-amt-wrap');
   if (homeKrwAmtWrap) homeKrwAmtWrap.style.display = sharedInputCurrency === 'KRW' ? 'none' : '';
-  document.getElementById('home-krw-amt').textContent = formatWon(억);
+  // 2026-08-01: compare-krw-amt와 같은 이유의 같은 버그 — formatWon()이 통화 선택과 무관하게
+  // 항상 원화만 반환해서, IDR/JPY 등을 골라도 이 참고용 줄만 계속 원화로 남아있었음
+  document.getElementById('home-krw-amt').textContent = formatEokKrwInDisplayCurrency(억, sharedInputCurrency);
 
   const trustLine = document.getElementById('home-trust-line');
   if (trustLine) {
@@ -11151,7 +11156,9 @@ function updateCalc(usdOverride){
   // "≈ X억원 · " 부분만 숨기고, 환율 직접 조정 UI(rate-input)는 그대로 남김
   const compareKrwAmtWrap = document.getElementById('compare-krw-amt-wrap');
   if (compareKrwAmtWrap) compareKrwAmtWrap.style.display = sharedInputCurrency === 'KRW' ? 'none' : '';
-  document.getElementById('compare-krw-amt').textContent = formatWon(억);
+  // 2026-08-01: 홈 탭 input-preview와 같은 원인의 같은 버그 — formatWon()이 통화 선택과
+  // 무관하게 항상 원화만 반환해서, IDR/JPY 등을 골라도 이 참고용 줄만 계속 원화로 남아있었음
+  document.getElementById('compare-krw-amt').textContent = formatEokKrwInDisplayCurrency(억, sharedInputCurrency);
 
   // "나라별로 나란히 놓고 보면" 표가 위 입력창이랑 연결돼 보이지 않는다는 지적(사용자가 직접
   // 스크린샷으로 지적) — 제목 아래 별도 문장 대신, 제목 자체에 금액을 붙여서 굵은 제목만 훑어도
