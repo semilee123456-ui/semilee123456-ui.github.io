@@ -858,7 +858,7 @@
             <span id="homeCountryTogglePlaceholder" style="display:none"></span>
             <p class="krw-hint" style="margin:-6px 0 14px;" data-i18n="input.basisHint">💡 실제 납세 국가 기준으로 골라주세요 (한국 거주자는 그대로 두면 돼요)</p>
 
-            <p class="filing-label" id="home-state-label" style="display:none;"><span class="flag-badge">US</span> <span data-i18n-html="compare.stateLabel">미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9% 로 크게 달라요)</span></span></p>
+            <p class="filing-label" id="home-state-label" style="display:none;"><span class="flag-badge">US</span> <span data-i18n-html="compare.stateLabel">미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9% 로 크게 달라요 · 연방세는 별도로 합산돼요)</span></span></p>
             <div class="input-row" style="margin-bottom:4px;" id="home-state-row">
               <select style="flex:1;" id="homeStateSelect" onchange="updateHomeCalc()">
                 <option value="AVG" data-i18n="state.AVG">평균 주세 (50개 주+DC, 약 4.7%)</option>
@@ -1262,7 +1262,7 @@
           </div>
           <p class="krw-hint"><span id="compare-krw-amt-wrap">≈ <span id="compare-krw-amt">1,503억원</span> · </span><span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="compare-rate-input" value="1,503.4" inputmode="decimal" oninput="onCompareRateChanged()"><span data-i18n="common.won">원</span> <button type="button" class="rate-live-badge" onclick="retryLiveExchangeRate(this)" title="기본값 사용 중 · 탭하면 실시간 환율로 갱신" aria-label="환율 새로고침" data-i18n-aria-label="common.refreshRate"><span aria-hidden="true">🔄</span></button></p>
 
-          <p class="filing-label" id="compare-state-label"><span class="flag-badge">US</span> <span data-i18n-html="compare.stateLabel">미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9% 로 크게 달라요)</span></span></p>
+          <p class="filing-label" id="compare-state-label"><span class="flag-badge">US</span> <span data-i18n-html="compare.stateLabel">미국 거주자 계산 시 적용할 주(State) <span>(주세율이 0%~10.9% 로 크게 달라요 · 연방세는 별도로 합산돼요)</span></span></p>
           <div class="input-row" style="margin-bottom:4px;" id="compare-state-row">
             <select id="compareStateSelect" onchange="updateCalc()">
               <option value="AVG" data-i18n="state.AVG">평균 주세 (50개 주+DC, 약 4.7%)</option>
