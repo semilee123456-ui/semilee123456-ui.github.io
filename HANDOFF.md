@@ -2569,3 +2569,58 @@ million/billion/trillion 3단계 크기에서 직접 호출해 반환된 단위 
 전부 클린. PR #52 squash merge 완료.
 
 변경 파일: `script.js`(`formatCompactCurrencyAmount()`의 `zh`/`ja` 분기에 `ko` 추가).
+
+### 2026-08-02 이어서 — 파워볼 새 회차/잭팟 갱신 + "$707M vs $307M 왜 다르냐" 문의 대응
++ 원화 환율 참고 줄 비강조 처리(PR #53)
+
+**(A) 파워볼 8/1(토) 새 회차·잭팟 갱신**: 사용자가 공식 사이트 스크린샷(Mega Millions Fri
+7/31 · Powerball Sat 8/1)을 전달 — 메가밀리언즈는 이미 `LATEST_DRAW`/`JACKPOT_DATA` 둘 다
+최신이었고(자동 루틴이 반영해둠), **파워볼만 7/29 회차·$707M로 멈춰있었음**(8/1 새 추첨
+결과가 아직 자동 루틴에 안 잡힌 상태). `LATEST_DRAW.powerball`을 `2026-08-01`/`[6,17,27,48,50]`/
+special `5`로, `JACKPOT_DATA.powerball`을 `amountUsd: 748000000`/`cashUsd: 325100000`으로
+갱신(스크린샷의 "Next Jackpot $748 Million ($325.1 Million cash)" 그대로 반영). **참고**:
+`odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`/`POWERBALL_JACKPOT_ARCHIVE`에는 이 8/1 회차를
+아직 백필 안 함(매일 도는 자동 루틴이 처리하는 영역이라 이번엔 손 안 댐, 위 "알려진 미해결
+항목"의 로또 데이터 체크리스트와 무관하게 별개 아카이브임에 주의).
+
+**(B) "$707M(발표)이랑 $307M(일시불) 왜 다르냐" 문의 — 버그 아님, 라벨만 보강**: 사용자가
+"D-1(월) $707M" 위젯과 "당첨금을 직접 입력해보세요" 카드의 "($307M · 일시불)"이 서로
+다른 숫자라 오류처럼 보인다고 지적. 실제로는 전자가 연금(annuity) 기준 발표액, 후자가
+일시불 현금가치(Cash Value)라 원래 다른 게 정상(공식 사이트도 항상 둘을 같이 보여줌) —
+다만 "(일시불)" 카드엔 이미 기준이 명시돼있는데 "$707M" 위젯엔 기준 표시가 전혀 없어서
+헷갈리기 쉬웠음. 게임명(`home.powerballName`/`home.megaName`) 옆에 `home.jackpotAnnuityBasis`
+("(연금 기준)") 라벨 신규 추가해서 "(일시불)" 카드와 짝을 이루게 함(26개 언어, en은
+`input.tabAnnounced`의 기존 검증된 "(Annuity)" 번역을 그대로 재사용해 새 번역 리스크 최소화).
+
+**(C) 같은 대화에서 이어진 "한국 중심 → 외국인 중심으로 바뀌었는데 원화 환율이 계속
+끼어드는 게 맞냐" 논의 → 완전 제거 대신 조건부 비강조 처리**: 입력창 밑 "환율 X원" 참고
+줄(`home-krw-rate-line`/`compare-krw-rate-line`)은 원래 항상 같은 굵기로 보였는데, 실제로
+이 값이 계산·표시 둘 다에 의미 있는 건 **국가=KR이거나 표시 통화=KRW일 때뿐**(KR만 절대
+원화 금액 기준 누진세라 환율이 실제 세액에 영향, KRW 표시일 땐 그 자체가 보여주는 숫자라
+당연히 필요 — 나머지 조합(예: 국가=JP·통화=INR)은 정률세라 환율이 결과 비율에 전혀
+영향 없고 표시 통화도 아니라서 순수 참고용). 완전히 숨기는 대신(→ 사이트의 핵심 타겟이
+여전히 "한국 거주자/한국 거주 외국인"이라 원화 참고 자체는 유효한 정보라고 판단해 존치
+결정) `sharedCountry !== 'kr' && sharedInputCurrency !== 'KRW'`일 때만 `rate-secondary`
+클래스로 `opacity:0.6` 적용해 시각적으로만 덜 강조되게 함(접근성 최소 폰트 크기(--fs-small)는
+그대로 유지, 폰트 자체를 줄이지 않음). `updateRateHintEmphasis()` 신규 함수를
+`refreshAmountInputDisplaysForCurrency()`/`updateHomeCalc()`/`updateCalc()` 3곳(국가·통화가
+바뀌는 모든 경로)에서 호출.
+
+**검증**: `node --check` 통과, Playwright로 4가지 국가×통화 조합(KR+KRW/KR+INR/JP+INR/JP+KRW)
+전수 테스트해서 `rate-secondary` 토글이 의도대로만 켜지는지 확인, 새 잭팟 숫자·"(연금 기준)"
+라벨 실제 렌더링 스크린샷 확인. `console_error_audit.js`(161, 0)·`home_audit.js`(18, 0)·
+`wrap_audit.js`(28, 0)·`audit_odds_compare.js`(40, 0)·`i18n_coverage_audit.js`(735, 0)·
+`draw_archive_integrity_check.js`(0) 전부 클린.
+
+**⚠️ 발견했지만 이번 세션 범위 밖으로 남겨둔 것**: `tests/i18n_attr_lint.js`가 41건의
+"검토 후보"를 보고함 — 이 문서엔 "0건이 정상"이라고 적혀있었는데(2026-07-23 기록) 실제로는
+41건이었고, `git stash`로 이번 세션 변경사항을 다 걷어내고 재확인해도 동일하게 41건이라
+**이번 세션이 만든 게 아니라 이전부터 누적된 문서-실태 불일치**임을 확인함. 후보 목록이지
+확정 버그는 아니라서(파일 자체 설명 참고) 이번엔 손 안 댔음 — **다음 세션이 실제로 데이터-
+i18n-html 전환이 필요한 진짜 이슈인지, 아니면 린트 규칙 자체가 오래돼서 오탐이 늘어난
+건지 확인할 것.**
+
+변경 파일: `script.js`(`JACKPOT_DATA`/`LATEST_DRAW.powerball` 갱신, `updateRateHintEmphasis()`
+신규), `index.html`(`home.jackpotAnnuityBasis` 마크업 2곳, `home-krw-rate-line`/
+`compare-krw-rate-line` id 추가), `styles.css`(`.jp-annuity-basis`, `.krw-hint.rate-secondary`),
+`i18n-source/translations.json`+`i18n/*.json`(26개 언어, `home.jackpotAnnuityBasis` 신규).

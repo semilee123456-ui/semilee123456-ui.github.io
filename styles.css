@@ -1153,6 +1153,12 @@
   }
   .result-hero .usd-actual-note span{ color:var(--text-muted); }
   .krw-hint{ font-size:var(--fs-small); color:var(--text-muted); font-weight:400; margin:0 0 10px 2px; }
+  /* 2026-08-02: 국가=한국이 아니고 표시 통화도 원화가 아닐 때(예: 국가=일본·통화=INR)는 이
+     원화 환율 줄이 계산에도 안 쓰이고(정률세 국가는 환율이 결과에 영향 없음) 화면 표시 통화도
+     아니라서 순수 참고용임 — 접근성 최소 폰트(--fs-small)는 그대로 두고 opacity만 낮춰서 덜
+     강조되게 함(사용자 요청: "한국 중심에서 외국인 중심으로 바뀌었는데 계속 원화가 끼어드는
+     느낌") */
+  .krw-hint.rate-secondary{ opacity:0.6; }
   .inline-link-btn{
     background:none; border:none; padding:0; margin:0; cursor:pointer;
     color:var(--teal); font-weight:600; font-family:inherit; font-size:inherit; text-decoration:underline;
@@ -1307,6 +1313,7 @@
   .mini-result-edit-input:focus{ outline:none; box-shadow:0 2px 0 0 var(--teal); }
   .mini-result-edit-unit{ font-size:var(--fs-note); color:var(--text-muted); flex-shrink:0; }
   .jp-drawdays{ color:var(--text-muted); font-weight:700; }
+  .jp-annuity-basis{ font-size:var(--fs-small); color:var(--text-muted); opacity:0.6; font-weight:400; }
   .dday-badge{
     display:inline-block; background:rgba(var(--ink-rgb),0.12); color:var(--text-dark); font-size:var(--fs-small); font-weight:800;
     padding:1px 6px; border-radius:8px; margin-left:5px; vertical-align:middle;
