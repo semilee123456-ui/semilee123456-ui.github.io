@@ -1084,8 +1084,8 @@ const LANG_UNIT_WORDS = {
 };
 function formatWonOther(n){ return formatWonIntl(n, LANG_UNIT_WORDS[currentLang], LOCALE_MAP[currentLang] || 'en-US'); }
 // 중국어·일본어도 한국어와 같은 이유(억 단위 숫자를 3자리 콤마로만 묶으면 万亿/兆 단위를 넘었는지
-// 한눈에 안 들어옴)로 1조(=10,000억) 이상이면 상위 단위를 앞에 분리해서 보여줌 — usdToKrwLabel()의
-// 잭팟 퀵필 라벨에 이미 있던 "N万亿M亿" 표기 방식과 통일함(소수점 근사 대신 정확한 값을 그대로 보여줌)
+// 한눈에 안 들어옴)로 1조(=10,000억) 이상이면 상위 단위를 앞에 분리해서 보여줌 — 예전
+// usdToKrwLabel()의 잭팟 퀵필 라벨에 있던 "N万亿M亿" 표기 방식과 통일함(소수점 근사 대신 정확한 값을 그대로 보여줌)
 function formatWonZh(n){
   if (Math.abs(n) >= 10000) {
     const rounded = Math.round(n);
@@ -2234,44 +2234,15 @@ function runCountUps() {
   });
 }
 
-function usdToKrwLabel(usd){
-  const krw = usd * EXCHANGE_RATE;
-  if (typeof currentLang !== 'undefined' && currentLang === 'en') {
-    return '(≈ ' + formatWonEn(krw / 100000000) + ')';
-  }
-  if (typeof currentLang !== 'undefined' && currentLang === 'vi') {
-    return '(≈ ' + formatWonVi(krw / 100000000) + ')';
-  }
-  if (typeof currentLang !== 'undefined' && currentLang === 'th') {
-    return '(≈ ' + formatWonTh(krw / 100000000) + ')';
-  }
-  if (typeof currentLang !== 'undefined' && currentLang === 'ru') {
-    return '(≈ ' + formatWonRu(krw / 100000000) + ')';
-  }
-  if (typeof currentLang !== 'undefined' && currentLang === 'ja') {
-    return '(≈ ' + formatWonJa(krw / 100000000) + ')';
-  }
-  // 억 단위로 먼저 반올림한 뒤 조/억을 나누면, "999.6억이 반올림되며 조 단위를 못 넘어가는" 이월 누락 문제가 안 생김
-  const totalEok = Math.round(krw / 100000000);
-  const 조 = Math.floor(totalEok / 10000);
-  const 억 = totalEok % 10000;
-  // 중국어도 亿(=억) 단위 체계가 같아서, "조" 자리만 현대 중국어 관행상 "万亿"(만조)으로 표기
-  if (typeof currentLang !== 'undefined' && currentLang === 'zh') {
-    if (조 > 0 && 억 === 0) return `(约${조}万亿韩元)`;
-    if (조 > 0) return `(约${조}万亿${억.toLocaleString('zh-CN')}亿韩元)`;
-    return `(约${억.toLocaleString('zh-CN')}亿韩元)`;
-  }
-  // formatWon()과 같은 원칙: 위에서 처리 안 된 나머지 모든 언어(크메르어·네팔어·우즈베크어·
-  // 몽골어·카자흐어·키르기스어·우르두어·벵골어·라오어·아랍어·힌디어·프랑스어·타갈로그어 등)는
-  // "억/조"라는 한국식 단위 대신 훨씬 널리 통하는 영어식 million/billion으로 통일함 —
-  // 이 함수(usdToKrwLabel)는 formatWon()과 별개라 그 수정이 안 들어가 있었고, 그 결과 이 언어들의
-  // 잭팟 퀵필 버튼에서만 "억원"이 그대로 노출되고 있었음
-  if (typeof currentLang !== 'undefined' && currentLang !== 'ko') {
-    return '(≈ ' + formatWonEn(krw / 100000000) + ')';
-  }
-  if (조 > 0 && 억 === 0) return `(약 ${조}조원)`;
-  if (조 > 0) return `(약 ${조}조 ${억.toLocaleString('ko-KR')}억원)`;
-  return `(약 ${억.toLocaleString('ko-KR')}억원)`;
+// 2026-08-02: 예전 이름(usdToKrwLabel) 그대로 항상 원화로만 환산해서 보여주고 있었음 — 그런데
+// 바로 아래(홈 화면 "최근 잭팟 확인하기" 패널) 퀵필 버튼은 이미 PR #44에서 선택된 표시 통화
+// (sharedInputCurrency)를 따라가게 고쳐놔서, 같은 패널 안에서 잭팟 헤드라인 밑 이 문구만 원화로
+// 고정되고 퀵필 버튼은 다른 통화로 나와 서로 안 맞아 보이는 문제가 있었음(사용자 지적). 퀵필
+// 버튼과 똑같은 formatEokKrwInDisplayCurrency()로 교체해서 선택 통화를 따라가게 하고, 함수
+// 이름도 실제 동작에 맞게 변경.
+function usdToDisplayCurrencyLabel(usd){
+  const eokKrw = usd * EXCHANGE_RATE / 100000000;
+  return '(≈ ' + formatEokKrwInDisplayCurrency(eokKrw, sharedInputCurrency) + ')';
 }
 
 // 2026-07-25: "잭팟 카드 기준 게임" 토글(odds-game-pb/odds-game-mega)이 있는데도 이 함수가
@@ -6557,8 +6528,8 @@ function initJackpotCardAmt(){
 
   const pbUsd = Number(document.getElementById('jp-powerball').getAttribute('data-target'));
   const mgUsd = Number(document.getElementById('jp-mega').getAttribute('data-target'));
-  document.getElementById('jp-powerball-krw').textContent = usdToKrwLabel(pbUsd);
-  document.getElementById('jp-mega-krw').textContent = usdToKrwLabel(mgUsd);
+  document.getElementById('jp-powerball-krw').textContent = usdToDisplayCurrencyLabel(pbUsd);
+  document.getElementById('jp-mega-krw').textContent = usdToDisplayCurrencyLabel(mgUsd);
 
   // "million/billion 감이 안 온다"는 사용자에게 숫자를 직접 타이핑하게 하는 대신,
   // 오늘 실제 잭팟의 일시불 환산액을 버튼에 미리 보여주고 누르면 바로 채워지게 함.
