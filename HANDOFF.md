@@ -2812,3 +2812,41 @@ nowrap 추가), `script.js`(`renderJackpotIndexRollover()`/`renderDateLookupResu
 변경 파일: `script.js`(`goToKoreaCalculator()` 신설, `REAL_ABROAD_CURRENCY` 신설,
 `goToRealAbroad()`/`goWithLangSelect()` 수정, 크메르어 "원" 오타 3곳 수정),
 `index.html`(카드②·④ onclick 핸들러 변경).
+
+### 2026-08-02 이어서 — 홈/비교 탭 "≈ X · 환율 Y원" 참고 줄, 국가=KR일 때 원화로 고정
+(PR #57, 다른 세션과 동시 작업)
+
+**요청 배경**: 사용자가 국가=KR(한국 기준)로 둔 채 통화만 VND/JPY로 바꾼 스크린샷 2장을
+보내며 "한국 사람인데 통화만 바꿨다고 왜 다른 나라 통화가 나오냐, 원화 감이 아예 안
+온다"고 지적 + "아까 이거 고치지 않았나? 다른 코드팀도 수정 중이니 잘 확인하고 반영해달라"고
+당부.
+
+**원인**: `updateHomeCalc()`/`updateCompareCalc()`(추정 함수명)의 `home-krw-amt`/
+`home-input-preview`/`compare-krw-amt`(입력창 밑 "≈ X · 환율 Y원 · 실수령 Z" 참고 줄)가
+PR #48에서 "항상 원화 하드코딩" 버그를 고치면서 `formatEokKrwInDisplayCurrency(억,
+sharedInputCurrency)`로 바뀌었는데, 이게 **국가=KR일 때까지 무조건 선택 통화를 따라가게
+만들어버림** — 헤드라인(`home-final-amt`)이야 사용자가 명시적으로 고른 통화를 보여주는
+게 맞지만, 이 "참고 줄"은 애초에 "원화 감을 주는 보조 정보"라는 존재 이유 자체가 있어서
+국가=KR인데 원화가 하나도 안 보이면 본래 역할을 못 함.
+
+**수정**: `country === 'kr'`(홈)/`sharedCountry === 'kr'`(비교)일 때만 이 3개 참고 줄을
+무조건 `'KRW'`로 고정(`homeKrwRefCurrency`/`compareKrwRefCurrency` 변수 신설). 헤드라인
+자체와 세전/세후 비교 줄(`tax-impact-before/after`)·비교 탭 카드 제목·재미로 보기 등
+**다른 모든 "주역" 표시는 그대로 선택 통화를 따름** — 이 참고 줄 3곳만 예외. 국가≠kr
+(정률세 국가)은 기존처럼 선택 통화를 그대로 따라가는 PR #48의 효과 그대로 유지(예:
+국가=JP+통화=INR은 그대로 INR로 표시됨 — 정률세라 원화가 실제 계산과 무관하다는 게 위
+"코드 아키텍처 핵심 패턴" 문서에 이미 정리돼있는 원칙).
+
+**동시 작업 실제 발생**: 커밋 준비 중 다른 세션이 정확히 같은 4개 페르소나 카드 관련
+영역(`updateHomeCalc()` 근처 포함)에 국가/통화 상태 불일치 3건 + 크메르어 오타 3곳을
+고친 커밋(`5eeb429`)을 먼저 push함 — `git fetch`로 감지 후 병합, `git merge`가 자동으로
+충돌 없이 합침(서로 다른 하위 구간을 고쳐서). 병합 후 회귀 테스트 12개 전부 재실행 +
+제 수정사항(국가=KR+VND/JPY 조합)이 병합 후에도 정상 동작하는지 재확인함.
+
+**검증**: `node --check` 통과, Playwright로 국가=KR 상태에서 VND/JPY/USD/KRW 4개 통화
+전환 시 참고 줄이 항상 "4,837억원"(원화)로 고정되는지, 국가=JP+INR 조합은 여전히
+선택 통화(INR)를 따르는지(회귀 없음) 확인. 회귀 테스트 12개 전부 `ISSUES: 0`. PR #57
+squash merge 완료.
+
+변경 파일: `script.js`(`updateHomeCalc()`/`updateCompareCalc()` 안에 `homeKrwRefCurrency`/
+`compareKrwRefCurrency` 도입).
