@@ -10632,7 +10632,13 @@ function updateHomeCalc(usdOverride){
   updateRateHintEmphasis();
   // 2026-08-01: compare-krw-amt와 같은 이유의 같은 버그 — formatWon()이 통화 선택과 무관하게
   // 항상 원화만 반환해서, IDR/JPY 등을 골라도 이 참고용 줄만 계속 원화로 남아있었음
-  document.getElementById('home-krw-amt').textContent = formatEokKrwInDisplayCurrency(억, sharedInputCurrency);
+  // 2026-08-02: 그런데 국가=KR(한국 기준)일 때까지 통화를 따라가면, 한국 사람이 통화만
+  // 다른 걸로 바꿔도 원화 감이 아예 안 잡히는 문제가 생김(사용자가 VND/JPY 스크린샷으로
+  // 지적) — 이 참고 줄의 역할 자체가 "원화 감"을 주는 것이므로, 국가=KR일 때는 선택 통화와
+  // 무관하게 항상 원화로 고정. 다른 나라 기준(country!=='kr')은 그 나라 정률세라 원화가
+  // 계산에 안 쓰이므로(위 usdNote 참고) 그대로 표시 통화를 따름.
+  const homeKrwRefCurrency = country === 'kr' ? 'KRW' : sharedInputCurrency;
+  document.getElementById('home-krw-amt').textContent = formatEokKrwInDisplayCurrency(억, homeKrwRefCurrency);
 
   const trustLine = document.getElementById('home-trust-line');
   if (trustLine) {
@@ -10772,7 +10778,7 @@ function updateHomeCalc(usdOverride){
   const inputPreviewEl = document.getElementById('home-input-preview');
   if (inputPreviewEl && 억 > 0) {
     const previewPct = Math.max(0, Math.min(100, 100 - taxImpactPct));
-    const previewAmt = formatEokKrwInDisplayCurrency(final, sharedInputCurrency);
+    const previewAmt = formatEokKrwInDisplayCurrency(final, homeKrwRefCurrency);
     inputPreviewEl.textContent = pickLang(
       ` · 실수령 ${previewAmt} (예상 ${previewPct}%)`,
       ` · take-home ${previewAmt} (est. ${previewPct}%)`,
@@ -11193,7 +11199,9 @@ function updateCalc(usdOverride){
   updateRateHintEmphasis();
   // 2026-08-01: 홈 탭 input-preview와 같은 원인의 같은 버그 — formatWon()이 통화 선택과
   // 무관하게 항상 원화만 반환해서, IDR/JPY 등을 골라도 이 참고용 줄만 계속 원화로 남아있었음
-  document.getElementById('compare-krw-amt').textContent = formatEokKrwInDisplayCurrency(억, sharedInputCurrency);
+  // 2026-08-02: home-krw-amt와 같은 이유로, 국가=KR일 때는 선택 통화와 무관하게 항상 원화로 고정
+  const compareKrwRefCurrency = sharedCountry === 'kr' ? 'KRW' : sharedInputCurrency;
+  document.getElementById('compare-krw-amt').textContent = formatEokKrwInDisplayCurrency(억, compareKrwRefCurrency);
 
   // "나라별로 나란히 놓고 보면" 표가 위 입력창이랑 연결돼 보이지 않는다는 지적(사용자가 직접
   // 스크린샷으로 지적) — 제목 아래 별도 문장 대신, 제목 자체에 금액을 붙여서 굵은 제목만 훑어도
