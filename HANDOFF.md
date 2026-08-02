@@ -2927,3 +2927,39 @@ Next Jackpot $748M/$325.1M cash)을 다시 보내며 "이 로또 데이터가 �
 
 변경 파일: `script.js`(`setSharedInputCurrency()`/`onHomeRateChanged()`/
 `onCompareRateChanged()`/`fetchLiveExchangeRate()` 4곳에 `renderJackpotHistory()` 호출 추가).
+
+### 2026-08-02 이어서 — 확률체감 탭 게임 방식 표 파워볼/메가볼 칸 겹침 회귀 재발·수정
+(PR #62, 이 세션 자신의 실수 정정)
+
+**요청 배경**: 사용자가 아이폰 카카오톡 인앱 브라우저 스크린샷을 보내며 "게임 방식부터"
+표에서 "1개(파워볼)"/"1개(메가볼)" 글씨가 옆 칸(메가밀리 열)과 겹쳐 보인다고 지적.
+
+**원인(이 세션 자신의 회귀)**: 확인해보니 **2026-07-30 세션이 이미 정확히 같은 자리에서
+같은 버그를 발견해 고쳐뒀던 것**이었음 — 그 세션 남긴 주석에 "이 칸(`.howto-compare-table`,
+`.hct-row`)은 폭이 약 74px밖에 안 되는데 `1~26 중 1개(파워볼)`처럼 nowrap을 걸면 그 구간
+전체가 안 꺾여서 옆 칸(메가밀리언즈 열)으로 넘쳐 두 칸 글자가 맞닿아 보인다"고 명확히
+설명돼있었고, 그래서 nowrap을 일부러 빼고 "칸 안에서 자연스럽게(약간 어색하게) 꺾이는"
+쪽을 선택해뒀었음. 그런데 **바로 이 세션이 앞서 진행한 PR #54(i18n_attr_lint 41건 검토)가
+`wrap_audit.js`로 이 요소를 다시 스캔하다가 "1개(" 경계에서 줄이 갈리는 걸 발견하고, 이미
+반대 이유로 제거됐던 nowrap을 그 사연을 못 보고 그대로 다시 추가**해서 정확히 같은 버그를
+재발시킴 — git log로 과거 커밋을 대조해서 이 사실을 직접 확인함.
+
+**수정**: nowrap을 다시 제거해 2026-07-30 상태로 원상복구. **재발 방지책**: `wrap_audit.js`
+자체에 `.howto-compare-table` 내부를 검사 대상에서 제외하는 필터를 추가함 — 이 좁은 표는
+"칸 밖 침범(더 나쁨)"보다 "칸 안에서 약간 어색한 줄바꿈(허용)"을 의도적으로 선택한 곳이라,
+앞으로 이 회귀 테스트가 이 자리를 다시 "버그"로 오인해서 nowrap을 넣도록 유도하는 일이
+구조적으로 안 생기게 함.
+
+**교훈**: `wrap_audit.js`가 실제 줄바꿈을 잡아내도, **그 자리가 이미 다른 트레이드오프로
+의도적으로 그렇게 되어있는 건 아닌지 주변 주석·git blame을 먼저 확인할 것** — 테스트가
+잡아낸다고 무조건 "고쳐야 할 버그"는 아님(이번엔 이미 한 번 결론난 트레이드오프를 몰라서
+되돌렸던 사례).
+
+**검증**: Playwright로 아이폰 뷰포트(390px)에서 표를 직접 스크린샷 찍어 겹침 없이 정상
+렌더링되는 것 육안 확인, `wrap_audit.js`(168, 0, `.howto-compare-table` 제외 후)·
+`console_error_audit`(161, 0)·`home_audit`(18, 0)·`audit_odds_compare`(40, 0)·
+`i18n_attr_lint`(0)·`i18n_coverage_audit`(735, 0)·`broken_link_audit`(90, 0) 전부 클린.
+PR #62 squash merge 완료.
+
+변경 파일: `index.html`(`odds.comparePickNumbers.pb`/`.mm`에서 nowrap 제거),
+`tests/wrap_audit.js`(`.howto-compare-table` 제외 필터 추가).
