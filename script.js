@@ -886,6 +886,19 @@ const LANG_TO_CURRENCY = {
   mn: 'MNT', kk: 'KZT', ky: 'KGS', ur: 'PKR', bn: 'BDT', lo: 'LAK',
   ja: 'JPY', hi: 'INR', tl: 'PHP',
 };
+// "다른 나라에 살아요" 드롭다운(realAbroadSelect, goToRealAbroad() 참고)의 20개국 전용 국가→통화
+// 매핑(2026-08-02, 인도 통화 오표기 발견 뒤 일반화). 이 드롭다운은 국가와 언어를 "국가|언어"
+// 값으로 동시에 알고 있는 유일한 진입점인데, 통화를 언어 기준(LANG_TO_CURRENCY)으로만 정하면
+// 계산기 본문(홈 탭 국가/통화 선택기)이 이미 지키는 "국가=세금 기준, 통화=표시 단위(서로 독립)"
+// 원칙과 어긋나는 경우가 생김 — 실제로 인도(in|en)만 유일하게 언어가 영어라 통화가 USD로 잘못
+// 잡혔던 사례가 있었음. 나머지 19개국은 언어=국가 통화라 이 표의 값이 LANG_TO_CURRENCY와 결과적으로
+// 같지만, 이 드롭다운에 새 나라가 추가될 때 같은 버그가 재발하지 않도록 국가 기준으로 명시함.
+const REAL_ABROAD_COUNTRY_TO_CURRENCY = {
+  us: 'USD', in: 'INR', cn: 'CNY', vn: 'VND', th: 'THB', ru: 'RUB',
+  kh: 'KHR', np: 'NPR', id: 'IDR', mm: 'MMK', lk: 'LKR', uz: 'UZS',
+  mn: 'MNT', kz: 'KZT', kg: 'KGS', pk: 'PKR', bd: 'BDT', la: 'LAK',
+  jp: 'JPY', ph: 'PHP',
+};
 // 언어 코드 → COUNTRY_TAX_PROFILES에 실제로 있는, 그 언어가 가리키는 세금 기준 국가
 // (2026-08-01 추가, "사이트 타겟을 한국인에서 전 세계로 넓히면서 통화는 언어 따라 자동
 // 전환되는데 세금 기준 국가는 항상 한국 고정"이라는 비대칭을 해소하기 위함). LANG_TO_CURRENCY와
@@ -2146,11 +2159,12 @@ function goToCalculatorInput(){
 function goToRealAbroad(country, lang){
   setLanguage(lang, true);
   setHomeCountry(country);
-  // "다른 나라에 살아요" 20개 조합 중 인도(in|en)만 유일하게 언어(en)의 기본 통화(USD)가 실제
-  // 그 나라 통화(INR)와 다름(나머지 19개는 언어=국가 통화라 이 보정이 필요 없음) — "IN"을
-  // 명시적으로 고른 사용자가 USD를 볼 이유가 없으므로 국가 기준으로 통화만 보정. 2026-08-02,
-  // 페르소나 카드 20개국 전수 검증 세션에서 발견.
-  if (country === 'in' && !isCurrencyManuallyEdited) setSharedInputCurrency('INR');
+  // 통화는 언어가 아니라 이 카드에서 실제로 고른 국가 기준으로 맞춤(REAL_ABROAD_COUNTRY_TO_CURRENCY
+  // 정의부 주석 참고) — setLanguage()가 이미 언어 기준으로 한 번 설정했더라도 여기서 국가 기준값으로
+  // 덮어써서 최종적으로 국가와 통화가 항상 일치하게 함
+  if (!isCurrencyManuallyEdited && REAL_ABROAD_COUNTRY_TO_CURRENCY[country]) {
+    setSharedInputCurrency(REAL_ABROAD_COUNTRY_TO_CURRENCY[country]);
+  }
   goToCalculatorInput();
 }
 

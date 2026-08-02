@@ -2794,3 +2794,18 @@ claude/github-handover-review-ma18qt origin/main`으로 브랜치를 최신 main
 브랜치로 새 PR이 열림.
 
 변경 파일: `script.js`(`goToRealAbroad()`에 인도 통화 보정 5줄 추가).
+
+**곧바로 후속 — 인도 특례를 20개국 공용 국가→통화 표로 일반화**: 사용자가 홈 탭 입력 카드의
+"국가=세금 기준 · 통화=표시 단위" 힌트 줄(국가/통화가 이미 완전히 독립된 선택기임을 보여주는
+스크린샷)을 보여주며 "카드1도 이렇게 나눠야 하지 않냐"고 질문 → `if (country==='in')` 특례
+한 줄 대신, `REAL_ABROAD_COUNTRY_TO_CURRENCY`(script.js, `LANG_TO_CURRENCY` 바로 아래)
+20개국 전체 국가→통화 매핑표를 새로 추가하고 `goToRealAbroad()`가 이걸 쓰도록 일반화함 —
+동작 결과는 오늘 만든 인도 특례와 완전히 동일(19개국은 원래 언어=국가 통화라 값이 같음)하지만,
+이 드롭다운에 나라가 추가될 때 같은 버그(UI 언어와 그 나라 실제 통화가 다른 경우)가 재발하지
+않도록 국가 기준임을 코드로 명시함. 카드1 UI 자체(드롭다운 하나)는 안 바꿈 — 드롭다운을
+2개로 쪼개자는 게 아니라 내부 로직만 홈 탭과 같은 "국가≠통화" 원칙에 맞춘 것. 20개국 전수
+재검증(`sharedInputCurrency`/`sharedCountry` 20/20 일치) + 회귀 테스트 12개 전부
+`ISSUES: 0` 재확인, `node --check` 통과.
+
+변경 파일: `script.js`(`REAL_ABROAD_COUNTRY_TO_CURRENCY` 매핑표 추가, `goToRealAbroad()`
+인도 특례를 표 기반 일반 로직으로 교체).
