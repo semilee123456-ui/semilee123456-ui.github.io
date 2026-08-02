@@ -10647,6 +10647,21 @@ function updateHomeCalc(usdOverride){
   // 계산에 안 쓰이므로(위 usdNote 참고) 그대로 표시 통화를 따름.
   const homeKrwRefCurrency = country === 'kr' ? 'KRW' : sharedInputCurrency;
   document.getElementById('home-krw-amt').textContent = formatEokKrwInDisplayCurrency(억, homeKrwRefCurrency);
+  // 2026-08-03: "환율 [KRW/USD 환율값] 원" 조각은 항상 원/달러 환율(home-rate-input)만 가리키는데,
+  // homeKrwRefCurrency가 KRW가 아닐 때도(예: 국가=중국+통화=CNY) 계속 떠 있어서 "≈ ¥22억 · 환율
+  // 1,487.73원 · 실수령 ¥15.4억"처럼 CNY 금액 사이에 아무 관련 없는 원화 환율이 끼어드는 문제가
+  // 있었음(사용자 스크린샷으로 발견 — updateRateHintEmphasis()의 isSecondary 조건과 동일 케이스인데
+  // 그쪽은 흐리게만 하고 이 문구 자체는 안 지웠던 것). 이 참고 줄이 원화가 아닌 통화를 보여줄
+  // 때는 이 환율 조각 자체가 무의미하므로 통째로 숨김 — 해당 외화 환율은 결과 히어로 쪽 별도
+  // 편집창(home-foreign-rate-row)에서 이미 고칠 수 있음. home-krw-sep1(" · ")은 amt-wrap과
+  // rate-editor-wrap이 "둘 다" 보일 때만 필요한 구분점이라 같이 토글 — 안 그러면 rate-editor-wrap만
+  // 숨겼을 때 "≈ X ·  · 실수령 Y"처럼 가운데 " · "가 중복으로 남음(home-input-preview가 이미
+  // 자기 앞에 " · "를 갖고 있어서, rate-editor-wrap이 숨으면 amt-wrap 바로 뒤에 preview가 붙어도
+  // 구분점 하나로 자연스럽게 이어짐)
+  const homeRateEditorWrap = document.getElementById('home-rate-editor-wrap');
+  if (homeRateEditorWrap) homeRateEditorWrap.style.display = homeKrwRefCurrency === 'KRW' ? '' : 'none';
+  const homeKrwSep1 = document.getElementById('home-krw-sep1');
+  if (homeKrwSep1) homeKrwSep1.style.display = (sharedInputCurrency !== 'KRW' && homeKrwRefCurrency === 'KRW') ? '' : 'none';
 
   const trustLine = document.getElementById('home-trust-line');
   if (trustLine) {
@@ -11211,6 +11226,13 @@ function updateCalc(usdOverride){
   // 2026-08-02: home-krw-amt와 같은 이유로, 국가=KR일 때는 선택 통화와 무관하게 항상 원화로 고정
   const compareKrwRefCurrency = sharedCountry === 'kr' ? 'KRW' : sharedInputCurrency;
   document.getElementById('compare-krw-amt').textContent = formatEokKrwInDisplayCurrency(억, compareKrwRefCurrency);
+  // 홈 탭 home-rate-editor-wrap/home-krw-sep1과 같은 이유의 같은 수정 — compareKrwRefCurrency가
+  // 원화가 아닐 때 "환율 ...원" 조각(원/달러 환율)이 다른 통화 금액 사이에 무의미하게 끼는 문제 수정.
+  // compare-krw-sep1은 amt-wrap과 rate-editor-wrap이 둘 다 보일 때만 필요한 구분점(" · ")
+  const compareRateEditorWrap = document.getElementById('compare-rate-editor-wrap');
+  if (compareRateEditorWrap) compareRateEditorWrap.style.display = compareKrwRefCurrency === 'KRW' ? '' : 'none';
+  const compareKrwSep1 = document.getElementById('compare-krw-sep1');
+  if (compareKrwSep1) compareKrwSep1.style.display = (sharedInputCurrency !== 'KRW' && compareKrwRefCurrency === 'KRW') ? '' : 'none';
 
   // "나라별로 나란히 놓고 보면" 표가 위 입력창이랑 연결돼 보이지 않는다는 지적(사용자가 직접
   // 스크린샷으로 지적) — 제목 아래 별도 문장 대신, 제목 자체에 금액을 붙여서 굵은 제목만 훑어도
