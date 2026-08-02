@@ -928,7 +928,7 @@
                  보인다"는 지적에 대응해, 결과 쪽으로 한 번도 안 내려가도 입력창 바로 밑에서
                  실수령액 감을 잡을 수 있게 함(updateHomeCalc() 안에서 채움). 회색 보조 텍스트
                  톤 유지 — 새 박스가 아니라 이 줄 자체를 확장한 것이라 클러터 안 늘어남. -->
-            <p class="krw-hint" id="home-krw-rate-line" style="margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);"><span id="home-krw-amt-wrap">≈ <span id="home-krw-amt">1,503억원</span> · </span><span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="home-rate-input" value="1,503.4" inputmode="decimal" oninput="onHomeRateChanged()"><span data-i18n="common.won">원</span><span id="home-input-preview"></span></p>
+            <p class="krw-hint" id="home-krw-rate-line" style="margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);"><span id="home-krw-amt-wrap">≈ <span id="home-krw-amt">1,503억원</span></span><span id="home-krw-sep1"> · </span><span id="home-rate-editor-wrap"><span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="home-rate-input" value="1,503.4" inputmode="decimal" oninput="onHomeRateChanged()"><span data-i18n="common.won">원</span></span><span id="home-input-preview"></span></p>
           </div>
 
           <div class="result-hero">
@@ -1260,7 +1260,7 @@
             <input type="range" class="slider" id="compareAmountSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onCompareSliderMoved()">
             <div class="slider-ticks" aria-hidden="true"></div>
           </div>
-          <p class="krw-hint" id="compare-krw-rate-line"><span id="compare-krw-amt-wrap">≈ <span id="compare-krw-amt">1,503억원</span> · </span><span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="compare-rate-input" value="1,503.4" inputmode="decimal" oninput="onCompareRateChanged()"><span data-i18n="common.won">원</span> <button type="button" class="rate-live-badge" onclick="retryLiveExchangeRate(this)" title="기본값 사용 중 · 탭하면 실시간 환율로 갱신" aria-label="환율 새로고침" data-i18n-aria-label="common.refreshRate"><span aria-hidden="true">🔄</span></button></p>
+          <p class="krw-hint" id="compare-krw-rate-line"><span id="compare-krw-amt-wrap">≈ <span id="compare-krw-amt">1,503억원</span></span><span id="compare-krw-sep1"> · </span><span id="compare-rate-editor-wrap"><span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="compare-rate-input" value="1,503.4" inputmode="decimal" oninput="onCompareRateChanged()"><span data-i18n="common.won">원</span> <button type="button" class="rate-live-badge" onclick="retryLiveExchangeRate(this)" title="기본값 사용 중 · 탭하면 실시간 환율로 갱신" aria-label="환율 새로고침" data-i18n-aria-label="common.refreshRate"><span aria-hidden="true">🔄</span></button></span></p>
           <!-- 2026-08-01: 홈 탭의 home-foreign-rate-row와 같은 목적 — 통화가 KRW/USD가 아닐 때
                (예: IDR/JPY) 그 통화 환율을 이 탭에서도 바로 고칠 수 있게 함. sharedInputCurrency는
                홈/비교 탭이 공유하므로 showForeignRateEditor()가 이 요소도 같이 채움 -->
