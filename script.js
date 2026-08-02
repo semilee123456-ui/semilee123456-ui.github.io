@@ -3407,7 +3407,7 @@ function buildDrawScheduleMore(days){
 // CASH_VALUE_RATIO(58%) 추정치로 대체됨(getJackpotCashUsd() 참고). 공식 발표는 추첨 직전까지
 // 계속 갱신되니 "확인 필요" 없이 확실할 때만 채우고, 애매하면 비워서 추정치를 쓰게 둘 것.
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 707000000, cashUsd: 307300000 },
+  powerball:    { amountUsd: 748000000, cashUsd: 325100000 },
   megamillions: { amountUsd: 60000000, cashUsd: 25500000 },
 };
 
@@ -3431,7 +3431,7 @@ const GAME_NAME_MORE = {
 // 안 함)라 안 바꿈 — 위 JACKPOT_DATA.powerball도 같은 스크린샷의 "Next Jackpot $707
 // Million"으로 같이 갱신함.
 const LATEST_DRAW = {
-  powerball:    { date: '2026-07-29', numbers: [30, 36, 40, 42, 57], special: 2 },
+  powerball:    { date: '2026-08-01', numbers: [6, 17, 27, 48, 50], special: 5 },
   megamillions: { date: '2026-07-31', numbers: [4, 18, 26, 43, 51], special: 4 },
 };
 
@@ -8310,6 +8310,19 @@ function formatEokKrwInDisplayCurrency(eokKrw, code){
   return formatCompactCurrencyAmount(usdMillions, code);
 }
 
+// 2026-08-02: 국가=한국이 아니고 표시 통화도 원화가 아닐 때는 이 원화 환율 줄이 계산에도 안
+// 쓰이고(정률세 국가는 환율이 결과 비율에 영향 없음, KR만 절대 원화 금액 기준 누진세라 실제로
+// 중요함) 화면 표시 통화도 아니라서 순수 참고용 — 그런 경우엔 시각적으로 덜 강조되게
+// rate-secondary 클래스를 붙임(styles.css 참고). 국가/통화가 바뀌는 지점(홈/비교 탭 공용)마다
+// 호출해야 하므로, homeKrwAmtWrap/compareKrwAmtWrap 표시 토글과 같은 자리에서 항상 같이 부름.
+function updateRateHintEmphasis(){
+  const isSecondary = sharedCountry !== 'kr' && sharedInputCurrency !== 'KRW';
+  const homeLine = document.getElementById('home-krw-rate-line');
+  if (homeLine) homeLine.classList.toggle('rate-secondary', isSecondary);
+  const compareLine = document.getElementById('compare-krw-rate-line');
+  if (compareLine) compareLine.classList.toggle('rate-secondary', isSecondary);
+}
+
 // 통화가 바뀌거나(setSharedInputCurrency) 환율 자체가 바뀔 때(onHomeRateChanged/실시간 환율
 // 갱신) 호출 — 항상 "정확한" 원본 값(sharedAmountUsd/sharedAnnouncedUsdMillions, 슬라이더의
 // 반올림된 위치가 아님)에서 다시 환산하므로, 통화를 여러 번 왔다갔다 해도 표시 오차가 누적되지
@@ -8372,6 +8385,7 @@ function refreshAmountInputDisplaysForCurrency(){
   }
   const homeKrwAmtWrap = document.getElementById('home-krw-amt-wrap');
   if (homeKrwAmtWrap) homeKrwAmtWrap.style.display = sharedInputCurrency === 'KRW' ? 'none' : '';
+  updateRateHintEmphasis();
 }
 
 function setSharedInputCurrency(code, isManual){
@@ -10609,6 +10623,7 @@ function updateHomeCalc(usdOverride){
   // 통화 표시와 무관하게 항상 USD→KRW 환율을 씀)
   const homeKrwAmtWrap = document.getElementById('home-krw-amt-wrap');
   if (homeKrwAmtWrap) homeKrwAmtWrap.style.display = sharedInputCurrency === 'KRW' ? 'none' : '';
+  updateRateHintEmphasis();
   // 2026-08-01: compare-krw-amt와 같은 이유의 같은 버그 — formatWon()이 통화 선택과 무관하게
   // 항상 원화만 반환해서, IDR/JPY 등을 골라도 이 참고용 줄만 계속 원화로 남아있었음
   document.getElementById('home-krw-amt').textContent = formatEokKrwInDisplayCurrency(억, sharedInputCurrency);
@@ -11169,6 +11184,7 @@ function updateCalc(usdOverride){
   // "≈ X억원 · " 부분만 숨기고, 환율 직접 조정 UI(rate-input)는 그대로 남김
   const compareKrwAmtWrap = document.getElementById('compare-krw-amt-wrap');
   if (compareKrwAmtWrap) compareKrwAmtWrap.style.display = sharedInputCurrency === 'KRW' ? 'none' : '';
+  updateRateHintEmphasis();
   // 2026-08-01: 홈 탭 input-preview와 같은 원인의 같은 버그 — formatWon()이 통화 선택과
   // 무관하게 항상 원화만 반환해서, IDR/JPY 등을 골라도 이 참고용 줄만 계속 원화로 남아있었음
   document.getElementById('compare-krw-amt').textContent = formatEokKrwInDisplayCurrency(억, sharedInputCurrency);
