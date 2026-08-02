@@ -2612,13 +2612,9 @@ special `5`로, `JACKPOT_DATA.powerball`을 `amountUsd: 748000000`/`cashUsd: 325
 `wrap_audit.js`(28, 0)·`audit_odds_compare.js`(40, 0)·`i18n_coverage_audit.js`(735, 0)·
 `draw_archive_integrity_check.js`(0) 전부 클린.
 
-**⚠️ 발견했지만 이번 세션 범위 밖으로 남겨둔 것**: `tests/i18n_attr_lint.js`가 41건의
-"검토 후보"를 보고함 — 이 문서엔 "0건이 정상"이라고 적혀있었는데(2026-07-23 기록) 실제로는
-41건이었고, `git stash`로 이번 세션 변경사항을 다 걷어내고 재확인해도 동일하게 41건이라
-**이번 세션이 만든 게 아니라 이전부터 누적된 문서-실태 불일치**임을 확인함. 후보 목록이지
-확정 버그는 아니라서(파일 자체 설명 참고) 이번엔 손 안 댔음 — **다음 세션이 실제로 데이터-
-i18n-html 전환이 필요한 진짜 이슈인지, 아니면 린트 규칙 자체가 오래돼서 오탐이 늘어난
-건지 확인할 것.**
+~~**⚠️ 발견했지만 이번 세션 범위 밖으로 남겨둔 것**: `tests/i18n_attr_lint.js`가 41건의
+"검토 후보"를 보고함~~ — **같은 날 바로 다음 세션에서 해결(PR #54), 아래 해당 세션 항목
+참고.**
 
 변경 파일: `script.js`(`JACKPOT_DATA`/`LATEST_DRAW.powerball` 갱신, `updateRateHintEmphasis()`
 신규), `index.html`(`home.jackpotAnnuityBasis` 마크업 2곳, `home-krw-rate-line`/
@@ -2653,3 +2649,73 @@ i18n-html 전환이 필요한 진짜 이슈인지, 아니면 린트 규칙 자�
 (위 "새 세션 시작 시 지켜야 할 것" 5~6번 규칙이 실제로 유효함을 재확인).
 
 변경 파일: 없음(이 문서만 갱신).
+
+### 2026-08-02 이어서 — `i18n_attr_lint.js` 41건 검토 요청 → wrap_audit.js 자체의 로케일
+버그 발견 + 실제 줄바꿈 버그 48곳 수정(PR #54)
+
+**요청 배경**: 이전 세션이 "41건 검토 후보를 다음 세션이 확인할 것"이라고 남겨둔 항목을
+사용자가 "이어서 추가해줘"라고 지시 — 정확히 뭘 이어서 하라는 건지 `AskUserQuestion`으로
+확인받아 이 항목으로 범위를 확정함. **사용자가 "다른 코드팀도 같이 작업 중이니 헷갈리지
+않게 해달라"고 명시적으로 당부** — 이번 세션 내내 작업 배치마다 `git fetch origin main`을
+반복 확인하며 진행함(실제로 세션 도중 다른 두 세션의 push를 두 번 감지·병합함, 아래 참고).
+
+**1차 조사(오판)**: `wrap_audit.js`(실제 렌더링 기준 검사)로 41건을 재검증하려 했으나, 이
+FAQ 항목들이 `data-basis="us"/"cn"` 등 **국가를 선택해야만 화면에 보이는** 요소라(재외국민
+전용 질문), 기존 `wrap_audit.js`가 항상 기본 country=kr로만 테스트해서 애초에 화면에 뜬 적이
+없었음을 발견 — 20개국을 순회하며 재검증하는 스크립트를 새로 짜서 돌렸더니 처음엔 0건이
+나와서 "41건 전부 가짜"라고 사용자에게 잘못 보고함.
+
+**2차 조사(진짜 원인 발견)**: 사용자에게 "괜찮은지" 재확인차 다시 검증하다가, **이 국가별
+순회 스크립트 자체가 `locale`/`?lang=ko`를 명시하지 않아서 이 샌드박스의 기본 브라우저
+로케일(en-US)로 `navigator.language` 자동감지가 작동해 실제로는 영어로 렌더링된 채
+테스트되고 있었음**을 발견(이 프로젝트가 이미 "테스트 짤 때 흔한 함정" #6으로 문서화해둔
+바로 그 함정 — 기존 `wrap_audit.js` 원본도 처음부터 이 설정이 없었던 것으로 확인됨, 즉
+이 파일이 생긴 이후 계속 있었던 잠재 결함). `locale: 'ko-KR'` + `?lang=ko`를 명시하고
+재검증하니 **82건(중복 제거 42개 지점)의 진짜 줄바꿈 버그**가 나옴 — 그중 35개는 원래
+41건 후보(FAQ 재외국민 답변) 안에 있던 것이었고, **나머지 7개는 완전히 별개로 이번에
+처음 발견된 버그**(확률체감 탭 4곳 "이월(Rollover)"/"1개(파워볼)"/"1개(메가볼)"/"데이터가
+없어요(당첨번호만", 국가별 비교 탭 1곳 "주(State)", FAQ 일반 문항 1곳 "연금(29년 분할)"·
+"판정 기준(Substantial", FAQ 환급 안내 1곳 "해드려요(주민등록번호"). 사용자에게 오판을
+정정해서 재보고하고, `AskUserQuestion`으로 "전부 한번에 수정" 확답을 받아 진행.
+
+**수정**: 41개 `faq.aud.*` 키를 `data-i18n` → `data-i18n-html`로 전환하고, 위험한
+"단어(설명)"/") 단어" 경계마다 `<span style="white-space:nowrap">`로 감쌈. **1차 자동
+변환에서 실수 발견·수정**: 괄호 안 설명이 길 때(예: "채워야만(그 사이 한 번이라도 30일
+넘게 중국 밖에 나가면 카운트 리셋)") 전체를 통째로 nowrap하면 **오히려 320px 화면보다
+훨씬 넓어져(최대 728px) 가로 스크롤이 새로 생기는 회귀**를 스스로 재검증하다가 발견 —
+괄호 안 내용이 16자 이하일 때만 전체를 감싸고, 그보다 길면 실제로 줄이 갈렸던 경계 문자
+2글자(예: "만(")만 최소로 감싸는 방식으로 알고리즘을 고쳐서 재적용함(가로 오버플로 전수
+재검증 스크립트로 0건 확인). 나머지 7개(odds/compare/faq 일반)는 이미 `data-i18n-html`
+이거나 `pickLang()`+`.textContent`였던 곳들이라(후자 2곳은 `.innerHTML`로 교체 필요)
+개별적으로 nowrap span 추가. **부수 실수 하나 더 발견·수정**: `.textContent = pickLang(`
+문자열을 `.innerHTML`로 일괄 치환하려다 무관한 다른 4곳(`jh-rank-title`/`ji-cpi-title`/
+`taxBasisOverlayTitle`/마일스톤 토스트 제목)까지 같이 바뀐 걸 diff로 재확인하다 발견 —
+의도한 1곳(`ji-rollover-title`)만 남기고 나머지 되돌림.
+
+**`wrap_audit.js` 자체도 영구 보강**: FAQ 뷰일 때 20개국(`FAQ_AUDIENCE_COUNTRIES`)을
+순회하며 해당 국가의 `data-audience` 항목까지 검사하도록 확장 + `locale: 'ko-KR'`/
+`?lang=ko` 명시 — 이 두 사각지대가 앞으로 재발하지 않음(총 검사 수 28→168).
+
+**동시 작업 실제 발생(사용자가 미리 당부한 바로 그 상황)**: 이 세션 진행 중 다른 세션이
+`main`에 두 번 새로 push함 — (1) 인수인계 문서 갱신 커밋(`02406ce`, 코드 변경 없음),
+(2) 홈 화면 잭팟 헤드라인 원화 환산 문구를 통화 인지형으로 고친 커밋(`15d40cc`,
+`usdToKrwLabel()`→`usdToDisplayCurrencyLabel()` 개명 포함). 둘 다 커밋/PR 직전
+`git fetch origin main`으로 감지해서 병합 후 진행 — `script.js`가 겹쳤지만
+`git merge`가 자동으로 충돌 없이 합침(서로 다른 함수/구간을 고쳐서), 병합 후 전체 회귀
+테스트 재실행으로 안전 확인함.
+
+**검증**: `node --check` 통과, 회귀 테스트 12개 전부 `ISSUES: 0`(`console_error_audit`
+161·`home_audit` 18·`wrap_audit` 168·`audit_odds_compare` 40·`faq_audit` 18·
+`lang_leak_audit` 104·`map_scroll_audit` 10·`nav_slider_audit`·`i18n_coverage_audit` 735·
+`broken_link_audit` 90·`draw_archive_integrity_check`·`fact_consistency_audit` 93),
+`i18n_attr_lint.js`(41→0), 가로 오버플로 전수 재검증(0). PR #54 squash merge 완료.
+
+**다음 세션이 참고할 것**: `wrap_audit.js`가 이제 locale을 명시하므로 이 함정은 해결됐지만,
+혹시 다른 테스트 파일(`home_audit.js`/`faq_audit.js`/`audit_odds_compare.js` 등)도
+`newPage()`에 `locale`/`?lang=ko`가 빠져있는지 한 번씩 점검할 가치 있음 — 이번 세션은
+`wrap_audit.js`만 확인·수정함(요청 범위 밖이라 나머지는 안 건드림).
+
+변경 파일: `index.html`(41개 `faq.aud.*` data-i18n-html 전환+nowrap, `compare.stateLabel`/
+`odds.comparePickNumbers.pb`·`.mm`/`faq.checklistFooter`/`faq.aJackpotEst`/`faq.a16`
+nowrap 추가), `script.js`(`renderJackpotIndexRollover()`/`renderDateLookupResult()` nowrap
++ innerHTML 전환), `tests/wrap_audit.js`(locale 고정 + 20개국 순회 추가).
