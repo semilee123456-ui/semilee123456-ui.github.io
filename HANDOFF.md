@@ -613,7 +613,9 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   보내줘서 발견·수정함. **`odds-data.js` 아카이브(자동 백필 봇)는 이미 7/31까지 정상
   반영돼있었으므로, 이 사고는 "아카이브 갱신을 깜빡함"이 아니라 "아카이브와 완전히 별개인
   `LATEST_DRAW`/`JACKPOT_DATA` 두 상수를 깜빡함"이 원인** — 위 2026-07-24 기록과 정확히
-  같은 패턴. **매번 반드시 확인할 최종 체크리스트(딱 이 2곳)**:
+  같은 패턴. **매번 반드시 확인할 최종 체크리스트(2026-08-02 세션에서 3번째 지점 추가 —
+  아래 참고 — 예전엔 "딱 2곳"이라고 적혀있었으나 실제로 3번째 지점이 따로 빠지는 사례가
+  나와서 갱신함)**:
   1. `LATEST_DRAW.powerball`/`LATEST_DRAW.megamillions` (date/numbers/special) — 최신 실제
      추첨 결과와 일치하는지
   2. `JACKPOT_DATA.powerball`/`JACKPOT_DATA.megamillions`의 `amountUsd`(다음 추첨 광고
@@ -627,6 +629,14 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
      추정치만 씀). 지금은 파워볼 `cashUsd: 307.3`(백만 달러), 메가밀리언즈 `cashUsd: 25.5`로
      채워져 있음 — **다음 갱신 때부터 금액뿐 아니라 현금가치도 공식 사이트 스크린샷에서 같이
      읽어서 넣을 것**(못 구하면 비워두면 예전처럼 58% 추정치로 자연 대체되니 걱정 안 해도 됨).
+  3. **(2026-08-02 신규)** `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`/`POWERBALL_JACKPOT_ARCHIVE`
+     (그리고 메가밀리언즈도 같은 이름 패턴) — 위 1·2번(`LATEST_DRAW`/`JACKPOT_DATA`)과
+     **완전히 별개인 세 번째 데이터 소스**라, 1·2번을 맞게 갱신해도 이 아카이브만 따로
+     누락될 수 있음(실제로 2026-08-02에 파워볼만 이 지점이 빠져서 발생함 — 이월 스트릭/
+     실수령 랭킹 등 아카이브 기반 위젯에서 최신 회차 누락). `node tests/
+     draw_archive_integrity_check.js` 실행 후 출력되는 `last date`가 최신 실제 추첨일과
+     일치하는지로 빠르게 확인 가능. 새 회차 추가 시 `odds-data.js` 캐시버스팅 버전
+     (`script.src = 'odds-data.js?v=...'`, script.js 안)도 같이 올릴 것.
   - **이번에 밝혀진 근본 원인**: "ChamTax 로또 데이터 점검(매일)" 루틴이 이 체크리스트를
     이미 프롬프트에 갖고 있었는데도, 그 루틴이 도는 클라우드 환경의 네트워크 정책이
     "Trusted"(패키지 매니저 등 일부 도메인만 허용)로 설정돼있어서 `data.ny.gov`/공식
@@ -2850,3 +2860,106 @@ squash merge 완료.
 
 변경 파일: `script.js`(`updateHomeCalc()`/`updateCompareCalc()` 안에 `homeKrwRefCurrency`/
 `compareKrwRefCurrency` 도입).
+
+### 2026-08-02 이어서 — "로또 데이터가 모든 곳에 반영됐는지" 재확인 요청 → odds-data.js
+아카이브 백필 누락 발견·수정(PR #60)
+
+**요청 배경**: 사용자가 공식 사이트 스크린샷(메가밀리언즈 7/31 결과 + 파워볼 8/1 결과,
+Next Jackpot $748M/$325.1M cash)을 다시 보내며 "이 로또 데이터가 필요한 모든 곳에 잘
+반영되어 있는지 다시 확인해달라"고 요청.
+
+**확인 결과**: `LATEST_DRAW`/`JACKPOT_DATA`(script.js)는 이미 이전 세션(PR #44 계열)에서
+정확히 이 스크린샷 값으로 반영돼 있었음(재확인 완료). 그런데 **별도 데이터 소스인
+`POWERBALL_DRAW_ARCHIVE`/`POWERBALL_JACKPOT_ARCHIVE`(odds-data.js)에는 8/1 회차가
+안 채워져 있었음**을 발견 — 이 두 데이터 소스가 완전히 별개라는 건 위 "알려진 미해결
+항목"의 로또 데이터 체크리스트에 이미 여러 번 기록된 재발 패턴인데, 이번엔 `LATEST_DRAW`
+쪽은 맞았지만 아카이브 쪽을 놓친 새로운 변형 사례. `POWERBALL_DRAW_ARCHIVE`에
+`["2026-08-01",[6,17,27,48,50],5]`, `POWERBALL_JACKPOT_ARCHIVE`에
+`["2026-08-01",[6,17,27,48,50],5,707]` 추가(잭팟 707은 새로 조회한 게 아니라, 이전
+세션이 "7/29 회차 이후 next jackpot $707M"으로 이미 캡처해둔 값을 그대로 사용 — 이번
+8/1 회차가 실제로 그 발표액 그대로 열렸음이 확인된 것). `odds-data.js` 캐시버스팅
+버전도 갱신.
+
+**메가밀리언즈는 아카이브까지 이미 정상 반영돼 있었음**(`draw_archive_integrity_check`로
+직접 확인) — 파워볼만 누락됐던 것.
+
+**체크리스트 문구도 같은 세션에서 바로 갱신함**: 위 "알려진 미해결 항목"의 로또 데이터
+체크리스트가 "딱 이 2곳"이라고 못박아놨던 걸, `odds-data.js` 아카이브를 3번째 확인
+지점으로 추가해서 고침(해당 섹션 참고) — 다음 세션이 또 놓치지 않도록.
+
+**검증**: `draw_archive_integrity_check.js`(날짜 오름차순·중복 없음, last date
+2026-08-01 확인), 회귀 테스트 12개 전부 `ISSUES: 0`. PR #60 squash merge 완료.
+
+변경 파일: `odds-data.js`(파워볼 아카이브 2곳에 8/1 회차 추가), `script.js`
+(odds-data.js 캐시버스팅 버전 `?v=20260802`로 갱신).
+
+### 2026-08-02 이어서 — 확률체감 탭 "역대 잭팟 확인 기록" 목록이 통화/환율 변경에 반응 안
+하던 버그 발견·수정 (`claude/github-latest-files-check-j9xthk` 브랜치)
+
+**요청 배경**: 사용자가 확률체감 탭 아코디언 7개 섹션 스크린샷을 보여주며 "6가지 페르소나로
+들어와도 이쪽 환율/통화가 전부 맞게 나오는지" 확인 요청. 7개 중 4개(당첨 사례·삶의 변화·
+번호 빈도)는 애초에 통화 개념이 없는 정적 콘텐츠라 해당 없음을 먼저 확인하고, 나머지 4개
+(잭팟 확인 기록·실수령 TOP10·이월 기록·물가보정 랭킹)를 코드로 대조함.
+
+**발견**: `renderJackpotHistory()`(`jackpot-history-list`, `renderAmountBreakdownHtml()`가
+`formatEokKrwInDisplayCurrency()`로 21개국 실수령액을 보여주는 목록)만 통화/환율이 바뀌는
+4개 지점(`setSharedInputCurrency()`/`onHomeRateChanged()`/`onCompareRateChanged()`/
+`fetchLiveExchangeRate()` 성공 콜백) 전부에서 다시 그려지는 호출이 빠져있었음 — 같은 탭의
+나머지 3개 랭킹(`renderJackpotTakeHomeRanking`/`renderJackpotIndexRollover`/
+`renderJackpotIndexCpiRanking`)은 `updateHomeCalc()` 경유로 이미 반영되는데, 이 목록만
+처음 확률체감 탭을 열 때(`renderOddsTabDataWhenReady()`)·"더보기"·날짜 조회 시에만
+그려지는 사각지대였음. Playwright로 실제 재현: 확률체감 탭을 펼쳐둔 채 통화를 KRW→INR로
+바꿔도 이 목록만 "억원" 표기 그대로 안 바뀜(같은 화면의 다른 랭킹들은 정상 전환).
+
+**수정**: 위 4개 함수 전부에 `renderJackpotHistory()` 호출 추가. 페이지네이션 상태
+(`jackpotHistoryVisibleCount`)는 함수 안에서 null일 때만 초기화하므로 재호출해도 "더보기"
+펼침 상태가 리셋되지 않음(확인함).
+
+**검증**: `node --check` 통과, Playwright로 KRW→INR 전환 재현·수정 확인, 회귀 테스트
+`console_error_audit`(161, 0)·`home_audit`(18, 0)·`lang_leak_audit`(104, 0)·
+`audit_odds_compare`(40, 0)·`draw_archive_integrity_check`(0)·`fact_consistency_audit`
+(93, 0) 전부 클린.
+
+**동시 작업**: 이 세션 도중 다른 세션이 `main`에 PR #57(원화 참고 줄 국가=KR 고정)·
+#60(파워볼 8/1 회차 아카이브 백필)·#61(문서 갱신) 3개를 push함 — 매 커밋/병합 전
+`git fetch origin main`으로 감지해서 병합(그중 한 번은 진짜 divergence라 fast-forward
+불가 → 일반 merge 커밋으로 처리, 충돌 없이 자동 병합됨) 후 진행함.
+
+변경 파일: `script.js`(`setSharedInputCurrency()`/`onHomeRateChanged()`/
+`onCompareRateChanged()`/`fetchLiveExchangeRate()` 4곳에 `renderJackpotHistory()` 호출 추가).
+
+### 2026-08-02 이어서 — 확률체감 탭 게임 방식 표 파워볼/메가볼 칸 겹침 회귀 재발·수정
+(PR #62, 이 세션 자신의 실수 정정)
+
+**요청 배경**: 사용자가 아이폰 카카오톡 인앱 브라우저 스크린샷을 보내며 "게임 방식부터"
+표에서 "1개(파워볼)"/"1개(메가볼)" 글씨가 옆 칸(메가밀리 열)과 겹쳐 보인다고 지적.
+
+**원인(이 세션 자신의 회귀)**: 확인해보니 **2026-07-30 세션이 이미 정확히 같은 자리에서
+같은 버그를 발견해 고쳐뒀던 것**이었음 — 그 세션 남긴 주석에 "이 칸(`.howto-compare-table`,
+`.hct-row`)은 폭이 약 74px밖에 안 되는데 `1~26 중 1개(파워볼)`처럼 nowrap을 걸면 그 구간
+전체가 안 꺾여서 옆 칸(메가밀리언즈 열)으로 넘쳐 두 칸 글자가 맞닿아 보인다"고 명확히
+설명돼있었고, 그래서 nowrap을 일부러 빼고 "칸 안에서 자연스럽게(약간 어색하게) 꺾이는"
+쪽을 선택해뒀었음. 그런데 **바로 이 세션이 앞서 진행한 PR #54(i18n_attr_lint 41건 검토)가
+`wrap_audit.js`로 이 요소를 다시 스캔하다가 "1개(" 경계에서 줄이 갈리는 걸 발견하고, 이미
+반대 이유로 제거됐던 nowrap을 그 사연을 못 보고 그대로 다시 추가**해서 정확히 같은 버그를
+재발시킴 — git log로 과거 커밋을 대조해서 이 사실을 직접 확인함.
+
+**수정**: nowrap을 다시 제거해 2026-07-30 상태로 원상복구. **재발 방지책**: `wrap_audit.js`
+자체에 `.howto-compare-table` 내부를 검사 대상에서 제외하는 필터를 추가함 — 이 좁은 표는
+"칸 밖 침범(더 나쁨)"보다 "칸 안에서 약간 어색한 줄바꿈(허용)"을 의도적으로 선택한 곳이라,
+앞으로 이 회귀 테스트가 이 자리를 다시 "버그"로 오인해서 nowrap을 넣도록 유도하는 일이
+구조적으로 안 생기게 함.
+
+**교훈**: `wrap_audit.js`가 실제 줄바꿈을 잡아내도, **그 자리가 이미 다른 트레이드오프로
+의도적으로 그렇게 되어있는 건 아닌지 주변 주석·git blame을 먼저 확인할 것** — 테스트가
+잡아낸다고 무조건 "고쳐야 할 버그"는 아님(이번엔 이미 한 번 결론난 트레이드오프를 몰라서
+되돌렸던 사례).
+
+**검증**: Playwright로 아이폰 뷰포트(390px)에서 표를 직접 스크린샷 찍어 겹침 없이 정상
+렌더링되는 것 육안 확인, `wrap_audit.js`(168, 0, `.howto-compare-table` 제외 후)·
+`console_error_audit`(161, 0)·`home_audit`(18, 0)·`audit_odds_compare`(40, 0)·
+`i18n_attr_lint`(0)·`i18n_coverage_audit`(735, 0)·`broken_link_audit`(90, 0) 전부 클린.
+PR #62 squash merge 완료.
+
+변경 파일: `index.html`(`odds.comparePickNumbers.pb`/`.mm`에서 nowrap 제거),
+`tests/wrap_audit.js`(`.howto-compare-table` 제외 필터 추가).

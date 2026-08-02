@@ -126,7 +126,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.js?v=20260801-1" defer></script>
+<script src="script.js?v=20260802-1" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1653,8 +1653,12 @@
                      nowrap을 빼서 필요하면 이 구절 안에서도 자연스럽게 줄바꿈되게 함(칸 밖으로
                      넘치는 것보다 살짝 어색하게 꺾이는 게 나음, 같은 판단을 이전에 다른
                      숫자+단위 조합에서도 한 적 있음) -->
-                <span data-i18n-html="odds.comparePickNumbers.pb">1~69 중 5개 + <span style="white-space:nowrap">1~26 중 1개(파워볼)</span></span>
-                <span data-i18n-html="odds.comparePickNumbers.mm">1~70 중 5개 + <span style="white-space:nowrap">1~24 중 1개(메가볼)</span></span>
+                <!-- 2026-08-02: PR #54가 위 2026-07-30 주석의 이유를 놓치고 nowrap을 다시 넣어서
+                     같은 버그(카톡 인앱 브라우저 스크린샷으로 재확인)가 재발함 — 원상복구. 이
+                     칸은 74px밖에 안 돼서 nowrap을 쓰면 반드시 옆 칸을 침범하니, 이 자리에는
+                     nowrap을 쓰지 말 것(향후 세션 주의). -->
+                <span data-i18n-html="odds.comparePickNumbers.pb">1~69 중 5개 + 1~26 중 1개(파워볼)</span>
+                <span data-i18n-html="odds.comparePickNumbers.mm">1~70 중 5개 + 1~24 중 1개(메가볼)</span>
               </div>
               <div class="hct-row">
                 <span class="hct-label" data-i18n="odds.compareJackpotOdds">1등 확률</span>
