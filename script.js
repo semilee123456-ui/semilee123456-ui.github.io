@@ -7541,13 +7541,30 @@ function stopReadingAloud(){
   activeTtsBtn = null;
 }
 
+// 이모지가 섞인 문장을 TTS 엔진이 읽으면 이상한 소리를 내거나("깜짝 놀란 얼굴" 등을 그대로
+// 말하는 경우도 있음) 어색하게 끊기는 경우가 많아서, 화면에는 그대로 보여주되 "읽어주기"
+// 음성에서만 제거함(2026-08-03, 사용자가 FAQ "😮"/"👉" 읽히는 걸 스크린샷으로 지적) —
+// toggleReadAloud() 하나에서 걸러내므로 홈 결과·FAQ 답변·국가별 비교 카드 등 모든 TTS
+// 진입점과 26개 언어 전부에 한 번에 적용됨(언어별 텍스트가 아니라 유니코드 이모지 범위
+// 기준이라 언어 무관). \p{Extended_Pictographic}가 대부분의 이모지 본체를 잡고, 국기
+// 이모지(지역 표시 문자)·변형 선택자(FE0F)·ZWJ 결합자는 별도 범위로 추가 제거.
+function stripEmojiForTts(text){
+  return text
+    .replace(/\p{Extended_Pictographic}/gu, '')
+    .replace(/[\u{1F1E6}-\u{1F1FF}]/gu, '')
+    .replace(/[\u{FE0F}\u{200D}]/gu, '')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+}
+
 // getText: 문자열 또는 "지금 화면에 보이는 텍스트를 즉석에서 모아주는 함수" — 버튼을 누르는
 // 시점의 최신 언어/결과값을 읽어야 하므로, 미리 문자열로 굳혀두지 않고 클릭 때마다 새로 계산함
 function toggleReadAloud(getText, btn){
   if (!speechSynthesisSupported) return;
   const wasSameBtn = activeTtsBtn === btn;
   if (activeTtsUtterance) { stopReadingAloud(); if (wasSameBtn) return; }
-  const text = (typeof getText === 'function' ? getText() : (getText || '')).trim();
+  const rawText = (typeof getText === 'function' ? getText() : (getText || '')).trim();
+  const text = stripEmojiForTts(rawText);
   if (!text) return;
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = FAQ_VOICE_LANG_MAP[currentLang] || 'ko-KR';
