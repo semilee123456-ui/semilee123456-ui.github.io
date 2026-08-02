@@ -3198,3 +3198,20 @@ JSON-LD의 ItemList 설명도 같이 수정.
 변경 파일: `biggest-jackpot-payouts.html`, `biggest-lottery-jackpots-after-tax.html`,
 `biggest_lottery_jackpots_after_tax_zh.html` (2위·5위 항목의 실수령액 4개국 수치 전부
 1인당 기준으로 재계산, 안내 문구·계산기 링크 수정).
+
+### 2026-08-02 이어서 — 네팔 FAQ 일본어 번역 오류("常habitな住居") 수정(PR #67)
+
+**배경**: 바로 이전 세션(기기x언어 전수 재검사, PR #65)이 `faq.aud.np.a1`의 일본어
+번역에서 "常habitな住居"처럼 영단어 "habit"이 그대로 섞여 있는 걸 발견했지만, 일본어
+원어민 검증 없이 임의로 고치지 않는다는 원칙에 따라 후보안 없이 보고만 하고 넘어갔었음.
+사용자가 "번역 오류는 어떻게 해야되?"라고 물어봐서, 영어 원문("no habitual place of
+abode")과 대조해 원인을 설명하고 후보 수정안("常居所" — 일본 세법 표준 용어)을 제시함.
+사용자가 이 후보안으로 바로 진행하라고 확정.
+
+**수정**: `faq.aud.np.a1`의 `ja` 필드에서 "常habitな住居" → "常居所"로 교체. 같은 오타
+패턴이 다른 키에 더 있는지 전체 검색했으나 이 1곳뿐이었음.
+
+**검증**: JSON 유효성, `i18n_coverage_audit`(735, 0)·`lang_leak_audit`(104, 0)·
+`console_error_audit`(161, 0)·`faq_audit`(18, 0) 전부 클린. PR #67 squash merge 완료.
+
+변경 파일: `i18n-source/translations.json`+`i18n/ja.json`.
