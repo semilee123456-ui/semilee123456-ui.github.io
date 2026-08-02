@@ -22,6 +22,12 @@ function checkBoundaryWraps(root) {
       const tag = p.tagName;
       if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT;
       if (p.closest('[aria-hidden="true"]')) return NodeFilter.FILTER_REJECT;
+      // 2026-07-30에 이미 한 번 확정된 트레이드오프: .howto-compare-table 칸(약 74px)은
+      // nowrap을 쓰면 반드시 옆 칸을 침범해 글자가 겹쳐 보이는 더 나쁜 버그가 생기므로,
+      // 이 칸 안에서는 "살짝 어색하게 꺾이는" 걸 의도적으로 허용함(2026-08-02에 이 사실을
+      // 놓치고 nowrap을 다시 넣었다가 재발시킨 적 있음 — 같은 실수 반복 방지용으로 이 테스트
+      // 자체에서 제외).
+      if (p.closest('.howto-compare-table')) return NodeFilter.FILTER_REJECT;
       if (p.getClientRects().length === 0) return NodeFilter.FILTER_REJECT;
       return NodeFilter.FILTER_ACCEPT;
     }
