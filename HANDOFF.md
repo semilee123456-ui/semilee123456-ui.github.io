@@ -2746,3 +2746,51 @@ nowrap 추가), `script.js`(`renderJackpotIndexRollover()`/`renderDateLookupResu
 변경 없이 검증만 진행.
 
 변경 파일: 없음(검증만 수행).
+
+### 2026-08-02 이어서 — 카드1(20개국) 결과 화면의 통화·환율 표시/수정 가능 여부까지 전수 재검증 +
+인도(`in|en`) 통화 오표기 발견·수정
+
+**요청 배경**: 바로 위 세션은 "4개 카드가 언어에 잘 연결되는지"(currentLang/sharedCountry 전환)만
+봤는데, 사용자가 이어서 "각 사람들이 볼 때 금액이 잘 나오고 실시간 환율이랑 수정도 가능한지
+글씨 하나하나 대조해달라"고 요청 — 이번엔 결과 화면 자체(통화 코드·환율 값·환율 입력칸 편집
+가능 여부·재계산 반영)까지 범위를 넓혀서 Playwright로 재검증함.
+
+**검증 범위**: 카드1(`realAbroadSelect`) 20개 국가|언어 조합 + 카드4(`foreignerLangSelect`)
+26개 언어(중복 `zh` 제외) = 46개 케이스, 매번 새 페이지 로드 후 선택→이동 버튼 클릭까지
+실제 사용자 흐름대로 재현. 확인 항목: `currentLang`/`sharedInputCurrency`가
+`LANG_TO_CURRENCY[lang]`과 일치하는지, KRW/USD는 환율 입력칸(`#home-foreign-rate-row`)이
+숨겨지고 나머지 19개 통화는 통화 코드·환율값(각 `EXCHANGE_RATE_XXX` 기본값)이 정확히
+뜨는지, **그 입력칸에 실제로 다른 값을 입력하면 내부 변수와 화면 실수령액이 진짜로
+재계산되는지**(39개 non-KRW/USD 케이스 전부 확인), 매핑 안 된 6개 언어(아랍어·프랑스어·
+스페인어·포르투갈어·테툼어·우크라이나어)에서 크래시/undefined/NaN이 없는지.
+
+**결과**: 46개 케이스 전부 통화 매핑·환율값·편집 가능성 정상(자동 스캐너가 "million/billion"
+텍스트를 5건 의심 신호로 잡았지만 전부 오탐 — 우즈베크어는 million/trillion이 실제 그 언어
+단위어이고 프랑스어도 million이 정식 프랑스어 단어라 정상). **단 하나, 카드1에서 "IN"(인도)을
+고르면 통화가 INR이 아니라 USD로 뜨는 문제 발견**: 카드1은 국가와 언어를 동시에 명시하는
+유일한 진입점인데, 통화는 (다른 모든 흐름과 동일하게) 언어 기준으로 정해짐(`LANG_TO_CURRENCY`).
+20개 조합 중 19개는 언어=국가 통화라 문제 없지만, `in|en`만 유일하게 언어가 영어라서
+`LANG_TO_CURRENCY['en']='USD'`가 적용되어 "IN"을 직접 고른 사용자에게 INR 대신 USD가
+보임(카드4에서 힌디어를 직접 고르면 INR이 정상적으로 뜨는 것과 대조적).
+
+**수정**: `goToRealAbroad(country, lang)`(script.js) 안에서 `country === 'in'`일 때만
+`setSharedInputCurrency('INR')`로 통화를 국가 기준으로 보정 — 나머지 19개 조합은 이미
+일치하므로 건드리지 않음. `LANG_TO_CURRENCY`/`setLanguage()` 등 다른 흐름(언어 선택기,
+카드4)이 쓰는 공용 로직은 전혀 안 건드림 — 카드1(국가+언어를 동시에 아는 유일한 지점)에서만
+좁게 보정. `en` 언어(영어 UI)는 그대로 유지 — 통화만 고침(인도에 별도 힌디어 UI를 강제하지
+않음). 수정 후 `in|en` 재검증: `sharedInputCurrency` `INR`, 환율 입력칸에 `87`(기본값)
+정상 표시. `us|en`(USD 유지)·`cn|zh`(CNY 유지) 등 기존 정상 조합도 스팟 체크로 안 깨짐
+확인. 회귀 테스트 12개 전부 `ISSUES: 0` 재확인(`console_error_audit` 161·`home_audit` 18·
+`wrap_audit` 168·`audit_odds_compare` 40·`faq_audit` 18·`lang_leak_audit` 104·
+`map_scroll_audit` 10·`nav_slider_audit`·`i18n_coverage_audit` 735·`broken_link_audit` 90·
+`draw_archive_integrity_check`·`fact_consistency_audit` 93), `node --check` 통과.
+
+**이 세션 진행 중 브랜치가 이미 병합·삭제된 상태였음**: 세션 시작 시 배정된 브랜치
+(`claude/github-handover-review-ma18qt`)로 push하려는데 원격에 그 브랜치가 없었음 —
+확인해보니 이 브랜치로 만든 PR #56이 이미 머지되고 원격 브랜치가 삭제된 뒤였음(로컬 HEAD가
+`origin/main`과 정확히 같은 커밋(`3324e5f`)이라 리베이스할 내용도 없었음). `git checkout -B
+claude/github-handover-review-ma18qt origin/main`으로 브랜치를 최신 main 기준으로 다시
+잡고(작업 중이던 미커밋 script.js 변경은 그대로 유지됨) 새 커밋으로 push함 — 같은 이름의
+브랜치로 새 PR이 열림.
+
+변경 파일: `script.js`(`goToRealAbroad()`에 인도 통화 보정 5줄 추가).

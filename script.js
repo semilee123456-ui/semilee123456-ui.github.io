@@ -2146,6 +2146,11 @@ function goToCalculatorInput(){
 function goToRealAbroad(country, lang){
   setLanguage(lang, true);
   setHomeCountry(country);
+  // "다른 나라에 살아요" 20개 조합 중 인도(in|en)만 유일하게 언어(en)의 기본 통화(USD)가 실제
+  // 그 나라 통화(INR)와 다름(나머지 19개는 언어=국가 통화라 이 보정이 필요 없음) — "IN"을
+  // 명시적으로 고른 사용자가 USD를 볼 이유가 없으므로 국가 기준으로 통화만 보정. 2026-08-02,
+  // 페르소나 카드 20개국 전수 검증 세션에서 발견.
+  if (country === 'in' && !isCurrencyManuallyEdited) setSharedInputCurrency('INR');
   goToCalculatorInput();
 }
 
