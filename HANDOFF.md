@@ -3155,3 +3155,46 @@ squash merge 완료.
 
 변경 파일: `styles.css`(`.prize-pct`에 nowrap), `i18n-source/translations.json`+
 `i18n/*.json`(일본어 3개 키에 nowrap span).
+
+### 2026-08-03 이어서 — "역대 최고 잭팟" 페이지, 분할 당첨 항목의 실수령액이 1인당이
+아니라 합산액 기준으로 계산돼있던 문제 발견·수정 (`claude/github-latest-files-check-j9xthk`
+브랜치)
+
+**요청 배경**: 사용자가 `biggest-jackpot-payouts.html`(역대 최고 잭팟 TOP 5) 1위 항목
+스크린샷을 보내며 "$20.4억 이런 금액이 맞는지 전부 확인해달라"고 요청 — `WebSearch`로
+5개 항목 전부(발표액·현금가치·당첨자 수·당첨 주)를 공식 소스(powerball.com, CBS, CNN
+등)와 대조함.
+
+**발견**: 1위(2022 카스트로)·3위(2023/10 CA)·4위(2023/8 FL)는 전부 단독 당첨이라
+금액·주(state) 전부 정확함. 그런데 **2위(2025-09-06, 미주리·텍사스 2인 분할)와 5위
+(2016-01-13, 캘리포니아·플로리다·테네시 3인 분할)는 실제로 여러 명이 나눠 가진 현금
+총액을 마치 한 사람이 그 전액을 받아 세금을 낸 것처럼 계산**해서 보여주고 있었음 — 실제
+당첨자 1인이 손에 쥔 돈의 2배/3배로 부풀려진 숫자였음. 한국어판은 이 구분을 전혀 안
+밝혔고, 영어판/중국어판은 "combined/合计"라고 라벨은 붙여뒀지만 그래도 "실제로 얼마
+받았을까?"라는 페이지 취지엔 안 맞는 숫자였음(실존하는 개인이 받은 돈이 아님).
+
+**검증 방법론**: 사이트의 실제 `calcTakeHome()` 함수를 Playwright로 그대로 호출해서
+1인당 현금(2위 $410.3M, 5위 $327.8M)을 기준으로 재계산하기 전에, 먼저 이미 발행된
+1위·3위·4위(단독 당첨)의 공개 수치를 같은 함수·같은 환율(1,503원)·미국 컬럼은 `AVG`
+주세로 재현해서 오차 ±3억원 이내로 방법론 자체를 먼저 검증한 뒤, 2위·5위에 적용함.
+
+**수정**: 한국어·영어·중국어 3개 언어판 전부(`biggest-jackpot-payouts.html`,
+`biggest-lottery-jackpots-after-tax.html`, `biggest_lottery_jackpots_after_tax_zh.html`)
+"1인당 실수령액" 기준으로 통일 — 2위 한국 거주자 기준 6,601억원→**3,300억원**, 5위
+7,526억원→**2,637억원**(미국·중국·인도 거주자 컬럼도 동일 비율로 수정). 분할 당첨
+항목에 "(아래 실수령액은 1인당 기준)" 안내 문구 추가, "이 금액으로 계산해보기" 링크도
+합산액(`?amount=820.6`/`983.4`) 대신 1인당 현금(`?amount=410.3`/`327.8`)으로 변경.
+JSON-LD의 ItemList 설명도 같이 수정.
+
+**검증**: JSON-LD 3개 파일 전부 파싱 확인, `node --check` 통과,
+`broken_link_audit`(90, 0)·`fact_consistency_audit`(93, 0)·`console_error_audit`(161, 0)
+클린.
+
+**다음 세션이 참고할 것**: 이번엔 이 페이지 하나만 확인 요청받아 고쳤음 — 사이트 안에
+비슷하게 "여러 명이 나눠 받은 잭팟"을 다루는 다른 정적 콘텐츠(예: `powerball-tax.html`,
+`megamillions-tax.html`, `us-lottery-basics-*.html` 등)가 있다면 같은 유형의 문제가
+없는지 한 번 점검해볼 가치 있음 — 이번 세션은 범위 밖이라 안 건드림.
+
+변경 파일: `biggest-jackpot-payouts.html`, `biggest-lottery-jackpots-after-tax.html`,
+`biggest_lottery_jackpots_after_tax_zh.html` (2위·5위 항목의 실수령액 4개국 수치 전부
+1인당 기준으로 재계산, 안내 문구·계산기 링크 수정).
