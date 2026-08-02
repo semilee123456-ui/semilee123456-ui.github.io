@@ -2719,3 +2719,30 @@ FAQ 항목들이 `data-basis="us"/"cn"` 등 **국가를 선택해야만 화면�
 `odds.comparePickNumbers.pb`·`.mm`/`faq.checklistFooter`/`faq.aJackpotEst`/`faq.a16`
 nowrap 추가), `script.js`(`renderJackpotIndexRollover()`/`renderDateLookupResult()` nowrap
 + innerHTML 전환), `tests/wrap_audit.js`(locale 고정 + 20개국 순회 추가).
+
+### 2026-08-02 이어서 — 홈 화면 "나는 어떤 경우일까요?" 4개 페르소나 카드 연결 상태 전수 검증
+(코드 변경 없음)
+
+**요청 배경**: 사용자가 "이쪽 각각 4가지 경우를 들어가도 그 언어들이랑 잘 연결이 되어
+있는지 하나하나 확인해달라"고 요청 — 홈 화면 맨 위 인트로 아코디언의 4개 카드(🌐 사는
+나라를 골라서 바로 보기 / 🇰🇷 한국에 살아요 / ✈️ 해외에 살지만 한국 국적 / 🌏 한국에 사는
+외국인) 각각의 실제 동작을 Playwright로 전부 클릭·선택해서 검증함.
+
+- **카드1(`realAbroadSelect`, 20개국)**: 국가|언어 조합 전부(US·IN·CN·VN·TH·RU·KH·NP·ID·MM·
+  LK·UZ·MN·KZ·KG·PK·BD·LA·JP·PH) 선택→`goRealAbroadFromSelect()` 호출 후 `currentLang`/
+  `sharedCountry`가 정확히 그 조합으로 바뀌는지 확인 — 20/20 정상. 하위 "국가별 비교
+  보기 →" 링크도 클릭 시 비교 탭 정상 전환 확인.
+- **카드2("한국에 살아요")**: `goToCalculatorInput()` 호출 시 아코디언이 접히고 입력
+  카드로 스크롤되는지 확인 — 정상.
+- **카드3("해외에 살지만 한국 국적")**: `introAbroadLink.href`가 언어별로 다른 페이지로
+  연결되는 구조(ko→`korean_abroad_us_lottery_tax_ko.html`, zh→`_zh.html`, 나머지 24개
+  언어→영어 폴백 `korean-abroad-us-lottery-tax.html`) — 7개 언어로 실제 HTTP 요청까지
+  보내 파일이 200으로 로드되는지 확인(과거 "하이픈 버그" 사고가 있었던 유형이라 실제
+  파일 존재까지 확인한 것). 3개 파일 전부 정상 존재·로드 확인.
+- **카드4(`foreignerLangSelect`, 26개 언어)**: 전부 선택→`goWithLangSelect()` 호출 후
+  `currentLang`이 정확히 바뀌는지 확인 — 26/26 정상.
+
+**결론**: 46개 조합 + 링크 2개, 이슈 0건 — 4개 카드 전부 정상 연결돼있음을 확인함. 코드
+변경 없이 검증만 진행.
+
+변경 파일: 없음(검증만 수행).
