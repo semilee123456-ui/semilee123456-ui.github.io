@@ -4368,8 +4368,8 @@ function renderJackpotIndexRollover(){
   if (!listEl) return;
   const titleEl = document.getElementById('ji-rollover-title');
   const descEl = document.getElementById('ji-rollover-desc');
-  if (titleEl) titleEl.textContent = pickLang(
-    '🎢 역대 최장 이월(Rollover) 기록은?',
+  if (titleEl) titleEl.innerHTML = pickLang(
+    '🎢 역대 최장 <span style="white-space:nowrap">이월(Rollover)</span> 기록은?',
     '🎢 What are the longest rollover streaks in history?',
     '🎢 历史上连续多少期未开出头奖(滚存)最长？',
     '🎢 Chuỗi jackpot dồn (rollover) dài nhất trong lịch sử là bao nhiêu kỳ?',
@@ -4969,7 +4969,7 @@ function renderDateLookupResult(dateStr){
   // 없게 함 — 두 섹션이 따로 있던 걸 하나로 합쳐달라는 요청 반영(2026-07-22)
   const amountHtml = draw.amountUsd
     ? `<p class="dl-amt">${pickLang('발표 잭팟', 'Announced jackpot', '发布头奖', 'Jackpot công bố', 'แจ็คพอตที่ประกาศ', 'Объявленный джекпот', DL_JACKPOT_LABEL_MORE)}: <bdi>${formatEokKrwInDisplayCurrency(draw.amountUsd * EXCHANGE_RATE / 100000000, sharedInputCurrency)}</bdi></p>${renderAmountBreakdownHtml(draw.cashUsd || draw.amountUsd * CASH_VALUE_RATIO, draw.stateCode)}`
-    : `<p class="dl-no-amt">${pickLang('이 회차는 잭팟 금액 데이터가 없어요(당첨번호만 있어요)', 'No jackpot amount for this draw (numbers only)', '这一期没有头奖金额数据（仅有开奖号码）', 'Kỳ quay này không có dữ liệu jackpot (chỉ có số trúng)', 'งวดนี้ไม่มีข้อมูลจำนวนแจ็คพอต (มีแค่เลขที่ออก)', 'Для этого розыгрыша нет суммы джекпота (только числа)', DL_NO_AMT_MORE)}</p>`;
+    : `<p class="dl-no-amt">${pickLang('이 회차는 잭팟 금액 <span style="white-space:nowrap">데이터가 없어요(당첨번호만</span> 있어요)', 'No jackpot amount for this draw (numbers only)', '这一期没有头奖金额数据（仅有开奖号码）', 'Kỳ quay này không có dữ liệu jackpot (chỉ có số trúng)', 'งวดนี้ไม่มีข้อมูลจำนวนแจ็คพอต (มีแค่เลขที่ออก)', 'Для этого розыгрыша нет суммы джекпота (только числа)', DL_NO_AMT_MORE)}</p>`;
 
   resultEl.innerHTML = `<div class="jackpot-history-row">
     <div class="jh-timeline"><span class="jh-timeline-dot ${gameTagClass}"></span></div>
