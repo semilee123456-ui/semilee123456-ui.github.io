@@ -4109,7 +4109,12 @@ function renderAmountBreakdownHtml(cashUsd, stateCode){
   // (점선 테두리만 남겨서 "순위 대상이 아닌 별도 항목"이라는 구분은 유지)
   const otherResult = calcTakeHome(cashKrw / 100000000, 'other', null);
   const otherLabel = otherResult.basisSuffix.replace(/\s*[（(][^)）]*[)）]\s*$/, '');
-  const otherChipHtml = `<span class="jh-amt-item jh-amt-chip jh-amt-chip-other"><span class="jh-amt-label">🌐 ${otherLabel}</span><span class="jh-amt"><bdi>${formatEokKrwInDisplayCurrency(otherResult.final, sharedInputCurrency)}</bdi></span></span>`;
+  // 2026-08-03: "🌐 " 이모지 접두사 때문에 이 칩(2열 그리드, 폭 100px 안팎)에서 "기타 국가"가
+  // "🌐"/"기타"/"국가" 3줄로 어색하게 쪼개져 보인다는 사용자 스크린샷 제보 — 옆 칩들(스리랑카
+  // 거주자 등)은 이모지 없이 텍스트만 있어서 같은 폭에서도 최대 2줄로 자연스럽게 접힘. 이
+  // 칩은 이미 점선 테두리(jh-amt-chip-other)로 "순위 대상 아닌 별도 항목"이라는 구분이
+  // 되고 있어서 이모지가 시각적으로 꼭 필요하지도 않았음 — 이모지만 제거
+  const otherChipHtml = `<span class="jh-amt-item jh-amt-chip jh-amt-chip-other"><span class="jh-amt-label">${otherLabel}</span><span class="jh-amt"><bdi>${formatEokKrwInDisplayCurrency(otherResult.final, sharedInputCurrency)}</bdi></span></span>`;
   const restHtml = `<div class="jh-amounts-grid">${restVisibleGroups.map(g => toAmtItem(g, false)).join('')}${otherChipHtml}</div>`;
   return primaryHtml + restHtml + hiddenHtml;
 }
@@ -10732,11 +10737,21 @@ function updateHomeCalc(usdOverride){
 
   const milestoneEl = document.getElementById('home-milestone');
   const newMilestoneTier = final >= 10000 ? 2 : (final >= 1000 ? 1 : 0);
+  // 2026-08-03: 마일스톤 문구가 "1조원"/"₩1 trillion"처럼 원화(KRW) 문구를 하드코딩하고 있어서,
+  // 표시 통화를 다른 걸로 바꾸면(예: 국가=미국+통화=USD) 바로 위 헤드라인은 "$582.8 billion"인데
+  // 그 밑 마일스톤 배지만 "실수령액이 1조원을 넘었어요"처럼 뜬금없이 원화를 얘기하는 불일치가
+  // 있었음(참고 줄 원화 환율 오표기와 같은 버그 유형, "6가지 페르소나" 재검증 세션에서 발견).
+  // 하드코딩된 금액 문구 대신 헤드라인과 같은 기준(sharedInputCurrency)으로 포맷한 임계값을
+  // 넣어서 항상 화면에 보이는 통화와 일치하게 함. 격조사가 붙는 언어(카자흐어·키르기스어·
+  // 몽골어·우즈베크어)는 통화명에 직접 격어미를 붙일 수 없어서 "수준/양"을 뜻하는 완충 단어를
+  // 넣어 자연스럽게 우회함.
   if (newMilestoneTier === 2) {
-    milestoneEl.textContent = pickLang('🎉 실수령액만 1조원을 넘었어요!', '🎉 Your take-home tops ₩1 trillion!', '🎉 实得金额突破1万亿韩元！', '🎉 Số tiền thực nhận vượt quá 1 nghìn tỷ won!', '🎉 เงินที่ได้รับจริงเกิน 1 ล้านล้านวอน!', '🎉 Сумма на руки превысила 1 триллион вон!', { ar:'🎉 صافي دخلك تجاوز 1 تريليون وون!', bn:'🎉 আপনার প্রকৃত আয় ১ ট্রিলিয়ন ওন ছাড়িয়ে গেছে!', fr:'🎉 Votre revenu net dépasse 1 000 milliards de wons !', hi:'🎉 आपके हाथ में आने वाली राशि 1 ट्रिलियन वॉन को पार कर गई!', id:'🎉 Take-home-mu tembus ₩1 triliun!', ja:'🎉 手取り額が1兆ウォンを突破！', kk:'🎉 Қолыңызға тиетін сома 1 триллион воннан асты!', km:'🎉 ចំណូលសុទ្ធរបស់អ្នកលើសពី 1 ទ្រីលានវ៉ុនហើយ!', ky:'🎉 Кол алдырма акчаңыз 1 триллион вондон ашты!', lo:'🎉 ເງິນທີ່ໄດ້ຮັບຈິງຂອງທ່ານເກີນ 1 ລ້ານລ້ານວອນແລ້ວ!', mn:'🎉 Таны гарт орох дүн 1 их наяд воноос давлаа!', my:'🎉 သင့်လက်ခံရရှိမှုသည် ဝမ်း ၁ ထရီလီယံ ကျော်လွန်သွားပါပြီ!', ne:'🎉 तपाईंको हातमा पर्ने रकम १ ट्रिलियन वोन नाघ्यो!', si:'🎉 ඔබේ අත් ලාභය වොන් ට්‍රිලියන 1 ඉක්මවා ඇත!', tl:'🎉 Lumampas na sa ₩1 trillion ang take-home mo!', ur:'🎉 آپ کے ہاتھ میں آنے والی رقم 1 ٹریلین وون سے تجاوز کر گئی!', uz:"🎉 Qo'lingizga tegadigan summa 1 trillion vondan oshdi!" , pt: `🎉 Seu valor líquido ultrapassa ₩1 trilhão!`, es: `🎉 ¡Tu monto neto supera 1 billón de ₩!`, uk: `🎉 Ваша сума на руки перевищує ₩1 трильйон!`, tet: `🎉 Ó-nia lori ba uma liuseik ₩1 triliaun!`});
+    const amt = formatEokKrwInDisplayCurrency(10000, sharedInputCurrency);
+    milestoneEl.textContent = pickLang(`🎉 실수령액만 ${amt}을 넘었어요!`, `🎉 Your take-home tops ${amt}!`, `🎉 实得金额突破${amt}！`, `🎉 Số tiền thực nhận vượt quá ${amt}!`, `🎉 เงินที่ได้รับจริงเกิน ${amt}!`, `🎉 Сумма на руки превысила ${amt}!`, { ar:`🎉 صافي دخلك تجاوز ${amt}!`, bn:`🎉 আপনার প্রকৃত আয় ${amt} ছাড়িয়ে গেছে!`, fr:`🎉 Votre revenu net dépasse ${amt} !`, hi:`🎉 आपके हाथ में आने वाली राशि ${amt} को पार कर गई!`, id:`🎉 Take-home-mu tembus ${amt}!`, ja:`🎉 手取り額が${amt}を突破！`, kk:`🎉 Қолыңызға тиетін сома ${amt} деңгейінен асты!`, km:`🎉 ចំណូលសុទ្ធរបស់អ្នកលើសពី ${amt}ហើយ!`, ky:`🎉 Кол алдырма акчаңыз ${amt} деңгээлинен ашты!`, lo:`🎉 ເງິນທີ່ໄດ້ຮັບຈິງຂອງທ່ານເກີນ ${amt}ແລ້ວ!`, mn:`🎉 Таны гарт орох дүн ${amt} хэмжээнээс давлаа!`, my:`🎉 သင့်လက်ခံရရှိမှုသည် ${amt} ကျော်လွန်သွားပါပြီ!`, ne:`🎉 तपाईंको हातमा पर्ने रकम ${amt} नाघ्यो!`, si:`🎉 ඔබේ අත් ලාභය ${amt} ඉක්මවා ඇත!`, tl:`🎉 Lumampas na sa ${amt} ang take-home mo!`, ur:`🎉 آپ کے ہاتھ میں آنے والی رقم ${amt} سے تجاوز کر گئی!`, uz:`🎉 Qo'lingizga tegadigan summa ${amt} miqdoridan oshdi!`, pt: `🎉 Seu valor líquido ultrapassa ${amt}!`, es: `🎉 ¡Tu monto neto supera ${amt}!`, uk: `🎉 Ваша сума на руки перевищує ${amt}!`, tet: `🎉 Ó-nia lori ba uma liuseik ${amt}!`});
     milestoneEl.style.display = 'block';
   } else if (newMilestoneTier === 1) {
-    milestoneEl.textContent = pickLang('💎 실수령액이 1,000억원을 넘었어요', '💎 Your take-home tops ₩100 billion', '💎 实得金额突破1000亿韩元', '💎 Số tiền thực nhận vượt quá 100 tỷ won', '💎 เงินที่ได้รับจริงเกิน 1 แสนล้านวอน', '💎 Сумма на руки превысила 100 миллиардов вон', { ar:'💎 صافي دخلك تجاوز 100 مليار وون', bn:'💎 আপনার প্রকৃত আয় ১০০ বিলিয়ন ওন ছাড়িয়ে গেছে', fr:'💎 Votre revenu net dépasse 100 milliards de wons', hi:'💎 आपके हाथ में आने वाली राशि 100 अरब वॉन को पार कर गई', id:'💎 Take-home-mu tembus ₩100 miliar', ja:'💎 手取り額が1000億ウォンを突破', kk:'💎 Қолыңызға тиетін сома 100 миллиард воннан асты', km:'💎 ចំណូលសុទ្ធរបស់អ្នកលើសពី 100 ប៊ីលានវ៉ុន', ky:'💎 Кол алдырма акчаңыз 100 миллиард вондон ашты', lo:'💎 ເງິນທີ່ໄດ້ຮັບຈິງຂອງທ່ານເກີນ 1 ແສນລ້ານວອນແລ້ວ', mn:'💎 Таны гарт орох дүн 100 тэрбум воноос давлаа', my:'💎 သင့်လက်ခံရရှိမှုသည် ဝမ်း ၁၀၀ ဘီလီယံ ကျော်လွန်သွားပါပြီ', ne:'💎 तपाईंको हातमा पर्ने रकम १०० अर्ब वोन नाघ्यो', si:'💎 ඔබේ අත් ලාභය වොන් බිලියන 100 ඉක්මවා ඇත', tl:'💎 Lumampas na sa ₩100 billion ang take-home mo', ur:'💎 آپ کے ہاتھ میں آنے والی رقم 100 ارب وون سے تجاوز کر گئی', uz:"💎 Qo'lingizga tegadigan summa 100 milliard vondan oshdi" , pt: `💎 Seu valor líquido ultrapassa ₩100 bilhões`, es: `💎 Tu monto neto supera los ₩100 mil millones`, uk: `💎 Ваша сума на руки перевищує ₩100 мільярдів`, tet: `💎 Ó-nia lori ba uma liuseik ₩100 biliaun`});
+    const amt = formatEokKrwInDisplayCurrency(1000, sharedInputCurrency);
+    milestoneEl.textContent = pickLang(`💎 실수령액이 ${amt}을 넘었어요`, `💎 Your take-home tops ${amt}`, `💎 实得金额突破${amt}`, `💎 Số tiền thực nhận vượt quá ${amt}`, `💎 เงินที่ได้รับจริงเกิน ${amt}`, `💎 Сумма на руки превысила ${amt}`, { ar:`💎 صافي دخلك تجاوز ${amt}`, bn:`💎 আপনার প্রকৃত আয় ${amt} ছাড়িয়ে গেছে`, fr:`💎 Votre revenu net dépasse ${amt}`, hi:`💎 आपके हाथ में आने वाली राशि ${amt} को पार कर गई`, id:`💎 Take-home-mu tembus ${amt}`, ja:`💎 手取り額が${amt}を突破`, kk:`💎 Қолыңызға тиетін сома ${amt} деңгейінен асты`, km:`💎 ចំណូលសុទ្ធរបស់អ្នកលើសពី ${amt}`, ky:`💎 Кол алдырма акчаңыз ${amt} деңгээлинен ашты`, lo:`💎 ເງິນທີ່ໄດ້ຮັບຈິງຂອງທ່ານເກີນ ${amt}`, mn:`💎 Таны гарт орох дүн ${amt} хэмжээнээс давлаа`, my:`💎 သင့်လက်ခံရရှိမှုသည် ${amt} ကျော်လွန်သွားပါပြီ`, ne:`💎 तपाईंको हातमा पर्ने रकम ${amt} नाघ्यो`, si:`💎 ඔබේ අත් ලාභය ${amt} ඉක්මවා ඇත`, tl:`💎 Lumampas na sa ${amt} ang take-home mo`, ur:`💎 آپ کے ہاتھ میں آنے والی رقم ${amt} سے تجاوز کر گئی`, uz:`💎 Qo'lingizga tegadigan summa ${amt} miqdoridan oshdi`, pt: `💎 Seu valor líquido ultrapassa ${amt}`, es: `💎 Tu monto neto supera ${amt}`, uk: `💎 Ваша сума на руки перевищує ${amt}`, tet: `💎 Ó-nia lori ba uma liuseik ${amt}`});
     milestoneEl.style.display = 'block';
   } else {
     milestoneEl.style.display = 'none';
