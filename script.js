@@ -8269,11 +8269,15 @@ function formatCompactCurrencyAmount(usdMillions, code){
   // 단위(万/亿/兆) 체계를 처리 못 하는 unitWordsForCurrentLang()의 영어 폴백을 타게
   // 됐던 것. formatWonZh()/formatWonJa()는 "원(한국 돈)" 전용이라 그대로 재사용 못 해서,
   // 같은 10000진법 로직만 통화 기호를 받는 형태로 여기 별도로 반영함.
-  if (currentLang === 'zh' || currentLang === 'ja') {
-    const locale = currentLang === 'zh' ? 'zh-CN' : 'ja-JP';
-    const wan = currentLang === 'zh' ? '万' : '万';
-    const yi = currentLang === 'zh' ? '亿' : '億';
-    const zhao = currentLang === 'zh' ? '万亿' : '兆';
+  // 2026-08-02: 한국어(ko)도 정확히 같은 만/억/조(10^4/10^8/10^12) 체계를 쓰는데 이 분기에
+  // 빠져있어서 unitWordsForCurrentLang()의 영어 폴백(million/billion/trillion)을 그대로 타는
+  // 동일한 버그였음 — 사용자가 국가=KR·통화=RUB 조합에서 "₽24,4 billion"처럼 한국어 화면에
+  // 영어 단위가 섞여 나오는 걸 스크린샷으로 지적해서 발견함. zh/ja와 같은 분기에 포함시킴.
+  if (currentLang === 'zh' || currentLang === 'ja' || currentLang === 'ko') {
+    const locale = currentLang === 'zh' ? 'zh-CN' : (currentLang === 'ja' ? 'ja-JP' : 'ko-KR');
+    const wan = currentLang === 'ko' ? '만' : '万';
+    const yi = currentLang === 'zh' ? '亿' : (currentLang === 'ja' ? '億' : '억');
+    const zhao = currentLang === 'zh' ? '万亿' : (currentLang === 'ja' ? '兆' : '조');
     const sym = meta.symbol || code + ' ';
     if (abs >= 1e12) return sym + (rawAmount / 1e12).toLocaleString(locale, { maximumFractionDigits: 1 }) + zhao;
     if (abs >= 1e8) return sym + (rawAmount / 1e8).toLocaleString(locale, { maximumFractionDigits: 1 }) + yi;
