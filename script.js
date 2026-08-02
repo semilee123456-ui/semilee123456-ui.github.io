@@ -347,6 +347,7 @@ function applyTranslations(){
   document.documentElement.lang = currentLang;
   document.documentElement.dir = RTL_LANGS.includes(currentLang) ? 'rtl' : 'ltr';
   if (toggleBtn) toggleBtn.value = currentLang;
+  syncTextSizeToggleIcon(); // 언어 전환 시 "가+/A+" 아이콘도 같이 맞춤(위 함수 정의부 참고)
 
   const activeView = document.querySelector('.view.on');
   if (activeView) {
@@ -530,10 +531,17 @@ document.addEventListener('DOMContentLoaded', syncThemeToggleIcon);
 
 // 글자 크게 보기: 다크모드와 완전히 동일한 구조(opt-in, localStorage 저장, FOUC 방지는 head 스크립트가 처리,
 // 여기선 버튼 아이콘만 상태에 맞춤) — 다크모드/고대비 모드와 독립적으로 동시에 켤 수 있음
+// 2026-08-03: 아이콘 자체("가+"/"가-")가 한글 전용 표기라, 외국어 화면(영어·태국어 등)에서도
+// 언어와 무관하게 계속 한글로 떠 있었음 — 옆의 텍스트 라벨(data-i18n)은 이미 번역되는데 아이콘만
+// 그대로라 어색함(사용자 지적). 한국어일 때만 "가+/가-"를 쓰고, 그 외 언어는 웹에서 널리 통하는
+// "A+/A-" 표기로 바꿈. currentLang이 바뀔 때도 다시 반영되도록 applyTranslations()에서도 호출함.
 function syncTextSizeToggleIcon(){
   const btn = document.getElementById('textsize-toggle');
   const iconEl = btn && btn.querySelector('.settings-row-icon');
-  const icon = document.documentElement.getAttribute('data-textsize') === 'large' ? '가-' : '가+';
+  const isLarge = document.documentElement.getAttribute('data-textsize') === 'large';
+  const icon = (typeof currentLang !== 'undefined' && currentLang === 'ko')
+    ? (isLarge ? '가-' : '가+')
+    : (isLarge ? 'A-' : 'A+');
   if (iconEl) iconEl.textContent = icon; else if (btn) btn.textContent = icon;
 }
 function toggleTextSize(){
