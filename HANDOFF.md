@@ -2892,3 +2892,38 @@ Next Jackpot $748M/$325.1M cash)을 다시 보내며 "이 로또 데이터가 �
 
 변경 파일: `odds-data.js`(파워볼 아카이브 2곳에 8/1 회차 추가), `script.js`
 (odds-data.js 캐시버스팅 버전 `?v=20260802`로 갱신).
+
+### 2026-08-02 이어서 — 확률체감 탭 "역대 잭팟 확인 기록" 목록이 통화/환율 변경에 반응 안
+하던 버그 발견·수정 (`claude/github-latest-files-check-j9xthk` 브랜치)
+
+**요청 배경**: 사용자가 확률체감 탭 아코디언 7개 섹션 스크린샷을 보여주며 "6가지 페르소나로
+들어와도 이쪽 환율/통화가 전부 맞게 나오는지" 확인 요청. 7개 중 4개(당첨 사례·삶의 변화·
+번호 빈도)는 애초에 통화 개념이 없는 정적 콘텐츠라 해당 없음을 먼저 확인하고, 나머지 4개
+(잭팟 확인 기록·실수령 TOP10·이월 기록·물가보정 랭킹)를 코드로 대조함.
+
+**발견**: `renderJackpotHistory()`(`jackpot-history-list`, `renderAmountBreakdownHtml()`가
+`formatEokKrwInDisplayCurrency()`로 21개국 실수령액을 보여주는 목록)만 통화/환율이 바뀌는
+4개 지점(`setSharedInputCurrency()`/`onHomeRateChanged()`/`onCompareRateChanged()`/
+`fetchLiveExchangeRate()` 성공 콜백) 전부에서 다시 그려지는 호출이 빠져있었음 — 같은 탭의
+나머지 3개 랭킹(`renderJackpotTakeHomeRanking`/`renderJackpotIndexRollover`/
+`renderJackpotIndexCpiRanking`)은 `updateHomeCalc()` 경유로 이미 반영되는데, 이 목록만
+처음 확률체감 탭을 열 때(`renderOddsTabDataWhenReady()`)·"더보기"·날짜 조회 시에만
+그려지는 사각지대였음. Playwright로 실제 재현: 확률체감 탭을 펼쳐둔 채 통화를 KRW→INR로
+바꿔도 이 목록만 "억원" 표기 그대로 안 바뀜(같은 화면의 다른 랭킹들은 정상 전환).
+
+**수정**: 위 4개 함수 전부에 `renderJackpotHistory()` 호출 추가. 페이지네이션 상태
+(`jackpotHistoryVisibleCount`)는 함수 안에서 null일 때만 초기화하므로 재호출해도 "더보기"
+펼침 상태가 리셋되지 않음(확인함).
+
+**검증**: `node --check` 통과, Playwright로 KRW→INR 전환 재현·수정 확인, 회귀 테스트
+`console_error_audit`(161, 0)·`home_audit`(18, 0)·`lang_leak_audit`(104, 0)·
+`audit_odds_compare`(40, 0)·`draw_archive_integrity_check`(0)·`fact_consistency_audit`
+(93, 0) 전부 클린.
+
+**동시 작업**: 이 세션 도중 다른 세션이 `main`에 PR #57(원화 참고 줄 국가=KR 고정)·
+#60(파워볼 8/1 회차 아카이브 백필)·#61(문서 갱신) 3개를 push함 — 매 커밋/병합 전
+`git fetch origin main`으로 감지해서 병합(그중 한 번은 진짜 divergence라 fast-forward
+불가 → 일반 merge 커밋으로 처리, 충돌 없이 자동 병합됨) 후 진행함.
+
+변경 파일: `script.js`(`setSharedInputCurrency()`/`onHomeRateChanged()`/
+`onCompareRateChanged()`/`fetchLiveExchangeRate()` 4곳에 `renderJackpotHistory()` 호출 추가).
