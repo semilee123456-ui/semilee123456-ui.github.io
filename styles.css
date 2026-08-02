@@ -1430,7 +1430,7 @@
   .howto-text{ font-size:var(--fs-small); color:var(--text-muted); margin:0; line-height:1.6; }
   .howto-text b{ color:var(--text-dark); }
   .prize-explain{ font-size:var(--fs-small); color:var(--text-muted); margin:1px 0 0; }
-  .prize-pct{ color:var(--text-muted); font-weight:400; font-size:var(--fs-small); opacity:0.75; }
+  .prize-pct{ color:var(--text-muted); font-weight:400; font-size:var(--fs-small); opacity:0.75; white-space:nowrap; }
   .prize-usd{ font-size:var(--fs-small); color:var(--text-muted); font-weight:400; }
 
   .jc-tap-cta{
