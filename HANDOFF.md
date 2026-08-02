@@ -2536,3 +2536,36 @@ UI와 결과 미리보기에 남아있던 원화 하드코딩을 통화 인지�
 
 변경 파일: `script.js`(주로), 이번 세션은 새 i18n 키 추가는 있었으나(주세 라벨 문구)
 `i18n-source/translations.json`+`i18n/*.json` 26개 언어 모두 빌드 완료 상태로 커밋됨.
+
+### 2026-08-02 이어서 — 한국어(ko)에서 통화만 바꾸면 "billion" 같은 영어 단위가 섞여 나오는
+실제 버그 발견·수정(PR #52)
+
+**요청 배경**: 사용자가 국가=KR·통화=RUB로 바꾼 스크린샷을 보내며 "한국어로 들어왔는데
+언어가 이상하게 변한 것 같다"고 지적 — 실제로는 UI 언어(라벨·버튼 등)는 전부 정상
+한국어였고, 잭팟 카드 금액 표시에만 "₽24,4 billion"처럼 영어 단위가 섞여 나오고 있었음.
+
+**원인**: `formatCompactCurrencyAmount()`(비KRW 통화의 억/조 압축 표기 담당)가 내부적으로
+`unitWordsForCurrentLang()`을 쓰는데, 이 함수는 en/vi/th/ru 4개 언어는 전용 배열로,
+`LANG_UNIT_WORDS`에 등록된 20개 언어는 거기서 단어를 가져오고, **중국어/일본어만 별도
+분기(万/亿/兆, 万/億/兆 — 한국과 같은 10^4 단위계라 서구식 million/billion 변환이 아예
+안 맞아서)에서 처리**하고 있었음. **한국어(ko)는 이 어느 쪽에도 포함이 안 되어 있어서**
+`unitWordsForCurrentLang()`의 최종 영어 폴백(`['million','billion','trillion']`)을 그대로
+탔던 것 — 정작 한국어도 중국/일본과 똑같이 만/억/조(10^4/10^8/10^12) 체계를 쓰는데도
+빠져있었던 순수 누락 버그. `zh`/`ja` 전용 분기에 `ko`를 추가하고 만='만'/억='억'/조='조',
+로케일 `ko-KR`을 매핑해서 해결.
+
+**전 언어(27개: ko + en/zh/vi/th/ru + `ADDITIONAL_LANGS` 21개) 전수 재검증**: 사용자가
+"모든 언어를 다 조사해달라"고 요청 → `formatCompactCurrencyAmount()`를 각 언어별로
+million/billion/trillion 3단계 크기에서 직접 호출해 반환된 단위 단어가 그 언어의 정식
+단어(`unitWordsForCurrentLang()` 반환값, zh/ja/ko는 만/억/조 계열)와 일치하는지 스크립트로
+전수 대조 — **수정 전엔 ko만 실패, 나머지 26개 언어는 이미 전부 정상이었고, 수정 후
+27개 언어 전부 `TOTAL ISSUES: 0`** 확인. (참고: 입력칸 밑 "Million RUB"/"M RUB" 같은
+단위 라벨(`getAmountUnitLabelParts()`, `.unit-full`/`.unit-short`)은 모든 언어에서 항상
+영어로 고정 표시하는 **별개의 의도된 디자인**이라 이번 버그와 무관 — 실제 표시 금액
+텍스트가 아니라 입력 필드 힌트라 언어 무관 국제 표기를 그대로 유지함, 건드리지 않음.)
+
+**검증**: `node --check` 통과, `console_error_audit.js`(161, 0)·`lang_leak_audit.js`(0)·
+`i18n_coverage_audit.js`(161, 0)·`home_audit.js`(18, 0)·`audit_odds_compare.js`(40, 0)
+전부 클린. PR #52 squash merge 완료.
+
+변경 파일: `script.js`(`formatCompactCurrencyAmount()`의 `zh`/`ja` 분기에 `ko` 추가).
