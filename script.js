@@ -773,6 +773,7 @@ async function fetchLiveExchangeRate(force){
           updateCalc(sharedAmountUsd);
         }
         initJackpotCardAmt();
+        renderJackpotHistory(); // onHomeRateChanged()/setSharedInputCurrency()와 같은 이유 — 실시간 환율이 늦게 들어와도 반영돼야 함
         refreshJackpotDrawerIfOpen();
         updateExchangeRateBadges();
         refreshAmountInputDisplaysForCurrency(); // KRW/다른 통화로 보이는 입력칸·눈금도 새 환율을 즉시 반영
@@ -8420,6 +8421,12 @@ function setSharedInputCurrency(code, isManual){
   // 같이 고침)
   initJackpotCardAmt();
   renderPrizeTiers();
+  // 2026-08-02: "역대 잭팟 확인 기록"(jackpot-history-list)도 formatEokKrwInDisplayCurrency()를
+  // 써서 표시 통화를 반영하는데, 이 목록은 처음 확률체감 탭을 열 때(renderOddsTabDataWhenReady())
+  // 아니면 "더보기"/날짜 조회 때만 다시 그려지고 있었음 — 통화 변경 시 다시 그리는 위 4개 함수
+  // 목록에 빠져있어서, 확률체감 탭을 이미 펼쳐둔 채로 통화만 바꾸면 이 목록만 이전 통화 그대로
+  // 남는 버그가 있었음(Playwright로 실제 재현: KRW→INR 전환해도 "억원" 표기 그대로 남음).
+  renderJackpotHistory();
   refreshJackpotDrawerIfOpen();
   refreshAmountInputDisplaysForCurrency();
   // select.value를 이 함수가 직접 설정하는 경로(예: 다른 탭에서 이미 바뀐 값과 동기화)라 네이티브
@@ -8813,6 +8820,7 @@ function onHomeRateChanged(){
   updateHomeCalc();
   refreshAmountInputDisplaysForCurrency(); // KRW/다른 통화 표시값이 새 환율을 즉시 반영하도록
   initJackpotCardAmt();
+  renderJackpotHistory(); // setSharedInputCurrency()와 같은 이유(환율 수동 수정도 이 목록에 반영돼야 함)
   refreshJackpotDrawerIfOpen();
 }
 
@@ -11164,6 +11172,7 @@ function onCompareRateChanged(){
   updateExchangeRateBadges();
   updateCalc();
   initJackpotCardAmt();
+  renderJackpotHistory(); // onHomeRateChanged()/setSharedInputCurrency()와 같은 이유
   refreshJackpotDrawerIfOpen();
 }
 
