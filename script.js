@@ -1874,7 +1874,7 @@ function calcTakeHome(amount, country, stateCode){
         ja: 'ラオスでの追加納税（FTCなし、推定 ⚠️）', ar: 'ضريبة إضافية في لاوس (بدون FTC، تقديري ⚠️)', hi: 'लाओस में अतिरिक्त कर (कोई FTC नहीं, अनुमानित ⚠️)', fr: 'Taxe supplémentaire au Laos (sans FTC, estimation ⚠️)',
         tl: 'Karagdagang buwis sa Laos (walang FTC, hindi pa nakumpirmang tantiya ⚠️)',
        pt: `Imposto adicional do Laos (sem FTC, estimativa não verificada ⚠️)`, es: `Impuesto adicional de Laos (sin FTC, estimación no verificada ⚠️)`, uk: `Додатковий податок Лаосу (без FTC, перевіреної оцінки немає ⚠️)`, tet: `Impostu adisionál Laos (la iha FTC, estimativa la verifika ⚠️)`}),
-      val2: laAdditionalTaxWon > 0 ? '-' + laEffectivePct.toFixed(1) + '%' : pickLang('0원', '₩0', '0元', '0 KRW', '0 วอน', '0 вон', { km:'0 វอน', ne:'₩0', id:'₩0', my:'၀ ဝမ်း', si:'0 වොන්', uz:'0 von', mn:'0 вон', kk:'0 вон', ky:'0 вон', ur:'0 وون', bn:'০ ওন', lo:'0 ວອນ', ja:'0ウォン', ar:'0 وون', hi:'₩0', fr:'0 KRW', tl:'₩0' , pt: `₩0`, es: `₩0`, uk: `₩0`, tet: `₩0`}),
+      val2: laAdditionalTaxWon > 0 ? '-' + laEffectivePct.toFixed(1) + '%' : pickLang('0원', '₩0', '0元', '0 KRW', '0 วอน', '0 вон', { km:'0 វ៉ុន', ne:'₩0', id:'₩0', my:'၀ ဝမ်း', si:'0 වොන්', uz:'0 von', mn:'0 вон', kk:'0 вон', ky:'0 вон', ur:'0 وون', bn:'০ ওন', lo:'0 ວອນ', ja:'0ウォン', ar:'0 وون', hi:'₩0', fr:'0 KRW', tl:'₩0' , pt: `₩0`, es: `₩0`, uk: `₩0`, tet: `₩0`}),
       basisSuffix: pickLang('라오스 거주자 (추정치 ⚠️)', 'Laos resident (estimate ⚠️)', '老挝居民（估算值⚠️）', 'Cư dân Lào (ước tính ⚠️)', 'ผู้พำนักในลาว (ค่าประมาณ ⚠️)', 'Резидент Лаоса (оценка ⚠️)', buildCountryMore('la', 'estimate'))
     };
   } else if (country === 'other') {
@@ -2140,18 +2140,49 @@ function goToCalculatorInput(){
   if (inputCard) inputCard.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
+// 2026-08-02: "한국에 살아요" 카드 전용 — 예전엔 goToCalculatorInput()만 호출해서 스크롤만 하고
+// 국가/통화는 그대로 뒀는데, 브라우저 언어 자동감지(LANG_TO_COUNTRY)로 이미 다른 나라 기준(예:
+// 베트남어 브라우저 → country=vn/VND)이 잡혀있는 상태에서 이 카드를 눌러도 그 나라 기준이 안
+// 바뀌는 문제가 있었음 — "한국에 살아요"라고 명시적으로 눌렀는데 계산은 다른 나라 기준으로 나가는
+// 모순(Playwright로 실제 재현 확인). 언어는 그대로 두고(외국어로 읽고 싶을 수 있음) 국가/통화만
+// 한국으로 명시적으로 확정함.
+function goToKoreaCalculator(){
+  setHomeCountry('kr', true);
+  setSharedInputCurrency('KRW', true);
+  goToCalculatorInput();
+}
+
+// "다른 나라에 살아요" 드롭다운(국가|언어 값)에서 country별로 실제 자국 통화가 뭔지 명시적으로
+// 정의함. LANG_TO_CURRENCY(언어→통화)에만 의존하면 "IN·English"처럼 국가와 짝지어진 언어가
+// 그 나라 통화를 안 가리키는 경우(영어→USD인데 국가는 인도) 통화가 엉뚱하게 남는 문제가 있었음
+// (2026-08-02, 실제로 India만 이 문제 있었음 — 나머지 19개국은 자국어를 짝지어놔서 우연히
+// 안 걸렸던 것). 이 드롭다운 20개국 전부를 명시적으로 나열해서 앞으로 이런 우연에 기대지 않게 함.
+const REAL_ABROAD_CURRENCY = {
+  us: 'USD', in: 'INR', cn: 'CNY', vn: 'VND', th: 'THB', ru: 'RUB', kh: 'KHR',
+  np: 'NPR', id: 'IDR', mm: 'MMK', lk: 'LKR', uz: 'UZS', mn: 'MNT', kz: 'KZT',
+  kg: 'KGS', pk: 'PKR', bd: 'BDT', la: 'LAK', jp: 'JPY', ph: 'PHP',
+};
+
 // "실제로 다른 나라에 살아요" 카드의 US/CN 버튼 — 한국이랑 아무 상관없는 진짜 외국인(예: 순수
 // 미국인·중국인)을 위한 원클릭 진입점. 언어와 세금 기준을 그 나라에 맞게 한 번에 맞춰주고
 // 계산기로 스크롤함 — 이게 없으면 한국어 화면만 보고 이탈할 위험이 있었음
 function goToRealAbroad(country, lang){
   setLanguage(lang, true);
   setHomeCountry(country);
+  if (REAL_ABROAD_CURRENCY[country]) setSharedInputCurrency(REAL_ABROAD_CURRENCY[country], true);
   goToCalculatorInput();
 }
 
 // 언어/국가 버튼 그리드를 드롭다운으로 압축한 UI용 — 선택된 <option>의 value를 보고
-// 언어 전환(setLanguage) 또는 별도 페이지 이동(location.href) 중 하나로 분기
-function goWithLangSelect(selectId){
+// 언어 전환(setLanguage) 또는 별도 페이지 이동(location.href) 중 하나로 분기.
+// forceKoreaContext=true는 "한국에 사는 외국인이에요" 드롭다운 전용 — 2026-08-02에 발견: 이
+// 드롭다운은 언어만 고르는 용도인데, setLanguage() 안의 언어→국가/통화 자동 추정(LANG_TO_COUNTRY/
+// LANG_TO_CURRENCY)이 같이 발동해서 예를 들어 베트남어를 고르면 country가 kr에서 vn으로,
+// currency가 KRW에서 VND로 바뀌어버림 — "한국에 산다"는 이 카드의 전제와 정면으로 모순되고
+// 세금 계산 자체가 완전히 다른 나라 기준으로 나가버리는 심각한 문제였음(Playwright로 재현
+// 확인). 이 카드에서 고르는 언어는 순수 표시 언어 선택일 뿐이라, 국가/통화는 항상 한국으로
+// 고정함.
+function goWithLangSelect(selectId, forceKoreaContext){
   const sel = document.getElementById(selectId);
   if (!sel) return;
   const val = sel.value;
@@ -2159,6 +2190,10 @@ function goWithLangSelect(selectId){
     location.href = val.slice(5);
   } else {
     setLanguage(val, true);
+    if (forceKoreaContext) {
+      setHomeCountry('kr', true);
+      setSharedInputCurrency('KRW', true);
+    }
     goToCalculatorInput();
   }
 }
@@ -10631,7 +10666,7 @@ function updateHomeCalc(usdOverride){
             id: `Berdasarkan data resmi ${authorityText} · tarif pajak 2026 · kurs ${rateStr} KRW/USD`,
             ja: `${authorityText}の公式データに基づく · 2026年税率 · 為替レート${rateStr}ウォン/ドル`,
             kk: `${authorityText} ресми деректері негізінде · 2026 салық мөлшерлемелері · айырбас бағамы ${rateStr} вон/долл.`,
-            km: `ផ្អែកលើទិន្នន័យផ្លូវការរបស់ ${authorityText} · អត្រាពន្ធឆ្នាំ 2026 · អត្រាប្តូរប្រាក់ ${rateStr} វอน/ដុល្លារ`,
+            km: `ផ្អែកលើទិន្នន័យផ្លូវការរបស់ ${authorityText} · អត្រាពន្ធឆ្នាំ 2026 · អត្រាប្តូរប្រាក់ ${rateStr} វ៉ុន/ដុល្លារ`,
             ky: `${authorityText} расмий маалыматтарынын негизинде · 2026 салык коэффициенттери · алмашуу курсу ${rateStr} вон/доллар`,
             lo: `ອີງໃສ່ຂໍ້ມູນທາງການຂອງ ${authorityText} · ອັດຕາພາສີປີ 2026 · ອັດຕາແລກປ່ຽນ ${rateStr} ວອນ/ໂດລາ`,
             mn: `${authorityText}-ийн албан ёсны мэдээлэлд үндэслэсэн · 2026 оны татварын хувь · ханш ${rateStr} вон/доллар`,
@@ -11389,13 +11424,13 @@ function buildAlsoPayMore(code, qualifier){
   return more;
 }
 
-const ZERO_OFFSET_MORE ={ ar:'0 وون (تمت مقاصته بائتمان ضريبي)', bn:'০ ওন (কর ক্রেডিট দ্বারা অফসেট)', fr:"0 KRW (compensé par le crédit d'impôt)", hi:'₩0 (कर क्रेडिट द्वारा समायोजित)', id:'₩0 (dikompensasi kredit pajak)', ja:'0ウォン（税額控除で相殺）', kk:'0 вон (салық несиесімен есептелді)', km:'0 វอន (ទូទាត់ដោយឥណទានពន្ធ)', ky:'0 вон (салык кредити менен эсептелди)', lo:'0 ວອນ (ຫັກລ້າງດ້ວຍເຄຣດິດພາສີ)', mn:'0 вон (татварын хөнгөлөлтөөр нөхөгдсөн)', my:'၀ ဝမ်း (အခွန်ခရက်ဒစ်ဖြင့်ခုနှိမ်)', ne:'₩0 (कर क्रेडिटले अफसेट)', si:'0 වොන් (බදු ණයට වන්දි)', tl:'₩0 (na-offset ng tax credit)', ur:'0 وون (ٹیکس کریڈٹ سے پورا)', uz:'0 von (soliq krediti bilan qoplandi)' ,
+const ZERO_OFFSET_MORE ={ ar:'0 وون (تمت مقاصته بائتمان ضريبي)', bn:'০ ওন (কর ক্রেডিট দ্বারা অফসেট)', fr:"0 KRW (compensé par le crédit d'impôt)", hi:'₩0 (कर क्रेडिट द्वारा समायोजित)', id:'₩0 (dikompensasi kredit pajak)', ja:'0ウォン（税額控除で相殺）', kk:'0 вон (салық несиесімен есептелді)', km:'0 វ៉ុន (ទូទាត់ដោយឥណទានពន្ធ)', ky:'0 вон (салык кредити менен эсептелди)', lo:'0 ວອນ (ຫັກລ້າງດ້ວຍເຄຣດິດພາສີ)', mn:'0 вон (татварын хөнгөлөлтөөр нөхөгдсөн)', my:'၀ ဝမ်း (အခွန်ခရက်ဒစ်ဖြင့်ခုနှိမ်)', ne:'₩0 (कर क्रेडिटले अफसेट)', si:'0 වොන් (බදු ණයට වන්දි)', tl:'₩0 (na-offset ng tax credit)', ur:'0 وون (ٹیکس کریڈٹ سے پورا)', uz:'0 von (soliq krediti bilan qoplandi)' ,
   pt: `₩0 (compensado por crédito tributário)`, es: `₩0 (compensado por crédito fiscal)`, uk: `₩0 (зараховано за рахунок податкового кредиту)`, tet: `₩0 (compensa husi crédito impostu)`,
 };
 
 // "0원 (근거 불명확 ⚠️)" — ZERO_OFFSET_MORE와 짝을 이루는, FTC 상계가 아니라 근거 자체가
 // 불명확해서 0원인 캄보디아 케이스용 (val2 표시, buildAdditionalTaxMore의 unclear 버전과 같은 문구)
-const ZERO_UNCLEAR_MORE = { ar:'0 وون (الأساس غير واضح ⚠️)', bn:'০ ওন (ভিত্তি অস্পষ্ট ⚠️)', fr:'0 KRW (base incertaine ⚠️)', hi:'₩0 (आधार अस्पष्ट ⚠️)', id:'₩0 (dasar tidak jelas ⚠️)', ja:'0ウォン（根拠不明確 ⚠️）', kk:'0 вон (негізі анық емес ⚠️)', km:'0 វอน (មូលដ្ឋានមិនច្បាស់ ⚠️)', ky:'0 вон (негизи так эмес ⚠️)', lo:'0 ວອນ (ພື້ນຖານບໍ່ຈະແຈ້ງ ⚠️)', mn:'0 вон (үндэслэл тодорхойгүй ⚠️)', my:'၀ ဝမ်း (အခြေခံမရှင်းလင်း ⚠️)', ne:'₩0 (आधार अस्पष्ट ⚠️)', si:'0 වොන් (පදනම අපැහැදිලියි ⚠️)', tl:'₩0 (hindi malinaw ang basehan ⚠️)', ur:'0 وون (بنیاد غیر واضح ⚠️)', uz:"0 von (asos noaniq ⚠️)" ,
+const ZERO_UNCLEAR_MORE = { ar:'0 وون (الأساس غير واضح ⚠️)', bn:'০ ওন (ভিত্তি অস্পষ্ট ⚠️)', fr:'0 KRW (base incertaine ⚠️)', hi:'₩0 (आधार अस्पष्ट ⚠️)', id:'₩0 (dasar tidak jelas ⚠️)', ja:'0ウォン（根拠不明確 ⚠️）', kk:'0 вон (негізі анық емес ⚠️)', km:'0 វ៉ុន (មូលដ្ឋានមិនច្បាស់ ⚠️)', ky:'0 вон (негизи так эмес ⚠️)', lo:'0 ວອນ (ພື້ນຖານບໍ່ຈະແຈ້ງ ⚠️)', mn:'0 вон (үндэслэл тодорхойгүй ⚠️)', my:'၀ ဝမ်း (အခြေခံမရှင်းလင်း ⚠️)', ne:'₩0 (आधार अस्पष्ट ⚠️)', si:'0 වොන් (පදනම අපැහැදිලියි ⚠️)', tl:'₩0 (hindi malinaw ang basehan ⚠️)', ur:'0 وون (بنیاد غیر واضح ⚠️)', uz:"0 von (asos noaniq ⚠️)" ,
   pt: `₩0 (nenhuma base clara encontrada ⚠️)`, es: `₩0 (sin base clara encontrada ⚠️)`, uk: `₩0 (чіткої бази не знайдено ⚠️)`, tet: `₩0 (la bele hetan base moos ⚠️)`,
 };
 
