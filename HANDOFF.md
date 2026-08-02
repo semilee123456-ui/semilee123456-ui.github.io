@@ -3391,3 +3391,46 @@ abode")과 대조해 원인을 설명하고 후보 수정안("常居所" — 일
 
 변경 파일: `biggest_lottery_jackpots_after_tax_zh.html`, `us-lottery-basics-zh.html`
 (브랜드명 표기 6곳씩 정상화).
+
+### 2026-08-03 이어서 — 메가밀리언즈 최소 잭팟이 사이트 전체에서 2025년 4월 개편 전 수치
+($20M)로 남아있던 것 발견·수정 (`claude/github-latest-files-check-j9xthk` 브랜치)
+
+**요청 배경**: 사용자가 "미국 로또 기초" 가이드 페이지(`us-lottery-basics.html`) 스크린샷을
+보여주며 번역 오류 확인 요청 — 실제로는 번역 문제가 아니라 **팩트 자체가 오래된 것**을
+`WebSearch`로 발견함: 메가밀리언즈가 2025-04-05 게임 개편(티켓 $2→$5, 논-잭팟 상금 배수
+도입)과 함께 최소 시작 잭팟을 **$20M → $50M**로 올렸는데(공식 소식: powerball 계열
+언론 다수 확인), 사이트가 개편 전 수치를 그대로 쓰고 있었음. **파워볼 최소 잭팟 $20M은
+이 개편과 무관해서 그대로 정확함** — 헷갈리지 말 것, 파워볼 칸은 안 건드림.
+
+**발견·수정 범위** (전부 "메가밀리언즈" 칸만 $20M→$50M로 교체, 파워볼 칸은 유지):
+1. `us-lottery-basics.html` **27개 파일 전부**(한국어 기본 + 26개 언어 접미사 버전) —
+   표의 "최소 잭팟" 행. **1차 일괄 스크립트 작업에서 프랑스어판(`-fr.html`)을 리스트에서
+   빠뜨렸다가**, 수정 후 전체 재검색(`grep -rln`으로 "메가밀리언즈"+"$20 million" 패턴
+   동시 매칭 파일 재검색)하다가 발견해서 별도로 추가 수정함 — 이런 전수 작업 후엔 항상
+   한 번 더 전체 재검색으로 빠뜨린 파일이 없는지 확인할 것(이번에 실제로 그렇게 해서
+   건짐).
+2. **`index.html`의 확률체감 탭 "게임 방식 비교" 표**(`odds.compareMinJackpot.mm`) — 이건
+   정적 가이드보다 노출이 훨씬 큰 실제 계산기 화면이라 우선순위 높음. `i18n-source/
+   translations.json` 마스터 소스의 `.mm` 오브젝트(26개 언어)를 수정한 뒤 `node scripts/
+   build-i18n.js`로 `i18n/*.json` 26개 재생성(직접 건드리지 않음 — 이 프로젝트 원칙).
+3. `lottery-jackpot-amount.html`(한/영/중 3개 언어) — "당첨자 나오면 최소 금액으로
+   초기화" 설명 문장이 두 게임을 뭉뚱그려 "보통 $20M 안팎"이라고 서술하던 걸, 게임별
+   정확한 금액을 병기하도록 수정.
+
+**검증**: `translations.json`+`i18n/*.json` 26개 전부 JSON 유효성 확인, `node --check`
+통과, Playwright로 ko/en/zh/th 4개 언어에서 실제 계산기 화면(`odds.compareMinJackpot.pb`/
+`.mm`) 렌더링 값 직접 확인(파워볼 $20M 그대로·메가밀리언즈 $50M로 정확히 전환됨),
+회귀 테스트 `i18n_coverage_audit`(735, 0)·`lang_leak_audit`(104, 0)·
+`console_error_audit`(161, 0)·`home_audit`(18, 0)·`broken_link_audit`(90, 0)·
+`fact_consistency_audit`(93, 0) 전부 클린.
+
+**다음 세션이 참고할 것**: 이번엔 "us-lottery-basics"/"lottery-jackpot-amount"/확률체감
+비교표 3곳만 확인·수정함. 사이트에 메가밀리언즈 관련 다른 정적 콘텐츠(예: 21개국
+`-resident-us-lottery-tax.html`, `*_in_korea_lottery_tax.html` 시리즈)가 "최소 잭팟"
+구체적 숫자를 또 언급하는지는 이번 세션 범위 밖이라 전수 확인 안 함 — grep 패턴
+`grep -rln "메가밀리언즈\|Mega Millions" *.html | xargs grep -l "2,000만\|20 million\|2000万"`
+로 빠르게 재확인 가능.
+
+변경 파일: `us-lottery-basics*.html`(27개, 최소 잭팟 표), `index.html`(비교표 기본값),
+`i18n-source/translations.json`+`i18n/*.json`(26개, `odds.compareMinJackpot.mm`),
+`lottery-jackpot-amount.html`+`-en.html`+`-zh.html`(롤오버 설명 문장).
