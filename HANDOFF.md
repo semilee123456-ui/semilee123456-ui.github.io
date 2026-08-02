@@ -2624,3 +2624,32 @@ i18n-html 전환이 필요한 진짜 이슈인지, 아니면 린트 규칙 자�
 신규), `index.html`(`home.jackpotAnnuityBasis` 마크업 2곳, `home-krw-rate-line`/
 `compare-krw-rate-line` id 추가), `styles.css`(`.jp-annuity-basis`, `.krw-hint.rate-secondary`),
 `i18n-source/translations.json`+`i18n/*.json`(26개 언어, `home.jackpotAnnuityBasis` 신규).
+
+### 2026-08-02 이어서 — GitHub 반영 상태 검증 세션 (`claude/github-latest-files-check-j9xthk`
+브랜치, 코드 변경 없음)
+
+사용자가 다른 세션(다른 코드팀)이 진행한 작업 로그(잭팟 cashUsd 반영·주세 라벨 문구·등수별
+상금표 통화 인지형 교체·파워볼 8/1 회차 갱신 등, PR #44~#53)를 붙여넣고 "이게 진짜 GitHub에
+다 반영됐냐"고 확인 요청 — `git log`/`git show`/PR API로 직접 대조해서 커밋 해시(`26e9452`,
+`ecb581a`, `75f6641`, `77c7baa` 등)와 실제 코드 내용(`JACKPOT_DATA.powerball.cashUsd`,
+주세 라벨 문구 등)까지 grep으로 검증해 전부 `main`에 실제로 병합돼 있음을 확인함. 이 세션
+자체는 코드를 고치지 않은 순수 검증 세션.
+
+**부수적으로 발견**: 이미 병합 완료됐지만 안 지워진 브랜치 5개 —
+`claude/connection-issue-tqhm4t`, `claude/github-file-check-g50n55`,
+`claude/github-handover-index-review-49ksjq`, `claude/github-work-handover-lqgr9p`,
+`claude/progress-checkpoint-pbf93h`. 전부 스쿼시 병합돼서 브랜치 자체 커밋 해시는 `main`에
+없지만(그래서 언뜻 미병합처럼 보임) PR API로 대조하면 내용은 100% `main`에 들어가 있음
+(`merged: true` 확인) — 삭제해도 코드 손실 없음. 사용자가 삭제를 요청했지만 **이 세션은
+`git push origin --delete`가 403으로 막혀 있고**(지정된 자기 브랜치로만 push 권한 있음),
+**GitHub MCP 서버에도 브랜치 삭제 도구가 없어서 실제로 삭제하지 못함** — 다음 세션이 다른
+권한으로 시도해보거나, 그때도 안 되면 사용자가 GitHub 웹 UI(저장소 → Branches 탭 → 휴지통
+아이콘)에서 직접 지워야 함.
+
+**동시 작업 중 실제로 겪은 일**: 이 세션이 진행되는 도중 다른 세션이 `main`에 바로 위 PR
+#53을 실제로 push함 — `git fetch`로 감지해서 fast-forward 병합한 뒤에 이 항목을 이어붙임.
+**여러 세션이 동시에 `main`에 작업할 수 있다는 걸 실제로 겪은 사례**이니, 다음 세션도 작업
+시작 직전·커밋/push 직전에 항상 `git fetch origin main`으로 최신 상태부터 다시 확인할 것
+(위 "새 세션 시작 시 지켜야 할 것" 5~6번 규칙이 실제로 유효함을 재확인).
+
+변경 파일: 없음(이 문서만 갱신).
