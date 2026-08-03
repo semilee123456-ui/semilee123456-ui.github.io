@@ -5909,6 +5909,13 @@ function sanitizeCheckDateForCanvas(rawValue){
 }
 
 function buildHomeResultCheckCanvas(){
+  // 2026-08-03: "받는 사람"·서명처럼 실제 수표를 흉내낸 빈 밑줄 위에 커서를 올리면 바로 글을
+  // 쓸 수 있게(펜/텍스트 도구를 먼저 고를 필요 없이) 해달라는 요청 — 그 위치는 라벨 폭 측정
+  // 결과·RTL 여부에 따라 언어마다 달라지므로, 그리는 시점에 실제 좌표를 여기 모아뒀다가
+  // 캔버스와 함께 반환함(별도로 다시 계산하면 그리기 로직과 어긋날 위험이 있어 재사용).
+  // 좌표는 canvas.width 기준(= 아래 SCALE 곱해진 값)으로 담아서, 포인터 이벤트가 쓰는
+  // annotateCanvasPoint()의 좌표계와 바로 비교 가능하게 함.
+  const hotspots = [];
   const isRtl = RTL_LANGS.includes(currentLang);
   const finalAmt = document.getElementById('home-final-amt').textContent;
   const basisMini = document.getElementById('home-final-basis-mini').textContent;
@@ -6025,9 +6032,19 @@ function buildHomeResultCheckCanvas(){
   if (isRtl) {
     ctx.moveTo(leftX + 10, payToLineY);
     ctx.lineTo(rightX - payToLabelW - 16, payToLineY);
+    hotspots.push({
+      hitX: (leftX + 10) * SCALE, hitY: (payToLineY - 24) * SCALE,
+      hitW: (rightX - payToLabelW - 16 - (leftX + 10)) * SCALE, hitH: 34 * SCALE,
+      clickX: (rightX - payToLabelW - 30) * SCALE, clickY: (payToLineY - 6) * SCALE,
+    });
   } else {
     ctx.moveTo(leftX + payToLabelW + 16, payToLineY);
     ctx.lineTo(rightX - 10, payToLineY);
+    hotspots.push({
+      hitX: (leftX + payToLabelW + 16) * SCALE, hitY: (payToLineY - 24) * SCALE,
+      hitW: (rightX - 10 - (leftX + payToLabelW + 16)) * SCALE, hitH: 34 * SCALE,
+      clickX: (leftX + payToLabelW + 24) * SCALE, clickY: (payToLineY - 6) * SCALE,
+    });
   }
   ctx.stroke();
 
@@ -6081,6 +6098,13 @@ function buildHomeResultCheckCanvas(){
   ctx.moveTo(W / 2 + bandMidGap, bandY + 28);
   ctx.lineTo(rightX, bandY + 28);
   ctx.stroke();
+  // 서명 밑줄도 "받는 사람"과 같은 이유로 클릭 즉시 글을 쓸 수 있는 핫스팟으로 등록 — 라벨이
+  // 줄 아래(bandY+44)에 있어서 위쪽으로 치우치게 히트 영역을 잡아 라벨과 안 겹치게 함.
+  hotspots.push({
+    hitX: (W / 2 + bandMidGap) * SCALE, hitY: (bandY + 28 - 26) * SCALE,
+    hitW: (rightX - (W / 2 + bandMidGap)) * SCALE, hitH: 30 * SCALE,
+    clickX: (W / 2 + bandMidGap + 8) * SCALE, clickY: (bandY + 28 - 6) * SCALE,
+  });
   ctx.textAlign = 'right';
   ctx.fillStyle = '#8A8371';
   ctx.font = "600 11px 'Pretendard', -apple-system, sans-serif";
@@ -6122,12 +6146,12 @@ function buildHomeResultCheckCanvas(){
   fitFontSize(ctx, disclaimer, 700, 18, 12, bannerW - 40);
   ctx.fillText(disclaimer, W / 2, bannerY0 + bannerH / 2 + 1);
 
-  return canvas;
+  return { canvas, hotspots };
 }
 
 function saveHomeResultAsImage(){
-  const canvas = buildHomeResultCheckCanvas();
-  openAnnotateOverlay(canvas, 'chamtax-result.png', { dateEditable: true });
+  const { canvas, hotspots } = buildHomeResultCheckCanvas();
+  openAnnotateOverlay(canvas, 'chamtax-result.png', { dateEditable: true, textHotspots: hotspots });
 }
 
 // 2026-07-31: "꾸며서 저장하기" 모달 안 날짜 입력/"날짜 표시 안 함" 체크박스가 바뀔 때마다
@@ -6135,8 +6159,9 @@ function saveHomeResultAsImage(){
 // annotateActions/펜·텍스트가 초기화되므로, 여기서는 base만 직접 다시 그림(사용자가 이미
 // 그려둔 낙서를 안 지우기 위함).
 function rebuildCheckCardBase(){
-  const canvas = buildHomeResultCheckCanvas();
+  const { canvas, hotspots } = buildHomeResultCheckCanvas();
   annotateSourceCanvas = canvas;
+  annotateTextHotspots = hotspots; // 날짜 바뀌면 "받는 사람"·서명 밑줄 위치도 다시 맞춰줌
   const base = document.getElementById('annotateBaseCanvas');
   if (!base) return;
   base.width = canvas.width; base.height = canvas.height;
@@ -6164,6 +6189,8 @@ let annotateDownloadFilename = 'chamtax-result.png';
 let annotateMode = 'save';
 let annotateShareTitle = '';
 let annotateShareText = '';
+// "받는 사람"/서명처럼 클릭하면 바로 텍스트 입력이 뜨는 영역 — openAnnotateOverlay() 참고
+let annotateTextHotspots = [];
 let annotateTool = 'pen';
 let annotateColor = '#C0392B';
 let annotateActions = [];
@@ -6197,6 +6224,10 @@ function openAnnotateOverlay(sourceCanvas, filename, opts){
   const shareBtn = document.getElementById('annotateShareBtn');
   if (saveBtn) saveBtn.style.display = annotateMode === 'share' ? 'none' : '';
   if (shareBtn) shareBtn.style.display = annotateMode === 'share' ? '' : 'none';
+  // 2026-08-03: "받는 사람"·서명처럼 카드 위 빈 밑줄에 커서를 올리면 바로 글을 쓸 수 있게
+  // 하는 핫스팟 — buildHomeResultCheckCanvas()만 이 옵션을 넘겨줌(다른 카드 4종은 그런 빈
+  // 밑줄이 없어서 opts.textHotspots가 없으면 그냥 빈 배열 = 기존과 동일하게 동작).
+  annotateTextHotspots = opts.textHotspots || [];
   annotateActions = [];
   annotateDrawing = null;
   annotateTextDrag = null;
@@ -6208,6 +6239,7 @@ function openAnnotateOverlay(sourceCanvas, filename, opts){
   base.getContext('2d').drawImage(sourceCanvas, 0, 0);
   draw.width = sourceCanvas.width; draw.height = sourceCanvas.height;
   draw.getContext('2d').clearRect(0, 0, draw.width, draw.height);
+  draw.style.cursor = '';
   renderAnnotateColorRow();
   setAnnotateTool('pen');
   updateAnnotateUndoClearState();
@@ -6331,29 +6363,60 @@ function findAnnotateTextActionAt(ctx, pt){
 // 캔버스 위 그리기 이벤트는 오버레이를 열 때마다 다시 바인딩하지 않고 캔버스 엘리먼트에 한 번만
 // 붙임(dataset 플래그로 중복 바인딩 방지) — 오버레이는 매번 새로 만들어지는 게 아니라 DOM에
 // 계속 남아있는 같은 엘리먼트라서, openAnnotateOverlay()를 여러 번 불러도 리스너가 안 쌓임
+// 2026-08-03: "받는 사람"/서명 같은 빈 밑줄 핫스팟(annotateTextHotspots, canvas.width 좌표계)
+// 히트테스트. buildHomeResultCheckCanvas()가 넘겨준 값이 없으면(다른 카드 4종) 그냥 빈
+// 배열이라 항상 null.
+function findAnnotateTextHotspotAt(pt){
+  for (const h of annotateTextHotspots) {
+    if (pt.x >= h.hitX && pt.x <= h.hitX + h.hitW && pt.y >= h.hitY && pt.y <= h.hitY + h.hitH) return h;
+  }
+  return null;
+}
+// annotateCanvasPoint()(클라이언트 좌표 → 캔버스 좌표)의 역변환 — 핫스팟은 캔버스 좌표로
+// 저장돼있는데 placeAnnotateTextInput()은 화면(clientX/clientY) 좌표를 받아서 필요함.
+function annotateCanvasPointToClient(canvasX, canvasY, canvas){
+  const rect = canvas.getBoundingClientRect();
+  return { x: rect.left + canvasX * (rect.width / canvas.width), y: rect.top + canvasY * (rect.height / canvas.height) };
+}
+
 function setupAnnotateCanvasEvents(canvas){
   if (canvas.dataset.annotateBound) return;
   canvas.dataset.annotateBound = '1';
   canvas.addEventListener('pointerdown', (e) => {
+    const pt = annotateCanvasPoint(e, canvas);
+    // 이미 놓아둔 텍스트 위를 다시 누르면(도구 상관없이) 새로 만드는 대신 자유롭게 끌어서
+    // 옮길 수 있게 함 — 예전엔 한번 놓은 자리에 그대로 고정이라 위치를 고치려면 실행취소로
+    // 통째로 지우고 처음부터 다시 입력해야 했음
+    const hitIndex = findAnnotateTextActionAt(canvas.getContext('2d'), pt);
+    if (hitIndex >= 0) {
+      e.preventDefault();
+      canvas.setPointerCapture(e.pointerId);
+      const action = annotateActions[hitIndex];
+      annotateTextDrag = { index: hitIndex, offsetX: pt.x - action.x, offsetY: pt.y - action.y, moved: false };
+      return;
+    }
+    // "받는 사람"/서명 핫스팟은 지금 어느 도구가 선택돼있든(펜이어도) 클릭하면 바로 그 자리에
+    // 글을 쓸 수 있게 함 — 텍스트 도구를 먼저 고르는 단계를 생략해서 실제 빈칸에 이름을 채워
+    // 넣는 것처럼 자연스럽게 느껴지도록. 이후에도 텍스트 도구로 전환해둬서 이어서 다른 곳에
+    // 글을 쓰기 편하게 함.
+    const hotspot = findAnnotateTextHotspotAt(pt);
+    if (hotspot) {
+      e.preventDefault();
+      setAnnotateTool('text');
+      const clientPt = annotateCanvasPointToClient(hotspot.clickX, hotspot.clickY, canvas);
+      // 핫스팟 높이에 맞춰 글자 크기를 줄임 — 기본 annotateFontSize(카드 전체 기준 큼직한
+      // 자유 낙서용)를 그대로 쓰면 이 좁은 한 줄 빈칸에서 옆 요소와 겹침
+      const hotspotFontSize = Math.max(14, Math.round(hotspot.hitH * 0.42));
+      placeAnnotateTextInput(pt, clientPt.x, clientPt.y, hotspotFontSize);
+      return;
+    }
     if (annotateTool === 'pen') {
       e.preventDefault();
       canvas.setPointerCapture(e.pointerId);
-      const pt = annotateCanvasPoint(e, canvas);
       annotateDrawing = { type: 'pen', color: annotateColor, width: annotatePenWidth, points: [pt] };
     } else if (annotateTool === 'text') {
       e.preventDefault();
-      const pt = annotateCanvasPoint(e, canvas);
-      // 이미 놓아둔 텍스트 위를 다시 누르면 새 텍스트를 만드는 대신 그 텍스트를 자유롭게
-      // 끌어서 옮길 수 있게 함 — 예전엔 한번 놓은 자리에 그대로 고정이라 위치를 고치려면
-      // 실행취소로 통째로 지우고 처음부터 다시 입력해야 했음
-      const hitIndex = findAnnotateTextActionAt(canvas.getContext('2d'), pt);
-      if (hitIndex >= 0) {
-        canvas.setPointerCapture(e.pointerId);
-        const action = annotateActions[hitIndex];
-        annotateTextDrag = { index: hitIndex, offsetX: pt.x - action.x, offsetY: pt.y - action.y, moved: false };
-      } else {
-        placeAnnotateTextInput(pt, e.clientX, e.clientY);
-      }
+      placeAnnotateTextInput(pt, e.clientX, e.clientY);
     }
   });
   canvas.addEventListener('pointermove', (e) => {
@@ -6368,12 +6431,20 @@ function setupAnnotateCanvasEvents(canvas){
       redrawAnnotateOverlay();
       return;
     }
-    if (!annotateDrawing) return;
-    e.preventDefault();
-    const pt = annotateCanvasPoint(e, canvas);
-    const prev = annotateDrawing.points[annotateDrawing.points.length - 1];
-    annotateDrawing.points.push(pt);
-    drawAnnotateStrokeSegment(canvas.getContext('2d'), annotateDrawing.color, annotateDrawing.width, prev, pt);
+    if (annotateDrawing) {
+      e.preventDefault();
+      const pt = annotateCanvasPoint(e, canvas);
+      const prev = annotateDrawing.points[annotateDrawing.points.length - 1];
+      annotateDrawing.points.push(pt);
+      drawAnnotateStrokeSegment(canvas.getContext('2d'), annotateDrawing.color, annotateDrawing.width, prev, pt);
+      return;
+    }
+    // 아무것도 안 그리는 중(호버)일 때만 — 핫스팟 위에서 커서를 텍스트 입력 모양으로 바꿔서
+    // "여기 누르면 바로 쓸 수 있다"는 걸 클릭 전에 미리 알려줌
+    if (e.pointerType === 'mouse') {
+      const pt = annotateCanvasPoint(e, canvas);
+      canvas.style.cursor = findAnnotateTextHotspotAt(pt) ? 'text' : '';
+    }
   });
   const endStroke = () => {
     if (annotateTextDrag) {
@@ -6398,8 +6469,12 @@ function setupAnnotateCanvasEvents(canvas){
 // 손잡이를 pointerdown할 때 preventDefault()로 input의 포커스(=키보드)를 그대로 유지한 채
 // wrap을 드래그해서 위치만 옮길 수 있음. 이미 놓인(커밋된) 텍스트를 드래그하는 기존 기능
 // (findAnnotateTextActionAt() 등)과는 별개 — 이건 "아직 입력 중인" 텍스트를 위한 것.
-function placeAnnotateTextInput(canvasPt, clientX, clientY){
+function placeAnnotateTextInput(canvasPt, clientX, clientY, fontSizeOverride){
   removeAnnotateTextInput();
+  // 2026-08-03: 핫스팟(예: "받는 사람")에서 열릴 땐 그 밑줄 높이에 맞는 작은 글자 크기를
+  // 넘겨받음 — 기본 annotateFontSize는 카드 전체 폭 기준으로 큼직하게 잡혀있어서(자유
+  // 낙서용), 좁은 한 줄짜리 빈칸에 그대로 쓰면 옆 요소(금액 등)와 겹침.
+  const fontSize = fontSizeOverride || annotateFontSize;
   const wrap = document.getElementById('annotateCanvasWrap');
   const drawCanvas = document.getElementById('annotateOverlayCanvas');
   if (!wrap || !drawCanvas) return;
@@ -6440,7 +6515,7 @@ function placeAnnotateTextInput(canvasPt, clientX, clientY){
     const text = input.value.trim();
     if (text) {
       const pt = currentCanvasPt();
-      annotateActions.push({ type: 'text', color: annotateColor, x: pt.x, y: pt.y, text, fontSize: annotateFontSize });
+      annotateActions.push({ type: 'text', color: annotateColor, x: pt.x, y: pt.y, text, fontSize });
       redrawAnnotateOverlay();
       updateAnnotateUndoClearState();
     }
@@ -9939,10 +10014,11 @@ async function shareResult(){
   // 만들지 않음. 링크 미리보기용 동적 카드 감싸기(wrapWithOgShareCard)는 이제 필요 없음(실제
   // 이미지 파일을 직접 공유하므로) — 대신 원본(비감싼) shareUrl을 문구에 그대로 붙여서, 받는
   // 사람이 눌러도 여전히 같은 계산 결과로 이동함.
-  const shareCanvas = buildHomeResultCheckCanvas();
+  const { canvas: shareCanvas, hotspots: shareHotspots } = buildHomeResultCheckCanvas();
   openAnnotateOverlay(shareCanvas, 'chamtax-result.png', {
     mode: 'share',
     dateEditable: true,
+    textHotspots: shareHotspots,
     shareTitle,
     shareText: `${shareText} ${shareUrl}`,
   });

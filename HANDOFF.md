@@ -4224,3 +4224,40 @@ Arabic'로 확정, `handleOgImage()`에 eager-buffer 방식 에러 핸들링 구
 `finishAnnotateAndShare` 신규, `shareResult`/`shareDreamResult`/`shareLatestDraw` 3곳을
 모달 경유 공유로 전환), `styles.css`(마스코트 애니메이션 keyframes, `.share-btn.copied` 아이콘,
 `#annotateDateRow` 특정성 버그 수정).
+
+### 2026-08-03 이어서 — 수표 카드 "받는 사람"·서명 밑줄에 호버→클릭 즉시 텍스트 입력 추가
+
+**요청**: "받는 사람" 등 빈 밑줄 위에 커서를 올리면 자연스럽게 글을 쓸 수 있게 해달라 — 지금은
+펜/텍스트 도구를 먼저 고른 뒤에야 탭해서 글자를 넣을 수 있는데, 그 단계를 생략하고 싶다는
+요청. "다른 이미지저장이랑 다른 언어들 전부"로 범위 확정 — 즉 "이미지로 저장"(`saveHomeResultAsImage`)
+과 "공유하기"(`shareResult`, 바로 위 항목에서 이 모달을 타게 만든 것) 둘 다에서 동작해야 하고,
+26개 언어(RTL 포함) 어디서나 정확한 위치에 뜨게 해야 함.
+
+**구현**: `buildHomeResultCheckCanvas()`가 캔버스만 반환하던 것을 `{canvas, hotspots}`로
+바꿔서, "받는 사람"·서명 밑줄을 그릴 때 실제 계산한 좌표(라벨 폭 측정·RTL 반전 로직과 완전히
+같은 값)를 `hotspots` 배열에 같이 담아 반환함 — 히트 영역을 별도로 다시 계산하면 그리기
+로직과 어긋날 위험이 있어서, "그린 자리 그대로"를 재사용. `openAnnotateOverlay()`가
+`opts.textHotspots`로 받아서 모듈 변수(`annotateTextHotspots`)에 저장 — 이 옵션을 안 넘기는
+다른 카드 4종(랭킹/이월/CPI/티켓·이번 세션에 추가한 꿈의당첨/당첨번호 공유 카드)은 빈 배열이라
+기존과 똑같이 동작함(회귀 없음).
+
+캔버스 pointerdown/pointermove 핸들러(`setupAnnotateCanvasEvents`)에 히트테스트를 추가:
+- 호버 시(`pointerType==='mouse'`만, 터치는 호버 개념이 없어서 제외) 핫스팟 위면
+  `canvas.style.cursor='text'`로 미리 알려줌.
+- 클릭 시 지금 펜/텍스트 어느 도구든 상관없이 핫스팟이면 바로 `setAnnotateTool('text')` +
+  `placeAnnotateTextInput()`을 호출해서 텍스트 입력을 그 자리에 띄움(기존에 이미 놓인 텍스트를
+  드래그하는 동작이 여전히 최우선 — 핫스팟 체크보다 먼저 검사).
+- 글자 크기: 기존 자유낙서용 `annotateFontSize`(카드 전체 폭 기준, 74px 정도로 큼)를 그대로
+  쓰면 좁은 한 줄짜리 빈칸에서 바로 아래 금액과 겹치는 문제가 있어서(첫 시도 스크린샷으로
+  발견), `placeAnnotateTextInput()`에 `fontSizeOverride` 파라미터를 추가해 핫스팟 높이 기준
+  (`hitH * 0.42`)으로 작게 계산해 넘김 — 커밋된 텍스트 액션에도 이 크기가 그대로 저장됨.
+
+**검증**: Playwright로 (1) "이미지로 저장"·"공유하기" 양쪽 진입 모두 핫스팟 2개(받는 사람+서명)
+전달 확인, (2) 호버 시 커서가 `text`로 바뀌는 것, (3) 클릭 시 입력창이 뜨고 도구가 자동으로
+`text`로 바뀌는 것, (4) 입력 후 커밋되면 작은 글자로 밑줄 위에 자연스럽게 앉는 것(한국어),
+(5) 아랍어(RTL)에서도 라벨 옆(오른쪽) 정확한 위치에 뜨는 것까지 스크린샷으로 확인. 자동 회귀
+테스트(`console_error_audit`·`home_audit`) 재실행 0 issues.
+
+변경 파일: `script.js`만(`buildHomeResultCheckCanvas`가 hotspots 반환하도록 변경 + 3개 호출부
+갱신, `setupAnnotateCanvasEvents`에 호버/클릭 핫스팟 로직 추가, `placeAnnotateTextInput`에
+`fontSizeOverride` 파라미터 추가).
