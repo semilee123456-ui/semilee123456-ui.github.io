@@ -331,6 +331,15 @@
     background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px;
     box-shadow:0 8px 24px rgba(var(--ink-rgb),0.14); min-width:200px;
   }
+  /* 2026-08-03: 27개 언어 × 5개 폭 × 7개 화면 전수 오버플로우 검사에서 발견 — 아랍어·우르두어
+     (RTL)에서 이 패널이 화면 밖으로 100px 넘게 삐져나가는 실제 버그였음. `right:0`은 물리적
+     속성이라 `dir="rtl"`이 걸려도 자동으로 안 뒤집히는데(gear 버튼 자체는 RTL 레이아웃을 따라
+     반대쪽으로 이동함), 패널만 계속 "물리적 오른쪽 끝에서 0"을 기준으로 펼쳐지면서 실제 여유
+     공간이 없는 방향으로 튀어나갔던 것 — html[dir="rtl"]일 때만 `left:0`으로 명시적으로 뒤집어서
+     고침(다른 RTL 위치 버그가 또 있으면 이 패턴을 재사용할 것 — 이 코드베이스는 지금까지 RTL
+     대응을 주로 텍스트 방향(unicode-bidi)·숫자 배치로만 해왔고, position:absolute 앵커링을
+     RTL에 맞게 뒤집은 사례가 이번이 처음이라 다른 곳에도 비슷한 사각지대가 있을 수 있음). */
+  html[dir="rtl"] .settings-panel{ right:auto; left:0; }
   .settings-row-btn{
     display:flex; align-items:center; gap:10px; width:100%; border:1.5px solid var(--border);
     background:var(--bg); color:var(--text-dark); border-radius:10px; padding:10px 12px;
