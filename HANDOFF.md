@@ -4420,24 +4420,39 @@ GPT 양쪽에 검토 요청 → 두 검토를 종합해 최종 우선순위 확�
     Results Test로 이 페이지를 재검증할 것.**
 
 **다음 세션이 이어서 할 것** (같은 패턴을 반복 적용):
-1. 같은 처리를 나머지 4개 페이지에 적용: `lottery-jackpot-amount.html`(ko),
-   `lottery-jackpot-amount-en.html`, `us-lottery-basics-en.html`, 그리고 `us-lottery-basics-ko.html`이
-   없으면(위 조사 당시 파일 목록엔 `-ko` 접미사 없이 한국어가 기본판일 가능성 있음) 실제
-   파일명부터 `ls us-lottery-basics-*.html`로 재확인 후 진행.
-2. 각 페이지 작업 시 체크리스트: (a) 엔터티 정의 문장 (b) 최종 업데이트 날짜 (c)
+1. ~~`lottery-jackpot-amount.html`(ko), `lottery-jackpot-amount-en.html`~~ — **완료(같은
+   세션 이어서, 커밋 `242f88a`)**: 두 페이지 모두 Organization/WebSite/SoftwareApplication/
+   HowTo JSON-LD + 엔터티 정의 문장 + 최종 업데이트 날짜 추가, JSON-LD 6개 블록씩 문법 검증
+   통과. 영문판은 필드명도 전부 영어로(`name: "ChamTax"` 등), 한글판과 원문 값 자체(로고
+   URL, applicationCategory 등)는 동일. 이 두 페이지는 h2 헤딩이 이미 대체로 질문형/자연어라
+   추가 손질 안 함, FAQPage도 이미 있어서 HowTo만 신규 추가.
+2. **남은 페이지**: `us-lottery-basics-en.html` 1개(원래 계획한 5개 중 4번째). 5번째로
+   잡았던 `us-lottery-basics-ko.html`은 **파일 자체가 없음**(확인 완료 — `ls
+   us-lottery-basics-*.html`을 실행하면 언어 접미사 붙은 파일들만 나오고 `-ko`나 접미사 없는
+   기본판이 없음, 대신 `korea-resident-us-lottery-tax.html`가 사실상 한국어 허브 역할을 함).
+   다음 페이지를 고를 땐 다른 고트래픽 랜딩페이지(`powerball-tax.html`,
+   `megamillions-tax.html`, `us-lottery-tax-rate.html` 등)로 대체할 것.
+3. 각 페이지 작업 시 체크리스트: (a) 엔터티 정의 문장 (b) 최종 업데이트 날짜 (c)
    Organization/WebSite/SoftwareApplication JSON-LD — **반드시 index.html 값과 동일하게**
    (d) FAQPage/HowTo JSON-LD — 이미 FAQPage 있으면 HowTo만 추가 (e) 대표 시나리오 정적
    텍스트 있는지 확인, 없으면 추가 (f) h2/h3가 질문형인지 확인, 아니면 자연어 질문형으로
-   다듬기.
-3. `index.html`(메인 계산기)엔 이미 Organization/WebSite/FAQPage/SoftwareApplication이
+   다듬기. **지금까지 작업한 3개 페이지 전부 이미 FAQPage/BreadcrumbList가 있었고 h2도
+   대체로 질문형이었음** — 이 사이트의 랜딩페이지들은 애초에 AEO 관점에서 꽤 잘 만들어져
+   있었다는 뜻, 다음 페이지도 (c)(d) 신규 추가 위주가 될 가능성이 높음.
+4. `index.html`(메인 계산기)엔 이미 Organization/WebSite/FAQPage/SoftwareApplication이
    있음 — HowTo만 없으니 필요하면 추가 검토(계산기 자체는 페이지 이동 없는 SPA라 HowTo
    "단계"가 자연스럽게 안 맞을 수 있음, 강행하지 말 것).
-4. **보류 백로그**: `Speakable` 스키마(여유 있을 때), GitHub Actions로 89개 랜딩페이지
+5. **보류 백로그**: `Speakable` 스키마(여유 있을 때), GitHub Actions로 89개 랜딩페이지
    잭팟 텍스트 자동 갱신(범위가 커서 별도 세션 필요 — 처음엔 이번처럼 소수 페이지로 시작할
    것, 89개 전부를 한 번에 자동화 대상으로 잡지 말 것 — 유지보수 부담 우려는 이미 두 AI
    검토 모두에서 지적됨), ARIA/헤딩 구조 전체 감사.
-5. 원본 대화(제미나이·GPT 검토 전문)는 이 저장소에 없음 — 사용자 채팅에만 있으므로, 세부
+6. 원본 대화(제미나이·GPT 검토 전문)는 이 저장소에 없음 — 사용자 채팅에만 있으므로, 세부
    근거가 더 필요하면 사용자에게 다시 물어볼 것.
+7. **이 작업 전체가 아직 `main`에 병합 안 됨** — 지금 `claude/adoring-curie-rcv0vy`
+   브랜치에만 있음(커밋 `d40a36c`, `242f88a`). 사용자에게 PR 병합 여부 확인 필요(하네스
+   지침상 명시적 요청 없이 PR을 만들지 않음).
 
-변경 파일: `korea-resident-us-lottery-tax.html`(JSON-LD 3개 신규 + HowTo, 엔터티 문장,
-최종 업데이트 날짜 표시). `llms.txt`는 기존 파일 그대로 유지(신규 작성 안 함).
+변경 파일(누적): `korea-resident-us-lottery-tax.html`, `lottery-jackpot-amount.html`,
+`lottery-jackpot-amount-en.html` — 전부 JSON-LD 3~4개 신규(Organization/WebSite/
+SoftwareApplication/HowTo) + 엔터티 문장 + 최종 업데이트 날짜. `llms.txt`는 기존 파일
+그대로 유지(신규 작성 안 함, 이미 잘 돼있었음).
