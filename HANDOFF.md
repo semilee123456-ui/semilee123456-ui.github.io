@@ -4087,3 +4087,36 @@ Sans Arabic으로 교체하면 해결"이라고 적었는데, **병합·배포 �
 변경 파일: `og-share-worker/src/index.js`(`LANG_FONT_FAMILY.ar` 최종적으로 'Noto Sans
 Arabic'로 확정, `handleOgImage()`에 eager-buffer 방식 에러 핸들링 구조 추가,
 `buildFallbackCard()` 헬퍼 분리).
+
+### 2026-08-03 이어서 — 홈페이지 전수 점검(버그 없음 확인) + 브랜치 정리 마무리
+
+**배경**: 사용자가 "홈페이지를 보고 필요한 걸 알아서 해달라"고 요청. 특정 버그 제보 없이
+자율적으로 점검할 항목을 찾아야 하는 상황이었음.
+
+**한 것 1 — 홈페이지 자동 감사 12종 전수 실행**: 로컬 정적 서버(`python3 -m http.server`)
+띄우고 `tests/` 폴더의 감사 스크립트 12개(`console_error_audit`, `home_audit`,
+`broken_link_audit`, `wrap_audit`, `i18n_coverage_audit`, `i18n_attr_lint`,
+`lang_leak_audit`, `audit_odds_compare`, `draw_archive_integrity_check`,
+`fact_consistency_audit`, `faq_audit`, `map_scroll_audit`, `nav_slider_audit`) 전부 실행 →
+**전부 0 ISSUES**. 잭팟 추첨 아카이브(파워볼/메가밀리언즈)도 날짜 정렬·중복·최신성 이상 없음
+확인(2026-08-03 기준 최신 추첨일과 실제 요일별 추첨 스케줄이 맞음).
+
+**한 것 2 — Playwright로 실제 화면 시각 확인**: 모바일(390×844)·데스크톱(1440×900) ×
+한국어·영어 조합으로 스크린샷 촬영해 직접 확인. 레이아웃 깨짐, 잘림, 겹침 없음 — 자동 감사가
+못 잡는 시각적 어색함도 없었음.
+
+**결론**: 이번 세션 시점 기준 홈페이지에서 새로 고칠 버그를 못 찾음(직전 여러 세션에 걸친
+반복 감사·수정으로 이미 상당히 정리된 상태로 보임). 코드 변경 없음.
+
+**한 것 3 — `HANDOFF-branch-cleanup-2026-08-03.md`에 남아있던 미확인 브랜치 4개 마무리**:
+`claude/connection-issue-tqhm4t`, `claude/github-file-check-g50n55`,
+`claude/github-handover-index-review-49ksjq`, `claude/github-work-handover-lqgr9p` —
+`git fetch` + `git merge-base --is-ancestor`(GitHub UI의 "N ahead" 표시보다 신뢰도 높음,
+스쿼시 병합 후 UI 갱신 지연 문제를 우회) 및 `main`과의 diff stat으로 검사. 4개 전부 고유
+커밋이 이미 main에 반영된 오래된 PR(#1~#70) 범위였고, diff가 순삭제 위주(main이 그 뒤로도
+계속 진행돼서 이 브랜치들이 오히려 뒤처짐)였음 — 그중 하나(TTS 이모지 제거, PR #70)는 실제
+코드가 현재 `script.js`에 있는지까지 직접 확인해 교차검증함. 결론: 10개 브랜치(`main` 제외)
+전부 삭제해도 안전함 확인 완료(자세한 표는 해당 파일 참고). 삭제 자체는 이 세션 도구로는
+불가능해 사용자가 GitHub 웹 UI에서 직접 해야 함.
+
+변경 파일: `HANDOFF-branch-cleanup-2026-08-03.md`(브랜치 4개 확인 결과 반영), 코드 변경 없음.

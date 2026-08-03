@@ -43,20 +43,22 @@ Workers & Pages → `semilee123456-ui-github-io` → Settings → Build 확인 �
 | `claude/github-handover-review-ma18qt` | PR #77로 병합됨 | ✅ 안전 |
 | `claude/handover-file-review-0l6xtv` | 고유 커밋이 PR #83/84/85 내용과 중복(이미 main에 다른 SHA로 반영됨) | ✅ 안전 |
 | `claude/github-handover-file-check-29r6r0` | PR #86으로 병합 완료(이번에 처리함) | ✅ 이제 안전 |
-| `claude/connection-issue-tqhm4t` | **미확인** | ⚠️ 확인 필요 |
-| `claude/github-file-check-g50n55` | **미확인** | ⚠️ 확인 필요 |
-| `claude/github-handover-index-review-49ksjq` | **미확인** | ⚠️ 확인 필요 |
-| `claude/github-work-handover-lqgr9p` | **미확인** | ⚠️ 확인 필요 |
+| `claude/connection-issue-tqhm4t` | 고유 커밋 전부 오래된 PR(#29~#70) — main에 이미 반영됨 | ✅ 안전 |
+| `claude/github-file-check-g50n55` | 고유 커밋 전부 오래된 PR(#29~#49) — main에 이미 반영됨 | ✅ 안전 |
+| `claude/github-handover-index-review-49ksjq` | 고유 커밋 전부 오래된 PR(#22~#40) — main에 이미 반영됨 | ✅ 안전 |
+| `claude/github-work-handover-lqgr9p` | 고유 커밋 전부 오래된 PR(#1~#27) — main에 이미 반영됨 | ✅ 안전 |
 
-마지막 4개는 시간 관계상 이번 세션에서 ahead/behind와 PR 병합 여부를 확인 못 했음. 지우기
-전에 `mcp__github__list_commits(sha=브랜치명)`으로 최상단 커밋이 main 로그에도 있는지,
-또는 `list_pull_requests`로 관련 PR이 이미 merged 상태인지 확인할 것 — 이번에 확인한
-6개 중 2개(#77, #80)가 GitHub 브랜치 목록 UI엔 "1 ahead"로 떠 있었는데 실제로는 이미
-병합된 상태였음(UI 표시가 스쿼시/리베이스 병합 후 갱신이 늦는 것으로 보임) — "ahead 숫자
-> 0"만 보고 병합 안 됐다고 단정하지 말고 PR 상태를 직접 확인할 것.
+(2026-08-03 후속 세션에서 확인 완료) 위 4개를 `git fetch` + `git merge-base --is-ancestor`로
+직접 검사함 — main의 최신 스냅샷과 diff하면 4개 전부 "추가 218~698줄 / 삭제 1243~3313줄"로
+**main보다 뒤처진 오래된 브랜치**였고(새 작업이 없고 오히려 그 뒤 main에서 지워진/바뀐
+내용을 아직 갖고 있는 상태), 고유 커밋에 찍힌 PR 번호(#1~#70)가 전부 이미 main에 반영된
+범위였음. 결정적 확인: `claude/connection-issue-tqhm4t`의 유일한 실작업 커밋("TTS 이모지
+제거", PR #70)의 실제 코드(`speechSynthesis` 관련 이모지 제거 로직)가 현재 `script.js`에
+이미 존재하고, `HANDOFF.md`에도 PR #70 기록이 이미 있음을 확인 → 4개 전부 안전하게 삭제
+가능. 이제 10개 브랜치(`main` 제외) 전부 확인 완료.
 
 ## 남은 일
 
-- 위 미확인 4개 브랜치 확인 후, 전부(main 제외) GitHub 웹 UI(Branches 탭)에서 삭제 —
+- 위 10개 브랜치(`main` 제외) 전부 GitHub 웹 UI(Branches 탭)에서 삭제 —
   git push/API로 브랜치 삭제하는 도구가 없어서 사용자가 직접 해야 함(자세한 내용은
   `HANDOFF-og-share-2026-07-31.md`의 "알아둘 것" 섹션 참고).
