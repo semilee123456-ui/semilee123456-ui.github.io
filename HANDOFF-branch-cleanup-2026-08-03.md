@@ -63,7 +63,7 @@ Workers & Pages → `semilee123456-ui-github-io` → Settings → Build 확인 �
 
 - 이제 위 표의 11개 브랜치 전부 확인 완료 — 전부 GitHub 웹 UI(Branches 탭)에서 삭제 가능.
   git push/API로 브랜치 삭제하는 도구가 없어서 사용자가 직접 해야 함(자세한 내용은
-  `HANDOFF-og-share-2026-07-31.md`의 "알아둘 것" 섹션 참고). **주의**: 이 목록엔 현재
-  작업 중인 세션의 브랜치(`claude/handover-github-files-review-n65pbq` — "이미지로 저장"
-  팝업 확대·텍스트 삭제/크기조절 기능이 아직 이 브랜치에만 있고 main 미병합)는 포함 안 됨 —
-  그건 지우면 안 됨, PR 병합 후 삭제 대상.
+  `HANDOFF-og-share-2026-07-31.md`의 "알아둘 것" 섹션 참고).
+- (2026-08-03 후속 세션에서 추가) `claude/handover-github-files-review-n65pbq`(PR #87로
+  병합 완료 — "이미지로 저장" 팝업 확대·텍스트 삭제/크기조절 기능)도 이제 안전하게 삭제
+  가능. 이걸로 위 11개 + 이 1개 = 총 12개 브랜치(`main` 제외) 전부 삭제 대상.

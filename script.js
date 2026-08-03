@@ -3994,31 +3994,23 @@ async function shareLatestDraw(game, btnEl){
     ur: 'اگلا جیک پاٹ', uz: "Keyingi jekpot",
     pt: 'Próximo prêmio', es: 'Próximo acumulado', uk: 'Наступний джекпот', tet: 'Jackpot oin',
   });
-  shareUrl = wrapWithOgShareCard(shareUrl, {
+  // 2026-08-03: "카드 없이 링크만 공유"(2026-07-29 결정, 바로 위 주석)를 사용자가 다시
+  // 뒤집어서, "꾸며서 저장하기" 모달을 먼저 보여주고 그 이미지를 공유하는 방식으로 변경 —
+  // 그때 문제였던 "🐻 이모지가 기기별 폰트에 따라 다르게 보임"은 이제 buildBearMascotIcon()이
+  // 실제 벡터 도형을 그리는 방식이라(og-image 로고와 동일 좌표) 이모지 폰트 의존성 자체가
+  // 없음, 재발 안 함.
+  const drawCardFooter = document.querySelector('[data-i18n="hero.tag"]')?.textContent || 'ChamTax';
+  const drawCanvas = buildShareCard({
     label: gameLabel,
-    main: `${numbersText} + ${specialLabel} ${draw.special}`,
-    sub: `${nextJackpotLabel} $${jackpotMillions}M`,
+    bigText: `${numbersText} + ${specialLabel} ${draw.special}`,
+    subText: `${nextJackpotLabel} $${jackpotMillions}M`,
+    footerText: drawCardFooter,
   });
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: gameLabel, text: shareText, url: shareUrl });
-      return;
-    } catch (e) {
-      if (e && e.name === 'AbortError') return;
-    }
-  }
-  try {
-    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-    if (btnEl) {
-      const original = btnEl.textContent;
-      btnEl.textContent = shareFallbackCopyToast();
-      btnEl.classList.add('copied');
-      setTimeout(() => { btnEl.textContent = original; btnEl.classList.remove('copied'); }, 2000);
-    }
-  } catch (e) {
-    window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), `${shareText} ${shareUrl}`);
-  }
+  openAnnotateOverlay(drawCanvas, `chamtax-${game}-draw.png`, {
+    mode: 'share',
+    shareTitle: gameLabel,
+    shareText: `${shareText} ${shareUrl}`,
+  });
 }
 
 function toggleJhGroupList(id){
@@ -5608,13 +5600,14 @@ function drawBearMascotIcon(ctx, x0, y0, size){
   ctx.ellipse(14, 17.75, 1.85, 1.3, 0, 0, Math.PI * 2);
   ctx.fillStyle = teal; ctx.fill();
 
-  // 입 — 원본 SVG path "M14 19.1v0.55M9.6 19.8c1.3 2.15 7.5 2.15 8.8 0"를 그대로 옮김
-  // (세로 코 밑 점 + 좌우로 벌어지는 미소 곡선)
+  // 입 — 헤더 로고 SVG path "M14 19.1v0.55M8.9 19.9c1.7 3.3 8.6 3.3 10.2 0"를 그대로 옮김
+  // (세로 코 밑 점 + 좌우로 벌어지는 미소 곡선, 2026-08-03에 더 활짝 웃는 곡선으로 키움 —
+  // 저장/공유되는 이미지는 정지 이미지라 "움직임"은 못 담아도 "웃는 표정"은 담을 수 있어서)
   ctx.beginPath();
   ctx.moveTo(14, 19.1);
   ctx.lineTo(14, 19.65);
-  ctx.moveTo(9.6, 19.8);
-  ctx.bezierCurveTo(10.9, 21.95, 17.1, 21.95, 18.4, 19.8);
+  ctx.moveTo(8.9, 19.9);
+  ctx.bezierCurveTo(10.6, 23.2, 17.4, 23.2, 19.1, 19.9);
   ctx.strokeStyle = teal;
   ctx.lineWidth = 1.4;
   ctx.stroke();
@@ -5916,6 +5909,13 @@ function sanitizeCheckDateForCanvas(rawValue){
 }
 
 function buildHomeResultCheckCanvas(){
+  // 2026-08-03: "받는 사람"·서명처럼 실제 수표를 흉내낸 빈 밑줄 위에 커서를 올리면 바로 글을
+  // 쓸 수 있게(펜/텍스트 도구를 먼저 고를 필요 없이) 해달라는 요청 — 그 위치는 라벨 폭 측정
+  // 결과·RTL 여부에 따라 언어마다 달라지므로, 그리는 시점에 실제 좌표를 여기 모아뒀다가
+  // 캔버스와 함께 반환함(별도로 다시 계산하면 그리기 로직과 어긋날 위험이 있어 재사용).
+  // 좌표는 canvas.width 기준(= 아래 SCALE 곱해진 값)으로 담아서, 포인터 이벤트가 쓰는
+  // annotateCanvasPoint()의 좌표계와 바로 비교 가능하게 함.
+  const hotspots = [];
   const isRtl = RTL_LANGS.includes(currentLang);
   const finalAmt = document.getElementById('home-final-amt').textContent;
   const basisMini = document.getElementById('home-final-basis-mini').textContent;
@@ -6032,9 +6032,19 @@ function buildHomeResultCheckCanvas(){
   if (isRtl) {
     ctx.moveTo(leftX + 10, payToLineY);
     ctx.lineTo(rightX - payToLabelW - 16, payToLineY);
+    hotspots.push({
+      hitX: (leftX + 10) * SCALE, hitY: (payToLineY - 24) * SCALE,
+      hitW: (rightX - payToLabelW - 16 - (leftX + 10)) * SCALE, hitH: 34 * SCALE,
+      clickX: (rightX - payToLabelW - 30) * SCALE, clickY: (payToLineY - 6) * SCALE,
+    });
   } else {
     ctx.moveTo(leftX + payToLabelW + 16, payToLineY);
     ctx.lineTo(rightX - 10, payToLineY);
+    hotspots.push({
+      hitX: (leftX + payToLabelW + 16) * SCALE, hitY: (payToLineY - 24) * SCALE,
+      hitW: (rightX - 10 - (leftX + payToLabelW + 16)) * SCALE, hitH: 34 * SCALE,
+      clickX: (leftX + payToLabelW + 24) * SCALE, clickY: (payToLineY - 6) * SCALE,
+    });
   }
   ctx.stroke();
 
@@ -6088,6 +6098,13 @@ function buildHomeResultCheckCanvas(){
   ctx.moveTo(W / 2 + bandMidGap, bandY + 28);
   ctx.lineTo(rightX, bandY + 28);
   ctx.stroke();
+  // 서명 밑줄도 "받는 사람"과 같은 이유로 클릭 즉시 글을 쓸 수 있는 핫스팟으로 등록 — 라벨이
+  // 줄 아래(bandY+44)에 있어서 위쪽으로 치우치게 히트 영역을 잡아 라벨과 안 겹치게 함.
+  hotspots.push({
+    hitX: (W / 2 + bandMidGap) * SCALE, hitY: (bandY + 28 - 26) * SCALE,
+    hitW: (rightX - (W / 2 + bandMidGap)) * SCALE, hitH: 30 * SCALE,
+    clickX: (W / 2 + bandMidGap + 8) * SCALE, clickY: (bandY + 28 - 6) * SCALE,
+  });
   ctx.textAlign = 'right';
   ctx.fillStyle = '#8A8371';
   ctx.font = "600 11px 'Pretendard', -apple-system, sans-serif";
@@ -6129,12 +6146,12 @@ function buildHomeResultCheckCanvas(){
   fitFontSize(ctx, disclaimer, 700, 18, 12, bannerW - 40);
   ctx.fillText(disclaimer, W / 2, bannerY0 + bannerH / 2 + 1);
 
-  return canvas;
+  return { canvas, hotspots };
 }
 
 function saveHomeResultAsImage(){
-  const canvas = buildHomeResultCheckCanvas();
-  openAnnotateOverlay(canvas, 'chamtax-result.png', { dateEditable: true });
+  const { canvas, hotspots } = buildHomeResultCheckCanvas();
+  openAnnotateOverlay(canvas, 'chamtax-result.png', { dateEditable: true, textHotspots: hotspots });
 }
 
 // 2026-07-31: "꾸며서 저장하기" 모달 안 날짜 입력/"날짜 표시 안 함" 체크박스가 바뀔 때마다
@@ -6142,8 +6159,9 @@ function saveHomeResultAsImage(){
 // annotateActions/펜·텍스트가 초기화되므로, 여기서는 base만 직접 다시 그림(사용자가 이미
 // 그려둔 낙서를 안 지우기 위함).
 function rebuildCheckCardBase(){
-  const canvas = buildHomeResultCheckCanvas();
+  const { canvas, hotspots } = buildHomeResultCheckCanvas();
   annotateSourceCanvas = canvas;
+  annotateTextHotspots = hotspots; // 날짜 바뀌면 "받는 사람"·서명 밑줄 위치도 다시 맞춰줌
   const base = document.getElementById('annotateBaseCanvas');
   if (!base) return;
   base.width = canvas.width; base.height = canvas.height;
@@ -6166,6 +6184,13 @@ function onAnnotateDateSkipChanged(checked){
 // 실제로 쓰일 일이 있는 펜(자유선)과 텍스트만 넣음(2026-07-25)
 let annotateSourceCanvas = null;
 let annotateDownloadFilename = 'chamtax-result.png';
+// 2026-08-03: 이 모달을 "저장"뿐 아니라 "공유"에도 쓰게 되면서 추가된 상태 — openAnnotateOverlay()
+// 참고
+let annotateMode = 'save';
+let annotateShareTitle = '';
+let annotateShareText = '';
+// "받는 사람"/서명처럼 클릭하면 바로 텍스트 입력이 뜨는 영역 — openAnnotateOverlay() 참고
+let annotateTextHotspots = [];
 let annotateTool = 'pen';
 let annotateColor = '#C0392B';
 let annotateActions = [];
@@ -6187,6 +6212,22 @@ function openAnnotateOverlay(sourceCanvas, filename, opts){
   if (!overlay || !base || !draw) return;
   annotateSourceCanvas = sourceCanvas;
   annotateDownloadFilename = filename;
+  // 2026-08-03: "공유하기" 버튼들(이 결과 공유하기/당첨번호 공유하기/재미로 보기 결과)도 이
+  // 모달을 거치게 되면서 추가 — opts.mode==='share'면 하단 버튼을 "이미지로 저장" 대신
+  // "공유하기"로 바꾸고, finishAnnotateAndShare()가 완성된 이미지를 다운로드 대신
+  // navigator.share()의 파일로 넘김. shareTitle/shareText는 기존 각 함수가 이미 만들어둔
+  // 번역된 문구를 그대로 받아서 그 공유 호출에 그대로 씀(새 번역 없음).
+  annotateMode = opts.mode === 'share' ? 'share' : 'save';
+  annotateShareTitle = opts.shareTitle || '';
+  annotateShareText = opts.shareText || '';
+  const saveBtn = document.getElementById('annotateSaveBtn');
+  const shareBtn = document.getElementById('annotateShareBtn');
+  if (saveBtn) saveBtn.style.display = annotateMode === 'share' ? 'none' : '';
+  if (shareBtn) shareBtn.style.display = annotateMode === 'share' ? '' : 'none';
+  // 2026-08-03: "받는 사람"·서명처럼 카드 위 빈 밑줄에 커서를 올리면 바로 글을 쓸 수 있게
+  // 하는 핫스팟 — buildHomeResultCheckCanvas()만 이 옵션을 넘겨줌(다른 카드 4종은 그런 빈
+  // 밑줄이 없어서 opts.textHotspots가 없으면 그냥 빈 배열 = 기존과 동일하게 동작).
+  annotateTextHotspots = opts.textHotspots || [];
   annotateActions = [];
   annotateDrawing = null;
   annotateTextDrag = null;
@@ -6198,6 +6239,7 @@ function openAnnotateOverlay(sourceCanvas, filename, opts){
   base.getContext('2d').drawImage(sourceCanvas, 0, 0);
   draw.width = sourceCanvas.width; draw.height = sourceCanvas.height;
   draw.getContext('2d').clearRect(0, 0, draw.width, draw.height);
+  draw.style.cursor = '';
   renderAnnotateColorRow();
   setAnnotateTool('pen');
   updateAnnotateUndoClearState();
@@ -6321,29 +6363,60 @@ function findAnnotateTextActionAt(ctx, pt){
 // 캔버스 위 그리기 이벤트는 오버레이를 열 때마다 다시 바인딩하지 않고 캔버스 엘리먼트에 한 번만
 // 붙임(dataset 플래그로 중복 바인딩 방지) — 오버레이는 매번 새로 만들어지는 게 아니라 DOM에
 // 계속 남아있는 같은 엘리먼트라서, openAnnotateOverlay()를 여러 번 불러도 리스너가 안 쌓임
+// 2026-08-03: "받는 사람"/서명 같은 빈 밑줄 핫스팟(annotateTextHotspots, canvas.width 좌표계)
+// 히트테스트. buildHomeResultCheckCanvas()가 넘겨준 값이 없으면(다른 카드 4종) 그냥 빈
+// 배열이라 항상 null.
+function findAnnotateTextHotspotAt(pt){
+  for (const h of annotateTextHotspots) {
+    if (pt.x >= h.hitX && pt.x <= h.hitX + h.hitW && pt.y >= h.hitY && pt.y <= h.hitY + h.hitH) return h;
+  }
+  return null;
+}
+// annotateCanvasPoint()(클라이언트 좌표 → 캔버스 좌표)의 역변환 — 핫스팟은 캔버스 좌표로
+// 저장돼있는데 placeAnnotateTextInput()은 화면(clientX/clientY) 좌표를 받아서 필요함.
+function annotateCanvasPointToClient(canvasX, canvasY, canvas){
+  const rect = canvas.getBoundingClientRect();
+  return { x: rect.left + canvasX * (rect.width / canvas.width), y: rect.top + canvasY * (rect.height / canvas.height) };
+}
+
 function setupAnnotateCanvasEvents(canvas){
   if (canvas.dataset.annotateBound) return;
   canvas.dataset.annotateBound = '1';
   canvas.addEventListener('pointerdown', (e) => {
+    const pt = annotateCanvasPoint(e, canvas);
+    // 이미 놓아둔 텍스트 위를 다시 누르면(도구 상관없이) 새로 만드는 대신 자유롭게 끌어서
+    // 옮길 수 있게 함 — 예전엔 한번 놓은 자리에 그대로 고정이라 위치를 고치려면 실행취소로
+    // 통째로 지우고 처음부터 다시 입력해야 했음
+    const hitIndex = findAnnotateTextActionAt(canvas.getContext('2d'), pt);
+    if (hitIndex >= 0) {
+      e.preventDefault();
+      canvas.setPointerCapture(e.pointerId);
+      const action = annotateActions[hitIndex];
+      annotateTextDrag = { index: hitIndex, offsetX: pt.x - action.x, offsetY: pt.y - action.y, moved: false };
+      return;
+    }
+    // "받는 사람"/서명 핫스팟은 지금 어느 도구가 선택돼있든(펜이어도) 클릭하면 바로 그 자리에
+    // 글을 쓸 수 있게 함 — 텍스트 도구를 먼저 고르는 단계를 생략해서 실제 빈칸에 이름을 채워
+    // 넣는 것처럼 자연스럽게 느껴지도록. 이후에도 텍스트 도구로 전환해둬서 이어서 다른 곳에
+    // 글을 쓰기 편하게 함.
+    const hotspot = findAnnotateTextHotspotAt(pt);
+    if (hotspot) {
+      e.preventDefault();
+      setAnnotateTool('text');
+      const clientPt = annotateCanvasPointToClient(hotspot.clickX, hotspot.clickY, canvas);
+      // 핫스팟 높이에 맞춰 글자 크기를 줄임 — 기본 annotateFontSize(카드 전체 기준 큼직한
+      // 자유 낙서용)를 그대로 쓰면 이 좁은 한 줄 빈칸에서 옆 요소와 겹침
+      const hotspotFontSize = Math.max(14, Math.round(hotspot.hitH * 0.42));
+      placeAnnotateTextInput(pt, clientPt.x, clientPt.y, { fontSize: hotspotFontSize });
+      return;
+    }
     if (annotateTool === 'pen') {
       e.preventDefault();
       canvas.setPointerCapture(e.pointerId);
-      const pt = annotateCanvasPoint(e, canvas);
       annotateDrawing = { type: 'pen', color: annotateColor, width: annotatePenWidth, points: [pt] };
     } else if (annotateTool === 'text') {
       e.preventDefault();
-      const pt = annotateCanvasPoint(e, canvas);
-      // 이미 놓아둔 텍스트 위를 다시 누르면 새 텍스트를 만드는 대신 그 텍스트를 자유롭게
-      // 끌어서 옮길 수 있게 함 — 예전엔 한번 놓은 자리에 그대로 고정이라 위치를 고치려면
-      // 실행취소로 통째로 지우고 처음부터 다시 입력해야 했음
-      const hitIndex = findAnnotateTextActionAt(canvas.getContext('2d'), pt);
-      if (hitIndex >= 0) {
-        canvas.setPointerCapture(e.pointerId);
-        const action = annotateActions[hitIndex];
-        annotateTextDrag = { index: hitIndex, offsetX: pt.x - action.x, offsetY: pt.y - action.y, moved: false };
-      } else {
-        placeAnnotateTextInput(pt, e.clientX, e.clientY);
-      }
+      placeAnnotateTextInput(pt, e.clientX, e.clientY);
     }
   });
   canvas.addEventListener('pointermove', (e) => {
@@ -6358,12 +6431,20 @@ function setupAnnotateCanvasEvents(canvas){
       redrawAnnotateOverlay();
       return;
     }
-    if (!annotateDrawing) return;
-    e.preventDefault();
-    const pt = annotateCanvasPoint(e, canvas);
-    const prev = annotateDrawing.points[annotateDrawing.points.length - 1];
-    annotateDrawing.points.push(pt);
-    drawAnnotateStrokeSegment(canvas.getContext('2d'), annotateDrawing.color, annotateDrawing.width, prev, pt);
+    if (annotateDrawing) {
+      e.preventDefault();
+      const pt = annotateCanvasPoint(e, canvas);
+      const prev = annotateDrawing.points[annotateDrawing.points.length - 1];
+      annotateDrawing.points.push(pt);
+      drawAnnotateStrokeSegment(canvas.getContext('2d'), annotateDrawing.color, annotateDrawing.width, prev, pt);
+      return;
+    }
+    // 아무것도 안 그리는 중(호버)일 때만 — 핫스팟 위에서 커서를 텍스트 입력 모양으로 바꿔서
+    // "여기 누르면 바로 쓸 수 있다"는 걸 클릭 전에 미리 알려줌
+    if (e.pointerType === 'mouse') {
+      const pt = annotateCanvasPoint(e, canvas);
+      canvas.style.cursor = findAnnotateTextHotspotAt(pt) ? 'text' : '';
+    }
   });
   const endStroke = () => {
     if (annotateTextDrag) {
@@ -6383,7 +6464,7 @@ function setupAnnotateCanvasEvents(canvas){
             { x: action.x, y: action.y },
             r.left + action.x * scaleX,
             r.top + action.y * scaleY,
-            { text: action.text, color: action.color, fontSize: action.fontSize }
+            { existing: { text: action.text, color: action.color, fontSize: action.fontSize } }
           );
         }
       }
@@ -6407,12 +6488,19 @@ function setupAnnotateCanvasEvents(canvas){
 // 손잡이를 pointerdown할 때 preventDefault()로 input의 포커스(=키보드)를 그대로 유지한 채
 // wrap을 드래그해서 위치만 옮길 수 있음. 이미 놓인(커밋된) 텍스트를 드래그하는 기존 기능
 // (findAnnotateTextActionAt() 등)과는 별개 — 이건 "아직 입력 중인" 텍스트를 위한 것.
-// existing(선택): 이미 캔버스에 놓인 텍스트를 다시 탭해서 편집하는 경우 { text, color, fontSize }를
-// 넘겨받음(호출부인 setupAnnotateCanvasEvents()의 endStroke()가 편집 시작 시점에 annotateActions에서
-// 해당 액션을 이미 splice로 빼놓고 넘겨줌 — 그래서 이 함수는 "새 텍스트"와 "기존 텍스트 편집"을
-// 구분할 필요 없이 항상 commit()에서 새로 push하면 됨. 삭제(🗑)는 그냥 입력을 열었다가 아무것도
-// push하지 않고 닫는 것과 동일해서, 편집 중이던 텍스트가 자연스럽게 사라짐)
-function placeAnnotateTextInput(canvasPt, clientX, clientY, existing){
+// existing(opts.existing, 선택): 이미 캔버스에 놓인 텍스트를 다시 탭해서 편집하는 경우
+// { text, color, fontSize }를 넘겨받음(호출부인 setupAnnotateCanvasEvents()의 endStroke()가
+// 편집 시작 시점에 annotateActions에서 해당 액션을 이미 splice로 빼놓고 넘겨줌 — 그래서 이
+// 함수는 "새 텍스트"와 "기존 텍스트 편집"을 구분할 필요 없이 항상 commit()에서 새로 push하면
+// 됨. 삭제(🗑)는 그냥 입력을 열었다가 아무것도 push하지 않고 닫는 것과 동일해서, 편집 중이던
+// 텍스트가 자연스럽게 사라짐).
+// opts.fontSize(선택): "받는 사람" 핫스팟처럼 좁은 빈칸에 맞춰 새 텍스트를 작게 시작하고
+// 싶을 때 초기 글자 크기 — 기본 annotateFontSize는 카드 전체 폭 기준으로 큼직하게 잡혀있어서
+// (자유 낙서용) 좁은 한 줄짜리 빈칸에 그대로 쓰면 옆 요소(금액 등)와 겹침. existing이 있으면
+// existing.fontSize가 우선함.
+function placeAnnotateTextInput(canvasPt, clientX, clientY, opts){
+  opts = opts || {};
+  const existing = opts.existing || null;
   removeAnnotateTextInput();
   const wrap = document.getElementById('annotateCanvasWrap');
   const drawCanvas = document.getElementById('annotateOverlayCanvas');
@@ -6421,7 +6509,7 @@ function placeAnnotateTextInput(canvasPt, clientX, clientY, existing){
   const BOTTOM_MARGIN = 74; // 아래 크기조절/삭제 버튼 줄까지 감안한 여유(기존 30px에서 확장)
 
   const color = existing ? existing.color : annotateColor;
-  let fontSize = existing ? existing.fontSize : annotateFontSize;
+  let fontSize = existing ? existing.fontSize : (opts.fontSize || annotateFontSize);
 
   const container = document.createElement('span');
   container.className = 'annotate-text-input-wrap';
@@ -6595,21 +6683,81 @@ function updateAnnotateUndoClearState(){
   if (clearBtn) clearBtn.disabled = !has;
 }
 
-function finishAnnotateAndDownload(){
-  removeAnnotateTextInput();
+// base(원본 카드)+draw(펜/텍스트 낙서) 두 캔버스를 하나로 합침 — 다운로드(toDataURL)와
+// 공유(toBlob) 양쪽에서 재사용
+function mergeAnnotateCanvases(){
   const base = document.getElementById('annotateBaseCanvas');
   const draw = document.getElementById('annotateOverlayCanvas');
-  if (!base || !draw) return;
+  if (!base || !draw) return null;
   const out = document.createElement('canvas');
   out.width = base.width; out.height = base.height;
   const ctx = out.getContext('2d');
   ctx.drawImage(base, 0, 0);
   ctx.drawImage(draw, 0, 0);
+  return out;
+}
+
+function finishAnnotateAndDownload(){
+  removeAnnotateTextInput();
+  const out = mergeAnnotateCanvases();
+  if (!out) return;
   const link = document.createElement('a');
   link.download = annotateDownloadFilename;
   link.href = out.toDataURL('image/png');
   link.click();
   closeAnnotateOverlay();
+}
+
+// 2026-08-03: "공유하기" 계열 버튼들이 이 모달을 거치게 되면서 추가 — 완성된 카드 이미지를
+// 파일로 만들어 navigator.share()에 넘김(OS 공유 시트가 뜸). 2026-07-29에 있었다가 "카드 없이
+// 링크만 공유해달라"는 요청으로 삭제됐던 tryShareCardImage()와 같은 구조를 이번 요청(모달에서
+// 꾸민 뒤 그 이미지를 공유)에 맞게 다시 만든 것 — 이번엔 사용자가 명시적으로 이 방향을 요청함
+// (인수인계 문서에 "예전 결정을 뒤집음"으로 기록해둘 것).
+async function finishAnnotateAndShare(){
+  removeAnnotateTextInput();
+  const out = mergeAnnotateCanvases();
+  if (!out) return;
+  const shareBtn = document.getElementById('annotateShareBtn');
+  const finish = () => closeAnnotateOverlay();
+
+  out.toBlob(async (blob) => {
+    if (!blob) return;
+    const file = new File([blob], annotateDownloadFilename, { type: 'image/png' });
+    const canShareFile = navigator.canShare && navigator.canShare({ files: [file] });
+    if (navigator.share && canShareFile) {
+      try {
+        await navigator.share({ files: [file], title: annotateShareTitle, text: annotateShareText });
+        finish();
+        return;
+      } catch (e) {
+        // 사용자가 OS 공유 시트에서 취소한 경우 — 모달은 열어둔 채로 그대로 둠(다시 시도하거나
+        // 직접 닫기를 누를 수 있게)
+        if (e && e.name === 'AbortError') return;
+        // 그 외 공유 실패(권한 없음 등) — 아래 폴백(다운로드+텍스트 복사)으로 계속 진행
+      }
+    }
+    // 파일 공유를 지원 안 하는 브라우저(대부분의 데스크톱)용 폴백 — 이미지는 다운로드해두고
+    // 문구+링크는 클립보드로 복사, 기존 공유 버튼들의 폴백 패턴과 동일하게 버튼 텍스트를
+    // 잠깐 "복사 완료"로 바꿔줌. 모달은 그 피드백이 보이도록 자동으로 닫지 않음(사용자가
+    // "닫기"를 직접 누름) — 이미지로 저장(finishAnnotateAndDownload)과 달리 여기선 결과
+    // 확인 없이 바로 닫으면 "복사됐다"는 안내를 못 보게 됨.
+    const link = document.createElement('a');
+    link.download = annotateDownloadFilename;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    URL.revokeObjectURL(link.href);
+    try {
+      await navigator.clipboard.writeText(annotateShareText);
+      if (shareBtn) {
+        const original = shareBtn.textContent;
+        shareBtn.textContent = shareFallbackCopyToast();
+        shareBtn.classList.add('copied');
+        setTimeout(() => { shareBtn.textContent = original; shareBtn.classList.remove('copied'); }, 2000);
+      }
+    } catch (e) {
+      window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), annotateShareText);
+    }
+  }, 'image/png');
 }
 
 function renderMyNumbersResult(mainNums, specialNum){
@@ -9832,34 +9980,19 @@ async function shareDreamResult(btnEl){
   let shareUrl = location.href;
   const shareTitle = pickLang('당첨되면 나는?', 'What would I do if I won?', '如果中奖了，我会……', 'Nếu trúng số tôi sẽ?', 'ถ้าถูกรางวัลฉันจะ?', 'Что бы я сделал, если бы выиграл?', { ar:'ماذا سأفعل لو فزت؟', bn:'জিতলে আমি কী করব?', fr:'Que ferais-je si je gagnais ?', hi:'अगर मैं जीत जाऊं तो क्या करूंगा?', id:'Apa yang akan kulakukan kalau menang?', ja:'当たったら私は何をする？', kk:'Ұтып алсам не істер едім?', km:'តើខ្ញុំនឹងធ្វើអ្វី ប្រសិនបើឈ្នះ?', ky:'Утуп алсам эмне кылмакмын?', lo:'ຖ້າຂ້ອຍຖືກລາງວັນ ຂ້ອຍຈະເຮັດຫຍັງ?', mn:'Хожвол би юу хийх вэ?', my:'ဆုမှန်ရင် ငါဘာလုပ်မလဲ?', ne:'जितें भने म के गर्छु?', si:'මම දිනුවොත් මොකද කරන්නේ?', tl:'Ano ang gagawin ko kung manalo ako?', ur:'اگر میں جیت جاؤں تو کیا کروں گا؟', uz:'Agar yutib olsam, nima qilaman?' , pt: `O que eu faria se ganhasse?`, es: `¿Qué haría si ganara?`, uk: `Що б я зробив(-ла), якби виграв(-ла)?`, tet: `Saida mak ha'u halo se ha'u manán?`});
 
-  // 2026-07-29: 카드 이미지 생성 없이 텍스트+링크만 공유하도록 단순화(위 shareLatestDraw 주석 참고)
-  // 2026-07-31: 다시 OG_SHARE_WORKER_BASE 동적 카드로 감쌈 — title/amt는 이미 화면(#dream-title/
-  // #dream-amt)에 보이는 텍스트를 그대로 씀, 새 번역 없음.
-  shareUrl = wrapWithOgShareCard(shareUrl, {
-    label: shareTitle,
-    main: title,
-    sub: amt,
+  // 2026-08-03: "카드 없이 링크만 공유"(2026-07-29 결정)를 사용자가 다시 뒤집어서, "꾸며서
+  // 저장하기" 모달을 먼저 보여주고 그 이미지를 공유하는 방식으로 변경 — title/amt는 이미
+  // 화면(#dream-title/#dream-amt)에 보이는 텍스트를 그대로 씀(새 번역 없음). 카드 레이아웃은
+  // 기존 buildShareCard()(잭팟 랭킹 카드용으로 검증된 함수)를 그대로 재사용. footerText는
+  // "hero.tag"(사이트 상단 한줄 소개, 26개 언어 이미 번역됨)를 그대로 가져다 씀 — 이 카드
+  // 전용 새 CTA 문구를 새로 번역하지 않기 위함.
+  const footerText = document.querySelector('[data-i18n="hero.tag"]')?.textContent || 'ChamTax';
+  const dreamCanvas = buildShareCard({ label: shareTitle, bigText: title, subText: amt, footerText });
+  openAnnotateOverlay(dreamCanvas, 'chamtax-dream-result.png', {
+    mode: 'share',
+    shareTitle,
+    shareText: `${shareText} ${shareUrl}`,
   });
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
-      return;
-    } catch (e) {
-      if (e && e.name === 'AbortError') return;
-    }
-  }
-  try {
-    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-    if (btnEl) {
-      const original = btnEl.textContent;
-      btnEl.textContent = shareFallbackCopyToast();
-      btnEl.classList.add('copied');
-      setTimeout(() => { btnEl.textContent = original; btnEl.classList.remove('copied'); }, 2000);
-    }
-  } catch (e) {
-    window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), `${shareText} ${shareUrl}`);
-  }
 }
 
 // 공유 문구(shareResult)에서 "150 Million USD"처럼 영어 단위를 그대로 박아넣으면 한국어/중국어/
@@ -9969,43 +10102,21 @@ async function shareResult(){
   // 2026-07-31: 여기에 OG_SHARE_WORKER_BASE 동적 카드 감싸기를 추가함(위 shareUrl은 그대로
   // 리다이렉트 대상(to=)으로만 쓰이고, 실제 카카오톡 등에 노출되는 건 이 감싼 URL) — label/sub는
   // 화면에 이미 보이는(=이미 번역된) 텍스트를 그대로 가져다 씀, 새 번역 없음.
-  const resultLabelText = document.querySelector('.result-hero-label')?.textContent || '';
-  const taxBeforeLabelText = document.querySelector('[data-i18n="home.taxBefore"]')?.textContent || '';
-  const beforeText = document.getElementById('tax-impact-before')?.textContent || '';
-  const takePctRaw = document.getElementById('result-visual-take-pct')?.textContent || '';
-  const takePct = parseInt(takePctRaw, 10);
-  shareUrl = wrapWithOgShareCard(shareUrl, {
-    label: resultLabelText,
-    main: finalAmt,
-    sub: beforeText ? `${taxBeforeLabelText} ${beforeText}`.trim() : '',
-    badge: country,
-    taxpct: Number.isNaN(takePct) ? undefined : 100 - takePct,
+  // 2026-08-03: "카드 없이 링크만 공유"(2026-07-29 결정, 위 주석) 대신 "꾸며서 저장하기"
+  // 모달을 먼저 보여주고 그 꾸민 이미지를 공유하는 방식으로 사용자가 다시 요청함 — 예전
+  // 결정을 명시적으로 뒤집는 것이므로 인수인계 문서에 그 경위를 남겨둘 것. 카드는 "이미지로
+  // 저장"과 완전히 같은 수표 카드(buildHomeResultCheckCanvas)를 재사용 — 새 카드 디자인을
+  // 만들지 않음. 링크 미리보기용 동적 카드 감싸기(wrapWithOgShareCard)는 이제 필요 없음(실제
+  // 이미지 파일을 직접 공유하므로) — 대신 원본(비감싼) shareUrl을 문구에 그대로 붙여서, 받는
+  // 사람이 눌러도 여전히 같은 계산 결과로 이동함.
+  const { canvas: shareCanvas, hotspots: shareHotspots } = buildHomeResultCheckCanvas();
+  openAnnotateOverlay(shareCanvas, 'chamtax-result.png', {
+    mode: 'share',
+    dateEditable: true,
+    textHotspots: shareHotspots,
+    shareTitle,
+    shareText: `${shareText} ${shareUrl}`,
   });
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
-      return;
-    } catch (e) {
-      // 사용자가 공유 취소한 경우 등 — 조용히 무시
-      if (e && e.name === 'AbortError') return;
-    }
-  }
-
-  // Web Share API 미지원 브라우저 — 클립보드 복사로 대체
-  const btn = document.getElementById('home-share-btn');
-  try {
-    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-    if (btn) {
-      const original = btn.textContent;
-      btn.textContent = shareFallbackCopyToast();
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
-    }
-  } catch (e) {
-    // 클립보드 API까지 막힌 환경(카카오톡 등 인앱 브라우저 등) — 사용자가 직접 보고 복사할 수 있게 표시
-    window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), `${shareText} ${shareUrl}`);
-  }
 }
 
 async function shareRefundChecklist(){
