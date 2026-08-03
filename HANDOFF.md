@@ -4565,3 +4565,49 @@ PR 불필요, 커밋 `c6c2a33`→`fde29fa`가 `587924f`의 직계 부모).
 
 변경 파일: `script.js`(`taxTotalLumpsumSuffix()` 신규, `taxTotalLinePrefix()` 호출부 2곳
 갱신, `shareResult()` 게이트 제거, `shareGenericPromo()` 삭제).
+
+### 2026-08-03 이어서 — "홈페이지가 한국에서 외국중심으로 됐다" 사용자 지적 → 언어 기반 세금 기준 국가 자동 전환 제거
+
+**배경**: 사용자가 "홈페이지가 한국에서 외국중심으로 됐는데 수정할 부분이 있을까?"라고 물음.
+`script.js`를 조사해서 2026-08-01에 추가된 `LANG_TO_COUNTRY`(언어 감지 → 세금 계산 기준
+국가 자동 전환) 기능이 원인임을 특정함: 브라우저/OS 언어(`navigator.language`)가 한국어가
+아니면(영어 Windows를 쓰는 한국 거주자 등 실제로 흔함 — 이 기능을 만든 세션 본인의 주석에도
+"네이버에서 '참택스' 검색해 들어왔는데 기기 언어가 키르기스어라 화면이 통째로 키르기스어로
+뜬" 사고 사례가 이미 기록돼있었음) 첫 화면부터 다른 나라 세금 계산 결과가 뜸 — 사이트 주
+타겟(한국 거주 40~60대)에게 정확히 사용자가 지적한 문제를 일으키는 원인이었음.
+
+**추가 근거**: 이 자동 전환 기능은 이미 2026-08-02에 두 번이나 방어 코드를 낳았었음
+(`goToKoreaCalculator()`, `goWithLangSelect(forceKoreaContext)` — "한국에 살아요"를 명시적으로
+눌러도 계산은 다른 나라 기준으로 나가는 모순을 막던 패치들). 증상별로 계속 땜질했는데도
+사용자가 다시 문제를 지적한 것 — 근본 원인(자동 전환 자체)을 제거하는 게 맞다고 판단.
+
+**조치**: `setLanguage()` 안의 `LANG_TO_COUNTRY` 자동 전환 트리거를 완전히 제거. **언어 자동
+감지(화면 표시 텍스트)는 그대로 유지**(한국 거주 외국인 EPS 근로자를 위한 기존 기능이라 안
+건드림), **통화 자동 전환(`LANG_TO_CURRENCY`)도 유지**(2026-07-29 사용자 요청으로 추가된
+기존 기능이고, 표시 단위만 바꿀 뿐 세금 계산 자체를 바꾸지 않아 리스크가 낮음). **세금 계산
+기준 국가만 항상 한국(또는 사용자의 명시적 선택)으로 유지**하도록 되돌림 — 화면 언어와 세금
+계산 기준을 분리하는 게 핵심 판단.
+
+**정리한 것**: `LANG_TO_COUNTRY` 상수 삭제(더 이상 아무 데서도 안 씀), 이 상수를 참조하던
+stale 주석 3곳(`goToKoreaCalculator()`, `goWithLangSelect()`, `#home-country-autoguess-hint`
+근처)을 과거형으로 갱신. `countryWasAutoGuessed`/`#home-country-autoguess-hint`(안내 배너)는
+이제 켜질 방법이 없어서 사실상 죽은 코드지만, HTML 요소 자체는 무해하고 나중에 자동 추정을
+다시 켤 일이 생기면 재사용 가능해서 **일부러 안 지움** — 다음 세션이 "빠진 줄" 착각하지
+않도록 여기 기록.
+
+**검증**: `node --check script.js` 통과. Playwright로 직접 시나리오 재현 확인 — 영어
+locale(`en-US`)로 처음 방문 시 `lang: 'en', country: 'kr', currency: 'USD'`(언어·통화는
+자동 전환되지만 국가는 한국 유지) 확인. `index.html?country=cn`처럼 랜딩페이지가 명시적으로
+보내는 신호는 여전히 정상 작동 확인(`country: 'cn'`). 회귀 테스트 13개 전부(`console_error_audit`
+161개 설정, `home_audit`/`wrap_audit`/`lang_leak_audit`/`nav_slider_audit`/`map_scroll_audit`/
+`audit_odds_compare`/`faq_audit`, `i18n_attr_lint`/`i18n_coverage_audit`(739개 키)/
+`fact_consistency_audit`(93개 파일)/`broken_link_audit`(90개 파일)/`draw_archive_integrity_check`)
+0건 확인.
+
+**다음 세션 참고**: 이 되돌림이 또 재발하지 않도록 — 언어 기반 추정으로 **세금 계산 결과 자체를
+바꾸는 값**(국가 등)을 자동 전환하는 기능을 다시 제안받으면, 이 항목과 위 2026-08-02 방어
+코드 이력을 먼저 보여줄 것. 통화처럼 "표시 단위만 바뀌는" 낮은 리스크 자동화와, 국가처럼
+"계산 결과 자체가 바뀌는" 높은 리스크 자동화는 구분해서 판단해야 함.
+
+변경 파일: `script.js`(`LANG_TO_COUNTRY` 상수 삭제, `setLanguage()`의 자동 전환 트리거 제거,
+관련 stale 주석 3곳 갱신).
