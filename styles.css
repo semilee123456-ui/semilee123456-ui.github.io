@@ -1245,27 +1245,26 @@
      고침. ✕는 버튼의 실제 사각형(faqFloatBtnCollidesWithText가 샘플링하는 4개 지점) 바깥으로
      반쯤 튀어나오게 배치해서, 충돌 감지 로직이 이 배지 자체를 "버튼 위의 글자"로 오인해
      엉뚱하게 흐려지는 오탐을 피함 */
+  /* 2026-08-03: "궁금해요" 버튼이 스크롤 위치·뒤 텍스트와의 충돌 여부에 따라 계속 나타났다
+     흐려졌다 하는 게 오히려 불편하다는 사용자 피드백(스크린샷)으로, 로드 직후부터 항상 완전히
+     보이는 상태로 되돌림 — 아래 is-colliding/is-scroll-hidden도 더 이상 투명도를 낮추지 않게
+     무력화함(script.js는 그대로 이 클래스들을 토글하지만 시각적 효과가 없어짐, is-hidden 하나만
+     계속 동작 — ✕ 버튼으로 직접 닫는 건 사용자의 명시적 선택이라 그대로 존중함). 예전에 이
+     흐림/숨김을 넣은 이유(버튼이 실제 콘텐츠 위에 얹혀 가리는 문제)보다 "버튼이 계속 있어야
+     한다"는 이번 피드백을 우선함 — 되돌리기 전에 반드시 이 주석을 먼저 읽을 것. */
   .faq-float-wrap{
     position:fixed; right:16px; bottom:calc(84px + env(safe-area-inset-bottom, 0px));
-    z-index:39; opacity:0; pointer-events:none; transform:translateY(8px);
+    z-index:39; opacity:1; pointer-events:auto; transform:translateY(0);
     transition:transform 0.15s ease, opacity 0.15s ease;
   }
   .faq-float-wrap.is-visible{ opacity:1; pointer-events:auto; transform:translateY(0); }
-  /* script.js의 faqFloatBtnCollidesWithText()가 이 버튼 자리에 실제 글자가 있는 요소를
-     발견하면 붙이는 클래스 — 스크롤이 멈춘 위치에서도 뒤 텍스트를 가리지 않도록 그 순간만
-     흐리게(완전히 사라지지 않아 "버튼이 있었는데 갑자기 없어짐" 혼란은 피함) */
-  .faq-float-wrap.is-colliding{ opacity:0.16; pointer-events:none; }
+  .faq-float-wrap.is-colliding{ opacity:1; }
   /* 2026-07-30: script.js의 faqFloatBtnCollisionState()가 이 버튼 밑에 진짜 버튼/링크/
-     아코디언 제목이 있다고 판단하면 붙이는 클래스 — 위 is-colliding과 달리 흐리게 하진
-     않음(2026-07-29 피드백대로 컨트롤 위에서 흐려지는 건 거슬려 보였음), 대신 탭만
-     통과시켜서 이 플로팅 버튼이 뒤에 깔린 진짜 컨트롤의 탭을 가로채지 않게 함(UX 점검
-     서브에이전트가 발견한 문제) */
+     아코디언 제목이 있다고 판단하면 붙이는 클래스 — 시각적 변화는 없고(위 2026-08-03 변경과
+     무관하게 계속 유지), 탭만 통과시켜서 이 플로팅 버튼이 뒤에 깔린 진짜 컨트롤의 탭을
+     가로채지 않게 함(UX 점검 서브에이전트가 발견한 문제) */
   .faq-float-wrap.is-over-control{ pointer-events:none; }
-  /* 2026-07-30: 제미나이/GPT 검수(12번 항목)가 공통으로 추천한 "스크롤 중 자동 숨김" —
-     아래로 스크롤할 땐 살짝 내려가며 숨겨서 다른 컨트롤과 겹칠 상황 자체를 줄임(위
-     is-over-control 방어 코드는 그래도 겹치는 드문 경우의 안전망으로 계속 둠). 위로
-     스크롤하거나 스크롤이 멈추면(script.js의 settleTimer) 다시 나타남 */
-  .faq-float-wrap.is-scroll-hidden{ opacity:0; pointer-events:none; transform:translateY(16px) scale(0.9); }
+  .faq-float-wrap.is-scroll-hidden{ opacity:1; pointer-events:auto; transform:translateY(0); }
   .faq-float-wrap.is-hidden{ display:none; }
   .faq-float-btn{
     position:relative; display:inline-flex; align-items:center; gap:6px; min-height:44px;
