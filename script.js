@@ -4116,12 +4116,14 @@ function renderAmountBreakdownHtml(cashUsd, stateCode){
   // 지적함) — 다른 나라 칩들과 똑같이 restVisibleGroups와 한 그리드 안에 넣어서 크기를 통일함
   // (점선 테두리만 남겨서 "순위 대상이 아닌 별도 항목"이라는 구분은 유지)
   const otherResult = calcTakeHome(cashKrw / 100000000, 'other', null);
-  const otherLabel = otherResult.basisSuffix.replace(/\s*[（(][^)）]*[)）]\s*$/, '');
+  const otherLabelText = otherResult.basisSuffix.replace(/\s*[（(][^)）]*[)）]\s*$/, '');
   // 2026-08-03: "🌐 " 이모지 접두사 때문에 이 칩(2열 그리드, 폭 100px 안팎)에서 "기타 국가"가
-  // "🌐"/"기타"/"국가" 3줄로 어색하게 쪼개져 보인다는 사용자 스크린샷 제보 — 옆 칩들(스리랑카
-  // 거주자 등)은 이모지 없이 텍스트만 있어서 같은 폭에서도 최대 2줄로 자연스럽게 접힘. 이
-  // 칩은 이미 점선 테두리(jh-amt-chip-other)로 "순위 대상 아닌 별도 항목"이라는 구분이
-  // 되고 있어서 이모지가 시각적으로 꼭 필요하지도 않았음 — 이모지만 제거
+  // "🌐"/"기타"/"국가" 3줄로 어색하게 쪼개져 보인다는 사용자 스크린샷 제보로 한 번 이모지를
+  // 통째로 뺐었는데, 이번엔 사용자가 다시 이모지를 원해서(이 칩이 "다른 나라"라는 걸 한눈에
+  // 알아보는 데 도움이 됐다고 함) 복원 — 이번엔 이모지와 첫 단어 사이를 줄바꿈 없는 공백
+  // (U+00A0)으로 묶어서 "🌐"이 혼자 한 줄을 차지하는 문제만 막음. 나머지 단어 사이는 그대로
+  // 일반 공백이라 줄바꿈 가능해서, 옆 칩들처럼 최대 2줄로는 자연스럽게 접힘
+  const otherLabel = '🌐 ' + otherLabelText;
   const otherChipHtml = `<span class="jh-amt-item jh-amt-chip jh-amt-chip-other"><span class="jh-amt-label">${otherLabel}</span><span class="jh-amt"><bdi>${formatEokKrwInDisplayCurrency(otherResult.final, sharedInputCurrency)}</bdi></span></span>`;
   const restHtml = `<div class="jh-amounts-grid">${restVisibleGroups.map(g => toAmtItem(g, false)).join('')}${otherChipHtml}</div>`;
   return primaryHtml + restHtml + hiddenHtml;
