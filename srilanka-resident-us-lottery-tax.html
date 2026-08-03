@@ -56,6 +56,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax යනු එක්සත් ජනපද Powerball සහ Mega Millions ලොතරැයි ජයග්‍රහණවලින් බදු අඩු කිරීමෙන් පසු සැබවින්ම අතට ලැබෙන මුදල ගණනය කරන නොමිලේ ගණකයන්ත්‍රයකි."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "එක්සත් ජනපද ලොතරැයි විශාල ත්‍යාග (Powerball, Mega Millions) සඳහා බදු අඩු කිරීමෙන් පසු අතට ලැබෙන මුදල සඳහා නොමිලේ වෙබ් ගණකයන්ත්‍රයක් වන අතර, එක්සත් ජනපද පදිංචිකරුවන් නොවන අයට අදාළ බදු අඩුකිරීම ඇතුළුව රටවල්/බලප්‍රදේශ 21ක් ආවරණය කරයි.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "එක්සත් ජනපද ලොතරැයි ජයග්‍රහණයකින් බදු අඩු කිරීමෙන් පසු අතට ලැබෙන මුදල ගණනය කරන ආකාරය",
+  "step": [
+    { "@type": "HowToStep", "name": "ජයග්‍රහණ මුදල ඇතුළත් කරන්න", "text": "Powerball හෝ Mega Millions ජයග්‍රහණ මුදල (ප්‍රකාශිත ත්‍යාගය හෝ එකවර මුදල් අගය) ඇතුළත් කරන්න." },
+    { "@type": "HowToStep", "name": "ඔබේ පදිංචි රට තෝරන්න", "text": "ඔබ ශ්‍රී ලංකාවේ පදිංචිකරුවෙකුද නැතහොත් වෙනත් රටක පදිංචිකරුවෙකුද යන්න තෝරන්න." },
+    { "@type": "HowToStep", "name": "එක්සත් ජනපද ප්‍රාන්තය (State) තෝරන්න", "text": "ටිකට් පත මිලදී ගත් එක්සත් ජනපද ප්‍රාන්තය තෝරන්න — අමතර බදු අඩුකිරීමේ අනුපාතය ප්‍රාන්තය අනුව වෙනස් වේ." },
+    { "@type": "HowToStep", "name": "බදු අඩු කිරීමෙන් පසු අතට ලැබෙන මුදල පරීක්ෂා කරන්න", "text": "එක්සත් ජනපද ෆෙඩරල් 30% බදු අඩුකිරීම සහ ශ්‍රී ලංකා බදු (ද්විත්ව බදුකරණය සකස් කිරීම ඇතුළුව) යෙදීමෙන් පසු ඇස්තමේන්තුගත අතට ලැබෙන මුදල බලන්න." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -84,6 +132,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.5; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   .quick-answer{ background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px; padding:20px; margin-bottom:24px; }
   .quick-answer p.label{ font-size:var(--fs-small); font-weight:700; color:var(--teal); margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em; }
   .quick-answer .row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:6px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px; }
@@ -120,7 +169,8 @@
   </div>
 
   <h1>ශ්‍රී ලාංකික බදු පදිංචිකරුවකු ඇමරිකානු ලොතරැයියෙන් ජයග්‍රහණය කළහොත් බදු කීයක්ද?</h1>
-  <p class="lead">ශ්‍රී ලාංකික බදු පදිංචිකරුවකු ලෙස Powerball හෝ Mega Millions දිනුවාද? ඇමරිකානු ෆෙඩරල් අඩුකිරීම 30%, ශ්‍රී ලංකා ප්‍රගතිශීලී ආදායම් බද්ද 36% දක්වා, විස්තරාත්මකව.</p>
+  <p class="lead">ChamTax යනු එක්සත් ජනපද Powerball සහ Mega Millions ජයග්‍රහණවලින් සැබෑ, බදු අඩු කිරීමෙන් පසු අතට ලැබෙන මුදල පෙන්වන නොමිලේ ගණකයන්ත්‍රයකි. ශ්‍රී ලාංකික බදු පදිංචිකරුවකු ලෙස Powerball හෝ Mega Millions දිනුවාද? ඇමරිකානු ෆෙඩරල් අඩුකිරීම 30%, ශ්‍රී ලංකා ප්‍රගතිශීලී ආදායම් බද්ද 36% දක්වා, විස්තරාත්මකව.</p>
+  <p class="updated-date">අවසන් යාවත්කාලීනය: 2026-08-03</p>
 
   <div class="quick-answer">
     <p class="label">තත්පර 30 සාරාංශය</p>

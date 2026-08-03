@@ -56,6 +56,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTaxは、米国のPowerballおよびMega Millionsのくじ当選金の税引き後の実際の手取り額を計算する無料の計算ツールです。"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "米国宝くじジャックポット（Powerball、Mega Millions）の税引き後の手取り額を計算する無料のウェブ計算ツールで、米国非居住者の源泉徴収を含む21の国・地域に対応しています。",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "米国宝くじ当選金の税引き後手取り額の計算方法",
+  "step": [
+    { "@type": "HowToStep", "name": "当選金額を入力", "text": "Powerballまたは Mega Millionsの当選金額（発表されたジャックポットまたは一時金の現金価値）を入力します。" },
+    { "@type": "HowToStep", "name": "居住国を選択", "text": "日本の居住者か、他の国の居住者かを選択します。" },
+    { "@type": "HowToStep", "name": "米国の州（State）を選択", "text": "宝くじを購入した米国の州を選択します — 州によって追加の源泉徴収税率が異なります。" },
+    { "@type": "HowToStep", "name": "税引き後の手取り額を確認", "text": "米国連邦税30%の源泉徴収と日本の税金（二重課税調整を反映）を適用した概算の手取り額を確認します。" }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -84,6 +132,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.5; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   .quick-answer{ background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px; padding:20px; margin-bottom:24px; }
   .quick-answer p.label{ font-size:var(--fs-small); font-weight:700; color:var(--teal); margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em; }
   .quick-answer .row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:6px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px; }
@@ -120,7 +169,8 @@
   </div>
 
   <h1>日本の居住者が米国宝くじに当選したら、税金はいくら？</h1>
-  <p class="lead">日本の居住者としてPowerballやMega Millionsに当選？米国連邦源泉徴収30%、日本の一時所得課税、外国税額控除の仕組みまで詳しく解説します。</p>
+  <p class="lead">ChamTaxは、米国のPowerballおよびMega Millionsの当選金について、実際の税引き後手取り額を表示する無料の計算ツールです。 日本の居住者としてPowerballやMega Millionsに当選？米国連邦源泉徴収30%、日本の一時所得課税、外国税額控除の仕組みまで詳しく解説します。</p>
+  <p class="updated-date">最終更新日: 2026-08-03</p>
 
   <div class="quick-answer">
     <p class="label">30秒でわかる要約</p>
