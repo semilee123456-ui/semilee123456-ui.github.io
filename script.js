@@ -6401,8 +6401,22 @@ function placeAnnotateTextInput(canvasPt, clientX, clientY){
   input.className = 'annotate-text-input';
   input.style.color = annotateColor;
 
+  // 2026-08-03: 입력하다가 다시 지우고 싶을 때(오타, 마음이 바뀜) input을 직접 길게 눌러
+  // 선택→삭제해야 했던 걸 사용자가 불편해해서, 손잡이 반대쪽에 원터치로 비우는 × 버튼을 추가함.
+  // 드래그 손잡이와 같은 원리로 pointerdown에서 preventDefault()해 입력 포커스(키보드)를 유지.
+  const clearBtn = document.createElement('span');
+  clearBtn.className = 'annotate-text-clear-btn';
+  clearBtn.textContent = '×';
+  clearBtn.setAttribute('aria-hidden', 'true');
+  clearBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    input.value = '';
+    input.focus();
+  });
+
   container.appendChild(handle);
   container.appendChild(input);
+  container.appendChild(clearBtn);
 
   // 커밋 시점에 wrap 기준 container 위치를 다시 캔버스 픽셀 좌표로 환산 — 드래그로 위치가
   // 바뀌었을 수 있어서 처음 탭한 canvasPt를 그대로 쓰지 않고 매번 새로 계산함

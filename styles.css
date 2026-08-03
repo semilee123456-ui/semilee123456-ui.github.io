@@ -157,6 +157,32 @@
     position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
     clip:rect(0,0,0,0); white-space:nowrap; border:0;
   }
+  /* 2026-08-03: 사용자가 인도 루피(₹)로 통화를 바꿔서 홈 결과("₹ 151.4억")를 캡처해 보내준
+     스크린샷에서 ₹ 기호만 숫자보다 눈에 띄게 위로 떠 보이는 걸 발견 — Pretendard(이 사이트
+     기본 폰트)에 이 글자가 없어서 브라우저가 조용히 다른 시스템 폰트로 대체하는데, 그 대체
+     폰트의 글자 디자인이 숫자와 세로 정렬이 안 맞았던 것(재현: `#home-final-amt` DOM 요소를
+     직접 스크린샷). 같은 "Currency Symbols" 유니코드 블록(U+20A0~20CF)에 있는 나머지 기호
+     (₫ 베트남·₭ 라오스·₮ 몽골·₱ 필리핀·₽ 러시아 — 이 사이트가 실제로 쓰는 통화들, ₩는 한국
+     폰트라 이미 정상)도 같은 원인으로 잠재적으로 같은 문제가 있을 걸로 보고 전부 같이 검증·
+     수정함(로컬에서 Google Fonts 'Noto Sans'로 렌더링 비교 — 전부 숫자와 어긋남 확인).
+     'Pretendard'라는 이름으로 유니코드 범위만 좁혀 폰트 페이스를 추가로 등록하면(같은 이름
+     아래 여러 @font-face를 두는 표준 기법), 이 글자들만 살짝 다른(Noto Sans) 소스로 채워지고
+     나머지 폰트 적용은 전혀 안 바뀜 — `font-family:'Pretendard'`를 쓰는 모든 곳(이 body 규칙
+     자체 + 결과 카드 캔버스 이미지 저장 기능의 ctx.font)에 코드 변경 없이 한 번에 적용됨. */
+  @font-face {
+    font-family: 'Pretendard';
+    font-weight: 100 900;
+    font-style: normal;
+    src: url(https://fonts.gstatic.com/s/notosans/v42/o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5aHdu2ui.woff2) format('woff2');
+    unicode-range: U+20AB, U+20AD, U+20AE, U+20B1, U+20BD; /* ₫ ₭ ₮ ₱ ₽ */
+  }
+  @font-face {
+    font-family: 'Pretendard';
+    font-weight: 100 900;
+    font-style: normal;
+    src: url(https://fonts.gstatic.com/s/notosans/v42/o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a_du2ui.woff2) format('woff2');
+    unicode-range: U+20B9; /* ₹ */
+  }
   body{
     margin:0;
     font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;
@@ -2035,6 +2061,14 @@
     font-size:15px; line-height:1; cursor:grab; touch-action:none; user-select:none;
   }
   .annotate-text-drag-handle:active{ cursor:grabbing; }
+  /* 2026-08-03: 입력 중 바로 지울 수 있는 × 버튼 — 드래그 손잡이와 같은 크기/터치 영역, 색만
+     "삭제" 느낌으로 중립 회색(빨강은 이 사이트의 세금/오류 배색과 겹쳐 과해 보여서 피함) */
+  .annotate-text-clear-btn{
+    display:flex; align-items:center; justify-content:center; flex:none;
+    width:28px; height:28px; border-radius:8px; background:rgba(var(--ink-rgb),0.12); color:var(--text-muted);
+    font-size:18px; line-height:1; cursor:pointer; touch-action:none; user-select:none;
+  }
+  .annotate-text-clear-btn:active{ background:rgba(var(--ink-rgb),0.2); }
   .annotate-text-input{
     font-family:inherit; font-size:16px; font-weight:800;
     background:rgba(255,255,255,0.92); border:1.5px dashed var(--teal); border-radius:6px;

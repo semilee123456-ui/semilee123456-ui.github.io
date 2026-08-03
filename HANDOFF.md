@@ -4032,3 +4032,72 @@ ID를 알려주면 그때 15개 루틴의 `environment_id`를 `update_trigger`�
 없이 사용자가 직접 켜면 됨.
 
 변경 파일: 없음(조사만 수행, 위험 대비 이득이 낮다고 판단한 항목은 의도적으로 보류).
+
+### 2026-08-03 이어서 (`claude/github-handover-files-gvlama` 브랜치) — "네가 할 수 있는 거 먼저 다 해줘"
+요청 대응: 로또 데이터 최신 확인, 공유 카드 아랍어 잔여 버그 발견·수정, 사용자가 스크린샷으로
+지적한 UI 버그 2건 수정
+
+**(A) 로또 데이터(LATEST_DRAW/JACKPOT_DATA/아카이브) 최신 상태 재확인 — 갱신 필요 없었음**:
+"아직 못한 거" 목록에 있던 "새 회차마다 3곳 확인" 항목을 실제로 점검. `WebFetch`로
+powerball.com/lotteryusa.com 라이브 데이터 직접 조회 → `script.js`의 `LATEST_DRAW`
+(파워볼 8/1, 메가밀리언즈 7/31)·`JACKPOT_DATA`(파워볼 $748M/cash $325.1M, 메가밀리언즈
+$60M/cash $25.5M)가 공식 사이트와 정확히 일치, `odds-data.js` 아카이브도
+`draw_archive_integrity_check.js` 기준 마지막 날짜 일치. 오늘(월요일) 파워볼 추첨은 아직
+전이라 다음 추첨은 여전히 8/1이 최신 — 갱신 불필요, 코드 변경 없음.
+
+**(B) 공유 카드 og-share-worker — PR #81의 아랍어(ar) 수정이 실제로는 불완전했음, 재수정**:
+PR #81이 "Noto Sans Arabic으로 바꿔서 해결"이라고 기록했으나, 실제 배포본(og.chamtax.com)에
+직접 요청해서 재검증(`main=مليار&lang=ar` 등)해보니 **여전히 크래시**하고 있었음(단, 이번엔
+0바이트가 아니라 `handleOgImage()`의 catch 폴백으로 조용히 넘어가 브랜드 카드만 뜨는 상태라
+겉보기엔 "안 깨진 것처럼" 보여서 놓치기 쉬움 — 실제로 이미지 내용을 열어봐야 빈 카드라는 걸
+알 수 있었음). `og-share-worker/`에 `npm install` 후 로컬 `wrangler dev`로 satori 크래시를
+직접 재현(원격 요청보다 훨씬 빠르고 결정적) → 정확한 원인 특정: OpenType GSUB lookupType 5
+(Chaining Contextual Substitution) format 3를 satori가 아예 지원 안 해서, ل+ي+ا(lam-ya-alef)
+3글자 연속을 포함한 문구(흔한 단어 다수 포함)에서 예외 없이 크래시. Noto Sans Arabic·Noto
+Naskh Arabic·Noto Kufi Arabic 전부 이 GSUB 규칙을 갖고 있어서 동일하게 크래시하는 것도 로컬
+재현으로 확인. Cairo·Tajawal·IBM Plex Sans Arabic·Almarai 등은 이 규칙 자체가 없어서 정상
+렌더링됨을 확인 → **Tajawal로 교체**(`LANG_FONT_FAMILY.ar`). `i18n-source/translations.json`의
+짧은 아랍어 문자열 387개 전부 로컬 `wrangler dev`로 일괄 재현 테스트 — 크래시 0건. 우르두어
+(ur)는 재확인 결과 기존 Noto Sans Arabic으로 이미 정상이라 손 안 댐(이 3글자 연속 패턴이 우연히
+없는 문구들이었던 것으로 보임 — 다음 세션이 우르두어 카드에서 같은 증상을 보면 이 항목부터
+참고). **주의: 이 수정은 이 브랜치에만 있고 아직 `main`에 병합 안 됨** — `og-share-worker/`는
+Cloudflare GitHub 연동으로 `main` 푸시 시 자동 재배포되므로, 이 브랜치가 `main`에 병합돼야
+실제 og.chamtax.com에 반영됨. 병합 후 재확인:
+```
+curl -s -o /tmp/ar.png -w "%{size_download}\n" "https://og.chamtax.com/api/og.png?main=%D9%85%D9%84%D9%8A%D8%A7%D8%B1&lang=ar"
+```
+(이미지를 열어서 실제 "مليار" 텍스트가 보이는지까지 확인할 것 — 0바이트만 아니라고 끝내면
+이번처럼 "폴백 카드로 조용히 넘어가는" 상태를 또 놓칠 수 있음.)
+
+**(C) 사용자가 스크린샷으로 지적한 UI 버그 2건**:
+1. **"텍스트 입력하고 바로 지우기도 되면 좋겠어"** — "이미지로 저장" 꾸미기 모달의 텍스트 도구
+   (`placeAnnotateTextInput()`)에 입력 중인 글자를 한 번에 비우는 × 버튼 추가(기존 드래그
+   손잡이 반대쪽). `pointerdown`에서 `preventDefault()`해 입력 포커스(모바일 키보드)를 유지한
+   채 `input.value=''`만 실행 — 드래그 손잡이와 동일한 패턴. CSS `.annotate-text-clear-btn`
+   (styles.css).
+2. **"₹ 151.4억"처럼 인도 루피(₹) 기호가 숫자보다 위로 떠 보임** — 스크린샷 재현 결과 실제
+   버그였음: Pretendard(사이트 기본 폰트)에 ₹(U+20B9) 글자가 없어서 브라우저가 조용히 다른
+   폰트로 대체하는데, 그 대체 폰트의 글자 디자인이 숫자와 세로 정렬이 안 맞음(캔버스 export
+   `buildHomeResultCheckCanvas()`와 DOM `#home-final-amt` 양쪽 다 재현). 같은 "Currency
+   Symbols" 유니코드 블록(U+20A0~20CF)의 나머지 기호(₫ 베트남·₭ 라오스·₮ 몽골·₱ 필리핀·₽
+   러시아 — 이 사이트가 실제 쓰는 통화들)도 같은 원인으로 잠재적 문제 있을 걸로 보고 전부 같이
+   검증(Noto Sans로 렌더링 비교 — 전부 어긋남 확인) → `'Pretendard'`라는 같은 이름 아래
+   unicode-range로 좁힌 `@font-face` 2개를 추가(표준 폰트 패치 기법 — 코드 호출부 변경 전혀
+   없이 `font-family:'Pretendard'` 쓰는 모든 곳에 자동 적용, DOM·캔버스 둘 다 커버). **참고:
+   이 샌드박스의 프록시가 fonts.gstatic.com 요청에서 간헐적으로 `ERR_CONNECTION_RESET`을
+   내서(같은 URL을 `curl`로는 100% 성공) 이 세션 안에서 매번 재현 성공은 못 함 — 실제
+   사용자 인터넷에서는 문제없을 gstatic.com 요청이라 판단하고 진행함(다른 Google Fonts
+   의존 기능들과 동일한 신뢰 수준). **다음 세션/사용자가 실제 배포본에서 ₹/₫/₭/₮/₱/₽ 카드를
+   한 번씩 열어서 정렬이 맞는지 육안 확인 권장** — 혹시 실제 사용자 환경에서도 폰트 로드
+   실패가 잦다면(광고 차단기 등으로 Google Fonts가 막힌 경우) 기존처럼 살짝 떠 보이는 폴백으로
+   돌아갈 뿐 깨지지는 않음.
+
+**검증**: `node --check`(script.js), `node --input-type=module --check`(og-share-worker),
+회귀 테스트 13종 전부 재실행 — `home_audit`(18,0)·`lang_leak_audit`(104,0)·
+`console_error_audit`(161,0)·`wrap_audit`(168,0)·`i18n_coverage_audit`(735,0)·
+`nav_slider_audit`(0)·`faq_audit`(18,0) 등 전부 `ISSUES: 0`. Playwright로 ₹ 기호 정렬(DOM+
+캔버스)과 텍스트 도구 × 버튼 둘 다 스크린샷으로 직접 확인.
+
+변경 파일: `og-share-worker/src/index.js`(`LANG_FONT_FAMILY.ar` → Tajawal), `script.js`
+(`placeAnnotateTextInput()`에 clearBtn 추가), `styles.css`(`@font-face` 2개 + 
+`.annotate-text-clear-btn`).

@@ -46,13 +46,24 @@ const LANG_FONT_FAMILY = {
   // 실제 배포된 Worker에 직접 요청을 보내 검증해보니(이전 세션들은 샌드박스 네트워크 제한으로
   // 못 했던 것 — 이번엔 됨) 이 두 폰트로 "مليار"(십억)·"ملین"(백만) 같은 흔한 단어가 포함된
   // 카드가 HTTP 200에 본문 0바이트(완전히 빈 이미지)로 깨지는 걸 재현함. 원인은 satori(이
-  // Worker가 쓰는 렌더링 엔진) 자체가 리가처/커닝 등 고급 OpenType 기능과 RTL을 공식적으로
-  // 지원 안 해서(vercel/satori 이슈 트래커에 명시됨) — Naskh/Nastaliq처럼 문맥별 리가처
-  // 치환이 많은 서예체 폰트의 특정 글자 조합(예: ل+ي+ا 연속)에서 렌더링이 죽는 것으로 보임.
-  // 단순한 산세리프 계열인 Noto Sans Arabic(우르두어도 같은 아랍 문자 확장이라 커버함)으로
-  // 바꿔서 리가처 의존도를 낮춤 — 서예체 느낌은 사라지지만, 완전히 빈 이미지보다는 훨씬 나음.
+  // Worker가 쓰는 렌더링 엔진)가 특정 OpenType GSUB 규칙(lookupType 5, format 3 — Chaining
+  // Contextual Substitution)을 아예 지원 안 해서(런타임에 "lookupType: 5 - substFormat: 3 is
+  // not yet supported"로 즉시 크래시) — Naskh/Nastaliq처럼 문맥별 리가처 치환이 많은 서예체
+  // 폰트의 특정 3글자 연속(예: ل+ي+ا, "لیار"/"لیا")에서 이 규칙이 걸리는 것으로 보임. 당시
+  // Noto Sans Arabic으로 바꿔서 해결됐다고 기록했으나, **2026-08-03 후속 세션이 실제
+  // og.chamtax.com에 직접 요청해서 재확인한 결과 Noto Sans Arabic도 같은 3글자 연속(예:
+  // "مليار" 자체)에서 여전히 크래시함이 드러남** — Noto Kufi Arabic·Noto Naskh Arabic도
+  // 전부 같은 lookupType 5 크래시를 재현(로컬 `wrangler dev`로 격리 재현·확인). 반면 Cairo·
+  // Tajawal·IBM Plex Sans Arabic·Almarai 등 이 GSUB 규칙 자체를 안 쓰는 폰트들은 크래시 없이
+  // 정상 렌더링됨을 확인 — 그중 Tajawal로 교체(사이트 본문에서도 흔히 쓰이는 무난한 산세리프
+  // 아랍어 폰트, 아랍어 문자 조인 자체는 정상 지원). `i18n-source/translations.json`의 짧은
+  // 아랍어 문자열 387개 전부(로컬 `wrangler dev`로 일괄 재현 테스트) 크래시 0건 확인. 우르두어
+  // (ur)는 재확인해보니 Noto Sans Arabic으로 이미 정상 렌더링되고 있어서(이 3글자 연속 자체가
+  // 없는 문구들이라 우연히 안 걸린 것으로 보임) 그대로 둠 — 다만 다음 세션이 우르두어 카드도
+  // "لیار" 류 3글자 연속이 들어간 문구를 실제로 만나면 같은 증상이 재현될 수 있으니, 재현되면
+  // 이 항목도 Tajawal(또는 같은 검증을 거친 다른 폰트)로 바꿀 것.
   // 사이트 본문(styles.css)의 폰트는 안 건드림(브라우저는 이 문제가 없음, 이 Worker만의 문제).
-  ar: 'Noto Sans Arabic',
+  ar: 'Tajawal',
   ur: 'Noto Sans Arabic',
   hi: 'Noto Sans Devanagari',
   ne: 'Noto Sans Devanagari',
