@@ -1497,6 +1497,15 @@ function taxTotalLinePrefix(){
   return pickLang('합계 ', 'Total ', '合计 ', 'Tổng ', 'รวม ', 'Итого ', { km:'សរុប ', ne:'जम्मा ', id:'Total ', my:'စုစုပေါင်း ', si:'එකතුව ', uz:'Jami ', mn:'Нийт ', kk:'Барлығы ', ky:'Баары ', ur:'کل ', bn:'মোট ', lo:'ລວມ ', ja:'合計 ', ar:'الإجمالي ', hi:'कुल ', fr:'Total ', tl:'Kabuuan ' , pt: `Total `, es: `Total `, uk: `Всього `, tet: `Totál `});
 }
 
+// "합계 -46.5%"만 보면 연금/일시불 어느 쪽 기준인지 안 보인다는 지적(2026-08-03) — 바로 위
+// 안내 박스에 "일시불(세전) 기준"이라고 이미 나와있지만 그 박스를 안 읽고 숫자만 보는
+// 사용자를 위해 합계 줄 자체에도 짧게 표시함. "한국 추가 납부 (FTC 적용)" 라벨과 같은 괄호
+// 패턴 재사용. 새 문구를 새로 번역하지 않고, 이미 검수된 home.flowLumpsumLabel(26개 언어)의
+// 값을 그대로 재사용해 번역 품질 리스크를 피함
+function taxTotalLumpsumSuffix(){
+  return ' (' + pickLang('일시불', 'Lump sum', '一次性支付', 'Nhận một lần', 'เงินก้อนครั้งเดียว', 'Единовременная выплата', { km:'ដុំតែម្តង', ne:'एकमुष्ट', id:'Sekaligus', my:'တစ်ကြိမ်တည်း', si:'එකවර ගෙවීම', uz:"Bir martalik to'lov", mn:'Нэг удаагийн төлбөр', kk:'Бір реттік төлем', ky:'Бир жолку төлөм', ur:'یکمشت', bn:'একবারে প্রদান', lo:'ຈ່າຍເທື່ອດຽວ', ja:'一括受取', ar:'الدفعة الواحدة', hi:'एकमुश्त', fr:'Versement unique', tl:'Lump sum', pt:'Pagamento único', es:'Pago único', uk:'Одноразова виплата', tet:'Pagamentu úniku' }) + ')';
+}
+
 function calcTakeHome(amount, country, stateCode){
   if (country === 'us') {
     const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
@@ -6954,7 +6963,7 @@ function refreshJackpotDrawerIfOpen(){
     const jcCashEok = cashKrw / 100000000;
     const jcTaxTotalPctPrecise = jcCashEok > 0 ? (100 - (r.final / jcCashEok * 100)) : 0;
     document.getElementById('jc-tax-total-line').textContent =
-      taxTotalLinePrefix() + '-' + jcTaxTotalPctPrecise.toFixed(1) + '%';
+      taxTotalLinePrefix() + '-' + jcTaxTotalPctPrecise.toFixed(1) + '%' + taxTotalLumpsumSuffix();
 
     // "일시불 대신 연금으로 받으면?" 박스 — 홈 화면의 같은 박스와 계산 로직이 완전히 같아져서
     // (둘 다 이제 일시불 금액이 출발점) 공용 함수로 합침. 예전엔 이 부분이 각자 따로
@@ -11010,7 +11019,7 @@ function updateHomeCalc(usdOverride){
   // 거기는 단독으로만 보여서 소수점 유무가 문제되지 않음
   const taxImpactPctPrecise = 억 > 0 ? (100 - (final / 억 * 100)) : 0;
   document.getElementById('home-tax-total-line').textContent =
-    taxTotalLinePrefix() + '-' + taxImpactPctPrecise.toFixed(1) + '%';
+    taxTotalLinePrefix() + '-' + taxImpactPctPrecise.toFixed(1) + '%' + taxTotalLumpsumSuffix();
 
   // 실수령/세금 비율을 숫자로만 보여주는 대신 막대그래프로도 한눈에 보이게 함 —
   // 다른 복권 세금 계산기들(infinitycalculator 등)에 공통으로 있는 시각적 breakdown 패턴 참고
