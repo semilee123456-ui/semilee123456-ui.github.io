@@ -3555,3 +3555,96 @@ ko/ja/ar/uz/tet 5개 언어 × 국가 조합을 직접 실행해 문구·URL을 
 변경 파일: `script.js`(`annotateTextDrag`/`getAnnotateTextBBox`/`findAnnotateTextActionAt`
 추가로 텍스트 드래그 이동 구현, `shareGenericPromo()` OG 카드 래핑 추가, `shareResult()` 국가
 라벨을 `calcTakeHome().basisSuffix` 재사용으로 교체).
+
+### 2026-08-03 이어서 — 이 세션(`claude/github-latest-files-check-j9xthk`) 전체 최종 확인
++ 인수인계 마무리
+
+**요청 배경**: 사용자가 "지금까지 한거 전부 다 반영됐는지 확인하고 인수인계 파일
+만들어줘"라고 요청 — 이 세션이 오늘 만든 수정사항 전부가 실제로 `main`에 살아있는지
+재확인하고 마무리 정리.
+
+**이 세션(오늘)이 실제로 고친 것 — 위쪽에 각각 상세 항목 있음, 여기는 인덱스**:
+1. GitHub 반영 상태 검증(코드 변경 없음) + 병합 완료됐지만 안 지워진 브랜치 5개 발견
+2. 홈 화면 잭팟 헤드라인 밑 원화 환산 문구를 선택 통화 인지형으로 교체
+   (`usdToKrwLabel`→`usdToDisplayCurrencyLabel`)
+3. "나는 어떤 경우일까요?" 4개 페르소나 카드의 국가/통화 상태 불일치 3건 수정
+   (`REAL_ABROAD_CURRENCY` 신설, `goToKoreaCalculator()` 신설, `forceKoreaContext` 옵션)
+   + 크메르어(km) "0 វอน" 언어 누출 3곳 수정
+4. 확률체감 탭 "역대 잭팟 확인 기록" 목록이 통화/환율 변경에 반응하지 않던 버그 수정
+   (`setSharedInputCurrency`/`onHomeRateChanged`/`onCompareRateChanged`/
+   `fetchLiveExchangeRate` 4곳에 `renderJackpotHistory()` 호출 추가)
+5. `script.js` 캐시버스팅 버전을 `20260802-1`로 갱신(반복된 "버전 안 올려서 구버전 캐시"
+   사고 재발 방지)
+6. "역대 최고 잭팟" 페이지 2인/3인 분할 당첨 항목의 실수령액을 1인당 실제 수령액으로 수정
+   (한/영/중 3개 언어), "$X.X억" 소수점+억 혼용 표기를 자연스러운 한글 표기로 변경(한국어판)
+7. "글자 크게 보기" 버튼 아이콘을 언어별로 "가+/가-" ↔ "A+/A-"로 전환
+   (`syncTextSizeToggleIcon()`, `applyTranslations()`에서도 호출)
+8. 메가밀리언즈 최소 잭팟이 2025-04 개편 전 수치($20M)로 남아있던 것 발견·수정 — 27개
+   언어판 `us-lottery-basics*.html` + `index.html` 확률체감 탭 비교표
+   (`odds.compareMinJackpot.mm`) + `lottery-jackpot-amount.html` 3개 언어
+
+**최종 재확인(방금 수행)**: `git fetch origin main` 기준 로컬 브랜치가 `main`과 완전히
+동일(diff 0/0), 위 1~8번 전부 재현 검증:
+- 회귀 테스트 `console_error_audit`(161)·`home_audit`(18)·`lang_leak_audit`(104)·
+  `broken_link_audit`(90)·`fact_consistency_audit`(93)·`i18n_coverage_audit`(735)·
+  `audit_odds_compare`(40) — **전부 ISSUES: 0**
+- 페르소나 국가/통화 일치(20개국+26개 언어) Playwright 재실행 — 정상
+- 크메르어 "0 វอน" 잔존 0건 재확인
+- 잭팟 기록 목록 KRW→INR 통화 전환 재현 — 정상
+- `script.js?v=20260802-1` 캐시버스팅 유지 확인
+- 역대 최고 잭팟 페이지 1인당 실수령액(3,300억원/2,637억원)·자연스러운 달러 표기
+  ("20억 4천만 달러" 등) 파일에 그대로 있음 확인
+- `syncTextSizeToggleIcon` 호출부(정의+`applyTranslations` 안 호출) 그대로 있음 확인
+- `odds.compareMinJackpot.mm`이 `index.html`에 "5,000만 달러"로 반영돼있음 확인
+
+**동시 작업**: 오늘 하루 종일 이 세션과 별개로 최소 3개 세션이 동시에 `main`에 작업함
+(원화 참고 줄 KR 고정, 마일스톤 배지 통화 수정, 게임 방식 표 겹침 회귀, TTS 이모지 제거,
+네팔/중국어 번역 오류, 중국어 페이지 브랜드명 깨짐 수정 등 — PR #53~#72 전부 이 세션이
+아닌 다른 세션들의 작업, 매번 `git fetch`+`git merge`로 충돌 없이 병합하며 진행함). 이
+문서에 각 세션이 자기 항목을 남겨서, 위 "작업 이력" 섹션의 2026-08-02~03 날짜 아래에
+이 세션 항목과 다른 세션 항목이 번갈아 섞여 있음 — **제목이 비슷해 보이는 항목(예:
+"6가지 페르소나" 재점검)도 있으니 브랜치명(`claude/github-latest-files-check-j9xthk`
+= 이 세션)으로 구분할 것**.
+
+**현재 상태**: 작업 트리 깨끗함, 로컬 브랜치·`origin/claude/github-latest-files-check-j9xthk`·
+`origin/main` 셋 다 완전히 동기화됨. 이 세션이 새로 연 미해결 이슈는 없음(SEO 점검만
+사용자 요청으로 다음 세션에 명시적으로 이월, 위 관련 항목 참고).
+
+변경 파일: 없음(이 항목은 검증·인수인계 정리만 수행).
+
+### 2026-08-03 이어서 — (`claude/github-handover-review-ma18qt` 브랜치) 2차 페이지 45개
+정밀 재검토 완주 → 라오어 진짜 버그 1건(5+1곳) 발견·수정
+
+**요청 배경**: 앞서 이 세션(branch명으로 위 다른 세션과 구분할 것)이 1차 페이지 26개를
+완독해서 우즈베크어·키르기스어 버그 2건을 고친 뒤(PR #74), 사용자가 "그럼 이어서 봐줘"로
+남은 2차 페이지(각국 거주자 페이지 19개 + "미국 로또 기초" 26개 언어판, 총 45개)까지
+요청 → 서브에이전트가 또 세션 한도(이번엔 4am UTC 리셋)에 걸려 2개 파일만 보고 중단,
+사용자가 "지금 이어서 해줘"로 즉시 재시도 요청 → 재시도한 서브에이전트는 이번엔 한도 없이
+45개 전부(2차 페이지 44개 + 앞서 놓쳤던 1개) 완독 성공.
+
+**발견**: `us-lottery-basics-lo.html`(라오어)의 "ພາສີຫັກ ນ ທີ່ຈ່າຍ"(원천징수) — 태국어
+관용구 "หัก ณ ที่จ่าย"를 라오어로 옮기는 과정에서 조사 "ณ"이 라오 문자 중 생김새가
+비슷한 "ນ"으로 잘못 치환돼서, "ຫັກ"(공제)와 "ທີ່ຈ່າຍ"(지급처) 사이에 뜻 없는 낱글자
+하나가 끼어있었음(우즈베크어 "topshиришdan", 키르기스어 "köп"과 같은 부류 — 겉보기엔
+멀쩡해 보이는 문자체계 혼용 오타). `i18n-source/translations.json`을 전수 재검색해보니
+같은 깨진 표현이 정적 HTML 1곳뿐 아니라 **번역 마스터 소스에도 5개 키**
+(`home.taxTermToggle`/`home.taxTermWithholdingTitle`/`faq.qTaxTerms`/`faq.aTaxTerms`/
+`faq.a19ru`)에 퍼져있었음 — `faq.a19ru`는 아예 "ณ"을 라오 문자로 바꾸지도 않고 태국어
+원문 그대로 남겨둔 상태였음.
+
+**수정**: 이미 같은 항목의 설명 문구(`home.taxTermWithholdingDesc`)에서 정상적으로 쓰이고
+있던 표현 "ຫັກໄວ້ລ່ວງໜ້າ"(사전에 떼어둔다는 뜻, 원천징수 개념과 동일)로 6곳 전부 통일 —
+`translations.json` 5개 키 + `us-lottery-basics-lo.html` 1곳. `i18n/lo.json`은 직접
+안 건드리고 관례대로 `node scripts/build-i18n.js`로 재생성. 다른 25개 언어에 태국어
+"ณ"이 남아있는 곳이 더 있는지 전체 재검색해서 이 5곳 외 없음도 확인.
+
+**최종 결과: "번역오류 전부 확인" 요청 완전히 마무리** — 1차 26개 + 2차 45개, 총 71개
+정적 페이지 본문을 각 언어 지식으로 전부 완독 검토함. 발견·수정한 진짜 버그 총 4건:
+브랜드명 깨짐 2곳(PR #72), 우즈베크어·키르기스어 문자체계 혼용(PR #74), 라오어 조사
+잔존(PR #76). 나머지는 전부 뜻·문법·문자체계 정상.
+
+**검증**: `node --check` 통과, `translations.json`/`i18n/lo.json` JSON 유효성 확인,
+회귀 테스트 12개 전부 `ISSUES: 0`. PR #76 squash merge 완료.
+
+변경 파일: `i18n-source/translations.json`(5개 키), `i18n/lo.json`(재생성),
+`us-lottery-basics-lo.html`.
