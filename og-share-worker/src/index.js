@@ -246,23 +246,42 @@ async function loadCardFonts(params) {
   return fonts;
 }
 
+// 안전한 대체 카드(개인화된 정보 없이 브랜드명만) — 실제 카드 생성이 어떤 이유로든 실패했을 때
+// 씀. 아래 두 곳(동기 실패·비동기 렌더링 실패)에서 공용으로 재사용.
+function buildFallbackCard() {
+  return `<div style="display:flex;width:1200px;height:630px;background:#155445;color:#ffffff;align-items:center;justify-content:center;font-size:48px;font-family:sans-serif;">ChamTax · chamtax.com</div>`;
+}
+
 async function handleOgImage(url) {
   const params = parseCardParams(url.searchParams);
   const fonts = await loadCardFonts(params);
   try {
-    return new ImageResponse(buildCardHtml(params), {
-      width: 1200,
-      height: 630,
-      fonts,
-      headers: { 'Cache-Control': 'public, max-age=86400' },
+    const rendered = new ImageResponse(buildCardHtml(params), { width: 1200, height: 630, fonts });
+    // 2026-08-03: 아랍어 카드가 HTTP 200에 본문 0바이트로 깨지는 버그를 실제 배포본에서
+    // 재현·조사하다가 발견함 — satori(렌더링 엔진)가 RTL/리가처를 지원 안 해서(공식 문서에
+    // 명시) 특정 아랍 문자 조합(예: "مليار")에서 PNG 인코딩이 실패하는데, 이 실패가 위
+    // `new ImageResponse(...)`가 "성공적으로" 반환한 Response의 스트림을 실제로 소비하는
+    // *시점*(비동기)에야 터짐 — 그래서 바로 아래 catch가 그동안 이 실패를 전혀 못 잡고
+    // 있었음(폰트를 Naskh→Noto Sans Arabic→Cairo로 세 번 바꿔봐도 여전히 재현돼서, 폰트
+    // 문제가 아니라 이 구조적 사각지대가 진짜 원인이었다는 걸 뒤늦게 확인함). 응답을 그냥
+    // 반환하는 대신 **여기서 바로 `arrayBuffer()`로 끝까지 다 읽어서** 렌더링을 지금 이
+    // try 블록 안에서 강제로 끝내버림 — 실패하면 Promise가 reject되어 catch로 정상적으로
+    // 넘어감(아랍어 텍스트 자체가 예쁘게 나오게 고치진 못했지만, 최소한 빈 이미지 대신 이미
+    // 있던 안전한 대체 카드라도 항상 나가게 됨 — "카드가 아예 안 뜬다"보다는 훨씬 나음).
+    const buf = await rendered.arrayBuffer();
+    return new Response(buf, {
+      headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' },
     });
   } catch (err) {
     // 카드 생성이 실패해도 깨진 이미지 대신 최소한의 안전한 카드로 대체(전체 실패보다 나음).
-    // 위에서 이미 받아둔 폰트(fonts)가 있으면 여기서도 그대로 재사용
-    return new ImageResponse(
-      `<div style="display:flex;width:1200px;height:630px;background:#155445;color:#ffffff;align-items:center;justify-content:center;font-size:48px;font-family:sans-serif;">ChamTax · chamtax.com</div>`,
-      { width: 1200, height: 630, fonts }
-    );
+    // 위에서 이미 받아둔 폰트(fonts)가 있으면 여기서도 그대로 재사용. 이 대체 카드 자체도
+    // 실패할 가능성에 대비해 대체 카드는 fonts 없이(라틴 문자만 쓰므로 기본 내장 폰트로 충분)
+    // 다시 한번 안전하게 렌더링 시도 — 그래도 실패하면 더 이상 손쓸 수 없어 그대로 전파함.
+    const fallback = new ImageResponse(buildFallbackCard(), { width: 1200, height: 630 });
+    const buf = await fallback.arrayBuffer();
+    return new Response(buf, {
+      headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=300' }, // 대체 카드는 짧게만 캐싱(원인이 해소되면 곧 정상 카드로 되돌아오게)
+    });
   }
 }
 
