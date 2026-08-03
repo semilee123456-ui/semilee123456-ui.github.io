@@ -1194,6 +1194,11 @@
     z-index:40; opacity:0; pointer-events:none; transition:opacity 0.2s ease, transform 0.2s ease;
   }
   .sticky-result-badge.is-visible{ opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+  /* 2026-08-03: faq-float-wrap과 같은 텍스트 충돌 감지를 이 배지에도 적용(script.js의
+     updateStickyResultBadgeCollision) — 세부 아코디언을 펼쳤을 때 그 안 마지막 문단(FTC 안내
+     문구 등)이 이 배지 밑에 깔려 안 읽히던 문제 수정. 완전히 숨기지 않고 흐리게만 해서 "배지가
+     사라졌다"는 혼란은 피함(faq-float-wrap.is-colliding과 동일 값) */
+  .sticky-result-badge.is-colliding{ opacity:0.16; pointer-events:none; }
   .sticky-result-label{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .sticky-result-amt{ font-size:var(--fs-note); font-weight:800; color:var(--teal); white-space:nowrap; font-variant-numeric:tabular-nums; }
   /* 홈 화면 전용 #sticky-result-badge는 화면 하단 가운데(left:50%)에 뜨는데, 폭이 좁은 기기에서는

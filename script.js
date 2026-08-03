@@ -7041,7 +7041,12 @@ function setupStickyResultBadge(){
   let hasSeenResult = false;
   const updateVisibility = () => {
     const isHomeActive = document.getElementById('view-home').classList.contains('on');
-    badge.classList.toggle('is-visible', isHomeActive && resultOutOfView && !pastRelevantZone);
+    const shouldShow = isHomeActive && resultOutOfView && !pastRelevantZone;
+    badge.classList.toggle('is-visible', shouldShow);
+    // is-colliding은 badge가 실제로 보이는 동안에만 의미가 있음 — 안 보이는 상태로 넘어갈 때
+    // 같이 지워두지 않으면, 다음에 다시 보일 때 이전 스크롤 위치의 충돌 판정이 잠깐 그대로
+    // 남아있는 상태로 시작함(faq-float-wrap의 같은 처리, updateShowHideOnly 참고)
+    if (!shouldShow) badge.classList.remove('is-colliding');
   };
 
   _stickyResultObserver = new IntersectionObserver((entries) => {
@@ -7129,6 +7134,19 @@ function faqFloatBtnCollisionState(btn){
   return { overText, overControl };
 }
 
+// 2026-08-03: sticky-result-badge(하단 중앙 "실수령 ○○원" 배지)는 faq-float-wrap과 달리
+// 텍스트 충돌 감지가 아예 없어서, 세부 아코디언(연금/세금 상세)을 펼쳤을 때 그 안의 마지막
+// 문단(예: "종합소득세 누진세율과 FTC를 반영한 참고용 계산이에요" 안내 문구)이 이 배지 밑에
+// 그대로 깔려 글자가 가려지는 문제가 있었음(사용자가 스크린샷으로 지적) — faqFloatBtnCollisionState는
+// 이미 범용(어떤 fixed 요소든 받음)이라 그대로 재사용, is-colliding일 때 흐리게 하는 것도
+// faq-float-wrap과 같은 패턴(styles.css)을 그대로 씀
+function updateStickyResultBadgeCollision(){
+  const badge = document.getElementById('sticky-result-badge');
+  if (!badge || !badge.classList.contains('is-visible')) return;
+  const { overText } = faqFloatBtnCollisionState(badge);
+  badge.classList.toggle('is-colliding', overText);
+}
+
 function updateFaqFloatBtnVisibility(){
   const wrap = document.getElementById('faqFloatWrap');
   if (!wrap) return;
@@ -7180,6 +7198,7 @@ function setupFaqFloatBtnScrollVisibility(){
       // 스크롤이 멈추면 마지막 방향과 무관하게 항상 다시 보이게 함(기존 충돌 재검사와 같은 타이밍)
       btn.classList.remove('is-scroll-hidden');
       updateFaqFloatBtnVisibility();
+      updateStickyResultBadgeCollision();
     }, 150);
   };
   window.addEventListener('scroll', onScroll, { passive: true });
@@ -7189,6 +7208,7 @@ function setupFaqFloatBtnScrollVisibility(){
   // 'toggle' 이벤트는 버블링을 안 해서 document에 capture:true로 걸어야 모든 <details>를
   // 한 번에 잡을 수 있음(요소마다 따로 리스너를 안 달아도 됨)
   document.addEventListener('toggle', updateFaqFloatBtnVisibility, true);
+  document.addEventListener('toggle', updateStickyResultBadgeCollision, true);
   updateFaqFloatBtnVisibility();
 }
 
