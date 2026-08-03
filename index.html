@@ -121,12 +121,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.css?v=20260803-3">
+<link rel="stylesheet" href="styles.css?v=20260803-4">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.js?v=20260803-2" defer></script>
+<script src="script.js?v=20260803-3" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1802,7 +1802,7 @@
           </div>
           <div id="lightning-fishing-mode" style="display:none;">
             <p class="panel-desc" data-i18n="odds.fishingHint">🎣 낚싯대를 던져서 번호를 하나씩 낚아보세요</p>
-            <div class="fishing-pond" id="fishing-pond" aria-hidden="true">
+            <div class="fishing-pond" id="fishing-pond" aria-hidden="true" onclick="castFishingLine()">
               <div class="fishing-rod-wrap" id="fishing-rod-wrap">
                 <span class="fishing-rod" id="fishing-rod">🎣</span>
                 <span class="fishing-line" id="fishing-line"></span>
@@ -1822,7 +1822,11 @@
               <span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball pb fishing-slot" id="fishing-special-ball">?</span>
             </div>
             <p class="sr-only" id="fishing-result-announcer" role="status" aria-live="polite"></p>
+            <div class="fishing-reel-gauge-wrap" id="fishing-reel-gauge-wrap" style="display:none;" aria-hidden="true">
+              <div class="fishing-reel-gauge-fill" id="fishing-reel-gauge-fill"></div>
+            </div>
             <button class="cta-btn" id="fishing-cast-btn" onclick="castFishingLine()" data-i18n="odds.fishingCastBtn">🎣 낚싯대 던지기</button>
+            <p class="fishing-status-msg" id="fishing-status-msg" aria-live="polite"></p>
             <p class="foot-note" style="margin-top:10px; text-align:center;" id="fishing-draw-note">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
           </div>
         </details>
