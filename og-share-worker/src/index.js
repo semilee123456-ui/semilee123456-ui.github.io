@@ -42,8 +42,18 @@ const LANG_FONT_FAMILY = {
   zh: 'Noto Sans SC',
   ja: 'Noto Sans JP',
   th: 'Noto Sans Thai',
-  ar: 'Noto Naskh Arabic', // 사이트 본문(styles.css html[lang="ar"])과 동일한 패밀리로 통일
-  ur: 'Noto Nastaliq Urdu', // 사이트 본문(styles.css html[lang="ur"])과 동일한 패밀리로 통일
+  // 2026-08-03: 사이트 본문과 통일하려고 원래 Noto Naskh Arabic/Noto Nastaliq Urdu를 썼는데,
+  // 실제 배포된 Worker에 직접 요청을 보내 검증해보니(이전 세션들은 샌드박스 네트워크 제한으로
+  // 못 했던 것 — 이번엔 됨) 이 두 폰트로 "مليار"(십억)·"ملین"(백만) 같은 흔한 단어가 포함된
+  // 카드가 HTTP 200에 본문 0바이트(완전히 빈 이미지)로 깨지는 걸 재현함. 원인은 satori(이
+  // Worker가 쓰는 렌더링 엔진) 자체가 리가처/커닝 등 고급 OpenType 기능과 RTL을 공식적으로
+  // 지원 안 해서(vercel/satori 이슈 트래커에 명시됨) — Naskh/Nastaliq처럼 문맥별 리가처
+  // 치환이 많은 서예체 폰트의 특정 글자 조합(예: ل+ي+ا 연속)에서 렌더링이 죽는 것으로 보임.
+  // 단순한 산세리프 계열인 Noto Sans Arabic(우르두어도 같은 아랍 문자 확장이라 커버함)으로
+  // 바꿔서 리가처 의존도를 낮춤 — 서예체 느낌은 사라지지만, 완전히 빈 이미지보다는 훨씬 나음.
+  // 사이트 본문(styles.css)의 폰트는 안 건드림(브라우저는 이 문제가 없음, 이 Worker만의 문제).
+  ar: 'Noto Sans Arabic',
+  ur: 'Noto Sans Arabic',
   hi: 'Noto Sans Devanagari',
   ne: 'Noto Sans Devanagari',
   bn: 'Noto Sans Bengali',
