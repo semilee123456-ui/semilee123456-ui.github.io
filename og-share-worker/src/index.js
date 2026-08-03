@@ -89,9 +89,27 @@ async function fetchFontSubset(text, lang) {
   return fontRes.arrayBuffer();
 }
 
+// 2026-08-03: 실제 배포된 og.chamtax.com 카드를 직접 열어보다가 발견 — "(추정치 ⚠️)"처럼
+// 번역 문구 안에 박힌 이모지가 러시아어(기본 'Noto Sans')·태국어(스크립트 전용 폰트) 카드
+// 양쪽 모두에서 tofu(☐) 2개로 깨져있었음. 위 loadCardFonts()의 기본 폰트 폴백으로 해결될까
+// 기대했는데, 러시아어는 이미 기본 'Noto Sans'가 1순위 폰트인데도 깨졌다는 건 이 폴백용
+// 폰트 자체가 애초에 이모지 글리프를 안 담고 있다는 뜻 — 즉 폰트를 바꾸는 방향으로는 해결
+// 불가능(이 프로젝트가 쓰는 어떤 Noto Sans 계열 폰트도 컬러 이모지를 안 담음). 대신 카드에
+// 들어가는 텍스트에서 이모지 자체를 렌더링 전에 제거함 — 카드는 이미 단순화된 요약 화면이라
+// 이모지가 빠져도 정보 손실은 없음(단어 자체는 그대로 남음, 예: "추정치 ⚠️" → "추정치").
+function stripEmoji(str) {
+  return str
+    .replace(/\p{Extended_Pictographic}/gu, '') // 이모지 자체(예: ⚠, 🎉)
+    .replace(/[‍️]/g, '') // ZWJ(U+200D)·이모지 표시용 변형 선택자(U+FE0F, 단독으로 남을 수 있음)
+    .replace(/\s+([)）])/g, '$1') // "추정치 )" → "추정치)" (이모지가 빠지며 남은 공백 정리)
+    .replace(/([(（])\s*([)）])/g, '') // 안이 완전히 비어버린 괄호 "()" 자체를 제거
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function clean(value, fallback, maxLen) {
   if (typeof value !== 'string' || value.trim() === '') return fallback;
-  return value.trim().slice(0, maxLen || MAX_LEN);
+  return stripEmoji(value.trim()).slice(0, maxLen || MAX_LEN) || fallback;
 }
 
 function cleanLang(value) {
