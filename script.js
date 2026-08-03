@@ -3193,6 +3193,13 @@ function setOddsGame(game){
 }
 
 let currentLightningGame = 'powerball';
+// 2026-08-03: "낚시로 뽑기" 모드 신설 — 그냥 뽑기(quick, 기존 기본값)와 낚시 미니게임(fishing,
+// 신규) 중 어느 걸 보여줄지. 서로 독립된 상태를 유지해서, 낚시 도중 그냥 뽑기로 갔다가 다시
+// 돌아와도 진행 상황이 그대로 남아있음.
+let currentLightningMode = 'quick';
+let fishingCaughtValues = [];   // 이번 판에서 지금까지 낚은 값들(순서대로, 5개+특별번호 1개)
+let fishingSessionValues = null; // 이번 판 전체 6개 값 — 캐스팅마다 하나씩 공개
+let fishingCastInProgress = false;
 
 // 언어 전환 시에도 재사용해야 해서, 이미 뽑아둔 번호는 그대로 두고 문구·토글 상태만 새로 그림
 function updateLightningGameUi(){
@@ -3202,22 +3209,137 @@ function updateLightningGameUi(){
   if (!pbBtn || !megaBtn || !noteEl) return;
   pbBtn.classList.toggle('active', currentLightningGame === 'powerball');
   megaBtn.classList.toggle('active', currentLightningGame === 'megamillions');
-  noteEl.textContent = LIGHTNING_GAMES[currentLightningGame].oddsText();
+  const oddsText = LIGHTNING_GAMES[currentLightningGame].oddsText();
+  noteEl.textContent = oddsText;
+  const fishingNoteEl = document.getElementById('fishing-draw-note');
+  if (fishingNoteEl) fishingNoteEl.textContent = oddsText;
 }
 
 // 게임을 바꾸면 특별볼(파워볼/메가볼) 색상 표시와 숫자 범위가 달라지므로, 이미 뽑아둔 번호는
-// 새 게임 기준으로는 의미가 없어져서 "?"로 리셋함
+// 새 게임 기준으로는 의미가 없어져서 "?"로 리셋함 — 낚시 모드도 같은 이유로 판을 새로 시작함
 function setLightningGame(game){
   if (game === currentLightningGame) return;
   currentLightningGame = game;
+  const specialClass = LIGHTNING_GAMES[game].specialClass;
   const specialBall = document.getElementById('lightning-special-ball');
   specialBall.classList.remove('pb', 'mega');
-  specialBall.classList.add(LIGHTNING_GAMES[game].specialClass);
+  specialBall.classList.add(specialClass);
   document.querySelectorAll('#lightning-result .lightning-ball').forEach(b => {
     b.textContent = '?';
     b.classList.remove('drawn');
   });
+  const fishingSpecialBall = document.getElementById('fishing-special-ball');
+  if (fishingSpecialBall) {
+    fishingSpecialBall.classList.remove('pb', 'mega');
+    fishingSpecialBall.classList.add(specialClass);
+  }
+  resetFishingRound();
   updateLightningGameUi();
+}
+
+// 그냥 뽑기 ↔ 낚시로 뽑기 화면 전환 — 패널만 바꿔치기하고 서로의 진행 상태는 건드리지 않음
+function setLightningMode(mode){
+  if (mode === currentLightningMode) return;
+  currentLightningMode = mode;
+  const quickBtn = document.getElementById('lightning-mode-quick');
+  const fishingBtn = document.getElementById('lightning-mode-fishing');
+  const quickPanel = document.getElementById('lightning-quick-mode');
+  const fishingPanel = document.getElementById('lightning-fishing-mode');
+  if (quickBtn) quickBtn.classList.toggle('active', mode === 'quick');
+  if (fishingBtn) fishingBtn.classList.toggle('active', mode === 'fishing');
+  if (quickPanel) quickPanel.style.display = mode === 'quick' ? '' : 'none';
+  if (fishingPanel) fishingPanel.style.display = mode === 'fishing' ? '' : 'none';
+}
+
+// "🎣 낚싯대 던지기" 기본 라벨 — data-i18n으로 이미 번역되어 화면에 떠있는 값을 그대로 다시
+// 읽어옴(getStateLabel()과 같은 관례: 한국어면 정적 HTML 값 그대로, 아니면 resolveI18n으로
+// 현재 언어 값을 가져오고 못 찾으면 한국어 문자열로 폴백)
+function fishingCastBtnDefaultLabel(){
+  return resolveI18n('odds.fishingCastBtn') || '🎣 낚싯대 던지기';
+}
+
+// 낚시 판을 처음 상태로 되돌림 — 게임(파워볼/메가밀리언즈)을 바꾸거나, 6마리를 전부 낚은 뒤
+// 다시 시작할 때 호출됨
+function resetFishingRound(){
+  fishingCaughtValues = [];
+  fishingSessionValues = null;
+  fishingCastInProgress = false;
+  const pond = document.getElementById('fishing-pond');
+  if (pond) pond.classList.remove('is-casting', 'is-biting', 'is-reeling');
+  document.querySelectorAll('#fishing-result .lightning-ball').forEach(b => {
+    b.textContent = '?';
+    b.classList.remove('drawn');
+  });
+  const resultEl = document.getElementById('fishing-result');
+  if (resultEl) resultEl.classList.remove('celebrate');
+  const btn = document.getElementById('fishing-cast-btn');
+  if (btn) { btn.disabled = false; btn.textContent = fishingCastBtnDefaultLabel(); }
+}
+
+// 낚싯대를 던져서 번호를 하나씩 낚음 — drawLightningNumbers()와 같은 5+1개 숫자를 만들되,
+// 한 번에 다 보여주는 대신 던질 때마다 한 개씩만 공개함(judul: "그러면서 번호가 생성되는"
+// 요청 반영). 캐스팅→입질→당기기 3단계를 CSS 클래스 전환으로 표현하고, 실제 숫자 확정은
+// 마지막 단계(당기기 완료 시점)에 함 — 그래야 "몇 번이 나올지" 애니메이션 도중엔 안 보임.
+function castFishingLine(){
+  if (fishingCastInProgress) return;
+  // 6마리를 이미 다 낚은 상태(이전 판 완료)에서 다시 누르면 새 판을 시작함
+  if (fishingCaughtValues.length >= 6) resetFishingRound();
+  fishingCastInProgress = true;
+
+  const config = LIGHTNING_GAMES[currentLightningGame];
+  if (!fishingSessionValues) {
+    const nums = new Set();
+    while (nums.size < 5) nums.add(Math.floor(Math.random() * config.mainMax) + 1);
+    fishingSessionValues = [...nums].sort((a, b) => a - b);
+    fishingSessionValues.push(Math.floor(Math.random() * config.specialMax) + 1);
+  }
+
+  const slotIndex = fishingCaughtValues.length;
+  const value = fishingSessionValues[slotIndex];
+  const pond = document.getElementById('fishing-pond');
+  const btn = document.getElementById('fishing-cast-btn');
+  const slots = document.querySelectorAll('#fishing-result .lightning-ball');
+  const slotEl = slots[slotIndex];
+  const originalBtnText = btn.textContent;
+  const vibrate = (pattern) => { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} };
+
+  btn.disabled = true;
+  btn.textContent = pickLang('기다리는 중... 🎣', 'Waiting for a bite... 🎣', '等待上钩中... 🎣', 'Đang chờ cá cắn câu... 🎣', 'กำลังรอปลากิน... 🎣', 'Ждём поклёвку... 🎣', FISHING_WAITING_MORE);
+  if (pond) { pond.classList.remove('is-biting', 'is-reeling'); pond.classList.add('is-casting'); }
+
+  const CAST_MS = 500, BITE_MS = 500, REEL_MS = 350;
+  setTimeout(() => {
+    if (pond) pond.classList.add('is-biting');
+    vibrate(10);
+  }, CAST_MS);
+  setTimeout(() => {
+    if (pond) { pond.classList.remove('is-casting', 'is-biting'); pond.classList.add('is-reeling'); }
+    vibrate([15, 30, 20]);
+  }, CAST_MS + BITE_MS);
+  setTimeout(() => {
+    if (pond) pond.classList.remove('is-reeling');
+    fishingCaughtValues.push(value);
+    if (slotEl) {
+      slotEl.textContent = value;
+      void slotEl.offsetWidth;
+      slotEl.classList.add('drawn');
+    }
+    const announcer = document.getElementById('fishing-result-announcer');
+    if (announcer) {
+      const prefix = pickLang('낚은 번호: ', 'Caught numbers: ', '钓到的号码：', 'Số đã câu được: ', 'เลขที่ตกได้: ', 'Пойманные числа: ', FISHING_CAUGHT_PREFIX_MORE);
+      announcer.textContent = prefix + fishingCaughtValues.join(', ');
+    }
+    fishingCastInProgress = false;
+    if (fishingCaughtValues.length >= 6) {
+      const resultEl = document.getElementById('fishing-result');
+      if (resultEl) { void resultEl.offsetWidth; resultEl.classList.add('celebrate'); }
+      btn.disabled = false;
+      btn.textContent = pickLang('🎣 처음부터 다시 낚시하기', '🎣 Fish again from scratch', '🎣 重新钓一次', '🎣 Câu lại từ đầu', '🎣 ตกปลาใหม่อีกครั้ง', '🎣 Порыбачить заново', FISHING_RESTART_MORE);
+    } else {
+      btn.disabled = false;
+      btn.textContent = originalBtnText;
+    }
+  }, CAST_MS + BITE_MS + REEL_MS);
 }
 
 const DRAWING_BTN_MORE = {
@@ -3236,6 +3358,38 @@ const DRAWN_ANNOUNCE_PREFIX_MORE = {
   ar: 'الأرقام المسحوبة: ', hi: 'निकाले गए नंबर: ', fr: 'Numéros tirés : ', tl: 'Mga numerong nakuha: '
 ,
   pt: `Números sorteados: `, es: `Números sorteados: `, uk: `Виграшні номери: `, tet: `Númeru ne'ebé sai: `,
+};
+
+// 2026-08-03 낚시로 뽑기 모드 신설 — 캐스팅 도중(입질 기다리는 중) 버튼에 뜨는 문구
+const FISHING_WAITING_MORE = {
+  km: 'កំពុងរង់ចាំ... 🎣', ne: 'पर्खंदै... 🎣', id: 'Menunggu... 🎣', my: 'စောင့်နေသည်... 🎣', si: 'රැඳී සිටිමින්... 🎣',
+  uz: 'Kutilmoqda... 🎣', mn: 'Хүлээж байна... 🎣', kk: 'Күтілуде... 🎣', ky: 'Күтүлүүдө... 🎣',
+  ur: 'انتظار ہو رہا ہے... 🎣', bn: 'অপেক্ষা করা হচ্ছে... 🎣', lo: 'ກຳລັງລໍຖ້າ... 🎣', ja: '待っています... 🎣',
+  ar: 'في انتظار... 🎣', hi: 'इंतज़ार हो रहा है... 🎣', fr: "En attente d'une touche... 🎣", tl: 'Naghihintay... 🎣'
+,
+  pt: `Aguardando... 🎣`, es: `Esperando... 🎣`, uk: `Очікування... 🎣`, tet: `Hein hela... 🎣`,
+};
+
+// 6마리(번호 6개) 전부 낚은 뒤, 버튼을 다시 누르면 새 판을 시작하도록 안내하는 문구
+const FISHING_RESTART_MORE = {
+  km: 'នេសាទម្ដងទៀត 🎣', ne: 'फेरि माछा मार्नुहोस् 🎣', id: 'Mancing lagi dari awal 🎣', my: 'ထပ်မံငါးဖမ်းမည် 🎣',
+  si: 'නැවත මාළු අල්ලන්න 🎣', uz: "Qaytadan boshlash 🎣", mn: 'Дахин загасчлах 🎣', kk: 'Қайтадан балық аулау 🎣',
+  ky: 'Кайра балык уулоо 🎣', ur: 'دوبارہ مچھلی پکڑیں 🎣', bn: 'আবার মাছ ধরুন 🎣', lo: 'ຕົກປາໃໝ່ 🎣',
+  ja: 'もう一度釣りをする 🎣', ar: 'اصطد من جديد 🎣', hi: 'फिर से मछली पकड़ें 🎣', fr: 'Repêcher depuis le début 🎣',
+  tl: 'Mangisda ulit 🎣'
+,
+  pt: `Pescar de novo 🎣`, es: `Pescar de nuevo 🎣`, uk: `Ловити знову 🎣`, tet: `Kaer isin fali 🎣`,
+};
+
+// 물고기를 한 마리 낚을 때마다 스크린리더에 알려주는 문구의 접두사(DRAWN_ANNOUNCE_PREFIX_MORE와
+// 같은 역할이지만 "뽑았다"가 아니라 "낚았다"는 낚시 모드 전용 동사를 씀)
+const FISHING_CAUGHT_PREFIX_MORE = {
+  km: 'លេខដែលបានចាប់: ', ne: 'समातिएका नम्बरहरू: ', id: 'Nomor yang ditangkap: ', my: 'ဖမ်းရသောနံပါတ်များ- ',
+  si: 'අල්ලාගත් අංක: ', uz: 'Tutilgan raqamlar: ', mn: 'Барьсан дугаарууд: ', kk: 'Ұсталған сандар: ',
+  ky: 'Кармалган сандар: ', ur: 'پکڑے گئے نمبر: ', bn: 'ধরা সংখ্যা: ', lo: 'ເລກທີ່ຕົກໄດ້: ', ja: '釣った番号: ',
+  ar: 'الأرقام المصطادة: ', hi: 'पकड़े गए नंबर: ', fr: 'Numéros attrapés : ', tl: 'Nahuling numero: '
+,
+  pt: `Números pescados: `, es: `Números pescados: `, uk: `Спіймані числа: `, tet: `Númeru ne'ebé kaer: `,
 };
 
 let lightningDrawInProgress = false;

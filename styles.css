@@ -1410,6 +1410,47 @@
   }
   @keyframes pop{ 0%{ transform:scale(0.5); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
 
+  /* 2026-08-03: "낚시로 뽑기" 모드 — 기존 lightning-game-toggle/btn과 똑같은 필 스타일을
+     그대로 복제(모드 전환이라는 별개 개념이라 클래스는 새로 둠) */
+  .lightning-mode-toggle{ display:flex; justify-content:center; gap:8px; margin:10px 0 14px; }
+  .lightning-mode-btn{
+    font-size:var(--fs-small); font-weight:700; color:var(--text-muted); background:var(--bg);
+    border:1.5px solid var(--border); border-radius:20px; padding:6px 14px; cursor:pointer;
+  }
+  .lightning-mode-btn.active{ color:var(--teal); border-color:var(--teal); background:rgba(var(--teal-rgb),0.06); }
+
+  /* 낚시 연못 — 위쪽(공기)은 패널 배경색 그대로, 아래쪽(물)만 그러데이션으로 구분. 낚싯대는
+     연못 위에 고정하고, 줄(.fishing-line)의 height를 캐스팅 상태에 따라 늘였다 줄였다 해서
+     "던지고 당기는" 움직임을 표현함(실제 물리 연산 없이 CSS transition만으로 구현) */
+  .fishing-pond{
+    position:relative; height:110px; border-radius:10px; overflow:hidden; margin:4px 0 14px;
+    background:linear-gradient(180deg, var(--bg) 0%, var(--bg) 40%, #BFE3F0 40%, #8FCBE0 100%);
+  }
+  :root[data-theme="dark"] .fishing-pond{
+    background:linear-gradient(180deg, var(--bg) 0%, var(--bg) 40%, #1B4A5C 40%, #0E2933 100%);
+  }
+  .fishing-rod-wrap{
+    position:absolute; top:2px; left:50%; transform:translateX(-50%);
+    display:flex; flex-direction:column; align-items:center; z-index:2;
+  }
+  .fishing-rod{ font-size:26px; line-height:1; transform:rotate(15deg); }
+  .fishing-line{
+    width:2px; background:rgba(var(--ink-rgb),0.35); height:6px; transition:height 0.5s ease;
+  }
+  .fishing-hook{ font-size:13px; line-height:1; }
+  .fishing-pond.is-casting .fishing-line{ height:60px; }
+  .fishing-pond.is-biting .fishing-hook{ animation:fishing-bite-wobble 0.22s ease-in-out infinite; }
+  @keyframes fishing-bite-wobble{ 0%,100%{ transform:translateX(0); } 50%{ transform:translateX(3px); } }
+  .fishing-water{ position:absolute; left:0; right:0; bottom:0; height:60%; overflow:hidden; }
+  .fishing-wave{
+    position:absolute; left:-10%; width:120%; height:14px; border-radius:50%;
+    background:rgba(255,255,255,0.3); opacity:0.55;
+  }
+  .fishing-wave:nth-child(1){ bottom:12px; animation:fishing-wave-drift 4s ease-in-out infinite; }
+  .fishing-wave:nth-child(2){ bottom:28px; animation:fishing-wave-drift 5s ease-in-out infinite reverse; }
+  .fishing-wave:nth-child(3){ bottom:2px; animation:fishing-wave-drift 3.5s ease-in-out infinite; }
+  @keyframes fishing-wave-drift{ 0%,100%{ transform:translateX(0); } 50%{ transform:translateX(12px); } }
+
   .prize-card{
     display:flex; justify-content:space-between; align-items:center; gap:8px;
     background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px 16px; margin-bottom:8px;
