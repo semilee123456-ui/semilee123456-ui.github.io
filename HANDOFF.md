@@ -4731,3 +4731,60 @@ Playwright로 캐스팅→입질→릴감기→결과 전 구간 스크린샷 �
 
 변경 파일: `powerball-tax.html`, `megamillions-tax.html`(JSON-LD 3개 신규 + HowTo, 엔터티
 문장, 최종 업데이트 날짜 — 위 5개 페이지와 동일 패턴).
+
+### 2026-08-03 이어서 — "모든 기기·모든 외국어 빠짐없이" 오버플로우 전수 검사 요청 → RTL(아랍어·우르두어) 설정 패널 실제 버그 발견·수정
+
+**배경**: 사용자가 "전체 스샷 찍어서 오버플로우 확인해줘. 모든 기기로 다 외국어도 전부 다
+빠짐없이"라고 요청. 기존 오버플로우 검사 스크립트들의 실제 언어 커버리지를 재확인해보니
+**전부 반쪽짜리였음**: `home_audit.js`는 ko/en 2개만, `wrap_audit.js`는 아예 언어 전환을
+한 번도 안 하고 항상 ko만, `audit_odds_compare.js`도 ko/en 2개만 테스트하고 있었음(각각
+"168개/40개 조합 검사, 0건"이라고 보고했지만 전부 한국어 UI만 본 것). `console_error_audit.js`는
+23개 언어만 커버(2026-07-28 추가된 pt/es/uk/tet 4개 누락). 사이트가 지원하는 27개 언어(ko
++ 26개 전환 언어) 중 실질적으로 20개 이상이 오버플로우 관점에서 한 번도 검증된 적 없던
+사각지대였음.
+
+**신규 스크립트**: `tests/full_overflow_sweep.js` — 27개 언어 × 화면폭 5개(320/375/390/
+412/430, 대표적인 폰 크기 스펙트럼) × 화면 7개(home/compare/odds/faq/privacy/disclaimer/
+contact) = 945개 조합 전수 검사. 언어별로 페이지를 새로 로드하지 않고 `setLanguage()`로
+전환(재사용)해서 속도 확보.
+
+**1차 시도 실패(오탐 100%)**: 처음엔 `scrollWidth > clientWidth`로 판정했는데 945개 전부
+걸림 — 원인은 `.menu-links button::after{ position:absolute; top:-6px; left:-6px;
+right:-6px; bottom:-6px; }`(터치 영역을 안 보이게 넓히는 흔한 접근성 트릭)가 부모의
+scrollWidth를 부풀린 것. 화면엔 전혀 안 보이는 값이라 실사용자에게 의미 없는 신호였음 —
+이 프로젝트의 기존 `audit_odds_compare.js`가 이미 쓰던 "실제 렌더링된 요소의
+`getBoundingClientRect()`가 뷰포트 경계를 벗어나는지" 방식으로 교체(가상요소는 이 방식으로는
+안 잡힘, 실제 눈에 보이는 요소만 검사됨).
+
+**2차 시도(수정된 방식)에서 실제 버그 발견**: 945개 중 70개 조합에서 이슈 — 전부
+**아랍어(ar)·우르두어(ur) 딱 2개 언어에만 집중**(각 35개 = 5개 폭 × 7개 화면 전부),
+`.settings-panel`(⚙️ 다크모드/글자크기/고대비/언어 전환 패널)이 화면 밖으로 최대 116px
+이탈. **원인**: `.settings-panel{ position:absolute; right:0; ... }`의 `right:0`이 물리적
+속성이라 `document.documentElement.dir='rtl'`(RTL_LANGS=['ar','ur']에서만 적용)이 걸려도
+자동으로 안 뒤집힘 — 톱니바퀴 버튼 자체는 RTL 레이아웃을 따라 반대쪽으로 이동하는데 패널은
+계속 "물리적 오른쪽 끝 기준"으로 펼쳐져서 실제 여유 공간이 없는 쪽으로 튀어나감. **수정**:
+`html[dir="rtl"] .settings-panel{ right:auto; left:0; }` 추가. 이 사이트가 지금까지 RTL
+대응을 텍스트 방향(`unicode-bidi`)·숫자 배치로만 해왔고 `position:absolute` 앵커링을 RTL에
+맞게 뒤집은 적은 이번이 처음이라, **다른 곳에도 비슷한 사각지대가 있을 수 있음** — 다음에
+새 `position:absolute; right:...` 또는 `left:...` 패턴을 쓰는 컴포넌트를 추가하면 반드시
+`html[dir="rtl"]` 오버라이드가 필요한지 검토할 것.
+
+**검증**: 수정 후 945개 조합 재실행 → 0건. 기존 회귀 테스트 13개(console_error_audit 161개
+설정, home_audit, wrap_audit, lang_leak_audit, nav_slider_audit, map_scroll_audit,
+audit_odds_compare, faq_audit, i18n_attr_lint, i18n_coverage_audit, fact_consistency_audit,
+broken_link_audit, draw_archive_integrity_check) 전부 0건. Playwright로 ar/ur 둘 다
+설정 패널을 실제로 열어서 스크린샷 확인(뷰포트 안에 정상적으로 들어옴). 추가로 27개 언어
+전부 홈 화면 320px 풀페이지 스크린샷을 찍어서 시각적으로도 스팟체크(RTL 2개 + 크메르어·
+미얀마어 등 복잡한 문자권 위주로 직접 확인, 이상 없음).
+
+**다음 세션이 알아야 할 것**: `home_audit.js`/`wrap_audit.js`/`audit_odds_compare.js`는
+여전히 ko/en(또는 ko만) 위주로만 도는 기존 상태 그대로 둠(이번 세션은 새 스크립트를
+추가하기만 했지 기존 스크립트를 재작성하진 않음) — 필요하면 이 셋의 언어 커버리지를
+`full_overflow_sweep.js` 수준으로 넓히는 것도 고려할 수 있으나, 지금은 새 스크립트가 그
+공백을 메우고 있어서 급하지 않음. `console_error_audit.js`의 LANGS 목록에 pt/es/uk/tet
+4개가 빠져있는 것도 별개로 발견됨 — 콘솔 에러 관점에서는 아직 미확인 상태(이번 세션은
+오버플로우만 다룸, 콘솔 에러는 범위 밖).
+
+변경 파일: `styles.css`(`.settings-panel`에 `html[dir="rtl"]` 오버라이드 추가),
+`tests/full_overflow_sweep.js`(신규), `index.html`(styles.css 캐시버스팅 버전
+`20260803-3`으로 갱신).
