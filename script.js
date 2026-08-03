@@ -6160,6 +6160,10 @@ let annotateColor = '#C0392B';
 let annotateActions = [];
 let annotateDrawing = null;
 let annotateActiveTextInput = null;
+// 텍스트 도구로 이미 놓인 텍스트를 눌러서 끄는 중일 때의 상태(액션 인덱스 + 손가락/커서와
+// 텍스트 기준점 사이의 오프셋) — 오프셋을 안 두면 드래그 시작 순간 텍스트가 커서 밑으로
+// "점프"해버림
+let annotateTextDrag = null;
 let annotatePenWidth = 6;
 let annotateFontSize = 32;
 const ANNOTATE_COLORS = ['#C0392B', '#262420', '#155445', '#F4B740', '#FFFFFF'];
@@ -6174,6 +6178,7 @@ function openAnnotateOverlay(sourceCanvas, filename, opts){
   annotateDownloadFilename = filename;
   annotateActions = [];
   annotateDrawing = null;
+  annotateTextDrag = null;
   // 캔버스 실제 해상도 기준으로 펜 굵기/글자 크기를 정함 — 이미 2배율로 그려진 큰 캔버스(예:
   // 900*2=1800px)에 고정 픽셀 값을 쓰면 너무 가늘어 보여서, 폭에 비례하게 계산함
   annotatePenWidth = Math.max(4, Math.round(sourceCanvas.width / 180));
@@ -6233,6 +6238,7 @@ function renderAnnotateColorRow(){
 
 function setAnnotateTool(tool){
   removeAnnotateTextInput();
+  annotateTextDrag = null;
   annotateTool = tool;
   const penBtn = document.getElementById('annotatePenBtn');
   const textBtn = document.getElementById('annotateTextBtn');
@@ -6279,6 +6285,28 @@ function redrawAnnotateOverlay(){
   });
 }
 
+// 텍스트 액션의 클릭 판정 영역(bbox) — redrawAnnotateOverlay()가 그리는 것과 같은 폰트로
+// measureText해야 실제 보이는 글자 크기와 어긋나지 않음. 위아래로 손가락이 덮기 쉽게 여유(pad)를
+// 좀 더 둠(정확히 글자 픽셀에만 맞추면 모바일에서 터치로 집기 어려움).
+function getAnnotateTextBBox(ctx, action){
+  ctx.font = `800 ${action.fontSize}px 'Pretendard', -apple-system, sans-serif`;
+  const width = ctx.measureText(action.text).width;
+  const pad = Math.max(6, action.fontSize * 0.25);
+  return { x: action.x - pad, y: action.y - pad, w: width + pad * 2, h: action.fontSize + pad * 2 };
+}
+
+// 캔버스 좌표(pt)에 놓인 텍스트 액션을 찾음 — 나중에 그려진(위에 보이는) 것부터 검사해서 겹칠 때
+// 맨 위에 보이는 텍스트가 먼저 잡히게 함
+function findAnnotateTextActionAt(ctx, pt){
+  for (let i = annotateActions.length - 1; i >= 0; i--) {
+    const action = annotateActions[i];
+    if (action.type !== 'text') continue;
+    const box = getAnnotateTextBBox(ctx, action);
+    if (pt.x >= box.x && pt.x <= box.x + box.w && pt.y >= box.y && pt.y <= box.y + box.h) return i;
+  }
+  return -1;
+}
+
 // 캔버스 위 그리기 이벤트는 오버레이를 열 때마다 다시 바인딩하지 않고 캔버스 엘리먼트에 한 번만
 // 붙임(dataset 플래그로 중복 바인딩 방지) — 오버레이는 매번 새로 만들어지는 게 아니라 DOM에
 // 계속 남아있는 같은 엘리먼트라서, openAnnotateOverlay()를 여러 번 불러도 리스너가 안 쌓임
@@ -6294,10 +6322,31 @@ function setupAnnotateCanvasEvents(canvas){
     } else if (annotateTool === 'text') {
       e.preventDefault();
       const pt = annotateCanvasPoint(e, canvas);
-      placeAnnotateTextInput(pt, e.clientX, e.clientY);
+      // 이미 놓아둔 텍스트 위를 다시 누르면 새 텍스트를 만드는 대신 그 텍스트를 자유롭게
+      // 끌어서 옮길 수 있게 함 — 예전엔 한번 놓은 자리에 그대로 고정이라 위치를 고치려면
+      // 실행취소로 통째로 지우고 처음부터 다시 입력해야 했음
+      const hitIndex = findAnnotateTextActionAt(canvas.getContext('2d'), pt);
+      if (hitIndex >= 0) {
+        canvas.setPointerCapture(e.pointerId);
+        const action = annotateActions[hitIndex];
+        annotateTextDrag = { index: hitIndex, offsetX: pt.x - action.x, offsetY: pt.y - action.y, moved: false };
+      } else {
+        placeAnnotateTextInput(pt, e.clientX, e.clientY);
+      }
     }
   });
   canvas.addEventListener('pointermove', (e) => {
+    if (annotateTextDrag) {
+      e.preventDefault();
+      const pt = annotateCanvasPoint(e, canvas);
+      const action = annotateActions[annotateTextDrag.index];
+      if (!action) { annotateTextDrag = null; return; }
+      action.x = pt.x - annotateTextDrag.offsetX;
+      action.y = pt.y - annotateTextDrag.offsetY;
+      annotateTextDrag.moved = true;
+      redrawAnnotateOverlay();
+      return;
+    }
     if (!annotateDrawing) return;
     e.preventDefault();
     const pt = annotateCanvasPoint(e, canvas);
@@ -6306,6 +6355,10 @@ function setupAnnotateCanvasEvents(canvas){
     drawAnnotateStrokeSegment(canvas.getContext('2d'), annotateDrawing.color, annotateDrawing.width, prev, pt);
   });
   const endStroke = () => {
+    if (annotateTextDrag) {
+      annotateTextDrag = null;
+      updateAnnotateUndoClearState();
+    }
     if (!annotateDrawing) return;
     if (annotateDrawing.points.length > 1) annotateActions.push(annotateDrawing);
     annotateDrawing = null;
@@ -6364,6 +6417,7 @@ function removeAnnotateTextInput(){
 
 function undoAnnotateAction(){
   removeAnnotateTextInput();
+  annotateTextDrag = null;
   annotateActions.pop();
   redrawAnnotateOverlay();
   updateAnnotateUndoClearState();
@@ -6371,6 +6425,7 @@ function undoAnnotateAction(){
 
 function clearAnnotateActions(){
   removeAnnotateTextInput();
+  annotateTextDrag = null;
   annotateActions = [];
   redrawAnnotateOverlay();
   updateAnnotateUndoClearState();
@@ -9671,7 +9726,14 @@ async function shareGenericPromo(){
     heroTitleText = clone.textContent.replace(/\s+/g, ' ').trim();
   }
   const shareText = heroTitleText ? `${shareTitle} — ${heroTitleText}` : shareTitle;
-  const shareUrl = location.href;
+  // 2026-08-03: 이전엔 location.href를 그대로 썼는데, 언어 선택이 URL이 아니라 localStorage에만
+  // 남아있어서(setLanguage 참고) 외국어 화면에서 이 버튼을 눌러도 받는 사람·카카오톡/페이스북/
+  // 트위터 등 링크 미리보기 봇은 항상 index.html의 고정 og:title/og:description(한국어)만 보게
+  // 되는 문제가 있었음(사용자 제보로 발견 — "다른 SNS로 공유해도 깨끗하게 나오는지" 확인 요청).
+  // 다른 공유 버튼 3개와 동일하게 wrapWithOgShareCard()로 감싸서, 지금 보고 있는 언어(currentLang)
+  // 그대로 반영된 동적 카드가 뜨게 함 — main/sub는 이미 화면에 번역되어 보이는 hero 문구를 그대로
+  // 재사용(새 번역 없음).
+  const shareUrl = wrapWithOgShareCard(location.href, { main: shareTitle, sub: heroTitleText });
 
   // 2026-07-29: 카드 이미지 생성 없이 텍스트+링크만 공유하도록 단순화(위 shareLatestDraw 주석 참고)
   if (navigator.share) {
@@ -9738,14 +9800,16 @@ async function shareResult(){
   const amountTextJa = formatUsdMillionsNatural(amountMillionsNum, 'ja');
   const finalAmt = document.getElementById('home-final-amt').textContent;
   const homeCountryVal = document.getElementById('homeCountrySelect').value;
-  const country = homeCountryVal === 'us'
-    ? pickLang('미국 거주자', 'US resident', '美国居民', 'Cư dân Mỹ', 'ผู้พำนักในสหรัฐฯ', 'Резидент США', buildCountryMore('us'))
-    : homeCountryVal === 'cn'
-    ? pickLang('중국 거주자', 'China resident', '中国居民', 'Cư dân Trung Quốc', 'ผู้พำนักในจีน', 'Резидент Китая', buildCountryMore('cn'))
-    : homeCountryVal === 'in'
-    ? pickLang('인도 거주자', 'India resident', '印度居民', 'Cư dân Ấn Độ', 'ผู้พำนักในอินเดีย', 'Резидент Индии', buildCountryMore('in'))
-    : pickLang('한국 거주자', 'Korea resident', '韩国居民', 'Cư dân Hàn Quốc', 'ผู้พำนักในเกาหลี', 'Резидент Кореи', buildCountryMore('kr'));
-  const article = homeCountryVal === 'in' ? 'an' : 'a'; // "an India resident" vs "a US/China/Korea resident"
+  // 2026-08-03: 예전엔 이 공유 문구가 us/cn/in 3개국만 자기 나라 이름으로 표시하고 그 외 18개국
+  // (일본·베트남·러시아·우즈베키스탄 등 homeCountrySelect가 실제로 지원하는 나머지 전부)은
+  // 전부 "한국 거주자"로 잘못 표시되는 버그가 있었음(사용자가 다른 SNS 공유 미리보기를
+  // 다른 언어로 확인해달라고 요청해서 발견) — calcTakeHome()이 이미 22개국 전부에 대해 22개
+  // 언어로 번역해둔 basisSuffix(화면의 "OO 거주자 기준" 문구와 동일한 값)를 그대로 재사용해서
+  // 실제 선택된 국가가 항상 정확히 반영되게 함
+  const country = calcTakeHome(1, homeCountryVal, document.getElementById('homeStateSelect')?.value).basisSuffix;
+  // "an India/Indonesia/Other-country resident" vs "a US/China/Japan/... resident" — 영어 모음
+  // 발음으로 시작하는 나라만 an을 씀
+  const article = (homeCountryVal === 'in' || homeCountryVal === 'id' || homeCountryVal === 'other') ? 'an' : 'a';
   const shareText = pickLang(
     `나 미국 복권(${amountTextKo}) 당첨되면 ${country} 기준 ${finalAmt} 실수령! 너도 얼마 받을 수 있는지 참택스에서 확인해봐 (참고용 시뮬레이션이에요)`,
     `If I won the US lottery (${amountTextEn}), my take-home as ${article} ${country} would be about ${finalAmt}. See how much you'd actually keep after tax on ChamTax! (This is a reference simulation)`,

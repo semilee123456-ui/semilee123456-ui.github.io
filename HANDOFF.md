@@ -170,6 +170,56 @@ KST 9시) 그대로, 프롬프트 내용만 "push까지 직접 끝낼 것"으로
 전부 "명백하고 안전한 것만 직접 고치고, 애매하면 코드 건드리지 말고 보고만" 원칙은 기존
 1~6번과 동일하게 적용됨.
 
+---
+
+## ⚠️ 2026-08-03: 위 두 루틴(로또 점검·헬스체크)은 더 이상 존재하지 않음 — 15개 개별 루틴으로 전면 교체됨
+
+**이 세션에서 `list_triggers`로 확인해보니 등록된 루틴이 0개였음** — 위에 적힌 두 루틴이 묶여있던
+세션이 어느 시점에 만료/종료된 것으로 추정됨(위 "다음 세션에서 왜 로또 체크가 안 왔지를
+재진단하지 말 것" 문단이 예견했던 바로 그 상황). 이 공백을 계기로, 사용자가 "인수인계 파일을
+바탕으로 해야 할 루틴을 수십 개까지 전부 만들어달라"고 명시적으로 요청함 → `AskUserQuestion`으로
+범위를 확인한 뒤(① 반복 점검성 작업만 루틴화, 일회성 TODO는 제외 ② 항목을 묶지 않고 항목별로
+개별 루틴 생성, 시간을 분산해서 충돌 회피 ③ 매번 새 세션 생성 방식) 위 두 루틴을 합쳐서 15개의
+독립된 루틴으로 재구성함. **`persistent_session_id` 방식(특정 세션에 영구히 묶기)은 이번에
+실제로 세션 만료로 끊긴 게 확인됐으므로, 15개 전부 `create_new_session_on_fire: true`(매번
+새 세션 생성) 방식으로 만듦** — 세션 만료로 조용히 죽는 문제 자체가 구조적으로 사라짐.
+
+**시간 분산으로 충돌 회피**: 여러 루틴이 같은 시각에 동시에 main에 커밋을 시도하면 충돌
+위험이 생긴다는 기존 교훈(위 "겹치는 별도 루틴은 충돌 위험만 생김")을 살려서, 요일/시간을
+전부 다르게 배치함(전부 UTC 기준 cron, next_run_at은 `list_triggers`로 확인):
+
+| 루틴 이름 | 주기 | cron(UTC) | trigger ID |
+|---|---|---|---|
+| ChamTax 로또 데이터 점검 | 매일 15:00 KST | `0 6 * * *` | `trig_01JtYWzvDEx9FRrzFsswuSzH` |
+| ChamTax 회귀 테스트 스위트 실행 | 매주 월 09:00 KST | `0 0 * * 1` | `trig_01JVHisS6EsmYk8ezy3C75h7` |
+| ChamTax 능동적 버그 탐색 | 매주 화 09:00 KST | `0 0 * * 2` | `trig_016mtZTr5CDHxJi418aPNagT` |
+| ChamTax SEO·콘텐츠 최신성 점검(보고 전용) | 매주 수 09:00 KST | `0 0 * * 3` | `trig_01TszRNDEMe7eNbkQmgaWehM` |
+| ChamTax 저장소 위생 점검 | 매주 목 09:00 KST | `0 0 * * 4` | `trig_01SrM28ksp8UJohf1wRCEhMj` |
+| ChamTax 환율 폴백 기본값 점검 | 매주 금 09:00 KST | `0 0 * * 5` | `trig_01VXjnfhvBLjWPTF1xLmACiV` |
+| ChamTax GitHub 브랜치 위생 점검(보고 전용) | 매주 토 09:00 KST | `0 0 * * 6` | `trig_01JX3L8oVHtVuJTxPGvR8XUD` |
+| ChamTax 캐시버스팅 버전 동기화 확인 | 매주 일 09:00 KST | `0 0 * * 0` | `trig_01KuSuDzrZwuaXBg3MxYKMUC` |
+| ChamTax 사이트 가동 상태 확인(보고 전용) | 매주 월 12:00 KST | `0 3 * * 1` | `trig_014B5Qjq2yWR7Rw1eK8TJqKB` |
+| ChamTax 동시 세션 충돌 감지 | 월/수/금 08:00 KST | `0 23 * * 0,2,4` | `trig_01FAL9fYC2tuagjYgaCsvMUY` |
+| ChamTax 세율표·법령 최신성 점검 | 매월 1일 10:00 KST | `0 1 1 * *` | `trig_0152i7KXX9L9XXGhEaRVKN2N` |
+| ChamTax 복권 게임 규칙 변경 감시 | 매월 8일 10:00 KST | `0 1 8 * *` | `trig_01HbdpPi16EnaA1vQ9P3qz8p` |
+| ChamTax 다국어 스크립트 혼용 재스캔 | 매월 15일 10:00 KST | `0 1 15 * *` | `trig_01DTHMrUbEeXUjrbXNDEz2hV` |
+| ChamTax 인수인계 문서 위생 재검증 | 매월 22일 09:00 KST | `0 0 22 * *` | `trig_01THjKjBavmY3NVUHpHnFJHG` |
+| ChamTax CPI 물가지수 연간 갱신 확인 | 분기별(1·4·7·10월 1일) 11:00 KST | `0 2 1 1,4,7,10 *` | `trig_01NabQ4iVgVogFW4iyxzhusM` |
+
+**모든 루틴 공통 원칙**(기존 헬스체크 루틴과 동일): 명백하고 안전한 문제만 직접 고쳐서
+git commit/push(origin main)까지 끝내고, 애매하거나 위험한 판단이 필요한 건 코드를 건드리지
+말고 이 문서에 발견 사항만 기록. 전부 이 저장소가 완전 공개임을 알고 있고, 매번 HANDOFF.md를
+먼저 읽게 프롬프트에 넣어뒀음. push 알림은 전부 켜둠(`notifications: {push: true}`) — 뭔가
+발견/수정했을 때 사용자 휴대폰으로 알림이 감.
+
+**다음 세션이 주의할 것**: (1) 이 표의 trigger ID가 최신이 아닐 수 있으니 필요하면
+`list_triggers`로 실제 상태 재확인할 것(특히 이번처럼 세션 만료로 조용히 사라질 수 있음).
+(2) 15개나 되는 만큼 일회성 TODO(카카오톡 재검증, FAQ 국가 확장 등)는 의도적으로 루틴화하지
+않았음 — 이런 건 여전히 사람이 직접 요청해야 진행됨. (3) 새로운 반복 점검 아이디어가 생기면
+기존 15개 중 하나에 억지로 끼워넣지 말고, 시간이 안 겹치는 새 슬롯으로 별도 루틴을 만드는 게
+이번 세션이 정한 방향과 일관됨(단, 그럴수록 루틴 수가 계속 늘어나니 정말 "반복 점검"인지 먼저
+따져볼 것 — 일회성 TODO는 여전히 루틴 대상이 아님).
+
 **파일명 하이픈 버그**: 사용자가 GitHub 웹 "Upload files" 화면에 하이픈(`-`)이 든 파일을
 드래그해서 올리면, **업로드 결과물에서 하이픈이 사라진 채로 저장소에 반영됨**(예:
 `odds-data.js`를 올렸는데 실제로는 `oddsdata.js`라는 별개 파일로 커밋됨). 이미 저장소에
@@ -3491,6 +3541,70 @@ hi/id/uk 우선).
 
 변경 파일: `uzbekistan-resident-us-lottery-tax.html`, `kyrgyz_in_korea_lottery_tax.html`
 (문자체계 혼용 오타 수정).
+
+### 2026-08-03 이어서 — "이미지로 저장" 텍스트 도구 드래그 이동 추가 + "이 결과 공유하기"
+다른 SNS·다른 언어 공유 시 진짜 버그 2건 발견·수정
+
+**요청 배경 1**: 사용자가 "이미지로 저장" 모달(꾸며서 저장하기, `openAnnotateOverlay()`)에서
+텍스트 도구로 글자를 넣었는데 "텍스트 옮기는 게 잘 안 된다"고 지적. Playwright로 직접
+재현해보니 실제로 드래그 이벤트 자체가 전혀 처리되지 않고 있었음(`placeAnnotateTextInput()`이
+탭한 자리에 `<input>`을 고정 배치만 하고, Enter/blur로 확정된 뒤에는 `annotateActions`에
+`{x, y}` 고정 좌표로 박혀서 재배치할 방법이 실행취소(전체 삭제) 말고는 없었음) — 이동 기능
+자체가 처음부터 없었던 게 맞음(펜 스트로크는 처음부터 좌표 배열을 들고 있어 다시 그릴 수
+있는 구조였는데 텍스트만 "드래그"라는 상호작용이 안 붙어있었을 뿐, 데이터 구조 자체는
+이미 좌표 기반 벡터라 드래그 구현이 어렵지 않았음).
+
+**수정**: `getAnnotateTextBBox()`/`findAnnotateTextActionAt()`로 이미 놓인 텍스트의 클릭
+판정 영역(터치로 집기 쉽게 여유 패딩 포함)을 계산하고, 텍스트 도구로 캔버스를 누를 때
+그 자리에 기존 텍스트가 있으면(`annotateTextDrag` 상태) 새 텍스트를 만드는 대신 그 텍스트를
+붙잡아 자유롭게 끌 수 있게 함 — `pointermove`에서 액션의 x/y를 갱신하며 `redrawAnnotateOverlay()`.
+빈 자리를 누르면 예전처럼 새 텍스트 입력이 뜸. 도구 전환/실행취소/전체지우기/오버레이 새로
+열기 시 `annotateTextDrag` 상태를 확실히 초기화해서 낡은 인덱스를 붙들고 있지 않게 함.
+
+**요청 배경 2**: 같은 대화에서 이어서 "이 결과 공유하기"(`shareResult()`)가 다른 SNS로
+공유해도 깨끗한지, 다른 언어에서도 잘 나오는지 확인해달라고 요청. 코드 검토 중 진짜 버그
+2건을 발견:
+
+1. **`shareGenericPromo()`가 동적 OG 카드를 안 씀** — 아직 금액을 직접 입력하지 않은
+   기본 상태(`isAmountManuallyEdited === false`)에서 공유하면 `shareResult()`가
+   `shareGenericPromo()`로 빠지는데, 이 함수는 `location.href`(쿼리 없는 순수 페이지 URL)를
+   그대로 공유 URL로 썼음. 언어 선택은 URL이 아니라 `localStorage`에만 남는 구조라서
+   (`setLanguage()` 참고), 일본어/아랍어 등 외국어 화면에서 이 버튼을 눌러도 카카오톡·
+   페이스북·트위터 같은 링크 미리보기 봇은 `index.html`의 고정 `og:title`/`og:description`
+   (한국어 전용, `index.html:74-75`)만 읽어서 항상 한국어 카드로만 보임 — 다른 공유 버튼
+   3개(홈 결과/최근 당첨번호/재미 결과)는 이미 `wrapWithOgShareCard()`로 감싸서 이 문제가
+   없었는데 이 경로만 빠져있었음. `shareGenericPromo()`도 동일하게
+   `wrapWithOgShareCard(location.href, { main: shareTitle, sub: heroTitleText })`로 감싸도록
+   수정(새 번역 없음 — hero.tag/hero.title 화면에 이미 표시 중인 번역 문구 재사용).
+2. **`shareResult()`의 "OO 거주자" 라벨이 us/cn/in 3개국만 지원** — `homeCountrySelect`는
+   실제로 21개국+기타(kr/us/cn/jp/in/vn/id/ph/th/ru/np/lk/uz/kz/kg/mm/bd/pk/kh/mn/la/other)를
+   지원하는데, 공유 문구의 나라 라벨은 us/cn/in 3개만 분기 처리하고 나머지 18개국은 전부
+   `else` 폴백으로 "한국 거주자"/"Korea resident"가 찍히고 있었음(코드 자체를 읽어서 발견 —
+   화면엔 정상 표시되니 육안으로는 안 보이고 공유 문구 안에서만 발생). Playwright로
+   일본(jp)·우즈베키스탄(uz) 국가를 고른 뒤 ja/ar/uz/tet 언어로 실제 `navigator.share()`
+   호출을 가로채 확인 → 국가를 뭘 고르든 공유 문구엔 계속 "일본 거주자"가 아니라 "한국
+   거주자"(또는 그 언어의 대응 문구)만 나오는 것 확인. `calcTakeHome(1, country, state)`가
+   이미 22개국 전부에 대해 22개 언어로 번역해둔 `basisSuffix`(화면의 "OO 거주자 기준" 문구와
+   완전히 동일한 값, `script.js:1500` 이하 국가별 분기마다 존재)를 그대로 재사용하도록 교체 —
+   수정 후 같은 테스트에서 jp→"일본居住者"/"resident in Japan", uz→"Oʻzbekiston rezidenti"로
+   정확히 바뀌는 것 확인. 영어 관사(a/an)도 India/Indonesia/Other만 "an"이 되도록 보정.
+
+**검증**: Playwright로 `navigator.share()`를 스텁해서 실제 호출 인자를 가로채는 방식으로
+ko/ja/ar/uz/tet 5개 언어 × 국가 조합을 직접 실행해 문구·URL을 확인(위 버그 2건 재현 후 수정
+확인). 텍스트 드래그는 실제 포인터 이벤트(mousedown→move→up)를 시뮬레이션해서 좌표가
+바뀌는 것과 스크린샷으로 시각 확인. 회귀 테스트 `console_error_audit`(161, 0)·
+`lang_leak_audit`(104, 0)·`home_audit`(18, 0) 전부 클린.
+
+**다음 세션이 참고할 것**: `shareGenericPromo()`가 감싸는 URL의 `to=`는 여전히 `location.href`
+그대로라, 카드 미리보기 자체는 언어별로 정확해졌지만 그 링크를 실제로 눌러서 들어간
+페이지는 받는 사람의 브라우저 언어/저장된 언어로 뜸(사이트 전체가 URL에 언어를 안 싣는
+구조라 다른 공유 버튼들도 동일 — 이 세션에서 새로 생긴 제약이 아니라 기존 설계).
+`shareDreamResult()`/`shareLatestDraw()`/환급 체크리스트 공유는 애초에 나라 라벨을 안 쓰거나
+이미 `basisSuffix`를 정상적으로 쓰고 있어서 2번 버그의 영향이 없었음(직접 확인함).
+
+변경 파일: `script.js`(`annotateTextDrag`/`getAnnotateTextBBox`/`findAnnotateTextActionAt`
+추가로 텍스트 드래그 이동 구현, `shareGenericPromo()` OG 카드 래핑 추가, `shareResult()` 국가
+라벨을 `calcTakeHome().basisSuffix` 재사용으로 교체).
 
 ### 2026-08-03 이어서 — 이 세션(`claude/github-latest-files-check-j9xthk`) 전체 최종 확인
 + 인수인계 마무리
