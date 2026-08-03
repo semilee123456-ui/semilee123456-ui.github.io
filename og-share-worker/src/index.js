@@ -42,8 +42,18 @@ const LANG_FONT_FAMILY = {
   zh: 'Noto Sans SC',
   ja: 'Noto Sans JP',
   th: 'Noto Sans Thai',
-  ar: 'Noto Naskh Arabic', // 사이트 본문(styles.css html[lang="ar"])과 동일한 패밀리로 통일
-  ur: 'Noto Nastaliq Urdu', // 사이트 본문(styles.css html[lang="ur"])과 동일한 패밀리로 통일
+  // 2026-08-03: 사이트 본문과 통일하려고 원래 Noto Naskh Arabic/Noto Nastaliq Urdu를 썼는데,
+  // 실제 배포된 Worker에 직접 요청을 보내 검증해보니(이전 세션들은 샌드박스 네트워크 제한으로
+  // 못 했던 것 — 이번엔 됨) 이 두 폰트로 "مليار"(십억)·"ملین"(백만) 같은 흔한 단어가 포함된
+  // 카드가 HTTP 200에 본문 0바이트(완전히 빈 이미지)로 깨지는 걸 재현함. 원인은 satori(이
+  // Worker가 쓰는 렌더링 엔진) 자체가 리가처/커닝 등 고급 OpenType 기능과 RTL을 공식적으로
+  // 지원 안 해서(vercel/satori 이슈 트래커에 명시됨) — Naskh/Nastaliq처럼 문맥별 리가처
+  // 치환이 많은 서예체 폰트의 특정 글자 조합(예: ل+ي+ا 연속)에서 렌더링이 죽는 것으로 보임.
+  // 단순한 산세리프 계열인 Noto Sans Arabic(우르두어도 같은 아랍 문자 확장이라 커버함)으로
+  // 바꿔서 리가처 의존도를 낮춤 — 서예체 느낌은 사라지지만, 완전히 빈 이미지보다는 훨씬 나음.
+  // 사이트 본문(styles.css)의 폰트는 안 건드림(브라우저는 이 문제가 없음, 이 Worker만의 문제).
+  ar: 'Noto Sans Arabic',
+  ur: 'Noto Sans Arabic',
   hi: 'Noto Sans Devanagari',
   ne: 'Noto Sans Devanagari',
   bn: 'Noto Sans Bengali',
@@ -79,9 +89,27 @@ async function fetchFontSubset(text, lang) {
   return fontRes.arrayBuffer();
 }
 
+// 2026-08-03: 실제 배포된 og.chamtax.com 카드를 직접 열어보다가 발견 — "(추정치 ⚠️)"처럼
+// 번역 문구 안에 박힌 이모지가 러시아어(기본 'Noto Sans')·태국어(스크립트 전용 폰트) 카드
+// 양쪽 모두에서 tofu(☐) 2개로 깨져있었음. 위 loadCardFonts()의 기본 폰트 폴백으로 해결될까
+// 기대했는데, 러시아어는 이미 기본 'Noto Sans'가 1순위 폰트인데도 깨졌다는 건 이 폴백용
+// 폰트 자체가 애초에 이모지 글리프를 안 담고 있다는 뜻 — 즉 폰트를 바꾸는 방향으로는 해결
+// 불가능(이 프로젝트가 쓰는 어떤 Noto Sans 계열 폰트도 컬러 이모지를 안 담음). 대신 카드에
+// 들어가는 텍스트에서 이모지 자체를 렌더링 전에 제거함 — 카드는 이미 단순화된 요약 화면이라
+// 이모지가 빠져도 정보 손실은 없음(단어 자체는 그대로 남음, 예: "추정치 ⚠️" → "추정치").
+function stripEmoji(str) {
+  return str
+    .replace(/\p{Extended_Pictographic}/gu, '') // 이모지 자체(예: ⚠, 🎉)
+    .replace(/[‍️]/g, '') // ZWJ(U+200D)·이모지 표시용 변형 선택자(U+FE0F, 단독으로 남을 수 있음)
+    .replace(/\s+([)）])/g, '$1') // "추정치 )" → "추정치)" (이모지가 빠지며 남은 공백 정리)
+    .replace(/([(（])\s*([)）])/g, '') // 안이 완전히 비어버린 괄호 "()" 자체를 제거
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function clean(value, fallback, maxLen) {
   if (typeof value !== 'string' || value.trim() === '') return fallback;
-  return value.trim().slice(0, maxLen || MAX_LEN);
+  return stripEmoji(value.trim()).slice(0, maxLen || MAX_LEN) || fallback;
 }
 
 function cleanLang(value) {
@@ -154,32 +182,63 @@ function buildCardHtml({ label, main, sub, badge, takePct, lang }) {
       <div style="display:flex;width:${takePct}%;height:100%;background:#155445;"></div>
       <div style="display:flex;width:${taxPct}%;height:100%;background:#C0392B;"></div>
     </div>
-    <div style="display:flex;gap:28px;margin-top:18px;font-size:24px;color:#262420;">
-      <div style="display:flex;"><span style="color:#155445;">●</span> ${takePct}%</div>
-      <div style="display:flex;"><span style="color:#C0392B;">●</span> ${taxPct}%</div>
+    <div style="display:flex;gap:28px;margin-top:18px;font-size:24px;color:#262420;align-items:center;">
+      <div style="display:flex;align-items:center;gap:8px;"><div style="display:flex;width:14px;height:14px;border-radius:7px;background:#155445;"></div> ${takePct}%</div>
+      <div style="display:flex;align-items:center;gap:8px;"><div style="display:flex;width:14px;height:14px;border-radius:7px;background:#C0392B;"></div> ${taxPct}%</div>
     </div>` : ''}
     ${bd ? `<div style="display:flex;position:absolute;bottom:56px;${badgeSideStyle}font-size:22px;color:#828C97;">${bd}</div>` : ''}
   </div>`;
 }
 
 // buildCardHtml()이 파라미터와 무관하게 항상 그려넣는 고정 문구/기호 — 브랜드 줄
-// ("ChamTax · chamtax.com")과 로고 원 안의 "C", 세율 바 밑 "● 46%" 같은 불릿·퍼센트 기호.
-// loadCardFonts()가 label/main/sub/badge(그때그때 다른 동적 값)만 보고 폰트 서브셋을
-// 받아왔더니, 이 고정 문구들의 글자가 서브셋에 아예 없어서 항상 네모(tofu)로 깨지는 버그가
-// 실사용자 스크린샷으로 발견됨(금액·라벨 등 동적 글자는 멀쩡한데 브랜드 줄만 깨짐) — 두
-// 자리 숫자 퍼센트가 항상 나오는 것도 아니라서 0-9 전체를 안전하게 포함시킴.
-const STATIC_CARD_CHARS = 'ChamTax · chamtax.com0123456789%●';
+// ("ChamTax · chamtax.com")과 로고 원 안의 "C", 퍼센트 기호. loadCardFonts()가
+// label/main/sub/badge(그때그때 다른 동적 값)만 보고 폰트 서브셋을 받아왔더니, 이 고정
+// 문구들의 글자가 서브셋에 아예 없어서 항상 네모(tofu)로 깨지는 버그가 실사용자 스크린샷으로
+// 발견됨(금액·라벨 등 동적 글자는 멀쩡한데 브랜드 줄만 깨짐) — 두 자리 숫자 퍼센트가 항상
+// 나오는 것도 아니라서 0-9 전체를 안전하게 포함시킴. (2026-08-03: 세율 바 밑 불릿은 "●" 글자가
+// 아니라 CSS로 그린 원(div)으로 바꿔서 여기 포함 안 함 — 아래 참고.)
+const STATIC_CARD_CHARS = 'ChamTax · chamtax.com0123456789%';
 
+// 2026-08-03: 실제 배포된 Worker에 직접 요청해서 캄보디아어/태국어/힌디어/미얀마어 등 8개
+// 언어(LANG_FONT_FAMILY의 스크립트 전용 폰트를 쓰는 언어) 카드를 스크린샷으로 직접 열어보다가
+// 발견함 — 위 세율 바 밑 "●"이 tofu(☐)로 깨져 있었음(당시엔 아직 글자였음, 지금은 위처럼 div로
+// 바꿔서 해결). 같은 자리에서 "(추정치 ⚠️)"처럼 실제 번역 문구 안에 박힌 이모지(⚠️ 등)도 같은
+// 이유로 깨지는 걸 확인함 — Noto Sans Khmer/Thai/Devanagari 같은 스크립트 전용 폰트는 애초에
+// 이모지·기호 글리프를 안 담고 있어서, 그 언어 폰트 하나만 받아오면 그 언어 텍스트 자체는
+// 멀쩡해도 이런 범용 기호만 깨짐. CSS 도형으로 바꿀 수 있는 불릿은 그렇게 했지만, 번역 문구
+// 안에 어떤 이모지가 더 있을지는 27개 언어 전체를 다 뒤지지 않는 한 장담 못 하므로(완전한
+// 해결은 아님, 아래 참고), 스크립트 전용 폰트를 쓰는 언어는 항상 기본 'Noto Sans'도 같이
+// 받아와서 satori의 font-family 폴백 목록(예: "Noto Sans Khmer, Noto Sans")에 얹음 — 스크립트
+// 폰트에 없는 글자(이모지 등)를 만나면 satori가 목록의 다음 폰트로 자동으로 넘어가서 찾음
+// (리가처/RTL과 달리 폰트 폴백 목록 자체는 satori가 지원하는 기능). 'Noto Sans'도 이모지를
+// 담고 있진 않을 가능성이 높아 이모지 자체가 여전히 깨질 수 있음 — 근본적으로는 카드 문구에서
+// 이모지를 걸러내는 게 더 확실하지만, 이번 세션은 이 폴백만으로 범위를 한정함(다음 세션이
+// 실제 배포본에서 이모지 포함 카드를 몇 개 더 열어봐서 필요하면 이모지 자체를 clean()에서
+// 정규식으로 제거하는 걸 검토할 것). 참고: buildCardHtml()의 CSS font-family는 여전히
+// 그냥 "sans-serif"(범용 키워드) — satori는 CSS font-family 이름으로 매칭하는 게 아니라
+// fonts 배열에 등록된 폰트들을 글자 단위로 순서대로 훑어서 그 글자를 담고 있는 첫 폰트를
+// 쓰는 방식이라(등록 순서 = 우선순위), 이름을 맞출 필요 없이 언어별 폰트를 먼저, 기본
+// 'Noto Sans'를 나중에 배열에 넣기만 하면 됨(실제로 기존 코드도 CSS에 "Noto Sans KR" 같은
+// 이름을 명시한 적이 한 번도 없었는데 한국어가 정상 렌더링됐던 것도 같은 이유).
 async function loadCardFonts(params) {
   const cardText = params.label + params.main + params.sub + params.badge + STATIC_CARD_CHARS;
+  const fonts = [];
   try {
-    const fontData = await fetchFontSubset(cardText, params.lang);
-    if (fontData) return [{ name: fontFamilyForLang(params.lang), data: fontData, weight: 700, style: 'normal' }];
+    const primaryData = await fetchFontSubset(cardText, params.lang);
+    if (primaryData) fonts.push({ name: fontFamilyForLang(params.lang), data: primaryData, weight: 700, style: 'normal' });
   } catch (e) {
     // 폰트를 못 받아와도(네트워크 문제 등) 카드 생성 자체는 계속 진행 — 이 경우 비라틴 문자가
     // 다시 깨질 수 있지만, 카드 자체가 안 뜨는 것보단 나음
   }
-  return [];
+  if (fontFamilyForLang(params.lang) !== 'Noto Sans') {
+    try {
+      const fallbackData = await fetchFontSubset(cardText, 'en'); // 'en'은 LANG_FONT_FAMILY에 없어 항상 기본 'Noto Sans'로 감
+      if (fallbackData) fonts.push({ name: 'Noto Sans', data: fallbackData, weight: 700, style: 'normal' });
+    } catch (e) {
+      // 위와 동일 — 폴백 폰트를 못 받아와도 1순위 폰트만으로 계속 진행
+    }
+  }
+  return fonts;
 }
 
 async function handleOgImage(url) {

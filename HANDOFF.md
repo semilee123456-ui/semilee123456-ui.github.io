@@ -3662,6 +3662,68 @@ ko/ja/ar/uz/tet 5개 언어 × 국가 조합을 직접 실행해 문구·URL을 
 
 변경 파일: 없음(이 항목은 검증·인수인계 정리만 수행).
 
+### 2026-08-03 이어서 (`claude/handover-file-review-0l6xtv` 브랜치) — 인수인계 문서 검토 후
+"할 일이라 생각하는 것 전부 해달라" 요청 → 회귀 테스트 전종 재확인 + 3차 번역 재검토로 진짜
+버그 2건 추가 발견·수정
+
+**요청 배경**: 사용자가 인수인계 문서와 그동안의 작업을 봐달라고 해서 요약 보고한 뒤,
+"보고 네가 해야된다고 생각하는 거 전부 해줘"라고 위임함. 문서에 명시적으로 남아있던 작업
+가능 항목(로또 데이터 최신성, 회귀 테스트 전체 재실행, 2차 SEO 페이지 번역 재검토)을
+확인·실행함. Cloudflare 대시보드 작업·CPI 기준연도 갱신 등 사용자 대시보드 권한이 필요하거나
+근거 없이 갱신하면 안 되는 항목은 손 안 댐(문서에 이미 보류 사유가 명시돼있어서 재론 안 함).
+
+**로또 데이터 최신성 확인**: `LATEST_DRAW`(파워볼 8/1·메가밀리언즈 7/31)와 `odds-data.js`
+아카이브(`draw_archive_integrity_check.js` — 파워볼 마지막 8/1, 메가밀리언즈 마지막 7/31)가
+일치함을 확인. 오늘(8/3, 월요일) 파워볼 회차는 아직 추첨 전이라 백필할 새 회차 없음 —
+정상 상태.
+
+**회귀 테스트 전종 재실행**: 로컬에 Playwright(`npm install playwright --no-save`, 이미
+설치돼있는 크로미움 `/opt/pw-browsers` 사용)를 임시로 설치하고 `python3 -m http.server 9000`
+으로 로컬 서버를 띄운 뒤 `tests/` 12개 스크립트 전부 재실행 — **전부 `ISSUES: 0`**
+(`home_audit`(18)·`lang_leak_audit`(104)·`wrap_audit`(168)·`nav_slider_audit`·
+`map_scroll_audit`(10)·`console_error_audit`(161)·`faq_audit`(18)·`i18n_coverage_audit`(735)·
+`i18n_attr_lint`·`broken_link_audit`(90)·`fact_consistency_audit`(93)·`audit_odds_compare`(40)·
+`draw_archive_integrity_check`). 테스트 끝나고 `npm init -y`가 만든 `package.json`은 실제로
+불필요해서(playwright는 `node_modules`만 있으면 `package.json` 없이도 `require` 정상 동작
+확인) 삭제함 — 다른 세션이 이미 `.gitignore`에 `node_modules/`를 추가해둔 상태였음
+(`2989c71`), 이번 세션에서 `package.json`까지 커밋 안 되게 정리.
+
+**3차 번역 재검토 — 이 세션과 동시에 다른 세션(`claude/github-handover-review-ma18qt`,
+PR #76/#77)이 "71개 정적 페이지 완독 검토 완전히 마무리"를 이미 선언했지만, 독립적으로
+서브에이전트 2개를 병렬로 띄워 같은 범위를 한 번 더 검토함**(문서가 반복적으로 강조하는
+"서술보다 재확인" 원칙 — 앞선 세션들도 몇 번이나 "이미 해결됐다고 적혀있던 게 실제로는
+아니었다"를 발견한 전례가 있어서, 다른 세션의 "완전히 마무리" 선언 하나만으로 검토를
+끝내지 않음). 결과: `us-lottery-basics-{zh,ja,es,fr,ru,vi,th,ar,pt,hi,id,uk}.html` 12개는
+문제 없었으나, **`{country}-resident-us-lottery-tax.html` 20개 재검토에서 앞선 리뷰들이
+놓친 진짜 버그 2건을 새로 발견**:
+1. `russia-resident-us-lottery-tax.html` — **같은 페이지 안에서 세율 서술이 자기모순**:
+   FAQ 두 번째 문항(JSON-LD + 화면 `<details>` 양쪽)이 "고정세율 13%"라고 적혀있는데,
+   같은 페이지의 요약 박스·계산 방법 섹션·세 번째 FAQ 문항은 전부 "누진세(2025년 개편 후
+   5단계, 최대 22%)"라고 정확히 서술하고 있었음 — 번역 오류가 아니라 **원문 작성 시점의
+   사실관계 불일치**로 보임(2025년 러시아 NDFL 누진세 개편 전 옛 세율 13%가 한 곳에만
+   남은 것으로 추정). "누진세(2025년 개편 후 최대 22%)"로 통일 수정.
+2. `pakistan-resident-us-lottery-tax.html` — 계산기로 돌아가는 "← 계산기 열기" 링크
+   (우르두어, RTL)가 이 페이지만 화살표 방향이 반대("→")였음. 같은 언어를 쓰는 다른
+   RTL 페이지(`us-lottery-basics-ur.html`, `us-lottery-basics-ar.html`)는 전부 "←"를
+   씀 — 파키스탄 페이지만 일관성이 깨져있던 것. "←"로 통일 수정.
+
+**검증**: `broken_link_audit`(90, 0)·`fact_consistency_audit`(93, 0)·`wrap_audit`(168, 0)
+재실행 통과. 두 파일 수정 후 나머지 부분과 문체·표현 일치 확인.
+
+**동시 작업 안내**: 이 세션 도중 `origin/main`이 두 번 앞서나감(`.gitignore` 추가 커밋,
+71개 페이지 라오어 버그 수정 PR #76/#77) — 둘 다 `git fetch`+`git merge`로 충돌 없이
+반영하고 이어서 진행함.
+
+**손 안 댄 것(문서에 이미 보류 사유가 명시된 항목, 재론 안 함)**: Cloudflare Auto
+Minify/Brotli(사용자 대시보드 작업 필요), CPI_BASE_YEAR 갱신(2025년 확정 전이라 근거 없음),
+잭팟 인덱스 GitHub Actions 자동화(의도적 미착수), 원격 저장소의 병합 기준점이 꼬인 브랜치
+2개(`claude/github-work-handover-lqgr9p`, `claude/progress-checkpoint-pbf93h`) 삭제 —
+이력이 이상해 보여서(`origin/main`과 merge-base 없음) 삭제 대신 사용자에게 채팅으로 별도
+보고함(공유 상태를 되돌리기 어려운 작업이라 임의로 안 지움).
+
+변경 파일: `russia-resident-us-lottery-tax.html`(세율 자기모순 수정),
+`pakistan-resident-us-lottery-tax.html`(화살표 방향 수정).
+
 ### 2026-08-03 이어서 — (`claude/github-handover-review-ma18qt` 브랜치) 2차 페이지 45개
 정밀 재검토 완주 → 라오어 진짜 버그 1건(5+1곳) 발견·수정
 
@@ -3698,6 +3760,43 @@ ko/ja/ar/uz/tet 5개 언어 × 국가 조합을 직접 실행해 문구·URL을 
 
 변경 파일: `i18n-source/translations.json`(5개 키), `i18n/lo.json`(재생성),
 `us-lottery-basics-lo.html`.
+
+### 2026-08-03 이어서 (`claude/handover-file-review-0l6xtv` 브랜치) — 사용자가 스크린샷으로
+지적한 하단 "실수령 ○○원" 배지-텍스트 겹침 실제 원인 발견·수정
+
+**요청 배경**: 사용자가 아이폰 스크린샷을 보내며 "이쪽이 안접혀"라고 지적 — 홈 화면 결과
+카드의 "결과 더 자세히 보기" 아코디언(연금 안내 + 세금 상세 + FTC 안내)을 펼친 상태에서
+스크롤을 내리면, 맨 아래 disclaimer 문단("종합소득세 누진세율과 외국납부세액공제(FTC)를
+반영한 참고용 계산이에요…")이 화면 하단에 고정된 "💰 실수령 ○○원" 배지(`#sticky-result-badge`)
+밑에 그대로 깔려 문장 중간이 안 보이는 상태였음.
+
+**원인**: 같은 화면에 떠 있는 다른 플로팅 버튼 "🔍 궁금해요"(`#faqFloatWrap`)는 이미
+`faqFloatBtnCollisionState()`로 뒤에 깔린 텍스트를 감지하면 자동으로 흐려지는(`is-colliding`,
+opacity 0.16) 방어 로직이 있는데(2026-07-25에 이미 만들어짐), `#sticky-result-badge`는
+그 로직이 애초에 없었음 — 스크롤 임계값·"관련 구간 지났는지"만 보고 뜨고 숨을 뿐, 지금
+그 자리에 무슨 텍스트가 있는지는 전혀 확인 안 하는 구조였음.
+
+**수정**: 이미 범용으로 만들어져 있던 `faqFloatBtnCollisionState(btn)`을 그대로 재사용해서
+`updateStickyResultBadgeCollision()`을 새로 추가 — `sticky-result-badge`가 `is-visible`인
+동안 텍스트와 겹치면 `is-colliding` 클래스를 붙여 흐리게(opacity 0.16, faq-float-wrap과
+동일 값) 함. 새 스크롤 리스너를 따로 안 만들고, 기존 `setupFaqFloatBtnScrollVisibility()`의
+스크롤 settle 타이머·`toggle` 이벤트(아코디언 열고 닫을 때) 훅에 그대로 얹어서 호출함(이미
+같은 타이밍에 같은 종류의 검사를 하고 있어서 효율적). 배지가 안 보이는 상태로 넘어갈 때
+`is-colliding`도 같이 지워서(스타일 우선순위상 안 지우면 다음에 다시 뜰 때 잠깐 이전 판정이
+남는 것 방지) `faq-float-wrap`의 기존 처리와 대칭을 맞춤.
+
+**검증**: Playwright로 실제 시나리오(홈 화면, `country=jp`, 결과 더 자세히 보기 + 연금 안내
+아코디언 펼침, 배지가 텍스트와 겹치는 스크롤 위치까지 정밀 이동) 재현 — 수정 전엔 배지가
+불투명하게 문장 위에 얹혀 안 읽혔고, 수정 후엔 `is-colliding` 클래스가 붙어 거의 안 보일
+정도로 흐려지며 문장이 다시 읽힘을 스크린샷으로 확인. 참고: 이 테스트 환경(헤드리스
+Chromium)에서 배지 자체의 표시 여부를 결정하는 기존 `IntersectionObserver` 로직이 스크롤
+후 재계산을 안 하는 현상이 있었음(이번 수정과 무관한 기존 코드, 실기기에선 사용자 스크린샷
+자체가 배지가 정상적으로 뜬 증거라 실제 버그는 아닐 가능성이 높음) — `is-visible` 클래스를
+직접 강제로 켜서 충돌 감지 로직만 독립적으로 검증함. `node --check`·`home_audit`(18)·
+`wrap_audit`(168)·`console_error_audit`(161) 통과.
+
+변경 파일: `script.js`(`updateStickyResultBadgeCollision()` 신설 + 훅 연결),
+`styles.css`(`.sticky-result-badge.is-colliding` 규칙 추가).
 
 ### 2026-08-03 이어서 — "역대 잭팟 확인 기록" "기타 국가" 칩 지구본(🌐) 이모지 복원
 
@@ -3765,6 +3864,78 @@ pointerdown할 때 `e.preventDefault()`로 `<input>`의 포커스(=키보드)를
 (`.annotate-text-input-wrap`/`.annotate-text-drag-handle` 신설, `.annotate-text-input`에서
 `position:absolute` 제거).
 
+### 2026-08-03 이어서 (`claude/handover-file-review-0l6xtv` 브랜치) — "공유 카드가 모든
+사이즈·언어에서 잘 나오는지 확인" 요청 → 실제 배포된 og.chamtax.com에서 진짜 버그 3건 발견·수정
+
+**요청 배경**: 사용자가 "이 결과 공유하기도 모든 사이즈에 잘 맞게 나오는지, 외국어도 다
+맞게 나오는지 확인해줘"라고 요청. **이번 세션은 특이하게 `og.chamtax.com`(공유 카드
+Worker)에 실제 네트워크 접근이 됨**(`curl -sI https://og.chamtax.com/api/og.png` → HTTP
+200) — 이전 모든 세션은 샌드박스 네트워크 정책으로 이 주소가 막혀있어서 실제 배포된
+이미지를 코드 리뷰로만 추정했었고(`HANDOFF-og-share-2026-07-31.md`에 "다음 세션이
+확인할 것: 아랍어/우르두어 카드의 실제 RTL 렌더링" 등 여러 미확인 항목이 남아있었음),
+이번엔 처음으로 진짜 이미지를 직접 열어서 검증함.
+
+**서브에이전트가 세션 한도로 중단**돼서 메인 세션이 직접 이어받음. Playwright로 4개 공유
+함수 중 `shareResult()`(홈 결과, 가장 많이 쓰임)를 20개 언어(ar/ur/km/lo/th/my/si/bn/hi/ne/
+zh/ja/ko/en/ru/mn/kk/ky/uz/vi)에서 실행해 실제 `og.chamtax.com/s?...` URL을 캡처 → 파라미터를
+그대로 살려서 `/api/og.png?...` 실제 이미지를 `curl`로 받아 직접 눈으로 확인.
+
+**발견·수정한 버그 3건** (전부 `og-share-worker/src/index.js`):
+
+1. **아랍어(ar)·우르두어(ur) 카드가 HTTP 200에 본문 0바이트로 완전히 깨짐** — 가장 심각한
+   버그. `curl`로 재현: "مليار"(십억), "ملین"(백만) 같은 흔한 단어가 포함된 카드가 예외 없이
+   빈 이미지로 응답함(캐시 헤더 `public, max-age=86400`까지 붙어서, 한 번 발생하면 Cloudflare
+   엣지에 24시간 캐시될 위험까지 있었음). 이진 탐색으로 원인 문자 조합까지 좁힘("ليار" =
+   lam+ya+alif 연속) → `WebSearch`로 확인해보니 **satori(이 Worker의 렌더링 엔진)가 공식적으로
+   리가처·커닝 등 고급 OpenType 기능과 RTL을 지원 안 함**(vercel/satori 이슈 트래커 명시) —
+   Noto Naskh Arabic/Noto Nastaliq Urdu처럼 문맥별 리가처 치환이 많은 서예체 폰트의 특정 글자
+   조합에서 렌더링이 죽는 것으로 보임(같은 텍스트를 기본 'Noto Sans'로 렌더링하면 안 죽음 —
+   폰트 자체의 문제로 확인). **두 언어 모두 Noto Sans Arabic(리가처 의존도 낮은 산세리프)으로
+   교체**해서 해결.
+2. **세율 바 밑 "●" 불릿이 tofu(☐)로 깨짐 — 놀랍게도 아랍어/우르두어 8개 언어뿐 아니라
+   한국어·영어·러시아어 등 사실상 전 언어에서 재현됨.** 기존 코드는 `STATIC_CARD_CHARS`에
+   "●"를 넣어 폰트 서브셋에 포함되도록 이미 조치해뒀었는데(2026-07-31 세션의 이전 수정),
+   실제로 열어보니 **한국어(Noto Sans KR)/중국어(Noto Sans SC)/일본어(Noto Sans JP) 3개
+   CJK 폰트만 이 글자를 담고 있고, 그 외 모든 언어(기본 'Noto Sans' 포함)는 이 글자 자체가
+   서브셋에 없어서 계속 깨지고 있었음.** 글자 렌더링에 기대는 대신 **CSS로 그린 작은
+   원(`<div>` + `border-radius:50%`)으로 교체** — 폰트 의존성을 원천적으로 없앰(어떤 언어든
+   항상 정상 표시).
+3. **번역 문구 안에 박힌 이모지(예: "태국 거주자 (추정치 ⚠️)")가 tofu 2개로 깨짐** — 러시아어
+   (기본 Noto Sans)·태국어(스크립트 전용 폰트) 양쪽에서 재현, 이 프로젝트가 쓰는 어떤 Noto
+   Sans 계열 폰트도 이모지 글리프를 안 담고 있어서(2번과 원인이 다름 — 폰트를 바꾸는 걸로는
+   해결 불가) **카드 렌더링 직전에 이모지 자체를 제거하는 `stripEmoji()`를 `clean()`에 추가**
+   (빈 괄호 "(추정치 )"가 안 남도록 공백/빈 괄호도 같이 정리).
+
+**부수적으로 시도했다가 뺀 것**: 스크립트 전용 폰트 언어(태국어 등)에 기본 'Noto Sans'를
+2순위 폴백 폰트로 추가하는 것도 같이 했는데(satori는 CSS font-family 이름 매칭이 아니라
+`fonts` 배열 등록 순서대로 글자 커버리지를 훑는 방식이라 이름 맞출 필요 없음), 러시아어
+재현 결과 기본 'Noto Sans' 자체도 이모지가 없다는 게 확인돼서 이모지 문제 해결에는 도움이
+안 됨(다른 비이모지 기호 불일치엔 여전히 안전망 역할) — 그래서 이모지는 위 3번처럼 별도로
+제거하는 방식으로 확정.
+
+**중요 — 이 수정들은 아직 실제로 배포 안 됨**: `og-share-worker/`는 Cloudflare GitHub
+연동으로 `main` 브랜치 푸시 때 자동 재배포되는데, 이번 수정은 이 세션의 작업 브랜치
+(`claude/handover-file-review-0l6xtv`)에만 있고 아직 `main`에 병합 안 됨 — **다음 세션(또는
+사용자)이 이 브랜치를 `main`에 병합해야 실제로 `og.chamtax.com`에 반영됨.** 병합 후 아래
+명령으로 재확인 가능(둘 다 지금은 0바이트, 병합 후엔 정상 PNG 크기가 나와야 함):
+```
+curl -s -o /tmp/ar.png -w "%{size_download}\n" "https://og.chamtax.com/api/og.png?main=%D9%85%D9%84%D9%8A%D8%A7%D8%B1&lang=ar"
+curl -s -o /tmp/ur.png -w "%{size_download}\n" "https://og.chamtax.com/api/og.png?main=%D9%85%D9%84%DB%8C%D9%86&lang=ur"
+```
+
+**온사이트 UI(공유 버튼·카드) 검증**: `shareDreamResult()`가 붙어있는 "재미로 보기" 페르소나
+결과 카드(`#dream-result`)를 Playwright로 240~430px 9개 폭 × 5개 언어(ko/en/ar/th/km)에서
+검사 — 카드/버튼 오버플로우, 자식 요소가 카드 밖으로 삐져나가는지 자동 검사 + 240px에서
+직접 스크린샷 확인(ar RTL 정렬 정상, km/th 줄바꿈 정상) — **이슈 0건**. `wrap_audit.js`
+(168, 0)도 재실행해서 재확인.
+
+**검증**: `node --input-type=module --check`(ESM) 통과, `stripEmoji()`는 Node로 직접
+단위 테스트(4개 케이스 — 이모지+괄호 정리, 일반 텍스트 보존, 이모지 단독 등) 통과. 실제
+배포본 재검증은 위에 적었듯 병합 후 필요.
+
+변경 파일: `og-share-worker/src/index.js`(`LANG_FONT_FAMILY.ar/ur` 폰트 교체,
+`loadCardFonts()` 폴백 폰트 추가, 세율 바 불릿 CSS 원으로 교체, `stripEmoji()`/`clean()` 추가).
+
 ### 2026-08-03 이어서 — 15개 자동 루틴 확인 + 회귀 테스트 13개 최종 재확인
 
 **요청 배경**: 사용자가 "우리가 말한 거 전부 다 들어갔는지 확인하고 인수인계 파일 올려줘"라고
@@ -3811,3 +3982,53 @@ ID를 알려주면 그때 15개 루틴의 `environment_id`를 `update_trigger`�
 `origin/main` 셋 다 동기화 완료, 15개 루틴 전부 활성 상태.
 
 변경 파일: 없음(이 항목은 검증·인수인계 정리만 수행).
+
+### 2026-08-03 이어서 (`claude/handover-file-review-0l6xtv` 브랜치) — "사이트를 가볍게
+만들어줘" 요청 → 실측 조사 결과 코드 변경은 안 함(이유 아래), Cloudflare 대시보드 설정만 재요청
+
+**요청 배경**: 사용자가 "사이트를 가볍게 만들어줘"라고 요청. 코드를 건드리기 전에 실제로
+뭐가 무거운지부터 실측함.
+
+**확인한 것**:
+- `curl -sI -H "Accept-Encoding: gzip, br" https://chamtax.com/script.js` → **`server:
+  cloudflare`**(2026-07-24 문서 기록 당시엔 "DNS only"/회색 구름이었는데, 지금은 주황 구름
+  Proxied 상태로 바뀌어 있음 — 사용자가 그 사이 바꾼 것으로 보임) + **`content-encoding: gzip`
+  이미 적용 중**: `script.js` 1.7MB(원본) → 547,828바이트(전송량, 68% 감소), `styles.css`
+  188KB → 54,434바이트(71% 감소). 실제로 브라우저가 받는 용량은 로컬 파일 크기보다 이미
+  훨씬 작음.
+- `curl -s https://chamtax.com/script.js`로 받은 라이브 파일과 로컬 파일을 직접 비교 —
+  **주석·공백이 그대로 살아있음(minify 안 됨)** → Cloudflare **Auto Minify는 아직 꺼져있고,
+  Brotli도 응답에 안 잡힘**(gzip만) — 즉 프록시는 켜졌는데 2026-07-24에 제안했던 두 토글
+  (Auto Minify, Brotli)은 아직 안 눌려있는 상태. **이게 지금 시점에서 가장 크고 확실한 남은
+  레버** — 코드 한 글자도 안 건드리고 대시보드에서 체크박스 2개만 켜면 전송량이 한 번 더
+  줄어듦(추가로 15~20%p 정도, 위 "알려진 미해결 항목"의 기존 제안 내용 참고). 이 세션은
+  대시보드 접근 권한이 없어서 대신 실행 못 함 — **사용자가 Cloudflare 대시보드 → Speed →
+  Optimization에서 Auto Minify(HTML/CSS/JS)·Brotli를 켜면 바로 적용됨.**
+- 이미지: `og-image.png`(24KB)·`og-image-hook.png`(64KB)·아이콘 3종 — Pillow로 무손실
+  재압축 시도해봤지만 0~2.7%밖에 안 줄어듦(이미 잘 압축된 상태) — 손댈 가치 없음.
+- `<img>` 태그 자체가 사이트 전체에 하나도 없음(이모지/유니코드 아이콘 위주 디자인) —
+  `loading="lazy"` 누락 같은 흔한 문제 자체가 해당 없음.
+- `odds-data.js`(492KB)는 이미 확률체감 탭을 열 때만 지연 로드(기존에 이미 돼있었음),
+  `script.js`도 이미 `defer`로 렌더링 차단 없이 로드 중 — 흔한 최적화 포인트들이 이미
+  적용돼있는 상태였음.
+- **검토했다가 위험이 커서 안 한 것**: `index.html`이 모든 방문자에게 무조건 Noto Naskh
+  Arabic/Noto Nastaliq Urdu Google Fonts 스타일시트를 preload하고 있음(아랍어/우르두어
+  방문자용인데 조건 없이 항상 로드) — 아랍어/우르두어가 아닌 96%+ 방문자에게는 불필요한
+  프리커넥트+작은 CSS 요청 하나가 낭비이긴 함. 조건부로 바꾸려면 `script.js`의 복잡한 언어
+  감지 로직(`?lang=` → `localStorage` → 검색어 리퍼러 → `navigator.language` 4단계,
+  8000번째 줄 근처)을 `<head>` 최상단의 동기 스크립트에서 최소한이라도 재현해야 하는데,
+  일부만(예: `?lang=`/`localStorage`) 흉내 내고 `navigator.language` 자동감지 케이스를
+  놓치면 — 그 케이스에 해당하는 실제 아랍어/우르두어 방문자가 이 폰트 스타일시트 자체를
+  아예 못 받아서 **사이트 본문 글자가 tofu로 깨지는 실제 회귀**를 만들 위험이 있음(이번
+  세션이 공유 카드 Worker에서 방금 그런 부류의 tofu 버그를 발견·수정하고 온 참이라 더 신중하게
+  판단함). 절약되는 바이트는 미미한데(프리커넥트 하나+작은 CSS 문서) 실제 사용자에게 보이는
+  화면이 깨질 위험은 실재해서, 이번 세션은 손 안 대고 이유만 남김 — 다음에 다시 검토한다면
+  최소한 실기기(또는 `navigator.language`를 아랍어/우르두어로 오버라이드한 Playwright
+  컨텍스트)로 그 특정 경로까지 재현 테스트한 뒤에 할 것.
+
+**결론**: 이 사이트는 "빌드 도구 없음" 설계 안에서 이미 상당히 가벼운 상태(gzip 활성,
+지연 로드 이미 적용, 이미지 최소, defer 적용)라 코드 레벨에서 더 짜낼 여지가 크지 않았음.
+가장 확실한 다음 한 걸음은 여전히 Cloudflare 대시보드 설정(Auto Minify + Brotli) — 코드 변경
+없이 사용자가 직접 켜면 됨.
+
+변경 파일: 없음(조사만 수행, 위험 대비 이득이 낮다고 판단한 항목은 의도적으로 보류).
