@@ -3935,3 +3935,50 @@ curl -s -o /tmp/ur.png -w "%{size_download}\n" "https://og.chamtax.com/api/og.pn
 
 변경 파일: `og-share-worker/src/index.js`(`LANG_FONT_FAMILY.ar/ur` 폰트 교체,
 `loadCardFonts()` 폴백 폰트 추가, 세율 바 불릿 CSS 원으로 교체, `stripEmoji()`/`clean()` 추가).
+
+### 2026-08-03 이어서 — 15개 자동 루틴 확인 + 회귀 테스트 13개 최종 재확인
+
+**요청 배경**: 사용자가 "우리가 말한 거 전부 다 들어갔는지 확인하고 인수인계 파일 올려줘"라고
+요청 — 바로 앞서 만든 15개 루틴(위 "15개 개별 루틴으로 전면 교체됨" 항목 참고)과, 그 사이
+사용자가 물어본 "루틴이 토큰(구독 사용량 한도) 없을 때도 API로 돌아가게 할 수 있는지" 질문의
+결론까지 전부 반영됐는지 재확인.
+
+**확인 1 — 15개 루틴**: `list_triggers`로 재조회, 15개 전부 `enabled: true` 상태로 그대로
+남아있음 확인(트리거 ID는 위 표와 동일). 세션 도중 다른 세션들이 만든 PR #78("텍스트 도구
+드래그 이동", "이 결과 공유하기" 언어/국가 라벨 버그 수정)·#79("기타 국가" 칩 지구본 이모지
+복원)가 각각 자기 항목을 이 문서에 이미 남겨뒀고, `git fetch`+`git merge --ff-only`로 충돌
+없이 반영 완료(로컬 `main`이 `origin/main`과 완전히 동일).
+
+**확인 2 — API 결제 환경 질문**: `list_environments`로 조회해보니 이 계정에 환경이 "Default"
+(`env_01J8THaE11jsnhprVCn8hgMu`, kind: `anthropic_cloud`) 하나뿐이었고, 이 세션의 도구로는
+새 환경을 만들거나 과금 방식(구독 사용량 한도 vs API 종량제)을 조회·변경할 방법이 없음을
+확인·사용자에게 안내함. 사용자가 모바일에서 claude.ai 앱 화면을 스크린샷으로 보내줬는데
+거기도 "Default" 환경 하나만 보이고 새 환경 옵션은 안 보임 — **사용자가 나중에 데스크톱에서
+환경 설정 화면을 직접 확인해보기로 하고 보류**(코드 변경 없음, 이 세션이 더 진행할 수 있는
+부분 없음). 다음 세션은 이 주제로 재진단하지 말고, 사용자가 "API 환경 만들었다"며 environment
+ID를 알려주면 그때 15개 루틴의 `environment_id`를 `update_trigger`로 옮겨주면 됨(단,
+`update_trigger` 스키마에 `environment_id` 필드가 있는지는 실제로 옮길 때 다시 확인할 것 —
+이번 세션은 스키마까지는 확인 안 함).
+
+**확인 3 — 회귀 테스트 13개 전체 재실행(다른 세션들 커밋 반영 후)**: 최초 실행 시 `home_audit`/
+`lang_leak_audit`/`console_error_audit`/`audit_odds_compare` 4개가 한꺼번에 대량 ISSUES를
+뱉어서 놀랐으나, 원인은 코드 버그가 아니라 **로컬 `python3 -m http.server 9000`이 중간에
+죽어서 전부 `ERR_CONNECTION_REFUSED`로 실패한 테스트 인프라 문제**였음(에러 메시지로 확인) —
+서버 재기동 후 재실행하니 전부 `ISSUES: 0`으로 정상. 13개 전부(`node --check script.js` 문법
+확인 포함) 최종 결과:
+
+- `i18n_coverage_audit`(735, 0)·`broken_link_audit`(90, 0)·`fact_consistency_audit`(93, 0)·
+  `draw_archive_integrity_check`(2 아카이브, 0)·`home_audit`(18, 0)·`lang_leak_audit`(104, 0)·
+  `console_error_audit`(161, 0)·`audit_odds_compare`(40, 0)·`wrap_audit`(168, 0)·
+  `map_scroll_audit`(10, 0)·`nav_slider_audit`(0)·`faq_audit`(0) — **전부 ISSUES: 0**
+
+**교훈(다음 세션 참고)**: 여러 회귀 테스트를 한 번에 돌릴 때 로컬 http 서버가 백그라운드
+쉘 세션 경계에서 죽는 경우가 있으므로, 대량 ISSUES가 갑자기 나오면 코드부터 의심하지 말고
+에러 메시지에 `ERR_CONNECTION_REFUSED` 같은 네트워크 오류가 섞여있는지 먼저 확인할 것 —
+실제 코드 회귀라면 에러 메시지가 페이지 콘텐츠/레이아웃 관련일 것이고, 서버가 죽은 거라면
+전부 `page.goto` 단계에서부터 실패함.
+
+**현재 상태**: 작업 트리 깨끗함, 로컬 브랜치·`origin/claude/github-latest-files-check-j9xthk`·
+`origin/main` 셋 다 동기화 완료, 15개 루틴 전부 활성 상태.
+
+변경 파일: 없음(이 항목은 검증·인수인계 정리만 수행).
