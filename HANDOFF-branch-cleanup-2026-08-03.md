@@ -43,20 +43,27 @@ Workers & Pages → `semilee123456-ui-github-io` → Settings → Build 확인 �
 | `claude/github-handover-review-ma18qt` | PR #77로 병합됨 | ✅ 안전 |
 | `claude/handover-file-review-0l6xtv` | 고유 커밋이 PR #83/84/85 내용과 중복(이미 main에 다른 SHA로 반영됨) | ✅ 안전 |
 | `claude/github-handover-file-check-29r6r0` | PR #86으로 병합 완료(이번에 처리함) | ✅ 이제 안전 |
-| `claude/connection-issue-tqhm4t` | **미확인** | ⚠️ 확인 필요 |
-| `claude/github-file-check-g50n55` | **미확인** | ⚠️ 확인 필요 |
-| `claude/github-handover-index-review-49ksjq` | **미확인** | ⚠️ 확인 필요 |
-| `claude/github-work-handover-lqgr9p` | **미확인** | ⚠️ 확인 필요 |
+| `claude/connection-issue-tqhm4t` | 고유 커밋 전부 오래된 PR(#52~#71, 전부 closed) — main에 이미 반영됨 | ✅ 안전 |
+| `claude/github-file-check-g50n55` | 고유 커밋 전부 오래된 PR(#41~#50, 전부 closed) — main에 이미 반영됨 | ✅ 안전 |
+| `claude/github-handover-index-review-49ksjq` | 고유 커밋 전부 오래된 PR(#18~#40, 전부 closed) — main에 이미 반영됨 | ✅ 안전 |
+| `claude/github-work-handover-lqgr9p` | 고유 커밋 전부 오래된 PR(#22~#28, 전부 closed) — main에 이미 반영됨 | ✅ 안전 |
+| `claude/github-latest-handover-files-i8ztge` | 인수인계 문서 갱신 커밋 2개(이번에 이 파일에 반영·통합함) 외 고유 작업 없음 | ✅ 안전 |
 
-마지막 4개는 시간 관계상 이번 세션에서 ahead/behind와 PR 병합 여부를 확인 못 했음. 지우기
-전에 `mcp__github__list_commits(sha=브랜치명)`으로 최상단 커밋이 main 로그에도 있는지,
-또는 `list_pull_requests`로 관련 PR이 이미 merged 상태인지 확인할 것 — 이번에 확인한
-6개 중 2개(#77, #80)가 GitHub 브랜치 목록 UI엔 "1 ahead"로 떠 있었는데 실제로는 이미
-병합된 상태였음(UI 표시가 스쿼시/리베이스 병합 후 갱신이 늦는 것으로 보임) — "ahead 숫자
-> 0"만 보고 병합 안 됐다고 단정하지 말고 PR 상태를 직접 확인할 것.
+마지막 5개는 후속 세션에서 `git diff --stat origin/main..origin/<브랜치>`로 직접 검사해
+마무리함 — 5개 전부 "삭제 위주"(main이 그 뒤로도 계속 진행되면서 이 브랜치들이 오히려
+뒤처진 상태) diff였고, 고유 커밋에 찍힌 PR 번호가 전부 이미 closed 상태로 main에 반영된
+범위였음. 결정적 교차검증으로 `claude/connection-issue-tqhm4t`의 유일한 실작업 커밋
+("TTS 이모지 제거", PR #70)이 실제로 지금 `script.js`에 있는지까지 확인함. 참고로
+`mcp__github__list_pull_requests`가 반환하는 `merged` 필드는 이 환경에서 신뢰할 수
+없음(PR #86처럼 git log에 병합 커밋이 실제로 있는데도 `merged:false`로 나옴) —
+**PR API의 `merged` 값이 아니라 `git diff`로 실제 파일 내용을 직접 비교해서 판단할 것.**
+"ahead 숫자 > 0"만 보고 병합 안 됐다고 단정하지 말라는 원래 교훈과 같은 맥락.
 
 ## 남은 일
 
-- 위 미확인 4개 브랜치 확인 후, 전부(main 제외) GitHub 웹 UI(Branches 탭)에서 삭제 —
+- 이제 위 표의 11개 브랜치 전부 확인 완료 — 전부 GitHub 웹 UI(Branches 탭)에서 삭제 가능.
   git push/API로 브랜치 삭제하는 도구가 없어서 사용자가 직접 해야 함(자세한 내용은
-  `HANDOFF-og-share-2026-07-31.md`의 "알아둘 것" 섹션 참고).
+  `HANDOFF-og-share-2026-07-31.md`의 "알아둘 것" 섹션 참고). **주의**: 이 목록엔 현재
+  작업 중인 세션의 브랜치(`claude/handover-github-files-review-n65pbq` — "이미지로 저장"
+  팝업 확대·텍스트 삭제/크기조절 기능이 아직 이 브랜치에만 있고 main 미병합)는 포함 안 됨 —
+  그건 지우면 안 됨, PR 병합 후 삭제 대상.

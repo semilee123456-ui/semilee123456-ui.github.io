@@ -4087,3 +4087,51 @@ Sans Arabic으로 교체하면 해결"이라고 적었는데, **병합·배포 �
 변경 파일: `og-share-worker/src/index.js`(`LANG_FONT_FAMILY.ar` 최종적으로 'Noto Sans
 Arabic'로 확정, `handleOgImage()`에 eager-buffer 방식 에러 핸들링 구조 추가,
 `buildFallbackCard()` 헬퍼 분리).
+
+### 2026-08-03 이어서 — "이미지로 저장" 팝업 확대 + 텍스트 삭제/크기조절 추가, 브랜치 정리 마무리, 자동 루틴 API 종량제 전환 가능 여부 최종 결론
+
+**요청 1 — 팝업이 작게 느껴짐**: 사용자가 스크린샷으로 "꾸며서 저장하기" 팝업이 40~60대에게
+작게 느껴진다고 지적. 도구 버튼(펜/텍스트/실행취소/지우기)·색상 원·제목·날짜 입력칸을 이
+코드베이스의 기존 시니어 접근성 기준(터치 타깃 44px, 본문 폰트 `--fs-body`)에 맞춰 확대함.
+
+**요청 2 — 텍스트 삭제·크기 조절이 안 됨**: 캔버스에 글자를 놓은 뒤 지우거나 크기를 바꿀
+방법이 없었음(실행취소로 전체를 되돌리거나 백스페이스로 한 글자씩 지우는 것뿐). 이미 놓인
+텍스트를 다시 탭하면(드래그 아닌 순수 탭만 — `annotateTextDrag.moved` 플래그로 구분) 원래
+입력 UI가 재편집 모드로 열리도록 확장하고, 입력창 아래에 크기조절(A−/A+)·삭제(🗑) 버튼을
+추가함. 이 버튼들은 click 대신 `pointerdown` + `preventDefault()`로 처리 — click을 쓰면
+버튼으로 포커스가 넘어가며 input이 먼저 blur되어 텍스트가 확정 저장돼버리는 문제가 있어서
+드래그 손잡이와 같은 패턴을 재사용함. Playwright로 추가→재편집(값 유지 확인)→크기조절
+미리보기 반영→삭제 흐름 직접 검증, 회귀 테스트(`wrap_audit`/`console_error_audit`/
+`home_audit`) 전부 0 ISSUES.
+
+변경 파일: `styles.css`(`.annotate-tool-btn`/`.annotate-color-swatch`/`.annotate-overlay-header`
+확대, `.annotate-text-controls`/`.annotate-text-size-btn`/`.annotate-text-delete-btn` 추가),
+`script.js`(`placeAnnotateTextInput()`에 `existing` 파라미터로 재편집 지원, `setupAnnotateCanvasEvents()`의
+`endStroke()`에 탭-vs-드래그 분기 추가).
+
+**요청 3 — 브랜치 정리 마무리**: `HANDOFF-branch-cleanup-2026-08-03.md`에 남아있던 미확인
+브랜치 4개를 `git diff --stat origin/main..origin/<브랜치>`로 직접 검사해 전부 안전 확인.
+그 과정에서 다른 세션이 만들어 놓고 main에 병합되지 않은 채 방치돼있던 브랜치
+(`claude/github-latest-handover-files-i8ztge`)를 발견 — 이 세션과 독립적으로 똑같은
+검증을 이미 끝내고 동일한 결론(4개 전부 안전)을 내린 문서 커밋 2개가 들어있었음. 그 내용을
+교차검증 삼아 확인 후 `HANDOFF-branch-cleanup-2026-08-03.md`에 통합함. **`mcp__github__list_pull_requests`의
+`merged` 필드가 이 환경에서 신뢰 불가**라는 것도 이번에 재확인됨(PR #86은 git log에 병합
+커밋이 실제로 있는데도 API는 `merged:false`로 반환) — 브랜치 안전 여부는 PR API 상태가
+아니라 `git diff`로 실제 파일 내용을 직접 비교해서 판단할 것. 자세한 표는
+`HANDOFF-branch-cleanup-2026-08-03.md` 참고, 이제 11개 브랜치(`main` 제외) 전부 삭제
+가능 확인 완료(삭제는 도구 지원 없어 사용자가 GitHub 웹 UI에서 직접 해야 함).
+
+**요청 4 — "자동 루틴이 토큰(구독 사용량) 없이 API 종량제만으로 돌 수 있는지" 최종 결론**:
+위에서 발견한 미병합 브랜치에 이미 결론이 나 있어서 그대로 채택함 — **Claude Code on the
+web의 클라우드 세션·루틴은 API 종량제로 분리할 방법이 원천적으로 없음**(공식 문서:
+"Claude Code on the web shares rate limits with all other Claude and Claude Code usage
+within your account"). 환경(environment) 설정 화면엔 API 키/결제 옵션이 아예 없고 네트워크
+권한만 있음 — `claude --cloud`/`--teleport`는 API 키 인증 자체를 안 받음. 판단이 필요한
+자동화(현재 15개 루틴 전부)는 예외 없이 토큰이 필요하고, 판단이 필요 없는 단순 반복 작업만
+`.github/workflows/lottery-backfill.yml`처럼 GitHub Actions + 공개 API + 무료 `GITHUB_TOKEN`
+조합으로 무료 자동화 가능(이미 그렇게 하고 있음). 사용자는 사용량 한도에 실제로 부딪힌
+상태가 아니라 당장 추가 조치 없음 — **다음 세션은 이 주제를 다시 "확인 필요"로 재조사하지
+말 것.** 나중에 한도에 실제로 부딪히면 (1) 루틴 개수/빈도 축소 (2) 판단 불필요한 항목만
+GitHub Actions로 이관 (3) 플랜 업그레이드, 이 셋이 유일한 선택지.
+
+변경 파일: 없음(문서 정리만 수행).
