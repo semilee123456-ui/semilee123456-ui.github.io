@@ -1804,12 +1804,18 @@
             <p class="panel-desc" data-i18n="odds.fishingHint">🎣 낚싯대를 던져서 번호를 하나씩 낚아보세요</p>
             <div class="fishing-pond" id="fishing-pond" aria-hidden="true">
               <div class="fishing-rod-wrap" id="fishing-rod-wrap">
-                <span class="fishing-rod">🎣</span>
+                <span class="fishing-rod" id="fishing-rod">🎣</span>
                 <span class="fishing-line" id="fishing-line"></span>
-                <span class="fishing-hook" id="fishing-hook">🪝</span>
+                <span class="fishing-hook-wrap">
+                  <span class="fishing-hook" id="fishing-hook">🪝</span>
+                  <span class="fishing-caught-fish" id="fishing-caught-fish">🐟</span>
+                </span>
               </div>
               <div class="fishing-water">
                 <span class="fishing-wave"></span><span class="fishing-wave"></span><span class="fishing-wave"></span>
+                <span class="fishing-idle-fish fishing-idle-fish-1">🐟</span>
+                <span class="fishing-idle-fish fishing-idle-fish-2">🐠</span>
+                <span class="fishing-splash" id="fishing-splash"></span>
               </div>
             </div>
             <div class="lightning-result" id="fishing-result">

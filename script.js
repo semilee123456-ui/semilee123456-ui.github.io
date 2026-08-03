@@ -3284,6 +3284,11 @@ function castFishingLine(){
   const originalBtnText = btn.textContent;
   const vibrate = (pattern) => { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} };
 
+  // 캐스팅마다 낚이는 물고기 이모지를 무작위로 바꿔서(styles.css의 .fishing-caught-fish) 매번
+  // 다른 물고기를 낚는 느낌을 줌 — 결과 자체(번호)와는 무관한 순수 장식
+  const caughtFishEl = document.getElementById('fishing-caught-fish');
+  if (caughtFishEl) caughtFishEl.textContent = ['🐟', '🐠', '🐡'][Math.floor(Math.random() * 3)];
+
   btn.disabled = true;
   btn.textContent = pickLang('기다리는 중... 🎣', 'Waiting for a bite... 🎣', '等待上钩中... 🎣', 'Đang chờ cá cắn câu... 🎣', 'กำลังรอปลากิน... 🎣', 'Ждём поклёвку... 🎣', FISHING_WAITING_MORE);
   if (pond) { pond.classList.remove('is-biting', 'is-reeling'); pond.classList.add('is-casting'); }
@@ -3291,6 +3296,14 @@ function castFishingLine(){
   const CAST_MS = 500, BITE_MS = 500, REEL_MS = 350;
   setTimeout(() => {
     if (pond) pond.classList.add('is-biting');
+    // 물 튀는 효과(.fishing-splash)를 매번 처음부터 재생 — .lightning-ball.drawn과 같은
+    // reflow 강제 재시작 패턴(클래스를 지웠다가 offsetWidth를 읽어 강제로 리플로우한 뒤 다시 붙임)
+    const splash = document.getElementById('fishing-splash');
+    if (splash) {
+      splash.classList.remove('play');
+      void splash.offsetWidth;
+      splash.classList.add('play');
+    }
     vibrate(10);
   }, CAST_MS);
   setTimeout(() => {
@@ -4397,6 +4410,21 @@ function jackpotRankCtaLabel(){
   );
 }
 
+// "🔧 세금 기준 바꾸기 →" 링크 — renderJackpotTakeHomeRanking()·renderJackpotCpiRanking() 양쪽에서
+// 씀. 2026-08-03: 두 곳 다 pickLang()이 more 인자 없이 6개 위치인자만 쓰고 있어서 21개 추가
+// 언어에서 영어로 폴백되던 걸 발견해서 채움 — 이미 TAX_BASIS_OVERLAY_TITLE_MORE(같은 파일,
+// openTaxBasisOverlay() 쪽)에 검증된 같은 의미("🔧 세금 기준 변경")의 21개 언어 번역이 있어서,
+// 새로 번역하지 않고 그 값에 화살표(→)만 붙여 재사용함(용어 일관성 유지 목적).
+const CHANGE_TAX_BASIS_LINK_MORE = {
+  ar: '🔧 تغيير أساس الضريبة →', bn: '🔧 কর ভিত্তি পরিবর্তন করুন →', fr: '🔧 Changer la base fiscale →',
+  hi: '🔧 टैक्स आधार बदलें →', id: '🔧 Ubah dasar pajak →', ja: '🔧 税金の基準を変更 →',
+  kk: '🔧 Салық негізін өзгерту →', km: '🔧 ផ្លាស់ប្តូរមូលដ្ឋានពន្ធ →', ky: '🔧 Салык негизин өзгөртүү →',
+  lo: '🔧 ປ່ຽນພື້ນຖານພາສີ →', mn: '🔧 Татварын үндэслэлийг өөрчлөх →', my: '🔧 အခွန်အခြေခံပြောင်းရန် →',
+  ne: '🔧 कर आधार परिवर्तन गर्नुहोस् →', si: '🔧 බදු පදනම වෙනස් කරන්න →', tl: '🔧 Palitan ang basehan ng buwis →',
+  ur: '🔧 ٹیکس کی بنیاد تبدیل کریں →', uz: "🔧 Soliq bazasini o'zgartirish →",
+  pt: `🔧 Alterar base de cálculo do imposto →`, es: `🔧 Cambiar base impositiva →`, uk: `🔧 Змінити податкову базу →`, tet: `🔧 Muda base impostu →`,
+};
+
 function renderJackpotTakeHomeRanking(){
   const listEl = document.getElementById('jh-rank-list');
   if (!listEl) return;
@@ -4429,7 +4457,8 @@ function renderJackpotTakeHomeRanking(){
   const changeBasisLinkEl = document.getElementById('jh-rank-change-basis-link');
   if (changeBasisLinkEl) changeBasisLinkEl.textContent = pickLang(
     '🔧 세금 기준 바꾸기 →', '🔧 Change tax basis →', '🔧 更改税收基准 →',
-    '🔧 Đổi cơ sở thuế →', '🔧 เปลี่ยนฐานภาษี →', '🔧 Изменить налоговую базу →'
+    '🔧 Đổi cơ sở thuế →', '🔧 เปลี่ยนฐานภาษี →', '🔧 Изменить налоговую базу →',
+    CHANGE_TAX_BASIS_LINK_MORE
   );
 
   const gameNameKo = { powerball: '파워볼', megamillions: '메가밀리언즈' };
@@ -4699,7 +4728,8 @@ function renderJackpotIndexCpiRanking(){
   const changeBasisLinkEl2 = document.getElementById('ji-cpi-change-basis-link');
   if (changeBasisLinkEl2) changeBasisLinkEl2.textContent = pickLang(
     '🔧 세금 기준 바꾸기 →', '🔧 Change tax basis →', '🔧 更改税收基准 →',
-    '🔧 Đổi cơ sở thuế →', '🔧 เปลี่ยนฐานภาษี →', '🔧 Изменить налоговую базу →'
+    '🔧 Đổi cơ sở thuế →', '🔧 เปลี่ยนฐานภาษี →', '🔧 Изменить налоговую базу →',
+    CHANGE_TAX_BASIS_LINK_MORE
   );
 
   const gameNameKo = { powerball: '파워볼', megamillions: '메가밀리언즈' };
@@ -5974,6 +6004,77 @@ const CHECK_PAYTO_MORE = {
   pt: 'Beneficiário', es: 'Beneficiario', uk: 'Отримувач', tet: "Simu-na'in",
 };
 
+// 2026-08-03: 이 수표 카드의 MEMO 줄/서명란 라벨 3개(아래 CHECK_MEMO_LABEL_MORE/
+// CHECK_MEMO_TEXT_MORE/CHECK_SIGN_LABEL_MORE)가 more 인자 없이 pickLang() 6개 위치인자만
+// 쓰고 있어서, 21개 추가 언어에서 전부 영어로 조용히 폴백되고 있던 걸 뒤늦게 발견해서 채움
+// (사용자가 "언어가 100% 다 들어갔는지 확인해달라"고 요청해서 발견 — i18n_coverage_audit.js는
+// translations.json의 키 완성도만 검사해서 이런 pickLang() 누락은 못 잡음, 다음에 비슷한 걸
+// 찾으려면 이 파일에서 `pickLang(`로 시작하는 호출이 6개 언어만 채우고 more를 빠뜨렸는지
+// 직접 점검할 것 — 자동 테스트로는 못 잡히는 사각지대임).
+const CHECK_MEMO_LABEL_MORE = {
+  ar: 'مذكرة',
+  bn: 'মেমো',
+  fr: 'Mémo',
+  hi: 'मेमो',
+  id: 'Memo',
+  ja: 'メモ',
+  kk: 'Ескерту',
+  km: 'កំណត់ចំណាំ',
+  ky: 'Эскертүү',
+  lo: 'ບັນທຶກ',
+  mn: 'Тэмдэглэл',
+  my: 'မှတ်ချက်',
+  ne: 'टिप्पणी',
+  si: 'සටහන',
+  tl: 'Memo',
+  ur: 'نوٹ',
+  uz: 'Eslatma',
+
+  pt: 'Memo', es: 'Nota', uk: 'Примітка', tet: 'Nota',
+};
+const CHECK_MEMO_TEXT_MORE = {
+  ar: 'محاكاة المبلغ الصافي المقدر بعد الضريبة',
+  bn: 'করের পরে আনুমানিক প্রকৃত প্রাপ্তির সিমুলেশন',
+  fr: 'Simulation du montant net estimé après impôt',
+  hi: 'कर के बाद अनुमानित शुद्ध प्राप्ति का सिमुलेशन',
+  id: 'Simulasi perkiraan jumlah bersih setelah pajak',
+  ja: '税引き後の手取り予想シミュレーション',
+  kk: 'Салықтан кейінгі болжамды қолға тиетін соманы модельдеу',
+  km: 'ការក្លែងធ្វើចំនួនទឹកប្រាក់ដែលទទួលបានផ្ទាល់ប៉ាន់ស្មានក្រោយពន្ធ',
+  ky: 'Салыктан кийинки болжолдуу колго тие турган суммага симуляция',
+  lo: 'ການຈຳລອງຈຳນວນເງິນສຸດທິຄາດຄະເນຫຼັງຫັກພາສີ',
+  mn: 'Татварын дараах ойролцоо гарт орох дүнгийн симуляц',
+  my: 'အခွန်ပြီးနောက် ခန့်မှန်းရရှိမည့်ငွေပမာဏ အတုအယောင်ပုံစံ',
+  ne: 'करपछि अनुमानित हातमा पर्ने रकमको सिमुलेसन',
+  si: 'බදු පසු ඇස්තමේන්තුගත අත් ලැබෙන මුදලේ අනුකරණය',
+  tl: 'Simulasyon ng tinatayang natatanggap pagkatapos ng buwis',
+  ur: 'ٹیکس کے بعد متوقع خالص رقم کی نقالی',
+  uz: "Soliqdan keyingi taxminiy qo'lga tegadigan summa simulyatsiyasi",
+
+  pt: 'Simulação do valor líquido estimado após impostos', es: 'Simulación del monto neto estimado después de impuestos', uk: 'Симуляція орієнтовної суми на руки після оподаткування', tet: 'Simulasaun kuantia likidu estimadu depois taxa',
+};
+const CHECK_SIGN_LABEL_MORE = {
+  ar: 'التوقيع (نموذج) · ليس توقيعًا حقيقيًا',
+  bn: 'স্বাক্ষর (নমুনা) · প্রকৃত স্বাক্ষর নয়',
+  fr: 'Signature (exemple) · pas une vraie signature',
+  hi: 'हस्ताक्षर (नमूना) · वास्तविक हस्ताक्षर नहीं',
+  id: 'Tanda tangan (contoh) · bukan tanda tangan asli',
+  ja: '署名（サンプル）・実際の署名ではありません',
+  kk: 'Қолтаңба (үлгі) · нақты қолтаңба емес',
+  km: 'ហត្ថលេខា (គំរូ) · មិនមែនហត្ថលេខាពិតប្រាកដទេ',
+  ky: 'Кол тамга (үлгү) · чыныгы кол тамга эмес',
+  lo: 'ລາຍເຊັນ (ຕົວຢ່າງ) · ບໍ່ແມ່ນລາຍເຊັນຈິງ',
+  mn: 'Гарын үсэг (жишээ) · бодит гарын үсэг биш',
+  my: 'လက်မှတ် (နမူနာ) · အမှန်တကယ်လက်မှတ်မဟုတ်ပါ',
+  ne: 'हस्ताक्षर (नमूना) · वास्तविक हस्ताक्षर होइन',
+  si: 'අත්සන (නියැදිය) · සැබෑ අත්සනක් නොවේ',
+  tl: 'Lagda (halimbawa) · hindi tunay na lagda',
+  ur: 'دستخط (نمونہ) · حقیقی دستخط نہیں',
+  uz: "Imzo (namuna) · haqiqiy imzo emas",
+
+  pt: 'Assinatura (exemplo) · não é uma assinatura real', es: 'Firma (ejemplo) · no es una firma real', uk: 'Підпис (зразок) · не справжній підпис', tet: "Asinatura (ezemplu) · la'ós asinatura tuir loloos",
+};
+
 // 홈 결과 카드("얼마 남을까")를 이미지로 저장 — "🖼️ 이미지로 저장"(내 번호 티켓)과 같은 Canvas
 // 직접 그리기 방식 재사용. 새 텍스트를 pickLang으로 또 다 번역하는 대신, 이미 화면에 렌더링된
 // DOM 값(이미 26개 언어로 번역·포맷 완료된 상태)을 그대로 읽어와서 캔버스에 옮겨 그림 — 새로
@@ -6207,7 +6308,7 @@ function buildHomeResultCheckCanvas(){
   ctx.textAlign = 'left';
   ctx.fillStyle = '#8A8371';
   ctx.font = "600 12px 'Pretendard', -apple-system, sans-serif";
-  const memoLabel = pickLang('MEMO', 'MEMO', '备注', 'Ghi chú', 'บันทึก', 'ПРИМЕЧАНИЕ', undefined);
+  const memoLabel = pickLang('MEMO', 'MEMO', '备注', 'Ghi chú', 'บันทึก', 'ПРИМЕЧАНИЕ', CHECK_MEMO_LABEL_MORE);
   ctx.fillText(memoLabel, leftX, bandY);
   ctx.fillStyle = '#262420';
   ctx.font = "500 13px 'Pretendard', -apple-system, sans-serif";
@@ -6218,7 +6319,7 @@ function buildHomeResultCheckCanvas(){
     'Mô phỏng số tiền thực nhận sau thuế',
     'จำลองยอดรับสุทธิหลังหักภาษี',
     'Симуляция суммы на руки после налога',
-    undefined
+    CHECK_MEMO_TEXT_MORE
   );
   fitFontSize(ctx, memoText, 500, 13, 10, (W / 2 - bandMidGap) - leftX);
   ctx.fillText(memoText, leftX, bandY + 20);
@@ -6250,7 +6351,7 @@ function buildHomeResultCheckCanvas(){
     'Chữ ký (mẫu) · không phải chữ ký thật',
     'ลายเซ็น (ตัวอย่าง) · ไม่ใช่ลายเซ็นจริง',
     'Подпись (образец) · не настоящая подпись',
-    undefined
+    CHECK_SIGN_LABEL_MORE
   );
   fitFontSize(ctx, signLabel, 600, 11, 9, rightX - (W / 2 + bandMidGap));
   ctx.fillText(signLabel, rightX, bandY + 44);
@@ -11055,6 +11156,32 @@ const COUNTRY_TAX_DISCLAIMERS = {
   )
 };
 
+// 홈 화면 입력 카드의 실시간 미리보기 줄(" · 실수령 XX (예상 XX%)") — updateHomeCalc() 안
+// #home-input-preview 참고. 2026-08-03: pickLang()이 more 인자 없이 6개 위치인자만 쓰고
+// 있어서 21개 추가 언어에서 영어로 폴백되던 걸 발견해서 채움(홈 화면 자체라 노출 빈도가 높은
+// 곳이었음).
+const HOME_INPUT_PREVIEW_MORE = (previewAmt, previewPct) => ({
+  ar: ` · صافي المبلغ ${previewAmt} (تقديري ${previewPct}%)`,
+  bn: ` · প্রকৃত প্রাপ্তি ${previewAmt} (আনুমানিক ${previewPct}%)`,
+  fr: ` · net perçu ${previewAmt} (est. ${previewPct}%)`,
+  hi: ` · हाथ में ${previewAmt} (अनुमानित ${previewPct}%)`,
+  id: ` · diterima bersih ${previewAmt} (perkiraan ${previewPct}%)`,
+  ja: ` · 手取り${previewAmt}(予想${previewPct}%)`,
+  kk: ` · қолға тиетін ${previewAmt} (болжам ${previewPct}%)`,
+  km: ` · ទទួលបានផ្ទាល់ ${previewAmt} (ប៉ាន់ស្មាន ${previewPct}%)`,
+  ky: ` · колго тийген ${previewAmt} (болжол ${previewPct}%)`,
+  lo: ` · ໄດ້ຮັບຈິງ ${previewAmt} (ຄາດຄະເນ ${previewPct}%)`,
+  mn: ` · гарт орох ${previewAmt} (тооцоолол ${previewPct}%)`,
+  my: ` · အမှန်ရငွေ ${previewAmt} (ခန့်မှန်း ${previewPct}%)`,
+  ne: ` · हातमा पर्ने ${previewAmt} (अनुमानित ${previewPct}%)`,
+  si: ` · අත ලැබෙන ${previewAmt} (ඇස්තමේන්තු ${previewPct}%)`,
+  tl: ` · natatanggap ${previewAmt} (tinatayang ${previewPct}%)`,
+  ur: ` · خالص وصولی ${previewAmt} (تخمینی ${previewPct}%)`,
+  uz: ` · qo'lga tegadigan ${previewAmt} (taxminiy ${previewPct}%)`,
+
+  pt: ` · líquido ${previewAmt} (est. ${previewPct}%)`, es: ` · neto recibido ${previewAmt} (est. ${previewPct}%)`, uk: ` · на руки ${previewAmt} (прибл. ${previewPct}%)`, tet: ` · simu loloos ${previewAmt} (estimadu ${previewPct}%)`,
+});
+
 function updateHomeCalc(usdOverride){
   // usdOverride 없이 호출되는 경우(환율 재조회·언어전환·국가/주 변경·URL 파라미터 반영 등)는
   // 전부 "입력값은 그대로, 다른 이유로 화면만 다시 그려줘"가 의도라 항상 sharedAmountUsd(정확한
@@ -11287,7 +11414,7 @@ function updateHomeCalc(usdOverride){
       ` · thực nhận ${previewAmt} (ước tính ${previewPct}%)`,
       ` · รับจริง ${previewAmt} (ประมาณ ${previewPct}%)`,
       ` · на руки ${previewAmt} (ок. ${previewPct}%)`,
-      undefined
+      HOME_INPUT_PREVIEW_MORE(previewAmt, previewPct)
     );
   }
   // 세전→세후 차액(빨간 -46% 줄)은 바로 위 home-final-amt(카운트업)와 달리 값이 바뀔 때마다

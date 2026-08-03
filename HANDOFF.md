@@ -4643,3 +4643,60 @@ locale(`en-US`)로 처음 방문 시 `lang: 'en', country: 'kr', currency: 'USD'
 
 변경 파일: `styles.css`(`.faq-float-wrap`/`.is-visible`/`.is-colliding`/`.is-scroll-hidden`
 규칙 수정, `.is-over-control`/`.is-hidden`은 그대로).
+
+### 2026-08-03 이어서 — 낚시 미니게임 재구성 + "pickLang() more 인자 누락"이라는 새로운 종류의 번역 사각지대 6곳 발견·수정
+
+**요청 1 — 낚시 미니게임(오늘의 번개 번호 뽑기 → 낚시로 뽑기, PR #93에서 프로토타입으로 신설된
+기능)이 재미없다는 사용자 스크린샷 지적**: 기존 구현은 낚싯줄 높이가 늘었다 줄었다 하고 바늘이
+살짝 흔들리는 정도가 전부였음. 물고기가 항상 헤엄쳐 다니고(`.fishing-idle-fish` 2마리, 좌우
+왕복+turn마다 flip), 캐스팅 시 낚싯대가 실제로 휘두르는 것처럼 회전하고(`.fishing-rod`,
+`fishing-rod-swing` 키프레임), 바늘이 수면에 닿는 순간 물결 효과(`.fishing-splash`, 캐스팅마다
+reflow로 재시작), 입질 때 물고기가 바늘에 나타나고(`.fishing-caught-fish`, 🐟/🐠/🐡 중
+캐스팅마다 무작위), 릴을 감으면(`.fishing-hook-wrap`이 `.fishing-line` 바로 다음 flex 자식이라
+줄 높이가 줄 때 자연스럽게 같이 위로 올라감 — 별도 translateY 애니메이션 불필요) 물고기가
+파닥거리며 딸려 올라오는 흐름으로 재구성. `prefers-reduced-motion: reduce`에서 전부 무력화.
+Playwright로 캐스팅→입질→릴감기→결과 전 구간 스크린샷 확인, 6마리 전부 낚기·재시작·320px
+좁은 화면까지 검증(사이트 다른 곳처럼 `overflow:hidden`으로 감싸져 있어 좁은 화면에서도 실제
+튀어나오진 않음).
+
+**요청 2 — "사이트 전체를 하나하나 보고 언어가 100% 다 들어갔는지 확인해달라"**: 기존
+`tests/i18n_coverage_audit.js`는 `translations.json`의 키 완성도만 검사(739개 키, 26개 언어
+전부 채워짐 재확인 — 0건)해서, **이번에 처음으로 다른 종류의 사각지대를 발견함**:
+`script.js` 안에서 직접 `pickLang(ko, en, zh, vi, th, ru, more)`을 호출하는 곳 중 일부가
+**7번째 인자(`more`, 나머지 21개 언어분)를 아예 안 넘기거나 `undefined`로 넘겨서**, 그
+지점만 21개 추가 언어(km/ne/id/my/si/uz/mn/kk/ky/ur/bn/lo/ja/ar/hi/fr/tl/pt/es/uk/tet)에서
+조용히 영어로 폴백되고 있었음 — `translations.json` 체계 밖이라 `i18n_coverage_audit.js`가
+구조적으로 못 잡는 종류의 버그. Python으로 `script.js`의 `pickLang(...)` 호출 410개를
+전수 파싱(괄호 깊이·따옴표를 고려해 top-level 인자 개수를 세는 스크립트를 그때그때 작성)해서
+"인자 6개뿐이거나 7번째가 `undefined`인 호출"만 걸러내는 방식으로 찾음. **실제 발견된 6곳**:
+1. 수표(giant novelty check) 카드 이미지의 `MEMO` 라벨(`memoLabel`)
+2. 같은 카드의 MEMO 본문 "세후 예상 실수령액 시뮬레이션"(`memoText`)
+3. 같은 카드의 서명란 라벨 "서명(예시용) · 실제 서명 아님"(`signLabel`)
+4. 잭팟 실수령 랭킹 위젯의 "🔧 세금 기준 바꾸기 →" 링크(`renderJackpotTakeHomeRanking`)
+5. 물가보정 랭킹 위젯의 같은 링크(`renderJackpotCpiRanking`, 4번과 중복된 문구)
+6. 홈 화면 입력 카드 실시간 미리보기 " · 실수령 XX (예상 XX%)"(`updateHomeCalc`의
+   `#home-input-preview`) — **노출 빈도가 가장 높은 곳**(홈 화면에서 금액 입력할 때마다 보임)이라
+   6개 중 가장 영향이 컸던 것으로 보임.
+
+**수정**: `CHECK_MEMO_LABEL_MORE`/`CHECK_MEMO_TEXT_MORE`/`CHECK_SIGN_LABEL_MORE`(신규, 21개
+언어 직접 번역)/`CHANGE_TAX_BASIS_LINK_MORE`(신규, 기존 `TAX_BASIS_OVERLAY_TITLE_MORE`의
+검증된 번역에 "→"만 붙여 재사용 — 같은 개념 새로 번역 안 함)/`HOME_INPUT_PREVIEW_MORE`(신규,
+변수 보간이 필요해서 객체가 아니라 `(previewAmt, previewPct) => ({...})` 함수 형태)를 추가해
+6개 호출부에 전부 연결. Playwright로 `ADDITIONAL_LANGS`(21개) 전체를 순회하며 5개 상수/함수의
+모든 키가 비어있지 않은지 프로그램적으로 검증(0건 누락) + km/uz/ar/tet/fr 5개 언어에서 실제
+렌더링 값 직접 확인.
+
+**다음 세션이 알아야 할 것**: `i18n_coverage_audit.js`는 여전히 `translations.json` 키만
+검사함 — `script.js` 안의 `pickLang()` 직접 호출은 커버 못 하는 구조적 한계가 이번에 확인됨.
+새 기능을 추가하며 `pickLang(...)`을 새로 쓸 때마다 7번째 인자(`more`)를 빠뜨리지 않았는지
+직접 확인할 것(코드 리뷰 시 "6개 언어만 나열하고 끝났는지" 눈으로 볼 것). 이번에 쓴 것과
+비슷한 재검사 스크립트(괄호/따옴표 깊이를 고려해 top-level 인자 개수 세기)를 다음에도 급하면
+그대로 재사용 가능 — 이 문서에는 스크립트 원문을 남기지 않았으니 필요하면 이 세션의 접근
+방식(Python으로 `pickLang\(` 정규식 매치 후 괄호 깊이 추적)을 다시 재현할 것. **아직 전수
+검사 안 한 부분**: `index.html`에 직접 박힌 인라인 텍스트(주로 `data-i18n` 계열로 커버되지만
+100% 확신은 못 함), 89개 정적 랜딩페이지(애초에 언어별로 분리된 별개 파일이라 이런 종류의
+버그 자체가 구조적으로 발생 불가능함, 대상 아님).
+
+변경 파일: `index.html`(낚시 연못 마크업에 물고기/물결 효과 요소 추가), `styles.css`(낚시
+애니메이션 전면 재구성), `script.js`(낚시 캐스팅 로직에 물튀김·무작위 물고기 이모지 추가,
+신규 MORE 상수/함수 5개 + 기존 6개 호출부 연결).
