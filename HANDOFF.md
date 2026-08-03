@@ -4883,3 +4883,66 @@ Playwright 검증에서 앞으로 주의할 점**: 화면에 실제로 보이는
 변경 파일: `script.js`(낚시 상태 머신 재작성, 신규 함수 8개, 신규 번역 상수 3개),
 `index.html`(연못 onclick, 릴 게이지·상태 메시지 마크업 추가, 캐시버스팅
 `script.js?v=20260803-3`/`styles.css?v=20260803-4`), `styles.css`(펄스/게이지/메시지 스타일).
+
+### 2026-08-03 이어서 — "잠자는 내 돈 찾기" 위젯(FAQ, Hometax/Gov24/FSS/NHIS/카드포인트) 6개 페르소나 재검증 → 버그 아님, 내 자체 테스트 오류였음
+
+**요청 배경**: 사용자가 중국어(zh) 화면에 이 위젯(한국 국세청 Hometax·정부24·금융감독원
+잠자는 내 돈·건강보험공단·여신금융협회 카드포인트 — 전부 한국 국내 전용 서비스)이 뜬
+스크린샷을 보내며 "여기 각 6가지 페르소나에 맞는지 확인해줘"라고 요청.
+
+**1차 조사(직전 세션, 이 항목 작성 전)에서 "버그처럼 보였던" 결과**: `사는 나라를 골라서
+바로 보기`(페르소나①)에서 중국을 고르면(`goToRealAbroad('cn','zh')`) 이 위젯이 숨어야
+정상인데, Playwright로 `document.querySelector('.refund-step-card[data-basis]')`로 확인하니
+계속 `display:block`으로 나와서 "버그"로 의심하고 조사를 이어가던 중이었음.
+
+**진짜 원인 — 테스트 스크립트가 엉뚱한 요소를 짚고 있었음**: `index.html`에
+`.refund-step-card` 클래스를 가진 `<div>`가 **3개** 있음(1904번째 줄 —
+`data-basis="kr,vn,cn,in,id,ph,th,jp,ru,np,lk,uz,kz,kg,mm,bd,pk,kh,mn,la"`로 `cn`도 포함된
+전혀 다른 위젯 / 2071번째 줄 — 스크린샷 속 그 위젯, `data-basis="kr"`만 / 2186번째 줄 —
+FTC 서류 체크리스트, `data-basis="kr"`만). `querySelector`(단수)는 DOM 순서상 **첫 번째**
+것(1904번째 줄, `cn` 포함이라 중국에서도 정상적으로 계속 보임)을 짚어버려서, 정작
+스크린샷 속 위젯(2071번째 줄)의 실제 상태는 확인도 안 하고 있었던 것 — 내 테스트 코드
+결함이었지 사이트 버그가 아니었음.
+
+**재검증(올바른 요소 — `#refund-site-hometax` 링크의 부모 `.refund-step-card`를
+`closest()`로 정확히 짚어서 확인)**:
+```
+1-사는나라(CN,zh)      country=cn    widgetVisible=false  ✅ (숨어야 정상 — 숨음)
+1-사는나라(VN,vi)      country=vn    widgetVisible=false  ✅
+1-사는나라(US,en)      country=us    widgetVisible=false  ✅
+2-한국거주             country=kr    widgetVisible=true   ✅ (핵심 타겟 — 당연히 보임)
+4-한국거주외국인(zh)   country=kr    widgetVisible=true   ✅ (의도된 동작, 아래 설명)
+4-한국거주외국인(vi)   country=kr    widgetVisible=true   ✅
+5-미국거주자           country=us    widgetVisible=false  ✅
+6-기타국가             country=other widgetVisible=false  ✅
+```
+`filterFaq()`의 `basisMatch`가 보는 건 **화면 표시 언어(`currentLang`)가 아니라 세금
+기준국(`sharedCountry`)** — `data-basis="kr"`는 `sharedCountry==='kr'`일 때만 보임. 이
+로직 자체는 처음부터 정확했음.
+
+**페르소나④(한국에 사는 외국인)에서 중국어로 이 위젯이 보이는 게 왜 버그가 아니라 의도인지**:
+페르소나④는 세금 계산 기준국이 항상 `kr`로 고정됨(언어만 바뀌고 나라는 안 바뀜) — 즉
+"한국에 살면서 한국 소득세를 내는 외국인 근로자"를 가리키는 페르소나라서, 실제로 이
+위젯이 안내하는 항목(연말정산 환급, 지방세, 예전 계좌, 건강보험·국민연금, 카드포인트)이
+전부 문자 그대로 적용 대상임 — 오히려 한국어를 잘 못 읽는 외국인 근로자일수록 이런 환급금이
+있는지도 모르고 못 찾아가는 경우가 많아서, 언어를 안 가리고 보여주는 게 맞는 설계임.
+
+**번역 완성도도 같이 재확인**: 이 위젯이 쓰는 16개 i18n 키(`faq.q10`, `faq.checklistTitle`,
+`faq.check1~8`, `faq.linkHometax/Gov24/Fine/Health/Cardpoint`, `faq.checklistFooter`) ×
+추가 25개 언어 전부 `i18n-source/translations.json`에 값이 채워져 있음(누락 0건) — 이번
+세션 초반에 여러 차례 발견됐던 "`pickLang()` 7번째 인자 누락" 패턴과는 다른 경로(정적
+`data-i18n` 속성 기반)라 그 버그의 영향을 안 받음.
+
+**주의할 점(버그는 아니지만 알아둘 것)**: Hometax·정부24·금융감독원·건강보험공단·여신금융협회
+5개 링크는 전부 **한국 정부/공공기관 사이트라 한국어만 지원**함(이 사이트가 통제할 수 없는
+외부 시스템 문제). 화면 안내 문구는 26개 언어로 다 번역돼 있지만, 실제로 링크를 눌러
+들어간 뒤부터는 외국인 방문자가 한국어 UI를 마주하게 됨 — 개선하려면 각 사이트가 다국어를
+지원해야 하는데 우리 쪽에서 손댈 수 있는 부분이 아님. 사용자가 요청하면 "이 사이트는
+한국어만 지원해요" 같은 안내 문구 추가를 고려할 수 있으나, 지금은 버그 리포트에 대한
+답이 "없음"이라 별도 조치 안 함.
+
+**결론: 실제 버그 없음, 코드 변경 없음.** 6개 페르소나 전부(③ 정적 페이지 제외, 계산기가
+있는 5개) 검증 완료.
+
+변경 파일: 없음(검증만 수행). 이 항목은 다음 세션이 같은 착오(첫 번째 `.refund-step-card`를
+짚는 테스트)를 반복하지 않도록 남겨둠.
