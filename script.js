@@ -76,15 +76,16 @@ function setLanguage(lang, isManual){
   if (!isCurrencyManuallyEdited && LANG_TO_CURRENCY[lang]) {
     setSharedInputCurrency(LANG_TO_CURRENCY[lang]);
   }
-  // 2026-08-01: 통화와 같은 원칙으로 세금 계산 기준 국가도 언어를 따라 자동으로 맞춰줌 — 다만
-  // 세금 계산 결과 자체를 바꾸는 값이라 통화보다 리스크가 커서, isManual=false로 호출해
-  // "아직 확인 안 된 추측"으로 표시하고(countryWasAutoGuessed), updateHomeCalc()가 그동안
-  // "자동으로 맞췄어요, 확인해주세요" 안내를 계속 노출하게 함(#home-country-autoguess-hint 참고).
-  // 사용자가 국가를 한 번이라도 직접 고르면(isCountryManuallyEdited) 그 뒤로는 언어를 다시
-  // 바꿔도 이 자동 전환이 그 선택을 덮어쓰지 않음
-  if (!isCountryManuallyEdited && LANG_TO_COUNTRY[lang]) {
-    setHomeCountry(LANG_TO_COUNTRY[lang], false);
-  }
+  // 2026-08-01에 추가했던 "언어 감지 → 세금 계산 기준 국가 자동 전환"(LANG_TO_COUNTRY)은
+  // 2026-08-03에 되돌림. 브라우저/OS 언어(navigator.language)는 실제 거주국과 무관한 경우가
+  // 흔한데(예: 한국 거주자가 영어 Windows를 쓰는 경우), 이 사이트 주 타겟(한국 거주자)이 첫
+  // 화면부터 다른 나라 세금 계산 결과를 보게 되는 사고가 반복됨 — 이 기능 자체가 이미
+  // goToKoreaCalculator()·goWithLangSelect(forceKoreaContext) 두 곳의 방어 코드를 낳았고,
+  // 그럼에도 사용자가 "홈페이지가 한국에서 외국중심으로 됐다"고 재차 지적함. 화면 표시 언어와
+  // 세금 계산 기준은 별개 문제로 분리 — 언어는 계속 자동 감지하되(한국 거주 외국인 근로자를
+  // 위한 기능이라 유지), 세금 계산 기준은 항상 한국(또는 사용자가 직접 고른 값)으로 유지함.
+  // countryWasAutoGuessed/#home-country-autoguess-hint는 이제 이 경로로는 켜지지 않지만(다른
+  // 트리거 없음), 다른 재발 방지 목적으로 그대로 남겨둠.
   // 번역 JSON을 불러오는 동안에는 화면이 기존 언어(보통 한국어 기본 텍스트) 그대로 보이다가,
   // 로드가 끝나면 applyTranslations()가 다시 실행되며 새 언어로 바뀜 — 언어 전환 버튼은
   // onclick="setLanguage(...)"처럼 이 Promise를 기다리지 않고 바로 다음 동작(예: 화면 이동)으로
@@ -895,24 +896,8 @@ const LANG_TO_CURRENCY = {
   mn: 'MNT', kk: 'KZT', ky: 'KGS', ur: 'PKR', bn: 'BDT', lo: 'LAK',
   ja: 'JPY', hi: 'INR', tl: 'PHP',
 };
-// 언어 코드 → COUNTRY_TAX_PROFILES에 실제로 있는, 그 언어가 가리키는 세금 기준 국가
-// (2026-08-01 추가, "사이트 타겟을 한국인에서 전 세계로 넓히면서 통화는 언어 따라 자동
-// 전환되는데 세금 기준 국가는 항상 한국 고정"이라는 비대칭을 해소하기 위함). LANG_TO_CURRENCY와
-// 같은 원칙으로 "이 21개국 목록 안에서" 1언어=1국가로 깔끔하게 대응되는 언어만 넣음 — 위 통화
-// 표에서 일부러 뺀 아랍어·프랑스어·스페인어·포르투갈어·우크라이나어·테툼어는 애초에 대응되는
-// 나라가 이 21개국 목록에 없어서 여기도 자연히 제외됨(모호해서가 아니라 해당사항이 없음).
-// 러시아어는 카자흐스탄·키르기스스탄·우즈베키스탄에서도 널리 쓰이지만, 그 나라들은 이미 자체
-// 언어 코드(kk/ky/uz)가 따로 있어 그 언어를 쓰는 사람에겐 그쪽이 먼저 잡히므로, 러시아어
-// 자체는 통화 표와 같은 원칙으로 러시아에 대응시킴. 세금 계산 결과에 직접 영향을 주는 값이라
-// 통화보다 훨씬 신중해야 함 — 그래서 반드시 isCountryManuallyEdited로 사용자의 직접 선택을
-// 덮어쓰지 않게 하고, 계산기 화면에도 "추측된 값이니 확인하라"는 안내를 같이 노출함
-// (updateHomeCalc() 쪽 country-toggle-hint 참고).
-const LANG_TO_COUNTRY = {
-  ko: 'kr', en: 'us', zh: 'cn', vi: 'vn', th: 'th', ru: 'ru',
-  km: 'kh', ne: 'np', id: 'id', my: 'mm', si: 'lk', uz: 'uz',
-  mn: 'mn', kk: 'kz', ky: 'kg', ur: 'pk', bn: 'bd', lo: 'la',
-  ja: 'jp', hi: 'in', tl: 'ph',
-};
+// LANG_TO_COUNTRY(언어→세금 기준 국가 자동 전환)는 2026-08-01에 추가됐다가 2026-08-03에
+// 제거됨 — setLanguage() 위쪽 주석 참고. 다시 추가하기 전에 그 주석의 재발 이력을 먼저 볼 것.
 // 연금액 탭에 마지막으로 입력된 "정확한" USD 백만 단위 값 — 슬라이더 위치(로그 스케일
 // 반올림으로 정밀도 손실 있음)를 통화 전환 재환산의 원본으로 쓰면 KRW↔다른 통화를 여러 번
 // 오갈 때마다 표시값이 조금씩 틀어지는 문제가 있어서, 일시불 탭의 sharedAmountUsd와 같은
@@ -2158,12 +2143,10 @@ function goToCalculatorInput(){
   if (inputCard) inputCard.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-// 2026-08-02: "한국에 살아요" 카드 전용 — 예전엔 goToCalculatorInput()만 호출해서 스크롤만 하고
-// 국가/통화는 그대로 뒀는데, 브라우저 언어 자동감지(LANG_TO_COUNTRY)로 이미 다른 나라 기준(예:
-// 베트남어 브라우저 → country=vn/VND)이 잡혀있는 상태에서 이 카드를 눌러도 그 나라 기준이 안
-// 바뀌는 문제가 있었음 — "한국에 살아요"라고 명시적으로 눌렀는데 계산은 다른 나라 기준으로 나가는
-// 모순(Playwright로 실제 재현 확인). 언어는 그대로 두고(외국어로 읽고 싶을 수 있음) 국가/통화만
-// 한국으로 명시적으로 확정함.
+// "한국에 살아요" 카드 전용 — 언어는 그대로 두고(외국어로 읽고 싶을 수 있음) 국가/통화만
+// 한국으로 명시적으로 확정함. (2026-08-02에는 언어 자동감지가 국가/통화까지 같이 바꿔버리던
+// 버그를 막는 방어 코드였지만, 그 자동 전환 자체가 2026-08-03에 제거됨 — 지금은 순수하게
+// "한국 기준으로 명시 확정"하는 역할만 함.)
 function goToKoreaCalculator(){
   setHomeCountry('kr', true);
   setSharedInputCurrency('KRW', true);
@@ -2193,13 +2176,11 @@ function goToRealAbroad(country, lang){
 
 // 언어/국가 버튼 그리드를 드롭다운으로 압축한 UI용 — 선택된 <option>의 value를 보고
 // 언어 전환(setLanguage) 또는 별도 페이지 이동(location.href) 중 하나로 분기.
-// forceKoreaContext=true는 "한국에 사는 외국인이에요" 드롭다운 전용 — 2026-08-02에 발견: 이
-// 드롭다운은 언어만 고르는 용도인데, setLanguage() 안의 언어→국가/통화 자동 추정(LANG_TO_COUNTRY/
-// LANG_TO_CURRENCY)이 같이 발동해서 예를 들어 베트남어를 고르면 country가 kr에서 vn으로,
-// currency가 KRW에서 VND로 바뀌어버림 — "한국에 산다"는 이 카드의 전제와 정면으로 모순되고
-// 세금 계산 자체가 완전히 다른 나라 기준으로 나가버리는 심각한 문제였음(Playwright로 재현
-// 확인). 이 카드에서 고르는 언어는 순수 표시 언어 선택일 뿐이라, 국가/통화는 항상 한국으로
-// 고정함.
+// forceKoreaContext=true는 "한국에 사는 외국인이에요" 드롭다운 전용 — 이 카드에서 고르는
+// 언어는 순수 표시 언어 선택일 뿐이라, 국가/통화는 항상 한국으로 고정함. (2026-08-02에는
+// setLanguage()의 언어→국가/통화 자동 전환이 같이 발동해서 "한국에 산다"는 전제와 모순되는
+// 버그를 막는 방어 코드였지만, 그 자동 전환 자체는 2026-08-03에 제거됨 — 지금은 currency만
+// LANG_TO_CURRENCY로 자동 전환되니 그 부분만 계속 명시적으로 되돌리는 역할.)
 function goWithLangSelect(selectId, forceKoreaContext){
   const sel = document.getElementById(selectId);
   if (!sel) return;
@@ -11437,11 +11418,10 @@ function updateHomeCalc(usdOverride){
   }
   filingNote.style.display = showFiling ? 'none' : 'block';
 
-  // 2026-08-01: 언어 기반 세금 기준 자동 추정(LANG_TO_COUNTRY, setLanguage() 참고) 결과를
-  // 사용자가 아직 직접 확인(수동 선택)하지 않았으면 항상 보이는 자리에 안내함 — 통화 자동
-  // 전환과 달리 이 값은 세금 계산 결과 자체를 바꾸므로, 조용히 자동 적용만 하고 끝내면 확신
-  // 있게 틀린 세금 결과를 보여줄 위험이 있음(2026-08-01 세션에서 이 위험을 이유로 처음엔
-  // 자동 전환 자체를 보류하기로 했다가, 이 안내 문구를 조건으로 다시 추가하기로 함)
+  // 언어 기반 세금 기준 자동 추정(2026-08-01 추가, 2026-08-03 제거 — setLanguage() 위쪽 주석
+  // 참고)이 켜져있던 동안 쓰던 안내 문구. 지금은 countryWasAutoGuessed가 될 방법이 없어서 이
+  // 블록이 실행되진 않지만, HTML의 #home-country-autoguess-hint 자리 자체는 남아있어도 무해하고
+  // 자동 추정을 다시 켤 일이 생기면 그대로 재사용 가능해서 지우지 않고 남겨둠.
   const autoGuessHint = document.getElementById('home-country-autoguess-hint');
   if (autoGuessHint) {
     if (countryWasAutoGuessed) {
