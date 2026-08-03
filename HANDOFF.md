@@ -3863,3 +3863,75 @@ pointerdown할 때 `e.preventDefault()`로 `<input>`의 포커스(=키보드)를
 변경 파일: `script.js`(`placeAnnotateTextInput()` 드래그 손잡이 추가), `styles.css`
 (`.annotate-text-input-wrap`/`.annotate-text-drag-handle` 신설, `.annotate-text-input`에서
 `position:absolute` 제거).
+
+### 2026-08-03 이어서 (`claude/handover-file-review-0l6xtv` 브랜치) — "공유 카드가 모든
+사이즈·언어에서 잘 나오는지 확인" 요청 → 실제 배포된 og.chamtax.com에서 진짜 버그 3건 발견·수정
+
+**요청 배경**: 사용자가 "이 결과 공유하기도 모든 사이즈에 잘 맞게 나오는지, 외국어도 다
+맞게 나오는지 확인해줘"라고 요청. **이번 세션은 특이하게 `og.chamtax.com`(공유 카드
+Worker)에 실제 네트워크 접근이 됨**(`curl -sI https://og.chamtax.com/api/og.png` → HTTP
+200) — 이전 모든 세션은 샌드박스 네트워크 정책으로 이 주소가 막혀있어서 실제 배포된
+이미지를 코드 리뷰로만 추정했었고(`HANDOFF-og-share-2026-07-31.md`에 "다음 세션이
+확인할 것: 아랍어/우르두어 카드의 실제 RTL 렌더링" 등 여러 미확인 항목이 남아있었음),
+이번엔 처음으로 진짜 이미지를 직접 열어서 검증함.
+
+**서브에이전트가 세션 한도로 중단**돼서 메인 세션이 직접 이어받음. Playwright로 4개 공유
+함수 중 `shareResult()`(홈 결과, 가장 많이 쓰임)를 20개 언어(ar/ur/km/lo/th/my/si/bn/hi/ne/
+zh/ja/ko/en/ru/mn/kk/ky/uz/vi)에서 실행해 실제 `og.chamtax.com/s?...` URL을 캡처 → 파라미터를
+그대로 살려서 `/api/og.png?...` 실제 이미지를 `curl`로 받아 직접 눈으로 확인.
+
+**발견·수정한 버그 3건** (전부 `og-share-worker/src/index.js`):
+
+1. **아랍어(ar)·우르두어(ur) 카드가 HTTP 200에 본문 0바이트로 완전히 깨짐** — 가장 심각한
+   버그. `curl`로 재현: "مليار"(십억), "ملین"(백만) 같은 흔한 단어가 포함된 카드가 예외 없이
+   빈 이미지로 응답함(캐시 헤더 `public, max-age=86400`까지 붙어서, 한 번 발생하면 Cloudflare
+   엣지에 24시간 캐시될 위험까지 있었음). 이진 탐색으로 원인 문자 조합까지 좁힘("ليار" =
+   lam+ya+alif 연속) → `WebSearch`로 확인해보니 **satori(이 Worker의 렌더링 엔진)가 공식적으로
+   리가처·커닝 등 고급 OpenType 기능과 RTL을 지원 안 함**(vercel/satori 이슈 트래커 명시) —
+   Noto Naskh Arabic/Noto Nastaliq Urdu처럼 문맥별 리가처 치환이 많은 서예체 폰트의 특정 글자
+   조합에서 렌더링이 죽는 것으로 보임(같은 텍스트를 기본 'Noto Sans'로 렌더링하면 안 죽음 —
+   폰트 자체의 문제로 확인). **두 언어 모두 Noto Sans Arabic(리가처 의존도 낮은 산세리프)으로
+   교체**해서 해결.
+2. **세율 바 밑 "●" 불릿이 tofu(☐)로 깨짐 — 놀랍게도 아랍어/우르두어 8개 언어뿐 아니라
+   한국어·영어·러시아어 등 사실상 전 언어에서 재현됨.** 기존 코드는 `STATIC_CARD_CHARS`에
+   "●"를 넣어 폰트 서브셋에 포함되도록 이미 조치해뒀었는데(2026-07-31 세션의 이전 수정),
+   실제로 열어보니 **한국어(Noto Sans KR)/중국어(Noto Sans SC)/일본어(Noto Sans JP) 3개
+   CJK 폰트만 이 글자를 담고 있고, 그 외 모든 언어(기본 'Noto Sans' 포함)는 이 글자 자체가
+   서브셋에 없어서 계속 깨지고 있었음.** 글자 렌더링에 기대는 대신 **CSS로 그린 작은
+   원(`<div>` + `border-radius:50%`)으로 교체** — 폰트 의존성을 원천적으로 없앰(어떤 언어든
+   항상 정상 표시).
+3. **번역 문구 안에 박힌 이모지(예: "태국 거주자 (추정치 ⚠️)")가 tofu 2개로 깨짐** — 러시아어
+   (기본 Noto Sans)·태국어(스크립트 전용 폰트) 양쪽에서 재현, 이 프로젝트가 쓰는 어떤 Noto
+   Sans 계열 폰트도 이모지 글리프를 안 담고 있어서(2번과 원인이 다름 — 폰트를 바꾸는 걸로는
+   해결 불가) **카드 렌더링 직전에 이모지 자체를 제거하는 `stripEmoji()`를 `clean()`에 추가**
+   (빈 괄호 "(추정치 )"가 안 남도록 공백/빈 괄호도 같이 정리).
+
+**부수적으로 시도했다가 뺀 것**: 스크립트 전용 폰트 언어(태국어 등)에 기본 'Noto Sans'를
+2순위 폴백 폰트로 추가하는 것도 같이 했는데(satori는 CSS font-family 이름 매칭이 아니라
+`fonts` 배열 등록 순서대로 글자 커버리지를 훑는 방식이라 이름 맞출 필요 없음), 러시아어
+재현 결과 기본 'Noto Sans' 자체도 이모지가 없다는 게 확인돼서 이모지 문제 해결에는 도움이
+안 됨(다른 비이모지 기호 불일치엔 여전히 안전망 역할) — 그래서 이모지는 위 3번처럼 별도로
+제거하는 방식으로 확정.
+
+**중요 — 이 수정들은 아직 실제로 배포 안 됨**: `og-share-worker/`는 Cloudflare GitHub
+연동으로 `main` 브랜치 푸시 때 자동 재배포되는데, 이번 수정은 이 세션의 작업 브랜치
+(`claude/handover-file-review-0l6xtv`)에만 있고 아직 `main`에 병합 안 됨 — **다음 세션(또는
+사용자)이 이 브랜치를 `main`에 병합해야 실제로 `og.chamtax.com`에 반영됨.** 병합 후 아래
+명령으로 재확인 가능(둘 다 지금은 0바이트, 병합 후엔 정상 PNG 크기가 나와야 함):
+```
+curl -s -o /tmp/ar.png -w "%{size_download}\n" "https://og.chamtax.com/api/og.png?main=%D9%85%D9%84%D9%8A%D8%A7%D8%B1&lang=ar"
+curl -s -o /tmp/ur.png -w "%{size_download}\n" "https://og.chamtax.com/api/og.png?main=%D9%85%D9%84%DB%8C%D9%86&lang=ur"
+```
+
+**온사이트 UI(공유 버튼·카드) 검증**: `shareDreamResult()`가 붙어있는 "재미로 보기" 페르소나
+결과 카드(`#dream-result`)를 Playwright로 240~430px 9개 폭 × 5개 언어(ko/en/ar/th/km)에서
+검사 — 카드/버튼 오버플로우, 자식 요소가 카드 밖으로 삐져나가는지 자동 검사 + 240px에서
+직접 스크린샷 확인(ar RTL 정렬 정상, km/th 줄바꿈 정상) — **이슈 0건**. `wrap_audit.js`
+(168, 0)도 재실행해서 재확인.
+
+**검증**: `node --input-type=module --check`(ESM) 통과, `stripEmoji()`는 Node로 직접
+단위 테스트(4개 케이스 — 이모지+괄호 정리, 일반 텍스트 보존, 이모지 단독 등) 통과. 실제
+배포본 재검증은 위에 적었듯 병합 후 필요.
+
+변경 파일: `og-share-worker/src/index.js`(`LANG_FONT_FAMILY.ar/ur` 폰트 교체,
+`loadCardFonts()` 폴백 폰트 추가, 세율 바 불릿 CSS 원으로 교체, `stripEmoji()`/`clean()` 추가).
