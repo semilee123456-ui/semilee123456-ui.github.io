@@ -164,32 +164,63 @@ function buildCardHtml({ label, main, sub, badge, takePct, lang }) {
       <div style="display:flex;width:${takePct}%;height:100%;background:#155445;"></div>
       <div style="display:flex;width:${taxPct}%;height:100%;background:#C0392B;"></div>
     </div>
-    <div style="display:flex;gap:28px;margin-top:18px;font-size:24px;color:#262420;">
-      <div style="display:flex;"><span style="color:#155445;">●</span> ${takePct}%</div>
-      <div style="display:flex;"><span style="color:#C0392B;">●</span> ${taxPct}%</div>
+    <div style="display:flex;gap:28px;margin-top:18px;font-size:24px;color:#262420;align-items:center;">
+      <div style="display:flex;align-items:center;gap:8px;"><div style="display:flex;width:14px;height:14px;border-radius:7px;background:#155445;"></div> ${takePct}%</div>
+      <div style="display:flex;align-items:center;gap:8px;"><div style="display:flex;width:14px;height:14px;border-radius:7px;background:#C0392B;"></div> ${taxPct}%</div>
     </div>` : ''}
     ${bd ? `<div style="display:flex;position:absolute;bottom:56px;${badgeSideStyle}font-size:22px;color:#828C97;">${bd}</div>` : ''}
   </div>`;
 }
 
 // buildCardHtml()이 파라미터와 무관하게 항상 그려넣는 고정 문구/기호 — 브랜드 줄
-// ("ChamTax · chamtax.com")과 로고 원 안의 "C", 세율 바 밑 "● 46%" 같은 불릿·퍼센트 기호.
-// loadCardFonts()가 label/main/sub/badge(그때그때 다른 동적 값)만 보고 폰트 서브셋을
-// 받아왔더니, 이 고정 문구들의 글자가 서브셋에 아예 없어서 항상 네모(tofu)로 깨지는 버그가
-// 실사용자 스크린샷으로 발견됨(금액·라벨 등 동적 글자는 멀쩡한데 브랜드 줄만 깨짐) — 두
-// 자리 숫자 퍼센트가 항상 나오는 것도 아니라서 0-9 전체를 안전하게 포함시킴.
-const STATIC_CARD_CHARS = 'ChamTax · chamtax.com0123456789%●';
+// ("ChamTax · chamtax.com")과 로고 원 안의 "C", 퍼센트 기호. loadCardFonts()가
+// label/main/sub/badge(그때그때 다른 동적 값)만 보고 폰트 서브셋을 받아왔더니, 이 고정
+// 문구들의 글자가 서브셋에 아예 없어서 항상 네모(tofu)로 깨지는 버그가 실사용자 스크린샷으로
+// 발견됨(금액·라벨 등 동적 글자는 멀쩡한데 브랜드 줄만 깨짐) — 두 자리 숫자 퍼센트가 항상
+// 나오는 것도 아니라서 0-9 전체를 안전하게 포함시킴. (2026-08-03: 세율 바 밑 불릿은 "●" 글자가
+// 아니라 CSS로 그린 원(div)으로 바꿔서 여기 포함 안 함 — 아래 참고.)
+const STATIC_CARD_CHARS = 'ChamTax · chamtax.com0123456789%';
 
+// 2026-08-03: 실제 배포된 Worker에 직접 요청해서 캄보디아어/태국어/힌디어/미얀마어 등 8개
+// 언어(LANG_FONT_FAMILY의 스크립트 전용 폰트를 쓰는 언어) 카드를 스크린샷으로 직접 열어보다가
+// 발견함 — 위 세율 바 밑 "●"이 tofu(☐)로 깨져 있었음(당시엔 아직 글자였음, 지금은 위처럼 div로
+// 바꿔서 해결). 같은 자리에서 "(추정치 ⚠️)"처럼 실제 번역 문구 안에 박힌 이모지(⚠️ 등)도 같은
+// 이유로 깨지는 걸 확인함 — Noto Sans Khmer/Thai/Devanagari 같은 스크립트 전용 폰트는 애초에
+// 이모지·기호 글리프를 안 담고 있어서, 그 언어 폰트 하나만 받아오면 그 언어 텍스트 자체는
+// 멀쩡해도 이런 범용 기호만 깨짐. CSS 도형으로 바꿀 수 있는 불릿은 그렇게 했지만, 번역 문구
+// 안에 어떤 이모지가 더 있을지는 27개 언어 전체를 다 뒤지지 않는 한 장담 못 하므로(완전한
+// 해결은 아님, 아래 참고), 스크립트 전용 폰트를 쓰는 언어는 항상 기본 'Noto Sans'도 같이
+// 받아와서 satori의 font-family 폴백 목록(예: "Noto Sans Khmer, Noto Sans")에 얹음 — 스크립트
+// 폰트에 없는 글자(이모지 등)를 만나면 satori가 목록의 다음 폰트로 자동으로 넘어가서 찾음
+// (리가처/RTL과 달리 폰트 폴백 목록 자체는 satori가 지원하는 기능). 'Noto Sans'도 이모지를
+// 담고 있진 않을 가능성이 높아 이모지 자체가 여전히 깨질 수 있음 — 근본적으로는 카드 문구에서
+// 이모지를 걸러내는 게 더 확실하지만, 이번 세션은 이 폴백만으로 범위를 한정함(다음 세션이
+// 실제 배포본에서 이모지 포함 카드를 몇 개 더 열어봐서 필요하면 이모지 자체를 clean()에서
+// 정규식으로 제거하는 걸 검토할 것). 참고: buildCardHtml()의 CSS font-family는 여전히
+// 그냥 "sans-serif"(범용 키워드) — satori는 CSS font-family 이름으로 매칭하는 게 아니라
+// fonts 배열에 등록된 폰트들을 글자 단위로 순서대로 훑어서 그 글자를 담고 있는 첫 폰트를
+// 쓰는 방식이라(등록 순서 = 우선순위), 이름을 맞출 필요 없이 언어별 폰트를 먼저, 기본
+// 'Noto Sans'를 나중에 배열에 넣기만 하면 됨(실제로 기존 코드도 CSS에 "Noto Sans KR" 같은
+// 이름을 명시한 적이 한 번도 없었는데 한국어가 정상 렌더링됐던 것도 같은 이유).
 async function loadCardFonts(params) {
   const cardText = params.label + params.main + params.sub + params.badge + STATIC_CARD_CHARS;
+  const fonts = [];
   try {
-    const fontData = await fetchFontSubset(cardText, params.lang);
-    if (fontData) return [{ name: fontFamilyForLang(params.lang), data: fontData, weight: 700, style: 'normal' }];
+    const primaryData = await fetchFontSubset(cardText, params.lang);
+    if (primaryData) fonts.push({ name: fontFamilyForLang(params.lang), data: primaryData, weight: 700, style: 'normal' });
   } catch (e) {
     // 폰트를 못 받아와도(네트워크 문제 등) 카드 생성 자체는 계속 진행 — 이 경우 비라틴 문자가
     // 다시 깨질 수 있지만, 카드 자체가 안 뜨는 것보단 나음
   }
-  return [];
+  if (fontFamilyForLang(params.lang) !== 'Noto Sans') {
+    try {
+      const fallbackData = await fetchFontSubset(cardText, 'en'); // 'en'은 LANG_FONT_FAMILY에 없어 항상 기본 'Noto Sans'로 감
+      if (fallbackData) fonts.push({ name: 'Noto Sans', data: fallbackData, weight: 700, style: 'normal' });
+    } catch (e) {
+      // 위와 동일 — 폴백 폰트를 못 받아와도 1순위 폰트만으로 계속 진행
+    }
+  }
+  return fonts;
 }
 
 async function handleOgImage(url) {
