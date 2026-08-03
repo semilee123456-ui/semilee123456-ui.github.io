@@ -1497,6 +1497,15 @@ function taxTotalLinePrefix(){
   return pickLang('합계 ', 'Total ', '合计 ', 'Tổng ', 'รวม ', 'Итого ', { km:'សរុប ', ne:'जम्मा ', id:'Total ', my:'စုစုပေါင်း ', si:'එකතුව ', uz:'Jami ', mn:'Нийт ', kk:'Барлығы ', ky:'Баары ', ur:'کل ', bn:'মোট ', lo:'ລວມ ', ja:'合計 ', ar:'الإجمالي ', hi:'कुल ', fr:'Total ', tl:'Kabuuan ' , pt: `Total `, es: `Total `, uk: `Всього `, tet: `Totál `});
 }
 
+// "합계 -46.5%"만 보면 연금/일시불 어느 쪽 기준인지 안 보인다는 지적(2026-08-03) — 바로 위
+// 안내 박스에 "일시불(세전) 기준"이라고 이미 나와있지만 그 박스를 안 읽고 숫자만 보는
+// 사용자를 위해 합계 줄 자체에도 짧게 표시함. "한국 추가 납부 (FTC 적용)" 라벨과 같은 괄호
+// 패턴 재사용. 새 문구를 새로 번역하지 않고, 이미 검수된 home.flowLumpsumLabel(26개 언어)의
+// 값을 그대로 재사용해 번역 품질 리스크를 피함
+function taxTotalLumpsumSuffix(){
+  return ' (' + pickLang('일시불', 'Lump sum', '一次性支付', 'Nhận một lần', 'เงินก้อนครั้งเดียว', 'Единовременная выплата', { km:'ដុំតែម្តង', ne:'एकमुष्ट', id:'Sekaligus', my:'တစ်ကြိမ်တည်း', si:'එකවර ගෙවීම', uz:"Bir martalik to'lov", mn:'Нэг удаагийн төлбөр', kk:'Бір реттік төлем', ky:'Бир жолку төлөм', ur:'یکمشت', bn:'একবারে প্রদান', lo:'ຈ່າຍເທື່ອດຽວ', ja:'一括受取', ar:'الدفعة الواحدة', hi:'एकमुश्त', fr:'Versement unique', tl:'Lump sum', pt:'Pagamento único', es:'Pago único', uk:'Одноразова виплата', tet:'Pagamentu úniku' }) + ')';
+}
+
 function calcTakeHome(amount, country, stateCode){
   if (country === 'us') {
     const stateInfo = STATE_TAX_RATES[stateCode] || STATE_TAX_RATES.AVG;
@@ -6954,7 +6963,7 @@ function refreshJackpotDrawerIfOpen(){
     const jcCashEok = cashKrw / 100000000;
     const jcTaxTotalPctPrecise = jcCashEok > 0 ? (100 - (r.final / jcCashEok * 100)) : 0;
     document.getElementById('jc-tax-total-line').textContent =
-      taxTotalLinePrefix() + '-' + jcTaxTotalPctPrecise.toFixed(1) + '%';
+      taxTotalLinePrefix() + '-' + jcTaxTotalPctPrecise.toFixed(1) + '%' + taxTotalLumpsumSuffix();
 
     // "일시불 대신 연금으로 받으면?" 박스 — 홈 화면의 같은 박스와 계산 로직이 완전히 같아져서
     // (둘 다 이제 일시불 금액이 출발점) 공용 함수로 합침. 예전엔 이 부분이 각자 따로
@@ -9761,59 +9770,6 @@ async function shareDreamResult(btnEl){
   }
 }
 
-// 아직 금액을 입력/조작한 적 없는 기본 상태(입력칸은 placeholder만 있고 실제 값은 비어있음)에서
-// 공유하면, 계산해본 적도 없는 기본값(100M USD)이 마치 실제로 나온 결과인 것처럼 특정 금액이
-// 나가버리는 문제가 있었음 — isAmountManuallyEdited가 true일 때(사용자가 직접 입력했거나
-// 슬라이더/퀵필 버튼을 조작한 적 있을 때)만 결과를 공유하고, 그 전에는 특정 금액 없이 사이트
-// 자체를 소개하는 텍스트+링크로 공유함(2026-07-29: 한때 이 함수만 카드 이미지 생성 로직이
-// 빠져있던 버그를 buildShareCard() 추가로 고쳤었는데, 같은 날 사용자가 카드 이미지 자체를
-// 아예 없애고 링크만 공유하는 방식으로 바꿔달라고 요청해서 다시 텍스트+링크만 남김 — 아래
-// shareLatestDraw 주석 참고, 카드 관련 재작업 이력)
-async function shareGenericPromo(){
-  const shareTitle = document.querySelector('[data-i18n="hero.tag"]')?.textContent?.trim() || 'ChamTax';
-  const heroTitleEl = document.querySelector('[data-i18n-html="hero.title"]');
-  let heroTitleText = '';
-  if (heroTitleEl) {
-    // hero.title엔 줄바꿈용 <br>이 들어있는데 textContent는 <br>을 공백 없이 그냥 이어붙여서
-    // "wouldyou"처럼 단어가 붙어버림 — <br>을 실제 공백으로 바꾼 뒤 텍스트만 뽑음
-    const clone = heroTitleEl.cloneNode(true);
-    clone.querySelectorAll('br').forEach(br => br.replaceWith(' '));
-    heroTitleText = clone.textContent.replace(/\s+/g, ' ').trim();
-  }
-  const shareText = heroTitleText ? `${shareTitle} — ${heroTitleText}` : shareTitle;
-  // 2026-08-03: 이전엔 location.href를 그대로 썼는데, 언어 선택이 URL이 아니라 localStorage에만
-  // 남아있어서(setLanguage 참고) 외국어 화면에서 이 버튼을 눌러도 받는 사람·카카오톡/페이스북/
-  // 트위터 등 링크 미리보기 봇은 항상 index.html의 고정 og:title/og:description(한국어)만 보게
-  // 되는 문제가 있었음(사용자 제보로 발견 — "다른 SNS로 공유해도 깨끗하게 나오는지" 확인 요청).
-  // 다른 공유 버튼 3개와 동일하게 wrapWithOgShareCard()로 감싸서, 지금 보고 있는 언어(currentLang)
-  // 그대로 반영된 동적 카드가 뜨게 함 — main/sub는 이미 화면에 번역되어 보이는 hero 문구를 그대로
-  // 재사용(새 번역 없음).
-  const shareUrl = wrapWithOgShareCard(location.href, { main: shareTitle, sub: heroTitleText });
-
-  // 2026-07-29: 카드 이미지 생성 없이 텍스트+링크만 공유하도록 단순화(위 shareLatestDraw 주석 참고)
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
-      return;
-    } catch (e) {
-      if (e && e.name === 'AbortError') return;
-    }
-  }
-
-  const btn = document.getElementById('home-share-btn');
-  try {
-    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-    if (btn) {
-      const original = btn.textContent;
-      btn.textContent = pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
-    }
-  } catch (e) {
-    window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), `${shareText} ${shareUrl}`);
-  }
-}
-
 // 공유 문구(shareResult)에서 "150 Million USD"처럼 영어 단위를 그대로 박아넣으면 한국어/중국어/
 // 일본어 문장 한복판에서 어색하게 읽힘(2026-08-01 외부 검수 지적) — 직접 검증 가능한 이 4개
 // 언어(ko/en/zh/ja)만 각자 화자에게 자연스러운 단위(억/万/億/million)로 바꿔줌. 나머지 23개
@@ -9842,7 +9798,12 @@ function formatUsdMillionsNatural(amountMillions, lang){
 }
 
 async function shareResult(){
-  if (!isAmountManuallyEdited) { await shareGenericPromo(); return; }
+  // 2026-08-03: 예전엔 !isAmountManuallyEdited(사용자가 금액을 직접 건드린 적 없음)면
+  // shareGenericPromo()(금액 없는 사이트 소개 카드)로 빠졌는데, 사용자가 "금액 카드가 항상
+  // 뜨게 해달라"고 요청함(기본값이라도 카드에 금액이 있는 게 아무 정보 없는 소개 카드보다
+  // 낫다는 판단) — 기본 상태에서도 home-final-amt·sharedAmountUsd가 이미 유효한 계산값을
+  // 갖고 있으므로(페이지 로드 시점에 기본 금액으로 미리 계산돼있음) 게이트 없이 항상 아래
+  // 로직으로 진행함.
   // 공유 문구/링크(?amount=)는 항상 "Million USD" 기준 숫자를 써야 함(문구 자체가 26개 언어
   // 전부 "Million USD"로 고정돼있고, 링크를 여는 사람이 어떤 통화를 보고 있었는지도 모르므로) —
   // 입력칸에 지금 보이는 텍스트(sharedInputCurrency 단위)를 그대로 쓰면 통화가 KRW 등일 때
@@ -9895,8 +9856,8 @@ async function shareResult(){
   // 공유 링크를 받은 사람이 빈 계산기가 아니라 나와 같은 결과를 바로 보게 하려면, 현재 계산기
   // 상태(금액/국가/주)를 URL 쿼리 파라미터로 실어 보내야 함 — DOMContentLoaded의 대칭 처리부가
   // 이 파라미터들을 읽어서 되돌려 채워준다(아래 "?amount=" "?state=" 처리 블록 참고).
-  // 이 함수는 맨 위에서 !isAmountManuallyEdited면 이미 shareGenericPromo()로 빠지므로, 여기
-  // 아래로 내려온 시점엔 amountText가 사용자가 실제로 입력/조작한 값임이 보장됨.
+  // amountText는 사용자가 직접 입력한 값일 수도, 기본값일 수도 있음(위 게이트 제거로 둘 다 이
+  // 경로를 탐).
   const shareUrlObj = new URL(location.href);
   shareUrlObj.searchParams.set('amount', amountText);
   shareUrlObj.searchParams.set('country', homeCountryVal);
@@ -11010,7 +10971,7 @@ function updateHomeCalc(usdOverride){
   // 거기는 단독으로만 보여서 소수점 유무가 문제되지 않음
   const taxImpactPctPrecise = 억 > 0 ? (100 - (final / 억 * 100)) : 0;
   document.getElementById('home-tax-total-line').textContent =
-    taxTotalLinePrefix() + '-' + taxImpactPctPrecise.toFixed(1) + '%';
+    taxTotalLinePrefix() + '-' + taxImpactPctPrecise.toFixed(1) + '%' + taxTotalLumpsumSuffix();
 
   // 실수령/세금 비율을 숫자로만 보여주는 대신 막대그래프로도 한눈에 보이게 함 —
   // 다른 복권 세금 계산기들(infinitycalculator 등)에 공통으로 있는 시각적 breakdown 패턴 참고
