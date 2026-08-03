@@ -43,22 +43,27 @@ Workers & Pages → `semilee123456-ui-github-io` → Settings → Build 확인 �
 | `claude/github-handover-review-ma18qt` | PR #77로 병합됨 | ✅ 안전 |
 | `claude/handover-file-review-0l6xtv` | 고유 커밋이 PR #83/84/85 내용과 중복(이미 main에 다른 SHA로 반영됨) | ✅ 안전 |
 | `claude/github-handover-file-check-29r6r0` | PR #86으로 병합 완료(이번에 처리함) | ✅ 이제 안전 |
-| `claude/connection-issue-tqhm4t` | 고유 커밋 전부 오래된 PR(#29~#70) — main에 이미 반영됨 | ✅ 안전 |
-| `claude/github-file-check-g50n55` | 고유 커밋 전부 오래된 PR(#29~#49) — main에 이미 반영됨 | ✅ 안전 |
-| `claude/github-handover-index-review-49ksjq` | 고유 커밋 전부 오래된 PR(#22~#40) — main에 이미 반영됨 | ✅ 안전 |
-| `claude/github-work-handover-lqgr9p` | 고유 커밋 전부 오래된 PR(#1~#27) — main에 이미 반영됨 | ✅ 안전 |
+| `claude/connection-issue-tqhm4t` | 고유 커밋 전부 오래된 PR(#52~#71, 전부 closed) — main에 이미 반영됨 | ✅ 안전 |
+| `claude/github-file-check-g50n55` | 고유 커밋 전부 오래된 PR(#41~#50, 전부 closed) — main에 이미 반영됨 | ✅ 안전 |
+| `claude/github-handover-index-review-49ksjq` | 고유 커밋 전부 오래된 PR(#18~#40, 전부 closed) — main에 이미 반영됨 | ✅ 안전 |
+| `claude/github-work-handover-lqgr9p` | 고유 커밋 전부 오래된 PR(#22~#28, 전부 closed) — main에 이미 반영됨 | ✅ 안전 |
+| `claude/github-latest-handover-files-i8ztge` | 인수인계 문서 갱신 커밋 2개(이번에 이 파일에 반영·통합함) 외 고유 작업 없음 | ✅ 안전 |
 
-(2026-08-03 후속 세션에서 확인 완료) 위 4개를 `git fetch` + `git merge-base --is-ancestor`로
-직접 검사함 — main의 최신 스냅샷과 diff하면 4개 전부 "추가 218~698줄 / 삭제 1243~3313줄"로
-**main보다 뒤처진 오래된 브랜치**였고(새 작업이 없고 오히려 그 뒤 main에서 지워진/바뀐
-내용을 아직 갖고 있는 상태), 고유 커밋에 찍힌 PR 번호(#1~#70)가 전부 이미 main에 반영된
-범위였음. 결정적 확인: `claude/connection-issue-tqhm4t`의 유일한 실작업 커밋("TTS 이모지
-제거", PR #70)의 실제 코드(`speechSynthesis` 관련 이모지 제거 로직)가 현재 `script.js`에
-이미 존재하고, `HANDOFF.md`에도 PR #70 기록이 이미 있음을 확인 → 4개 전부 안전하게 삭제
-가능. 이제 10개 브랜치(`main` 제외) 전부 확인 완료.
+마지막 5개는 후속 세션에서 `git diff --stat origin/main..origin/<브랜치>`로 직접 검사해
+마무리함 — 5개 전부 "삭제 위주"(main이 그 뒤로도 계속 진행되면서 이 브랜치들이 오히려
+뒤처진 상태) diff였고, 고유 커밋에 찍힌 PR 번호가 전부 이미 closed 상태로 main에 반영된
+범위였음. 결정적 교차검증으로 `claude/connection-issue-tqhm4t`의 유일한 실작업 커밋
+("TTS 이모지 제거", PR #70)이 실제로 지금 `script.js`에 있는지까지 확인함. 참고로
+`mcp__github__list_pull_requests`가 반환하는 `merged` 필드는 이 환경에서 신뢰할 수
+없음(PR #86처럼 git log에 병합 커밋이 실제로 있는데도 `merged:false`로 나옴) —
+**PR API의 `merged` 값이 아니라 `git diff`로 실제 파일 내용을 직접 비교해서 판단할 것.**
+"ahead 숫자 > 0"만 보고 병합 안 됐다고 단정하지 말라는 원래 교훈과 같은 맥락.
 
 ## 남은 일
 
-- 위 10개 브랜치(`main` 제외) 전부 GitHub 웹 UI(Branches 탭)에서 삭제 —
+- 이제 위 표의 11개 브랜치 전부 확인 완료 — 전부 GitHub 웹 UI(Branches 탭)에서 삭제 가능.
   git push/API로 브랜치 삭제하는 도구가 없어서 사용자가 직접 해야 함(자세한 내용은
   `HANDOFF-og-share-2026-07-31.md`의 "알아둘 것" 섹션 참고).
+- (2026-08-03 후속 세션에서 추가) `claude/handover-github-files-review-n65pbq`(PR #87로
+  병합 완료 — "이미지로 저장" 팝업 확대·텍스트 삭제/크기조절 기능)도 이제 안전하게 삭제
+  가능. 이걸로 위 11개 + 이 1개 = 총 12개 브랜치(`main` 제외) 전부 삭제 대상.

@@ -1988,7 +1988,7 @@
   }
   .annotate-overlay-header{
     display:flex; align-items:center; justify-content:space-between; gap:8px;
-    font-size:var(--fs-body); font-weight:800; color:var(--text-dark);
+    font-size:var(--fs-h3); font-weight:800; color:var(--text-dark);
   }
   .annotate-overlay-title-group{ display:flex; align-items:center; gap:8px; min-width:0; }
   /* 곰돌이 마스코트가 "인사"하는 걸 보고 싶다는 요청(2026-08-03) — 저장 결과물(PNG)은 정지
@@ -2012,10 +2012,13 @@
     transform-box:fill-box; transform-origin:center;
     animation:mascotWink 1.1s ease-in-out;
   }
-  .annotate-toolbar{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+  .annotate-toolbar{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+  /* 2026-08-03: 40~60대 사용자가 이 팝업(도구 버튼·색상 원)이 작게 느껴진다고 지적 —
+     시니어 가독성 최소 폰트(--fs-small)를 본문급(--fs-body)으로 올리고, 터치 타깃도
+     이 코드베이스의 44px 최소 기준(예: .tts-btn-icon)에 맞춤 */
   .annotate-tool-btn{
-    font-family:inherit; font-size:var(--fs-small); font-weight:700; padding:6px 10px; border-radius:10px;
-    border:1.5px solid var(--border); background:var(--bg); color:var(--text-dark); cursor:pointer;
+    font-family:inherit; font-size:var(--fs-body); font-weight:700; padding:10px 16px; min-height:44px;
+    border-radius:12px; border:1.5px solid var(--border); background:var(--bg); color:var(--text-dark); cursor:pointer;
   }
   .annotate-tool-btn.is-active{ background:var(--teal); border-color:var(--teal); color:var(--on-accent); }
   .annotate-tool-btn-ghost{ background:none; }
@@ -2055,8 +2058,9 @@
      입력창을 한 wrap으로 묶어서 wrap을 absolute로 옮기고, 손잡이를 끌면 입력 포커스(키보드)는
      유지한 채로 위치만 바뀌게 함(placeAnnotateTextInput() 참고) */
   .annotate-text-input-wrap{
-    position:absolute; z-index:5; display:inline-flex; align-items:center; gap:4px; touch-action:none;
+    position:absolute; z-index:5; display:flex; flex-direction:column; gap:4px; touch-action:none;
   }
+  .annotate-text-input-row{ display:inline-flex; align-items:center; gap:4px; }
   .annotate-text-drag-handle{
     display:flex; align-items:center; justify-content:center; flex:none;
     width:28px; height:28px; border-radius:8px; background:var(--teal); color:var(--on-accent);
@@ -2069,6 +2073,22 @@
     padding:2px 6px; min-width:80px; outline:none;
   }
   :root[data-theme="dark"] .annotate-text-input{ background:rgba(30,28,24,0.92); }
+  /* 2026-08-03: 텍스트를 쓴 다음 지우거나(🗑) 글자 크기를 바꿀(A−/A+) 방법이 없다는 지적으로
+     입력창 아래에 별도 줄로 추가 — placeAnnotateTextInput()이 기존 텍스트를 다시 누르면
+     같은 UI로 재편집(삭제·크기조절 포함)할 수 있게 재사용함 */
+  .annotate-text-controls{ display:inline-flex; align-items:center; gap:4px; }
+  .annotate-text-size-btn{
+    display:flex; align-items:center; justify-content:center; flex:none;
+    width:30px; height:30px; border-radius:8px; border:1.5px solid var(--border);
+    background:var(--card); color:var(--text-dark); font-size:14px; font-weight:800;
+    cursor:pointer; touch-action:none; user-select:none;
+  }
+  .annotate-text-delete-btn{
+    display:flex; align-items:center; justify-content:center; flex:none;
+    width:30px; height:30px; border-radius:8px; border:none;
+    background:var(--status-red); color:#fff; font-size:14px;
+    cursor:pointer; touch-action:none; user-select:none;
+  }
   .annuity-schedule-wrap{ margin-top:8px; }
   .annuity-schedule-row{
     display:grid; grid-template-columns:38px 1fr 1fr; gap:4px 8px; align-items:baseline;

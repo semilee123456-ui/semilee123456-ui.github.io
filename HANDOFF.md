@@ -4261,3 +4261,37 @@ Arabic'로 확정, `handleOgImage()`에 eager-buffer 방식 에러 핸들링 구
 변경 파일: `script.js`만(`buildHomeResultCheckCanvas`가 hotspots 반환하도록 변경 + 3개 호출부
 갱신, `setupAnnotateCanvasEvents`에 호버/클릭 핫스팟 로직 추가, `placeAnnotateTextInput`에
 `fontSizeOverride` 파라미터 추가).
+
+### 2026-08-03 이어서 (`claude/handover-github-files-review-n65pbq` 브랜치, PR #87로 병합) —
+"이미지로 저장" 팝업 확대 + 텍스트 삭제/크기조절 추가
+
+**배경**: 위 항목들과 동시에 별도 세션에서 진행된 작업 — 병합 시점에 `script.js`/`styles.css`의
+같은 영역(`placeAnnotateTextInput`/`setupAnnotateCanvasEvents`)을 건드려서 충돌이 났고, 수동
+병합으로 두 세션의 기능(이 항목의 삭제/크기조절 + 바로 위 항목의 "받는 사람" 핫스팟)을 합쳤음
+— `placeAnnotateTextInput()`의 네 번째 인자를 두 세션이 각자 다른 용도(하나는 재편집용
+`existing` 객체, 하나는 신규 텍스트용 `fontSizeOverride` 숫자)로 추가해서 시그니처가 충돌났던
+게 병합의 핵심 작업이었음(아래 참고).
+
+**요청 1 — 팝업이 작게 느껴짐**: 사용자가 스크린샷으로 "꾸며서 저장하기" 팝업이 40~60대에게
+작게 느껴진다고 지적. 도구 버튼(펜/텍스트/실행취소/지우기)·색상 원·제목·날짜 입력칸을 이
+코드베이스의 기존 시니어 접근성 기준(터치 타깃 44px, 본문 폰트 `--fs-body`)에 맞춰 확대함.
+
+**요청 2 — 텍스트 삭제·크기 조절이 안 됨**: 캔버스에 글자를 놓은 뒤 지우거나 크기를 바꿀
+방법이 없었음(실행취소로 전체를 되돌리거나 백스페이스로 한 글자씩 지우는 것뿐). 이미 놓인
+텍스트를 다시 탭하면(드래그 아닌 순수 탭만 — `annotateTextDrag.moved` 플래그로 구분) 원래
+입력 UI가 재편집 모드로 열리도록 확장하고, 입력창 아래에 크기조절(A−/A+)·삭제(🗑) 버튼을
+추가함. 이 버튼들은 click 대신 `pointerdown` + `preventDefault()`로 처리 — click을 쓰면
+버튼으로 포커스가 넘어가며 input이 먼저 blur되어 텍스트가 확정 저장돼버리는 문제가 있어서
+드래그 손잡이와 같은 패턴을 재사용함. Playwright로 추가→재편집(값 유지 확인)→크기조절
+미리보기 반영→삭제 흐름 직접 검증, 회귀 테스트(`wrap_audit`/`console_error_audit`/
+`home_audit`) 전부 0 ISSUES.
+
+**병합 시 처리**: `placeAnnotateTextInput(canvasPt, clientX, clientY, opts)`로 네 번째 인자를
+`opts` 객체로 통일 — `opts.existing`(재편집, 이 항목 기능)과 `opts.fontSize`(신규 텍스트 초기
+크기, "받는 사람" 핫스팟 기능)를 둘 다 담을 수 있게 함. 두 기능을 실제로 같이 써보는 시나리오
+(핫스팟으로 "받는 사람" 채운 뒤 그 텍스트를 다시 탭해서 크기 조절/삭제)까지 Playwright로 확인.
+
+변경 파일: `styles.css`(`.annotate-tool-btn`/`.annotate-color-swatch`/`.annotate-overlay-header`
+확대, `.annotate-text-controls`/`.annotate-text-size-btn`/`.annotate-text-delete-btn` 추가),
+`script.js`(`placeAnnotateTextInput()`에 `existing` 파라미터로 재편집 지원, `setupAnnotateCanvasEvents()`의
+`endStroke()`에 탭-vs-드래그 분기 추가 — 이후 병합 세션이 `opts` 객체로 통합).

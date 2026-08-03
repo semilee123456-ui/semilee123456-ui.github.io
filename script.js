@@ -6407,7 +6407,7 @@ function setupAnnotateCanvasEvents(canvas){
       // 핫스팟 높이에 맞춰 글자 크기를 줄임 — 기본 annotateFontSize(카드 전체 기준 큼직한
       // 자유 낙서용)를 그대로 쓰면 이 좁은 한 줄 빈칸에서 옆 요소와 겹침
       const hotspotFontSize = Math.max(14, Math.round(hotspot.hitH * 0.42));
-      placeAnnotateTextInput(pt, clientPt.x, clientPt.y, hotspotFontSize);
+      placeAnnotateTextInput(pt, clientPt.x, clientPt.y, { fontSize: hotspotFontSize });
       return;
     }
     if (annotateTool === 'pen') {
@@ -6448,7 +6448,26 @@ function setupAnnotateCanvasEvents(canvas){
   });
   const endStroke = () => {
     if (annotateTextDrag) {
+      const drag = annotateTextDrag;
       annotateTextDrag = null;
+      // 2026-08-03: 움직이지 않고 그냥 탭만 한 경우(드래그 아님) — 그 텍스트를 다시 편집
+      // 모드로 열어서 삭제/크기 조절이 가능하게 함. 실제로 끌어서 옮긴 경우(moved:true)는
+      // 이미 위 pointermove에서 위치가 반영됐으니 그대로 둠(편집창을 또 열지 않음)
+      if (!drag.moved) {
+        const action = annotateActions[drag.index];
+        if (action) {
+          annotateActions.splice(drag.index, 1);
+          redrawAnnotateOverlay();
+          const r = canvas.getBoundingClientRect();
+          const scaleX = r.width / canvas.width, scaleY = r.height / canvas.height;
+          placeAnnotateTextInput(
+            { x: action.x, y: action.y },
+            r.left + action.x * scaleX,
+            r.top + action.y * scaleY,
+            { existing: { text: action.text, color: action.color, fontSize: action.fontSize } }
+          );
+        }
+      }
       updateAnnotateUndoClearState();
     }
     if (!annotateDrawing) return;
@@ -6469,21 +6488,36 @@ function setupAnnotateCanvasEvents(canvas){
 // 손잡이를 pointerdown할 때 preventDefault()로 input의 포커스(=키보드)를 그대로 유지한 채
 // wrap을 드래그해서 위치만 옮길 수 있음. 이미 놓인(커밋된) 텍스트를 드래그하는 기존 기능
 // (findAnnotateTextActionAt() 등)과는 별개 — 이건 "아직 입력 중인" 텍스트를 위한 것.
-function placeAnnotateTextInput(canvasPt, clientX, clientY, fontSizeOverride){
+// existing(opts.existing, 선택): 이미 캔버스에 놓인 텍스트를 다시 탭해서 편집하는 경우
+// { text, color, fontSize }를 넘겨받음(호출부인 setupAnnotateCanvasEvents()의 endStroke()가
+// 편집 시작 시점에 annotateActions에서 해당 액션을 이미 splice로 빼놓고 넘겨줌 — 그래서 이
+// 함수는 "새 텍스트"와 "기존 텍스트 편집"을 구분할 필요 없이 항상 commit()에서 새로 push하면
+// 됨. 삭제(🗑)는 그냥 입력을 열었다가 아무것도 push하지 않고 닫는 것과 동일해서, 편집 중이던
+// 텍스트가 자연스럽게 사라짐).
+// opts.fontSize(선택): "받는 사람" 핫스팟처럼 좁은 빈칸에 맞춰 새 텍스트를 작게 시작하고
+// 싶을 때 초기 글자 크기 — 기본 annotateFontSize는 카드 전체 폭 기준으로 큼직하게 잡혀있어서
+// (자유 낙서용) 좁은 한 줄짜리 빈칸에 그대로 쓰면 옆 요소(금액 등)와 겹침. existing이 있으면
+// existing.fontSize가 우선함.
+function placeAnnotateTextInput(canvasPt, clientX, clientY, opts){
+  opts = opts || {};
+  const existing = opts.existing || null;
   removeAnnotateTextInput();
-  // 2026-08-03: 핫스팟(예: "받는 사람")에서 열릴 땐 그 밑줄 높이에 맞는 작은 글자 크기를
-  // 넘겨받음 — 기본 annotateFontSize는 카드 전체 폭 기준으로 큼직하게 잡혀있어서(자유
-  // 낙서용), 좁은 한 줄짜리 빈칸에 그대로 쓰면 옆 요소(금액 등)와 겹침.
-  const fontSize = fontSizeOverride || annotateFontSize;
   const wrap = document.getElementById('annotateCanvasWrap');
   const drawCanvas = document.getElementById('annotateOverlayCanvas');
   if (!wrap || !drawCanvas) return;
   const wrapRect = wrap.getBoundingClientRect();
+  const BOTTOM_MARGIN = 74; // 아래 크기조절/삭제 버튼 줄까지 감안한 여유(기존 30px에서 확장)
+
+  const color = existing ? existing.color : annotateColor;
+  let fontSize = existing ? existing.fontSize : (opts.fontSize || annotateFontSize);
 
   const container = document.createElement('span');
   container.className = 'annotate-text-input-wrap';
   container.style.left = Math.max(0, Math.min(wrapRect.width - 120, clientX - wrapRect.left)) + 'px';
-  container.style.top = Math.max(0, Math.min(wrapRect.height - 30, clientY - wrapRect.top)) + 'px';
+  container.style.top = Math.max(0, Math.min(wrapRect.height - BOTTOM_MARGIN, clientY - wrapRect.top)) + 'px';
+
+  const inputRow = document.createElement('span');
+  inputRow.className = 'annotate-text-input-row';
 
   const handle = document.createElement('span');
   handle.className = 'annotate-text-drag-handle';
@@ -6493,18 +6527,58 @@ function placeAnnotateTextInput(canvasPt, clientX, clientY, fontSizeOverride){
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'annotate-text-input';
-  input.style.color = annotateColor;
+  input.style.color = color;
+  if (existing) input.value = existing.text;
 
-  container.appendChild(handle);
-  container.appendChild(input);
+  inputRow.appendChild(handle);
+  inputRow.appendChild(input);
 
-  // 커밋 시점에 wrap 기준 container 위치를 다시 캔버스 픽셀 좌표로 환산 — 드래그로 위치가
-  // 바뀌었을 수 있어서 처음 탭한 canvasPt를 그대로 쓰지 않고 매번 새로 계산함
+  // 2026-08-03: "텍스트 없애기"·"글씨 크기 변경"이 안 된다는 지적으로 입력창 아래 별도 줄에
+  // 크기조절(A−/A+)·삭제(🗑) 버튼을 추가. 실행취소로 통째로 지우거나 글자를 전부 백스페이스로
+  // 지워야 했던 예전 방식보다 훨씬 직접적임
+  const controls = document.createElement('span');
+  controls.className = 'annotate-text-controls';
+
+  const updateFontPreview = () => {
+    const r = drawCanvas.getBoundingClientRect();
+    const scale = r.width / drawCanvas.width;
+    input.style.fontSize = Math.max(12, Math.round(fontSize * scale)) + 'px';
+  };
+  updateFontPreview();
+
+  const sizeDownBtn = document.createElement('button');
+  sizeDownBtn.type = 'button';
+  sizeDownBtn.className = 'annotate-text-size-btn';
+  sizeDownBtn.textContent = 'A−';
+  sizeDownBtn.setAttribute('aria-label', '글자 작게');
+
+  const sizeUpBtn = document.createElement('button');
+  sizeUpBtn.type = 'button';
+  sizeUpBtn.className = 'annotate-text-size-btn';
+  sizeUpBtn.textContent = 'A+';
+  sizeUpBtn.setAttribute('aria-label', '글자 크게');
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'annotate-text-delete-btn';
+  deleteBtn.textContent = '🗑';
+  deleteBtn.setAttribute('aria-label', '텍스트 삭제');
+
+  controls.appendChild(sizeDownBtn);
+  controls.appendChild(sizeUpBtn);
+  controls.appendChild(deleteBtn);
+
+  container.appendChild(inputRow);
+  container.appendChild(controls);
+
+  // 커밋 시점에 wrap 기준 inputRow 위치를 다시 캔버스 픽셀 좌표로 환산 — 드래그로 위치가
+  // 바뀌었을 수 있어서 처음 탭한 canvasPt를 그대로 쓰지 않고 매번 새로 계산함(핸들+입력창이
+  // 있는 첫 줄 기준 — 아래 컨트롤 줄까지 포함하면 텍스트 기준점이 아래로 밀려버림)
   const currentCanvasPt = () => {
     const r = drawCanvas.getBoundingClientRect();
     const scaleX = drawCanvas.width / r.width;
     const scaleY = drawCanvas.height / r.height;
-    const cr = container.getBoundingClientRect();
+    const cr = inputRow.getBoundingClientRect();
     return { x: (cr.left - r.left) * scaleX, y: (cr.top - r.top) * scaleY };
   };
 
@@ -6515,7 +6589,8 @@ function placeAnnotateTextInput(canvasPt, clientX, clientY, fontSizeOverride){
     const text = input.value.trim();
     if (text) {
       const pt = currentCanvasPt();
-      annotateActions.push({ type: 'text', color: annotateColor, x: pt.x, y: pt.y, text, fontSize });
+      annotateActions.push({ type: 'text', color, x: pt.x, y: pt.y, text, fontSize });
+      annotateFontSize = fontSize; // 다음 새 텍스트도 방금 쓴 크기를 이어받음
       redrawAnnotateOverlay();
       updateAnnotateUndoClearState();
     }
@@ -6526,12 +6601,31 @@ function placeAnnotateTextInput(canvasPt, clientX, clientY, fontSizeOverride){
     done = true;
     if (container.parentNode) container.parentNode.removeChild(container);
     annotateActiveTextInput = null;
+    updateAnnotateUndoClearState();
   };
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); commit(); }
     else if (e.key === 'Escape') { e.preventDefault(); discard(); }
   });
   input.addEventListener('blur', commit);
+
+  // 아래 세 버튼은 click 대신 pointerdown + preventDefault로 처리 — click을 쓰면 버튼으로
+  // 포커스가 넘어가면서 input이 먼저 blur되어 commit()이 발동해버려서(드래그 손잡이와 같은 이유)
+  // 삭제/크기조절 버튼을 눌러도 그 직전에 이미 텍스트가 확정 저장돼버리는 문제가 생김
+  sizeDownBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    fontSize = Math.max(14, fontSize - 4);
+    updateFontPreview();
+  });
+  sizeUpBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    fontSize = Math.min(120, fontSize + 4);
+    updateFontPreview();
+  });
+  deleteBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    discard();
+  });
 
   let dragPointerId = null;
   let dragOffsetX = 0, dragOffsetY = 0;
@@ -6547,7 +6641,7 @@ function placeAnnotateTextInput(canvasPt, clientX, clientY, fontSizeOverride){
     if (dragPointerId === null || e.pointerId !== dragPointerId) return;
     const r = wrap.getBoundingClientRect();
     const left = Math.max(0, Math.min(r.width - 120, e.clientX - r.left - dragOffsetX));
-    const top = Math.max(0, Math.min(r.height - 30, e.clientY - r.top - dragOffsetY));
+    const top = Math.max(0, Math.min(r.height - BOTTOM_MARGIN, e.clientY - r.top - dragOffsetY));
     container.style.left = left + 'px';
     container.style.top = top + 'px';
   });
@@ -6558,6 +6652,7 @@ function placeAnnotateTextInput(canvasPt, clientX, clientY, fontSizeOverride){
   wrap.appendChild(container);
   annotateActiveTextInput = { el: container, commit };
   input.focus();
+  if (existing) input.select();
 }
 
 function removeAnnotateTextInput(){
