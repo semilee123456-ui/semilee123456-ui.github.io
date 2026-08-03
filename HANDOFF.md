@@ -4372,3 +4372,72 @@ merge`로 직접 합쳐서 충돌을 눈으로 보고 해결할 것(자동 병�
 쓸 것(직접 push는 403).
 
 변경 파일: 위 병합 대상 4개 파일(코드 변경은 없음, 병합 충돌 해소만 수행).
+
+### 2026-08-03 이어서 — "AI 글래스 대비" SEO/AEO 작업 착수 (사용자가 제미나이·GPT 교차검증 후 요청, 세션 중간에 사용량 한도 임박으로 축소 진행)
+
+**배경**: 사용자가 "AI 글래스(Meta Ray-Ban, Google Android XR+Gemini 등) 시대에 대비하려면
+뭘 해야 하나" 질문 → 조사 결과 "AI 글래스 대비 = AI 에이전트(Gemini/ChatGPT/Perplexity)가
+콘텐츠를 정확히 읽고 인용할 수 있게 만드는 것"으로 결론 → 정리한 제안서를 사용자가 제미나이·
+GPT 양쪽에 검토 요청 → 두 검토를 종합해 최종 우선순위 확정. 이후 **세션 사용량이 얼마 안
+남았다는 사용자 알림**을 받고, "다 쓰기 전에 할 수 있는 것부터"라는 요청에 따라 범위를
+1개 페이지로 축소해서 실제로 반영하고, 나머지는 이 항목에 상세히 인계함.
+
+**최종 확정 우선순위** (두 AI 검토 종합, 이 문서에 원본 대화 없음 — 요약만 기록):
+1. 대표 시나리오를 정적 HTML 문장으로 제공 (계산기만으론 부족, AI가 인용할 "문장"이 있어야 함)
+2. 엔터티 정의 문장("참택스는 무엇인가" 한 줄 설명)
+3. Organization/WebSite/SoftwareApplication(또는 WebApplication) JSON-LD 보강
+4. FAQPage + HowTo JSON-LD
+5. 최종 업데이트 날짜 표시
+6. 질문형(대화형) H2/H3 헤딩
+7. `llms.txt`
+8. ARIA/헤딩 구조 감사 (낮은 우선순위)
+- **보류로 결론**: `Speakable` 스키마 — 한 검토는 추천, 다른 검토는 "뉴스 위주라 범용 AI가
+  잘 안 씀"으로 반박. 무효 마크업은 아니지만 실효성 불확실해서 이번엔 안 넣기로 함(백로그
+  참고, 나중에 여유 있을 때 추가해도 손해 없음).
+
+**이번 세션에서 실제로 완료한 것** (1개 페이지만, 사용량 한도 때문에 축소):
+- `korea-resident-us-lottery-tax.html`(허브 페이지)에:
+  - `<p class="lead">`에 엔터티 정의 문장 추가("참택스(ChamTax)는 ~계산기예요")
+  - `.updated-date` 클래스로 "최종 업데이트: 2026-08-03" 표시 추가(스타일도 신규 추가)
+  - Organization/WebSite/SoftwareApplication JSON-LD 3개 신규 추가 — **반드시 `index.html`의
+    기존 값과 동일하게 맞춤**(`name: "참택스"`, `logo: icon-512.png`, `applicationCategory:
+    "FinanceApplication"` 등 — 사이트 전체에서 같은 엔터티를 가리키는 구조화 데이터는 값이
+    일치해야 AI가 신뢰도 있게 인식한다는 두 검토 공통 지적 반영)
+  - HowTo JSON-LD 신규 추가("미국 복권 세후 실수령액 계산 방법" 4단계)
+  - **이 페이지에 이미 있어서 손 안 댄 것**: FAQPage·BreadcrumbList JSON-LD(이미 있었음),
+    질문형 헤딩(h2들이 이미 "왜 두 나라에서 다 내야 해요?" 같은 자연어 질문형이었음 — 이
+    페이지는 원래도 잘 돼있었음, 다른 페이지는 확인 필요), 대표 시나리오 텍스트(`.example-box`에
+    "1억 달러 당첨 시 약 5,300만~7,000만 달러" 구체적 예시가 이미 있었음).
+  - **`llms.txt`는 이미 다른 세션/루틴이 만들어놨음을 발견**(영어로 작성, `korea-resident-...`
+    포함 대표 페이지들 링크·세율 팩트·"AI 어시스턴트를 위한 참고사항" 섹션까지 이미 충실하게
+    돼있었음) — 새로 안 만들고 그대로 둠. 다만 그 안의 `biggest-lottery-jackpots-after-tax.html`/
+    `korean-abroad-us-lottery-tax.html` 링크가 위 랜딩페이지 안의 `biggest-jackpot-payouts.html`/
+    `korean_abroad_us_lottery_tax_ko.html`과 파일명이 다른데 **둘 다 실제로 존재하는 별개
+    파일임을 확인**(깨진 링크 아님, 혼동 주의).
+  - 검증: JSON-LD 6개 블록 전부 `python3 -c "json.loads(...)"` 문법 검증 통과. 이 저장소엔
+    Playwright가 `node_modules`로 설치돼있지 않아(빌드 도구 없음 원칙) 브라우저 렌더링
+    검증은 못 함 — 코드 리뷰로 구조만 확인함. **다음 세션 또는 배포 후, Google Rich
+    Results Test로 이 페이지를 재검증할 것.**
+
+**다음 세션이 이어서 할 것** (같은 패턴을 반복 적용):
+1. 같은 처리를 나머지 4개 페이지에 적용: `lottery-jackpot-amount.html`(ko),
+   `lottery-jackpot-amount-en.html`, `us-lottery-basics-en.html`, 그리고 `us-lottery-basics-ko.html`이
+   없으면(위 조사 당시 파일 목록엔 `-ko` 접미사 없이 한국어가 기본판일 가능성 있음) 실제
+   파일명부터 `ls us-lottery-basics-*.html`로 재확인 후 진행.
+2. 각 페이지 작업 시 체크리스트: (a) 엔터티 정의 문장 (b) 최종 업데이트 날짜 (c)
+   Organization/WebSite/SoftwareApplication JSON-LD — **반드시 index.html 값과 동일하게**
+   (d) FAQPage/HowTo JSON-LD — 이미 FAQPage 있으면 HowTo만 추가 (e) 대표 시나리오 정적
+   텍스트 있는지 확인, 없으면 추가 (f) h2/h3가 질문형인지 확인, 아니면 자연어 질문형으로
+   다듬기.
+3. `index.html`(메인 계산기)엔 이미 Organization/WebSite/FAQPage/SoftwareApplication이
+   있음 — HowTo만 없으니 필요하면 추가 검토(계산기 자체는 페이지 이동 없는 SPA라 HowTo
+   "단계"가 자연스럽게 안 맞을 수 있음, 강행하지 말 것).
+4. **보류 백로그**: `Speakable` 스키마(여유 있을 때), GitHub Actions로 89개 랜딩페이지
+   잭팟 텍스트 자동 갱신(범위가 커서 별도 세션 필요 — 처음엔 이번처럼 소수 페이지로 시작할
+   것, 89개 전부를 한 번에 자동화 대상으로 잡지 말 것 — 유지보수 부담 우려는 이미 두 AI
+   검토 모두에서 지적됨), ARIA/헤딩 구조 전체 감사.
+5. 원본 대화(제미나이·GPT 검토 전문)는 이 저장소에 없음 — 사용자 채팅에만 있으므로, 세부
+   근거가 더 필요하면 사용자에게 다시 물어볼 것.
+
+변경 파일: `korea-resident-us-lottery-tax.html`(JSON-LD 3개 신규 + HowTo, 엔터티 문장,
+최종 업데이트 날짜 표시). `llms.txt`는 기존 파일 그대로 유지(신규 작성 안 함).
