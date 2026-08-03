@@ -6373,43 +6373,96 @@ function setupAnnotateCanvasEvents(canvas){
 
 // 텍스트 도구로 캔버스를 탭하면 그 자리에 임시 <input>을 띄워서 입력받고, 확정되면(Enter/포커스
 // 아웃) 캔버스 액션으로 굳혀서 그려 넣음 — Esc는 입력을 그냥 버림. done 플래그로 Enter 확정 뒤
-// input을 지울 때 발생하는 blur가 같은 텍스트를 중복으로 추가하지 않게 막음
+// input을 지울 때 발생하는 blur가 같은 텍스트를 중복으로 추가하지 않게 막음.
+// 2026-08-03: 모바일에서 타이핑 중(키보드가 열려 화면 절반을 가린 상태)엔 옮길 방법이 아예
+// 없다는 사용자 지적으로, <input> 옆에 작은 드래그 손잡이(.annotate-text-drag-handle)를 붙임 —
+// 손잡이를 pointerdown할 때 preventDefault()로 input의 포커스(=키보드)를 그대로 유지한 채
+// wrap을 드래그해서 위치만 옮길 수 있음. 이미 놓인(커밋된) 텍스트를 드래그하는 기존 기능
+// (findAnnotateTextActionAt() 등)과는 별개 — 이건 "아직 입력 중인" 텍스트를 위한 것.
 function placeAnnotateTextInput(canvasPt, clientX, clientY){
   removeAnnotateTextInput();
   const wrap = document.getElementById('annotateCanvasWrap');
-  if (!wrap) return;
+  const drawCanvas = document.getElementById('annotateOverlayCanvas');
+  if (!wrap || !drawCanvas) return;
   const wrapRect = wrap.getBoundingClientRect();
+
+  const container = document.createElement('span');
+  container.className = 'annotate-text-input-wrap';
+  container.style.left = Math.max(0, Math.min(wrapRect.width - 120, clientX - wrapRect.left)) + 'px';
+  container.style.top = Math.max(0, Math.min(wrapRect.height - 30, clientY - wrapRect.top)) + 'px';
+
+  const handle = document.createElement('span');
+  handle.className = 'annotate-text-drag-handle';
+  handle.textContent = '✥';
+  handle.setAttribute('aria-hidden', 'true');
+
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'annotate-text-input';
-  input.style.left = Math.max(0, Math.min(wrapRect.width - 90, clientX - wrapRect.left)) + 'px';
-  input.style.top = Math.max(0, Math.min(wrapRect.height - 28, clientY - wrapRect.top)) + 'px';
   input.style.color = annotateColor;
+
+  container.appendChild(handle);
+  container.appendChild(input);
+
+  // 커밋 시점에 wrap 기준 container 위치를 다시 캔버스 픽셀 좌표로 환산 — 드래그로 위치가
+  // 바뀌었을 수 있어서 처음 탭한 canvasPt를 그대로 쓰지 않고 매번 새로 계산함
+  const currentCanvasPt = () => {
+    const r = drawCanvas.getBoundingClientRect();
+    const scaleX = drawCanvas.width / r.width;
+    const scaleY = drawCanvas.height / r.height;
+    const cr = container.getBoundingClientRect();
+    return { x: (cr.left - r.left) * scaleX, y: (cr.top - r.top) * scaleY };
+  };
+
   let done = false;
   const commit = () => {
     if (done) return;
     done = true;
     const text = input.value.trim();
     if (text) {
-      annotateActions.push({ type: 'text', color: annotateColor, x: canvasPt.x, y: canvasPt.y, text, fontSize: annotateFontSize });
+      const pt = currentCanvasPt();
+      annotateActions.push({ type: 'text', color: annotateColor, x: pt.x, y: pt.y, text, fontSize: annotateFontSize });
       redrawAnnotateOverlay();
       updateAnnotateUndoClearState();
     }
-    if (input.parentNode) input.parentNode.removeChild(input);
-    if (annotateActiveTextInput && annotateActiveTextInput.el === input) annotateActiveTextInput = null;
+    if (container.parentNode) container.parentNode.removeChild(container);
+    if (annotateActiveTextInput && annotateActiveTextInput.el === container) annotateActiveTextInput = null;
+  };
+  const discard = () => {
+    done = true;
+    if (container.parentNode) container.parentNode.removeChild(container);
+    annotateActiveTextInput = null;
   };
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); commit(); }
-    else if (e.key === 'Escape') {
-      e.preventDefault();
-      done = true;
-      if (input.parentNode) input.parentNode.removeChild(input);
-      annotateActiveTextInput = null;
-    }
+    else if (e.key === 'Escape') { e.preventDefault(); discard(); }
   });
   input.addEventListener('blur', commit);
-  wrap.appendChild(input);
-  annotateActiveTextInput = { el: input, commit };
+
+  let dragPointerId = null;
+  let dragOffsetX = 0, dragOffsetY = 0;
+  handle.addEventListener('pointerdown', (e) => {
+    e.preventDefault(); // input 포커스(키보드)를 그대로 유지
+    dragPointerId = e.pointerId;
+    handle.setPointerCapture(e.pointerId);
+    const cr = container.getBoundingClientRect();
+    dragOffsetX = e.clientX - cr.left;
+    dragOffsetY = e.clientY - cr.top;
+  });
+  handle.addEventListener('pointermove', (e) => {
+    if (dragPointerId === null || e.pointerId !== dragPointerId) return;
+    const r = wrap.getBoundingClientRect();
+    const left = Math.max(0, Math.min(r.width - 120, e.clientX - r.left - dragOffsetX));
+    const top = Math.max(0, Math.min(r.height - 30, e.clientY - r.top - dragOffsetY));
+    container.style.left = left + 'px';
+    container.style.top = top + 'px';
+  });
+  const endHandleDrag = (e) => { if (e.pointerId === dragPointerId) dragPointerId = null; };
+  handle.addEventListener('pointerup', endHandleDrag);
+  handle.addEventListener('pointercancel', endHandleDrag);
+
+  wrap.appendChild(container);
+  annotateActiveTextInput = { el: container, commit };
   input.focus();
 }
 

@@ -2017,8 +2017,21 @@
   #annotateBaseCanvas{ display:block; width:100%; height:auto; }
   #annotateOverlayCanvas{ position:absolute; inset:0; width:100%; height:100%; }
   .annotate-hint{ font-size:var(--fs-small); color:var(--text-muted); margin:0; text-align:center; }
+  /* 2026-08-03: 예전엔 <input> 자체가 absolute였는데, 타이핑 중(키보드 열려있는 동안)엔 옮길
+     방법이 없다는 지적으로 작은 드래그 손잡이(.annotate-text-drag-handle)를 추가함 — 손잡이+
+     입력창을 한 wrap으로 묶어서 wrap을 absolute로 옮기고, 손잡이를 끌면 입력 포커스(키보드)는
+     유지한 채로 위치만 바뀌게 함(placeAnnotateTextInput() 참고) */
+  .annotate-text-input-wrap{
+    position:absolute; z-index:5; display:inline-flex; align-items:center; gap:4px; touch-action:none;
+  }
+  .annotate-text-drag-handle{
+    display:flex; align-items:center; justify-content:center; flex:none;
+    width:28px; height:28px; border-radius:8px; background:var(--teal); color:var(--on-accent);
+    font-size:15px; line-height:1; cursor:grab; touch-action:none; user-select:none;
+  }
+  .annotate-text-drag-handle:active{ cursor:grabbing; }
   .annotate-text-input{
-    position:absolute; z-index:5; font-family:inherit; font-size:16px; font-weight:800;
+    font-family:inherit; font-size:16px; font-weight:800;
     background:rgba(255,255,255,0.92); border:1.5px dashed var(--teal); border-radius:6px;
     padding:2px 6px; min-width:80px; outline:none;
   }
