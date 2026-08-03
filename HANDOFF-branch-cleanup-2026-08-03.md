@@ -14,12 +14,24 @@
 - 홈 결과 카드 "합계" 줄에 일시불 기준 표기 추가
 
 병합 시 "Workers Builds: semilee123456-ui-github-io" 체크가 실패 상태였는데, 이 PR은
-`script.js` 한 파일만 건드려서 `og-share-worker/`와는 무관 — **관계없는 파일 변경인데도 이
-체크가 실패로 뜨는 것으로 보임(다른 여러 브랜치에서도 동일하게 실패로 표시된 것 확인)**.
-무시하고 병합했음. 다음 세션이 시간 나면: 이 Cloudflare Workers Build 체크가 실제로 뭘 보고
-pass/fail을 판단하는지(브랜치 전체를 빌드하는지, 왜 무관한 변경에도 실패하는지) 한 번
-확인해볼 것 — 어쩌면 이 체크 자체가 항상 실패하는 상태로 고장나 있어서, 앞으로 진짜 문제가
-있는 PR도 이 체크 하나 보고는 구분을 못 할 수 있음.
+`script.js` 한 파일만 건드려서 `og-share-worker/`와는 무관 — 관계없는 파일 변경인데도 이
+체크가 실패로 뜨는 것으로 확인됨(다른 여러 브랜치에서도 동일 증상). 무시하고 병합했음.
+
+**✅ 이후 원인 파악·해결함 (같은 날 후속 작업)**: Cloudflare 대시보드 →
+Workers & Pages → `semilee123456-ui-github-io` → Settings → Build 확인 결과, 두 가지가
+원인이었음:
+1. **Branch control**: "Builds for non-production branches"가 Enabled로 되어 있어서,
+   `main`이 아닌 아무 브랜치에 푸시만 해도 실제 **production**에 배포를 시도하고 있었음
+   (details_url이 `.../production/builds/...`였던 이유). 이건 단순 CI 소음이 아니라, 오래된/
+   미완성 브랜치가 실수로 라이브 Worker를 덮어쓸 수 있는 실제 위험이었음.
+2. **Build watch paths**: "Include paths: `*`"(저장소 전체)로 되어 있어서, `og-share-worker`와
+   무관한 파일(예: script.js, HTML 페이지)이 바뀌어도 이 빌드가 매번 돌았음.
+
+**조치 완료**: ① Branch control → "Builds for non-production branches" **Disabled**로 변경
+(이제 `main` 병합 시에만 배포됨). ② Build watch paths → `*`를 지우고 **`og-share-worker/*`**로
+변경(이제 그 폴더가 바끈 때만 빌드가 돌). 둘 다 사용자가 대시보드에서 직접 저장 완료,
+설정 화면에 반영된 것까지 확인함. 앞으로 무관한 PR/브랜치에서 이 체크가 실패로 뜨는 일은
+없을 것으로 예상됨 — 혼시 또 발생하면 이 두 설정이 원래대로 되돌아갔는지부터 확인할 것.
 
 ## 브랜치별 상태 (2026-08-03 기준)
 
