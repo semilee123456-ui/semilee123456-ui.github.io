@@ -1545,12 +1545,41 @@
     0%{ width:6px; height:6px; margin-left:-3px; opacity:0.9; }
     100%{ width:34px; height:34px; margin-left:-17px; opacity:0; }
   }
+  /* 2026-08-03: "낚싯대도 움직이고 진짜 물고기 잡는 것처럼" 요청으로 자동재생을 탭 타이밍
+     게임으로 바꾸며 추가 — 입질 순간엔 버튼 자체가 눈에 띄게 펄스(.fishing-btn-urgent)해서
+     "지금 눌러야 한다"는 걸 놓치기 어렵게 하고, 릴 감기 단계에선 진행 게이지(연타할수록 채워짐)를
+     보여줌. 물고기를 놓쳤을 때 뜨는 안내 문구(.fishing-status-msg)는 기본 흐림(opacity:0)
+     상태였다가 .show가 붙을 때만 살짝 페이드인 — reflow 재시작 패턴(script.js)으로 매번
+     처음부터 재생됨. 연못(.fishing-pond) 자체는 aria-hidden이라 스크린리더에서 안 보이지만,
+     실제 조작 가능한 컨트롤은 여전히 진짜 <button>(#fishing-cast-btn)이라 키보드로도 Enter를
+     연타하면 플레이 가능함 — 연못 클릭은 마우스/터치 사용자를 위한 더 큰 보너스 타겟일 뿐. */
+  @keyframes fishing-btn-pulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.045); }
+  }
+  .fishing-btn-urgent{
+    animation:fishing-btn-pulse 0.32s ease-in-out infinite;
+    background:var(--status-amber) !important;
+  }
+  .fishing-pond.is-biting, .fishing-pond.is-reeling{ cursor:pointer; }
+  .fishing-reel-gauge-wrap{
+    height:14px; border-radius:7px; background:var(--border); overflow:hidden; margin:10px 0 0;
+  }
+  .fishing-reel-gauge-fill{
+    height:100%; width:0%; background:var(--teal); border-radius:7px; transition:width 0.12s ease;
+  }
+  .fishing-status-msg{
+    min-height:1.4em; text-align:center; font-size:var(--fs-small); font-weight:700;
+    color:var(--status-red); margin:8px 0 0; opacity:0; transition:opacity 0.2s ease;
+  }
+  .fishing-status-msg.show{ opacity:1; }
   @media (prefers-reduced-motion: reduce){
     .fishing-pond.is-casting .fishing-rod{ animation:none; }
     .fishing-pond.is-biting .fishing-hook{ animation:none; }
     .fishing-pond.is-reeling .fishing-caught-fish{ animation:none; }
     .fishing-idle-fish{ animation:none; }
     .fishing-splash.play{ animation:none; }
+    .fishing-btn-urgent{ animation:none; }
   }
 
   .prize-card{
