@@ -3760,3 +3760,40 @@ Minify/Brotli(사용자 대시보드 작업 필요), CPI_BASE_YEAR 갱신(2025�
 
 변경 파일: `i18n-source/translations.json`(5개 키), `i18n/lo.json`(재생성),
 `us-lottery-basics-lo.html`.
+
+### 2026-08-03 이어서 (`claude/handover-file-review-0l6xtv` 브랜치) — 사용자가 스크린샷으로
+지적한 하단 "실수령 ○○원" 배지-텍스트 겹침 실제 원인 발견·수정
+
+**요청 배경**: 사용자가 아이폰 스크린샷을 보내며 "이쪽이 안접혀"라고 지적 — 홈 화면 결과
+카드의 "결과 더 자세히 보기" 아코디언(연금 안내 + 세금 상세 + FTC 안내)을 펼친 상태에서
+스크롤을 내리면, 맨 아래 disclaimer 문단("종합소득세 누진세율과 외국납부세액공제(FTC)를
+반영한 참고용 계산이에요…")이 화면 하단에 고정된 "💰 실수령 ○○원" 배지(`#sticky-result-badge`)
+밑에 그대로 깔려 문장 중간이 안 보이는 상태였음.
+
+**원인**: 같은 화면에 떠 있는 다른 플로팅 버튼 "🔍 궁금해요"(`#faqFloatWrap`)는 이미
+`faqFloatBtnCollisionState()`로 뒤에 깔린 텍스트를 감지하면 자동으로 흐려지는(`is-colliding`,
+opacity 0.16) 방어 로직이 있는데(2026-07-25에 이미 만들어짐), `#sticky-result-badge`는
+그 로직이 애초에 없었음 — 스크롤 임계값·"관련 구간 지났는지"만 보고 뜨고 숨을 뿐, 지금
+그 자리에 무슨 텍스트가 있는지는 전혀 확인 안 하는 구조였음.
+
+**수정**: 이미 범용으로 만들어져 있던 `faqFloatBtnCollisionState(btn)`을 그대로 재사용해서
+`updateStickyResultBadgeCollision()`을 새로 추가 — `sticky-result-badge`가 `is-visible`인
+동안 텍스트와 겹치면 `is-colliding` 클래스를 붙여 흐리게(opacity 0.16, faq-float-wrap과
+동일 값) 함. 새 스크롤 리스너를 따로 안 만들고, 기존 `setupFaqFloatBtnScrollVisibility()`의
+스크롤 settle 타이머·`toggle` 이벤트(아코디언 열고 닫을 때) 훅에 그대로 얹어서 호출함(이미
+같은 타이밍에 같은 종류의 검사를 하고 있어서 효율적). 배지가 안 보이는 상태로 넘어갈 때
+`is-colliding`도 같이 지워서(스타일 우선순위상 안 지우면 다음에 다시 뜰 때 잠깐 이전 판정이
+남는 것 방지) `faq-float-wrap`의 기존 처리와 대칭을 맞춤.
+
+**검증**: Playwright로 실제 시나리오(홈 화면, `country=jp`, 결과 더 자세히 보기 + 연금 안내
+아코디언 펼침, 배지가 텍스트와 겹치는 스크롤 위치까지 정밀 이동) 재현 — 수정 전엔 배지가
+불투명하게 문장 위에 얹혀 안 읽혔고, 수정 후엔 `is-colliding` 클래스가 붙어 거의 안 보일
+정도로 흐려지며 문장이 다시 읽힘을 스크린샷으로 확인. 참고: 이 테스트 환경(헤드리스
+Chromium)에서 배지 자체의 표시 여부를 결정하는 기존 `IntersectionObserver` 로직이 스크롤
+후 재계산을 안 하는 현상이 있었음(이번 수정과 무관한 기존 코드, 실기기에선 사용자 스크린샷
+자체가 배지가 정상적으로 뜬 증거라 실제 버그는 아닐 가능성이 높음) — `is-visible` 클래스를
+직접 강제로 켜서 충돌 감지 로직만 독립적으로 검증함. `node --check`·`home_audit`(18)·
+`wrap_audit`(168)·`console_error_audit`(161) 통과.
+
+변경 파일: `script.js`(`updateStickyResultBadgeCollision()` 신설 + 훅 연결),
+`styles.css`(`.sticky-result-badge.is-colliding` 규칙 추가).
