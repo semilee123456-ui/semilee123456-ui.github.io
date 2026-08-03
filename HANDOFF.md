@@ -3492,6 +3492,70 @@ hi/id/uk 우선).
 변경 파일: `uzbekistan-resident-us-lottery-tax.html`, `kyrgyz_in_korea_lottery_tax.html`
 (문자체계 혼용 오타 수정).
 
+### 2026-08-03 이어서 — "이미지로 저장" 텍스트 도구 드래그 이동 추가 + "이 결과 공유하기"
+다른 SNS·다른 언어 공유 시 진짜 버그 2건 발견·수정
+
+**요청 배경 1**: 사용자가 "이미지로 저장" 모달(꾸며서 저장하기, `openAnnotateOverlay()`)에서
+텍스트 도구로 글자를 넣었는데 "텍스트 옮기는 게 잘 안 된다"고 지적. Playwright로 직접
+재현해보니 실제로 드래그 이벤트 자체가 전혀 처리되지 않고 있었음(`placeAnnotateTextInput()`이
+탭한 자리에 `<input>`을 고정 배치만 하고, Enter/blur로 확정된 뒤에는 `annotateActions`에
+`{x, y}` 고정 좌표로 박혀서 재배치할 방법이 실행취소(전체 삭제) 말고는 없었음) — 이동 기능
+자체가 처음부터 없었던 게 맞음(펜 스트로크는 처음부터 좌표 배열을 들고 있어 다시 그릴 수
+있는 구조였는데 텍스트만 "드래그"라는 상호작용이 안 붙어있었을 뿐, 데이터 구조 자체는
+이미 좌표 기반 벡터라 드래그 구현이 어렵지 않았음).
+
+**수정**: `getAnnotateTextBBox()`/`findAnnotateTextActionAt()`로 이미 놓인 텍스트의 클릭
+판정 영역(터치로 집기 쉽게 여유 패딩 포함)을 계산하고, 텍스트 도구로 캔버스를 누를 때
+그 자리에 기존 텍스트가 있으면(`annotateTextDrag` 상태) 새 텍스트를 만드는 대신 그 텍스트를
+붙잡아 자유롭게 끌 수 있게 함 — `pointermove`에서 액션의 x/y를 갱신하며 `redrawAnnotateOverlay()`.
+빈 자리를 누르면 예전처럼 새 텍스트 입력이 뜸. 도구 전환/실행취소/전체지우기/오버레이 새로
+열기 시 `annotateTextDrag` 상태를 확실히 초기화해서 낡은 인덱스를 붙들고 있지 않게 함.
+
+**요청 배경 2**: 같은 대화에서 이어서 "이 결과 공유하기"(`shareResult()`)가 다른 SNS로
+공유해도 깨끗한지, 다른 언어에서도 잘 나오는지 확인해달라고 요청. 코드 검토 중 진짜 버그
+2건을 발견:
+
+1. **`shareGenericPromo()`가 동적 OG 카드를 안 씀** — 아직 금액을 직접 입력하지 않은
+   기본 상태(`isAmountManuallyEdited === false`)에서 공유하면 `shareResult()`가
+   `shareGenericPromo()`로 빠지는데, 이 함수는 `location.href`(쿼리 없는 순수 페이지 URL)를
+   그대로 공유 URL로 썼음. 언어 선택은 URL이 아니라 `localStorage`에만 남는 구조라서
+   (`setLanguage()` 참고), 일본어/아랍어 등 외국어 화면에서 이 버튼을 눌러도 카카오톡·
+   페이스북·트위터 같은 링크 미리보기 봇은 `index.html`의 고정 `og:title`/`og:description`
+   (한국어 전용, `index.html:74-75`)만 읽어서 항상 한국어 카드로만 보임 — 다른 공유 버튼
+   3개(홈 결과/최근 당첨번호/재미 결과)는 이미 `wrapWithOgShareCard()`로 감싸서 이 문제가
+   없었는데 이 경로만 빠져있었음. `shareGenericPromo()`도 동일하게
+   `wrapWithOgShareCard(location.href, { main: shareTitle, sub: heroTitleText })`로 감싸도록
+   수정(새 번역 없음 — hero.tag/hero.title 화면에 이미 표시 중인 번역 문구 재사용).
+2. **`shareResult()`의 "OO 거주자" 라벨이 us/cn/in 3개국만 지원** — `homeCountrySelect`는
+   실제로 21개국+기타(kr/us/cn/jp/in/vn/id/ph/th/ru/np/lk/uz/kz/kg/mm/bd/pk/kh/mn/la/other)를
+   지원하는데, 공유 문구의 나라 라벨은 us/cn/in 3개만 분기 처리하고 나머지 18개국은 전부
+   `else` 폴백으로 "한국 거주자"/"Korea resident"가 찍히고 있었음(코드 자체를 읽어서 발견 —
+   화면엔 정상 표시되니 육안으로는 안 보이고 공유 문구 안에서만 발생). Playwright로
+   일본(jp)·우즈베키스탄(uz) 국가를 고른 뒤 ja/ar/uz/tet 언어로 실제 `navigator.share()`
+   호출을 가로채 확인 → 국가를 뭘 고르든 공유 문구엔 계속 "일본 거주자"가 아니라 "한국
+   거주자"(또는 그 언어의 대응 문구)만 나오는 것 확인. `calcTakeHome(1, country, state)`가
+   이미 22개국 전부에 대해 22개 언어로 번역해둔 `basisSuffix`(화면의 "OO 거주자 기준" 문구와
+   완전히 동일한 값, `script.js:1500` 이하 국가별 분기마다 존재)를 그대로 재사용하도록 교체 —
+   수정 후 같은 테스트에서 jp→"일본居住者"/"resident in Japan", uz→"Oʻzbekiston rezidenti"로
+   정확히 바뀌는 것 확인. 영어 관사(a/an)도 India/Indonesia/Other만 "an"이 되도록 보정.
+
+**검증**: Playwright로 `navigator.share()`를 스텁해서 실제 호출 인자를 가로채는 방식으로
+ko/ja/ar/uz/tet 5개 언어 × 국가 조합을 직접 실행해 문구·URL을 확인(위 버그 2건 재현 후 수정
+확인). 텍스트 드래그는 실제 포인터 이벤트(mousedown→move→up)를 시뮬레이션해서 좌표가
+바뀌는 것과 스크린샷으로 시각 확인. 회귀 테스트 `console_error_audit`(161, 0)·
+`lang_leak_audit`(104, 0)·`home_audit`(18, 0) 전부 클린.
+
+**다음 세션이 참고할 것**: `shareGenericPromo()`가 감싸는 URL의 `to=`는 여전히 `location.href`
+그대로라, 카드 미리보기 자체는 언어별로 정확해졌지만 그 링크를 실제로 눌러서 들어간
+페이지는 받는 사람의 브라우저 언어/저장된 언어로 뜸(사이트 전체가 URL에 언어를 안 싣는
+구조라 다른 공유 버튼들도 동일 — 이 세션에서 새로 생긴 제약이 아니라 기존 설계).
+`shareDreamResult()`/`shareLatestDraw()`/환급 체크리스트 공유는 애초에 나라 라벨을 안 쓰거나
+이미 `basisSuffix`를 정상적으로 쓰고 있어서 2번 버그의 영향이 없었음(직접 확인함).
+
+변경 파일: `script.js`(`annotateTextDrag`/`getAnnotateTextBBox`/`findAnnotateTextActionAt`
+추가로 텍스트 드래그 이동 구현, `shareGenericPromo()` OG 카드 래핑 추가, `shareResult()` 국가
+라벨을 `calcTakeHome().basisSuffix` 재사용으로 교체).
+
 ### 2026-08-03 이어서 — 이 세션(`claude/github-latest-files-check-j9xthk`) 전체 최종 확인
 + 인수인계 마무리
 
