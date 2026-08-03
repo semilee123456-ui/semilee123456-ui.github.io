@@ -4120,3 +4120,41 @@ Arabic'로 확정, `handleOgImage()`에 eager-buffer 방식 에러 핸들링 구
 불가능해 사용자가 GitHub 웹 UI에서 직접 해야 함.
 
 변경 파일: `HANDOFF-branch-cleanup-2026-08-03.md`(브랜치 4개 확인 결과 반영), 코드 변경 없음.
+
+### 2026-08-03 이어서 — "자동 루틴이 토큰(구독 사용량) 없이 API만으로 돌 수 있는지" 최종 결론
+
+**배경**: 이전 세션들이 몇 차례 "보류"로 남겨뒀던 질문(위 "확인 2 — API 결제 환경 질문"
+항목 참고) — 15개 자동 루틴을 구독 사용량 한도 대신 API 종량제로 돌릴 수 있는지 — 을 사용자가
+다시 물어봄. 이번엔 끝까지 파고들어 확정 답을 찾음.
+
+**조사 과정**:
+1. `list_environments`로 재조회 — 여전히 "Default" 환경 2개뿐, 전부 `anthropic_cloud`.
+2. 사용자가 claude.ai/code 화면에서 환경 선택 드롭다운 → "+ 클라우드 환경 추가..."를 직접
+   열어서 스크린샷으로 보여줌 — **새 환경 만들기 화면엔 이름·네트워크 액세스(없음/신뢰됨/
+   전체/사용자 정의)·설정 스크립트만 있고, API 키나 결제 방식과 관련된 옵션은 전혀 없었음.**
+   즉 "환경(environment)"은 애초에 결제 방식과 무관한 개념(샌드박스 네트워크 권한 설정)임을
+   직접 확인.
+3. 공식 문서(`https://code.claude.com/docs/en/claude-code-on-the-web`)를 WebFetch로 확인해
+   결정적 근거를 찾음:
+   - *"Claude Code on the web shares rate limits with all other Claude and Claude Code usage
+     within your account... There is no separate compute charge for the cloud VM."*
+   - *"`claude --cloud`/`--teleport`는 claude.ai 계정 로그인이 필요하고, API 키로 인증하면
+     'Unable to get organization UUID'로 실패한다"* — 클라우드 세션(루틴 포함)은 구조적으로
+     API 키 인증 자체를 받지 않음.
+
+**최종 결론(확정, 더 이상 "확인 필요"로 남기지 말 것)**:
+- **Claude Code on the web의 클라우드 세션·루틴은 API 종량제로 분리할 방법이 원천적으로
+  없음.** 몇 개를 만들든 전부 그 계정(이세미 님)의 구독(Pro) 사용량 한도를 공유함.
+- 즉 "판단이 필요한" 자동화(지금 15개 루틴 — 버그 점검, 잭팟 갱신, 세법 재검증 등 전부 Claude가
+  웹서치·판단해야 함)는 **예외 없이 토큰(사용량)이 필요함.**
+- 반대로 "판단이 필요 없는" 단순 반복 작업은 애초에 Claude/루틴으로 만들 필요가 없고, 이미
+  존재하는 `.github/workflows/lottery-backfill.yml`처럼 **GitHub Actions + 공개 API(data.ny.gov)
+  + 자동 발급되는 `GITHUB_TOKEN`** 조합으로 완전히 무료·무토큰으로 돌릴 수 있음(이미 그렇게
+  하고 있음). 이 경계선(판단 필요 여부)이 "토큰 없이 자동화 가능한가"의 실질적 기준.
+- 사용자는 현재 사용량 한도에 실제로 부딪힌 상태가 아니고(미리 걱정한 것), 상위 플랜(Max)으로
+  올릴 생각도 없다고 명시적으로 밝힘 — **당장 추가 조치 없음.** 다음 세션은 이 주제를 다시
+  "확인 필요"로 재조사하지 말고 이 결론을 그대로 참고할 것. 사용자가 나중에 "사용량 한도에
+  실제로 부딪힌다"고 하면, 그때는 (1) 15개 루틴 개수/빈도 축소 (2) 판단 불필요한 항목만
+  GitHub Actions로 이관 (3) 플랜 업그레이드 — 이 세 가지가 유일한 실질적 선택지.
+
+변경 파일: 없음(질문 조사·인수인계 정리만 수행).
