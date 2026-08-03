@@ -87,6 +87,53 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "참택스",
+  "alternateName": "ChamTax",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "참택스",
+  "url": "https://chamtax.com/",
+  "description": "미국 복권(파워볼·메가밀리언즈) 당첨 시 세금과 실수령액을 확인하는 계산기"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "참택스 (ChamTax)",
+  "url": "https://chamtax.com/",
+  "description": "미국 복권(파워볼·메가밀리언즈) 당첨 시 세금과 실수령액을 확인하는 무료 웹 계산기. 한국 포함 21개국 세금 기준, 미국 비거주자 원천징수까지 계산해볼 수 있어요.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "메가밀리언즈 세후 실수령액 계산 방법",
+  "step": [
+    { "@type": "HowToStep", "name": "당첨금 입력", "text": "메가밀리언즈 발표 잭팟 또는 일시불 현금가치를 입력해요." },
+    { "@type": "HowToStep", "name": "거주국 선택", "text": "한국 거주자 기준인지, 다른 나라 기준인지 선택해요." },
+    { "@type": "HowToStep", "name": "세후 실수령액 확인", "text": "미국 연방세 30% 원천징수와 한국 세금(이중과세 조정 반영)을 적용한 예상 실수령액을 확인해요." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -131,6 +178,7 @@
   .disclaimer{ font-size:var(--fs-small); color:var(--text-muted); margin-top:32px; padding-top:16px; border-top:1px solid var(--border); }
   .related-links{ display:flex; flex-direction:column; gap:8px; margin:16px 0 32px; }
   .related-links a{ font-size:var(--fs-note); color:var(--teal); text-decoration:none; font-weight:600; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
 </style>
 </head>
 <body>
@@ -145,7 +193,8 @@
   </div>
 
   <h1>메가밀리언즈 당첨금, 실제로 얼마 받을까?</h1>
-  <p class="lead">한국 거주자 기준으로 미국 메가밀리언즈(Mega Millions) 당첨금에 붙는 세금을 정리했어요. 아래에서 바로 실수령액도 계산할 수 있어요.</p>
+  <p class="lead"><b>참택스(ChamTax)</b>는 미국 파워볼·메가밀리언즈 복권 당첨금의 세후 실수령액을 계산해주는 온라인 계산기예요. 이 페이지는 한국 거주자 기준으로 미국 메가밀리언즈(Mega Millions) 당첨금에 붙는 세금을 정리했어요. 아래에서 바로 실수령액도 계산할 수 있어요.</p>
+  <p class="updated-date">최종 업데이트: 2026-08-03</p>
 
   <div class="quick-answer">
     <p class="label">3초 요약</p>

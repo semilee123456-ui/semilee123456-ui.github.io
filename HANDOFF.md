@@ -4509,12 +4509,15 @@ GPT 양쪽에 검토 요청 → 두 검토를 종합해 최종 우선순위 확�
    통과. 영문판은 필드명도 전부 영어로(`name: "ChamTax"` 등), 한글판과 원문 값 자체(로고
    URL, applicationCategory 등)는 동일. 이 두 페이지는 h2 헤딩이 이미 대체로 질문형/자연어라
    추가 손질 안 함, FAQPage도 이미 있어서 HowTo만 신규 추가.
-2. **남은 페이지**: `us-lottery-basics-en.html` 1개(원래 계획한 5개 중 4번째). 5번째로
-   잡았던 `us-lottery-basics-ko.html`은 **파일 자체가 없음**(확인 완료 — `ls
-   us-lottery-basics-*.html`을 실행하면 언어 접미사 붙은 파일들만 나오고 `-ko`나 접미사 없는
-   기본판이 없음, 대신 `korea-resident-us-lottery-tax.html`가 사실상 한국어 허브 역할을 함).
-   다음 페이지를 고를 땐 다른 고트래픽 랜딩페이지(`powerball-tax.html`,
-   `megamillions-tax.html`, `us-lottery-tax-rate.html` 등)로 대체할 것.
+2. ~~`powerball-tax.html`, `megamillions-tax.html`~~ — **완료(2026-08-03, 다른 세션 이어서)**:
+   원래 계획했던 `us-lottery-basics-en.html`/`us-lottery-basics-ko.html` 대신(5번째로 잡았던
+   `-ko`는 파일 자체가 없음을 이미 확인해뒀었음) 더 고트래픽인 이 두 페이지로 대체 적용.
+   둘 다 Organization/WebSite/SoftwareApplication/HowTo JSON-LD 신규 + 엔터티 문장 + 최종
+   업데이트 날짜 추가, JSON-LD 6개 블록씩 문법 검증 통과. 이 두 페이지도 h2가 이미 질문형
+   ("왜 세금을 두 번 내요?" 등)이고 quick-answer 박스에 대표 시나리오 수치가 이미 있어서
+   추가 손질 불필요했음 — 지금까지 작업한 5개 페이지 전부 같은 패턴(신규 추가는 주로
+  (c)(d)뿐)이었다는 게 재확인됨. `us-lottery-tax-rate.html`은 아직 미착수 — 다음에 여유
+  있으면 이어서 할 것(필수는 아님, 소수 페이지로도 이미 대표성 있는 커버리지 확보).
 3. 각 페이지 작업 시 체크리스트: (a) 엔터티 정의 문장 (b) 최종 업데이트 날짜 (c)
    Organization/WebSite/SoftwareApplication JSON-LD — **반드시 index.html 값과 동일하게**
    (d) FAQPage/HowTo JSON-LD — 이미 FAQPage 있으면 HowTo만 추가 (e) 대표 시나리오 정적
@@ -4531,14 +4534,13 @@ GPT 양쪽에 검토 요청 → 두 검토를 종합해 최종 우선순위 확�
    검토 모두에서 지적됨), ARIA/헤딩 구조 전체 감사.
 6. 원본 대화(제미나이·GPT 검토 전문)는 이 저장소에 없음 — 사용자 채팅에만 있으므로, 세부
    근거가 더 필요하면 사용자에게 다시 물어볼 것.
-7. **이 작업 전체가 아직 `main`에 병합 안 됨** — 지금 `claude/adoring-curie-rcv0vy`
-   브랜치에만 있음(커밋 `d40a36c`, `242f88a`). 사용자에게 PR 병합 여부 확인 필요(하네스
-   지침상 명시적 요청 없이 PR을 만들지 않음).
+7. ~~이 작업 전체가 아직 `main`에 병합 안 됨~~ — **병합 완료(PR #90, #99 등 여러 세션에
+   나눠서)**.
 
-변경 파일(누적): `korea-resident-us-lottery-tax.html`, `lottery-jackpot-amount.html`,
-`lottery-jackpot-amount-en.html` — 전부 JSON-LD 3~4개 신규(Organization/WebSite/
-SoftwareApplication/HowTo) + 엔터티 문장 + 최종 업데이트 날짜. `llms.txt`는 기존 파일
-그대로 유지(신규 작성 안 함, 이미 잘 돼있었음).
+변경 파일(누적, 5개 페이지): `korea-resident-us-lottery-tax.html`, `lottery-jackpot-amount.html`,
+`lottery-jackpot-amount-en.html`, `powerball-tax.html`, `megamillions-tax.html` — 전부
+JSON-LD 3~4개 신규(Organization/WebSite/SoftwareApplication/HowTo) + 엔터티 문장 + 최종
+업데이트 날짜. `llms.txt`는 기존 파일 그대로 유지(신규 작성 안 함, 이미 잘 돼있었음).
 
 ### 2026-08-03 이어서 — 홈 결과 "합계" 줄에 일시불 표기 추가 + "이 결과 공유하기" 항상 금액 카드로 공유
 
@@ -4705,3 +4707,27 @@ Playwright로 캐스팅→입질→릴감기→결과 전 구간 스크린샷 �
 변경 파일: `index.html`(낚시 연못 마크업에 물고기/물결 효과 요소 추가), `styles.css`(낚시
 애니메이션 전면 재구성), `script.js`(낚시 캐스팅 로직에 물튀김·무작위 물고기 이모지 추가,
 신규 MORE 상수/함수 5개 + 기존 6개 호출부 연결).
+
+### 2026-08-03 이어서 — "홈페이지보고 못한 거 알아서 해달라"는 요청으로 시각 점검 + AEO 백로그 잔여분 마무리
+
+**배경**: 사용자가 구체적인 지시 없이 "홈페이지보고 못한 거 알아서 해주고"라고 요청. 두 갈래로
+접근함: (1) 실제 라이브 사이트를 직접 눈으로 훑어서 눈에 띄는 문제가 있는지 점검 (2) 이 문서에
+이미 "다음에 할 것"으로 명시적으로 남아있던 미완료 작업이 있으면 마저 처리.
+
+**(1) 시각 점검 결과 — 문제 없음**: Playwright로 홈/비교/확률체감/FAQ 4개 화면을 라이트·다크
+모드, 390px·320px 폭에서 스크롤하며 전수 스크린샷 촬영. 콘솔 에러 0건, 명백한 레이아웃 깨짐
+없음. 320px 다크모드에서 `.amount-tab-panel`/`.slider-track-wrap`에 `scrollWidth`가
+`clientWidth`보다 4px 큰 게 스크립트로 잡혔으나, 시각적으로는 안 보이고 기존
+`wrap_audit.js`(같은 폭 포함 168개 조합 검사)도 이미 이 상태로 0건이라 노이즈로 판단하고
+건드리지 않음(과거에도 `.fishing-water`에서 같은 패턴이 있었음 — `overflow:hidden`으로
+의도적으로 클리핑되는 장식 요소는 이 스크립트가 오탐할 수 있다는 걸 재확인).
+
+**(2) AEO 백로그 잔여분 처리**: 위 "다음 세션이 이어서 할 것" 2번 항목에 남아있던 마지막 2개
+페이지(`powerball-tax.html`, `megamillions-tax.html`)에 같은 패턴 적용 완료 — 이걸로 애초
+계획했던 5개 페이지 작업이 전부 끝남. 자세한 내용은 바로 위 2번 항목(취소선 처리됨) 참고.
+
+**검증**: 두 페이지 JSON-LD 6개 블록씩 문법 검증 통과, `broken_link_audit`(90개 파일)·
+`fact_consistency_audit`(93개 파일) 재실행 0건, 사이트 전체 90개 HTML JSON-LD 재검증 0건.
+
+변경 파일: `powerball-tax.html`, `megamillions-tax.html`(JSON-LD 3개 신규 + HowTo, 엔터티
+문장, 최종 업데이트 날짜 — 위 5개 페이지와 동일 패턴).
