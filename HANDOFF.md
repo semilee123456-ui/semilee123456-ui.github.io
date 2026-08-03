@@ -4158,3 +4158,69 @@ Arabic'로 확정, `handleOgImage()`에 eager-buffer 방식 에러 핸들링 구
   GitHub Actions로 이관 (3) 플랜 업그레이드 — 이 세 가지가 유일한 실질적 선택지.
 
 변경 파일: 없음(질문 조사·인수인계 정리만 수행).
+
+### 2026-08-03 이어서 — 곰돌이 마스코트 애니메이션 추가 + "공유하기" 3종을 "꾸며서 저장하기"
+모달 경유 방식으로 전환(2026-07-29 결정을 사용자가 명시적으로 뒤집음)
+
+**요청 1 — 곰돌이가 저장/공유 시 웃거나 인사하면 좋겠다는 요청**: 정지 이미지(PNG)는 실제로
+움직일 수 없어서 범위를 화면(움직임 가능)과 이미지 자체(표정만 가능)로 나눠 확인 후 진행.
+- 헤더 로고(`.mascot-mark` SVG, `index.html`)와 캔버스로 그리는 저장/공유 카드(`drawBearMascotIcon()`,
+  `script.js`) 둘 다 입을 더 크게 벌린 함박웃음으로 교체(좌표를 동일하게 맞춰서 "실제 로고와
+  일치해야 함" 기존 원칙 유지).
+- "꾸며서 저장하기" 모달(`annotateOverlay`) 헤더에 마스코트 SVG를 하나 더 넣고, 모달이 열릴
+  때(`.annotate-overlay.show`)만 윙크(한쪽 눈 `scaleY` 애니메이션)+통통 튀는 애니메이션이
+  한 번 재생되도록 CSS keyframes 추가(`mascotWink`/`mascotBounce`) — 별도 JS 트리거 없이
+  조상 `.show` 클래스 토글만으로 매번 새로 재생됨.
+- 공유 버튼들의 "✅ 복사 완료!" 성공 상태(`.share-btn.copied`)에도 같은 마스코트를 작은
+  data-URI SVG로 붙여서 통통 튀게 함 — `.copied` 클래스 하나로 기존 호출부 4곳을 안 건드리고
+  전부 적용됨.
+
+**요청 2 — "이 결과 공유하기"를 누르면 "이미지로 저장"처럼 꾸며서 저장하기 모달을 먼저
+보여주고, 그 안에서 꾸민 이미지를 공유하게 해달라는 요청** (`shareResult`/`shareDreamResult`/
+`shareLatestDraw` 3곳, "홈페이지 공유하기에 전부 적용해줘"로 범위 확정):
+- **중요한 발견**: 이건 **2026-07-29에 사용자가 명시적으로 요청해서 없앤 기능**을 다시
+  살리는 것임(당시 주석: "카드 이미지 생성 없이 텍스트+링크만 공유하도록 단순화... 카드
+  이미지에 쓰던 🐻 이모지가 기기별 폰트에 따라 실제 로고와 다르게 보이는 문제도 있었음"). 그
+  이모지 문제는 이제 무관함(이모지가 아니라 벡터 도형을 직접 그리는 `drawBearMascotIcon()`
+  방식이라 폰트 의존성 자체가 없음) — 사용자에게 이 경위를 알린 뒤 진행 승인받음.
+- `openAnnotateOverlay(canvas, filename, opts)`에 `opts.mode`('save'|'share') 추가 — 'share'면
+  하단 버튼이 `#annotateSaveBtn`(다운로드) 대신 `#annotateShareBtn`("이 결과 공유하기"
+  라벨 재사용, 새 번역 없음)로 바뀜.
+- `finishAnnotateAndShare()` 신규: 완성된 캔버스를 `toBlob()`→`File`로 만들어
+  `navigator.share({files,...})` 시도(파일 공유 지원 시 OS 공유 시트) → 실패/미지원이면
+  이미지 다운로드+텍스트 클립보드 복사로 폴백(기존 3개 공유 함수의 폴백 패턴과 동일). 사용자가
+  OS 공유 시트에서 취소(AbortError)하거나 폴백 경로를 탄 경우는 모달을 자동으로 안 닫음(성공
+  시에만 닫음) — 폴백 토스트("복사 완료")를 사용자가 볼 수 있게.
+- 카드 디자인: `shareResult`는 기존 `buildHomeResultCheckCanvas()`(수표 카드) 그대로 재사용.
+  `shareDreamResult`/`shareLatestDraw`는 기존에 랭킹 카드용으로만 쓰이던 `buildShareCard()`를
+  재사용(주석에 "예전엔 이 4곳(결과·꿈의당첨·환급체크리스트·회차공유)에서 검증됨"이라고
+  적혀있던 그 함수) — 새 카드 레이아웃을 만들지 않음. `footerText`는 새 번역을 만들지 않고
+  `hero.tag`(사이트 상단 한줄 소개, 26개 언어 이미 번역됨)를 그대로 가져다 씀.
+- 링크 미리보기용 동적 카드 감싸기(`wrapWithOgShareCard`)는 이 3곳에서 더 이상 안 씀(실제
+  이미지 파일을 직접 공유하므로 필요 없음) — 대신 원본(비감싼) URL을 텍스트 문구에 그대로
+  붙여서 공유 문구에 남김.
+
+**부수적으로 발견·수정한 실제 버그**: 위 작업을 Playwright로 실제 테스트하다가, "꾸며서
+저장하기" 모달의 날짜 입력 행(`#annotateDateRow`, 수표 카드에서만 보여야 함)이 **2026-07-31에
+메인 화면에서 이 모달 안으로 옮겨진 이후로 계속 무조건 보이는 회귀 버그**였음을 발견함(다른
+4종 카드 — 랭킹/이월/CPI/티켓·이번에 추가한 3곳 — 전부 영향받음). 원인: `.check-date-row`
+(예전 메인 화면 인라인 시절 스타일, `display:flex` 무조건)와 `.annotate-date-row`(모달용,
+기본 `display:none`)가 클래스 특정성이 동률이라 소스 순서상 나중에 나오는 `.check-date-row`가
+항상 이겼음 — `.show` 토글 자체는 정상 동작했지만 CSS가 그 결과를 계속 덮어썼던 것. ID
+선택자(`#annotateDateRow`/`#annotateDateRow.show`)로 특정성을 올려서 순서 무관하게 고침.
+이 버그는 이번 세션 작업과 무관하게 이미 있던 것이라(제출 코드 손 안 댐 지역), 다음 세션이
+비슷한 "며칠 전부터 있었는데 아무도 못 본 회귀"를 찾을 때 참고할 사례로 남김.
+
+**검증**: `node --check script.js` 통과. Playwright로 3개 공유 흐름(홈 결과/꿈의 당첨/당첨번호)
+전부 모달이 올바른 모드(공유 버튼 표시·저장 버튼 숨김)로 열리는 것, 날짜 행이 해당 없는
+카드에서 안 보이는 것, 헤드리스 환경(navigator.share 없음)에서 폴백(다운로드+클립보드 복사)이
+정상 동작하는 것을 확인. 자동 회귀 테스트 12종 중 11종 재실행해 전부 0 issues 확인(`faq_audit`
+은 이 세션 로컬 `python3 -m http.server`가 반복 실행 중 불안정해져서 `page.goto`가 간헐적으로
+멈추는 환경 문제로 재확인 못 함 — FAQ 페이지 자체는 이번 변경과 무관하고 수동 네비게이션
+테스트로 콘솔 에러 없음은 확인함).
+
+변경 파일: `index.html`(헤더 마스코트 SVG 웃음+눈 그룹화, 저장 모달 헤더에 웨이브 마스코트+
+공유 버튼 추가), `script.js`(`drawBearMascotIcon()` 웃음 확대, `openAnnotateOverlay`/
+`finishAnnotateAndShare` 신규, `shareResult`/`shareDreamResult`/`shareLatestDraw` 3곳을
+모달 경유 공유로 전환), `styles.css`(마스코트 애니메이션 keyframes, `.share-btn.copied` 아이콘,
+`#annotateDateRow` 특정성 버그 수정).

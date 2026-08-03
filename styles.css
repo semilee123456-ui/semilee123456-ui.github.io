@@ -1990,6 +1990,28 @@
     display:flex; align-items:center; justify-content:space-between; gap:8px;
     font-size:var(--fs-body); font-weight:800; color:var(--text-dark);
   }
+  .annotate-overlay-title-group{ display:flex; align-items:center; gap:8px; min-width:0; }
+  /* 곰돌이 마스코트가 "인사"하는 걸 보고 싶다는 요청(2026-08-03) — 저장 결과물(PNG)은 정지
+     이미지라 실제로 움직일 수 없어서, 이 모달이 열리는 화면 위에서만 한 번 윙크+살짝 통통
+     튀는 애니메이션을 재생함. `.mascot-wave`는 이 모달 전용 클래스라 상단 네비 로고
+     (`.mascot-mark`만 있고 `.mascot-wave`는 없음)에는 영향 없음 — 조상 `.show` 클래스가
+     붙을 때마다(모달을 열 때마다) 애니메이션이 새로 시작됨(별도 JS 트리거 불필요). */
+  @keyframes mascotWink{
+    0%, 45%, 100%{ transform:scaleY(1); }
+    60%, 75%{ transform:scaleY(0.12); }
+  }
+  @keyframes mascotBounce{
+    0%, 100%{ transform:translateY(0) rotate(0deg); }
+    20%{ transform:translateY(-3px) rotate(-8deg); }
+    40%{ transform:translateY(0) rotate(5deg); }
+    60%{ transform:translateY(-1.5px) rotate(-3deg); }
+    80%{ transform:translateY(0) rotate(0deg); }
+  }
+  .annotate-overlay.show .mascot-wave{ animation:mascotBounce 1.1s ease-in-out; }
+  .annotate-overlay.show .mascot-wave .mascot-eye-r{
+    transform-box:fill-box; transform-origin:center;
+    animation:mascotWink 1.1s ease-in-out;
+  }
   .annotate-toolbar{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
   .annotate-tool-btn{
     font-family:inherit; font-size:var(--fs-small); font-weight:700; padding:6px 10px; border-radius:10px;
@@ -2000,9 +2022,15 @@
   .annotate-tool-btn-ghost:disabled{ opacity:0.4; cursor:default; }
   .annotate-color-row{ display:flex; gap:6px; margin-left:auto; }
   /* 수표 카드에서만 쓰는 날짜 입력 — openAnnotateOverlay()가 dateEditable 옵션일 때만 .show를
-     붙임(기본은 숨김, 랭킹/이월/CPI/티켓처럼 날짜를 안 쓰는 카드에서는 계속 안 보임) */
-  .annotate-date-row{ display:none; justify-content:flex-start; flex-wrap:wrap; row-gap:6px; }
-  .annotate-date-row.show{ display:flex; }
+     붙임(기본은 숨김, 랭킹/이월/CPI/티켓/공유하기 3종처럼 날짜를 안 쓰는 카드에서는 계속 안
+     보임). 2026-08-03에 발견: 이 요소가 .check-date-row도 같이 갖고 있는데, 그 클래스의
+     원래(메인 화면 인라인 시절) 규칙이 `display:flex`를 조건 없이 정의하고 있어서(아래
+     `.check-date-row{...}`, 원래는 이 규칙보다 위에 있었는데 모달로 옮겨오면서 순서가
+     바뀌어 동률 특정성에서 나중 규칙이 이겨버림) — 실제로는 매번 보였던 회귀였음(공유하기
+     3종 새 카드를 테스트하다가 처음 발견). ID 선택자로 특정성을 올려서 순서와 무관하게
+     항상 이기게 고침. */
+  #annotateDateRow{ display:none; justify-content:flex-start; flex-wrap:wrap; row-gap:6px; }
+  #annotateDateRow.show{ display:flex; }
   /* 2026-07-31: 날짜 자체를 카드에 안 넣고 싶은 사람을 위한 체크박스 — 켜면 입력칸을 흐리게
      비활성화하고(#annotateDateInput:disabled), 카드에서 날짜·수표번호 줄이 통째로 빠짐
      (script.js buildHomeResultCheckCanvas의 checkCardDateHidden 분기 참고) */
@@ -2144,6 +2172,17 @@
   }
   
   .share-btn.copied{ background:var(--teal); color:var(--on-accent); border-color:var(--teal); }
+  /* 공유(링크 복사) 성공 시에도 곰돌이가 반겨주면 좋겠다는 요청(2026-08-03) — 버튼 텍스트가
+     "✅ 복사 완료!"로 바뀌는 기존 로직(script.js 4곳)은 그대로 두고, 그 상태에 CSS만으로
+     마스코트 아이콘 + 통통 튀는 애니메이션을 덧붙임 — .copied 클래스 하나로 모든 공유 버튼에
+     한번에 적용됨(호출부마다 따로 고칠 필요 없음). data URI라 var(--teal) 같은 커스텀
+     프로퍼티를 못 써서 라이트모드 고정 색상(#155445/#FFFFFF)을 그대로 박음 — 버튼 배경이
+     이미 var(--teal)이라 다크모드에서도 흰 얼굴+진한 테두리 조합의 대비는 그대로 유지됨. */
+  .share-btn.copied::after{
+    content:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cellipse cx='6.1' cy='10.4' rx='2.7' ry='4' fill='%23FFFFFF' stroke='%23155445' stroke-width='1.7' transform='rotate(-24 6.1 10.4)'/%3E%3Cellipse cx='21.9' cy='10.4' rx='2.7' ry='4' fill='%23FFFFFF' stroke='%23155445' stroke-width='1.7' transform='rotate(24 21.9 10.4)'/%3E%3Ccircle cx='14' cy='15.6' r='9.7' fill='%23FFFFFF' stroke='%23155445' stroke-width='1.8'/%3E%3Cellipse cx='8.5' cy='17.5' rx='1.6' ry='1.05' fill='%23F0A98C' opacity='0.55'/%3E%3Cellipse cx='19.5' cy='17.5' rx='1.6' ry='1.05' fill='%23F0A98C' opacity='0.55'/%3E%3Ccircle cx='10.5' cy='14.4' r='1.7' fill='%23262420'/%3E%3Ccircle cx='11.05' cy='13.85' r='0.5' fill='%23fff'/%3E%3Ccircle cx='17.5' cy='14.4' r='1.7' fill='%23262420'/%3E%3Ccircle cx='18.05' cy='13.85' r='0.5' fill='%23fff'/%3E%3Cellipse cx='14' cy='17.75' rx='1.85' ry='1.3' fill='%23155445'/%3E%3Cpath d='M14 19.1v0.55M8.9 19.9c1.7 3.3 8.6 3.3 10.2 0' fill='none' stroke='%23155445' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    display:inline-block; width:18px; height:18px; flex-shrink:0;
+    animation:mascotBounce 0.9s ease-in-out;
+  }
   /* "결과 공유하기"(텍스트/링크)와 "이미지로 저장"(PNG)이 서로 다른 두 가지 방법이라 나란히
      둠 — .mn-btn-row(내 번호 티켓 이미지 버튼 줄)와 같은 flex 2등분 패턴 재사용 */
   .home-result-btn-row{ display:flex; gap:8px; margin-top:12px; }

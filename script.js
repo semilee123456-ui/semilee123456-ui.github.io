@@ -3994,31 +3994,23 @@ async function shareLatestDraw(game, btnEl){
     ur: 'اگلا جیک پاٹ', uz: "Keyingi jekpot",
     pt: 'Próximo prêmio', es: 'Próximo acumulado', uk: 'Наступний джекпот', tet: 'Jackpot oin',
   });
-  shareUrl = wrapWithOgShareCard(shareUrl, {
+  // 2026-08-03: "카드 없이 링크만 공유"(2026-07-29 결정, 바로 위 주석)를 사용자가 다시
+  // 뒤집어서, "꾸며서 저장하기" 모달을 먼저 보여주고 그 이미지를 공유하는 방식으로 변경 —
+  // 그때 문제였던 "🐻 이모지가 기기별 폰트에 따라 다르게 보임"은 이제 buildBearMascotIcon()이
+  // 실제 벡터 도형을 그리는 방식이라(og-image 로고와 동일 좌표) 이모지 폰트 의존성 자체가
+  // 없음, 재발 안 함.
+  const drawCardFooter = document.querySelector('[data-i18n="hero.tag"]')?.textContent || 'ChamTax';
+  const drawCanvas = buildShareCard({
     label: gameLabel,
-    main: `${numbersText} + ${specialLabel} ${draw.special}`,
-    sub: `${nextJackpotLabel} $${jackpotMillions}M`,
+    bigText: `${numbersText} + ${specialLabel} ${draw.special}`,
+    subText: `${nextJackpotLabel} $${jackpotMillions}M`,
+    footerText: drawCardFooter,
   });
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: gameLabel, text: shareText, url: shareUrl });
-      return;
-    } catch (e) {
-      if (e && e.name === 'AbortError') return;
-    }
-  }
-  try {
-    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-    if (btnEl) {
-      const original = btnEl.textContent;
-      btnEl.textContent = shareFallbackCopyToast();
-      btnEl.classList.add('copied');
-      setTimeout(() => { btnEl.textContent = original; btnEl.classList.remove('copied'); }, 2000);
-    }
-  } catch (e) {
-    window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), `${shareText} ${shareUrl}`);
-  }
+  openAnnotateOverlay(drawCanvas, `chamtax-${game}-draw.png`, {
+    mode: 'share',
+    shareTitle: gameLabel,
+    shareText: `${shareText} ${shareUrl}`,
+  });
 }
 
 function toggleJhGroupList(id){
@@ -5608,13 +5600,14 @@ function drawBearMascotIcon(ctx, x0, y0, size){
   ctx.ellipse(14, 17.75, 1.85, 1.3, 0, 0, Math.PI * 2);
   ctx.fillStyle = teal; ctx.fill();
 
-  // 입 — 원본 SVG path "M14 19.1v0.55M9.6 19.8c1.3 2.15 7.5 2.15 8.8 0"를 그대로 옮김
-  // (세로 코 밑 점 + 좌우로 벌어지는 미소 곡선)
+  // 입 — 헤더 로고 SVG path "M14 19.1v0.55M8.9 19.9c1.7 3.3 8.6 3.3 10.2 0"를 그대로 옮김
+  // (세로 코 밑 점 + 좌우로 벌어지는 미소 곡선, 2026-08-03에 더 활짝 웃는 곡선으로 키움 —
+  // 저장/공유되는 이미지는 정지 이미지라 "움직임"은 못 담아도 "웃는 표정"은 담을 수 있어서)
   ctx.beginPath();
   ctx.moveTo(14, 19.1);
   ctx.lineTo(14, 19.65);
-  ctx.moveTo(9.6, 19.8);
-  ctx.bezierCurveTo(10.9, 21.95, 17.1, 21.95, 18.4, 19.8);
+  ctx.moveTo(8.9, 19.9);
+  ctx.bezierCurveTo(10.6, 23.2, 17.4, 23.2, 19.1, 19.9);
   ctx.strokeStyle = teal;
   ctx.lineWidth = 1.4;
   ctx.stroke();
@@ -6166,6 +6159,11 @@ function onAnnotateDateSkipChanged(checked){
 // 실제로 쓰일 일이 있는 펜(자유선)과 텍스트만 넣음(2026-07-25)
 let annotateSourceCanvas = null;
 let annotateDownloadFilename = 'chamtax-result.png';
+// 2026-08-03: 이 모달을 "저장"뿐 아니라 "공유"에도 쓰게 되면서 추가된 상태 — openAnnotateOverlay()
+// 참고
+let annotateMode = 'save';
+let annotateShareTitle = '';
+let annotateShareText = '';
 let annotateTool = 'pen';
 let annotateColor = '#C0392B';
 let annotateActions = [];
@@ -6187,6 +6185,18 @@ function openAnnotateOverlay(sourceCanvas, filename, opts){
   if (!overlay || !base || !draw) return;
   annotateSourceCanvas = sourceCanvas;
   annotateDownloadFilename = filename;
+  // 2026-08-03: "공유하기" 버튼들(이 결과 공유하기/당첨번호 공유하기/재미로 보기 결과)도 이
+  // 모달을 거치게 되면서 추가 — opts.mode==='share'면 하단 버튼을 "이미지로 저장" 대신
+  // "공유하기"로 바꾸고, finishAnnotateAndShare()가 완성된 이미지를 다운로드 대신
+  // navigator.share()의 파일로 넘김. shareTitle/shareText는 기존 각 함수가 이미 만들어둔
+  // 번역된 문구를 그대로 받아서 그 공유 호출에 그대로 씀(새 번역 없음).
+  annotateMode = opts.mode === 'share' ? 'share' : 'save';
+  annotateShareTitle = opts.shareTitle || '';
+  annotateShareText = opts.shareText || '';
+  const saveBtn = document.getElementById('annotateSaveBtn');
+  const shareBtn = document.getElementById('annotateShareBtn');
+  if (saveBtn) saveBtn.style.display = annotateMode === 'share' ? 'none' : '';
+  if (shareBtn) shareBtn.style.display = annotateMode === 'share' ? '' : 'none';
   annotateActions = [];
   annotateDrawing = null;
   annotateTextDrag = null;
@@ -6503,21 +6513,81 @@ function updateAnnotateUndoClearState(){
   if (clearBtn) clearBtn.disabled = !has;
 }
 
-function finishAnnotateAndDownload(){
-  removeAnnotateTextInput();
+// base(원본 카드)+draw(펜/텍스트 낙서) 두 캔버스를 하나로 합침 — 다운로드(toDataURL)와
+// 공유(toBlob) 양쪽에서 재사용
+function mergeAnnotateCanvases(){
   const base = document.getElementById('annotateBaseCanvas');
   const draw = document.getElementById('annotateOverlayCanvas');
-  if (!base || !draw) return;
+  if (!base || !draw) return null;
   const out = document.createElement('canvas');
   out.width = base.width; out.height = base.height;
   const ctx = out.getContext('2d');
   ctx.drawImage(base, 0, 0);
   ctx.drawImage(draw, 0, 0);
+  return out;
+}
+
+function finishAnnotateAndDownload(){
+  removeAnnotateTextInput();
+  const out = mergeAnnotateCanvases();
+  if (!out) return;
   const link = document.createElement('a');
   link.download = annotateDownloadFilename;
   link.href = out.toDataURL('image/png');
   link.click();
   closeAnnotateOverlay();
+}
+
+// 2026-08-03: "공유하기" 계열 버튼들이 이 모달을 거치게 되면서 추가 — 완성된 카드 이미지를
+// 파일로 만들어 navigator.share()에 넘김(OS 공유 시트가 뜸). 2026-07-29에 있었다가 "카드 없이
+// 링크만 공유해달라"는 요청으로 삭제됐던 tryShareCardImage()와 같은 구조를 이번 요청(모달에서
+// 꾸민 뒤 그 이미지를 공유)에 맞게 다시 만든 것 — 이번엔 사용자가 명시적으로 이 방향을 요청함
+// (인수인계 문서에 "예전 결정을 뒤집음"으로 기록해둘 것).
+async function finishAnnotateAndShare(){
+  removeAnnotateTextInput();
+  const out = mergeAnnotateCanvases();
+  if (!out) return;
+  const shareBtn = document.getElementById('annotateShareBtn');
+  const finish = () => closeAnnotateOverlay();
+
+  out.toBlob(async (blob) => {
+    if (!blob) return;
+    const file = new File([blob], annotateDownloadFilename, { type: 'image/png' });
+    const canShareFile = navigator.canShare && navigator.canShare({ files: [file] });
+    if (navigator.share && canShareFile) {
+      try {
+        await navigator.share({ files: [file], title: annotateShareTitle, text: annotateShareText });
+        finish();
+        return;
+      } catch (e) {
+        // 사용자가 OS 공유 시트에서 취소한 경우 — 모달은 열어둔 채로 그대로 둠(다시 시도하거나
+        // 직접 닫기를 누를 수 있게)
+        if (e && e.name === 'AbortError') return;
+        // 그 외 공유 실패(권한 없음 등) — 아래 폴백(다운로드+텍스트 복사)으로 계속 진행
+      }
+    }
+    // 파일 공유를 지원 안 하는 브라우저(대부분의 데스크톱)용 폴백 — 이미지는 다운로드해두고
+    // 문구+링크는 클립보드로 복사, 기존 공유 버튼들의 폴백 패턴과 동일하게 버튼 텍스트를
+    // 잠깐 "복사 완료"로 바꿔줌. 모달은 그 피드백이 보이도록 자동으로 닫지 않음(사용자가
+    // "닫기"를 직접 누름) — 이미지로 저장(finishAnnotateAndDownload)과 달리 여기선 결과
+    // 확인 없이 바로 닫으면 "복사됐다"는 안내를 못 보게 됨.
+    const link = document.createElement('a');
+    link.download = annotateDownloadFilename;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    URL.revokeObjectURL(link.href);
+    try {
+      await navigator.clipboard.writeText(annotateShareText);
+      if (shareBtn) {
+        const original = shareBtn.textContent;
+        shareBtn.textContent = shareFallbackCopyToast();
+        shareBtn.classList.add('copied');
+        setTimeout(() => { shareBtn.textContent = original; shareBtn.classList.remove('copied'); }, 2000);
+      }
+    } catch (e) {
+      window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), annotateShareText);
+    }
+  }, 'image/png');
 }
 
 function renderMyNumbersResult(mainNums, specialNum){
@@ -9740,34 +9810,19 @@ async function shareDreamResult(btnEl){
   let shareUrl = location.href;
   const shareTitle = pickLang('당첨되면 나는?', 'What would I do if I won?', '如果中奖了，我会……', 'Nếu trúng số tôi sẽ?', 'ถ้าถูกรางวัลฉันจะ?', 'Что бы я сделал, если бы выиграл?', { ar:'ماذا سأفعل لو فزت؟', bn:'জিতলে আমি কী করব?', fr:'Que ferais-je si je gagnais ?', hi:'अगर मैं जीत जाऊं तो क्या करूंगा?', id:'Apa yang akan kulakukan kalau menang?', ja:'当たったら私は何をする？', kk:'Ұтып алсам не істер едім?', km:'តើខ្ញុំនឹងធ្វើអ្វី ប្រសិនបើឈ្នះ?', ky:'Утуп алсам эмне кылмакмын?', lo:'ຖ້າຂ້ອຍຖືກລາງວັນ ຂ້ອຍຈະເຮັດຫຍັງ?', mn:'Хожвол би юу хийх вэ?', my:'ဆုမှန်ရင် ငါဘာလုပ်မလဲ?', ne:'जितें भने म के गर्छु?', si:'මම දිනුවොත් මොකද කරන්නේ?', tl:'Ano ang gagawin ko kung manalo ako?', ur:'اگر میں جیت جاؤں تو کیا کروں گا؟', uz:'Agar yutib olsam, nima qilaman?' , pt: `O que eu faria se ganhasse?`, es: `¿Qué haría si ganara?`, uk: `Що б я зробив(-ла), якби виграв(-ла)?`, tet: `Saida mak ha'u halo se ha'u manán?`});
 
-  // 2026-07-29: 카드 이미지 생성 없이 텍스트+링크만 공유하도록 단순화(위 shareLatestDraw 주석 참고)
-  // 2026-07-31: 다시 OG_SHARE_WORKER_BASE 동적 카드로 감쌈 — title/amt는 이미 화면(#dream-title/
-  // #dream-amt)에 보이는 텍스트를 그대로 씀, 새 번역 없음.
-  shareUrl = wrapWithOgShareCard(shareUrl, {
-    label: shareTitle,
-    main: title,
-    sub: amt,
+  // 2026-08-03: "카드 없이 링크만 공유"(2026-07-29 결정)를 사용자가 다시 뒤집어서, "꾸며서
+  // 저장하기" 모달을 먼저 보여주고 그 이미지를 공유하는 방식으로 변경 — title/amt는 이미
+  // 화면(#dream-title/#dream-amt)에 보이는 텍스트를 그대로 씀(새 번역 없음). 카드 레이아웃은
+  // 기존 buildShareCard()(잭팟 랭킹 카드용으로 검증된 함수)를 그대로 재사용. footerText는
+  // "hero.tag"(사이트 상단 한줄 소개, 26개 언어 이미 번역됨)를 그대로 가져다 씀 — 이 카드
+  // 전용 새 CTA 문구를 새로 번역하지 않기 위함.
+  const footerText = document.querySelector('[data-i18n="hero.tag"]')?.textContent || 'ChamTax';
+  const dreamCanvas = buildShareCard({ label: shareTitle, bigText: title, subText: amt, footerText });
+  openAnnotateOverlay(dreamCanvas, 'chamtax-dream-result.png', {
+    mode: 'share',
+    shareTitle,
+    shareText: `${shareText} ${shareUrl}`,
   });
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
-      return;
-    } catch (e) {
-      if (e && e.name === 'AbortError') return;
-    }
-  }
-  try {
-    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-    if (btnEl) {
-      const original = btnEl.textContent;
-      btnEl.textContent = shareFallbackCopyToast();
-      btnEl.classList.add('copied');
-      setTimeout(() => { btnEl.textContent = original; btnEl.classList.remove('copied'); }, 2000);
-    }
-  } catch (e) {
-    window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), `${shareText} ${shareUrl}`);
-  }
 }
 
 // 공유 문구(shareResult)에서 "150 Million USD"처럼 영어 단위를 그대로 박아넣으면 한국어/중국어/
@@ -9877,43 +9932,20 @@ async function shareResult(){
   // 2026-07-31: 여기에 OG_SHARE_WORKER_BASE 동적 카드 감싸기를 추가함(위 shareUrl은 그대로
   // 리다이렉트 대상(to=)으로만 쓰이고, 실제 카카오톡 등에 노출되는 건 이 감싼 URL) — label/sub는
   // 화면에 이미 보이는(=이미 번역된) 텍스트를 그대로 가져다 씀, 새 번역 없음.
-  const resultLabelText = document.querySelector('.result-hero-label')?.textContent || '';
-  const taxBeforeLabelText = document.querySelector('[data-i18n="home.taxBefore"]')?.textContent || '';
-  const beforeText = document.getElementById('tax-impact-before')?.textContent || '';
-  const takePctRaw = document.getElementById('result-visual-take-pct')?.textContent || '';
-  const takePct = parseInt(takePctRaw, 10);
-  shareUrl = wrapWithOgShareCard(shareUrl, {
-    label: resultLabelText,
-    main: finalAmt,
-    sub: beforeText ? `${taxBeforeLabelText} ${beforeText}`.trim() : '',
-    badge: country,
-    taxpct: Number.isNaN(takePct) ? undefined : 100 - takePct,
+  // 2026-08-03: "카드 없이 링크만 공유"(2026-07-29 결정, 위 주석) 대신 "꾸며서 저장하기"
+  // 모달을 먼저 보여주고 그 꾸민 이미지를 공유하는 방식으로 사용자가 다시 요청함 — 예전
+  // 결정을 명시적으로 뒤집는 것이므로 인수인계 문서에 그 경위를 남겨둘 것. 카드는 "이미지로
+  // 저장"과 완전히 같은 수표 카드(buildHomeResultCheckCanvas)를 재사용 — 새 카드 디자인을
+  // 만들지 않음. 링크 미리보기용 동적 카드 감싸기(wrapWithOgShareCard)는 이제 필요 없음(실제
+  // 이미지 파일을 직접 공유하므로) — 대신 원본(비감싼) shareUrl을 문구에 그대로 붙여서, 받는
+  // 사람이 눌러도 여전히 같은 계산 결과로 이동함.
+  const shareCanvas = buildHomeResultCheckCanvas();
+  openAnnotateOverlay(shareCanvas, 'chamtax-result.png', {
+    mode: 'share',
+    dateEditable: true,
+    shareTitle,
+    shareText: `${shareText} ${shareUrl}`,
   });
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
-      return;
-    } catch (e) {
-      // 사용자가 공유 취소한 경우 등 — 조용히 무시
-      if (e && e.name === 'AbortError') return;
-    }
-  }
-
-  // Web Share API 미지원 브라우저 — 클립보드 복사로 대체
-  const btn = document.getElementById('home-share-btn');
-  try {
-    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-    if (btn) {
-      const original = btn.textContent;
-      btn.textContent = shareFallbackCopyToast();
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
-    }
-  } catch (e) {
-    // 클립보드 API까지 막힌 환경(카카오톡 등 인앱 브라우저 등) — 사용자가 직접 보고 복사할 수 있게 표시
-    window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), `${shareText} ${shareUrl}`);
-  }
 }
 
 async function shareRefundChecklist(){
