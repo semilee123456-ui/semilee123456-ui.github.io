@@ -3548,6 +3548,68 @@ hi/id/uk 우선).
 
 변경 파일: 없음(이 항목은 검증·인수인계 정리만 수행).
 
+### 2026-08-03 이어서 (`claude/handover-file-review-0l6xtv` 브랜치) — 인수인계 문서 검토 후
+"할 일이라 생각하는 것 전부 해달라" 요청 → 회귀 테스트 전종 재확인 + 3차 번역 재검토로 진짜
+버그 2건 추가 발견·수정
+
+**요청 배경**: 사용자가 인수인계 문서와 그동안의 작업을 봐달라고 해서 요약 보고한 뒤,
+"보고 네가 해야된다고 생각하는 거 전부 해줘"라고 위임함. 문서에 명시적으로 남아있던 작업
+가능 항목(로또 데이터 최신성, 회귀 테스트 전체 재실행, 2차 SEO 페이지 번역 재검토)을
+확인·실행함. Cloudflare 대시보드 작업·CPI 기준연도 갱신 등 사용자 대시보드 권한이 필요하거나
+근거 없이 갱신하면 안 되는 항목은 손 안 댐(문서에 이미 보류 사유가 명시돼있어서 재론 안 함).
+
+**로또 데이터 최신성 확인**: `LATEST_DRAW`(파워볼 8/1·메가밀리언즈 7/31)와 `odds-data.js`
+아카이브(`draw_archive_integrity_check.js` — 파워볼 마지막 8/1, 메가밀리언즈 마지막 7/31)가
+일치함을 확인. 오늘(8/3, 월요일) 파워볼 회차는 아직 추첨 전이라 백필할 새 회차 없음 —
+정상 상태.
+
+**회귀 테스트 전종 재실행**: 로컬에 Playwright(`npm install playwright --no-save`, 이미
+설치돼있는 크로미움 `/opt/pw-browsers` 사용)를 임시로 설치하고 `python3 -m http.server 9000`
+으로 로컬 서버를 띄운 뒤 `tests/` 12개 스크립트 전부 재실행 — **전부 `ISSUES: 0`**
+(`home_audit`(18)·`lang_leak_audit`(104)·`wrap_audit`(168)·`nav_slider_audit`·
+`map_scroll_audit`(10)·`console_error_audit`(161)·`faq_audit`(18)·`i18n_coverage_audit`(735)·
+`i18n_attr_lint`·`broken_link_audit`(90)·`fact_consistency_audit`(93)·`audit_odds_compare`(40)·
+`draw_archive_integrity_check`). 테스트 끝나고 `npm init -y`가 만든 `package.json`은 실제로
+불필요해서(playwright는 `node_modules`만 있으면 `package.json` 없이도 `require` 정상 동작
+확인) 삭제함 — 다른 세션이 이미 `.gitignore`에 `node_modules/`를 추가해둔 상태였음
+(`2989c71`), 이번 세션에서 `package.json`까지 커밋 안 되게 정리.
+
+**3차 번역 재검토 — 이 세션과 동시에 다른 세션(`claude/github-handover-review-ma18qt`,
+PR #76/#77)이 "71개 정적 페이지 완독 검토 완전히 마무리"를 이미 선언했지만, 독립적으로
+서브에이전트 2개를 병렬로 띄워 같은 범위를 한 번 더 검토함**(문서가 반복적으로 강조하는
+"서술보다 재확인" 원칙 — 앞선 세션들도 몇 번이나 "이미 해결됐다고 적혀있던 게 실제로는
+아니었다"를 발견한 전례가 있어서, 다른 세션의 "완전히 마무리" 선언 하나만으로 검토를
+끝내지 않음). 결과: `us-lottery-basics-{zh,ja,es,fr,ru,vi,th,ar,pt,hi,id,uk}.html` 12개는
+문제 없었으나, **`{country}-resident-us-lottery-tax.html` 20개 재검토에서 앞선 리뷰들이
+놓친 진짜 버그 2건을 새로 발견**:
+1. `russia-resident-us-lottery-tax.html` — **같은 페이지 안에서 세율 서술이 자기모순**:
+   FAQ 두 번째 문항(JSON-LD + 화면 `<details>` 양쪽)이 "고정세율 13%"라고 적혀있는데,
+   같은 페이지의 요약 박스·계산 방법 섹션·세 번째 FAQ 문항은 전부 "누진세(2025년 개편 후
+   5단계, 최대 22%)"라고 정확히 서술하고 있었음 — 번역 오류가 아니라 **원문 작성 시점의
+   사실관계 불일치**로 보임(2025년 러시아 NDFL 누진세 개편 전 옛 세율 13%가 한 곳에만
+   남은 것으로 추정). "누진세(2025년 개편 후 최대 22%)"로 통일 수정.
+2. `pakistan-resident-us-lottery-tax.html` — 계산기로 돌아가는 "← 계산기 열기" 링크
+   (우르두어, RTL)가 이 페이지만 화살표 방향이 반대("→")였음. 같은 언어를 쓰는 다른
+   RTL 페이지(`us-lottery-basics-ur.html`, `us-lottery-basics-ar.html`)는 전부 "←"를
+   씀 — 파키스탄 페이지만 일관성이 깨져있던 것. "←"로 통일 수정.
+
+**검증**: `broken_link_audit`(90, 0)·`fact_consistency_audit`(93, 0)·`wrap_audit`(168, 0)
+재실행 통과. 두 파일 수정 후 나머지 부분과 문체·표현 일치 확인.
+
+**동시 작업 안내**: 이 세션 도중 `origin/main`이 두 번 앞서나감(`.gitignore` 추가 커밋,
+71개 페이지 라오어 버그 수정 PR #76/#77) — 둘 다 `git fetch`+`git merge`로 충돌 없이
+반영하고 이어서 진행함.
+
+**손 안 댄 것(문서에 이미 보류 사유가 명시된 항목, 재론 안 함)**: Cloudflare Auto
+Minify/Brotli(사용자 대시보드 작업 필요), CPI_BASE_YEAR 갱신(2025년 확정 전이라 근거 없음),
+잭팟 인덱스 GitHub Actions 자동화(의도적 미착수), 원격 저장소의 병합 기준점이 꼬인 브랜치
+2개(`claude/github-work-handover-lqgr9p`, `claude/progress-checkpoint-pbf93h`) 삭제 —
+이력이 이상해 보여서(`origin/main`과 merge-base 없음) 삭제 대신 사용자에게 채팅으로 별도
+보고함(공유 상태를 되돌리기 어려운 작업이라 임의로 안 지움).
+
+변경 파일: `russia-resident-us-lottery-tax.html`(세율 자기모순 수정),
+`pakistan-resident-us-lottery-tax.html`(화살표 방향 수정).
+
 ### 2026-08-03 이어서 — (`claude/github-handover-review-ma18qt` 브랜치) 2차 페이지 45개
 정밀 재검토 완주 → 라오어 진짜 버그 1건(5+1곳) 발견·수정
 
