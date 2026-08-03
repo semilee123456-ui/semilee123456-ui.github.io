@@ -4456,3 +4456,34 @@ GPT 양쪽에 검토 요청 → 두 검토를 종합해 최종 우선순위 확�
 `lottery-jackpot-amount-en.html` — 전부 JSON-LD 3~4개 신규(Organization/WebSite/
 SoftwareApplication/HowTo) + 엔터티 문장 + 최종 업데이트 날짜. `llms.txt`는 기존 파일
 그대로 유지(신규 작성 안 함, 이미 잘 돼있었음).
+
+### 2026-08-03 이어서 — 홈 결과 "합계" 줄에 일시불 표기 추가 + "이 결과 공유하기" 항상 금액 카드로 공유
+
+**(A) "합계 -46.5%"만 봐선 일시불/연금 어느 기준인지 안 보인다는 지적**: 바로 위 안내
+박스("💡 미국 로또는 두 가지 방식으로 받아요")에 이미 "일시불(세전) 기준으로 계산돼요"라고
+나와있지만, 그 박스를 안 읽고 숫자만 보면 헷갈릴 수 있다는 사용자 지적으로 합계 줄 자체에
+`(일시불)`을 짧게 덧붙임. 새 번역을 만드는 대신 이미 검수된 `home.flowLumpsumLabel`(26개
+언어) 값을 그대로 재사용해서 번역 품질 리스크 없이 적용(`taxTotalLumpsumSuffix()` 함수
+신규, 홈 화면·확률체감 탭 잭팟 드로어 두 곳 모두 적용).
+
+**(B) "이 결과 공유하기"가 기본 화면에서 홈페이지 소개 카드만 보여줌**: `shareResult()`가
+사용자가 금액을 직접 입력/조작한 적 없으면(`isAmountManuallyEdited === false`) 금액 없는
+소개 카드(`shareGenericPromo()`)로 빠지도록 되어있었음(2026-07-29에 "계산해본 적 없는
+기본값을 실제 결과처럼 공유하면 안 된다"는 이유로 넣은 의도적 게이트) — 사용자가 "그래도
+금액 카드가 항상 뜨는 게 낫다"고 요청해서 이 게이트를 제거함. 페이지 로드 시점에 이미
+기본 금액 기준 계산이 끝나있어서(`home-final-amt`·`sharedAmountUsd`가 항상 유효값을 가짐)
+게이트 없이도 문제없이 동작. 더 이상 호출되지 않는 `shareGenericPromo()` 함수도 같이 삭제.
+
+**검증**: `node --check script.js` 통과, `tests/console_error_audit.js`(161개 설정,
+0건)·`tests/home_audit.js`(18개, 0건) 통과. Playwright로 (a) 합계 줄에 `(Lump sum)` 표기
+확인 (b) 아무것도 안 건드린 상태에서 `shareResult()` 호출 시 홈페이지 카드 대신 금액이 담긴
+공유 카드(og share worker URL)로 정상 전환되는 것 확인.
+
+**참고**: 이 작업 직후 바로 다른 세션이 "곰돌이 마스코트 애니메이션 + 공유 3종을 꾸며서
+저장하기 모달 경유로 전환"(커밋 `587924f`, 아래 항목 참고)을 이어서 작업함 — `shareResult()`의
+문구/URL 조립 로직(A·B로 고친 부분)은 그대로 남고, 그 뒤(navigator.share 호출부)만 그
+세션이 다시 고쳤음. 두 작업이 한 브랜치 히스토리에 순서대로 쌓여 이미 `main`에 반영됨(별도
+PR 불필요, 커밋 `c6c2a33`→`fde29fa`가 `587924f`의 직계 부모).
+
+변경 파일: `script.js`(`taxTotalLumpsumSuffix()` 신규, `taxTotalLinePrefix()` 호출부 2곳
+갱신, `shareResult()` 게이트 제거, `shareGenericPromo()` 삭제).
