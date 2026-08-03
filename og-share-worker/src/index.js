@@ -45,24 +45,29 @@ const LANG_FONT_FAMILY = {
   // 2026-08-03: 사이트 본문과 통일하려고 원래 Noto Naskh Arabic/Noto Nastaliq Urdu를 썼는데,
   // 실제 배포된 Worker에 직접 요청을 보내 검증해보니(이전 세션들은 샌드박스 네트워크 제한으로
   // 못 했던 것 — 이번엔 됨) 이 두 폰트로 "مليار"(십억)·"ملین"(백만) 같은 흔한 단어가 포함된
-  // 카드가 HTTP 200에 본문 0바이트(완전히 빈 이미지)로 깨지는 걸 재현함. 원인은 satori(이
-  // Worker가 쓰는 렌더링 엔진)가 특정 OpenType GSUB 규칙(lookupType 5, format 3 — Chaining
-  // Contextual Substitution)을 아예 지원 안 해서(런타임에 "lookupType: 5 - substFormat: 3 is
-  // not yet supported"로 즉시 크래시) — Naskh/Nastaliq처럼 문맥별 리가처 치환이 많은 서예체
-  // 폰트의 특정 3글자 연속(예: ل+ي+ا, "لیار"/"لیا")에서 이 규칙이 걸리는 것으로 보임. 당시
-  // Noto Sans Arabic으로 바꿔서 해결됐다고 기록했으나, **2026-08-03 후속 세션이 실제
-  // og.chamtax.com에 직접 요청해서 재확인한 결과 Noto Sans Arabic도 같은 3글자 연속(예:
-  // "مليار" 자체)에서 여전히 크래시함이 드러남** — Noto Kufi Arabic·Noto Naskh Arabic도
-  // 전부 같은 lookupType 5 크래시를 재현(로컬 `wrangler dev`로 격리 재현·확인). 반면 Cairo·
-  // Tajawal·IBM Plex Sans Arabic·Almarai 등 이 GSUB 규칙 자체를 안 쓰는 폰트들은 크래시 없이
-  // 정상 렌더링됨을 확인 — 그중 Tajawal로 교체(사이트 본문에서도 흔히 쓰이는 무난한 산세리프
-  // 아랍어 폰트, 아랍어 문자 조인 자체는 정상 지원). `i18n-source/translations.json`의 짧은
-  // 아랍어 문자열 387개 전부(로컬 `wrangler dev`로 일괄 재현 테스트) 크래시 0건 확인. 우르두어
-  // (ur)는 재확인해보니 Noto Sans Arabic으로 이미 정상 렌더링되고 있어서(이 3글자 연속 자체가
-  // 없는 문구들이라 우연히 안 걸린 것으로 보임) 그대로 둠 — 다만 다음 세션이 우르두어 카드도
-  // "لیار" 류 3글자 연속이 들어간 문구를 실제로 만나면 같은 증상이 재현될 수 있으니, 재현되면
-  // 이 항목도 Tajawal(또는 같은 검증을 거친 다른 폰트)로 바꿀 것.
-  // 사이트 본문(styles.css)의 폰트는 안 건드림(브라우저는 이 문제가 없음, 이 Worker만의 문제).
+  // 카드가 HTTP 200에 본문 0바이트(완전히 빈 이미지)로 깨지는 걸 재현함. 둘 다 Noto Sans
+  // Arabic으로 바꿔서 우르두어는 고쳐졌지만, 아랍어는 "ل+ي+ا" 연속(특히 "مليار") 같은 특정
+  // 글자 조합에서 여전히 재현됨 — 같은 날 다른 세션이 이 사각지대를 `handleOgImage()`의
+  // 안전한 대체 카드 폴백 구조(아래 참고)로 우회했었는데, **뒤이은 세션이 로컬 `wrangler dev`로
+  // 직접 재현해서 진짜 원인을 특정함**: satori(이 Worker가 쓰는 렌더링 엔진)가 특정 OpenType
+  // GSUB 규칙(lookupType 5, format 3 — Chaining Contextual Substitution)을 아예 지원 안 해서
+  // (런타임에 "lookupType: 5 - substFormat: 3 is not yet supported"로 즉시 크래시) —
+  // Naskh/Nastaliq·Noto Sans Arabic·Noto Kufi Arabic 전부 이 GSUB 규칙을 갖고 있어서 "ل+ي+ا"
+  // 3글자 연속에서 폰트와 무관하게 동일하게 크래시함을 로컬 재현으로 확인(리가처 문제가 아니라
+  // 이 규칙 자체를 satori가 못 읽는 문제였음). 반면 Cairo·Tajawal·IBM Plex Sans Arabic·Almarai
+  // 등 이 GSUB 규칙 자체를 안 쓰는 폰트들은 크래시 없이 정상 렌더링됨을 확인 — 그중 Tajawal로
+  // 교체(사이트 본문에서도 흔히 쓰이는 무난한 산세리프 아랍어 폰트, 아랍어 문자 조인 자체는
+  // 정상 지원). `i18n-source/translations.json`의 짧은 아랍어 문자열 387개 전부(로컬
+  // `wrangler dev`로 일괄 재현 테스트) 크래시 0건 확인 — **Cairo는 시도 당시 이 문자 조합에
+  // 대한 Google Fonts 서브셋 응답 자체가 `content-length: 0`(빈 폰트 파일)이라 되돌렸던 적이
+  // 있었는데(다른 세션 기록), Tajawal은 그 문제 없이 정상 응답됨을 같이 확인함.** 아래
+  // `handleOgImage()`의 안전한 대체 카드 폴백 구조는 이 근본 수정과 별개로 그대로 유지 —
+  // 지금은 안 쓰이지만 앞으로 다른 언어/조합에서 satori가 또 다른 사각지대를 만나면 여전히
+  // 최후 방어선 역할을 함. 우르두어(ur)는 재확인해보니 Noto Sans Arabic으로 이미 정상
+  // 렌더링되고 있어서(이 3글자 연속 자체가 없는 문구들이라 우연히 안 걸린 것으로 보임) 그대로
+  // 둠 — 다만 다음 세션이 우르두어 카드도 같은 증상을 보면 이 항목도 Tajawal(또는 같은 검증을
+  // 거친 다른 폰트)로 바꿀 것. 사이트 본문(styles.css)의 폰트는 안 건드림(브라우저는 이 문제가
+  // 없음, 이 Worker만의 문제).
   ar: 'Tajawal',
   ur: 'Noto Sans Arabic',
   hi: 'Noto Sans Devanagari',
@@ -252,23 +257,42 @@ async function loadCardFonts(params) {
   return fonts;
 }
 
+// 안전한 대체 카드(개인화된 정보 없이 브랜드명만) — 실제 카드 생성이 어떤 이유로든 실패했을 때
+// 씀. 아래 두 곳(동기 실패·비동기 렌더링 실패)에서 공용으로 재사용.
+function buildFallbackCard() {
+  return `<div style="display:flex;width:1200px;height:630px;background:#155445;color:#ffffff;align-items:center;justify-content:center;font-size:48px;font-family:sans-serif;">ChamTax · chamtax.com</div>`;
+}
+
 async function handleOgImage(url) {
   const params = parseCardParams(url.searchParams);
   const fonts = await loadCardFonts(params);
   try {
-    return new ImageResponse(buildCardHtml(params), {
-      width: 1200,
-      height: 630,
-      fonts,
-      headers: { 'Cache-Control': 'public, max-age=86400' },
+    const rendered = new ImageResponse(buildCardHtml(params), { width: 1200, height: 630, fonts });
+    // 2026-08-03: 아랍어 카드가 HTTP 200에 본문 0바이트로 깨지는 버그를 실제 배포본에서
+    // 재현·조사하다가 발견함 — satori(렌더링 엔진)가 RTL/리가처를 지원 안 해서(공식 문서에
+    // 명시) 특정 아랍 문자 조합(예: "مليار")에서 PNG 인코딩이 실패하는데, 이 실패가 위
+    // `new ImageResponse(...)`가 "성공적으로" 반환한 Response의 스트림을 실제로 소비하는
+    // *시점*(비동기)에야 터짐 — 그래서 바로 아래 catch가 그동안 이 실패를 전혀 못 잡고
+    // 있었음(폰트를 Naskh→Noto Sans Arabic→Cairo로 세 번 바꿔봐도 여전히 재현돼서, 폰트
+    // 문제가 아니라 이 구조적 사각지대가 진짜 원인이었다는 걸 뒤늦게 확인함). 응답을 그냥
+    // 반환하는 대신 **여기서 바로 `arrayBuffer()`로 끝까지 다 읽어서** 렌더링을 지금 이
+    // try 블록 안에서 강제로 끝내버림 — 실패하면 Promise가 reject되어 catch로 정상적으로
+    // 넘어감(아랍어 텍스트 자체가 예쁘게 나오게 고치진 못했지만, 최소한 빈 이미지 대신 이미
+    // 있던 안전한 대체 카드라도 항상 나가게 됨 — "카드가 아예 안 뜬다"보다는 훨씬 나음).
+    const buf = await rendered.arrayBuffer();
+    return new Response(buf, {
+      headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' },
     });
   } catch (err) {
     // 카드 생성이 실패해도 깨진 이미지 대신 최소한의 안전한 카드로 대체(전체 실패보다 나음).
-    // 위에서 이미 받아둔 폰트(fonts)가 있으면 여기서도 그대로 재사용
-    return new ImageResponse(
-      `<div style="display:flex;width:1200px;height:630px;background:#155445;color:#ffffff;align-items:center;justify-content:center;font-size:48px;font-family:sans-serif;">ChamTax · chamtax.com</div>`,
-      { width: 1200, height: 630, fonts }
-    );
+    // 위에서 이미 받아둔 폰트(fonts)가 있으면 여기서도 그대로 재사용. 이 대체 카드 자체도
+    // 실패할 가능성에 대비해 대체 카드는 fonts 없이(라틴 문자만 쓰므로 기본 내장 폰트로 충분)
+    // 다시 한번 안전하게 렌더링 시도 — 그래도 실패하면 더 이상 손쓸 수 없어 그대로 전파함.
+    const fallback = new ImageResponse(buildFallbackCard(), { width: 1200, height: 630 });
+    const buf = await fallback.arrayBuffer();
+    return new Response(buf, {
+      headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=300' }, // 대체 카드는 짧게만 캐싱(원인이 해소되면 곧 정상 카드로 되돌아오게)
+    });
   }
 }
 
