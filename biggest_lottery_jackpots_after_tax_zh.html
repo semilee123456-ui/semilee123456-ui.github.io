@@ -134,6 +134,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax是一个免费计算器，用于计算美国强力球和超级百万彩票奖金的税后实得金额。"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax是一个免费的网页计算器，用于计算美国彩票头奖（强力球、超级百万）的税后实得金额，涵盖包括美国非居民预扣税在内的21个国家/地区的税务标准。",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "如何查询历史最高彩票头奖的税后实得金额",
+  "step": [
+    { "@type": "HowToStep", "name": "查看历史排名", "text": "查看强力球和超级百万历史最高的5笔头奖及其实际一次性现金支付金额。" },
+    { "@type": "HowToStep", "name": "按居民国比较实得金额", "text": "比较美国、韩国、中国、印度居民各自的税后实得金额。" },
+    { "@type": "HowToStep", "name": "用该金额打开计算器", "text": "点击任意排名卡片上的\"用这个金额计算\"，即可将该金额直接载入计算器。" },
+    { "@type": "HowToStep", "name": "查看自己的税后实得金额", "text": "选择自己的居民国和购买彩票的美国州，查看预估的税后实得金额。" }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -166,6 +214,7 @@
 
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
 
   .quick-answer{
     background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px;
@@ -236,7 +285,8 @@
   </div>
 
   <h1>历史最高彩票头奖，扣税后实际能拿到多少？</h1>
-  <p class="lead">强力球·超级百万历史最高头奖5笔，按实际确认的一次性现金金额为基准，计算了美国、韩国、中国、印度居民各自扣税后实得的金额。</p>
+  <p class="lead"><b>ChamTax</b>是一个免费计算器，可以计算出美国强力球和超级百万彩票奖金的实际税后到手金额。强力球·超级百万历史最高头奖5笔，按实际确认的一次性现金金额为基准，计算了美国、韩国、中国、印度居民各自扣税后实得的金额。</p>
+  <p class="updated-date">最后更新：2026-08-03</p>
 
   <button type="button" class="share-btn" id="pageShareBtn" onclick="sharePage()">📤 分享这份榜单</button>
 

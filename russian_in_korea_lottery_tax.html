@@ -57,13 +57,13 @@
 <meta property="og:description" content="Живёте в Корее и выиграли в американскую лотерею? Простое объяснение про налоги.">
 <meta property="og:url" content="https://chamtax.com/russian_in_korea_lottery_tax.html">
 <meta property="og:locale" content="ru_RU">
-<meta property="og:image" content="https://chamtax.com/og-image.png">
+<meta property="og:image" content="https://chamtax.com/og-image-hook-ru.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Живёте в Корее и выиграли в лотерею США? Нужно ли платить налог?">
 <meta name="twitter:description" content="Живёте в Корее и выиграли в американскую лотерею? Простое объяснение.">
-<meta name="twitter:image" content="https://chamtax.com/og-image.png">
+<meta name="twitter:image" content="https://chamtax.com/og-image-hook-ru.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -124,6 +124,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax — бесплатный калькулятор для расчёта суммы, которую вы фактически получите после уплаты налогов с выигрыша в американской лотерее Powerball и Mega Millions."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "Бесплатный веб-калькулятор суммы, получаемой после уплаты налогов с джекпотов американской лотереи (Powerball, Mega Millions), охватывающий 21 страну/юрисдикцию, включая удержание налога для нерезидентов США.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "Как рассчитать сумму после уплаты налогов с выигрыша в американской лотерее",
+  "step": [
+    { "@type": "HowToStep", "name": "Введите сумму выигрыша", "text": "Введите сумму вашего выигрыша в Powerball или Mega Millions (объявленный джекпот или единовременная денежная стоимость)." },
+    { "@type": "HowToStep", "name": "Выберите страну проживания", "text": "Выберите, являетесь ли вы резидентом Кореи или резидентом другой страны." },
+    { "@type": "HowToStep", "name": "Выберите штат США", "text": "Выберите штат США, где был куплен билет — ставка дополнительного удержания различается в зависимости от штата." },
+    { "@type": "HowToStep", "name": "Проверьте сумму после уплаты налогов", "text": "Посмотрите примерную сумму, которую вы получите после удержания федерального налога США в размере 30% и корейского налога (с учётом корректировки двойного налогообложения)." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -152,6 +200,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   .quick-answer{ background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px; padding:20px; margin-bottom:24px; }
   .quick-answer p.label{ font-size:var(--fs-small); font-weight:700; color:var(--teal); margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em; }
   .quick-answer .row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:6px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px; }
@@ -195,7 +244,8 @@
   </div>
 
   <h1>Живёте в Корее и выиграли в американскую лотерею? Нужно ли платить налог?</h1>
-  <p class="lead">Живёте в Корее и выиграли в Powerball или Mega Millions в США? Простыми словами объясняем, что происходит с налогами.</p>
+  <p class="lead">ChamTax — бесплатный калькулятор, показывающий фактическую сумму, которую вы получите после уплаты налогов с выигрыша в Powerball и Mega Millions в США. Живёте в Корее и выиграли в Powerball или Mega Millions в США? Простыми словами объясняем, что происходит с налогами.</p>
+  <p class="updated-date">Последнее обновление: 2026-08-04</p>
 
   <button type="button" id="share-btn" class="share-btn" onclick="shareThisPage()">📤 Поделиться этой страницей</button>
 

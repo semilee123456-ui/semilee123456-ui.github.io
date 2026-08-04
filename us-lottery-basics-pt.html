@@ -56,13 +56,13 @@
 <meta property="og:description" content="Um guia para quem não sabe absolutamente nada sobre o Powerball e o Mega Millions: o que são, como jogar, as chances reais, e por que as pessoas jogam mesmo assim.">
 <meta property="og:url" content="https://chamtax.com/us-lottery-basics-pt.html">
 <meta property="og:locale" content="pt_PT">
-<meta property="og:image" content="https://chamtax.com/og-image.png">
+<meta property="og:image" content="https://chamtax.com/og-image-hook-basics-pt.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="O que é a loteria americana (Powerball, Mega Millions)? Guia completo para iniciantes">
 <meta name="twitter:description" content="Um guia para quem não sabe absolutamente nada sobre o Powerball e o Mega Millions: o que são, como jogar, as chances reais, e por que as pessoas jogam mesmo assim.">
-<meta name="twitter:image" content="https://chamtax.com/og-image.png">
+<meta name="twitter:image" content="https://chamtax.com/og-image-hook-basics-pt.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -82,6 +82,54 @@
     { "@type": "Question", "name": "As chances são realmente tão baixas?", "acceptedAnswer": { "@type": "Answer", "text": "Sim. As chances de ganhar o prêmio do Powerball são de cerca de 1 em 292,2 milhões. Isso é muito menor do que a chance de ser atingido por um raio ao longo da vida (cerca de 1 em 10.000), e mais de 35 vezes menor do que ganhar o prêmio da Lotto 6/45 coreana (cerca de 1 em 8,14 milhões)." } },
     { "@type": "Question", "name": "Se as chances são tão ruins, por que as pessoas jogam?", "acceptedAnswer": { "@type": "Answer", "text": "Puramente pela matemática, jogar não é racional — mas os prêmios da loteria americana são excepcionalmente grandes (frequentemente acima de 1 bilhão de dólares), então um bilhete é basicamente comprar a chance de um resultado que muda a vida. A apenas alguns dólares o bilhete, muita gente encara isso como entretenimento de baixo risco, não como investimento." } },
     { "@type": "Question", "name": "Posso comprar bilhetes da loteria americana estando fora dos EUA?", "acceptedAnswer": { "@type": "Answer", "text": "Oficialmente, o bilhete só é válido quando comprado pessoalmente em um revendedor licenciado nos EUA. Existem serviços online que afirmam comprar bilhetes por você a partir do exterior, mas seu status legal costuma ser incerto e alguns apresentam risco real de fraude, por isso é preciso cautela. A ChamTax não vende, revende nem faz a intermediação de bilhetes de loteria — fornecemos apenas informações de cálculo de impostos." } }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax é uma calculadora gratuita que calcula o valor real recebido após impostos sobre prêmios de loteria dos EUA, Powerball e Mega Millions."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "Uma calculadora web gratuita para o valor líquido após impostos de grandes prêmios de loteria dos EUA (Powerball, Mega Millions), abrangendo 21 países/jurisdições, incluindo a retenção de impostos para não residentes dos EUA.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "Como calcular o valor líquido após impostos de um prêmio de loteria dos EUA",
+  "step": [
+    { "@type": "HowToStep", "name": "Insira o valor do prêmio", "text": "Insira o valor do seu prêmio de Powerball ou Mega Millions (o prêmio anunciado ou o valor em dinheiro à vista)." },
+    { "@type": "HowToStep", "name": "Selecione o país de residência", "text": "Escolha se você é residente na Coreia ou em outro país." },
+    { "@type": "HowToStep", "name": "Selecione o estado dos EUA", "text": "Escolha o estado dos EUA onde o bilhete foi comprado — a taxa de retenção adicional varia conforme o estado." },
+    { "@type": "HowToStep", "name": "Verifique o valor líquido após impostos", "text": "Veja o valor estimado recebido após a retenção do imposto federal dos EUA de 30% e o imposto no seu país de residência (com ajuste de dupla tributação)." }
   ]
 }
 </script>
@@ -113,6 +161,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   h2{ font-size:var(--fs-h2); margin:32px 0 12px; }
   h3{ font-size:var(--fs-h3); margin:20px 0 8px; }
   p{ font-size:var(--fs-body); margin:0 0 14px; }
@@ -156,7 +205,8 @@
   </div>
 
   <h1>Afinal, o que é mesmo a loteria americana?</h1>
-  <p class="lead">Para quem já trouxe esse assunto numa conversa e recebeu um olhar de confusão — aqui está a explicação de verdade, desde o início. O que são o Powerball e o Mega Millions, como jogar, quão ruins são realmente as chances, e por que as pessoas jogam mesmo assim.</p>
+  <p class="lead"><b>ChamTax</b> é uma calculadora gratuita que mostra o valor real recebido após impostos sobre prêmios de Powerball e Mega Millions dos EUA. E para quem já trouxe esse assunto numa conversa e recebeu um olhar de confusão — aqui está a explicação de verdade, desde o início. O que são o Powerball e o Mega Millions, como jogar, quão ruins são realmente as chances, e por que as pessoas jogam mesmo assim.</p>
+  <p class="updated-date">Última atualização: 2026-08-03</p>
 
   <h2>1. A loteria americana = Powerball + Mega Millions</h2>
   <p>Cada estado americano também tem sua própria loteria, mas “a loteria americana” geralmente se refere a esses dois jogos enormes vendidos em conjunto em quase todos os estados.</p>
