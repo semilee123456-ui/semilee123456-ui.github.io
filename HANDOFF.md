@@ -1973,3 +1973,33 @@ og:image ... 이거 해줘" 요청으로 세 그룹 전부 처리.
 `og-image-hook-{slug}.png` 6). `script.js`/`styles.css` 변경 없음 — 빌드 재실행 불필요.
 이로써 오늘 오전 27개(`*_in_korea_lottery_tax.html`) + 이번 51개 = 사이트 전체 og:image
 언어중립 이미지 교체 작업 완료.
+
+### 2026-08-04 이어서 — Speakable 스키마 87개 페이지 전체 적용 (미결 항목 결론)
+
+**배경**: 위 세션들에서 `Speakable`이 "효과 있다는 검토/없다는 검토가 갈려서 미결"로
+남아있던 항목. 사용자에게 뭘 하는 스키마인지 설명(음성 인터페이스가 어느 문단을 읽어줄지
+지정하는 Google 공식 구조화 데이터 — 실제로 이걸 읽는 게 확인된 건 Google Assistant
+뉴스 액션 정도뿐이고 ChatGPT/Perplexity/Claude가 참고한다는 근거는 없음, 다만 넣는 비용이
+거의 0) → "손해 없으니 넣자"로 사용자와 합의, 진행.
+
+**적용**: AEO 84개 확장 때 만든 87개 페이지(`index.html`/`404.html`/구글 인증 파일 제외)
+전부에 `WebPage` + `speakable.cssSelector` JSON-LD 블록 신규 추가. 셀렉터는
+`.lead`(전 페이지에 이미 있음)를 항상 포함하고, `.quick-answer`(3초 요약 박스)가 있는
+페이지는 같이 포함. `name`은 각 페이지 `<title>`에서 " | 참택스"/"| ChamTax" 접미사를
+제거해서 재사용(새 문구 작성 없음, 87개 스크립트로 일괄 처리). 삽입 위치는 기존 HowTo
+블록 바로 뒤(`<link rel="preload"` 직전) — 다른 AEO 블록들과 같은 자리.
+
+**병합 시 주의**: 이 작업 도중 다른 세션이 실시간으로 og:image 나머지 51개 페이지를
+작업 중인 걸 발견(사용자가 먼저 알아챔) — 같은 파일들을 건드리지만 head 안에서 위치가
+완전히 다른 부분(og:image는 메타태그 영역, speakable은 JSON-LD 블록 맨 끝)이라 겹칠
+걱정 없이 병행 진행함. 실제로 병합 시 충돌 0건으로 확인됨.
+
+**검증**: 87개 페이지 전체 JSON-LD 재파싱 — 실패 0건. 3개 파일(중국어 페이지들 —
+`china-resident-us-lottery-tax.html`/`korean_abroad_us_lottery_tax_zh.html`/
+`lottery-jackpot-amount-zh.html`)은 title이 "？| ChamTax"처럼 앞에 공백 없는 구분자를 써서
+자동 스크립트의 " | " 분리 로직이 안 먹혀 "| ChamTax"가 이름에 그대로 남았던 걸 발견해서
+별도로 수정함 — **다음에 비슷한 title 일괄 파싱 스크립트를 짤 때 이 3개 파일의 구분자
+패턴(공백 없는 "？|")을 참고해서 정규식을 더 관대하게 짤 것**.
+
+변경 파일: 87개 랜딩페이지 전체(각 파일에 `WebPage`/`speakable` JSON-LD 블록 1개씩 신규
+추가, 그 외 내용 변경 없음). `script.js`/`styles.css` 변경 없음.
