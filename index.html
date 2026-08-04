@@ -121,12 +121,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260804-3">
+<link rel="stylesheet" href="styles.min.css?v=20260804-4">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260804-3" defer></script>
+<script src="script.min.js?v=20260804-4" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1029,6 +1029,14 @@
                     <div class="annuity-schedule-list" id="home-annuity-schedule-list"></div>
                   </div>
                 </details>
+              </div>
+            </details>
+            <details class="jh-more" id="home-split-detail" style="margin-top:10px;">
+              <summary class="jh-more-summary" data-i18n="home.splitToggle">👥 당첨자가 여러 명이면?</summary>
+              <div class="jc-annuity-box">
+                <div class="jc-row"><span data-i18n="home.splitCountLabel">당첨자 수 (본인 포함)</span><input type="number" class="rate-input" id="home-split-count" min="1" max="50" step="1" value="1" inputmode="numeric" style="width:50px;" oninput="updateHomeSplitCalc()"></div>
+                <div class="jc-row jc-final"><span data-i18n="home.splitFinalLabel">1인당 세후 실수령액</span><span class="jc-val" id="home-split-final">-</span></div>
+                <p class="jc-note" data-i18n="home.splitNote">※ 세금은 총액이 아니라 1인당 나눠 받은 금액 기준으로 다시 계산돼요 — 누진세를 쓰는 나라는 총액 기준보다 유리할 수 있어요. 실제 공동 당첨 시엔 지분을 명확히 정해두는 게 안전해요.</p>
               </div>
             </details>
             <div class="detail-note-box" style="background:var(--bg); border-radius:10px; padding:12px 14px; margin-top:10px;">

@@ -7902,6 +7902,27 @@ function renderAnnuityFromCash(cashKrw, usdMillionsLabel, idPrefix, scheduleList
   return announcedKrw;
 }
 
+// "당첨자가 여러 명이면?" 아코디언(#home-split-detail) — 홈 화면 result-hero 전용, 다른
+// 위젯(확률체감 탭 잭팟 드로어 등)에는 일부러 안 붙임(TTS와 같은 이유 — 핵심 결과에만 붙여서
+// "정보 밀도" 문제를 다시 만들지 않기 위함, 위 home-result-btn-row 주석 참고).
+// updateHomeCalc()가 금액/국가/주가 바뀔 때마다 같이 불러줘서 항상 최신 sharedAmountUsd 기준으로
+// 동기화됨 — 인원수 입력칸을 직접 바꿀 때는 oninput="updateHomeSplitCalc()"로 이 함수만 다시 부름.
+// 세금은 총액이 아니라 "1인당 나눠 받은 금액"을 calcTakeHome()에 새로 넣어 처음부터 다시
+// 계산함(단순히 최종 실수령액을 인원수로 나누기만 하면, 누진세를 쓰는 나라(한국 종합소득세 등)에서
+// 실제와 다른 값이 나옴 — 낮은 금액일수록 낮은 세율 구간이 적용되므로).
+function updateHomeSplitCalc(){
+  const countInput = document.getElementById('home-split-count');
+  const finalEl = document.getElementById('home-split-final');
+  if (!countInput || !finalEl) return;
+  let count = parseInt(countInput.value, 10);
+  if (!Number.isFinite(count) || count < 1) count = 1;
+  if (count > 50) count = 50;
+  countInput.value = count;
+  const perWinnerEok = (sharedAmountUsd / count) * EXCHANGE_RATE / 100000000;
+  const r = calcTakeHome(perWinnerEok, sharedCountry, sharedState);
+  finalEl.textContent = formatEokKrwInDisplayCurrency(r.final, sharedInputCurrency);
+}
+
 function refreshJackpotDrawerIfOpen(){
   const box = document.getElementById('jackpot-calc-box');
   if (box && box.classList.contains('show')) {
@@ -12236,6 +12257,8 @@ function updateHomeCalc(usdOverride){
   // 일시불 대신 연금(annuity)으로 받으면? — 확률체감 탭 잭팟 드로어와 공용 함수 사용
   // (renderAnnuityFromCash, refreshJackpotDrawerIfOpen 근처 정의 참고)
   renderAnnuityFromCash(usd * EXCHANGE_RATE, usdMillions, 'home-annuity', 'home-annuity-schedule-list');
+  // 당첨자가 여러 명이면? — 국가/금액이 바뀔 때마다 같이 갱신(updateHomeSplitCalc 정의 참고)
+  updateHomeSplitCalc();
 
   const usdNote = document.getElementById('home-usd-note');
   const cnyNote = document.getElementById('home-cny-note');
