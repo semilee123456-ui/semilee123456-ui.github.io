@@ -85,6 +85,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax ແມ່ນເຄື່ອງຄິດໄລ່ຟຣີສຳລັບຄິດໄລ່ຈຳນວນເງິນທີ່ໄດ້ຮັບແທ້ຈິງຫຼັງຫັກພາສີຈາກເງິນລາງວັນຫວຍ Powerball ແລະ Mega Millions ຂອງສະຫະລັດ."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ເຄື່ອງຄິດໄລ່ເວັບຟຣີສຳລັບຈຳນວນເງິນຫຼັງຫັກພາສີຂອງລາງວັນໃຫຍ່ຫວຍສະຫະລັດ (Powerball, Mega Millions) ຄອບຄຸມ 21 ປະເທດ/ເຂດອຳນາດສານ ລວມທັງການຫັກພາສີທີ່ແຫຼ່ງສຳລັບຜູ້ທີ່ບໍ່ແມ່ນຜູ້ອາໄສຢູ່ໃນສະຫະລັດ.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "ວິທີຄິດໄລ່ຈຳນວນເງິນຫຼັງຫັກພາສີຈາກການຖືກຫວຍສະຫະລັດ",
+  "step": [
+    { "@type": "HowToStep", "name": "ປ້ອນຈຳນວນເງິນລາງວັນ", "text": "ປ້ອນຈຳນວນເງິນລາງວັນ Powerball ຫຼື Mega Millions ຂອງທ່ານ (ຈຳນວນລາງວັນໃຫຍ່ທີ່ປະກາດ ຫຼື ມູນຄ່າເງິນສົດແບບຮັບເທື່ອດຽວ)." },
+    { "@type": "HowToStep", "name": "ເລືອກປະເທດທີ່ອາໄສຢູ່", "text": "ເລືອກວ່າທ່ານເປັນຜູ້ອາໄສຢູ່ໃນເກົາຫຼີ ຫຼື ປະເທດອື່ນ." },
+    { "@type": "HowToStep", "name": "ເລືອກລັດຂອງສະຫະລັດ", "text": "ເລືອກລັດຂອງສະຫະລັດທີ່ທ່ານຊື້ປີ້ — ອັດຕາການຫັກພາສີເພີ່ມເຕີມແຕກຕ່າງກັນຕາມແຕ່ລະລັດ." },
+    { "@type": "HowToStep", "name": "ກວດເບິ່ງຈຳນວນເງິນຫຼັງຫັກພາສີ", "text": "ເບິ່ງຈຳນວນເງິນທີ່ຄາດວ່າຈະໄດ້ຮັບຫຼັງຈາກນຳໃຊ້ການຫັກພາສີລັດຖະບານກາງສະຫະລັດ 30% ແລະ ພາສີໃນປະເທດທີ່ທ່ານອາໄສຢູ່ (ພ້ອມການປັບປຸງການເກັບພາສີຊ້ຳຊ້ອນ)." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -113,6 +161,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   h2{ font-size:var(--fs-h2); margin:32px 0 12px; }
   h3{ font-size:var(--fs-h3); margin:20px 0 8px; }
   p{ font-size:var(--fs-body); margin:0 0 14px; }
@@ -156,7 +205,8 @@
   </div>
 
   <h1>ຄັນຊັ້ນຫວຍອາເມຣິກາແທ້ໆແມ່ນຫຍັງ?</h1>
-  <p class="lead">ສຳລັບໃຜທີ່ເຄີຍເວົ້າເລື່ອງນີ້ແລ້ວໄດ້ຮັບສາຍຕາງົງໆກັບມາ — ນີ້ແມ່ນຄຳອະທິບາຍແທ້ໆຈາກຈຸດເລີ່ມຕົ້ນ. ພາວເວີບອລ ແລະ ເມກາມິນລ້ຽນ ແມ່ນຫຍັງ, ຫຼິ້ນແນວໃດ, ໂອກາດຖືກແທ້ໆແຍ່ຂະໜາດໃດ, ແລະ ເປັນຫຍັງຄົນຍັງຫຼິ້ນຢູ່.</p>
+  <p class="lead"><b>ChamTax</b> ແມ່ນເຄື່ອງຄິດໄລ່ຟຣີທີ່ສະແດງຈຳນວນເງິນທີ່ໄດ້ຮັບແທ້ຈິງຫຼັງຫັກພາສີຈາກເງິນລາງວັນ Powerball ແລະ Mega Millions ຂອງສະຫະລັດ. ແລະສຳລັບໃຜທີ່ເຄີຍເວົ້າເລື່ອງນີ້ແລ້ວໄດ້ຮັບສາຍຕາງົງໆກັບມາ — ນີ້ແມ່ນຄຳອະທິບາຍແທ້ໆຈາກຈຸດເລີ່ມຕົ້ນ. ພາວເວີບອລ ແລະ ເມກາມິນລ້ຽນ ແມ່ນຫຍັງ, ຫຼິ້ນແນວໃດ, ໂອກາດຖືກແທ້ໆແຍ່ຂະໜາດໃດ, ແລະ ເປັນຫຍັງຄົນຍັງຫຼິ້ນຢູ່.</p>
+  <p class="updated-date">ອັບເດດຫຼ້າສຸດ: 2026-08-03</p>
 
   <h2>1. ຫວຍອາເມຣິກາ = ພາວເວີບອລ + ເມກາມິນລ້ຽນ</h2>
   <p>ແຕ່ລະລັດຂອງອາເມຣິກາກໍມີຫວຍຂອງຕົນເອງ ແຕ່ “ຫວຍອາເມຣິກາ” ປົກກະຕິໝາຍເຖິງເກມໃຫຍ່ສອງເກມນີ້ທີ່ຂາຍຮ່ວມກັນເກືອບທຸກລັດ.</p>

@@ -85,6 +85,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax යනු එක්සත් ජනපද Powerball සහ Mega Millions ලොතරැයි ජයග්‍රහණවල බදු ගෙවීමෙන් පසු අත ලැබෙන සැබෑ මුදල ගණනය කරන නොමිලේ ගණකයන්මයකි."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "එක්සත් ජනපද ලොතරැයි ජැක්පොට් (Powerball, Mega Millions) සඳහා බදු ගෙවීමෙන් පසු අත ලැබෙන මුදල ගණනය කරන නොමිලේ වෙබ් ගණකයන්මයකි, එක්සත් ජනපදයේ පදිංචි නොවන අයගේ මූලාශ්‍ර බද්ද ඇතුළුව රටවල්/අධිකරණ බලප්‍රදේශ 21ක් ආවරණය කරයි.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "එක්සත් ජනපද ලොතරැයි ජයග්‍රහණයක බදු ගෙවීමෙන් පසු අත ලැබෙන මුදල ගණනය කරන ආකාරය",
+  "step": [
+    { "@type": "HowToStep", "name": "ජයග්‍රාහී මුදල ඇතුළත් කරන්න", "text": "ඔබගේ Powerball හෝ Mega Millions ජයග්‍රාහී මුදල (ප්‍රකාශිත ජැක්පොට් හෝ එකවර මුදල් අගය) ඇතුළත් කරන්න." },
+    { "@type": "HowToStep", "name": "පදිංචි රට තෝරන්න", "text": "ඔබ කොරියාවේ පදිංචිකරුවෙකුද නැත්නම් වෙනත් රටක පදිංචිකරුවෙකුද යන්න තෝරන්න." },
+    { "@type": "HowToStep", "name": "එක්සත් ජනපද ප්‍රාන්තය තෝරන්න", "text": "ඔබ ලොතරැයි පත්‍රය මිලදී ගත් එක්සත් ජනපද ප්‍රාන්තය තෝරන්න — අතිරේක බදු අඩු කිරීමේ අනුපාත ප්‍රාන්තය අනුව වෙනස් වේ." },
+    { "@type": "HowToStep", "name": "බදු ගෙවීමෙන් පසු අත ලැබෙන මුදල පරීක්ෂා කරන්න", "text": "එක්සත් ජනපද ෆෙඩරල් බද්ද 30% අඩු කිරීම සහ ඔබේ පදිංචි රටේ බද්ද (ද්විත්ව බදු ගැලපීම සමඟ) යොදන ලද ඇස්තමේන්තුගත අත ලැබෙන මුදල බලන්න." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -113,6 +161,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   h2{ font-size:var(--fs-h2); margin:32px 0 12px; }
   h3{ font-size:var(--fs-h3); margin:20px 0 8px; }
   p{ font-size:var(--fs-body); margin:0 0 14px; }
@@ -156,7 +205,8 @@
   </div>
 
   <h1>එහෙනම් ඇමරිකානු ලොතරැයිය ඇත්තටම මොකක්ද?</h1>
-  <p class="lead">මේ ගැන කතාවක් ඇරඹ දෙබල් වූ බැල්මකට මුහුණ දුන් ඕනෑම කෙනෙකුට — මෙන්න මූලික සිටම සැබෑ පැහැදිලි කිරීම. Powerball සහ Mega Millions කියන්නේ මොනවාද, ක්‍රීඩා කරන්නේ කෙසේද, ඉඩකඩ ඇත්තටම කොපමණ දුරට නරකද, සහ ජනතාව එසේ වුවත් ක්‍රීඩා කරන්නේ ඇයි.</p>
+  <p class="lead"><b>ChamTax</b> යනු එක්සත් ජනපද Powerball සහ Mega Millions ජයග්‍රහණවල සැබෑ, බදු ගෙවීමෙන් පසු අත ලැබෙන මුදල පෙන්වන නොමිලේ ගණකයන්මයකි. තවද මේ ගැන කතාවක් ඇරඹ දෙබල් වූ බැල්මකට මුහුණ දුන් ඕනෑම කෙනෙකුට — මෙන්න මූලික සිටම සැබෑ පැහැදිලි කිරීම. Powerball සහ Mega Millions කියන්නේ මොනවාද, ක්‍රීඩා කරන්නේ කෙසේද, ඉඩකඩ ඇත්තටම කොපමණ දුරට නරකද, සහ ජනතාව එසේ වුවත් ක්‍රීඩා කරන්නේ ඇයි.</p>
+  <p class="updated-date">අවසන් යාවත්කාලීන කිරීම: 2026-08-03</p>
 
   <h2>1. ඇමරිකානු ලොතරැයිය = Powerball + Mega Millions</h2>
   <p>ඇමරිකාවේ එක් එක් ප්‍රාන්තයටම එහිම ලොතරැයියක් ද ඇත, නමුත් “ඇමරිකානු ලොතරැයිය” යනුවෙන් සාමාන්‍යයෙන් හඳුන්වන්නේ සියලුම ප්‍රාන්ත වලම පාහේ එකට විකුණන මෙම විශාල ක්‍රීඩා දෙකයි.</p>
