@@ -50,7 +50,7 @@ let I18N_LOAD_PROMISE = null;
 
 function loadI18nLanguage(lang){
   if (lang === "ko" || I18N_CACHE[lang]) return Promise.resolve();
-  return fetch(`i18n/${lang}.json?v=20260804-3`)
+  return fetch(`i18n/${lang}.json?v=20260804-4`)
     .then(res => { if (!res.ok) throw new Error("i18n fetch failed: " + res.status); return res.json(); })
     .then(data => { I18N_CACHE[lang] = data; })
     .catch(err => { console.error("[i18n] failed to load", lang, err); });
@@ -614,8 +614,8 @@ let EXCHANGE_RATE_LAK = 22600;  // 기본값(fallback), USD/LAK (2026-07-18 확�
 function syncRateInputsDisplay(){
   const homeInput = document.getElementById('home-rate-input');
   const compareInput = document.getElementById('compare-rate-input');
-  if (homeInput && document.activeElement !== homeInput) homeInput.value = EXCHANGE_RATE.toLocaleString('ko-KR');
-  if (compareInput && document.activeElement !== compareInput) compareInput.value = EXCHANGE_RATE.toLocaleString('ko-KR');
+  if (homeInput && document.activeElement !== homeInput) homeInput.value = EXCHANGE_RATE.toLocaleString('ko-KR', { maximumFractionDigits: 1 });
+  if (compareInput && document.activeElement !== compareInput) compareInput.value = EXCHANGE_RATE.toLocaleString('ko-KR', { maximumFractionDigits: 1 });
 }
 let exchangeRateSourceName = null; // 실시간 조회에 성공했을 때, 어느 제공처에서 가져온 값인지 화면에 표시하기 위해 저장
 let exchangeRateIsLive = false; // 실시간 fetch 성공 여부 표시용
@@ -643,7 +643,7 @@ function showForeignRateEditor(code, rate){
     if (!row || !input || !codeEl) return;
     // 사용자가 지금 이 칸에 타이핑 중이면(activeElement) 값을 덮어쓰지 않음 — home-rate-input의
     // 기존 패턴과 동일(타이핑 도중 재계산이 커서 위치를 흩트리지 않도록)
-    if (document.activeElement !== input) input.value = rate.toLocaleString('en-US', { maximumFractionDigits: 4 });
+    if (document.activeElement !== input) input.value = rate.toLocaleString('en-US', { maximumFractionDigits: 2 });
     codeEl.textContent = code;
     row.style.display = 'block';
   });
@@ -933,7 +933,7 @@ function syncHomeFromShared(){
     btn.classList.toggle('active', btn.dataset.country === sharedCountry);
   });
   document.getElementById('homeStateSelect').value = sharedState;
-  document.getElementById('home-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR');
+  document.getElementById('home-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR', { maximumFractionDigits: 1 });
   updateHomeCalc(sharedAmountUsd);
   filterFaq();
 }
@@ -956,7 +956,7 @@ function syncCompareFromShared(){
   setSliderMillions(slider, millions);
   updateSliderFill(slider);
   document.getElementById('compareStateSelect').value = sharedState;
-  document.getElementById('compare-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR');
+  document.getElementById('compare-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR', { maximumFractionDigits: 1 });
   const compareCurrencySelect = document.getElementById('compareCurrencySelect');
   if (compareCurrencySelect && compareCurrencySelect.value !== sharedInputCurrency) compareCurrencySelect.value = sharedInputCurrency;
   updateAmountUnitLabels();
@@ -2112,7 +2112,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260802';
+    script.src = 'odds-data.js?v=20260804';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -2289,16 +2289,6 @@ function runCountUps() {
 function usdToDisplayCurrencyLabel(usd){
   const eokKrw = usd * EXCHANGE_RATE / 100000000;
   return '(≈ ' + formatEokKrwInDisplayCurrency(eokKrw, sharedInputCurrency) + ')';
-}
-
-// 2026-07-25: "잭팟 카드 기준 게임" 토글(odds-game-pb/odds-game-mega)이 있는데도 이 함수가
-// jp-powerball만 고정으로 읽어서, 메가밀리언즈로 토글해도 위 "🏆 잭팟" 카드가 계속 파워볼
-// 금액을 보여주는 버그가 있었음(사용자 지적 — "메가밀리언즈 1등은 어떻게 되는거야?"). 인자로
-// 게임을 받아 currentOddsGame을 기본값으로 씀
-function getJackpotKRW(game){
-  const targetId = (game || currentOddsGame) === 'megamillions' ? 'jp-mega' : 'jp-powerball';
-  const usd = Number(document.getElementById(targetId).getAttribute('data-target'));
-  return usd * EXCHANGE_RATE;
 }
 
 // jackpot-card-odds-num에 들어가는 "1 / N" 확률 표기 — odds.oddsPowerball 번역키와 같은
@@ -2562,7 +2552,7 @@ function checkUsUnclaimedMoney(){
   }
 
   const recommendedSites = new Set(checkedBoxes.map(c => c.dataset.site));
-  const allSites = ['irs', 'usagov', 'missingmoney'];
+  const allSites = ['irs', 'usagov', 'missingmoney', 'pbgc'];
   allSites.forEach(site => {
     const btn = document.getElementById('refund-us-site-' + site);
     if (!btn) return;
@@ -3970,7 +3960,7 @@ function buildDrawScheduleMore(days){
 // CASH_VALUE_RATIO(58%) 추정치로 대체됨(getJackpotCashUsd() 참고). 공식 발표는 추첨 직전까지
 // 계속 갱신되니 "확인 필요" 없이 확실할 때만 채우고, 애매하면 비워서 추정치를 쓰게 둘 것.
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 748000000, cashUsd: 325100000 },
+  powerball:    { amountUsd: 786000000, cashUsd: 341600000 },
   megamillions: { amountUsd: 60000000, cashUsd: 25500000 },
 };
 
@@ -3985,16 +3975,18 @@ const GAME_NAME_MORE = {
 // 🎱 최신 추첨 당첨번호 — 잭팟 확인할 때 공식 사이트(powerball.com/megamillions.com) 보고 같이 갱신.
 // 재미 요소 + 공유 유도용(사용자 피드백: "사이트가 너무 교과서 같다") — 세금 계산기 본질은 그대로 두고
 // 잭팟 카드 안에 양념처럼 추가한 것이라, 갱신을 깜빡해도 계산기 기능엔 영향 없음.
-// 2026-07-28 사용자가 채팅으로 공식 결과 직접 전달해서 갱신: 파워볼 7/25 → 7/27 회차
-// (6,26,46,58,65 + 파워볼 25, Power Play 2x는 이 위젯 스코프 밖이라 표시 안 함). 2026-07-29
-// 사용자가 스크린샷으로 메가밀리언즈 7/28 회차 결과도 전달해서 갱신
-// (34,48,49,59,70 + 메가볼 12). 2026-07-30 사용자가 usamega.com 스크린샷으로 파워볼
-// 7/27 → 7/29 회차 결과 전달해서 갱신(30,36,40,42,57 + 파워볼 2, Power Play 2x·더블플레이는
-// 이 위젯 스코프 밖). 메가밀리언즈는 같은 스크린샷에도 7/28 회차 그대로(다음 추첨 7/31 아직
-// 안 함)라 안 바꿈 — 위 JACKPOT_DATA.powerball도 같은 스크린샷의 "Next Jackpot $707
-// Million"으로 같이 갱신함.
+// 2026-08-04 이어서: "네가 보고 혼자 할 수 있는 거 전부 해줘" 요청으로 WebSearch(뉴스 3곳)+
+// WebFetch(powerball.com 공식 페이지)로 교차검증 후 갱신. 자동 백필 루틴(커밋 fd78d6f)이
+// odds-data.js의 POWERBALL_DRAW_ARCHIVE에는 8/3 회차를 이미 넣어놨는데, 이 상수(LATEST_DRAW)와
+// POWERBALL_JACKPOT_ARCHIVE는 빠뜨린 채였음 — 위 "알려진 미해결 항목"에 이미 문서화된 "3개
+// 데이터 소스 중 하나만 빠지는" 패턴이 이번에도 그대로 재발한 것(자세한 배경은 그 섹션 참고).
+// 파워볼 8/1 → 8/3 회차(8,30,41,48,54 + 파워볼 4, Power Play 2x는 스코프 밖) — 당첨자 없어서
+// 다음 추첨(8/5) 잭팟이 $786M(현금가치 $341.6M)로 증가, 위 JACKPOT_DATA.powerball도 같이 갱신함.
+// 메가밀리언즈는 7/31 회차 그대로 최신(다음 추첨이 오늘 8/4 저녁이라 아직 결과 없음, WebSearch로
+// 8/4 추첨 예고 잭팟 $60M/현금 $25.5M 확인 — 기존 JACKPOT_DATA.megamillions와 이미 일치해서
+// 변경 없음).
 const LATEST_DRAW = {
-  powerball:    { date: '2026-08-01', numbers: [6, 17, 27, 48, 50], special: 5 },
+  powerball:    { date: '2026-08-03', numbers: [8, 30, 41, 48, 54], special: 4 },
   megamillions: { date: '2026-07-31', numbers: [4, 18, 26, 43, 51], special: 4 },
 };
 
@@ -4585,6 +4577,10 @@ function getCombinedJackpotHistory(){
 // 다시 호출해도) 펼쳐본 만큼은 유지되도록 모듈 스코프에 보관(페이지 새로고침 전까지 유지)
 const JACKPOT_HISTORY_PAGE_SIZE = 15;
 let jackpotHistoryVisibleCount = null;
+// 2026-08-04: 외부 랜딩 페이지의 "이 금액으로 계산해보기" 링크로 지목된 특정 회차 —
+// { date, game } 또는 null. renderJackpotHistory()가 매번 이 값을 확인해서 목록 맨 위에
+// 별도로 얹어줌(아래 jumpToJackpotHistoryRecord() 참고).
+let jackpotSpotlightRecord = null;
 function expandJackpotHistory(){
   jackpotHistoryVisibleCount += JACKPOT_HISTORY_PAGE_SIZE;
   renderJackpotHistory();
@@ -4688,24 +4684,55 @@ function renderJackpotHistory(){
     return;
   }
   if (jackpotHistoryVisibleCount === null) jackpotHistoryVisibleCount = JACKPOT_HISTORY_PAGE_SIZE;
+  const sorted = combined.slice(0, jackpotHistoryVisibleCount);
+  const rowsHtml = sorted.map(entry => buildJackpotHistoryRowHtml(entry)).join('');
+
+  // 2026-08-04: 외부 랜딩 페이지("역대 최고 잭팟" 순위표)의 "이 금액으로 계산해보기" 링크로
+  // 지목된 회차(jumpToJackpotHistoryRecord()가 채워둠) — 이미 위 sorted(현재 페이지)에 보이면
+  // 또 안 넣고, 안 보이면(대부분 오래된 회차라 페이지 훨씬 아래에 있음) 목록 맨 위에 별도로
+  // 얹음. 이 블록을 renderJackpotHistory() 안에 둔 이유: 통화 전환·환율 갱신·언어 전환 등
+  // 무엇이 이 함수를 다시 불러도(전부 listEl.innerHTML을 통째로 새로 씀) 스포트라이트가 같이
+  // 다시 그려지게 하기 위함 — 바깥에서 한 번만 DOM에 꽂아두는 방식은 그 다음 재렌더에 지워짐.
+  let spotlightHtml = '';
+  if (jackpotSpotlightRecord) {
+    const alreadyShown = sorted.some(e => e.date === jackpotSpotlightRecord.date && e.game === jackpotSpotlightRecord.game);
+    if (!alreadyShown) {
+      const spotlightEntry = combined.find(e => e.date === jackpotSpotlightRecord.date && e.game === jackpotSpotlightRecord.game);
+      if (spotlightEntry) spotlightHtml = buildJackpotHistoryRowHtml(spotlightEntry, 'jh-spotlight-row');
+    }
+  }
+
+  const remaining = combined.length - jackpotHistoryVisibleCount;
+  const moreBtnHtml = remaining > 0
+    ? `<button type="button" class="jh-more-btn" onclick="expandJackpotHistory()">${pickLang(
+        `${remaining}건 더 보기`, `Show ${remaining} more`, `再显示${remaining}条`, `Xem thêm ${remaining} mục`, `ดูอีก ${remaining} รายการ`, `Показать ещё ${remaining}`,
+        buildJhMoreBtnMore(remaining)
+      )}</button>`
+    : '';
+  listEl.innerHTML = spotlightHtml + rowsHtml + moreBtnHtml;
+}
+
+// renderJackpotHistory()의 각 행 마크업 — 정상 페이지 목록과 스포트라이트(아래
+// jumpToJackpotHistoryRecord() 참고) 둘 다 이 함수 하나로 그려서 마크업이 어긋나지 않게 함.
+// 17개 언어 모두 "Powerball"/"Mega Millions"를 그대로 라틴 문자로 표기 — home.powerballName/
+// home.megaName의 번역(translations.json)과 같은 관례
+function buildJackpotHistoryRowHtml(entry, extraClass){
   const gameNameKo = { powerball: '파워볼', megamillions: '메가밀리언즈' };
   const gameNameEn = { powerball: 'Powerball', megamillions: 'Mega Millions' };
   const gameNameZh = { powerball: '强力球', megamillions: '超级百万' };
   const gameNameVi = { powerball: 'Powerball', megamillions: 'Mega Millions' };
   const gameNameTh = { powerball: 'พาวเวอร์บอล', megamillions: 'เมกะมิลเลียน' };
   const gameNameRu = { powerball: 'Powerball', megamillions: 'Mega Millions' };
-  // 17개 언어 모두 "Powerball"/"Mega Millions"를 그대로 라틴 문자로 표기 — home.powerballName/
-  // home.megaName의 번역(translations.json)과 같은 관례
-  const sorted = combined.slice(0, jackpotHistoryVisibleCount);
-  const rowsHtml = sorted.map(entry => {
-    const cashUsd = entry.cashUsd || entry.amountUsd * CASH_VALUE_RATIO;
-    const gameLabel = pickLang(gameNameKo[entry.game], gameNameEn[entry.game], gameNameZh[entry.game], gameNameVi[entry.game], gameNameTh[entry.game], gameNameRu[entry.game], GAME_NAME_MORE[entry.game]);
-    const note = pickLang(entry.noteKo, entry.noteEn, entry.noteZh, entry.noteVi, entry.noteTh, entry.noteRu, entry.noteMore);
-    const noteHtml = note ? `<p class="jh-note">${note}</p>` : '';
-    const amountBreakdownHtml = renderAmountBreakdownHtml(cashUsd, entry.stateCode);
-    const gameTagClass = entry.game === 'powerball' ? 'pb' : 'mm';
-    const gameTagEmoji = entry.game === 'powerball' ? '🔴' : '🟡';
-    return `<div class="jackpot-history-row" data-date="${entry.date}" data-game="${entry.game}">
+  const cashUsd = entry.cashUsd || entry.amountUsd * CASH_VALUE_RATIO;
+  const gameLabel = pickLang(gameNameKo[entry.game], gameNameEn[entry.game], gameNameZh[entry.game], gameNameVi[entry.game], gameNameTh[entry.game], gameNameRu[entry.game], GAME_NAME_MORE[entry.game]);
+  const note = pickLang(entry.noteKo, entry.noteEn, entry.noteZh, entry.noteVi, entry.noteTh, entry.noteRu, entry.noteMore);
+  const noteHtml = note ? `<p class="jh-note">${note}</p>` : '';
+  const amountBreakdownHtml = renderAmountBreakdownHtml(cashUsd, entry.stateCode);
+  const gameTagClass = entry.game === 'powerball' ? 'pb' : 'mm';
+  const gameTagEmoji = entry.game === 'powerball' ? '🔴' : '🟡';
+  const rowClass = extraClass ? `jackpot-history-row ${extraClass}` : 'jackpot-history-row';
+  const rowId = extraClass === 'jh-spotlight-row' ? ' id="jh-spotlight-row"' : '';
+  return `<div class="${rowClass}"${rowId} data-date="${entry.date}" data-game="${entry.game}">
       <div class="jh-timeline">
         <span class="jh-timeline-dot ${gameTagClass}"></span>
         <span class="jh-timeline-line"></span>
@@ -4719,17 +4746,42 @@ function renderJackpotHistory(){
         ${amountBreakdownHtml}
       </div>
     </div>`;
-  }).join('');
-
-  const remaining = combined.length - jackpotHistoryVisibleCount;
-  const moreBtnHtml = remaining > 0
-    ? `<button type="button" class="jh-more-btn" onclick="expandJackpotHistory()">${pickLang(
-        `${remaining}건 더 보기`, `Show ${remaining} more`, `再显示${remaining}条`, `Xem thêm ${remaining} mục`, `ดูอีก ${remaining} รายการ`, `Показать ещё ${remaining}`,
-        buildJhMoreBtnMore(remaining)
-      )}</button>`
-    : '';
-  listEl.innerHTML = rowsHtml + moreBtnHtml;
 }
+
+// 2026-08-04: 외부 랜딩 페이지("역대 최고 잭팟" 순위표, biggest-jackpot-payouts.html 등)의
+// "이 금액으로 계산해보기" 링크가 넘겨준 ?jgame=&jdate=로 특정 회차를 지목하면, 확률체감 탭으로
+// 이동해 그 회차를 목록 맨 위에 스포트라이트로 꽂아서 보여줌.
+// jackpotSpotlightRecord(모듈 전역)만 세팅해두면 renderJackpotHistory()가 알아서 매번 그
+// 회차를 얹어주므로(통화 전환·환율 갱신·언어 전환 등 무엇이 다시 그려도 유지됨 — 위
+// jackpotSpotlightRecord 선언부 참고), 여기서는 go('odds')만 부르면 됨. 다만 go('odds')의
+// 실제 렌더는 odds-data.js 지연 로드가 끝난 뒤 비동기로 일어나므로, 행이 실제 DOM에 나타날
+// 때까지 짧게 폴링한 뒤에만 스크롤+아코디언 펼치기+하이라이트를 함(폴링 대신 프라미스 체인에
+// 직접 걸면 go() 내부 체인과의 실행 순서를 보장할 수 없어서 더 위험함 — 실제로 이전 버전에서
+// 그 순서 문제로 스포트라이트가 렌더 직후 지워지는 버그가 있었음).
+function jumpToJackpotHistoryRecord(jgame, jdate){
+  jackpotSpotlightRecord = { game: jgame, date: jdate };
+  go('odds');
+  let attempts = 0;
+  const poll = () => {
+    const row = document.getElementById('jh-spotlight-row');
+    if (row) {
+      const detailsEl = row.closest('details');
+      if (detailsEl && !detailsEl.open) detailsEl.open = true;
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.classList.remove('field-autofill-flash');
+      void row.offsetWidth;
+      row.classList.add('field-autofill-flash');
+      return;
+    }
+    // 회차를 못 찾아 렌더가 아예 안 될 수도 있으므로(잘못된 날짜 등) 무한 폴링하지 않고
+    // 2초(40 × 50ms) 안에 안 나타나면 조용히 포기 — 홈 화면엔 이미 ?amount= 처리로 금액이
+    // 채워져 있어서 최소한의 결과는 항상 보장됨
+    if (++attempts > 40) return;
+    setTimeout(poll, 50);
+  };
+  poll();
+}
+
 function buildJhMoreBtnMore(remaining){
   return {
     ar: `عرض ${remaining} المزيد`, bn: `আরও ${remaining}টি দেখুন`, fr: `Afficher ${remaining} de plus`, hi: `${remaining} और दिखाएं`,
@@ -6679,11 +6731,19 @@ function buildHomeResultCheckCanvas(){
   // 넓어진 캔버스에 맞춰 살짝 더 키움(58px→66px). 폭을 넘으면 fitFontSize로 방어.
   // 2026-07-31 디자인팀 반영 가이드: 바로 아래 있던 "일시불 예상 실수령액" 캡션(resultLabelText)
   // 삭제 — 그 역할은 아래 MEMO 줄("세후 예상 실수령액 시뮬레이션")이 이미 겸하고 있어서 중복
-  // 이었음. 금액 자체의 y좌표(256)는 그대로 유지.
+  // 이었음.
+  // 2026-08-04: 위 "금액 y좌표(256)는 그대로 유지" 지침이 실제로는 잘못된 판단이었음이 밝혀짐
+  // — 사용자가 스크린샷으로 "받는 사람" 밑줄(payToLineY=214)과 금액 숫자가 겹쳐 보인다고
+  // 지적함. 66px 굵은 한글은 alphabetic 베이스라인 기준 ascent가 실제로 47~52px에 달해서
+  // (CJK 글리프는 라틴 문자보다 em 박스를 거의 꽉 채움), y=256 기준으로 글자 윗부분이
+  // 206px 근처까지 올라가 payToLineY(214)보다 위로 삐져나갔던 것 — 폭 방향(fitFontSize)만
+  // 방어하고 있었고 세로 여백은 애초에 검증한 적이 없었음. 최대 폰트를 66→58px로, y좌표를
+  // 256→284로 내려서 payToLineY와 최소 19px 여유를 확보(어느 언어든 짧은 금액 문자열은
+  // 항상 이 최대 크기 근처로 그려지므로, 언어별로 따로 확인할 필요 없이 이 여백이 공통 적용됨).
   ctx.fillStyle = '#155445';
   ctx.textAlign = 'center';
-  fitFontSize(ctx, finalAmt, 800, 66, 40, cardW - PAD * 2);
-  ctx.fillText(finalAmt, W / 2, 256);
+  fitFontSize(ctx, finalAmt, 800, 58, 40, cardW - PAD * 2);
+  ctx.fillText(finalAmt, W / 2, 284);
 
   // MEMO 줄 + 서명란 — 2026-07-31 하드 제약 #3 완화(사용자 승인, 위 안전장치 문단 참고). 기존
   // "세전 → 세후차액" 줄(beforeTax/taxDiff)은 사용자 요청으로 이 카드에서 아예 뺌 — 그 정보는
@@ -7133,15 +7193,21 @@ function placeAnnotateTextInput(canvasPt, clientX, clientY, opts){
   const drawCanvas = document.getElementById('annotateOverlayCanvas');
   if (!wrap || !drawCanvas) return;
   const wrapRect = wrap.getBoundingClientRect();
-  const BOTTOM_MARGIN = 74; // 아래 크기조절/삭제 버튼 줄까지 감안한 여유(기존 30px에서 확장)
+  // 2026-08-04: [손잡이+입력창]과 [A−/A+/삭제]를 세로로 쌓지 않고 한 줄로 나란히 배치(아래
+  // styles.css .annotate-text-input-wrap 주석 참고)하면서 필요한 여유 공간도 같이 바뀜 — 세로
+  // 여유(ROW_MARGIN)는 예전 두 줄 높이(74px) 대신 한 줄 높이만큼만 필요(translateY(-50%)로
+  // 위아래 반반 걸치므로 그 절반씩), 가로 여유(WIDTH_MARGIN)는 반대로 다섯 요소가 한 줄에
+  // 나란히 놓이며 늘어난 폭만큼 넉넉히 잡음.
+  const ROW_MARGIN = 30;
+  const WIDTH_MARGIN = 230;
 
   const color = existing ? existing.color : annotateColor;
   let fontSize = existing ? existing.fontSize : (opts.fontSize || annotateFontSize);
 
   const container = document.createElement('span');
   container.className = 'annotate-text-input-wrap';
-  container.style.left = Math.max(0, Math.min(wrapRect.width - 120, clientX - wrapRect.left)) + 'px';
-  container.style.top = Math.max(0, Math.min(wrapRect.height - BOTTOM_MARGIN, clientY - wrapRect.top)) + 'px';
+  container.style.left = Math.max(0, Math.min(wrapRect.width - WIDTH_MARGIN, clientX - wrapRect.left)) + 'px';
+  container.style.top = Math.max(ROW_MARGIN, Math.min(wrapRect.height - ROW_MARGIN, clientY - wrapRect.top)) + 'px';
 
   const inputRow = document.createElement('span');
   inputRow.className = 'annotate-text-input-row';
@@ -7267,8 +7333,8 @@ function placeAnnotateTextInput(canvasPt, clientX, clientY, opts){
   handle.addEventListener('pointermove', (e) => {
     if (dragPointerId === null || e.pointerId !== dragPointerId) return;
     const r = wrap.getBoundingClientRect();
-    const left = Math.max(0, Math.min(r.width - 120, e.clientX - r.left - dragOffsetX));
-    const top = Math.max(0, Math.min(r.height - BOTTOM_MARGIN, e.clientY - r.top - dragOffsetY));
+    const left = Math.max(0, Math.min(r.width - WIDTH_MARGIN, e.clientX - r.left - dragOffsetX));
+    const top = Math.max(ROW_MARGIN, Math.min(r.height - ROW_MARGIN, e.clientY - r.top - dragOffsetY));
     container.style.left = left + 'px';
     container.style.top = top + 'px';
   });
@@ -7909,13 +7975,6 @@ function toggleJackpotCalc(){
   const isShowing = box.classList.toggle('show');
   updateJcTapLabel();
   if (isShowing) refreshJackpotDrawerIfOpen();
-}
-
-// 홈 화면 계산기는 일시불(lump sum) 기준으로만 계산함 — 연금(annuity) 세금은 30년에 걸쳐
-// 매년 다른 세율 구간이 적용되는 완전히 별도의 계산이라 여기에 중복으로 넣지 않고,
-// 이미 만들어둔 확률체감 페이지의 잭팟 계산기(연금 단계 포함)로 안내만 함
-function toggleTaxTermInfo(){
-  toggleInlineTermBox('tax-term-box');
 }
 
 // 홈 화면 히어로 결과뿐 아니라, 확률체감 탭 잭팟 계산기와 국가비교 화면의 세부내역 아래에도
@@ -8815,6 +8874,7 @@ document.addEventListener('DOMContentLoaded', initAmountVoiceButtons);
 function initMascotIdlePlay() {
   const mascot = document.querySelector('.logo .mascot-mark');
   if (!mascot) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   const scheduleNext = () => {
     const delay = 8000 + Math.random() * 12000;
@@ -8990,6 +9050,26 @@ document.addEventListener('DOMContentLoaded', () => {
     params.delete('amount');
     const newSearch3 = params.toString();
     history.replaceState(null, '', location.pathname + (newSearch3 ? '?' + newSearch3 : '') + location.hash);
+  }
+
+  // 2026-08-04: "역대 최고 잭팟" 류 랜딩 페이지(biggest-jackpot-payouts.html 등 3개 언어판)의
+  // 5개 순위 카드마다 있는 "이 금액으로 계산해보기" 링크가 "?amount="만 넘겨서, 위 블록이
+  // 홈 화면 금액은 정확히 채워주지만 "이게 2022-11-07 파워볼 역대 1위였다"는 맥락이나 한국·
+  // 미국 말고 다른 나라 기준 금액은 아무 데도 안 보인다는 사용자 지적으로 "?jgame=&jdate="
+  // 추가함. 확률체감 탭의 "역대 잭팟 확인 기록"(jackpot-history-list)이 바로 그 회차를
+  // COUNTRY_TAX_PROFILES 전체(랜딩 페이지가 보여주는 4개국보다 훨씬 많음) 기준으로 이미
+  // 보여주고 있어서, 새 UI를 만드는 대신 그 목록의 해당 행으로 바로 스크롤+하이라이트함.
+  // odds-data.js가 아직 없으면(지연 로드) 비동기로 기다렸다가 처리하고, 혹시 회차를 못 찾으면
+  // (데이터 변경 등) 위에서 이미 채워둔 홈 화면 금액을 그대로 둔 채 조용히 포기함 — 링크가
+  // 최소한 "금액은 맞게 채워짐"까지는 항상 보장되게.
+  const urlJgame = params.get('jgame');
+  const urlJdate = params.get('jdate');
+  if ((urlJgame === 'powerball' || urlJgame === 'megamillions') && /^\d{4}-\d{2}-\d{2}$/.test(urlJdate || '')) {
+    params.delete('jgame');
+    params.delete('jdate');
+    const newSearchJ = params.toString();
+    history.replaceState(null, '', location.pathname + (newSearchJ ? '?' + newSearchJ : '') + location.hash);
+    jumpToJackpotHistoryRecord(urlJgame, urlJdate);
   }
 
   // "?state=CA"는 세금 기준이 미국일 때만 의미가 있음 — 이 요청(urlCountry) 또는 이미 위에서
@@ -12455,27 +12535,27 @@ function updateCalc(usdOverride){
 // 전부 영어로 조용히 대체되고 있었음(일본어 화면에서 숫자는 일본어인데 나라 이름만 영어로 나오는 등)
 // — 21개국 × 17개 언어 나라 이름표를 만들어 pickLang()의 7번째 more 인자로 채움
 const COUNTRY_NAMES_MORE = {
-  ar: { kr:'كوريا الجنوبية', us:'الولايات المتحدة', vn:'فيتنام', cn:'الصين', in:'الهند', id:'إندونيسيا', ph:'الفلبين', th:'تايلاند', jp:'اليابان', ru:'روسيا', np:'نيبال', lk:'سريلانكا', uz:'أوزبكستان', kz:'كازاخستان', kg:'قيرغيزستان', mm:'ميانمار', bd:'بنغلاديش', pk:'باكستان', kh:'كمبوديا', mn:'منغوليا', la:'لاوس' },
-  bn: { kr:'দক্ষিণ কোরিয়া', us:'যুক্তরাষ্ট্র', vn:'ভিয়েতনাম', cn:'চীন', in:'ভারত', id:'ইন্দোনেশিয়া', ph:'ফিলিপাইন', th:'থাইল্যান্ড', jp:'জাপান', ru:'রাশিয়া', np:'নেপাল', lk:'শ্রীলঙ্কা', uz:'উজবেকিস্তান', kz:'কাজাখস্তান', kg:'কিরগিজস্তান', mm:'মিয়ানমার', bd:'বাংলাদেশ', pk:'পাকিস্তান', kh:'কম্বোডিয়া', mn:'মঙ্গোলিয়া', la:'লাওস' },
-  fr: { kr:'Corée du Sud', us:'États-Unis', vn:'Vietnam', cn:'Chine', in:'Inde', id:'Indonésie', ph:'Philippines', th:'Thaïlande', jp:'Japon', ru:'Russie', np:'Népal', lk:'Sri Lanka', uz:'Ouzbékistan', kz:'Kazakhstan', kg:'Kirghizistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodge', mn:'Mongolie', la:'Laos' },
-  hi: { kr:'दक्षिण कोरिया', us:'अमेरिका', vn:'वियतनाम', cn:'चीन', in:'भारत', id:'इंडोनेशिया', ph:'फिलीपींस', th:'थाईलैंड', jp:'जापान', ru:'रूस', np:'नेपाल', lk:'श्रीलंका', uz:'उज़्बेकिस्तान', kz:'कज़ाकिस्तान', kg:'किर्गिज़स्तान', mm:'म्यांमार', bd:'बांग्लादेश', pk:'पाकिस्तान', kh:'कंबोडिया', mn:'मंगोलिया', la:'लाओस' },
-  id: { kr:'Korea Selatan', us:'Amerika Serikat', vn:'Vietnam', cn:'Tiongkok', in:'India', id:'Indonesia', ph:'Filipina', th:'Thailand', jp:'Jepang', ru:'Rusia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakhstan', kg:'Kirgistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kamboja', mn:'Mongolia', la:'Laos' },
+  ar: { kr:'كوريا', us:'الولايات المتحدة', vn:'فيتنام', cn:'الصين', in:'الهند', id:'إندونيسيا', ph:'الفلبين', th:'تايلاند', jp:'اليابان', ru:'روسيا', np:'نيبال', lk:'سريلانكا', uz:'أوزبكستان', kz:'كازاخستان', kg:'قيرغيزستان', mm:'ميانمار', bd:'بنغلاديش', pk:'باكستان', kh:'كمبوديا', mn:'منغوليا', la:'لاوس' },
+  bn: { kr:'কোরিয়া', us:'যুক্তরাষ্ট্র', vn:'ভিয়েতনাম', cn:'চীন', in:'ভারত', id:'ইন্দোনেশিয়া', ph:'ফিলিপাইন', th:'থাইল্যান্ড', jp:'জাপান', ru:'রাশিয়া', np:'নেপাল', lk:'শ্রীলঙ্কা', uz:'উজবেকিস্তান', kz:'কাজাখস্তান', kg:'কিরগিজস্তান', mm:'মিয়ানমার', bd:'বাংলাদেশ', pk:'পাকিস্তান', kh:'কম্বোডিয়া', mn:'মঙ্গোলিয়া', la:'লাওস' },
+  fr: { kr:'Corée', us:'États-Unis', vn:'Vietnam', cn:'Chine', in:'Inde', id:'Indonésie', ph:'Philippines', th:'Thaïlande', jp:'Japon', ru:'Russie', np:'Népal', lk:'Sri Lanka', uz:'Ouzbékistan', kz:'Kazakhstan', kg:'Kirghizistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodge', mn:'Mongolie', la:'Laos' },
+  hi: { kr:'कोरिया', us:'अमेरिका', vn:'वियतनाम', cn:'चीन', in:'भारत', id:'इंडोनेशिया', ph:'फिलीपींस', th:'थाईलैंड', jp:'जापान', ru:'रूस', np:'नेपाल', lk:'श्रीलंका', uz:'उज़्बेकिस्तान', kz:'कज़ाकिस्तान', kg:'किर्गिज़स्तान', mm:'म्यांमार', bd:'बांग्लादेश', pk:'पाकिस्तान', kh:'कंबोडिया', mn:'मंगोलिया', la:'लाओस' },
+  id: { kr:'Korea', us:'Amerika Serikat', vn:'Vietnam', cn:'Tiongkok', in:'India', id:'Indonesia', ph:'Filipina', th:'Thailand', jp:'Jepang', ru:'Rusia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakhstan', kg:'Kirgistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kamboja', mn:'Mongolia', la:'Laos' },
   ja: { kr:'韓国', us:'アメリカ', vn:'ベトナム', cn:'中国', in:'インド', id:'インドネシア', ph:'フィリピン', th:'タイ', jp:'日本', ru:'ロシア', np:'ネパール', lk:'スリランカ', uz:'ウズベキスタン', kz:'カザフスタン', kg:'キルギス', mm:'ミャンマー', bd:'バングラデシュ', pk:'パキスタン', kh:'カンボジア', mn:'モンゴル', la:'ラオス' },
-  kk: { kr:'Оңтүстік Корея', us:'АҚШ', vn:'Вьетнам', cn:'Қытай', in:'Үндістан', id:'Индонезия', ph:'Филиппин', th:'Тайланд', jp:'Жапония', ru:'Ресей', np:'Непал', lk:'Шри-Ланка', uz:'Өзбекстан', kz:'Қазақстан', kg:'Қырғызстан', mm:'Мьянма', bd:'Бангладеш', pk:'Пәкістан', kh:'Камбоджа', mn:'Моңғолия', la:'Лаос' },
-  km: { kr:'កូរ៉េខាងត្បូង', us:'សហរដ្ឋអាមេរិក', vn:'វៀតណាម', cn:'ចិន', in:'ឥណ្ឌា', id:'ឥណ្ឌូនេស៊ី', ph:'ហ្វីលីពីន', th:'ថៃ', jp:'ជប៉ុន', ru:'រុស្ស៊ី', np:'នេប៉ាល់', lk:'ស្រីលង្កា', uz:'អ៊ូសបេគីស្ថាន', kz:'កាហ្សាក់ស្ថាន', kg:'គារហ្គីស្ថាន', mm:'មីយ៉ាន់ម៉ា', bd:'បង់ក្លាដែស', pk:'ប៉ាគីស្ថាន', kh:'កម្ពុជា', mn:'ម៉ុងហ្គោលី', la:'ឡាវ' },
-  ky: { kr:'Түштүк Корея', us:'АКШ', vn:'Вьетнам', cn:'Кытай', in:'Индия', id:'Индонезия', ph:'Филиппин', th:'Тайланд', jp:'Япония', ru:'Орусия', np:'Непал', lk:'Шри-Ланка', uz:'Өзбекстан', kz:'Казакстан', kg:'Кыргызстан', mm:'Мьянма', bd:'Бангладеш', pk:'Пакистан', kh:'Камбоджа', mn:'Монголия', la:'Лаос' },
-  lo: { kr:'ເກົາຫຼີໃຕ້', us:'ສະຫະລັດ', vn:'ຫວຽດນາມ', cn:'ຈີນ', in:'ອິນເດຍ', id:'ອິນໂດເນເຊຍ', ph:'ຟີລິບປິນ', th:'ໄທ', jp:'ຍີ່ປຸ່ນ', ru:'ລັດເຊຍ', np:'ເນປານ', lk:'ສີລັງກາ', uz:'ອຸສເບກິສະຖານ', kz:'ຄາຊັກສະຖານ', kg:'ຄີກີສະຖານ', mm:'ມຽນມາ', bd:'ບັງກະລາເທດ', pk:'ປາກີສະຖານ', kh:'ກຳປູເຈຍ', mn:'ມົງໂກເລຍ', la:'ລາວ' },
-  mn: { kr:'Өмнөд Солонгос', us:'АНУ', vn:'Вьетнам', cn:'Хятад', in:'Энэтхэг', id:'Индонез', ph:'Филиппин', th:'Тайланд', jp:'Япон', ru:'Орос', np:'Балба', lk:'Шри Ланка', uz:'Узбекистан', kz:'Казахстан', kg:'Киргизстан', mm:'Мьянмар', bd:'Бангладеш', pk:'Пакистан', kh:'Камбож', mn:'Монгол', la:'Лаос' },
-  my: { kr:'တောင်ကိုရီးယား', us:'အမေရိကန်ပြည်ထောင်စု', vn:'ဗီယက်နမ်', cn:'တရုတ်', in:'အိန္ဒိယ', id:'အင်ဒိုနီးရှား', ph:'ဖိလစ်ပိုင်', th:'ထိုင်း', jp:'ဂျပန်', ru:'ရုရှား', np:'နီပေါ', lk:'သီရိလင်္ကာ', uz:'ဥဇဗက်ကစ္စတန်', kz:'ကာဇက်စတန်', kg:'ကာဂျစ္စတန်', mm:'မြန်မာ', bd:'ဘင်္ဂလားဒေ့ရှ်', pk:'ပါကစ္စတန်', kh:'ကမ္ဘောဒီးယား', mn:'မွန်ဂိုလီးယား', la:'လာအို' },
-  ne: { kr:'दक्षिण कोरिया', us:'अमेरिका', vn:'भियतनाम', cn:'चीन', in:'भारत', id:'इन्डोनेसिया', ph:'फिलिपिन्स', th:'थाइल्यान्ड', jp:'जापान', ru:'रुस', np:'नेपाल', lk:'श्रीलंका', uz:'उज्बेकिस्तान', kz:'कजाकिस्तान', kg:'किर्गिस्तान', mm:'म्यानमार', bd:'बंगलादेश', pk:'पाकिस्तान', kh:'कम्बोडिया', mn:'मंगोलिया', la:'लाओस' },
-  si: { kr:'දකුණු කොරියාව', us:'ඇමරිකා එක්සත් ජනපදය', vn:'වියට්නාමය', cn:'චීනය', in:'ඉන්දියාව', id:'ඉන්දුනීසියාව', ph:'පිලිපීනය', th:'තායිලන්තය', jp:'ජපානය', ru:'රුසියාව', np:'නේපාලය', lk:'ශ්‍රී ලංකාව', uz:'උස්බෙකිස්තානය', kz:'කසකස්තානය', kg:'කිර්ගිස්තානය', mm:'මියන්මාරය', bd:'බංග්ලාදේශය', pk:'පකිස්තානය', kh:'කාම්බෝජය', mn:'මොංගෝලියාව', la:'ලාඕසය' },
-  tl: { kr:'Timog Korea', us:'Estados Unidos', vn:'Vietnam', cn:'Tsina', in:'India', id:'Indonesia', ph:'Pilipinas', th:'Thailand', jp:'Japan', ru:'Russia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakhstan', kg:'Kyrgyzstan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodia', mn:'Mongolia', la:'Laos' },
-  ur: { kr:'جنوبی کوریا', us:'امریکہ', vn:'ویتنام', cn:'چین', in:'بھارت', id:'انڈونیشیا', ph:'فلپائن', th:'تھائی لینڈ', jp:'جاپان', ru:'روس', np:'نیپال', lk:'سری لنکا', uz:'ازبکستان', kz:'قازقستان', kg:'کرغزستان', mm:'میانمار', bd:'بنگلہ دیش', pk:'پاکستان', kh:'کمبوڈیا', mn:'منگولیا', la:'لاؤس' },
-  uz: { kr:'Janubiy Koreya', us:'AQSH', vn:'Vetnam', cn:'Xitoy', in:'Hindiston', id:'Indoneziya', ph:'Filippin', th:'Tailand', jp:'Yaponiya', ru:'Rossiya', np:'Nepal', lk:'Shri-Lanka', uz:'Oʻzbekiston', kz:'Qozogʻiston', kg:'Qirgʻiziston', mm:'Myanma', bd:'Bangladesh', pk:'Pokiston', kh:'Kambodja', mn:'Mongoliya', la:'Laos' },
-  pt: { kr:'Coreia do Sul', us:'Estados Unidos', vn:'Vietnã', cn:'China', in:'Índia', id:'Indonésia', ph:'Filipinas', th:'Tailândia', jp:'Japão', ru:'Rússia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbequistão', kz:'Cazaquistão', kg:'Quirguistão', mm:'Mianmar', bd:'Bangladesh', pk:'Paquistão', kh:'Camboja', mn:'Mongólia', la:'Laos' },
-  es: { kr:'Corea del Sur', us:'Estados Unidos', vn:'Vietnam', cn:'China', in:'India', id:'Indonesia', ph:'Filipinas', th:'Tailandia', jp:'Japón', ru:'Rusia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistán', kz:'Kazajistán', kg:'Kirguistán', mm:'Myanmar', bd:'Bangladés', pk:'Pakistán', kh:'Camboya', mn:'Mongolia', la:'Laos' },
-  uk: { kr:'Південна Корея', us:'США', vn:"В'єтнам", cn:'Китай', in:'Індія', id:'Індонезія', ph:'Філіппіни', th:'Таїланд', jp:'Японія', ru:'Росія', np:'Непал', lk:'Шрі-Ланка', uz:'Узбекистан', kz:'Казахстан', kg:'Киргизстан', mm:"М'янма", bd:'Бангладеш', pk:'Пакистан', kh:'Камбоджа', mn:'Монголія', la:'Лаос' },
-  tet: { kr:'Korea do Sul', us:'EUA', vn:'Vietname', cn:'China', in:'Índia', id:'Indonésia', ph:'Filipinas', th:'Tailándia', jp:'Japaun', ru:'Rúsia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbequistão', kz:'Cazaquistão', kg:'Quirguizistão', mm:'Mianmar', bd:'Bangladesh', pk:'Paquistão', kh:'Camboja', mn:'Mongólia', la:'Laos' },
+  kk: { kr:'Корея', us:'АҚШ', vn:'Вьетнам', cn:'Қытай', in:'Үндістан', id:'Индонезия', ph:'Филиппин', th:'Тайланд', jp:'Жапония', ru:'Ресей', np:'Непал', lk:'Шри-Ланка', uz:'Өзбекстан', kz:'Қазақстан', kg:'Қырғызстан', mm:'Мьянма', bd:'Бангладеш', pk:'Пәкістан', kh:'Камбоджа', mn:'Моңғолия', la:'Лаос' },
+  km: { kr:'កូរ៉េ', us:'សហរដ្ឋអាមេរិក', vn:'វៀតណាម', cn:'ចិន', in:'ឥណ្ឌា', id:'ឥណ្ឌូនេស៊ី', ph:'ហ្វីលីពីន', th:'ថៃ', jp:'ជប៉ុន', ru:'រុស្ស៊ី', np:'នេប៉ាល់', lk:'ស្រីលង្កា', uz:'អ៊ូសបេគីស្ថាន', kz:'កាហ្សាក់ស្ថាន', kg:'គារហ្គីស្ថាន', mm:'មីយ៉ាន់ម៉ា', bd:'បង់ក្លាដែស', pk:'ប៉ាគីស្ថាន', kh:'កម្ពុជា', mn:'ម៉ុងហ្គោលី', la:'ឡាវ' },
+  ky: { kr:'Корея', us:'АКШ', vn:'Вьетнам', cn:'Кытай', in:'Индия', id:'Индонезия', ph:'Филиппин', th:'Тайланд', jp:'Япония', ru:'Орусия', np:'Непал', lk:'Шри-Ланка', uz:'Өзбекстан', kz:'Казакстан', kg:'Кыргызстан', mm:'Мьянма', bd:'Бангладеш', pk:'Пакистан', kh:'Камбоджа', mn:'Монголия', la:'Лаос' },
+  lo: { kr:'ເກົາຫຼີ', us:'ສະຫະລັດ', vn:'ຫວຽດນາມ', cn:'ຈີນ', in:'ອິນເດຍ', id:'ອິນໂດເນເຊຍ', ph:'ຟີລິບປິນ', th:'ໄທ', jp:'ຍີ່ປຸ່ນ', ru:'ລັດເຊຍ', np:'ເນປານ', lk:'ສີລັງກາ', uz:'ອຸສເບກິສະຖານ', kz:'ຄາຊັກສະຖານ', kg:'ຄີກີສະຖານ', mm:'ມຽນມາ', bd:'ບັງກະລາເທດ', pk:'ປາກີສະຖານ', kh:'ກຳປູເຈຍ', mn:'ມົງໂກເລຍ', la:'ລາວ' },
+  mn: { kr:'Солонгос', us:'АНУ', vn:'Вьетнам', cn:'Хятад', in:'Энэтхэг', id:'Индонез', ph:'Филиппин', th:'Тайланд', jp:'Япон', ru:'Орос', np:'Балба', lk:'Шри Ланка', uz:'Узбекистан', kz:'Казахстан', kg:'Киргизстан', mm:'Мьянмар', bd:'Бангладеш', pk:'Пакистан', kh:'Камбож', mn:'Монгол', la:'Лаос' },
+  my: { kr:'ကိုရီးယား', us:'အမေရိကန်ပြည်ထောင်စု', vn:'ဗီယက်နမ်', cn:'တရုတ်', in:'အိန္ဒိယ', id:'အင်ဒိုနီးရှား', ph:'ဖိလစ်ပိုင်', th:'ထိုင်း', jp:'ဂျပန်', ru:'ရုရှား', np:'နီပေါ', lk:'သီရိလင်္ကာ', uz:'ဥဇဗက်ကစ္စတန်', kz:'ကာဇက်စတန်', kg:'ကာဂျစ္စတန်', mm:'မြန်မာ', bd:'ဘင်္ဂလားဒေ့ရှ်', pk:'ပါကစ္စတန်', kh:'ကမ္ဘောဒီးယား', mn:'မွန်ဂိုလီးယား', la:'လာအို' },
+  ne: { kr:'कोरिया', us:'अमेरिका', vn:'भियतनाम', cn:'चीन', in:'भारत', id:'इन्डोनेसिया', ph:'फिलिपिन्स', th:'थाइल्यान्ड', jp:'जापान', ru:'रुस', np:'नेपाल', lk:'श्रीलंका', uz:'उज्बेकिस्तान', kz:'कजाकिस्तान', kg:'किर्गिस्तान', mm:'म्यानमार', bd:'बंगलादेश', pk:'पाकिस्तान', kh:'कम्बोडिया', mn:'मंगोलिया', la:'लाओस' },
+  si: { kr:'කොරියාව', us:'ඇමරිකා එක්සත් ජනපදය', vn:'වියට්නාමය', cn:'චීනය', in:'ඉන්දියාව', id:'ඉන්දුනීසියාව', ph:'පිලිපීනය', th:'තායිලන්තය', jp:'ජපානය', ru:'රුසියාව', np:'නේපාලය', lk:'ශ්‍රී ලංකාව', uz:'උස්බෙකිස්තානය', kz:'කසකස්තානය', kg:'කිර්ගිස්තානය', mm:'මියන්මාරය', bd:'බංග්ලාදේශය', pk:'පකිස්තානය', kh:'කාම්බෝජය', mn:'මොංගෝලියාව', la:'ලාඕසය' },
+  tl: { kr:'Korea', us:'Estados Unidos', vn:'Vietnam', cn:'Tsina', in:'India', id:'Indonesia', ph:'Pilipinas', th:'Thailand', jp:'Japan', ru:'Russia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakhstan', kg:'Kyrgyzstan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodia', mn:'Mongolia', la:'Laos' },
+  ur: { kr:'کوریا', us:'امریکہ', vn:'ویتنام', cn:'چین', in:'بھارت', id:'انڈونیشیا', ph:'فلپائن', th:'تھائی لینڈ', jp:'جاپان', ru:'روس', np:'نیپال', lk:'سری لنکا', uz:'ازبکستان', kz:'قازقستان', kg:'کرغزستان', mm:'میانمار', bd:'بنگلہ دیش', pk:'پاکستان', kh:'کمبوڈیا', mn:'منگولیا', la:'لاؤس' },
+  uz: { kr:'Koreya', us:'AQSH', vn:'Vetnam', cn:'Xitoy', in:'Hindiston', id:'Indoneziya', ph:'Filippin', th:'Tailand', jp:'Yaponiya', ru:'Rossiya', np:'Nepal', lk:'Shri-Lanka', uz:'Oʻzbekiston', kz:'Qozogʻiston', kg:'Qirgʻiziston', mm:'Myanma', bd:'Bangladesh', pk:'Pokiston', kh:'Kambodja', mn:'Mongoliya', la:'Laos' },
+  pt: { kr:'Coreia', us:'Estados Unidos', vn:'Vietnã', cn:'China', in:'Índia', id:'Indonésia', ph:'Filipinas', th:'Tailândia', jp:'Japão', ru:'Rússia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbequistão', kz:'Cazaquistão', kg:'Quirguistão', mm:'Mianmar', bd:'Bangladesh', pk:'Paquistão', kh:'Camboja', mn:'Mongólia', la:'Laos' },
+  es: { kr:'Corea', us:'Estados Unidos', vn:'Vietnam', cn:'China', in:'India', id:'Indonesia', ph:'Filipinas', th:'Tailandia', jp:'Japón', ru:'Rusia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistán', kz:'Kazajistán', kg:'Kirguistán', mm:'Myanmar', bd:'Bangladés', pk:'Pakistán', kh:'Camboya', mn:'Mongolia', la:'Laos' },
+  uk: { kr:'Корея', us:'США', vn:"В'єтнам", cn:'Китай', in:'Індія', id:'Індонезія', ph:'Філіппіни', th:'Таїланд', jp:'Японія', ru:'Росія', np:'Непал', lk:'Шрі-Ланка', uz:'Узбекистан', kz:'Казахстан', kg:'Киргизстан', mm:"М'янма", bd:'Бангладеш', pk:'Пакистан', kh:'Камбоджа', mn:'Монголія', la:'Лаос' },
+  tet: { kr:'Korea', us:'EUA', vn:'Vietname', cn:'China', in:'Índia', id:'Indonésia', ph:'Filipinas', th:'Tailándia', jp:'Japaun', ru:'Rúsia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbequistão', kz:'Cazaquistão', kg:'Quirguizistão', mm:'Mianmar', bd:'Bangladesh', pk:'Paquistão', kh:'Camboja', mn:'Mongólia', la:'Laos' },
 };
 
 // 언어별 "~ 거주자" 관용구 템플릿 — 위 COUNTRY_NAMES_MORE의 나라 이름을 채워서 완성
