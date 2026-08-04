@@ -121,15 +121,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<!-- styles.css/script.js가 사람이 고치는 소스, styles.min.css/script.min.js가 실제로 로드하는
-     압축본(scripts/build-min.js로 생성, .github/workflows/minify-assets.yml이 push마다 자동
-     재생성·커밋함) — 자세한 내용은 HANDOFF.md "코드 아키텍처 핵심 패턴" 참고 -->
-<link rel="stylesheet" href="styles.min.css?v=20260804-4">
+<link rel="stylesheet" href="styles.min.css?v=20260804-1">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260804-8" defer></script>
+<script src="script.min.js?v=20260804-1" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",

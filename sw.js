@@ -116,7 +116,7 @@ async function networkFirst(request) {
     }
     return networkResponse;
   } catch (err) {
-    // 네트워크 실패(오프라인 등) — script.js?v=YYYYMMDD처럼 쿼리스트링이 버전마다 달라지는
+    // 네트워크 실패(오프라인 등) — script.min.js?v=YYYYMMDD처럼 쿼리스트링이 버전마다 달라지는
     // 요청도 폴백에서는 찾을 수 있도록 ignoreSearch로 매칭
     const cached = await cache.match(request, { ignoreSearch: true });
     if (cached) return cached;

@@ -1,48 +1,54 @@
-// script.js/styles.css(사람이 직접 고치는 소스)를 읽어서 script.min.js/styles.min.css
-// (방문자가 실제로 받는 압축본)를 다시 생성함.
+// script.js/styles.css(사람이 읽고 고치는 원본 — 주석 그대로 유지)를 minify해서
+// script.min.js/styles.min.css(실제로 방문자가 받는 파일)를 다시 생성함.
 //
-// script.js나 styles.css를 고쳤으면 커밋 전에 이 스크립트를 실행하세요:
-//   npm install (최초 1회) && node scripts/build-min.js
+// script.js 또는 styles.css를 고쳤으면 반드시 이 스크립트를 실행한 뒤 minify된 결과물도
+// 같이 커밋하세요:
+//   npm install   (devDependencies가 아직 없으면 한 번만)
+//   node scripts/build-min.js
 //
-// GitHub Actions(.github/workflows/minify-assets.yml)가 main에 push될 때 script.js/styles.css
-// 변경을 감지해서 이 스크립트를 자동 실행 후 커밋하므로, 로컬에서 깜빡해도 결국 반영되지만
-// index.html은 script.min.js/styles.min.css를 직접 로드하므로 로컬 미리보기(Artifact 등)에서
-// 최신 상태를 보려면 이 스크립트를 직접 돌려야 함.
+// index.html은 script.min.js/styles.min.css를 불러오므로, 이 단계를 빠뜨리면 원본 파일을
+// 아무리 고쳐도 라이브 사이트엔 반영되지 않음(i18n-source/translations.json → i18n/*.json과
+// 완전히 같은 실수 패턴 — build-i18n.js 상단 주석 참고). 원본(script.js/styles.css)의
+// 캐시버스팅 버전을 올렸으면 이 스크립트를 돌린 뒤 index.html의 실제 참조도 확인할 것.
 const fs = require('fs');
 const path = require('path');
 const { minify } = require('terser');
 const CleanCSS = require('clean-css');
 
 const ROOT = path.resolve(__dirname, '..');
-const JS_SRC = path.join(ROOT, 'script.js');
-const JS_OUT = path.join(ROOT, 'script.min.js');
-const CSS_SRC = path.join(ROOT, 'styles.css');
-const CSS_OUT = path.join(ROOT, 'styles.min.css');
 
-function fmtKB(bytes) {
-  return `${(bytes / 1024).toFixed(1)}KB`;
+function human(bytes) {
+  return (bytes / 1024).toFixed(1) + 'KB';
 }
 
 async function buildJs() {
-  const src = fs.readFileSync(JS_SRC, 'utf8');
+  const srcPath = path.join(ROOT, 'script.js');
+  const outPath = path.join(ROOT, 'script.min.js');
+  const src = fs.readFileSync(srcPath, 'utf8');
   const result = await minify(src, { compress: true, mangle: true });
   if (result.error) throw result.error;
-  fs.writeFileSync(JS_OUT, result.code);
-  console.log(`[build-min] script.js ${fmtKB(Buffer.byteLength(src))} -> script.min.js ${fmtKB(Buffer.byteLength(result.code))}`);
+  fs.writeFileSync(outPath, result.code);
+  // 안전장치: minify 결과물이 실제로 유효한 JS인지 한 번 더 확인(구문 오류가 있으면
+  // 여기서 바로 걸러짐 — 라이브에 깨진 스크립트가 올라가는 걸 막음)
+  new Function(result.code); // eslint-disable-line no-new-func
+  console.log(`[build-min] script.js ${human(Buffer.byteLength(src))} -> script.min.js ${human(Buffer.byteLength(result.code))}`);
 }
 
 function buildCss() {
-  const src = fs.readFileSync(CSS_SRC, 'utf8');
-  const result = new CleanCSS({ level: 2 }).minify(src);
-  if (result.errors.length) throw new Error(result.errors.join('\n'));
-  fs.writeFileSync(CSS_OUT, result.styles);
-  console.log(`[build-min] styles.css ${fmtKB(Buffer.byteLength(src))} -> styles.min.css ${fmtKB(Buffer.byteLength(result.styles))}`);
+  const srcPath = path.join(ROOT, 'styles.css');
+  const outPath = path.join(ROOT, 'styles.min.css');
+  const src = fs.readFileSync(srcPath, 'utf8');
+  const output = new CleanCSS({ level: 2 }).minify(src);
+  if (output.errors.length) throw new Error('[build-min] styles.css minify 실패: ' + output.errors.join('; '));
+  fs.writeFileSync(outPath, output.styles);
+  console.log(`[build-min] styles.css ${human(Buffer.byteLength(src))} -> styles.min.css ${human(Buffer.byteLength(output.styles))}`);
 }
 
 (async () => {
   await buildJs();
   buildCss();
+  console.log('[build-min] 완료 — script.min.js/styles.min.css가 실제로 바뀐 파일인지 git status로 확인하고, 바뀌었으면 index.html 캐시버스팅 버전과 함께 커밋할 것.');
 })().catch(err => {
-  console.error('[build-min] 실패:', err);
-  process.exit(1);
+  console.error(err);
+  process.exitCode = 1;
 });

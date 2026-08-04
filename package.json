@@ -1,12 +1,12 @@
 {
-  "name": "chamtax",
+  "name": "chamtax-site",
   "private": true,
-  "version": "1.0.0",
+  "description": "참택스(ChamTax) 정적 사이트. 사이트 자체는 빌드 도구 없이 배포하는 게 원칙이며, 이 package.json은 오직 script.js/styles.css의 배포용 minify(script.min.js/styles.min.css, scripts/build-min.js)를 위해서만 존재함 — 다른 목적으로 의존성을 추가하지 말 것.",
   "scripts": {
     "build:min": "node scripts/build-min.js"
   },
   "devDependencies": {
-    "terser": "^5.49.1",
-    "clean-css": "^5.3.3"
+    "clean-css": "^5.3.3",
+    "terser": "^5.49.1"
   }
 }
