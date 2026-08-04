@@ -1299,3 +1299,42 @@ full_overflow_sweep.js`(27개 언어 × 5개 화면폭 × 7개 화면 = 945개 �
 추가), `HANDOFF.md`/`HANDOFF-ARCHIVE.md`(2026-08-03까지 세션 기록 4,151줄 아카이빙 —
 이 섹션이 5,351줄까지 쌓여있었음, 위 문서 상단 규칙의 "3~4개 넘으면 정리" 기준을 한참
 넘긴 상태였음).
+
+### 2026-08-04 이어서 — 위 PR #110 병합 완료 확인 + "6가지 페르소나" 홈 화면 반영 재검증(이슈 없음)
+
+**요청 배경**: 위 세션 종료 직후 사용자가 "왜 안 바뀌었지, 아직 배포가 안 된건가"라고 질문 →
+`claude/github-file-review-handover-dfx0d5` 브랜치(PR #110)만 있고 `main`엔 아직 안
+반영된 상태였음을 확인·설명 후 PR #110을 `main`에 병합함(머지 커밋 `25a0ddd`). 이어서
+사용자가 "6가지 페르소나가 홈 화면에 다 반영됐는지 확인해달라"고 요청.
+
+**"6가지 페르소나" 정의**(이 문서 과거 세션에서 이미 확정, `HANDOFF-ARCHIVE.md`
+"2026-08-03 이어서 — '6개 페르소나' 재검증 요청" 항목 참고): ①사는 나라를 골라서 바로
+보기 ②한국에 살아요 ③해외에 살지만 한국 국적 ④한국에 사는 외국인 ⑤미국 거주자
+⑥기타 국가.
+
+**검증 방법**: Playwright로 6개 모두 실제 진입 함수를 직접 호출해 재현.
+①②③④는 홈 화면 상단 "👋 나는 어떤 경우일까요?" 아코디언(`introPersonaAccordion`)의
+4개 행이 각각 담당(①`goRealAbroadFromSelect('realAbroadSelect')`, ②
+`goToKoreaCalculator()`, ③`#introAbroadLink`(정적 페이지 링크), ④
+`goWithLangSelect('foreignerLangSelect', true)`). ⑤⑥은 이 아코디언이 아니라 그 아래
+입력 카드의 국가 선택기(`homeCountrySelect`)에 `us`/`other`가 직접 옵션으로 있어서
+그 경로로 도달함(이미 과거 세션이 확인해둔 구조 그대로).
+
+- ①: `us|en` → lang=en/country=us/헤드라인 `$189.5 million` 정상. `jp|ja` → lang=ja/
+  country=jp/헤드라인 `¥324.7億` 정상.
+- ②: `us`로 바꿔둔 뒤 클릭 → country=kr로 정상 복귀, 헤드라인 원화로 정상.
+- ③: 링크 대상(`korean-abroad-us-lottery-tax.html`) HTTP 200 확인(하이픈 파일명 — 이
+  프로젝트가 과거에 겪은 "GitHub 웹 업로드 시 하이픈이 사라지는" 사고와는 무관, 이번
+  세션은 `git push`로 반영되므로 안전).
+- ④: `ar`(RTL) → `dir=rtl` 정상 적용, 아라비아 숫자 대신 아랍-인도 숫자(٢٥٨٫٨)까지 정상
+  렌더링. `vi` → 정상.
+- ⑤: `setHomeCountry('us')` → `basisSuffix` "US resident" 정상, 주(State) 선택기도
+  같이 나타남(`needsState:true` 정상 반영).
+- ⑥: `setHomeCountry('other')` → `basisSuffix` "Other country (IRS nonresident 30%
+  basis)" 정상, 헤드라인 계산도 에러 없이 나옴.
+
+**결론: 6개 페르소나 전부 홈 화면에 정상 반영돼 있고 이슈 없음.** 6곳 전부 콘솔 에러 0건,
+예외 0건. 오늘 세션(모달/겹침 버그/로고 애니메이션/잭팟 링크/낚시 게임/공유 감사)이 이
+영역 코드를 전혀 안 건드렸다는 점과도 일치. **코드 변경 없음** — 검증만 수행.
+
+변경 파일: `HANDOFF.md`만(이 항목).
