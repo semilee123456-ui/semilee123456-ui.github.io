@@ -2198,3 +2198,53 @@ Cloudflare가 폐지**했지만 이 프로젝트는 이미 `script.min.js`/`styl
 변경 파일: `index.html`(캐시버스팅 버전), `script.js`/`script.min.js`(낚시 릴 감기 로직 전면
 교체 + 26개 언어 안내 문구), `styles.css`/`styles.min.css`(낚시 홀드 강조 스타일 추가,
 `.annotate-overlay-panel` max-width 재확대), `HANDOFF.md`(이 항목 + TTS 백로그 정정, PR #125).
+
+### 2026-08-04 이어서 — 경쟁 사이트(USA Mega 등) 조사 후 발견한 유일한 진짜 공백:
+### "공동 당첨자 분할 계산기" 신규 추가
+
+**배경**: 사용자가 "다른 계산기 사이트랑 비교해서 추가하거나 뺄 거 있냐"고 물어봄 —
+`WebSearch`로 미국 잭팟 분석 대표 사이트(USA Mega 등)와 최근 나온 여러 세금 계산기를
+실제로 조사(추측 대신 근거 확인).
+
+**비교 결과**: ChamTax가 이미 대등하거나 더 나은 것 — 일시불 vs 연금 비교(30년 지급표,
+실제 파워볼/메가밀리언즈처럼 연 5% 증액 구조까지 반영, 회차별로 세율도 다시 계산해서
+경쟁사보다 정교함), 미국 51개 주+DC 세율, 연방세 37% 단일 적용(경쟁사는 "실제 누진세율
+씀"을 내세우지만, 코드의 `federal: 0.37` 주석과 기존 `faq.q17`/`a17`을 재확인해보니
+**잭팟 규모(수백만~수십억 달러)에서는 그 차이가 반올림 오차 수준이라 실제로 고칠
+필요가 없는 부분**이었음 — 괜히 안 건드림), 확률체감/잭팟 인덱스(오히려 이쪽이 더
+독특함). 26개 언어 지원은 미국 경쟁사 전부 영어 전용이라 압도적 차별점.
+
+**진짜 공백 1건 발견 → 반영**: **공동구매/당첨자 분할 계산기가 없었음.** 실제로 큰
+잭팟은 여러 명이 나눠 당첨되는 경우가 흔한데(`odds-data.js` `JACKPOT_HISTORY`에도
+"2025-09-06 역대 2위, 미주리·텍사스 2인 분할" 기록이 있음) 1인당 실수령액을 다시
+계산해주는 기능이 없었음. 사용자 승인받아 바로 구현함.
+
+**구현**: 홈 화면 결과 카드의 "결과 더 자세히 보기" 아코디언 안, 기존 "일시불 대신
+연금으로 받으면?"(`#home-annuity-detail`) 바로 아래에 같은 `.jh-more`/`.jc-annuity-box`
+패턴으로 새 아코디언(`#home-split-detail`) 추가 — "당첨자 수(본인 포함)" 입력칸(1~50
+범위, `.rate-input` 스타일 재사용) → `updateHomeSplitCalc()`가 `sharedAmountUsd`를
+인원수로 나눈 뒤 **`calcTakeHome()`을 처음부터 다시 호출**해서 1인당 세후 실수령액을
+계산. 단순히 최종 결과를 인원수로 나누기만 하면 누진세 국가(한국 종합소득세 등)에서
+실제와 다른 값이 나오기 때문에 반드시 이렇게 해야 함(코드 주석에 근거 명시). 다른
+위젯(확률체감 탭 잭팟 드로어 등)에는 일부러 안 붙임 — TTS 때와 같은 이유로 핵심 결과
+화면에만 붙여서 "정보 밀도" 문제를 다시 만들지 않기 위함. `updateHomeCalc()`가 금액/
+국가/주 바뀔 때마다 `updateHomeSplitCalc()`도 같이 호출하도록 연결해서 항상 최신
+상태 유지.
+
+**⚠️ 이번에도 겪은 실수 — `script.min.js` 재생성 깜빡함**: `script.js`만 고치고
+바로 Playwright로 테스트했더니 `updateHomeSplitCalc is not defined` 콘솔 에러가
+남(index.html이 `script.min.js`를 로드하는데 그게 최신화가 안 됐던 것) — 이 프로젝트가
+반복 경고해온 바로 그 실수를 이번에도 저지름. `node scripts/build-min.js` 재실행 후
+캐시버스팅 버전(`20260804-3`→`20260804-4`)을 올리자 정상화됨. **다음 세션도 script.js를
+고치면 반드시 이 단계를 거칠 것.**
+
+**검증**: `node --check` 통과. Playwright로 인원수 1/2/3/0(1로 보정 확인)/999(50으로
+상한 확인) 전부 정상 동작 확인, 한국어/영어/아랍어(RTL)/태국어 4개 언어에서 오버플로우
+없음 확인(스크린샷 확보). 회귀 테스트 6종(`home_audit` 18·`wrap_audit` 168·
+`i18n_attr_lint` 0후보·`i18n_coverage_audit` 766키·`console_error_audit` 161configs·
+`nav_slider_audit`) 전부 `ISSUES: 0`.
+
+변경 파일: `index.html`(새 아코디언 마크업, 캐시버스팅 `20260804-3`→`20260804-4`),
+`script.js`/`script.min.js`(`updateHomeSplitCalc()` 신규 + `updateHomeCalc()` 연동),
+`i18n-source/translations.json`(`home.splitToggle`/`splitCountLabel`/`splitFinalLabel`/
+`splitNote` 4개 키 × 26개 언어), `i18n/*.json` 26개(재생성).
