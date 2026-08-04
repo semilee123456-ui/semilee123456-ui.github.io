@@ -1463,3 +1463,58 @@ minify를 제대로 하려면 `terser`/`clean-css`를 npm 의존성으로 추가
 숫자(terser/clean-css 조합, 30%/66% 추가 절감)를 그대로 재현할 수 있음.
 
 변경 파일: `screenshots/` 폴더 삭제(11개 파일), `script.js`(죽은 함수 2개 삭제).
+
+### 2026-08-04 이어서 — 영어/중국어/일본어 전용 "후크형" og:image 3장 신규 제작
+
+**배경**: 사용자에게 og:image 개념을 설명하는 김에("그림으로 보여줄 수 없냐"는 요청으로
+Artifact까지 만들어서 실제 파일로 설명함), 백로그에 있던 "언어별 og:image 시범 제작"을
+바로 진행. 폰트 위험 없는 언어(영어/중국어/일본어)부터 시작하기로 사용자와 합의, 카피
+이중검수(제미나이/GPT)는 이번엔 생략하고 결과물만 보고 판단하기로 함.
+
+**대상 페이지 선정 기준**: 무작위로 고르지 않고, **이미 3개 언어 모두에 동일한 검증된
+숫자 예시가 있는 페이지**를 찾아서 그 숫자를 그대로 재사용함(새로 세금 계산을 만들어내지
+않음 — 공개 마케팅 이미지에 부정확한 숫자가 박히는 위험을 피하기 위해). `english_in_korea_
+lottery_tax.html`/`china_in_korea_lottery_tax.html`/`japanese_in_korea_lottery_tax.html`
+(한국 거주 외국인 대상 페이지, hreflang으로 서로 연결됨) 3곳 전부 동일한 예시를 이미
+갖고 있었음: "1억 달러 당첨 시 미국 원천징수 30% → 7,000만 달러, 한국 거주자면 추가 과세로
+최종 5,300만~7,000만 달러선"(이미 각 언어로 검수돼 실려있던 문구, 그대로 재사용).
+
+**이미지 제작 방법**: 이 샌드박스에 Playwright npm 패키지는 없지만 **Chromium 바이너리
+자체는 `/opt/pw-browsers/chromium-1194/`에 이미 있음**을 확인 → `chrome --headless
+--screenshot=... --window-size=1200,630`으로 직접 스크린샷 떠서 PNG 생성(별도 설치 불필요).
+디자인은 실제 사이트 CSS 변수 값을 그대로 가져다 씀(`--teal:#155445`, `--bg:#F4F5F7`,
+`--status-red:#C0392B` 등 `styles.css`에서 직접 확인) + 로고도 `index.html`의 실제
+마스코트 SVG(`.mascot-mark`) 그대로 재사용 — 새로 디자인 발명 안 하고 기존 브랜드 그대로
+복제. 레이아웃은 기존 `og-image-hook.png`(한국어) 구조를 그대로 따름(좌측 헤드라인+CTA,
+우측 발표금액→실수령액 카드).
+
+**폰트 검증**: `fc-list`로 사전 확인한 대로 영어(Liberation Sans)·중국어(WenQuanYi Zen
+Hei)·일본어(IPAGothic) 전부 스크린샷에서 실제로 정상 렌더링됨(네모 박스 깨짐 없음) —
+스크린샷을 직접 눈으로 확인해서 검증(추측 아님). 중국어 카드의 "5300万–7000万"이 카드
+폭에서 두 줄로 밀리는 걸 발견해 "5300–7000万"(万을 마지막에 한 번만)으로 자연스럽게
+줄여서 한 줄로 고침.
+
+**용량 최적화**: 첫 시도에 배경에 은은한 radial-gradient 장식을 넣었더니 파일이
+184~194KB로 커짐(기존 `og-image-hook.png`는 64KB) — PNG는 그라디언트에 약하다는 점
+때문. 장식 제거하고 단색 배경으로 되돌리니 68~72KB로 기존과 비슷한 수준까지 줄어듦,
+디자인 손실 거의 없음(스크린샷으로 재확인).
+
+**적용**: 3개 페이지 각각 `og:image`/`twitter:image`를 `og-image.png`(범용) →
+`og-image-hook-en.png`/`-zh.png`/`-ja.png`로 교체. `og:image:width`/`height`는 동일
+1200×630이라 그대로 둠.
+
+**검증**: `node tests/broken_link_audit.js` 재실행(정적 분석, 브라우저 불필요) — 90개
+파일 이슈 0건, 새 이미지 참조도 정상 인식됨. 이미지 자체는 헤드리스 Chromium 스크린샷
+결과를 직접 눈으로 확인(위 폰트 검증 참고).
+
+**다음 세션이 참고할 것**: 나머지 23개 언어 중 폰트 위험 있는 언어(크메르어/미얀마어/
+신할라어/벵골어/힌디어/라오어 등)는 이 샌드박스에 해당 폰트가 없어서 같은 방법을 그대로
+쓸 수 없음 — 폰트 파일을 직접 구해서 시스템에 설치하거나, 다른 방법을 찾아야 함. 베트남어/
+러시아어는 폰트 위험이 낮다고 이미 분류돼있으니(위 "알려진 미해결 항목" 참고) 같은 패턴을
+반복하면 될 것으로 보임. 이번에 쓴 헤드리스 Chromium 스크린샷 방식(`chrome --headless
+--screenshot`)은 이 저장소에 새로 기록해두는 게 좋은 재사용 가능한 도구 발견임 — Playwright
+설치 없이도 이미지 생성이 가능하다는 뜻.
+
+변경 파일: `og-image-hook-en.png`/`og-image-hook-zh.png`/`og-image-hook-ja.png`(신규),
+`english_in_korea_lottery_tax.html`/`china_in_korea_lottery_tax.html`/`japanese_in_korea_lottery_tax.html`
+(`og:image`/`twitter:image` 교체).
