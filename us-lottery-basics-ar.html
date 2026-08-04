@@ -85,6 +85,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax هي حاسبة مجانية لحساب المبلغ الفعلي الذي تحصل عليه بعد خصم الضرائب من أرباح يانصيب Powerball وMega Millions الأمريكي."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "حاسبة ويب مجانية لحساب المبلغ الصافي بعد الضرائب من جوائز اليانصيب الأمريكية الكبرى (Powerball، Mega Millions)، تغطي 21 دولة/منطقة قضائية بما في ذلك اقتطاع الضريبة للأشخاص غير المقيمين في الولايات المتحدة.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "كيفية حساب المبلغ الصافي بعد الضرائب من ربح اليانصيب الأمريكي",
+  "step": [
+    { "@type": "HowToStep", "name": "أدخل مبلغ الجائزة", "text": "أدخل مبلغ ربحك في Powerball أو Mega Millions (الجائزة الكبرى المعلنة أو القيمة النقدية الفورية)." },
+    { "@type": "HowToStep", "name": "اختر بلد الإقامة", "text": "اختر ما إذا كنت مقيمًا في كوريا أو في بلد آخر." },
+    { "@type": "HowToStep", "name": "اختر الولاية الأمريكية", "text": "اختر الولاية الأمريكية التي اشتريت منها التذكرة — تختلف نسبة الاقتطاع الضريبي الإضافي حسب الولاية." },
+    { "@type": "HowToStep", "name": "تحقق من المبلغ الصافي بعد الضرائب", "text": "شاهد المبلغ التقديري الذي ستحصل عليه بعد تطبيق اقتطاع 30% من الضريبة الفيدرالية الأمريكية وضريبة بلد إقامتك (مع تعديل الازدواج الضريبي)." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -113,6 +161,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   h2{ font-size:var(--fs-h2); margin:32px 0 12px; }
   h3{ font-size:var(--fs-h3); margin:20px 0 8px; }
   p{ font-size:var(--fs-body); margin:0 0 14px; }
@@ -156,7 +205,8 @@
   </div>
 
   <h1>إذن ما هي اليانصيب الأمريكي فعلًا؟</h1>
-  <p class="lead">لمن طرح هذا الموضوع في محادثة وقوبل بنظرة حائرة — إليك الشرح الحقيقي من البداية. ما هما باوربول وميغا ميليونز، وكيف يُلعبان، ومدى سوء الاحتمالات فعليًا، ولماذا يلعب الناس رغم ذلك.</p>
+  <p class="lead"><b>ChamTax</b> هي حاسبة مجانية تعرض المبلغ الفعلي الذي تحصل عليه بعد خصم الضرائب من أرباح Powerball وMega Millions الأمريكي. ولمن طرح هذا الموضوع في محادثة وقوبل بنظرة حائرة — إليك الشرح الحقيقي من البداية. ما هما باوربول وميغا ميليونز، وكيف يُلعبان، ومدى سوء الاحتمالات فعليًا، ولماذا يلعب الناس رغم ذلك.</p>
+  <p class="updated-date">آخر تحديث: 2026-08-03</p>
 
   <h2>1. اليانصيب الأمريكي = باوربول + ميغا ميليونز</h2>
   <p>لكل ولاية أمريكية يانصيبها الخاص أيضًا، لكن "اليانصيب الأمريكي" يشير عادة إلى هاتين اللعبتين الضخمتين اللتين تُباعان معًا في جميع الولايات تقريبًا.</p>

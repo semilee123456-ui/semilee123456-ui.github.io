@@ -85,6 +85,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax — АҚШ-тың Powerball және Mega Millions лотереясындағы ұтыстан салық шегерілгеннен кейін қолға тиетін нақты соманы есептейтін тегін калькулятор."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "АҚШ лотереясының джекпоттарына (Powerball, Mega Millions) арналған, салықтан кейінгі соманы есептейтін тегін веб-калькулятор. Ол АҚШ-та резидент емес адамдарға арналған көзден салық ұстауды қоса алғанда, 21 ел/юрисдикцияны қамтиды.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "АҚШ лотереясында ұтылған соманың салықтан кейінгі мөлшерін қалай есептеу керек",
+  "step": [
+    { "@type": "HowToStep", "name": "Ұтыс сомасын енгізіңіз", "text": "Powerball немесе Mega Millions ұтыс сомаңызды (жарияланған джекпот немесе бір жолғы қолма-қол ақша құны) енгізіңіз." },
+    { "@type": "HowToStep", "name": "Тұратын елді таңдаңыз", "text": "Сіздің Кореяда немесе басқа елде тұратыныңызды таңдаңыз." },
+    { "@type": "HowToStep", "name": "АҚШ штатын таңдаңыз", "text": "Билет сатып алынған АҚШ штатын таңдаңыз — қосымша салық ұстау мөлшерлемесі штатқа байланысты өзгереді." },
+    { "@type": "HowToStep", "name": "Салықтан кейінгі соманы қараңыз", "text": "АҚШ федералды салығының 30% ұсталуы мен тұратын еліңіздегі салықты (қос салық салуды реттеумен) қолданғаннан кейінгі болжамды сомаңызды қараңыз." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -113,6 +161,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   h2{ font-size:var(--fs-h2); margin:32px 0 12px; }
   h3{ font-size:var(--fs-h3); margin:20px 0 8px; }
   p{ font-size:var(--fs-body); margin:0 0 14px; }
@@ -156,7 +205,8 @@
   </div>
 
   <h1>Америка лотереясы шын мәнінде не?</h1>
-  <p class="lead">Бұл туралы айтып, таңғалған көзқараспен кездескендерге арналған — міне, шынайы, басынан бастап түсіндірме. Powerball мен Mega Millions деген не, қалай ойналады, мүмкіндік нақты қаншалықты нашар және неге адамдар бәрібір ойнайды.</p>
+  <p class="lead"><b>ChamTax</b> — АҚШ-тың Powerball және Mega Millions ұтыстарынан салық шегерілгеннен кейін қолға тиетін нақты соманы көрсететін тегін калькулятор. Ал бұл туралы айтып, таңғалған көзқараспен кездескендерге арналған — міне, шынайы, басынан бастап түсіндірме. Powerball мен Mega Millions деген не, қалай ойналады, мүмкіндік нақты қаншалықты нашар және неге адамдар бәрібір ойнайды.</p>
+  <p class="updated-date">Соңғы жаңарту: 2026-08-03</p>
 
   <h2>1. Америка лотереясы = Powerball + Mega Millions</h2>
   <p>АҚШ-тың әр штатының өз лотереясы бар, бірақ “Америка лотереясы” деп әдетте дерлік барлық штатта бірлесіп сатылатын осы екі алып ойынды айтады.</p>

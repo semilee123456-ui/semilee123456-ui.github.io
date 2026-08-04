@@ -85,6 +85,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax គឺជាឧបករណ៍គណនាឥតគិតថ្លៃសម្រាប់ចំនួនប្រាក់ដែលទទួលបានជាក់ស្តែងបន្ទាប់ពីបង់ពន្ធពីការឈ្នះឆ្នោត Powerball និង Mega Millions របស់សហរដ្ឋអាមេរិក។"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ឧបករណ៍គណនាតាមវេបសាយឥតគិតថ្លៃសម្រាប់ចំនួនប្រាក់ដែលទទួលបានបន្ទាប់ពីបង់ពន្ធពីការឈ្នះឆ្នោត Jackpot របស់សហរដ្ឋអាមេរិក (Powerball, Mega Millions) គ្របដណ្តប់ 21 ប្រទេស/តំបន់យុត្តាធិការ រួមទាំងការកាត់ពន្ធនៅប្រភពសម្រាប់អ្នកមិនមែនអ្នកស្នាក់នៅសហរដ្ឋអាមេរិក។",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "របៀបគណនាចំនួនប្រាក់ដែលទទួលបានបន្ទាប់ពីបង់ពន្ធពីការឈ្នះឆ្នោតសហរដ្ឋអាមេរិក",
+  "step": [
+    { "@type": "HowToStep", "name": "បញ្ចូលចំនួនប្រាក់ឈ្នះ", "text": "បញ្ចូលចំនួនប្រាក់ឈ្នះ Powerball ឬ Mega Millions របស់អ្នក (ចំនួន Jackpot ដែលបានប្រកាស ឬតម្លៃសាច់ប្រាក់ដែលទទួលបានតែម្តង)។" },
+    { "@type": "HowToStep", "name": "ជ្រើសរើសប្រទេសលំនៅដ្ឋាន", "text": "ជ្រើសរើសថាតើអ្នកជាអ្នកស្នាក់នៅកូរ៉េ ឬប្រទេសផ្សេងទៀត។" },
+    { "@type": "HowToStep", "name": "ជ្រើសរើសរដ្ឋសហរដ្ឋអាមេរិក", "text": "ជ្រើសរើសរដ្ឋសហរដ្ឋអាមេរិកដែលអ្នកបានទិញសំបុត្រ — អត្រាកាត់ពន្ធបន្ថែមខុសគ្នាទៅតាមរដ្ឋនីមួយៗ។" },
+    { "@type": "HowToStep", "name": "ពិនិត្យមើលចំនួនប្រាក់ដែលទទួលបានបន្ទាប់ពីបង់ពន្ធ", "text": "ពិនិត្យមើលចំនួនប្រាក់ប៉ាន់ស្មានដែលទទួលបានបន្ទាប់ពីកាត់ពន្ធសហព័ន្ធសហរដ្ឋអាមេរិក 30% និងពន្ធនៅប្រទេសលំនៅដ្ឋានរបស់អ្នក (ឆ្លុះបញ្ចាំងពីការកែតម្រូវពន្ធពីរដង)។" }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -113,6 +161,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   h2{ font-size:var(--fs-h2); margin:32px 0 12px; }
   h3{ font-size:var(--fs-h3); margin:20px 0 8px; }
   p{ font-size:var(--fs-body); margin:0 0 14px; }
@@ -156,7 +205,8 @@
   </div>
 
   <h1>ដូច្នេះតើឆ្នោតអាមេរិកគឺជាអ្វីទៅ?</h1>
-  <p class="lead">សម្រាប់អ្នកដែលធ្លាប់លើកយកសាច់រឿងនេះមកនិយាយ ហើយបានឃើញភ្នែកមានចម្ងល់ — នេះជាការពន្យល់ពិតប្រាកដចាប់ពីដើម។ តើ Powerball និង Mega Millions ជាអ្វី លេងយ៉ាងណា ឱកាសពិតប្រាកដអាក្រក់ប៉ុណ្ណា និងហេតុអ្វីមនុស្សនៅតែលេង។</p>
+  <p class="lead"><b>ChamTax</b> គឺជាឧបករណ៍គណនាឥតគិតថ្លៃដែលបង្ហាញចំនួនប្រាក់ជាក់ស្តែងដែលទទួលបានបន្ទាប់ពីបង់ពន្ធពីការឈ្នះឆ្នោត Powerball និង Mega Millions របស់សហរដ្ឋអាមេរិក។ ហើយសម្រាប់អ្នកដែលធ្លាប់លើកយកសាច់រឿងនេះមកនិយាយ ហើយបានឃើញភ្នែកមានចម្ងល់ — នេះជាការពន្យល់ពិតប្រាកដចាប់ពីដើម។ តើ Powerball និង Mega Millions ជាអ្វី លេងយ៉ាងណា ឱកាសពិតប្រាកដអាក្រក់ប៉ុណ្ណា និងហេតុអ្វីមនុស្សនៅតែលេង។</p>
+  <p class="updated-date">ធ្វើបច្ចុប្បន្នភាពចុងក្រោយ៖ 2026-08-03</p>
 
   <h2>១. ឆ្នោតអាមេរិក = Powerball + Mega Millions</h2>
   <p>រដ្ឋនីមួយៗនៅសហរដ្ឋអាមេរិកក៏មានឆ្នោតផ្ទាល់ខ្លួនដែរ ប៉ុន្តែ “ឆ្នោតអាមេរិក” ជាទូទៅសំដៅលើហ្គេមធំៗពីរនេះ ដែលលក់រួមគ្នានៅស្ទើរគ្រប់រដ្ឋ។</p>
