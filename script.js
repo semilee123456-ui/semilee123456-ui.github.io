@@ -21,15 +21,11 @@
 //   4) 무엇보다, 150개 넘는 문구의 실제 번역 작업이 코드 작업보다 훨씬 큼
 // 실제 언어가 확정되기 전엔 구조를 미리 넓히지 않기로 결정함 (2026년 7월) — 근거 없이
 // 짐작한 구조가 실제 필요와 안 맞을 위험이 구조를 안 짜두는 비용보다 크다고 판단.
-// 공유 링크의 카카오톡 등 미리보기 카드에 실제 계산 결과(예: "223억원")를 반영해주는 서버리스
-// Worker의 배포 주소. og-share-worker/README.md 안내대로 배포한 뒤 여기 채워 넣을 것 —
-// 비워두면(기본값) 예전처럼 카드 없이 링크+텍스트만 공유됨(아무 것도 깨지지 않음, 안전한 기본값).
-// 예: 'https://chamtax-og-share.내계정.workers.dev'
-// 2026-07-31: workers.dev 공유 서브도메인은 카카오톡 등 링크 미리보기 봇이 접속할 때 실제 Worker
-// 코드 대신 Cloudflare 자체 홍보 페이지("Cloudflare Workers - Global Serverless...")를 보여주는
-// 문제가 실사용자 스크린샷으로 확인됨(브라우저로 직접 열면 정상 동작 — 봇 트래픽에서만 발생).
-// og.chamtax.com 커스텀 도메인을 Cloudflare 대시보드에서 Worker에 연결해서 해결.
-const OG_SHARE_WORKER_BASE = 'https://og.chamtax.com';
+// 2026-08-05: 공유 문구에서 사이트 링크 자체를 뺐음(아래 shareLatestDraw() 등 주석 참고)에
+// 따라 이 상수를 쓰던 wrapWithOgShareCard()의 호출부가 전부 사라져서 이 상수도 같이 지움 —
+// og.chamtax.com Cloudflare Worker(og-share-worker/) 배포 자체는 그대로 남아있음(되돌리지
+// 않음), 다만 지금은 사이트 어디서도 이 Worker를 호출하지 않는 상태. 나중에 링크 공유를
+// 다시 붙이게 되면 og-share-worker/README.md 참고해서 이 상수를 되살릴 것.
 
 let currentLang = 'ko';
 let resultBarAnimatedIn = false; // 홈 실수령/세금 비율 막대가 최초 1회만 0%→목표값 애니메이션되도록 하는 플래그
@@ -4536,36 +4532,6 @@ function shareFallbackCopyToast(){
   return pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
 }
 
-// 2026-07-31: 공유 버튼 4개(이 결과 공유하기/당첨번호 공유하기/재미로 보기 결과/환급
-// 체크리스트)가 전부 같은 방식으로 동적 OG 카드(Cloudflare Worker)를 쓰도록 공통 로직을 하나로
-// 모음 — og-share-worker/src/index.js의 /s 라우트가 기대하는 파라미터 스키마와 반드시 맞춰서
-// 같이 고칠 것. label/main/sub/badge/title/desc는 전부 호출부에서 이미 26개 언어로 번역된
-// 문자열을 그대로 넘겨받음(이 함수 자체는 새 번역을 만들지 않음) — lang만 현재 화면 언어
-// (currentLang)를 실어보내서 Worker가 카드 폰트를 그 언어 스크립트에 맞게 골라 받아오게 함.
-function wrapWithOgShareCard(shareUrl, { label, main, sub, taxpct, badge } = {}){
-  if (!OG_SHARE_WORKER_BASE || !main) return shareUrl;
-  const p = new URLSearchParams({ main, to: shareUrl, lang: currentLang || 'ko' });
-  if (label) p.set('label', label);
-  if (sub) p.set('sub', sub);
-  if (badge) p.set('badge', badge);
-  // 2026-08-01: title/desc 파라미터를 아예 안 보내기로 함 — 실사용자가 실제 카카오톡
-  // "나와의 채팅"에 붙여넣기로 재현해보니, 카카오톡이 이 URL을 아예 "링크"로 인식조차 못 하고
-  // (파란 밑줄도 안 붙고 그냥 긴 텍스트로 표시) 카드 자체를 시도조차 안 하는 게 확인됨 — 반면
-  // 카카오 공식 디버거(developers.kakao.com/tool/debugger/sharing)는 같은 URL을 문제없이
-  // 스크랩함(길이 제한이 없는 도구라서). 즉 원인은 서버/Worker가 아니라 URL 길이 자체
-  // (label/sub/badge/title/desc가 전부 한글이라 퍼센트인코딩되면 글자당 9자로 불어나서
-  // 500~700자까지 늘어났었음) — title/desc는 label/main/badge와 내용이 중복되므로(desc는
-  // 바로 위 세 값을 합친 것에 불과했고, title은 고정 사이트 문구), Worker(og-share-worker/
-  // src/index.js의 handleSharePage)가 이미 이 둘이 없을 때 main/label/sub로 자동 채우는
-  // 폴백을 갖고 있어서 그냥 안 보내도 카드 내용은 동일하게 유지됨 — URL만 크게 짧아짐.
-  if (typeof taxpct === 'number' && !Number.isNaN(taxpct)) p.set('taxpct', String(taxpct));
-  // 카카오톡 등 링크 미리보기 봇은 같은 URL을 한 번 스크랩하면 상당 기간(수 시간~며칠) 그
-  // 결과를 캐시해서 재사용함 — 매번 "한 번도 안 본 새 URL"처럼 보이게 캐시무효화 타임스탬프를
-  // 붙임(실제 사용자 제보로 발견된 문제). Worker의 handleSharePage는 이 파라미터를 안 읽으므로
-  // 리다이렉트(to=) 동작에는 전혀 영향 없음.
-  p.set('t', Date.now().toString(36));
-  return `${OG_SHARE_WORKER_BASE.replace(/\/$/, '')}/s?${p.toString()}`;
-}
 
 async function shareLatestDraw(game, btnEl){
   const draw = LATEST_DRAW[game];
@@ -4608,7 +4574,6 @@ async function shareLatestDraw(game, btnEl){
       uz: `🎱 Oxirgi ${gameLabel} raqamlari: ${numbersText} + ${specialLabel} ${draw.special} / Keyingi jekpot $${jackpotMillions}M! ChamTax'da ko'ring`,
      pt: `🎱 Últimos números do ${gameLabel}: ${numbersText} + ${specialLabel} ${draw.special} / Próximo prêmio é de $${jackpotMillions}M! Confira no ChamTax`, es: `🎱 Últimos números de ${gameLabel}: ${numbersText} + ${specialLabel} ${draw.special} / ¡El próximo acumulado es de $${jackpotMillions}M! Míralo en ChamTax`, uk: `🎱 Останні номери ${gameLabel}: ${numbersText} + ${specialLabel} ${draw.special} / Наступний джекпот — $${jackpotMillions}M! Перевірте на ChamTax`, tet: `🎱 Númeru foin lalais ${gameLabel}: ${numbersText} + ${specialLabel} ${draw.special} / Jackpot oin mak $${jackpotMillions}M! Haree iha ChamTax`}
   );
-  let shareUrl = location.href;
 
   // 2026-07-29: 이전엔 여기서 buildShareCard()로 이미지 카드를 만들어 파일 공유부터 시도했는데,
   // 사용자가 "다른 사이트들처럼" 카드 없이 링크만 공유하길 원함(카드 없이 링크 공유가 대부분
@@ -4638,7 +4603,11 @@ async function shareLatestDraw(game, btnEl){
   openAnnotateOverlay(drawCanvas, `chamtax-${game}-draw.png`, {
     mode: 'share',
     shareTitle: gameLabel,
-    shareText: `${shareText} ${shareUrl}`,
+    // 2026-08-05: 공유 텍스트 끝에 사이트 링크를 붙였더니 아이메시지 등에서 이미지+텍스트+
+    // 링크미리보기카드까지 메시지가 3덩이로 쪼개져 나온다는 지적(스크린샷 확인) — 이미지
+    // 자체에 이미 "chamtax.com" 워터마크가 있으므로 텍스트에서는 링크를 빼서 한 덩어리로
+    // 깔끔하게 나가게 함(shareResult()의 딥링크는 실질 기능이 있어 예외로 유지).
+    shareText,
   });
 }
 
@@ -10851,7 +10820,6 @@ async function shareDreamResult(btnEl){
       uz: `Men [${title}]! ${amt}. Agar yutib olsang, birinchi bo'lib nima qilasan?`,
      pt: `Eu sou [${title}]! ${amt}. O que você faria primeiro se ganhasse?`, es: `¡Soy [${title}]! ${amt}. ¿Qué harías primero si ganaras?`, uk: `Я — [${title}]! ${amt}. Що б ви зробили насамперед, якби виграли?`, tet: `Ha'u [${title}]! ${amt}. Saida mak ó halo uluk se ó manán?`}
   );
-  let shareUrl = location.href;
   const shareTitle = pickLang('당첨되면 나는?', 'What would I do if I won?', '如果中奖了，我会……', 'Nếu trúng số tôi sẽ?', 'ถ้าถูกรางวัลฉันจะ?', 'Что бы я сделал, если бы выиграл?', { ar:'ماذا سأفعل لو فزت؟', bn:'জিতলে আমি কী করব?', fr:'Que ferais-je si je gagnais ?', hi:'अगर मैं जीत जाऊं तो क्या करूंगा?', id:'Apa yang akan kulakukan kalau menang?', ja:'当たったら私は何をする？', kk:'Ұтып алсам не істер едім?', km:'តើខ្ញុំនឹងធ្វើអ្វី ប្រសិនបើឈ្នះ?', ky:'Утуп алсам эмне кылмакмын?', lo:'ຖ້າຂ້ອຍຖືກລາງວັນ ຂ້ອຍຈະເຮັດຫຍັງ?', mn:'Хожвол би юу хийх вэ?', my:'ဆုမှန်ရင် ငါဘာလုပ်မလဲ?', ne:'जितें भने म के गर्छु?', si:'මම දිනුවොත් මොකද කරන්නේ?', tl:'Ano ang gagawin ko kung manalo ako?', ur:'اگر میں جیت جاؤں تو کیا کروں گا؟', uz:'Agar yutib olsam, nima qilaman?' , pt: `O que eu faria se ganhasse?`, es: `¿Qué haría si ganara?`, uk: `Що б я зробив(-ла), якби виграв(-ла)?`, tet: `Saida mak ha'u halo se ha'u manán?`});
 
   // 2026-08-03: "카드 없이 링크만 공유"(2026-07-29 결정)를 사용자가 다시 뒤집어서, "꾸며서
@@ -10865,7 +10833,8 @@ async function shareDreamResult(btnEl){
   openAnnotateOverlay(dreamCanvas, 'chamtax-dream-result.png', {
     mode: 'share',
     shareTitle,
-    shareText: `${shareText} ${shareUrl}`,
+    // 2026-08-05: shareLatestDraw()와 같은 이유로 링크 제거 — 위 주석 참고
+    shareText,
   });
 }
 
@@ -11021,7 +10990,6 @@ async function shareRefundChecklist(){
       uz: "Men ushbu tekshiruv ro'yxati orqali da'vo qilinmagan pulim bor-yo'qligini tekshirdim. Koreyada har yili yuzlab milliard von da'vo qilinmagan soliq qaytarilishi yo'qolib ketar ekan (5 yildan keyin xazinaga o'tadi). ChamTax'ning FAQ sahifasida tekshirish atigi 10 daqiqa oladi!",
      pt: `Verifiquei se tinha dinheiro não resgatado usando este checklist. Aparentemente, centenas de bilhões de wones em restituições de impostos não resgatadas ficam esquecidos todos os anos na Coreia (retornando ao tesouro após 5 anos). Leva 10 minutos para verificar no FAQ do ChamTax!`, es: `Comprobé si tenía dinero no reclamado usando esta lista. Al parecer, cientos de miles de millones de wones en reembolsos de impuestos no reclamados se quedan sin reclamar cada año en Corea (vuelven al tesoro tras 5 años). ¡Lleva 10 minutos verificarlo en el FAQ de ChamTax!`, uk: `Я перевірив(-ла), чи є в мене незатребувані гроші, за допомогою цього списку. Виявляється, сотні мільярдів вон незатребуваних повернень податків щороку залишаються в Кореї (переходять до скарбниці через 5 років). Перевірка займає 10 хвилин у FAQ на ChamTax!`, tet: `Ha'u verifika se ha'u iha osan ne'ebé la reklama uza lista verifikasaun ne'e. Dalaruma meiu atus biliaun won husi reembolso impostu la reklama tinan-tinan iha Korea (fila ba tesouru depois tinan 5). Foti menutu 10 hodi verifika iha FAQ ChamTax nian!`}
   );
-  let shareUrl = location.href;
   const btn = document.getElementById('refund-share-btn');
   const shareTitle = pickLang(
     '나도 모르는 잠자는 내 돈 찾기 체크리스트',
@@ -11051,16 +11019,14 @@ async function shareRefundChecklist(){
      pt: `Encontre dinheiro que você não sabia que tinha — checklist`, es: `Encuentra dinero que no sabías que tenías: lista de verificación`, uk: `Знайдіть гроші, про які ви не знали — чекліст`, tet: `Buka osan ne'ebé ó la hatene katak ó iha — lista verifikasaun`}
   );
 
-  // 2026-07-29: 카드 이미지 생성 없이 텍스트+링크만 공유하도록 단순화(위 shareLatestDraw 주석 참고)
-  // 2026-07-31: 다시 OG_SHARE_WORKER_BASE 동적 카드로 감쌈 — 이 공유는 특정 계산 결과가 아니라
-  // 체크리스트 자체를 소개하는 거라 label/sub 없이 shareTitle을 그대로 main으로 씀(새 번역 없음).
-  shareUrl = wrapWithOgShareCard(shareUrl, {
-    main: shareTitle,
-  });
-
+  // 2026-08-05: 링크(사이트 URL)를 텍스트에서 뺌 — 아이메시지 등에서 텍스트+링크가 있으면
+  // OS가 자동으로 별도의 링크 미리보기 카드를 또 붙여서 메시지가 여러 덩이로 쪼개져 보인다는
+  // 지적(스크린샷 확인, shareLatestDraw() 주석도 참고). 이 공유는 원래 이미지 없이 텍스트만
+  // 보내는 방식이라 링크를 빼면 카카오톡 등에서 쓰던 동적 카드(wrapWithOgShareCard)도 이제
+  // 필요 없어짐 — 순수 텍스트만 공유.
   if (navigator.share) {
     try {
-      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+      await navigator.share({ title: shareTitle, text: shareText });
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return;
@@ -11068,7 +11034,7 @@ async function shareRefundChecklist(){
   }
 
   try {
-    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    await navigator.clipboard.writeText(shareText);
     if (btn) {
       const original = btn.textContent;
       btn.textContent = shareFallbackCopyToast();
@@ -11084,7 +11050,7 @@ async function shareRefundChecklist(){
       'กดค้างเพื่อคัดลอกแล้วแชร์',
       'Нажмите и удерживайте, чтобы скопировать, затем поделитесь',
       PRESS_HOLD_COPY_MORE
-    ), `${shareText} ${shareUrl}`);
+    ), shareText);
   }
 }
 
@@ -11121,7 +11087,6 @@ async function shareUsUnclaimedMoneyChecklist(){
       uz: "Men ushbu tekshiruv ro'yxati orqali da'vo qilinmagan pulim bor-yo'qligini tekshirdim. Har bir AQSh shtatida o'zining da'vo qilinmagan mulk dasturi bor ekan, shuning uchun eski bank hisoblari, ish haqi yoki sug'urta to'lovlari da'vo qilinmasdan qolishi mumkin. ChamTax'ning FAQ sahifasida tekshirish atigi 10 daqiqa oladi!",
      pt: `Verifiquei se tinha dinheiro não resgatado usando este checklist. Aparentemente, cada estado dos EUA tem seu próprio programa de bens não resgatados, então contas bancárias, salários ou pagamentos de seguro antigos podem ficar parados sem serem resgatados. Leva 10 minutos para verificar no FAQ do ChamTax!`, es: `Comprobé si tenía dinero no reclamado usando esta lista. Al parecer, cada estado de EE. UU. tiene su propio programa de bienes no reclamados, así que cuentas bancarias, salarios o pagos de seguros antiguos pueden quedar ahí sin reclamar. ¡Lleva 10 minutos verificarlo en el FAQ de ChamTax!`, uk: `Я перевірив(-ла), чи є в мене незатребувані гроші, за допомогою цього списку. Виявляється, кожен штат США має власну програму незатребуваного майна, тож старі банківські рахунки, зарплата чи страхові виплати можуть просто лежати незатребуваними. Перевірка займає 10 хвилин у FAQ на ChamTax!`, tet: `Ha'u verifika se ha'u iha osan ne'ebé la reklama uza lista verifikasaun ne'e. Dalaruma kada estadu EUA iha ó-nia programa própriu propredade la reklama, entaun konta bankária, saláriu, ka pagamentu seguru tuan bele nakloke la reklama. Foti menutu 10 hodi verifika iha FAQ ChamTax nian!`}
   );
-  let shareUrl = location.href;
   const btn = document.getElementById('refund-us-share-btn');
   const shareTitle = pickLang(
     '나도 모르는 잠자는 내 돈 찾기 체크리스트',
@@ -11150,11 +11115,11 @@ async function shareUsUnclaimedMoneyChecklist(){
       uz: "Bor ekanini bilmagan pulingizni topish tekshiruv ro'yxati",
      pt: `Encontre dinheiro que você não sabia que tinha — checklist`, es: `Encuentra dinero que no sabías que tenías: lista de verificación`, uk: `Знайдіть гроші, про які ви не знали — чекліст`, tet: `Buka osan ne'ebé ó la hatene katak ó iha — lista verifikasaun`}
   );
-  shareUrl = wrapWithOgShareCard(shareUrl, { main: shareTitle });
 
+  // 2026-08-05: shareRefundChecklist()와 같은 이유로 링크 제거 — 위 주석 참고
   if (navigator.share) {
     try {
-      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+      await navigator.share({ title: shareTitle, text: shareText });
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return;
@@ -11162,7 +11127,7 @@ async function shareUsUnclaimedMoneyChecklist(){
   }
 
   try {
-    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    await navigator.clipboard.writeText(shareText);
     if (btn) {
       const original = btn.textContent;
       btn.textContent = shareFallbackCopyToast();
@@ -11178,7 +11143,7 @@ async function shareUsUnclaimedMoneyChecklist(){
       'กดค้างเพื่อคัดลอกแล้วแชร์',
       'Нажмите и удерживайте, чтобы скопировать, затем поделитесь',
       PRESS_HOLD_COPY_MORE
-    ), `${shareText} ${shareUrl}`);
+    ), shareText);
   }
 }
 
@@ -11213,7 +11178,6 @@ async function shareInUnclaimedMoneyChecklist(){
       uz: "Men ushbu tekshiruv ro'yxati orqali da'vo qilinmagan pulim bor-yo'qligini tekshirdim. Hindistonda RBI'ning UDGAM portali orqali bir nechta bankdagi da'vo qilinmagan omonatlarni bir vaqtning o'zida qidirish, IEPF orqali esa 7 yildan ortiq da'vo qilinmagan dividend yoki aksiyalarni tekshirish mumkin ekan. ChamTax'ning FAQ sahifasida tekshirish atigi 10 daqiqa oladi!",
      pt: `Verifiquei se tinha dinheiro não resgatado usando este checklist. Na Índia, dá para buscar depósitos não resgatados em vários bancos de uma vez pelo portal UDGAM do RBI, e verificar dividendos ou ações não resgatados há mais de 7 anos pelo IEPF. Leva 10 minutos para verificar no FAQ do ChamTax!`, es: `Comprobé si tenía dinero no reclamado usando esta lista. En la India, se pueden buscar depósitos no reclamados en varios bancos a la vez a través del portal UDGAM del RBI, y consultar dividendos o acciones no reclamados durante más de 7 años a través del IEPF. ¡Lleva 10 minutos verificarlo en el FAQ de ChamTax!`, uk: `Я перевірив(-ла), чи є в мене незатребувані гроші, за допомогою цього списку. В Індії можна шукати незатребувані депозити одразу в кількох банках через портал UDGAM від RBI, а також перевірити дивіденди чи акції, незатребувані понад 7 років, через IEPF. Перевірка займає 10 хвилин у FAQ на ChamTax!`, tet: `Ha'u verifika se ha'u iha osan ne'ebé la reklama uza lista verifikasaun ne'e. Iha Índia, bele buka depósitu la reklama iha banku barak hamutuk liuhusi portál UDGAM RBI nian, no verifika dividendu ka aksaun la reklama liu tinan 7 liuhusi IEPF. Foti menutu 10 hodi verifika iha FAQ ChamTax nian!`}
   );
-  let shareUrl = location.href;
   const btn = document.getElementById('refund-in-share-btn');
   const shareTitle = pickLang(
     '나도 모르는 잠자는 내 돈 찾기 체크리스트',
@@ -11242,11 +11206,11 @@ async function shareInUnclaimedMoneyChecklist(){
       uz: "Bor ekanini bilmagan pulingizni topish tekshiruv ro'yxati",
      pt: `Encontre dinheiro que você não sabia que tinha — checklist`, es: `Encuentra dinero que no sabías que tenías: lista de verificación`, uk: `Знайдіть гроші, про які ви не знали — чекліст`, tet: `Buka osan ne'ebé ó la hatene katak ó iha — lista verifikasaun`}
   );
-  shareUrl = wrapWithOgShareCard(shareUrl, { main: shareTitle });
 
+  // 2026-08-05: shareRefundChecklist()와 같은 이유로 링크 제거 — 위 주석 참고
   if (navigator.share) {
     try {
-      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+      await navigator.share({ title: shareTitle, text: shareText });
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return;
@@ -11254,7 +11218,7 @@ async function shareInUnclaimedMoneyChecklist(){
   }
 
   try {
-    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    await navigator.clipboard.writeText(shareText);
     if (btn) {
       const original = btn.textContent;
       btn.textContent = shareFallbackCopyToast();
@@ -11270,7 +11234,7 @@ async function shareInUnclaimedMoneyChecklist(){
       'กดค้างเพื่อคัดลอกแล้วแชร์',
       'Нажмите и удерживайте, чтобы скопировать, затем поделитесь',
       PRESS_HOLD_COPY_MORE
-    ), `${shareText} ${shareUrl}`);
+    ), shareText);
   }
 }
 

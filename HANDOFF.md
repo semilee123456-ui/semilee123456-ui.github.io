@@ -2312,3 +2312,106 @@ Lighthouse 감사는 한 번도 안 돌려본 걸 발견해서 처음 실행함(
 blob화), `script.min.js`(재생성, 캐시버스팅 `20260804-4`→`20260804-5`), `sw.js`
 (`CACHE_NAME` v2→v3), `i18n-source/translations.json`+`i18n/*.json`(`a11y.amountSlider`
 신규 키). `styles.css`/`styles.min.css`는 이번엔 변경 없음(캐시버스팅 `20260804-4` 그대로).
+
+### 2026-08-04 이어서 — "한국 중심 → 외국 중심 전환"이 모든 탭·모든 언어에 완전히
+### 반영됐는지 전수 재검증 (6개 페르소나 + 189개 언어×탭 조합, 코드 변경 없음)
+
+**요청 배경**: 사용자가 "사이트 전체가 한국에서 외국 중심으로 바뀌었는데 모든 탭이 완벽하게
+반영됐는지 하나하나 봐달라"고 반복 요청(총 3차례, 점점 범위를 넓혀가며). 매번 기존 자동
+테스트를 그대로 돌리는 데 그치지 않고, **기존 테스트 스크립트 자체의 커버리지 구멍을
+코드로 직접 확인**해서 메운 뒤 재검증함.
+
+**1차**: `lang_leak_audit`(한글 잔존)·`i18n_coverage_audit`·`wrap_audit`·
+`full_overflow_sweep`·`console_error_audit`·`broken_link_audit`·`fact_consistency_audit`
+기존 7종 그대로 재실행 — 전부 `ISSUES: 0`.
+
+**2차 — "6가지 페르소나" 재검증**: 과거 세션(`HANDOFF-ARCHIVE.md` 2026-08-03, 이 문서
+2026-08-04 앞부분)이 정의해둔 6개 페르소나(①사는 나라 골라 바로 보기 ②한국에 살아요
+③해외 거주 한국 국적 ④한국에 사는 외국인 ⑤미국 거주자 ⑥기타 국가)를 Playwright로 각
+진입 함수(`goRealAbroadFromSelect`/`goToKoreaCalculator`/`introAbroadLink`/
+`goWithLangSelect`/`setHomeCountry`)를 직접 호출해 재현 — 6곳 전부 콘솔 에러 0건, 상태
+(언어/국가/RTL 등) 정상. 오늘 세션이 건드린 코드(낚시 게임·모달·CPI-U·신규 FAQ·공동
+당첨자 계산기 등) 어느 것도 이 영역과 안 겹친다는 것과 일치.
+
+**3차 — "모든 나라/모든 옵션까지" 요청으로 범위 확대**: 6개 페르소나 검증이 각 유형당
+대표 1개씩만 테스트했던 걸 사용자가 지적 → 다음을 전수 테스트:
+- 페르소나①의 `realAbroadSelect` 드롭다운 **20개국 전부**(us/in/cn/vn/th/ru/kh/np/id/
+  mm/lk/uz/mn/kz/kg/pk/bd/la/jp/ph) — 국가/언어 상태 정확성 + 콘솔 에러 확인
+- 페르소나④의 `foreignerLangSelect` 드롭다운 **26개 언어 전부** — 언어는 바뀌고 국가는
+  항상 `kr`로 고정되는지 확인
+- 국가별 정적 랜딩 페이지 **72개 전부**(`XX-resident-us-lottery-tax.html` 20개 +
+  `XX_in_korea_lottery_tax.html` 26개 + `us-lottery-basics-XX.html` 26개) 실제 HTTP
+  요청으로 로드해서 상태코드·콘솔 에러·빈 `<title>`·`undefined`/`NaN`/`[object Object]`/
+  `{{...}}` 같은 미처리 텍스트 잔존 여부 확인
+→ 118개 조합 전부 이슈 0건.
+
+**4차 — "모든 텝 모든 언어 하나하나" 최종 요청 → 기존 테스트의 실제 커버리지 구멍 2개
+발견·직접 메움**: 사용자가 다시 한번 "전부 하나하나"를 요청해서, 이번엔 재실행 전에
+기존 테스트 스크립트 소스 자체를 grep해서 실제 커버리지를 확인함 —
+- `tests/console_error_audit.js`의 `LANGS`(23개)가 **`ADDITIONAL_LANGS`(21개, script.js)
+  + 핵심 6개 = 27개 중 4개(포르투갈어 pt·스페인어 es·우크라이나어 uk·테툼어 tet)를
+  빠뜨리고 있었음** — 이 4개 언어는 콘솔 에러 검사를 한 번도 받은 적 없었던 것.
+- `tests/lang_leak_audit.js`의 `VIEWS`(4개: home/compare/odds/faq)가 **개인정보처리방침·
+  면책조항·문의하기 3개 탭을 아예 검사 대상에서 빼놓고 있었음** — 이 3탭은 한글 잔존
+  여부를 한 번도 검사받은 적 없었던 것.
+- 두 구멍을 메운 새 스크립트(7개 탭 × 27개 언어=189개 조합, 언어당 새 탭마다 한글 잔존
+  검사(한국어 제외)+콘솔 에러 검사를 함께 수행)를 별도로 짜서 실행 → **189개 조합 전부
+  이슈 0건**(스크래치패드 임시 스크립트, 저장소에는 반영 안 함 — 필요하면 이 항목을
+  참고해서 기존 두 테스트 파일의 LANGS/VIEWS 목록 자체를 넓히는 것도 고려할 만함, 이번엔
+  검증만 하고 테스트 파일 자체는 안 고침).
+
+**결론: 7개 탭 × 27개 언어 전체, 6개 페르소나, 20개국 드롭다운, 72개 국가별 랜딩
+페이지 — 전부 하나도 빠짐없이 검증 완료, 이슈 0건.** "한국 중심 → 외국 중심 전환"은
+코드 변경이 필요한 문제가 아니라 **기존 자동 테스트의 커버리지 자체가 일부 비어있던
+것**으로 판명됐고, 그 구멍들도 이번에 실제로 다 검증해서 메웠음. **다음 세션 참고**:
+`tests/console_error_audit.js`의 `LANGS`와 `tests/lang_leak_audit.js`의 `VIEWS`가
+실제 사이트 지원 범위(27개 언어/7개 탭)보다 좁게 박혀있다는 걸 알아챘으면, 언젠가
+정식으로 그 두 파일 자체를 넓혀서(스크래치패드 임시 스크립트 말고 저장소의 진짜 회귀
+테스트로) 이 구멍이 다시 조용히 벌어지지 않게 고정해두는 것도 좋음(이번 세션은 시간
+관계상 검증만 하고 넘어감).
+
+변경 파일: `HANDOFF.md`만(이 항목 — 코드 변경 없음, 전부 검증 작업).
+
+### 2026-08-05 — 공유 문구 끝 사이트 링크 제거 (아이메시지 등에서 이미지+텍스트+
+### 링크미리보기카드로 메시지가 3덩이로 쪼개져 나오는 문제)
+
+**배경**: 사용자가 아이메시지 스크린샷을 보내줌 — "🎱 최근 당첨번호" 공유 시 (1) 이미지
+카드 (2) "...확인해보세요 https://chamtax.com/"라는 텍스트+링크 (3) 그 링크를 아이메시지가
+자동으로 스크랩해서 만든 별도의 링크 미리보기 카드, 이렇게 메시지가 3덩이로 쪼개져 나와서
+지저분함. "맨 밑에 사이트 링크는 없는 게 나은 거 같아, 전부 수정해줘. 모든 언어랑 모든
+공유"라고 명시적으로 요청함.
+
+**조사**: `grep`으로 공유 관련 함수 6개(`shareLatestDraw`/`shareDreamResult`/`shareResult`/
+`shareRefundChecklist`/`shareUsUnclaimedMoneyChecklist`/`shareInUnclaimedMoneyChecklist`)
+전부가 `shareText`에 `shareUrl`을 붙이거나 `navigator.share()`에 별도 `url` 파라미터로
+넘기고 있는 걸 확인. 그중 `shareResult`("이 결과 공유하기")만 예외적으로 링크에 실질
+기능이 있음을 발견 — `?amount=&country=&state=` 쿼리파라미터가 실려있어서 받는 사람이
+누르면 나와 똑같은 계산 결과를 그대로 보여주는 딥링크였음(단순 사이트 홍보 링크가 아님).
+사용자에게 확인받아 **이것만 예외로 남기고 나머지 5개는 전부 링크 제거**하기로 함.
+
+**구현**: 5개 함수에서 `shareUrl` 변수·`wrapWithOgShareCard()` 호출·`url:` 파라미터를
+전부 제거 — 이미지가 있는 2개(`shareLatestDraw`/`shareDreamResult`)는 `shareText`에서
+`${shareUrl}` 접미사만 제거(이미지 자체엔 이미 "chamtax.com" 워터마크가 있어서 브랜딩은
+유지됨), 텍스트만 있는 3개(체크리스트 공유)는 `navigator.share()`/클립보드 폴백/
+`window.prompt` 폴백 3곳 전부에서 링크를 빼서 순수 텍스트만 공유되게 함. `shareResult`는
+전혀 안 건드림. **번역 작업은 불필요했음** — 26개 언어 문구 자체엔 애초에 URL이 안
+박혀있었고(템플릿 리터럴로 나중에 붙이는 방식이었음), 코드에서 그 접미사만 떼어내면 되는
+구조였기 때문.
+
+**부수 정리 — 죽은 코드 제거**: 5개 함수의 호출부를 없애자 `wrapWithOgShareCard()`
+함수(카카오톡 등 링크 미리보기 봇용 동적 OG 카드를 만들어주던 헬퍼, `og.chamtax.com`
+Cloudflare Worker 호출)와 `OG_SHARE_WORKER_BASE` 상수가 호출부 0개인 죽은 코드가 됨 —
+`grep`으로 전체 저장소(소스 파일 기준, `script.min.js` 제외) 재확인 후 완전히 삭제.
+**단, `og-share-worker/` 폴더(실제 배포된 Cloudflare Worker 소스)는 그대로 둠** — 배포
+자체를 되돌리는 건 이 세션 요청 범위 밖이라고 판단(인프라 변경은 신중하게). 나중에 링크
+공유를 다시 붙이고 싶으면 `og-share-worker/README.md` 참고해서 `OG_SHARE_WORKER_BASE`
+상수와 `wrapWithOgShareCard()`를 되살리면 됨(git 히스토리에 남아있음).
+
+**검증**: `node --check` 통과. Playwright로 `navigator.share`를 스텁으로 갈아끼워서
+6개 함수 전부 실제로 어떤 데이터가 넘어가는지 직접 캡처 — 5개는 `url` 필드/텍스트 접미사
+전부 없음 확인, `shareResult`만 여전히 `?amount=342&country=kr` 딥링크가 텍스트에 살아있는
+것 확인. 회귀 테스트(`home_audit` 18·`console_error_audit` 161·`i18n_coverage_audit`
+766키·`i18n_attr_lint` 0후보) 전부 `ISSUES: 0`.
+
+변경 파일: `script.js`/`script.min.js`(`OG_SHARE_WORKER_BASE`/`wrapWithOgShareCard()`
+삭제, 5개 공유 함수에서 링크 제거), `index.html`(캐시버스팅 `20260804-4`→`20260805-1`).
