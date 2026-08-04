@@ -1858,3 +1858,37 @@ myanmar,nepal,pakistan,philippines,russia,srilanka,thailand,uzbekistan,vietnam}-
 하는 사람에게 캡처를 보여주고 확인받는 방법뿐임.
 
 변경 파일: 없음(적용 후 전부 원복).
+
+### 2026-08-04 이어서 — 브랜치 정리(8개 중 7개 삭제) + 잭팟 자동 갱신 루틴 범위 확장 + 남은 og:image 작업 PR로 병합
+
+**브랜치 정리**: 남아있던 8개 브랜치를 `git diff`/`git log`로 직접 대조해서 판정. 7개
+(`claude/adoring-curie-rcv0vy`, `claude/github-file-review-handover-9up48b`,
+`claude/github-file-review-handover-dfx0d5`, `claude/github-handover-file-check-29r6r0`,
+`claude/github-handover-files-gvlama`, `claude/github-latest-handover-files-i8ztge`,
+`claude/github-latest-handover-files-ndnr73`)는 고유 커밋이 전부 이미 main에 반영된
+내용(낡은 HANDOFF.md 메모, 또는 PR #107로 이미 병합된 코드와 완전히 동일)이라 "안전 삭제"로
+판정 → 사용자가 GitHub 웹 UI에서 직접 삭제 완료. 나머지 1개
+(`claude/github-latest-files-handover-571k06`)는 `us-lottery-basics-*.html`(26개 언어)의
+og:image를 언어중립 기본 이미지에서 "미국 로또 vs 한국 로또 배당률 비교 카드" 디자인의
+언어별 전용 이미지(`og-image-hook-basics-*.png` 26장)로 교체하는 **진짜 미병합 작업**이라
+삭제 대상에서 제외하고 PR #118로 만들어 병합함(충돌 없이 clean).
+
+**잭팟 데이터 자동 갱신 루틴 범위 확장**: 사용자가 "89개 페이지 잭팟 숫자 자동 갱신"을 다시
+물어봄 — 조사해보니 (1) 순수 API/GitHub Actions 방식은 과거에 이미 시도했다가 실패한 이력이
+있음(data.ny.gov/powerball.com 전부 403, API 월간 사용 한도 초과 — `scripts/backfill-lottery.js`
+주석에도 "잭팟 금액엔 신뢰할 API가 없어 수동 유지"라고 명시돼있음), (2) 하지만 **이미 매일
+15:00 KST에 도는 Claude 자동 루틴("ChamTax 로또 데이터 점검", `trig_01JtYWzvDEx9FRrzFsswuSzH`)이
+`JACKPOT_DATA`(계산기가 쓰는 실제 잭팟 값)는 WebSearch 기반 판단으로 이미 매일 갱신하고
+있었음** — 다만 89개 랜딩페이지에 박힌 예시 문구까지는 손 안 대고 있었음. 새 GitHub Actions를
+만드는 대신, 이미 있는 이 루틴의 프롬프트에 4번째 체크 항목만 추가(`update_trigger`) —
+"랜딩페이지 예시 잭팟 금액이 실제 잭팟과 크게 어긋날 때만(사소한 차이는 매일 갱신 소음이니
+무시) 최신화, 확신 없으면 손대지 말 것". 다음 실행(내일 15:00 KST)부터 적용됨.
+
+**참고 — 로또 "당첨 번호"(잭팟 금액과 별개)는 이미 완전 자동화돼있음**: `.github/workflows/
+lottery-backfill.yml`이 매일 GitHub Actions에서 data.ny.gov 공식 오픈데이터로 새 회차
+당첨번호만 자동 백필함(Claude 세션 없이, 토큰 소모 없이 무료로 돎) — data.ny.gov가 Claude
+세션 자체의 샌드박스 네트워크에서는 막혀있지만 GitHub Actions 러너에서는 정상 접근되기
+때문에 가능했던 것. 잭팟 "금액"은 이 방식이 안 통해서(구조화 API 없음) 위처럼 Claude 판단
+루틴으로 계속 처리.
+
+변경 파일: 없음(이 항목은 브랜치/루틴 정리, 코드 변경은 PR #118 병합분뿐 — 그쪽 로그 참고).
