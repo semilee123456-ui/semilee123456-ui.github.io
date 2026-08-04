@@ -3443,6 +3443,15 @@ const FISHING_BITE_WINDOW_MS = 900; // 입질 순간 탭 제한시간 — 반응
 const FISHING_REEL_TIME_LIMIT_MS = 3000; // 릴 감기 전체 제한시간(누르지 않고 방치하면 이 시간 뒤 실패 처리)
 const FISHING_REEL_FILL_RATE = 55;  // 누르고 있는 동안 초당 게이지 증가량(%) — 계속 누르면 약 1.8초면 꽉 참
 const FISHING_REEL_DRAIN_RATE = 22; // 손을 뗐을 때 초당 게이지 감소량(%) — 채우는 속도보다 느리게 둬서, 살짝 떼도 크게 불리하지 않음
+// 2026-08-04: 릴 감기가 성공/실패로 끝나는 순간, 대부분 사용자 손가락이 아직 버튼 위에 있다가
+// 그제서야 떼기 때문에("잡았다!"를 보고 반응해서 손을 떼는 거라 타이밍이 겹침) 그 떼는 동작이
+// 브라우저 click 이벤트를 만들어서 곧바로 다음 캐스팅이 의도치 않게 시작돼버리는 버그를
+// Playwright로 pointerdown/up을 직접 재현하다가 발견함(결과를 볼 틈도 없이 다음 입질 타이머가
+// 조용히 돌기 시작 — "왜 자꾸 놓쳐요"의 또 다른 원인이 될 뻔함). reeling이 끝난 직후 잠깐(아래
+// 값만큼) castFishingLine()이 클릭을 무시하게 해서 막음(fishingCaughtSuccess/fishingReelFailed
+// 에서 세팅).
+let fishingClickLockUntil = 0;
+const FISHING_CLICK_LOCK_MS = 450;
 function fishingVibrate(pattern){ try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
 
 // 언어 전환 시에도 재사용해야 해서, 이미 뽑아둔 번호는 그대로 두고 문구·토글 상태만 새로 그림
@@ -3538,6 +3547,7 @@ function resetFishingRound(){
 // casting/waiting 중엔 버튼이 disabled라 클릭 자체가 안 들어옴(= 너무 일찍 누르면 그냥
 // 무시되는 효과 — 시니어 타겟이라 오조작에 불이익을 주지 않기로 함).
 function castFishingLine(){
+  if (performance.now() < fishingClickLockUntil) return; // 릴 감기 직후 손 떼는 동작이 만든 트레일링 클릭 무시(위 fishingClickLockUntil 설명 참고)
   if (fishingState === 'biting') { handleFishingBiteTap(); return; }
   if (fishingState === 'reeling') return; // 릴 감기는 이제 누르고 있기(pointerdown/up)로 처리 — 클릭 자체는 무시
   if (fishingState !== 'idle') return;
@@ -3676,6 +3686,7 @@ function hideFishingReelGauge(){
 
 function fishingReelFailed(){
   fishingState = 'idle';
+  fishingClickLockUntil = performance.now() + FISHING_CLICK_LOCK_MS;
   stopFishingReelLoop();
   const pond = document.getElementById('fishing-pond');
   const btn = document.getElementById('fishing-cast-btn');
@@ -3729,6 +3740,7 @@ function fishingCaughtSuccess(){
   hideFishingReelGauge();
   if (pond) pond.classList.remove('is-reeling');
   fishingState = 'idle';
+  fishingClickLockUntil = performance.now() + FISHING_CLICK_LOCK_MS;
 
   const slotIndex = fishingCaughtValues.length;
   const value = fishingSessionValues[slotIndex];
@@ -7446,8 +7458,7 @@ function updateAnnotateUndoClearState(){
   if (clearBtn) clearBtn.disabled = !has;
 }
 
-// base(원본 카드)+draw(펜/텍스트 낙서) 두 캔버스를 하나로 합침 — 다운로드(toDataURL)와
-// 공유(toBlob) 양쪽에서 재사용
+// base(원본 카드)+draw(펜/텍스트 낙서) 두 캔버스를 하나로 합침 — 다운로드·공유 양쪽에서 재사용
 function mergeAnnotateCanvases(){
   const base = document.getElementById('annotateBaseCanvas');
   const draw = document.getElementById('annotateOverlayCanvas');
@@ -7460,14 +7471,26 @@ function mergeAnnotateCanvases(){
   return out;
 }
 
+// 2026-08-04: 예전엔 out.toDataURL()로 만든 data: URI를 <a download>에 바로 물렸는데, 사용자가
+// "다운로드/보기 둘 다 눌러도 아무것도 안 나온다"(아이폰 사파리)고 신고함 — 사파리가 큰 data:
+// URI 다운로드를 처리할 때 확인창까지는 뜨는데 실제로는 저장도 안 되고 보기도 안 되는 사례가
+// 알려져 있음(용량이 클수록 잘 재현되는 WebKit 쪽 신뢰성 문제, 이 카드 PNG는 ~600KB대). 같은
+// 파일 안 finishAnnotateAndShare()의 폴백 경로가 이미 blob: URL(out.toBlob + URL.
+// createObjectURL)을 써서 신고된 적 없었으므로, 여기도 같은 방식으로 통일함. revokeObjectURL은
+// 클릭 직후 바로 하지 않고 살짝 늦춰서(사파리가 다운로드를 실제로 읽어가는 타이밍과 안 겹치게)
+// 안전 마진을 둠.
 function finishAnnotateAndDownload(){
   removeAnnotateTextInput();
   const out = mergeAnnotateCanvases();
   if (!out) return;
-  const link = document.createElement('a');
-  link.download = annotateDownloadFilename;
-  link.href = out.toDataURL('image/png');
-  link.click();
+  out.toBlob((blob) => {
+    if (!blob) return;
+    const link = document.createElement('a');
+    link.download = annotateDownloadFilename;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 2000);
+  }, 'image/png');
   closeAnnotateOverlay();
 }
 
