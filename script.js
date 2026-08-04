@@ -1,3 +1,8 @@
+// ⚠️⚠️⚠️ 이 파일을 고쳤으면 반드시 `node scripts/build-min.js`를 실행해서 script.min.js를
+// 재생성하고 같이 커밋할 것 — index.html이 이 파일이 아니라 script.min.js를 불러오므로,
+// 이 단계를 빠뜨리면 아무리 이 파일을 고쳐도 라이브 사이트엔 반영되지 않음
+// (i18n-source/translations.json → i18n/*.json과 완전히 같은 실수 패턴, 자세한 배경은
+// package.json/scripts/build-min.js 참고). 처음 실행이면 `npm install`부터. ⚠️⚠️⚠️
 // ============================================================
 // 세금 모델 정의 (단일 기준 — 여기만 고치면 전체 계산기에 반영됨)
 // 출처: IRS Instructions for Forms W-2G (2026), Park v. Commissioner 136 T.C. 569 (2011),
