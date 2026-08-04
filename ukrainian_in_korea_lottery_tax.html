@@ -124,6 +124,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax — це безкоштовний калькулятор для розрахунку суми, яку ви фактично отримаєте після сплати податків з виграшу в американську лотерею Powerball та Mega Millions."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "Безкоштовний веб-калькулятор суми, яку отримують після сплати податків з джекпотів американської лотереї (Powerball, Mega Millions), що охоплює 21 країну/юрисдикцію, включаючи утримання податку для нерезидентів США.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "Як розрахувати суму після сплати податків з виграшу в американську лотерею",
+  "step": [
+    { "@type": "HowToStep", "name": "Введіть суму виграшу", "text": "Введіть суму вашого виграшу в Powerball або Mega Millions (оголошений джекпот або одноразова грошова вартість)." },
+    { "@type": "HowToStep", "name": "Виберіть країну проживання", "text": "Виберіть, чи є ви резидентом Кореї, чи резидентом іншої країни." },
+    { "@type": "HowToStep", "name": "Виберіть штат США", "text": "Виберіть штат США, де було придбано квиток — ставка додаткового утримання відрізняється залежно від штату." },
+    { "@type": "HowToStep", "name": "Перевірте суму після сплати податків", "text": "Перегляньте орієнтовну суму, яку ви отримаєте після утримання федерального податку США у розмірі 30% та корейського податку (з урахуванням коригування подвійного оподаткування)." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -152,6 +200,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   .quick-answer{ background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px; padding:20px; margin-bottom:24px; }
   .quick-answer p.label{ font-size:var(--fs-small); font-weight:700; color:var(--teal); margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em; }
   .quick-answer .row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:6px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px; }
@@ -195,7 +244,8 @@
   </div>
 
   <h1>Живете в Кореї та виграли в американську лотерею, чи треба платити податок?</h1>
-  <p class="lead">Живете в Кореї та виграли в Powerball чи Mega Millions США? Простими словами пояснюємо, що відбувається з податками.</p>
+  <p class="lead">ChamTax — це безкоштовний калькулятор, який показує фактичну суму, яку ви отримаєте після сплати податків з виграшу в Powerball та Mega Millions США. Живете в Кореї та виграли в Powerball чи Mega Millions США? Простими словами пояснюємо, що відбувається з податками.</p>
+  <p class="updated-date">Останнє оновлення: 2026-08-04</p>
 
   <button type="button" id="share-btn" class="share-btn" onclick="shareThisPage()">📤 Поділитися цією сторінкою</button>
 
