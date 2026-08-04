@@ -4481,44 +4481,34 @@ WebSite/SoftwareApplication 고정 설명문 원문, HowTo 4단계 고정 구조
 박아 넣고, 각 페이지의 `<html lang>`에 맞게 번역해서 적용하도록 지시. 매 파일 수정 후
 `json.loads`로 전체 JSON-LD 블록 파싱 검증 필수화.
 
-**결과 (세션 한도로 그룹A·C가 중간에 API 에러로 중단됨 — "You've hit your session limit,
-resets 7:30pm UTC")**:
-- ✅ 그룹B 19/19 완료, 커밋됨(`182029f` 원본, 병합 후 새 SHA)
-- ✅ 그룹D 12/12 완료, 커밋됨(`af9dae7` 원본, 병합 후 새 SHA)
-- ⚠️ 그룹C 19/26 완료(ar,bn,en,es,fr,hi,id,ja,kk,km,ky,lo,mn,my,ne,pt,ru,si,tet) — 커밋 안
-  된 상태로 발견해서 메인 세션이 직접 커밋 후 병합함. **미완료 7개**: `us-lottery-basics-th.html`,
-  `-tl`, `-uk`, `-ur`, `-uz`, `-vi`, `-zh`
-- ❌ 그룹A는 파일 목록·구조 확인만 하고 실제 편집 시작 전에 한도 걸림 — **27개 전부 미착수**
-  (`arabic_in_korea_lottery_tax.html`부터 `vietnamese-in-korea-lottery-tax.html`까지, 정확한
-  27개 목록은 이 항목 위쪽 "방법" 섹션 참고). 이 에이전트는 파일을 변경 안 해서 worktree가
-  자동 정리됨(별도 정리 불필요).
-- 메인 세션에서 3개 워크트리 브랜치(B/D/C-부분)를 `git merge`로 충돌 없이 병합, 병합 후
-  전체 90개 HTML 파일 JSON-LD를 Python `json.loads`로 재검증 — **실패 0건**.
+**결과 (1차 시도에서 세션 한도로 그룹A·C가 중간에 API 에러로 중단됨 — "You've hit your
+session limit, resets 7:30pm UTC" — 이후 사용자가 "계속 진행해줘"로 재개 요청, 남은 34개를
+2개 에이전트로 재시도해서 최종적으로 84/84 전부 완료됨)**:
+- ✅ 그룹B(resident-us 19개), 그룹D(개별 12개), 그룹C 1차(us-lottery-basics 19개) — 1차
+  시도에서 완료, 메인 세션이 워크트리 병합
+- ✅ 그룹C 나머지 7개(`us-lottery-basics-th/tl/uk/ur/uz/vi/zh.html`) — 재시도에서 완료
+  (이 에이전트가 작업 시작 시점에 워크트리가 그룹C 1차 병합 이전 커밋에서 갈라져 있었던 걸
+  발견해서 "19개가 이미 됐다던데 확인해보니 하나도 없다"고 보고했었음 — 실제로는 자기
+  워크트리 기준으로는 맞는 말이었고, 대상 7개 파일 자체는 다른 그룹과 안 겹쳐서 병합 시
+  충돌 없이 정리됨. **다음에 병렬 에이전트를 쓸 때 참고**: worktree는 에이전트 실행 시점의
+  HEAD에서 갈라지므로, 같은 세션 안에서 먼저 병합한 내용을 나중에 뜬 에이전트가 못 볼 수
+  있음 — "이미 됐다"는 에이전트 자체 보고보다 병합 후 메인 세션에서 직접
+  `grep`/`json.loads`로 재검증하는 게 항상 더 신뢰도 높음, PR `merged` 필드를 못 믿는다는
+  기존 교훈과 같은 맥락).
+- ✅ 그룹A(in_korea 27개) — 재시도에서 완료. 5개씩 중간 커밋하도록 지시해서(1차 실패
+  경험 반영) 한도에 다시 걸려도 안전하게 남도록 함 — 실제로 이번엔 안 걸리고 27개 전부
+  한 번에 끝남(커밋 6개: 부분 5/10/15/20/25/27).
+- 메인 세션에서 총 5개 워크트리 브랜치(B/D/C-1차/C-나머지/A)를 순서대로 `git merge`,
+  전부 충돌 없이 병합됨(파일셋이 서로 겹치지 않아서). 병합 후 **전체 90개 HTML 파일, JSON-LD
+  블록 529개를 Python `json.loads`로 전수 재검증 — 실패 0건.** `index.html`(SPA, 기존에
+  이미 있던 4종) 포함 88개 파일에 Organization 블록 존재 확인(90 - `404.html` -
+  `google45a28cb010bb349d.html` = 88, 정확히 일치).
 
-**다음 세션이 이어서 할 것**: 위 세션 한도가 풀린 뒤(또는 새 세션에서) 아래 34개 파일에
-동일 패턴 적용, 각 파일을 처리하기 전 `grep -c '"@type": "Organization"' <파일>`로 이미
-됐는지 재확인부터 할 것(실수로 중복 추가 방지):
-- `us-lottery-basics-th.html`, `-tl`, `-uk`, `-ur`, `-uz`, `-vi`, `-zh` (7개, 그룹C 나머지)
-- `arabic_in_korea_lottery_tax.html`, `bengali_in_korea_lottery_tax.html`,
-  `cambodian_in_korea_lottery_tax.html`, `china_in_korea_lottery_tax.html`,
-  `english_in_korea_lottery_tax.html`, `french_in_korea_lottery_tax.html`,
-  `hindi_in_korea_lottery_tax.html`, `indonesian_in_korea_lottery_tax.html`,
-  `japanese_in_korea_lottery_tax.html`, `kazakh_in_korea_lottery_tax.html`,
-  `kyrgyz_in_korea_lottery_tax.html`, `lao_in_korea_lottery_tax.html`,
-  `mongolian_in_korea_lottery_tax.html`, `myanmar_in_korea_lottery_tax.html`,
-  `nepali_in_korea_lottery_tax.html`, `philippines_in_korea_lottery_tax.html`,
-  `portuguese_in_korea_lottery_tax.html`, `russian_in_korea_lottery_tax.html`,
-  `spanish_in_korea_lottery_tax.html`, `srilanka_in_korea_lottery_tax.html`,
-  `taiwan_hk_in_korea_lottery_tax.html`, `thai_in_korea_lottery_tax.html`,
-  `timor_in_korea_lottery_tax.html`, `ukrainian_in_korea_lottery_tax.html`,
-  `urdu_in_korea_lottery_tax.html`, `uzbek_in_korea_lottery_tax.html`,
-  `vietnamese-in-korea-lottery-tax.html` (27개, 그룹A 전체)
-
-패턴/문구 원문은 이미 완료된 `korea-resident-us-lottery-tax.html`(ko)·
-`lottery-jackpot-amount-en.html`(en)과, 이번에 새로 완료된 각 언어별 파일들(예: 미얀마어는
-`myanmar-resident-us-lottery-tax.html`, 크메르어는 `cambodia-resident-us-lottery-tax.html`
-등)을 그대로 참고하면 됨 — 같은 언어의 번역이 이미 다른 파일에 있으면 새로 번역하지 말고
-재사용할 것.
+**AI 에이전트 인용 최적화(AEO) 84개 페이지 확장 — 완료.** 번역 확신이 낮다고 에이전트들이
+스스로 표시한 언어(라오어·크메르어·티모르어·스리랑카어·키르기스어·카자흐어·몽골어·
+우즈베크어 등)는 기계번역 수준 검증만 거쳤고 원어민 검수는 안 받았음 — 나중에 여유 있을 때
+확인해도 좋음(당장 급한 건 아님, JSON-LD 문법과 구조는 전부 검증 완료라 사이트 동작·SEO에
+지장은 없음).
 
 **별개 작업 — 로고 마스코트 유휴 애니메이션**: 사용자가 상단 네비 로고 곰돌이가 "가끔씩
 움직이면 어떨까" 요청 → 기존에 "꾸며서 저장하기" 모달 전용이던 `mascotBounce`/`mascotWink`
