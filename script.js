@@ -8890,6 +8890,29 @@ function startAmountVoiceInput(inputId, onTyped){
 
 document.addEventListener('DOMContentLoaded', initAmountVoiceButtons);
 
+// 상단 네비 로고 곰돌이(.mascot-mark)가 가끔 저절로 윙크+통통 튀게 함 — "꾸며서 저장하기" 모달
+// 전용이던 mascotBounce/mascotWink 키프레임(styles.css의 .idle-play 규칙)을 그대로 재사용.
+// 매번 똑같은 리듬이면 기계적으로 보여서 8~20초 사이 무작위 간격으로 재생하고, 탭이 백그라운드에
+// 있을 땐(document.hidden) 재생하지 않고 다음 간격만 새로 잡아서 배터리/CPU를 아낌.
+function initMascotIdlePlay() {
+  const mascot = document.querySelector('.logo .mascot-mark');
+  if (!mascot) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const scheduleNext = () => {
+    const delay = 8000 + Math.random() * 12000;
+    setTimeout(() => {
+      if (!document.hidden) {
+        mascot.classList.add('idle-play');
+        mascot.addEventListener('animationend', () => mascot.classList.remove('idle-play'), { once: true });
+      }
+      scheduleNext();
+    }, delay);
+  };
+  scheduleNext();
+}
+document.addEventListener('DOMContentLoaded', initMascotIdlePlay);
+
 // renderJackpotHistory()/renderJackpotTakeHomeRanking()/renderNumberFrequencyStats()는 확률체감
 // 탭 전용 데이터(odds-data.js)가 필요해서 여기서 안 부름 — go('odds')가 처음 호출될 때 지연 로드
 // 후 그려짐(renderOddsTabDataWhenReady, 2026-07-22 성능 개선)

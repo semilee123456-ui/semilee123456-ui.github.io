@@ -85,6 +85,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax একটি বিনামূল্যের ক্যালকুলেটর যা মার্কিন Powerball ও Mega Millions লটারি জয়ের অর্থের ওপর কর কাটার পর প্রকৃত হাতে পাওয়া পরিমাণ হিসাব করে।"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "মার্কিন লটারি জ্যাকপট (Powerball, Mega Millions)-এর কর-পরবর্তী প্রাপ্ত অর্থের হিসাব করার জন্য একটি বিনামূল্যের ওয়েব ক্যালকুলেটর, যা মার্কিন অ-বাসিন্দাদের জন্য উৎসে কর কর্তনসহ ২১টি দেশ/এখতিয়ার কভার করে।",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "মার্কিন লটারি জয়ের কর-পরবর্তী প্রাপ্ত অর্থ কীভাবে হিসাব করবেন",
+  "step": [
+    { "@type": "HowToStep", "name": "জেতা অর্থের পরিমাণ লিখুন", "text": "আপনার Powerball বা Mega Millions জেতা অর্থের পরিমাণ (ঘোষিত জ্যাকপট বা এককালীন নগদ মূল্য) লিখুন।" },
+    { "@type": "HowToStep", "name": "বসবাসের দেশ নির্বাচন করুন", "text": "আপনি কোরিয়ার বাসিন্দা নাকি অন্য কোনো দেশের, তা নির্বাচন করুন।" },
+    { "@type": "HowToStep", "name": "মার্কিন অঙ্গরাজ্য নির্বাচন করুন", "text": "যে মার্কিন অঙ্গরাজ্য থেকে টিকিট কেনা হয়েছে তা নির্বাচন করুন — অতিরিক্ত কর কর্তনের হার অঙ্গরাজ্যভেদে ভিন্ন হয়।" },
+    { "@type": "HowToStep", "name": "কর-পরবর্তী প্রাপ্ত অর্থ দেখুন", "text": "মার্কিন ফেডারেল করের ৩০% কর্তন এবং আপনার বসবাসের দেশের কর (দ্বৈত করারোপ সমন্বয়সহ) প্রয়োগের পর আনুমানিক প্রাপ্ত অর্থ দেখুন।" }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -113,6 +161,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   h2{ font-size:var(--fs-h2); margin:32px 0 12px; }
   h3{ font-size:var(--fs-h3); margin:20px 0 8px; }
   p{ font-size:var(--fs-body); margin:0 0 14px; }
@@ -156,7 +205,8 @@
   </div>
 
   <h1>তাহলে মার্কিন লটারি আসলে কী?</h1>
-  <p class="lead">যারা এই বিষয়ে কথা বলে বিভ্রান্ত দৃষ্টির মুখোমুখি হয়েছেন — এটা তাদের জন্য সত্যিকারের শুরু থেকে ব্যাখ্যা। পাওয়ারবল আর মেগা মিলিয়নস কী, কীভাবে খেলা হয়, সম্ভাবনা আসলে কতটা খারাপ, আর মানুষ কেন তবুও খেলে।</p>
+  <p class="lead"><b>ChamTax</b> একটি বিনামূল্যের ক্যালকুলেটর যা মার্কিন Powerball ও Mega Millions জয়ের অর্থের প্রকৃত কর-পরবর্তী প্রাপ্ত পরিমাণ দেখায়। যারা এই বিষয়ে কথা বলে বিভ্রান্ত দৃষ্টির মুখোমুখি হয়েছেন — এটা তাদের জন্য সত্যিকারের শুরু থেকে ব্যাখ্যা। পাওয়ারবল আর মেগা মিলিয়নস কী, কীভাবে খেলা হয়, সম্ভাবনা আসলে কতটা খারাপ, আর মানুষ কেন তবুও খেলে।</p>
+  <p class="updated-date">সর্বশেষ আপডেট: 2026-08-03</p>
 
   <h2>১. মার্কিন লটারি = পাওয়ারবল + মেগা মিলিয়নস</h2>
   <p>আমেরিকার প্রতিটি রাজ্যের নিজস্ব লটারিও আছে, কিন্তু “মার্কিন লটারি” বলতে সাধারণত এই দুটো বিশাল গেমকে বোঝায়, যা প্রায় প্রতিটি রাজ্যে একসাথে বিক্রি হয়।</p>

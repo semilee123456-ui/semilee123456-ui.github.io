@@ -1745,3 +1745,116 @@ FAQ `mn.sub`·상세설명패널 `mn` 항목 26개 언어 재작성).
 main..HEAD`로 먼저 겹치는 작업이 없는지 확인하는 습관이 필요함.
 
 변경 파일: `.github/workflows/minify-assets.yml`(신규), `HANDOFF.md`(이 항목).
+
+### 2026-08-04 — AI 에이전트 인용 최적화, 나머지 84개 페이지로 일괄 확장 (서브에이전트 4개 병렬, 세션 한도로 일부 중단) + 로고 마스코트 유휴 애니메이션 추가
+
+**배경**: 사용자가 위 세션에서 미완료로 남긴 "AI 글래스 대비"(AEO) 작업을 이어감. 이번엔
+사용자가 다른 AI(제미나이 추정)의 2차 리뷰를 붙여넣어와서 교차검증함 — 리뷰 내용 대부분
+(엔터티 문장·Organization/WebApplication·업데이트 날짜·HowTo)은 이미 결정된 방향과 일치했고,
+`FinancialCalculator`라는 스키마 타입은 schema.org에 실존하지 않는 걸 확인해 반영 안 함,
+`Speakable`은 기존 결론(보류) 유지. 이후 "89개 페이지 전부에 같은 패턴을 확장하려면 손으로
+할지 스크립트로 일괄 할지" 사용자에게 물어서 **스크립트(서브에이전트) 방식**으로 확정.
+
+**방법**: 남은 84개 페이지(전체 90개 중 `index.html`/`404.html`/구글 인증 파일/기완료 3개
+제외)를 파일명 패턴 기준 4그룹으로 나눠 `isolation: worktree`로 병렬 서브에이전트 4개를
+동시 실행:
+- 그룹A: `~_in_korea_lottery_tax.html` 계열(한국 거주 외국인용) 27개
+- 그룹B: `~-resident-us-lottery-tax.html` 계열(각국 거주자용) 19개
+- 그룹C: `us-lottery-basics-XX.html` 계열(복권 기초 설명) 26개
+- 그룹D: 개별 페이지(잭팟 최고액·재외동포·파워볼/메가밀리언즈 세금 등) 12개
+
+각 에이전트에게 이미 검증된 패턴(`korea-resident-us-lottery-tax.html`/
+`lottery-jackpot-amount-en.html`의 정확한 JSON-LD 4블록 구조, Organization name 규칙 —
+`lang="ko"`는 "참택스"/alternateName "ChamTax", 그 외는 "ChamTax"/alternateName "참택스" —,
+WebSite/SoftwareApplication 고정 설명문 원문, HowTo 4단계 고정 구조)을 그대로 프롬프트에
+박아 넣고, 각 페이지의 `<html lang>`에 맞게 번역해서 적용하도록 지시. 매 파일 수정 후
+`json.loads`로 전체 JSON-LD 블록 파싱 검증 필수화.
+
+**결과 (1차 시도에서 세션 한도로 그룹A·C가 중간에 API 에러로 중단됨 — "You've hit your
+session limit, resets 7:30pm UTC" — 이후 사용자가 "계속 진행해줘"로 재개 요청, 남은 34개를
+2개 에이전트로 재시도해서 최종적으로 84/84 전부 완료됨)**:
+- ✅ 그룹B(resident-us 19개), 그룹D(개별 12개), 그룹C 1차(us-lottery-basics 19개) — 1차
+  시도에서 완료, 메인 세션이 워크트리 병합
+- ✅ 그룹C 나머지 7개(`us-lottery-basics-th/tl/uk/ur/uz/vi/zh.html`) — 재시도에서 완료
+  (이 에이전트가 작업 시작 시점에 워크트리가 그룹C 1차 병합 이전 커밋에서 갈라져 있었던 걸
+  발견해서 "19개가 이미 됐다던데 확인해보니 하나도 없다"고 보고했었음 — 실제로는 자기
+  워크트리 기준으로는 맞는 말이었고, 대상 7개 파일 자체는 다른 그룹과 안 겹쳐서 병합 시
+  충돌 없이 정리됨. **다음에 병렬 에이전트를 쓸 때 참고**: worktree는 에이전트 실행 시점의
+  HEAD에서 갈라지므로, 같은 세션 안에서 먼저 병합한 내용을 나중에 뜬 에이전트가 못 볼 수
+  있음 — "이미 됐다"는 에이전트 자체 보고보다 병합 후 메인 세션에서 직접
+  `grep`/`json.loads`로 재검증하는 게 항상 더 신뢰도 높음, PR `merged` 필드를 못 믿는다는
+  기존 교훈과 같은 맥락).
+- ✅ 그룹A(in_korea 27개) — 재시도에서 완료. 5개씩 중간 커밋하도록 지시해서(1차 실패
+  경험 반영) 한도에 다시 걸려도 안전하게 남도록 함 — 실제로 이번엔 안 걸리고 27개 전부
+  한 번에 끝남(커밋 6개: 부분 5/10/15/20/25/27).
+- 메인 세션에서 총 5개 워크트리 브랜치(B/D/C-1차/C-나머지/A)를 순서대로 `git merge`,
+  전부 충돌 없이 병합됨(파일셋이 서로 겹치지 않아서). 병합 후 **전체 90개 HTML 파일, JSON-LD
+  블록 529개를 Python `json.loads`로 전수 재검증 — 실패 0건.** `index.html`(SPA, 기존에
+  이미 있던 4종) 포함 88개 파일에 Organization 블록 존재 확인(90 - `404.html` -
+  `google45a28cb010bb349d.html` = 88, 정확히 일치).
+
+**AI 에이전트 인용 최적화(AEO) 84개 페이지 확장 — 완료.** 번역 확신이 낮다고 에이전트들이
+스스로 표시한 언어(라오어·크메르어·티모르어·스리랑카어·키르기스어·카자흐어·몽골어·
+우즈베크어 등)는 기계번역 수준 검증만 거쳤고 원어민 검수는 안 받았음 — 나중에 여유 있을 때
+확인해도 좋음(당장 급한 건 아님, JSON-LD 문법과 구조는 전부 검증 완료라 사이트 동작·SEO에
+지장은 없음).
+
+**PR #104 생성함**(사용자 명시적 요청으로): `claude/recent-github-files-4o1ifp` → `main`,
+"AI 에이전트 인용 최적화(AEO) 84개 페이지 전체 확장 + 로고 마스코트 유휴 애니메이션".
+https://github.com/semilee123456-ui/semilee123456-ui.github.io/pull/104 — 아직 병합 안 됨,
+PR 감시(리뷰 코멘트·CI 자동 대응) 여부는 사용자에게 물어본 상태(이 세션 종료 시점까지 답
+없었으면 다음 세션에서 PR #104 상태부터 확인할 것).
+
+**별개 작업 — 로고 마스코트 유휴 애니메이션**: 사용자가 상단 네비 로고 곰돌이가 "가끔씩
+움직이면 어떨까" 요청 → 기존에 "꾸며서 저장하기" 모달 전용이던 `mascotBounce`/`mascotWink`
+키프레임(`styles.css`)을 재사용해서, `.logo .mascot-mark.idle-play` 규칙을 새로 추가하고
+`script.js`에 `initMascotIdlePlay()` 함수로 8~20초 무작위 간격마다 그 클래스를 붙였다 떼는
+방식 구현(`animationend` 이벤트로 정리, `document.hidden`이면 그 회차는 재생 건너뛰고 다음
+간격만 새로 잡음 — 백그라운드 탭 낭비 방지). `node --check script.js`로 문법 검증함, 브라우저
+실사용 검증(Playwright)은 세션 한도 때문에 이번엔 못 함 — **다음 세션에서 실제로 로고가
+8~20초 내로 윙크하는지 브라우저로 확인 권장**.
+
+**⚠️ 병합 시 발견: 다른 세션이 같은 요청을 동시에 처리하며 다른 구현을 만들어놨었음**(바로
+위 "40~60대용 '꾸며서 저장하기' 모달 확대..." 항목의 4번 참고 — 그 세션은 "페이지 로드 시
+0.4초 뒤 1회만 재생"으로 구현, `prefers-reduced-motion` 처리 포함). 이 PR을 `main`에 병합
+준비하며 `styles.css`/`script.js` 충돌을 직접 확인하다가 발견 — 두 구현이 같은 요청("로고가
+움직이게")에서 나온 것으로 보이지만 동작이 다름(반복 vs 1회성). 이 세션은 사용자와 직접
+"CSS 1회 vs JS 반복" 트레이드오프를 논의하고 반복 방식으로 명시 승인받았으므로, 병합 시
+**이 세션의 반복 방식(`idle-play`)을 최종으로 채택**하고 다른 세션의 1회성 구현은 버림 —
+단, 그 세션이 챙긴 `prefers-reduced-motion` 접근성 처리는 좋은 아이디어라 그대로 가져와
+`idle-play`에도 적용함(CSS `@media` + JS `matchMedia` 가드 둘 다). 다음 세션이 로고
+애니메이션 관련 다른 PR/브랜치를 또 보게 되면, 이 판단(반복 방식이 최종)을 참고할 것.
+
+변경 파일: `script.js`, `styles.css`(마스코트 애니메이션) +
+`us-lottery-basics-{ar,bn,en,es,fr,hi,id,ja,kk,km,ky,lo,mn,my,ne,pt,ru,si,tet}.html`(19개),
+`{bangladesh,cambodia,china,india,indonesia,japan,kazakhstan,kyrgyzstan,laos,mongolia,
+myanmar,nepal,pakistan,philippines,russia,srilanka,thailand,uzbekistan,vietnam}-resident-us-lottery-tax.html`(19개),
+`biggest-jackpot-payouts.html`, `biggest-lottery-jackpots-after-tax.html`,
+`biggest_lottery_jackpots_after_tax_zh.html`, `korean-abroad-us-lottery-tax.html`,
+`korean_abroad_us_lottery_tax_ko.html`, `korean_abroad_us_lottery_tax_zh.html`,
+`lottery-jackpot-amount-zh.html`, `megamillions-tax.html`, `powerball-tax.html`,
+`us-lottery-basics.html`, `us-lottery-take-home.html`, `us-lottery-tax-rate.html`(12개).
+
+### 2026-08-04 이어서 — 번역 확신 낮은 9개 언어 "AI 교차검수" 시도했다가 되돌림(교훈만 남김)
+
+**시도**: 위에서 번역 확신이 낮다고 표시했던 9개 언어(라오어·크메르어·티모르어·스리랑카어·
+키르기스어·카자흐어·몽골어·우즈베크어·미얀마어)의 AEO 문구(엔터티 설명문·HowTo 4단계 등)를
+정리한 검수용 문서를 만들어 사용자에게 전달, 사용자가 이걸 제미나이/GPT에 붙여넣어 검수받고
+"세법 표준 용어로 고쳐야 한다"는 구체적인 교정안을 가져옴 → 26개 파일에 실제로 반영함.
+
+**되돌림**: 반영 직후, 그 검수를 준 쪽이 스스로 "실시간 공식 자료 확인 없이 그럴듯하게
+단정적으로 답한 것"이라고 정정(사용자가 그대로 전달함) — 즉 "표준 용어로 교정했다"는 그
+결과물도 원래 기계번역과 **동일한 수준의 검증 안 된 추측**이었던 것으로 드러남. 이미 반영한
+26개 파일 변경을 `git checkout --`로 전부 원복(커밋 전이라 깨끗하게 되돌림), 사용자와 논의
+후 **"지금은 되돌린 상태로 두고, 원어민 검수는 여전히 백로그"**로 최종 결정함(이유: 이
+문구들은 사용자가 직접 읽는 화면 텍스트가 아니라 JSON-LD 메타데이터라 실오류의 실질 피해가
+작고, 진짜 검증은 실제 원어민/전문 번역가만 가능 — 다른 AI에게 "검수해달라"고 시키는 건
+근본적으로 같은 문제를 반복할 뿐 진짜 검증이 아님).
+
+**다음 세션이 알아둘 것**: 이 9개 언어의 AEO 문구는 여전히 최초 기계번역 그대로임(2026-08-04
+그룹A/B/C 세션이 작성한 원본, 위 항목들 참고). "다른 AI(제미나이/GPT)의 번역 검수 결과"라는
+이유만으로 그 내용을 검증된 사실처럼 반영하지 말 것 — 이번처럼 그 AI 스스로도 실시간 근거
+확인 없이 확신에 찬 어조로 답할 수 있음을 실제로 겪음. 정말 품질을 높이려면 실제 그 언어를
+하는 사람에게 캡처를 보여주고 확인받는 방법뿐임.
+
+변경 파일: 없음(적용 후 전부 원복).

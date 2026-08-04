@@ -124,6 +124,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "O ChamTax é uma calculadora gratuita para saber o valor líquido recebido após impostos sobre prêmios da loteria americana Powerball e Mega Millions."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "Uma calculadora web gratuita para o valor líquido após impostos dos prêmios de loteria dos EUA (Powerball, Mega Millions), abrangendo 21 países/jurisdições, incluindo a retenção na fonte para não residentes dos EUA.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "Como Calcular o Valor Líquido Após Impostos de Prêmios de Loteria dos EUA",
+  "step": [
+    { "@type": "HowToStep", "name": "Insira o valor do prêmio", "text": "Insira o valor do seu prêmio do Powerball ou Mega Millions (jackpot anunciado ou valor em dinheiro à vista)." },
+    { "@type": "HowToStep", "name": "Selecione o país de residência", "text": "Escolha se você é residente na Coreia ou residente em outro país." },
+    { "@type": "HowToStep", "name": "Selecione o estado dos EUA", "text": "Selecione o estado dos EUA onde comprou o bilhete — a taxa de retenção adicional varia por estado." },
+    { "@type": "HowToStep", "name": "Verifique o valor líquido após impostos", "text": "Veja o valor estimado que receberá após a retenção federal dos EUA de 30% e o imposto coreano (com ajuste de bitributação aplicado)." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -152,6 +200,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   .quick-answer{ background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px; padding:20px; margin-bottom:24px; }
   .quick-answer p.label{ font-size:var(--fs-small); font-weight:700; color:var(--teal); margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em; }
   .quick-answer .row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:6px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px; }
@@ -195,7 +244,8 @@
   </div>
 
   <h1>Mora na Coreia e ganhou na loteria americana, precisa pagar imposto?</h1>
-  <p class="lead">Mora na Coreia e ganhou no Powerball ou Mega Millions dos EUA? Explicamos de forma simples o que acontece com os impostos.</p>
+  <p class="lead">O ChamTax é uma calculadora gratuita que mostra o valor real recebido após impostos sobre prêmios do Powerball e Mega Millions dos EUA. Mora na Coreia e ganhou no Powerball ou Mega Millions dos EUA? Explicamos de forma simples o que acontece com os impostos.</p>
+  <p class="updated-date">Última atualização: 2026-08-04</p>
 
   <button type="button" id="share-btn" class="share-btn" onclick="shareThisPage()">📤 Compartilhar esta página</button>
 

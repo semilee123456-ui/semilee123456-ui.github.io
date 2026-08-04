@@ -85,6 +85,53 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax là công cụ tính toán miễn phí cho số tiền thực nhận sau thuế từ tiền trúng số Powerball và Mega Millions của Mỹ."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "Công cụ tính toán trực tuyến miễn phí cho số tiền thực nhận sau thuế từ giải độc đắc xổ số Mỹ (Powerball, Mega Millions), bao phủ 21 quốc gia/vùng lãnh thổ, bao gồm cả khấu trừ thuế cho người không cư trú tại Mỹ.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "Cách tính số tiền thực nhận sau thuế từ tiền trúng số Mỹ",
+  "step": [
+    { "@type": "HowToStep", "name": "Nhập số tiền trúng thưởng", "text": "Nhập số tiền trúng thưởng Powerball hoặc Mega Millions (giải độc đắc được công bố hoặc giá trị tiền mặt nhận một lần)." },
+    { "@type": "HowToStep", "name": "Chọn quốc gia cư trú", "text": "Chọn quốc gia mà bạn là người cư trú thuế." },
+    { "@type": "HowToStep", "name": "Chọn bang của Mỹ", "text": "Chọn bang của Mỹ nơi mua vé số — mỗi bang có mức thuế khấu trừ bổ sung khác nhau." },
+    { "@type": "HowToStep", "name": "Xem số tiền thực nhận sau thuế", "text": "Xem số tiền thực nhận ước tính sau khi áp dụng khấu trừ liên bang Mỹ 30% (đối với người không cư trú) và thuế tại quốc gia cư trú (đã điều chỉnh tránh đánh thuế hai lần)." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -113,6 +160,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   h2{ font-size:var(--fs-h2); margin:32px 0 12px; }
   h3{ font-size:var(--fs-h3); margin:20px 0 8px; }
   p{ font-size:var(--fs-body); margin:0 0 14px; }
@@ -156,7 +204,8 @@
   </div>
 
   <h1>Vậy thực ra xổ số Mỹ là gì?</h1>
-  <p class="lead">Dành cho những ai từng nhắc đến chuyện này và nhận lại ánh mắt ngơ ngác — đây là phần giải thích thật sự từ đầu. Powerball và Mega Millions là gì, chơi thế nào, tỷ lệ trúng thực sự tệ đến đâu, và vì sao người ta vẫn chơi.</p>
+  <p class="lead">ChamTax là công cụ tính toán miễn phí hiển thị số tiền thực nhận sau thuế thực tế từ tiền trúng số Powerball và Mega Millions của Mỹ. Dành cho những ai từng nhắc đến chuyện này và nhận lại ánh mắt ngơ ngác — đây là phần giải thích thật sự từ đầu. Powerball và Mega Millions là gì, chơi thế nào, tỷ lệ trúng thực sự tệ đến đâu, và vì sao người ta vẫn chơi.</p>
+  <p class="updated-date">Cập nhật lần cuối: 2026-08-04</p>
 
   <h2>1. Xổ số Mỹ = Powerball + Mega Millions</h2>
   <p>Từng bang ở Mỹ cũng có xổ số riêng, nhưng “xổ số Mỹ” thường dùng để chỉ hai trò chơi khổng lồ này, được bán chung ở gần như mọi bang.</p>

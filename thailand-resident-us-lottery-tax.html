@@ -56,6 +56,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax คือเครื่องคำนวณฟรีสำหรับจำนวนเงินที่ได้รับจริงหลังหักภาษีจากเงินรางวัลลอตเตอรี Powerball และ Mega Millions ของสหรัฐฯ"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "เครื่องคำนวณเว็บฟรีสำหรับจำนวนเงินที่ได้รับจริงหลังหักภาษีจากเงินรางวัลใหญ่ลอตเตอรีสหรัฐฯ (Powerball, Mega Millions) ครอบคลุม 21 ประเทศ/เขตอำนาจศาล รวมถึงการหักภาษี ณ ที่จ่ายสำหรับผู้ไม่มีถิ่นที่อยู่ในสหรัฐฯ",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "วิธีคำนวณจำนวนเงินที่ได้รับจริงหลังหักภาษีจากการถูกลอตเตอรีสหรัฐฯ",
+  "step": [
+    { "@type": "HowToStep", "name": "กรอกจำนวนเงินรางวัล", "text": "กรอกจำนวนเงินรางวัล Powerball หรือ Mega Millions (เงินรางวัลที่ประกาศหรือมูลค่าเงินสดแบบจ่ายครั้งเดียว)" },
+    { "@type": "HowToStep", "name": "เลือกประเทศที่พำนัก", "text": "เลือกว่าคุณเป็นผู้มีถิ่นที่อยู่ทางภาษีในไทยหรือประเทศอื่น" },
+    { "@type": "HowToStep", "name": "เลือกรัฐของสหรัฐฯ (State)", "text": "เลือกรัฐของสหรัฐฯ ที่ซื้อสลาก — อัตราการหักภาษีเพิ่มเติมแตกต่างกันไปตามแต่ละรัฐ" },
+    { "@type": "HowToStep", "name": "ตรวจสอบจำนวนเงินที่ได้รับหลังหักภาษี", "text": "ดูจำนวนเงินโดยประมาณที่ได้รับหลังจากหักภาษี ณ ที่จ่ายของรัฐบาลกลางสหรัฐฯ 30% และภาษีไทย (รวมการปรับปรุงเพื่อหลีกเลี่ยงภาษีซ้อน)" }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -84,6 +132,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.5; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   .quick-answer{ background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px; padding:20px; margin-bottom:24px; }
   .quick-answer p.label{ font-size:var(--fs-small); font-weight:700; color:var(--teal); margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em; }
   .quick-answer .row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:6px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px; }
@@ -120,7 +169,8 @@
   </div>
 
   <h1>ผู้มีถิ่นที่อยู่ทางภาษีในไทยถูกลอตเตอรีสหรัฐฯ ต้องเสียภาษีเท่าไหร่?</h1>
-  <p class="lead">ถูก Powerball หรือ Mega Millions ในฐานะผู้มีถิ่นที่อยู่ทางภาษีในไทย? หักภาษี ณ ที่จ่ายของสหรัฐฯ 30%, กฎการนำเงินได้ต่างประเทศเข้าไทยปี 2567 ⚠️ ยังไม่ชัดเจนสำหรับเงินรางวัล — อธิบายครบถ้วน</p>
+  <p class="lead">ChamTax คือเครื่องคำนวณฟรีที่แสดงจำนวนเงินที่ได้รับจริงหลังหักภาษีจากเงินรางวัลลอตเตอรี Powerball และ Mega Millions ของสหรัฐฯ ถูก Powerball หรือ Mega Millions ในฐานะผู้มีถิ่นที่อยู่ทางภาษีในไทย? หักภาษี ณ ที่จ่ายของสหรัฐฯ 30%, กฎการนำเงินได้ต่างประเทศเข้าไทยปี 2567 ⚠️ ยังไม่ชัดเจนสำหรับเงินรางวัล — อธิบายครบถ้วน</p>
+  <p class="updated-date">อัปเดตล่าสุด: 2026-08-03</p>
 
   <div class="quick-answer">
     <p class="label">สรุปใน 30 วินาที</p>

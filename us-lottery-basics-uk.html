@@ -85,6 +85,53 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax — це безкоштовний калькулятор чистої суми після сплати податків із виграшів у лотереях Powerball і Mega Millions у США."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "Безкоштовний вебкалькулятор чистої суми після сплати податків із джекпотів американських лотерей (Powerball, Mega Millions), що охоплює 21 країну/юрисдикцію, включно з утриманням податку для нерезидентів США.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "Як розрахувати чисту суму після сплати податків із виграшу американської лотереї",
+  "step": [
+    { "@type": "HowToStep", "name": "Введіть суму виграшу", "text": "Введіть суму виграшу Powerball або Mega Millions (оголошений джекпот або вартість одноразової виплати готівкою)." },
+    { "@type": "HowToStep", "name": "Оберіть країну проживання", "text": "Оберіть країну, у якій ви є податковим резидентом." },
+    { "@type": "HowToStep", "name": "Оберіть штат США", "text": "Оберіть штат США, у якому було придбано квиток — ставка додаткового податку залежить від штату." },
+    { "@type": "HowToStep", "name": "Перевірте чисту суму після сплати податків", "text": "Перевірте приблизну чисту суму після утримання федерального податку США 30% (для нерезидентів) і податку в країні проживання (з урахуванням коригування подвійного оподаткування)." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -113,6 +160,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   h2{ font-size:var(--fs-h2); margin:32px 0 12px; }
   h3{ font-size:var(--fs-h3); margin:20px 0 8px; }
   p{ font-size:var(--fs-body); margin:0 0 14px; }
@@ -156,7 +204,8 @@
   </div>
 
   <h1>То що ж таке американська лотерея насправді?</h1>
-  <p class="lead">Для тих, хто колись піднімав цю тему в розмові й натикався на здивований погляд у відповідь — ось справжнє пояснення з самого початку. Що таке Powerball і Mega Millions, як у них грати, наскільки реально низькі шанси і чому люди все одно грають.</p>
+  <p class="lead">ChamTax — це безкоштовний калькулятор, який показує реальну чисту суму після сплати податків із виграшів у Powerball і Mega Millions у США. Для тих, хто колись піднімав цю тему в розмові й натикався на здивований погляд у відповідь — ось справжнє пояснення з самого початку. Що таке Powerball і Mega Millions, як у них грати, наскільки реально низькі шанси і чому люди все одно грають.</p>
+  <p class="updated-date">Останнє оновлення: 2026-08-04</p>
 
   <h2>1. Американська лотерея = Powerball + Mega Millions</h2>
   <p>У кожного штату США є й своя власна лотерея, але «американська лотерея» зазвичай означає саме ці дві величезні ігри, які продаються спільно майже в усіх штатах.</p>

@@ -124,6 +124,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax est une calculatrice gratuite pour connaître le montant net après impôt des gains à la loterie américaine Powerball et Mega Millions."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "Une calculatrice web gratuite pour le montant net après impôt des jackpots de loterie américaine (Powerball, Mega Millions), couvrant 21 pays/juridictions, y compris la retenue à la source pour les non-résidents américains.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "Comment calculer le montant net après impôt des gains à la loterie américaine",
+  "step": [
+    { "@type": "HowToStep", "name": "Saisir le montant du gain", "text": "Saisissez votre gain au Powerball ou au Mega Millions (jackpot annoncé ou valeur en espèces en un seul versement)." },
+    { "@type": "HowToStep", "name": "Choisir le pays de résidence", "text": "Choisissez si vous êtes résident en Corée ou dans un autre pays." },
+    { "@type": "HowToStep", "name": "Choisir l'État américain", "text": "Sélectionnez l'État américain où vous avez acheté le billet — le taux de retenue supplémentaire varie selon l'État." },
+    { "@type": "HowToStep", "name": "Consulter le montant net après impôt", "text": "Consultez le montant net estimé après la retenue fédérale américaine de 30% et l'impôt coréen (avec ajustement de la double imposition)." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -152,6 +200,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   .quick-answer{ background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px; padding:20px; margin-bottom:24px; }
   .quick-answer p.label{ font-size:var(--fs-small); font-weight:700; color:var(--teal); margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em; }
   .quick-answer .row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:6px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px; }
@@ -195,7 +244,8 @@
   </div>
 
   <h1>Vous vivez en Corée et gagnez à la loterie américaine, faut-il payer des impôts ?</h1>
-  <p class="lead">Vous vivez en Corée et avez gagné au Powerball ou au Mega Millions américain ? On vous explique simplement ce qui se passe avec les impôts.</p>
+  <p class="lead">ChamTax est une calculatrice gratuite qui montre le montant net réel après impôt des gains au Powerball et au Mega Millions américains. Vous vivez en Corée et avez gagné au Powerball ou au Mega Millions américain ? On vous explique simplement ce qui se passe avec les impôts.</p>
+  <p class="updated-date">Dernière mise à jour : 2026-08-04</p>
 
   <button type="button" id="share-btn" class="share-btn" onclick="shareThisPage()">📤 Partager cette page</button>
 

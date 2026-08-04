@@ -134,6 +134,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "A free calculator for the after-tax take-home amount of US Powerball and Mega Millions lottery winnings."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "A free web calculator for the after-tax take-home amount of US lottery jackpots (Powerball, Mega Millions), covering 21 countries/jurisdictions including US non-resident withholding.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to find the after-tax take-home amount for the biggest lottery jackpots",
+  "step": [
+    { "@type": "HowToStep", "name": "Check the all-time rankings", "text": "See Powerball and Mega Millions' 5 biggest jackpots ever and their actual lump-sum cash payouts." },
+    { "@type": "HowToStep", "name": "Compare take-home by country of residence", "text": "Compare the after-tax take-home amount across the US, Korea, China, and India." },
+    { "@type": "HowToStep", "name": "Open the calculator with that amount", "text": "Click \"Calculate with this amount\" on any rank card to load that exact figure into the calculator." },
+    { "@type": "HowToStep", "name": "See your own after-tax amount", "text": "Select your country of residence and the US state where the ticket was bought to see your estimated after-tax take-home." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -166,6 +214,7 @@
 
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
 
   .quick-answer{
     background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px;
@@ -236,7 +285,8 @@
   </div>
 
   <h1>The 5 Biggest Lottery Jackpots Ever — What Winners Actually Took Home</h1>
-  <p class="lead">Powerball and Mega Millions' 5 biggest jackpots in history, ranked by the actual lump-sum cash payout — with what the winner really kept after tax as a US resident, and as a foreign (nonresident alien) winner from Korea, China, or India.</p>
+  <p class="lead"><b>ChamTax</b> is a free calculator that shows the actual after-tax take-home amount for US Powerball and Mega Millions jackpots. Here are the 5 biggest jackpots in history, ranked by the actual lump-sum cash payout — with what the winner really kept after tax as a US resident, and as a foreign (nonresident alien) winner from Korea, China, or India.</p>
+  <p class="updated-date">Last updated: 2026-08-03</p>
 
   <button type="button" class="share-btn" id="pageShareBtn" onclick="sharePage()">📤 Share this list</button>
 
