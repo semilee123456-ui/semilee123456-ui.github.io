@@ -2012,6 +2012,14 @@
     transform-box:fill-box; transform-origin:center;
     animation:mascotWink 1.1s ease-in-out;
   }
+  /* 2026-08-03: 상단 네비 로고 곰돌이가 가끔 저절로 움직이게 해달라는 요청 — 위 모달 전용
+     키프레임(mascotBounce/mascotWink)을 그대로 재사용하고, JS(initMascotIdlePlay)가 무작위
+     간격으로 이 클래스를 붙였다 뗌 */
+  .logo .mascot-mark.idle-play{ animation:mascotBounce 1.1s ease-in-out; }
+  .logo .mascot-mark.idle-play .mascot-eye-r{
+    transform-box:fill-box; transform-origin:center;
+    animation:mascotWink 1.1s ease-in-out;
+  }
   .annotate-toolbar{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
   /* 2026-08-03: 40~60대 사용자가 이 팝업(도구 버튼·색상 원)이 작게 느껴진다고 지적 —
      시니어 가독성 최소 폰트(--fs-small)를 본문급(--fs-body)으로 올리고, 터치 타깃도
