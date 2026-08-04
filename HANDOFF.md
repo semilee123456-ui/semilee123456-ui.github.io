@@ -4947,6 +4947,48 @@ FTC 서류 체크리스트, `data-basis="kr"`만). `querySelector`(단수)는 DO
 변경 파일: 없음(검증만 수행). 이 항목은 다음 세션이 같은 착오(첫 번째 `.refund-step-card`를
 짚는 테스트)를 반복하지 않도록 남겨둠.
 
+### 2026-08-03 이어서 — "오늘의 번개 번호 뽑기"에 낚시 미니게임 모드 추가 (프로토타입, PR #93)
+
+**요청 배경**: 사용자가 "여기에 재밌는 게임 넣는 건 어때?"라고 제안 — 처음엔 "낚시게임
+볼링게임 등 여러가지"를 원했으나, 완전히 별도의 범용 아케이드 게임은 (1) 복권 번호와
+무관한 콘텐츠라 사이트 정체성("복권 세금 계산기")과 멀어지고 (2) 물리 연산·애니메이션
+등 개발 부담이 훨씬 크다고 설명 → 대신 "번호를 뽑는다"는 핵심 동작은 유지하면서 재미를
+더하는 방향(번호 생성 자체가 게임의 결과물)으로 좁혀서 합의. 여러 개를 한꺼번에 만들지
+않고 낚시 테마 하나만 먼저 프로토타입으로 구현하기로 함(AskUserQuestion으로 낚시/볼링/
+둘 다 빠르게 중 선택받음 — 낚시 선택).
+
+**구현**: 기존 "⚡ 바로 뽑기"(그대로 유지, 기본값 — 회귀 위험 없음)에 "🎣 낚시로 뽑기"
+모드를 추가. 낚싯대를 던지면 캐스팅→입질→당기기 3단계 CSS 애니메이션(진동 피드백 포함)
+후 번호가 하나씩 공개되고, 6번 던지면 5개+특별번호 1개가 완성됨. 파워볼/메가밀리언즈
+전환 시 기존 `LIGHTNING_GAMES` 설정(mainMax/specialMax/specialClass/oddsText)을 그대로
+재사용해서 새 로직 없이 낚시 모드에도 정확한 범위·색상이 반영되게 함. 게임을 바꾸거나
+6마리를 전부 낚은 뒤 다시 던지면 새 판을 시작함(`resetFishingRound()`).
+
+**새 번역**: 모드 토글 2개(`odds.lightningModeQuickBtn`/`odds.lightningModeFishingBtn`)·
+힌트(`odds.fishingHint`)·캐스팅 버튼(`odds.fishingCastBtn`)은 `i18n-source/
+translations.json`에 26개 언어 전체 추가 후 `build-i18n.js`로 `i18n/*.json` 재생성.
+캐스팅 중/재시작 시 바뀌는 동적 버튼 문구·스크린리더 알림 접두사는 기존 `DRAWING_BTN_MORE`
+관례대로 `script.js`에 `FISHING_WAITING_MORE`/`FISHING_RESTART_MORE`/
+`FISHING_CAUGHT_PREFIX_MORE`로 추가(각 20개 언어).
+
+**검증**: Playwright로 6회 캐스팅 전체 사이클(게임 전환 시 리셋, 6번째 완료 후 재시작,
+언어 전환 시 라벨 갱신) 확인, 아랍어(RTL)·벵골어 등 실제 렌더링 스크린샷 확인(레이아웃
+깨짐 없음), 다크모드 확인. 회귀 테스트 `console_error_audit`(161, 0)·
+`lang_leak_audit`(104, 0)·`home_audit`(18, 0)·`i18n_coverage_audit`(739, 0)·
+`broken_link_audit`(90, 0)·`fact_consistency_audit`(93, 0) 전부 클린. PR #93 squash
+merge 완료.
+
+**다음 세션이 참고할 것**: 이건 "프로토타입, 반응 보고 결정"으로 시작한 기능 — 사용자가
+실제로 써보고 반응이 안 좋거나 다른 방향을 원하면 `setLightningMode('fishing')` 관련
+코드(`castFishingLine()`/`resetFishingRound()`/`.fishing-*` CSS)만 들어내면 기존
+"바로 뽑기" 흐름에는 전혀 영향 없이 깔끔하게 제거 가능(독립적으로 설계함). 볼링 등
+다른 테마를 추가로 원하면 같은 패턴(`LIGHTNING_GAMES` 재사용 + 모드 토글 추가)을
+반복하면 됨.
+
+변경 파일: `index.html`(모드 토글 + 낚시 마크업 추가), `script.js`(낚시 상태·로직 함수
+추가), `styles.css`(`.fishing-*`/`.lightning-mode-*` 신설), `i18n-source/
+translations.json`(4개 키 추가) + `i18n/*.json`(26개 재생성).
+
 ### 2026-08-04 이어서 — 위 위젯, 사용자 후속 질문("5개 링크 지금처럼 보이는 게 맞아? 외국인이
 봐도 도움되는거야? 외국사이트로 안해도 될까?")으로 실제 버그 2건 발견·수정
 
