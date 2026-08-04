@@ -2248,3 +2248,67 @@ Cloudflare가 폐지**했지만 이 프로젝트는 이미 `script.min.js`/`styl
 `script.js`/`script.min.js`(`updateHomeSplitCalc()` 신규 + `updateHomeCalc()` 연동),
 `i18n-source/translations.json`(`home.splitToggle`/`splitCountLabel`/`splitFinalLabel`/
 `splitNote` 4개 키 × 26개 언어), `i18n/*.json` 26개(재생성).
+
+### 2026-08-04 이어서 — Lighthouse 실측 감사(첫 실행) + 낚시 게임 잔여 버그 + "이미지로
+### 저장" 아이폰 먹통 신고 대응 — **다른 세션과 같은 기능(낚시 홀드 전환)을 동시에 작업 중이던
+### 걸 병합 직전에 발견해서 브랜치를 origin/main 기준으로 재정렬한 뒤 겹치지 않는 부분만 재적용함**
+
+**중요 — 세션 충돌 기록**: 이 세션은 자체적으로 낚시로 뽑기 릴 감기를 "연타→누르고 있기"로
+재설계하는 작업을 먼저 끝내뒀었는데, PR을 올리기 직전 `git fetch origin main`으로 확인해보니
+**다른 세션이 같은 기능을 이미 구현해서 PR #127로 병합해둔 상태**였음(`2188f94` 커밋,
+`FISHING_REEL_FILL_RATE`/`FISHING_REEL_DRAIN_RATE`/`fishingReelLoop`/
+`initFishingReelHoldEvents` 등 — 이 세션이 만든 것과 변수명만 다르고 설계는 사실상 동일).
+그대로 병합하면 script.js/styles.css/index.html 전체가 충돌하거나 두 구현이 뒤섞여 죽은
+코드가 남을 위험이 있어서, **이 브랜치를 `git reset --hard origin/main`으로 초기화하고, 아래
+겹치지 않는 항목들만 origin/main의 실제 함수/변수명에 맞춰 다시 적용함.** 다음 세션은 이
+문서만 보고 "낚시 홀드 전환이 아직 안 됐다"고 또 착수하지 말 것 — 이미 두 번 만들어졌다가
+한 번은 폐기됨.
+
+**1) Lighthouse 실측 감사(처음 실행)로 발견한 접근성/구조 이슈 4건 — `index.html`**: 기존
+감사는 전부 자체 제작 스크립트(정적 린트·Playwright 렌더링 확인)라 "이슈 0건"이었지만, 표준
+Lighthouse 감사는 한 번도 안 돌려본 걸 발견해서 처음 실행함(라이브 HTTPS는 이 샌드박스
+프록시-Chrome 간 TLS 신뢰 문제로 막혀서, 로컬 정적 서버로 우회). 결과 accessibility 89 →
+아래 수정.
+  - 환율 직접입력 5곳(`#home-rate-input`/`#home-foreign-rate-input`/`#home-split-count`
+    (당첨자 수, 위 세션에서 신규 추가된 것)/`#compare-rate-input`/`#compare-foreign-rate-input`)
+    에 스크린리더 이름이 없었음 — 바로 앞 라벨 `<span>`에 id를 주고 `aria-labelledby`로 연결.
+  - 금액 슬라이더 3곳(`#homeAmountSlider`/`#homeAnnouncedSlider`/`#compareAmountSlider`)도
+    이름 없음 — `aria-label`+`data-i18n-aria-label="a11y.amountSlider"`(신규 키, 26개 언어,
+    `i18n-source/translations.json`) 추가.
+  - `<main>` 랜드마크가 사이트 전체에 없었음(`grep` 0건) — `<div class="page">`를
+    `<main class="page">`로.
+  - `<meta charset="UTF-8">`가 AdSense/GA 스크립트 3개보다 뒤에 있었음 — `<head>` 최상단으로
+    이동.
+  - 검증: `node scripts/build-i18n.js` 재생성, `i18n_coverage_audit`(767개 키)
+    `i18n_attr_lint` `home_audit`(18) `console_error_audit`(161) 전부 `ISSUES: 0`.
+
+**2) 낚시 게임 릴 감기 — 성공/실패 직후 트레일링 클릭이 다음 캐스팅을 몰래 시작시키는 버그
+   (병합된 다른 세션 구현에도 있던 버그, 이 세션이 추가로 발견·수정)**: Playwright로 실제
+   pointerdown/up을 재현하며 검증하던 중, 게이지가 100을 채운 순간(성공) 여전히 손가락이
+   버튼 위에 있다가 그제서야 떼는 흐름에서 그 떼는 동작이 브라우저 `click` 이벤트를 만들어
+   곧바로 다음 캐스팅이 의도치 않게 시작되는 걸 발견함(결과를 볼 틈도 없이 다음 입질 타이머가
+   조용히 돌기 시작 — "왜 자꾸 놓쳐요"의 또 다른 원인이 될 뻔함). `fishingClickLockUntil`
+   (450ms)을 두어 `fishingCaughtSuccess()`/`fishingReelFailed()` 직후 `castFishingLine()`이
+   그 트레일링 클릭을 무시하게 해서 해결. (`touch-action:none`은 이미 `#fishing-cast-btn`에
+   병합된 세션이 넣어뒀어서 별도 조치 불필요했음.)
+
+**3) "이미지로 저장" 눌러도 아이폰에서 다운로드/보기 둘 다 아무것도 안 나온다는 신고 →
+   data: URI를 blob: URL로 교체**: `finishAnnotateAndDownload()`가 `canvas.toDataURL()`로
+   만든 `data:image/png;base64,...` URI를 `<a download>`에 바로 물려서 `.click()`하고
+   있었음 — 사파리가 큰 `data:` URI를 받을 때 확인창은 뜨지만 실제 저장/열람이 조용히 실패하는
+   신뢰성 문제가 알려져 있음(카드 PNG ~600KB대). 같은 파일의 `finishAnnotateAndShare()` 폴백
+   경로는 이미 `toBlob()`+`URL.createObjectURL()`을 쓰고 있었고 이쪽은 신고된 적 없었음 —
+   `finishAnnotateAndDownload()`도 같은 방식으로 통일(`revokeObjectURL`은 2초 지연). **이
+   샌드박스가 Linux Chromium이라 아이폰 사파리 자체의 개선 여부까지는 직접 재현 불가 — 사용자가
+   실제 아이폰에서 재확인해줘야 완전히 확인되는 항목.**
+
+**검증(종합)**: `node --check script.js` 통과. Playwright로 낚시 미니게임 전체 흐름(캐스팅→
+입질→훅→누르고 있기→성공, 성공 직후 손 떼도 다음 캐스팅이 안 시작되는지)과 "이미지로 저장"
+다운로드 이벤트가 실제로 발생하는지(`page.waitForEvent('download')`)를 좌표 기반
+`page.mouse` 조작으로 직접 재현·확인(전용 스크립트, 커밋 대상 아님). `home_audit`/
+`console_error_audit` 재실행 `ISSUES: 0`.
+
+변경 파일: `index.html`(a11y 5곳 + `<main>` + charset 순서), `script.js`(클릭락 + 다운로드
+blob화), `script.min.js`(재생성, 캐시버스팅 `20260804-4`→`20260804-5`), `sw.js`
+(`CACHE_NAME` v2→v3), `i18n-source/translations.json`+`i18n/*.json`(`a11y.amountSlider`
+신규 키). `styles.css`/`styles.min.css`는 이번엔 변경 없음(캐시버스팅 `20260804-4` 그대로).

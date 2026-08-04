@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<meta charset="UTF-8">
 <script>
   /* 다크모드는 기기 설정이 아니라 사용자가 직접 켠 경우에만 적용(기본은 항상 라이트모드).
      이 스크립트를 defer 없이 head 맨 앞에 동기 실행시켜서, 다크모드를 켜둔 채 재방문한
@@ -21,7 +22,6 @@
   gtag('config', 'G-52R7SSXXNB');
 </script>
 
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>미국 복권 세금 계산기 | 참택스 - 미국 파워볼·메가밀리언즈 실수령액</title>
 <meta name="description" content="미국 복권(파워볼·메가밀리언즈) 당첨 시 세금과 실수령액을 확인해보세요. 한국 포함 21개국 세금 기준, 미국 비거주자 원천징수까지 한 번에 계산해볼 수 있어요.">
@@ -126,7 +126,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260804-4" defer></script>
+<script src="script.min.js?v=20260804-5" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -437,7 +437,7 @@
 </head>
 <body>
 
-<div class="page">
+<main class="page">
 
       <div class="nav">
         <button class="logo" onclick="go('home')">
@@ -763,7 +763,7 @@
                 </button>
               </div>
               <div class="slider-track-wrap">
-                <input type="range" class="slider" id="homeAmountSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onHomeSliderMoved()">
+                <input type="range" class="slider" id="homeAmountSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onHomeSliderMoved()" aria-label="금액 슬라이더" data-i18n-aria-label="a11y.amountSlider">
                 <div class="slider-ticks" aria-hidden="true"></div>
               </div>
             </div>
@@ -777,7 +777,7 @@
                 </button>
               </div>
               <div class="slider-track-wrap">
-                <input type="range" class="slider" id="homeAnnouncedSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onHomeAnnouncedSliderMoved()">
+                <input type="range" class="slider" id="homeAnnouncedSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onHomeAnnouncedSliderMoved()" aria-label="금액 슬라이더" data-i18n-aria-label="a11y.amountSlider">
                 <div class="slider-ticks" aria-hidden="true"></div>
               </div>
               <p class="krw-hint" style="margin:6px 0 0;" data-i18n="input.announcedHint">💡 발표 금액의 평균 약 58%를 일시불 기준으로 환산해서 계산해요</p>
@@ -928,7 +928,7 @@
                  보인다"는 지적에 대응해, 결과 쪽으로 한 번도 안 내려가도 입력창 바로 밑에서
                  실수령액 감을 잡을 수 있게 함(updateHomeCalc() 안에서 채움). 회색 보조 텍스트
                  톤 유지 — 새 박스가 아니라 이 줄 자체를 확장한 것이라 클러터 안 늘어남. -->
-            <p class="krw-hint" id="home-krw-rate-line" style="margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);"><span id="home-krw-amt-wrap">≈ <span id="home-krw-amt">1,503억원</span></span><span id="home-krw-sep1"> · </span><span id="home-rate-editor-wrap"><span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="home-rate-input" value="1,503.4" inputmode="decimal" oninput="onHomeRateChanged()"><span data-i18n="common.won">원</span></span><span id="home-input-preview"></span></p>
+            <p class="krw-hint" id="home-krw-rate-line" style="margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);"><span id="home-krw-amt-wrap">≈ <span id="home-krw-amt">1,503억원</span></span><span id="home-krw-sep1"> · </span><span id="home-rate-editor-wrap"><span data-i18n="common.exchangeRate" id="home-rate-label">환율</span> <input type="text" class="rate-input" id="home-rate-input" value="1,503.4" inputmode="decimal" oninput="onHomeRateChanged()" aria-labelledby="home-rate-label"><span data-i18n="common.won">원</span></span><span id="home-input-preview"></span></p>
           </div>
 
           <div class="result-hero">
@@ -961,8 +961,8 @@
             <p class="usd-actual-note" id="home-inr-note" style="display:none; margin-top:4px;"></p>
             <p class="usd-actual-note" id="home-other-note" style="display:none; margin-top:4px;"></p>
             <p class="usd-actual-note" id="home-foreign-rate-row" style="display:none; margin-top:4px;">
-              <span data-i18n="common.exchangeRate">환율</span>
-              <input type="text" class="rate-input" id="home-foreign-rate-input" inputmode="decimal" oninput="onForeignRateChanged(this)">
+              <span data-i18n="common.exchangeRate" id="home-foreign-rate-label">환율</span>
+              <input type="text" class="rate-input" id="home-foreign-rate-input" inputmode="decimal" oninput="onForeignRateChanged(this)" aria-labelledby="home-foreign-rate-label">
               <span id="home-foreign-rate-code"></span>
             </p>
             <p class="milestone-badge" id="home-milestone" style="display:none;"></p>
@@ -1034,7 +1034,7 @@
             <details class="jh-more" id="home-split-detail" style="margin-top:10px;">
               <summary class="jh-more-summary" data-i18n="home.splitToggle">👥 당첨자가 여러 명이면?</summary>
               <div class="jc-annuity-box">
-                <div class="jc-row"><span data-i18n="home.splitCountLabel">당첨자 수 (본인 포함)</span><input type="number" class="rate-input" id="home-split-count" min="1" max="50" step="1" value="1" inputmode="numeric" style="width:50px;" oninput="updateHomeSplitCalc()"></div>
+                <div class="jc-row"><span data-i18n="home.splitCountLabel" id="home-split-count-label">당첨자 수 (본인 포함)</span><input type="number" class="rate-input" id="home-split-count" min="1" max="50" step="1" value="1" inputmode="numeric" style="width:50px;" oninput="updateHomeSplitCalc()" aria-labelledby="home-split-count-label"></div>
                 <div class="jc-row jc-final"><span data-i18n="home.splitFinalLabel">1인당 세후 실수령액</span><span class="jc-val" id="home-split-final">-</span></div>
                 <p class="jc-note" data-i18n="home.splitNote">※ 세금은 총액이 아니라 1인당 나눠 받은 금액 기준으로 다시 계산돼요 — 누진세를 쓰는 나라는 총액 기준보다 유리할 수 있어요. 실제 공동 당첨 시엔 지분을 명확히 정해두는 게 안전해요.</p>
               </div>
@@ -1265,16 +1265,16 @@
             <span class="million-unit" id="compareAmountUnit"><span class="unit-full">Million USD</span><span class="unit-short">M USD</span></span>
           </div>
           <div class="slider-track-wrap">
-            <input type="range" class="slider" id="compareAmountSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onCompareSliderMoved()">
+            <input type="range" class="slider" id="compareAmountSlider" min="0" max="1000" step="1" value="435" data-usd-min="10" data-usd-max="2000" oninput="onCompareSliderMoved()" aria-label="금액 슬라이더" data-i18n-aria-label="a11y.amountSlider">
             <div class="slider-ticks" aria-hidden="true"></div>
           </div>
-          <p class="krw-hint" id="compare-krw-rate-line"><span id="compare-krw-amt-wrap">≈ <span id="compare-krw-amt">1,503억원</span></span><span id="compare-krw-sep1"> · </span><span id="compare-rate-editor-wrap"><span data-i18n="common.exchangeRate">환율</span> <input type="text" class="rate-input" id="compare-rate-input" value="1,503.4" inputmode="decimal" oninput="onCompareRateChanged()"><span data-i18n="common.won">원</span> <button type="button" class="rate-live-badge" onclick="retryLiveExchangeRate(this)" title="기본값 사용 중 · 탭하면 실시간 환율로 갱신" aria-label="환율 새로고침" data-i18n-aria-label="common.refreshRate"><span aria-hidden="true">🔄</span></button></span></p>
+          <p class="krw-hint" id="compare-krw-rate-line"><span id="compare-krw-amt-wrap">≈ <span id="compare-krw-amt">1,503억원</span></span><span id="compare-krw-sep1"> · </span><span id="compare-rate-editor-wrap"><span data-i18n="common.exchangeRate" id="compare-rate-label">환율</span> <input type="text" class="rate-input" id="compare-rate-input" value="1,503.4" inputmode="decimal" oninput="onCompareRateChanged()" aria-labelledby="compare-rate-label"><span data-i18n="common.won">원</span> <button type="button" class="rate-live-badge" onclick="retryLiveExchangeRate(this)" title="기본값 사용 중 · 탭하면 실시간 환율로 갱신" aria-label="환율 새로고침" data-i18n-aria-label="common.refreshRate"><span aria-hidden="true">🔄</span></button></span></p>
           <!-- 2026-08-01: 홈 탭의 home-foreign-rate-row와 같은 목적 — 통화가 KRW/USD가 아닐 때
                (예: IDR/JPY) 그 통화 환율을 이 탭에서도 바로 고칠 수 있게 함. sharedInputCurrency는
                홈/비교 탭이 공유하므로 showForeignRateEditor()가 이 요소도 같이 채움 -->
           <p class="krw-hint" id="compare-foreign-rate-row" style="display:none; margin-top:4px;">
-            <span data-i18n="common.exchangeRate">환율</span>
-            <input type="text" class="rate-input" id="compare-foreign-rate-input" inputmode="decimal" oninput="onForeignRateChanged(this)">
+            <span data-i18n="common.exchangeRate" id="compare-foreign-rate-label">환율</span>
+            <input type="text" class="rate-input" id="compare-foreign-rate-input" inputmode="decimal" oninput="onForeignRateChanged(this)" aria-labelledby="compare-foreign-rate-label">
             <span id="compare-foreign-rate-code"></span>
           </p>
 
@@ -2875,7 +2875,7 @@
         <p class="footer-copy" data-i18n="footer.copy">본 사이트는 정보 제공 목적의 시뮬레이터이며, 복권 구매를 대행·중개하지 않습니다.</p>
       </div>
 
-    </div>
+    </main>
 
     <button type="button" class="sticky-result-badge" id="sticky-result-badge" onclick="scrollToMainResult()">
       <span class="sticky-result-label">💰 <span data-i18n="result.takeHomeLabel">실수령</span></span>
