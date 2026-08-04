@@ -1924,6 +1924,114 @@ span이 살아있는 채로 `textContent`가 원래 문구와 정확히 일치�
 
 변경 파일: `index.html`(`faq.usCheck4`를 `data-i18n-html`로 전환 + nowrap span 추가).
 
+### 2026-08-04 이어서 — 나머지 51개 페이지 og:image 확장 완료 (26 basics + 19 resident + 6 misc)
+
+**배경**: 오늘 앞서 만든 27개 og:image(`*_in_korea_lottery_tax.html` 계열)는 전체 사이트의
+일부일 뿐 — `us-lottery-basics-XX.html`(26개 언어), `XX-resident-us-lottery-tax.html`(19개국),
+그 외 잡다한 6개 페이지가 여전히 언어중립 `og-image.png`를 쓰고 있었음. "나머지 51개 페이지의
+og:image ... 이거 해줘" 요청으로 세 그룹 전부 처리.
+
+**공통 원칙 — 새 카피는 최소화, 이미 검증된 실제 콘텐츠를 최대한 재사용**:
+- 헤드라인(h1)은 각 언어 페이지에 이미 게시돼있는 실제 문구를 그대로 재사용(새로 번역 안 함,
+  오역 리스크 0)
+- 카드에 들어가는 라벨류는 가능한 한 `script.js`에 이미 있는 검증된 다국어 상수를 그대로
+  재사용 — `US_FED_TAX_NONRESIDENT_MORE`("미국 연방세 (비거주자)" 26개 언어),
+  `ALSO_PAY_PHRASE_MORE`+`COUNTRY_NAMES_MORE`("~에서도 또 내요?" 패턴)
+- 내가 새로 쓴 문구(eyebrow/subtext/cta 등)는 전부 짧고 단순한 문장으로 제한(저자원 언어일수록
+  오류 리스크가 문장 길이에 비례하기 때문) — 오늘 앞서 제미나이/GPT 원어민 검수를 받았던
+  11개 언어(km/my/lo/si/mn/kk/ky/uz/ne/bn/ur)는 그때 검수된 표현을 그대로 재사용
+
+**Group A — `us-lottery-basics-XX.html` 26개 언어**: "실제 확률" 카드(파워볼 배당률 vs
+한국 로또 6/45 배당률 비교, "35배 낮음" 델타) 디자인. 각 언어 페이지에 이미 게시된 실제
+배당률 수치(정규식으로 추출, 예: 영어 "1 in 292.2M", 중국어 "1 / 2亿9200万")를 그대로 사용.
+`/tmp/og_gen2/build_a.py`로 생성 → 헤드리스 크로미움 스크린샷 → `og-image-hook-basics-XX.png`
+26개로 저장. 스팟체크 10개 언어(en/ar/my/zh/si/ur/km/hi/th/mn) 전부 글자 깨짐/오버플로우
+없음 확인.
+
+**Group B — `XX-resident-us-lottery-tax.html` 19개국**: 각국 거주자가 미국 복권에 당첨됐을 때
+"미국 연방 원천징수 30%(비거주자, 전 국가 공통 — `TAX_MODEL.nonresident.us_withholding`)"를
+보여주는 카드. 국가별 자국 추가세율은 이미지에 안 넣음(일부는 `unverified_estimate` 상태라
+이미지에 박아넣기엔 확신도가 낮음 — 페이지 본문의 전체 설명/경고 문구는 그대로 유지되니
+이미지는 "확실히 맞는 사실 하나"만 보여주는 티저로 설계). `/tmp/og_gen3/build_b.py`로 생성 →
+`og-image-hook-resident-{country}.png` 19개. 전 언어 스크린샷 확인(우르두 RTL 미러링 포함) —
+글자 깨짐/카드 침범 없음.
+
+**Group C(misc) — 나머지 6개 페이지**: `biggest-lottery-jackpots-after-tax.html`(en/zh) —
+페이지에 이미 있는 역대 1위 실측치(2022-11-07 파워볼 $2.04B, 미국 거주자 실수령 ≈$581.4M)를
+카드에 재사용. `korean-abroad-us-lottery-tax.html`(en/zh) — 판정 기준이 국적이 아니라
+"한국 세법상 거주자 여부(183일 기준)"라는 페이지의 핵심 포인트를 카드에 요약.
+`lottery-jackpot-amount-en/zh.html` — 이 페이지는 매주 잭팟 금액이 바뀌는 실시간 페이지라
+구체적 금액을 이미지에 박으면 금방 낡아버리므로, 금액 대신 "실시간 추적 중 · 파워볼·메가밀리언즈"
+문구로 디자인(스테일 데이터 방지). `/tmp/og_gen4/build_c.py`로 생성 → `og-image-hook-{slug}.png`
+6개.
+
+**검증**: 그룹별로 `node tests/broken_link_audit.js` 실행해 `ISSUES: 0` 확인 후 커밋(3회 분할
+커밋: Group A → Group B → Group C). 최종적으로 `node --check script.js`,
+`node tests/broken_link_audit.js`, `node tests/fact_consistency_audit.js` 전부 통과 확인.
+
+변경 파일: `us-lottery-basics-*.html`(26, og:image 메타태그만), `*-resident-us-lottery-tax.html`
+(19, 마찬가지), `biggest-lottery-jackpots-after-tax.html`/`biggest_lottery_jackpots_after_tax_zh.html`
+/`korean-abroad-us-lottery-tax.html`/`korean_abroad_us_lottery_tax_zh.html`/
+`lottery-jackpot-amount-en.html`/`lottery-jackpot-amount-zh.html`(6, 마찬가지) + 신규 이미지
+파일 51개(`og-image-hook-basics-*.png` 26 + `og-image-hook-resident-*.png` 19 +
+`og-image-hook-{slug}.png` 6). `script.js`/`styles.css` 변경 없음 — 빌드 재실행 불필요.
+이로써 오늘 오전 27개(`*_in_korea_lottery_tax.html`) + 이번 51개 = 사이트 전체 og:image
+언어중립 이미지 교체 작업 완료.
+
+### 2026-08-04 이어서 — Speakable 스키마 87개 페이지 전체 적용 (미결 항목 결론)
+
+**배경**: 위 세션들에서 `Speakable`이 "효과 있다는 검토/없다는 검토가 갈려서 미결"로
+남아있던 항목. 사용자에게 뭘 하는 스키마인지 설명(음성 인터페이스가 어느 문단을 읽어줄지
+지정하는 Google 공식 구조화 데이터 — 실제로 이걸 읽는 게 확인된 건 Google Assistant
+뉴스 액션 정도뿐이고 ChatGPT/Perplexity/Claude가 참고한다는 근거는 없음, 다만 넣는 비용이
+거의 0) → "손해 없으니 넣자"로 사용자와 합의, 진행.
+
+**적용**: AEO 84개 확장 때 만든 87개 페이지(`index.html`/`404.html`/구글 인증 파일 제외)
+전부에 `WebPage` + `speakable.cssSelector` JSON-LD 블록 신규 추가. 셀렉터는
+`.lead`(전 페이지에 이미 있음)를 항상 포함하고, `.quick-answer`(3초 요약 박스)가 있는
+페이지는 같이 포함. `name`은 각 페이지 `<title>`에서 " | 참택스"/"| ChamTax" 접미사를
+제거해서 재사용(새 문구 작성 없음, 87개 스크립트로 일괄 처리). 삽입 위치는 기존 HowTo
+블록 바로 뒤(`<link rel="preload"` 직전) — 다른 AEO 블록들과 같은 자리.
+
+**병합 시 주의**: 이 작업 도중 다른 세션이 실시간으로 og:image 나머지 51개 페이지를
+작업 중인 걸 발견(사용자가 먼저 알아챔) — 같은 파일들을 건드리지만 head 안에서 위치가
+완전히 다른 부분(og:image는 메타태그 영역, speakable은 JSON-LD 블록 맨 끝)이라 겹칠
+걱정 없이 병행 진행함. 실제로 병합 시 충돌 0건으로 확인됨.
+
+**검증**: 87개 페이지 전체 JSON-LD 재파싱 — 실패 0건. 3개 파일(중국어 페이지들 —
+`china-resident-us-lottery-tax.html`/`korean_abroad_us_lottery_tax_zh.html`/
+`lottery-jackpot-amount-zh.html`)은 title이 "？| ChamTax"처럼 앞에 공백 없는 구분자를 써서
+자동 스크립트의 " | " 분리 로직이 안 먹혀 "| ChamTax"가 이름에 그대로 남았던 걸 발견해서
+별도로 수정함 — **다음에 비슷한 title 일괄 파싱 스크립트를 짤 때 이 3개 파일의 구분자
+패턴(공백 없는 "？|")을 참고해서 정규식을 더 관대하게 짤 것**.
+
+변경 파일: 87개 랜딩페이지 전체(각 파일에 `WebPage`/`speakable` JSON-LD 블록 1개씩 신규
+추가, 그 외 내용 변경 없음). `script.js`/`styles.css` 변경 없음.
+
+### 2026-08-04 이어서 — 9개 언어 번역 검수, 이번엔 "확신도 명시" 규칙으로 재시도 → 결론: 반영할 것 없음(백로그 종결)
+
+**배경**: 앞서 "AI 교차검수 시도했다가 되돌림" 항목에서 실패했던 방식을 개선해서 재시도.
+검수 요청 문서에 "확실함/아마도 맞음/추측일 뿐" 확신도 표시 의무화, "모르면 모른다고
+답하기", "의미 오류 vs 선택적 다듬기" 구분을 명시적으로 요구하도록 고쳐서 사용자에게
+다시 전달. 사용자가 이번엔 **서로 다른 AI 둘(제미나이·GPT 추정)에게 각각** 검수받아옴.
+
+**결과 — 두 검수가 갈렸고, 그 갈림 자체가 유용한 신호였음**:
+- 두 검수 다 "치명적 의미 오류는 못 찾았다"는 결론은 일치함.
+- 유일하게 "확실함"으로 지적된 항목(키르기스어 HowTo 2단계 `белеңиз`가 과거시제라 오류라는
+  주장)을 **두 번째 검수가 아예 언급조차 안 함**(그 문장을 보고도 오류 없음으로 판단) —
+  즉 "확실함"이라던 유일한 항목조차 두 AI 사이에서 합의가 안 됨.
+- 나머지("이중과세 조정"류 전문용어 직역투 표현들)는 두 검수 모두 "아마도 맞음"/"추측일 뿐"
+  로 일치 — 확신 있게 반영할 근거가 안 됨.
+
+**최종 판단(메인 세션): 아무것도 반영하지 않음.** "확신함" 등급만 실제 반영하기로 미리
+정한 기준을 그대로 적용하면, 유일한 확신함 후보가 다른 검수로 반박됐으니 기준 미달. 대신
+"두 독립된 AI가 심각한 오류 없음에 수렴했다"는 것 자체를 이 백로그 항목의 실질적 결론으로
+삼음 — **9개 언어 번역은 지금 상태 그대로 유지, 이 항목은 이걸로 종결.** 다음 세션이
+이 주제를 또 꺼내면 이 항목부터 참고할 것(추가 재검수 불필요 — 진짜 원어민이 나타나서
+구체적 오류를 지적하기 전까진 더 파봐야 나올 게 없다는 게 이번 교차검증의 결론).
+
+변경 파일: 없음.
+
 ### 2026-08-04 이어서 — 보류돼있던 2025년 CPI-U 확정치 반영 (10월 정부 셧다운으로 인한
 ### 영구 결측 확인 후 11개월 평균으로 처리)
 
