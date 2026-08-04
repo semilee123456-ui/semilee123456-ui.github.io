@@ -1422,3 +1422,44 @@ check.js` 재실행 ISSUES: 0(4개 배열 전부), `console_error_audit.js`/`aud
 ARCHIVE에 07-31 1건 추가), `tests/draw_archive_integrity_check.js`(JACKPOT_ARCHIVE
 자체 검증 + DRAW/JACKPOT 교차검증 로직 신설), `index.html`(`script.js?v=` 캐시버스팅
 20260804-6→20260804-7).
+
+### 2026-08-04 이어서 — "최대한 사이트 가볍게 해줘" 요청 처리 (1단계: 무위험 정리 완료,
+### 2단계: 실제로 큰 효과 있는 방법은 사용자 확인 필요해서 대기)
+
+**무위험으로 바로 처리한 것**:
+- `screenshots/` 폴더(496KB) 삭제 — grep으로 전체 저장소에서 참조 여부 확인해보니 어떤
+  HTML/JS/XML/JSON 파일에서도 안 쓰이는 예전 세션의 QA용 스크린샷 잔재였음.
+- 죽은 함수 2개 삭제: `getJackpotKRW()`(2026-07-25 세션이 만들었던 함수인데, 그 뒤 다른
+  세션이 `jackpot-card-amt`/`jc-jackpot` 표시 로직을 이 함수를 안 거치는 방식으로 리팩터링
+  하면서 호출부가 전부 사라졌는데 함수 자체는 안 지우고 남아있었음), `toggleTaxTermInfo()`
+  (`toggleInlineTermBox('tax-term-box')`를 그대로 감싸기만 하는 래퍼인데, 실제 호출부
+  4곳은 전부 `toggleInlineTermBox()`를 직접 부르고 있어서 이 래퍼 자체가 안 쓰이고 있었음).
+  둘 다 `python3` 스크립트로 "정의된 함수명이 파일 전체에서 정의 지점 포함 1번만 나오는지"
+  전수 조사해서 찾음(317개 함수 중 이 2개만 해당).
+- 이미지(og-image.png 등 5개) PIL `optimize=True`로 무손실 재압축 시도 — 이미 압축이
+  잘 되어있어서 0~2.7%밖에 안 줄어서(픽셀은 완전히 동일 확인) 실제로 반영은 안 함(효과가
+  너무 작아서 손댈 가치가 없다고 판단).
+
+**진짜 효과가 큰 방법(script.js/styles.css 압축)은 판단을 남겨둠**: GitHub Pages가 이미
+텍스트 파일을 자동으로 gzip 압축해서 서빙하고 있어서(직접 확인: `script.js` 1.87MB →
+gzip 573KB, `styles.css` 217KB → gzip 62KB — 실제 사용자가 받는 무게는 원본 파일 크기가
+아니라 이 gzip 크기임), 나이브하게 "파일이 크니 minify하자"는 이미 상당 부분 gzip이
+해주고 있던 일이었음. 그래도 `terser`(JS)/`clean-css`(CSS, level 2)로 실제 minify까지
+해서 gzip 위에 추가 이득이 있는지 직접 측정해봄:
+- script.js: gzip 573KB → **minify 후 gzip 401KB (30% 추가 절감)**
+- styles.css: gzip 62KB → **minify 후 gzip 21KB (66% 추가 절감)**
+- 합쳐서 매 방문마다 약 **208KB 추가 절감** — 사소하지 않은 실제 효과.
+
+**왜 바로 반영 안 하고 사용자에게 물어보기로 했는지**: 이 프로젝트가 "빌드 도구 없음"
+원칙을 여러 세션에 걸쳐 반복해서 명시적으로 지켜왔고(위 "Cloudflare Auto Minify" 항목
+참고 — 그때도 "소스는 하나도 안 건드리고 엣지에서 자동 압축"하는 방법을 일부러 골랐음),
+minify를 제대로 하려면 `terser`/`clean-css`를 npm 의존성으로 추가하고 `script.min.js`/
+`styles.min.css`를 소스와 별개로 생성·유지해야 함 — 이 프로젝트가 이미 `i18n/*.json`
+(소스: `i18n-source/translations.json`)에서 겪어본 "생성 파일 재생성을 깜빡함" 사고
+패턴을 하나 더 만들 위험이 있음(script.js를 고칠 때마다 `node scripts/build-min.js`를
+잊지 않고 같이 돌려야 함 — 자동 루틴들도 전부 이 규칙을 알아야 함). 실제 효과(208KB)와
+이 위험을 저울질하는 건 이 세션이 임의로 결정하기보다 사용자 판단이 맞다고 봐서, 이 세션은
+실행하지 않고 다음 대화에서 결정을 물어봄. **원하면 다음 세션이 바로 진행 가능** — 위
+숫자(terser/clean-css 조합, 30%/66% 추가 절감)를 그대로 재현할 수 있음.
+
+변경 파일: `screenshots/` 폴더 삭제(11개 파일), `script.js`(죽은 함수 2개 삭제).
