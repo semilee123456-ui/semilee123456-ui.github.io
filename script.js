@@ -2291,16 +2291,6 @@ function usdToDisplayCurrencyLabel(usd){
   return '(≈ ' + formatEokKrwInDisplayCurrency(eokKrw, sharedInputCurrency) + ')';
 }
 
-// 2026-07-25: "잭팟 카드 기준 게임" 토글(odds-game-pb/odds-game-mega)이 있는데도 이 함수가
-// jp-powerball만 고정으로 읽어서, 메가밀리언즈로 토글해도 위 "🏆 잭팟" 카드가 계속 파워볼
-// 금액을 보여주는 버그가 있었음(사용자 지적 — "메가밀리언즈 1등은 어떻게 되는거야?"). 인자로
-// 게임을 받아 currentOddsGame을 기본값으로 씀
-function getJackpotKRW(game){
-  const targetId = (game || currentOddsGame) === 'megamillions' ? 'jp-mega' : 'jp-powerball';
-  const usd = Number(document.getElementById(targetId).getAttribute('data-target'));
-  return usd * EXCHANGE_RATE;
-}
-
 // jackpot-card-odds-num에 들어가는 "1 / N" 확률 표기 — odds.oddsPowerball 번역키와 같은
 // 스타일(언어별 단위 관례: 억/만, M, 亿, करोड़ 등)로 메가밀리언즈(1/290,472,336)도 맞춤.
 // 2026-07-29: 메가밀리언즈가 2025년 4월에 티켓 5달러·번호 매트릭스 개편을 거치면서 확률이
@@ -7985,13 +7975,6 @@ function toggleJackpotCalc(){
   const isShowing = box.classList.toggle('show');
   updateJcTapLabel();
   if (isShowing) refreshJackpotDrawerIfOpen();
-}
-
-// 홈 화면 계산기는 일시불(lump sum) 기준으로만 계산함 — 연금(annuity) 세금은 30년에 걸쳐
-// 매년 다른 세율 구간이 적용되는 완전히 별도의 계산이라 여기에 중복으로 넣지 않고,
-// 이미 만들어둔 확률체감 페이지의 잭팟 계산기(연금 단계 포함)로 안내만 함
-function toggleTaxTermInfo(){
-  toggleInlineTermBox('tax-term-box');
 }
 
 // 홈 화면 히어로 결과뿐 아니라, 확률체감 탭 잭팟 계산기와 국가비교 화면의 세부내역 아래에도
