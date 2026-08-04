@@ -4510,6 +4510,12 @@ session limit, resets 7:30pm UTC" — 이후 사용자가 "계속 진행해줘"�
 확인해도 좋음(당장 급한 건 아님, JSON-LD 문법과 구조는 전부 검증 완료라 사이트 동작·SEO에
 지장은 없음).
 
+**PR #104 생성함**(사용자 명시적 요청으로): `claude/recent-github-files-4o1ifp` → `main`,
+"AI 에이전트 인용 최적화(AEO) 84개 페이지 전체 확장 + 로고 마스코트 유휴 애니메이션".
+https://github.com/semilee123456-ui/semilee123456-ui.github.io/pull/104 — 아직 병합 안 됨,
+PR 감시(리뷰 코멘트·CI 자동 대응) 여부는 사용자에게 물어본 상태(이 세션 종료 시점까지 답
+없었으면 다음 세션에서 PR #104 상태부터 확인할 것).
+
 **별개 작업 — 로고 마스코트 유휴 애니메이션**: 사용자가 상단 네비 로고 곰돌이가 "가끔씩
 움직이면 어떨까" 요청 → 기존에 "꾸며서 저장하기" 모달 전용이던 `mascotBounce`/`mascotWink`
 키프레임(`styles.css`)을 재사용해서, `.logo .mascot-mark.idle-play` 규칙을 새로 추가하고
