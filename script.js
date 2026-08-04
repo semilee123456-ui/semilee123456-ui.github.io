@@ -76,15 +76,16 @@ function setLanguage(lang, isManual){
   if (!isCurrencyManuallyEdited && LANG_TO_CURRENCY[lang]) {
     setSharedInputCurrency(LANG_TO_CURRENCY[lang]);
   }
-  // 2026-08-01: 통화와 같은 원칙으로 세금 계산 기준 국가도 언어를 따라 자동으로 맞춰줌 — 다만
-  // 세금 계산 결과 자체를 바꾸는 값이라 통화보다 리스크가 커서, isManual=false로 호출해
-  // "아직 확인 안 된 추측"으로 표시하고(countryWasAutoGuessed), updateHomeCalc()가 그동안
-  // "자동으로 맞췄어요, 확인해주세요" 안내를 계속 노출하게 함(#home-country-autoguess-hint 참고).
-  // 사용자가 국가를 한 번이라도 직접 고르면(isCountryManuallyEdited) 그 뒤로는 언어를 다시
-  // 바꿔도 이 자동 전환이 그 선택을 덮어쓰지 않음
-  if (!isCountryManuallyEdited && LANG_TO_COUNTRY[lang]) {
-    setHomeCountry(LANG_TO_COUNTRY[lang], false);
-  }
+  // 2026-08-01에 추가했던 "언어 감지 → 세금 계산 기준 국가 자동 전환"(LANG_TO_COUNTRY)은
+  // 2026-08-03에 되돌림. 브라우저/OS 언어(navigator.language)는 실제 거주국과 무관한 경우가
+  // 흔한데(예: 한국 거주자가 영어 Windows를 쓰는 경우), 이 사이트 주 타겟(한국 거주자)이 첫
+  // 화면부터 다른 나라 세금 계산 결과를 보게 되는 사고가 반복됨 — 이 기능 자체가 이미
+  // goToKoreaCalculator()·goWithLangSelect(forceKoreaContext) 두 곳의 방어 코드를 낳았고,
+  // 그럼에도 사용자가 "홈페이지가 한국에서 외국중심으로 됐다"고 재차 지적함. 화면 표시 언어와
+  // 세금 계산 기준은 별개 문제로 분리 — 언어는 계속 자동 감지하되(한국 거주 외국인 근로자를
+  // 위한 기능이라 유지), 세금 계산 기준은 항상 한국(또는 사용자가 직접 고른 값)으로 유지함.
+  // countryWasAutoGuessed/#home-country-autoguess-hint는 이제 이 경로로는 켜지지 않지만(다른
+  // 트리거 없음), 다른 재발 방지 목적으로 그대로 남겨둠.
   // 번역 JSON을 불러오는 동안에는 화면이 기존 언어(보통 한국어 기본 텍스트) 그대로 보이다가,
   // 로드가 끝나면 applyTranslations()가 다시 실행되며 새 언어로 바뀜 — 언어 전환 버튼은
   // onclick="setLanguage(...)"처럼 이 Promise를 기다리지 않고 바로 다음 동작(예: 화면 이동)으로
@@ -895,24 +896,8 @@ const LANG_TO_CURRENCY = {
   mn: 'MNT', kk: 'KZT', ky: 'KGS', ur: 'PKR', bn: 'BDT', lo: 'LAK',
   ja: 'JPY', hi: 'INR', tl: 'PHP',
 };
-// 언어 코드 → COUNTRY_TAX_PROFILES에 실제로 있는, 그 언어가 가리키는 세금 기준 국가
-// (2026-08-01 추가, "사이트 타겟을 한국인에서 전 세계로 넓히면서 통화는 언어 따라 자동
-// 전환되는데 세금 기준 국가는 항상 한국 고정"이라는 비대칭을 해소하기 위함). LANG_TO_CURRENCY와
-// 같은 원칙으로 "이 21개국 목록 안에서" 1언어=1국가로 깔끔하게 대응되는 언어만 넣음 — 위 통화
-// 표에서 일부러 뺀 아랍어·프랑스어·스페인어·포르투갈어·우크라이나어·테툼어는 애초에 대응되는
-// 나라가 이 21개국 목록에 없어서 여기도 자연히 제외됨(모호해서가 아니라 해당사항이 없음).
-// 러시아어는 카자흐스탄·키르기스스탄·우즈베키스탄에서도 널리 쓰이지만, 그 나라들은 이미 자체
-// 언어 코드(kk/ky/uz)가 따로 있어 그 언어를 쓰는 사람에겐 그쪽이 먼저 잡히므로, 러시아어
-// 자체는 통화 표와 같은 원칙으로 러시아에 대응시킴. 세금 계산 결과에 직접 영향을 주는 값이라
-// 통화보다 훨씬 신중해야 함 — 그래서 반드시 isCountryManuallyEdited로 사용자의 직접 선택을
-// 덮어쓰지 않게 하고, 계산기 화면에도 "추측된 값이니 확인하라"는 안내를 같이 노출함
-// (updateHomeCalc() 쪽 country-toggle-hint 참고).
-const LANG_TO_COUNTRY = {
-  ko: 'kr', en: 'us', zh: 'cn', vi: 'vn', th: 'th', ru: 'ru',
-  km: 'kh', ne: 'np', id: 'id', my: 'mm', si: 'lk', uz: 'uz',
-  mn: 'mn', kk: 'kz', ky: 'kg', ur: 'pk', bn: 'bd', lo: 'la',
-  ja: 'jp', hi: 'in', tl: 'ph',
-};
+// LANG_TO_COUNTRY(언어→세금 기준 국가 자동 전환)는 2026-08-01에 추가됐다가 2026-08-03에
+// 제거됨 — setLanguage() 위쪽 주석 참고. 다시 추가하기 전에 그 주석의 재발 이력을 먼저 볼 것.
 // 연금액 탭에 마지막으로 입력된 "정확한" USD 백만 단위 값 — 슬라이더 위치(로그 스케일
 // 반올림으로 정밀도 손실 있음)를 통화 전환 재환산의 원본으로 쓰면 KRW↔다른 통화를 여러 번
 // 오갈 때마다 표시값이 조금씩 틀어지는 문제가 있어서, 일시불 탭의 sharedAmountUsd와 같은
@@ -2158,12 +2143,10 @@ function goToCalculatorInput(){
   if (inputCard) inputCard.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-// 2026-08-02: "한국에 살아요" 카드 전용 — 예전엔 goToCalculatorInput()만 호출해서 스크롤만 하고
-// 국가/통화는 그대로 뒀는데, 브라우저 언어 자동감지(LANG_TO_COUNTRY)로 이미 다른 나라 기준(예:
-// 베트남어 브라우저 → country=vn/VND)이 잡혀있는 상태에서 이 카드를 눌러도 그 나라 기준이 안
-// 바뀌는 문제가 있었음 — "한국에 살아요"라고 명시적으로 눌렀는데 계산은 다른 나라 기준으로 나가는
-// 모순(Playwright로 실제 재현 확인). 언어는 그대로 두고(외국어로 읽고 싶을 수 있음) 국가/통화만
-// 한국으로 명시적으로 확정함.
+// "한국에 살아요" 카드 전용 — 언어는 그대로 두고(외국어로 읽고 싶을 수 있음) 국가/통화만
+// 한국으로 명시적으로 확정함. (2026-08-02에는 언어 자동감지가 국가/통화까지 같이 바꿔버리던
+// 버그를 막는 방어 코드였지만, 그 자동 전환 자체가 2026-08-03에 제거됨 — 지금은 순수하게
+// "한국 기준으로 명시 확정"하는 역할만 함.)
 function goToKoreaCalculator(){
   setHomeCountry('kr', true);
   setSharedInputCurrency('KRW', true);
@@ -2193,13 +2176,11 @@ function goToRealAbroad(country, lang){
 
 // 언어/국가 버튼 그리드를 드롭다운으로 압축한 UI용 — 선택된 <option>의 value를 보고
 // 언어 전환(setLanguage) 또는 별도 페이지 이동(location.href) 중 하나로 분기.
-// forceKoreaContext=true는 "한국에 사는 외국인이에요" 드롭다운 전용 — 2026-08-02에 발견: 이
-// 드롭다운은 언어만 고르는 용도인데, setLanguage() 안의 언어→국가/통화 자동 추정(LANG_TO_COUNTRY/
-// LANG_TO_CURRENCY)이 같이 발동해서 예를 들어 베트남어를 고르면 country가 kr에서 vn으로,
-// currency가 KRW에서 VND로 바뀌어버림 — "한국에 산다"는 이 카드의 전제와 정면으로 모순되고
-// 세금 계산 자체가 완전히 다른 나라 기준으로 나가버리는 심각한 문제였음(Playwright로 재현
-// 확인). 이 카드에서 고르는 언어는 순수 표시 언어 선택일 뿐이라, 국가/통화는 항상 한국으로
-// 고정함.
+// forceKoreaContext=true는 "한국에 사는 외국인이에요" 드롭다운 전용 — 이 카드에서 고르는
+// 언어는 순수 표시 언어 선택일 뿐이라, 국가/통화는 항상 한국으로 고정함. (2026-08-02에는
+// setLanguage()의 언어→국가/통화 자동 전환이 같이 발동해서 "한국에 산다"는 전제와 모순되는
+// 버그를 막는 방어 코드였지만, 그 자동 전환 자체는 2026-08-03에 제거됨 — 지금은 currency만
+// LANG_TO_CURRENCY로 자동 전환되니 그 부분만 계속 명시적으로 되돌리는 역할.)
 function goWithLangSelect(selectId, forceKoreaContext){
   const sel = document.getElementById(selectId);
   if (!sel) return;
@@ -3193,6 +3174,30 @@ function setOddsGame(game){
 }
 
 let currentLightningGame = 'powerball';
+// 2026-08-03: "낚시로 뽑기" 모드 신설 — 그냥 뽑기(quick, 기존 기본값)와 낚시 미니게임(fishing,
+// 신규) 중 어느 걸 보여줄지. 서로 독립된 상태를 유지해서, 낚시 도중 그냥 뽑기로 갔다가 다시
+// 돌아와도 진행 상황이 그대로 남아있음.
+let currentLightningMode = 'quick';
+let fishingCaughtValues = [];   // 이번 판에서 지금까지 낚은 값들(순서대로, 5개+특별번호 1개)
+let fishingSessionValues = null; // 이번 판 전체 6개 값 — 캐스팅마다 하나씩 공개
+// 2026-08-03: 예전엔 fishingCastInProgress(불리언) 하나로 "애니메이션 재생 중" 여부만 표시하고
+// 나머지는 전부 setTimeout 체인이 알아서 순서대로 진행했음(사용자가 버튼만 누르면 결과가
+// 자동으로 나오는 "관람형"이었음) — "낚싯대도 움직이고 진짜 물고기 잡는 것처럼" 요청으로
+// 실제 탭 타이밍이 필요한 상태 5개(idle/casting/waiting/biting/reeling)로 재구성함.
+// idle=대기, casting=캐스팅 애니메이션 재생 중, waiting=입질 기다리는 중(입질 순간은 무작위),
+// biting=제한시간 내에 탭해야 걸리는 순간, reeling=탭 연타로 게이지를 채워야 하는 순간.
+let fishingState = 'idle';
+let fishingReelGaugeValue = 0;
+let fishingWaitTimer = null;
+let fishingBiteTimer = null;
+let fishingReelDeadlineTimer = null;
+const FISHING_CAST_MS = 450;
+const FISHING_WAIT_MIN_MS = 600;   // 캐스팅 후 입질까지 최소 대기(무작위 구간의 아래쪽) — 너무 짧으면 반응할 틈이 없음
+const FISHING_WAIT_MAX_MS = 1500;  // 위쪽 — 너무 길면 지루해짐, 시니어 타겟 고려해 3초 이내로 제한
+const FISHING_BITE_WINDOW_MS = 900; // 입질 순간 탭 제한시간 — 반응 속도가 느려도 잡을 수 있게 넉넉히
+const FISHING_REEL_TIME_LIMIT_MS = 3000; // 릴 감기 전체 제한시간
+const FISHING_REEL_TAP_GAIN = 18;  // 탭 1번당 게이지 증가량(100/18 ≈ 6번 탭이면 성공, 3초 안에 충분히 가능한 페이스)
+function fishingVibrate(pattern){ try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
 
 // 언어 전환 시에도 재사용해야 해서, 이미 뽑아둔 번호는 그대로 두고 문구·토글 상태만 새로 그림
 function updateLightningGameUi(){
@@ -3202,22 +3207,254 @@ function updateLightningGameUi(){
   if (!pbBtn || !megaBtn || !noteEl) return;
   pbBtn.classList.toggle('active', currentLightningGame === 'powerball');
   megaBtn.classList.toggle('active', currentLightningGame === 'megamillions');
-  noteEl.textContent = LIGHTNING_GAMES[currentLightningGame].oddsText();
+  const oddsText = LIGHTNING_GAMES[currentLightningGame].oddsText();
+  noteEl.textContent = oddsText;
+  const fishingNoteEl = document.getElementById('fishing-draw-note');
+  if (fishingNoteEl) fishingNoteEl.textContent = oddsText;
 }
 
 // 게임을 바꾸면 특별볼(파워볼/메가볼) 색상 표시와 숫자 범위가 달라지므로, 이미 뽑아둔 번호는
-// 새 게임 기준으로는 의미가 없어져서 "?"로 리셋함
+// 새 게임 기준으로는 의미가 없어져서 "?"로 리셋함 — 낚시 모드도 같은 이유로 판을 새로 시작함
 function setLightningGame(game){
   if (game === currentLightningGame) return;
   currentLightningGame = game;
+  const specialClass = LIGHTNING_GAMES[game].specialClass;
   const specialBall = document.getElementById('lightning-special-ball');
   specialBall.classList.remove('pb', 'mega');
-  specialBall.classList.add(LIGHTNING_GAMES[game].specialClass);
+  specialBall.classList.add(specialClass);
   document.querySelectorAll('#lightning-result .lightning-ball').forEach(b => {
     b.textContent = '?';
     b.classList.remove('drawn');
   });
+  const fishingSpecialBall = document.getElementById('fishing-special-ball');
+  if (fishingSpecialBall) {
+    fishingSpecialBall.classList.remove('pb', 'mega');
+    fishingSpecialBall.classList.add(specialClass);
+  }
+  resetFishingRound();
   updateLightningGameUi();
+}
+
+// 그냥 뽑기 ↔ 낚시로 뽑기 화면 전환 — 패널만 바꿔치기하고 서로의 진행 상태는 건드리지 않음
+function setLightningMode(mode){
+  if (mode === currentLightningMode) return;
+  currentLightningMode = mode;
+  const quickBtn = document.getElementById('lightning-mode-quick');
+  const fishingBtn = document.getElementById('lightning-mode-fishing');
+  const quickPanel = document.getElementById('lightning-quick-mode');
+  const fishingPanel = document.getElementById('lightning-fishing-mode');
+  if (quickBtn) quickBtn.classList.toggle('active', mode === 'quick');
+  if (fishingBtn) fishingBtn.classList.toggle('active', mode === 'fishing');
+  if (quickPanel) quickPanel.style.display = mode === 'quick' ? '' : 'none';
+  if (fishingPanel) fishingPanel.style.display = mode === 'fishing' ? '' : 'none';
+}
+
+// "🎣 낚싯대 던지기" 기본 라벨 — data-i18n으로 이미 번역되어 화면에 떠있는 값을 그대로 다시
+// 읽어옴(getStateLabel()과 같은 관례: 한국어면 정적 HTML 값 그대로, 아니면 resolveI18n으로
+// 현재 언어 값을 가져오고 못 찾으면 한국어 문자열로 폴백)
+function fishingCastBtnDefaultLabel(){
+  return resolveI18n('odds.fishingCastBtn') || '🎣 낚싯대 던지기';
+}
+
+// 낚시 판을 처음 상태로 되돌림 — 게임(파워볼/메가밀리언즈)을 바꾸거나, 6마리를 전부 낚은 뒤
+// 다시 시작할 때 호출됨
+function resetFishingRound(){
+  fishingCaughtValues = [];
+  fishingSessionValues = null;
+  fishingState = 'idle';
+  fishingReelGaugeValue = 0;
+  clearTimeout(fishingWaitTimer);
+  clearTimeout(fishingBiteTimer);
+  clearTimeout(fishingReelDeadlineTimer);
+  const pond = document.getElementById('fishing-pond');
+  if (pond) pond.classList.remove('is-casting', 'is-biting', 'is-reeling');
+  const gaugeWrap = document.getElementById('fishing-reel-gauge-wrap');
+  if (gaugeWrap) gaugeWrap.style.display = 'none';
+  const msgEl = document.getElementById('fishing-status-msg');
+  if (msgEl) msgEl.classList.remove('show');
+  document.querySelectorAll('#fishing-result .lightning-ball').forEach(b => {
+    b.textContent = '?';
+    b.classList.remove('drawn');
+  });
+  const resultEl = document.getElementById('fishing-result');
+  if (resultEl) resultEl.classList.remove('celebrate');
+  const btn = document.getElementById('fishing-cast-btn');
+  if (btn) { btn.disabled = false; btn.classList.remove('fishing-btn-urgent'); btn.textContent = fishingCastBtnDefaultLabel(); }
+}
+
+// 2026-08-03: "낚싯대도 움직이고 진짜 물고기 잡는 것처럼" 요청으로 관람형 자동 재생을 실제
+// 탭 타이밍 게임으로 재구성함(기존 설계 배경 — 캐스팅마다 한 번호씩만 공개하는 것 — 은 그대로
+// 유지). 버튼 하나(#fishing-cast-btn)가 상태에 따라 하는 일이 다름:
+// idle=새로 캐스팅 시작 / biting=입질 순간 탭(걸기) / reeling=릴 감기 탭(연타) — HTML의
+// onclick="castFishingLine()"은 그대로 두고 이 함수 내부에서 fishingState를 보고 분기함.
+// casting/waiting 중엔 버튼이 disabled라 클릭 자체가 안 들어옴(= 너무 일찍 누르면 그냥
+// 무시되는 효과 — 시니어 타겟이라 오조작에 불이익을 주지 않기로 함).
+function castFishingLine(){
+  if (fishingState === 'biting') { handleFishingBiteTap(); return; }
+  if (fishingState === 'reeling') { handleFishingReelTap(); return; }
+  if (fishingState !== 'idle') return;
+
+  if (fishingCaughtValues.length >= 6) resetFishingRound();
+
+  const config = LIGHTNING_GAMES[currentLightningGame];
+  if (!fishingSessionValues) {
+    const nums = new Set();
+    while (nums.size < 5) nums.add(Math.floor(Math.random() * config.mainMax) + 1);
+    fishingSessionValues = [...nums].sort((a, b) => a - b);
+    fishingSessionValues.push(Math.floor(Math.random() * config.specialMax) + 1);
+  }
+
+  const pond = document.getElementById('fishing-pond');
+  const btn = document.getElementById('fishing-cast-btn');
+
+  // 캐스팅마다 낚이는 물고기 이모지를 무작위로 바꿔서(styles.css의 .fishing-caught-fish) 매번
+  // 다른 물고기를 낚는 느낌을 줌 — 결과 자체(번호)와는 무관한 순수 장식
+  const caughtFishEl = document.getElementById('fishing-caught-fish');
+  if (caughtFishEl) caughtFishEl.textContent = ['🐟', '🐠', '🐡'][Math.floor(Math.random() * 3)];
+
+  fishingState = 'casting';
+  btn.disabled = true;
+  btn.textContent = pickLang('기다리는 중... 🎣', 'Waiting for a bite... 🎣', '等待上钩中... 🎣', 'Đang chờ cá cắn câu... 🎣', 'กำลังรอปลากิน... 🎣', 'Ждём поклёвку... 🎣', FISHING_WAITING_MORE);
+  if (pond) { pond.classList.remove('is-biting', 'is-reeling'); pond.classList.add('is-casting'); }
+
+  setTimeout(() => {
+    if (fishingState !== 'casting') return; // 그 사이 게임/모드가 바뀌어 리셋됐으면 중단
+    if (pond) pond.classList.remove('is-casting');
+    fishingState = 'waiting';
+    // 입질 시점을 무작위로 흔들어서(600~1500ms) 매번 타이밍을 예측 못 하게 함 — 진짜 낚시처럼
+    const waitMs = FISHING_WAIT_MIN_MS + Math.random() * (FISHING_WAIT_MAX_MS - FISHING_WAIT_MIN_MS);
+    fishingWaitTimer = setTimeout(enterFishingBiteState, waitMs);
+  }, FISHING_CAST_MS);
+}
+
+// 입질 순간 진입 — 제한시간(FISHING_BITE_WINDOW_MS) 안에 탭해야 걸림, 못 하면 fishingMissed()
+function enterFishingBiteState(){
+  fishingState = 'biting';
+  const pond = document.getElementById('fishing-pond');
+  const btn = document.getElementById('fishing-cast-btn');
+  if (pond) pond.classList.add('is-biting');
+  // 물 튀는 효과(.fishing-splash)를 매번 처음부터 재생 — .lightning-ball.drawn과 같은
+  // reflow 강제 재시작 패턴(클래스를 지웠다가 offsetWidth를 읽어 강제로 리플로우한 뒤 다시 붙임)
+  const splash = document.getElementById('fishing-splash');
+  if (splash) { splash.classList.remove('play'); void splash.offsetWidth; splash.classList.add('play'); }
+  btn.disabled = false;
+  btn.classList.add('fishing-btn-urgent');
+  btn.textContent = pickLang('👆 지금 탭하세요!', '👆 Tap now!', '👆 现在点一下！', '👆 Chạm ngay!', '👆 แตะตอนนี้เลย!', '👆 Нажмите сейчас!', FISHING_BITE_PROMPT_MORE);
+  fishingVibrate([10, 40, 10, 40]);
+  fishingBiteTimer = setTimeout(fishingMissed, FISHING_BITE_WINDOW_MS);
+}
+
+function handleFishingBiteTap(){
+  clearTimeout(fishingBiteTimer);
+  const btn = document.getElementById('fishing-cast-btn');
+  btn.classList.remove('fishing-btn-urgent');
+  fishingVibrate([15, 30, 20]);
+  enterFishingReelState();
+}
+
+// 입질 제한시간을 놓쳤을 때 — 판 진행 상태(이미 낚은 번호)는 그대로 두고 지금 시도만 실패
+// 처리, 같은 슬롯을 다시 캐스팅하면 재도전 가능(불이익 없음)
+function fishingMissed(){
+  fishingState = 'idle';
+  const pond = document.getElementById('fishing-pond');
+  const btn = document.getElementById('fishing-cast-btn');
+  if (pond) pond.classList.remove('is-casting', 'is-biting', 'is-reeling');
+  btn.classList.remove('fishing-btn-urgent');
+  btn.disabled = false;
+  btn.textContent = fishingCastBtnDefaultLabel();
+  showFishingEscapedMessage();
+}
+
+// 릴 감기(연타) 단계 진입 — 게이지를 100까지 채우면 성공, 제한시간 안에 못 채우면 fishingReelFailed()
+function enterFishingReelState(){
+  fishingState = 'reeling';
+  fishingReelGaugeValue = 0;
+  const pond = document.getElementById('fishing-pond');
+  const btn = document.getElementById('fishing-cast-btn');
+  if (pond) { pond.classList.remove('is-biting'); pond.classList.add('is-reeling'); }
+  updateFishingReelGaugeUi();
+  const gaugeWrap = document.getElementById('fishing-reel-gauge-wrap');
+  if (gaugeWrap) gaugeWrap.style.display = '';
+  btn.textContent = pickLang('👆 빠르게 탭해서 감아요!', '👆 Tap fast to reel it in!', '👆 快速点击收线！', '👆 Chạm nhanh để cuộn dây!', '👆 แตะเร็วๆ เพื่อดึงสาย!', '👆 Нажимайте быстро, чтобы смотать леску!', FISHING_REEL_PROMPT_MORE);
+  fishingReelDeadlineTimer = setTimeout(fishingReelFailed, FISHING_REEL_TIME_LIMIT_MS);
+}
+
+function handleFishingReelTap(){
+  fishingReelGaugeValue = Math.min(100, fishingReelGaugeValue + FISHING_REEL_TAP_GAIN);
+  updateFishingReelGaugeUi();
+  fishingVibrate(8);
+  if (fishingReelGaugeValue >= 100) {
+    clearTimeout(fishingReelDeadlineTimer);
+    fishingCaughtSuccess();
+  }
+}
+
+function updateFishingReelGaugeUi(){
+  const fill = document.getElementById('fishing-reel-gauge-fill');
+  if (fill) fill.style.width = fishingReelGaugeValue + '%';
+}
+
+function hideFishingReelGauge(){
+  const gaugeWrap = document.getElementById('fishing-reel-gauge-wrap');
+  if (gaugeWrap) gaugeWrap.style.display = 'none';
+  fishingReelGaugeValue = 0;
+  updateFishingReelGaugeUi();
+}
+
+function fishingReelFailed(){
+  fishingState = 'idle';
+  const pond = document.getElementById('fishing-pond');
+  const btn = document.getElementById('fishing-cast-btn');
+  if (pond) pond.classList.remove('is-casting', 'is-biting', 'is-reeling');
+  hideFishingReelGauge();
+  btn.disabled = false;
+  btn.textContent = fishingCastBtnDefaultLabel();
+  showFishingEscapedMessage();
+}
+
+function showFishingEscapedMessage(){
+  const msgEl = document.getElementById('fishing-status-msg');
+  if (!msgEl) return;
+  msgEl.textContent = pickLang('🐟 놓쳤어요! 다시 던져보세요', '🐟 It got away! Try casting again', '🐟 跑掉了！再试一次吧', '🐟 Nó chạy mất rồi! Thử thả câu lại nhé', '🐟 มันหนีไปแล้ว! ลองโยนเบ็ดอีกครั้ง', '🐟 Сорвалась! Попробуйте забросить ещё раз', FISHING_ESCAPED_MSG_MORE);
+  msgEl.classList.remove('show');
+  void msgEl.offsetWidth;
+  msgEl.classList.add('show');
+}
+
+// 릴 감기 게이지를 제시간에 다 채웠을 때 — 실제로 번호 한 개를 확정·공개함(예전 setTimeout
+// 체인의 마지막 단계와 같은 역할, 트리거만 타이머 대신 사용자의 성공적인 탭 연타로 바뀜)
+function fishingCaughtSuccess(){
+  const pond = document.getElementById('fishing-pond');
+  const btn = document.getElementById('fishing-cast-btn');
+  hideFishingReelGauge();
+  if (pond) pond.classList.remove('is-reeling');
+  fishingState = 'idle';
+
+  const slotIndex = fishingCaughtValues.length;
+  const value = fishingSessionValues[slotIndex];
+  const slots = document.querySelectorAll('#fishing-result .lightning-ball');
+  const slotEl = slots[slotIndex];
+  fishingCaughtValues.push(value);
+  if (slotEl) {
+    slotEl.textContent = value;
+    void slotEl.offsetWidth;
+    slotEl.classList.add('drawn');
+  }
+  const announcer = document.getElementById('fishing-result-announcer');
+  if (announcer) {
+    const prefix = pickLang('낚은 번호: ', 'Caught numbers: ', '钓到的号码：', 'Số đã câu được: ', 'เลขที่ตกได้: ', 'Пойманные числа: ', FISHING_CAUGHT_PREFIX_MORE);
+    announcer.textContent = prefix + fishingCaughtValues.join(', ');
+  }
+  fishingVibrate([20, 40, 30, 40, 50]);
+  if (fishingCaughtValues.length >= 6) {
+    const resultEl = document.getElementById('fishing-result');
+    if (resultEl) { void resultEl.offsetWidth; resultEl.classList.add('celebrate'); }
+    btn.disabled = false;
+    btn.textContent = pickLang('🎣 처음부터 다시 낚시하기', '🎣 Fish again from scratch', '🎣 重新钓一次', '🎣 Câu lại từ đầu', '🎣 ตกปลาใหม่อีกครั้ง', '🎣 Порыбачить заново', FISHING_RESTART_MORE);
+  } else {
+    btn.disabled = false;
+    btn.textContent = fishingCastBtnDefaultLabel();
+  }
 }
 
 const DRAWING_BTN_MORE = {
@@ -3236,6 +3473,73 @@ const DRAWN_ANNOUNCE_PREFIX_MORE = {
   ar: 'الأرقام المسحوبة: ', hi: 'निकाले गए नंबर: ', fr: 'Numéros tirés : ', tl: 'Mga numerong nakuha: '
 ,
   pt: `Números sorteados: `, es: `Números sorteados: `, uk: `Виграшні номери: `, tet: `Númeru ne'ebé sai: `,
+};
+
+// 2026-08-03 낚시로 뽑기 모드 신설 — 캐스팅 도중(입질 기다리는 중) 버튼에 뜨는 문구
+const FISHING_WAITING_MORE = {
+  km: 'កំពុងរង់ចាំ... 🎣', ne: 'पर्खंदै... 🎣', id: 'Menunggu... 🎣', my: 'စောင့်နေသည်... 🎣', si: 'රැඳී සිටිමින්... 🎣',
+  uz: 'Kutilmoqda... 🎣', mn: 'Хүлээж байна... 🎣', kk: 'Күтілуде... 🎣', ky: 'Күтүлүүдө... 🎣',
+  ur: 'انتظار ہو رہا ہے... 🎣', bn: 'অপেক্ষা করা হচ্ছে... 🎣', lo: 'ກຳລັງລໍຖ້າ... 🎣', ja: '待っています... 🎣',
+  ar: 'في انتظار... 🎣', hi: 'इंतज़ार हो रहा है... 🎣', fr: "En attente d'une touche... 🎣", tl: 'Naghihintay... 🎣'
+,
+  pt: `Aguardando... 🎣`, es: `Esperando... 🎣`, uk: `Очікування... 🎣`, tet: `Hein hela... 🎣`,
+};
+
+// 6마리(번호 6개) 전부 낚은 뒤, 버튼을 다시 누르면 새 판을 시작하도록 안내하는 문구
+const FISHING_RESTART_MORE = {
+  km: 'នេសាទម្ដងទៀត 🎣', ne: 'फेरि माछा मार्नुहोस् 🎣', id: 'Mancing lagi dari awal 🎣', my: 'ထပ်မံငါးဖမ်းမည် 🎣',
+  si: 'නැවත මාළු අල්ලන්න 🎣', uz: "Qaytadan boshlash 🎣", mn: 'Дахин загасчлах 🎣', kk: 'Қайтадан балық аулау 🎣',
+  ky: 'Кайра балык уулоо 🎣', ur: 'دوبارہ مچھلی پکڑیں 🎣', bn: 'আবার মাছ ধরুন 🎣', lo: 'ຕົກປາໃໝ່ 🎣',
+  ja: 'もう一度釣りをする 🎣', ar: 'اصطد من جديد 🎣', hi: 'फिर से मछली पकड़ें 🎣', fr: 'Repêcher depuis le début 🎣',
+  tl: 'Mangisda ulit 🎣'
+,
+  pt: `Pescar de novo 🎣`, es: `Pescar de nuevo 🎣`, uk: `Ловити знову 🎣`, tet: `Kaer isin fali 🎣`,
+};
+
+// 물고기를 한 마리 낚을 때마다 스크린리더에 알려주는 문구의 접두사(DRAWN_ANNOUNCE_PREFIX_MORE와
+// 같은 역할이지만 "뽑았다"가 아니라 "낚았다"는 낚시 모드 전용 동사를 씀)
+const FISHING_CAUGHT_PREFIX_MORE = {
+  km: 'លេខដែលបានចាប់: ', ne: 'समातिएका नम्बरहरू: ', id: 'Nomor yang ditangkap: ', my: 'ဖမ်းရသောနံပါတ်များ- ',
+  si: 'අල්ලාගත් අංක: ', uz: 'Tutilgan raqamlar: ', mn: 'Барьсан дугаарууд: ', kk: 'Ұсталған сандар: ',
+  ky: 'Кармалган сандар: ', ur: 'پکڑے گئے نمبر: ', bn: 'ধরা সংখ্যা: ', lo: 'ເລກທີ່ຕົກໄດ້: ', ja: '釣った番号: ',
+  ar: 'الأرقام المصطادة: ', hi: 'पकड़े गए नंबर: ', fr: 'Numéros attrapés : ', tl: 'Nahuling numero: '
+,
+  pt: `Números pescados: `, es: `Números pescados: `, uk: `Спіймані числа: `, tet: `Númeru ne'ebé kaer: `,
+};
+
+// 2026-08-03: "낚싯대도 움직이고 진짜 물고기 잡는 것처럼 게임하게" 요청으로, 자동 재생되던
+// 낚시 미니게임을 실제 탭 타이밍 게임으로 바꿈 — 아래 3개는 그 과정에서 새로 필요해진 문구.
+// 입질 순간에 뜨는 문구(제한시간 내에 탭해야 걸림)
+const FISHING_BITE_PROMPT_MORE = {
+  km: '👆 ចុចឥឡូវនេះ!', ne: '👆 अहिले ट्याप गर्नुहोस्!', id: '👆 Ketuk sekarang!', my: '👆 အခုနှိပ်ပါ!',
+  si: '👆 දැන් තට්ටු කරන්න!', uz: '👆 Hozir bosing!', mn: '👆 Одоо дараарай!', kk: '👆 Қазір басыңыз!',
+  ky: '👆 Азыр басыңыз!', ur: '👆 ابھی تھپتھپائیں!', bn: '👆 এখনই ট্যাপ করুন!', lo: '👆 ແຕະດຽວນີ້!',
+  ja: '👆 今タップ！', ar: '👆 اضغط الآن!', hi: '👆 अभी टैप करें!', fr: '👆 Appuyez maintenant !',
+  tl: '👆 Pindutin ngayon!'
+,
+  pt: `👆 Toque agora!`, es: `👆 ¡Toca ahora!`, uk: `👆 Натисніть зараз!`, tet: `👆 Toka agora!`,
+};
+// 릴 감기(연타) 단계에서 뜨는 문구
+const FISHING_REEL_PROMPT_MORE = {
+  km: '👆 ចុចញាប់ៗដើម្បីទាញខ្សែ!', ne: '👆 डोरी तान्न छिटो ट्याप गर्नुहोस्!', id: '👆 Ketuk cepat untuk menggulung!',
+  my: '👆 လိုင်းဆွဲရန် လျင်မြန်စွာနှိပ်ပါ!', si: '👆 නූල ඇදගැනීමට වේගයෙන් තට්ටු කරන්න!', uz: '👆 Yigirish uchun tez-tez bosing!',
+  mn: '👆 Утсыг сойхын тулд хурдан дараарай!', kk: '👆 Жіпті орау үшін жылдам басыңыз!', ky: '👆 Жипти ороо үчүн тез-тез басыңыз!',
+  ur: '👆 ڈوری کھینچنے کے لیے تیزی سے تھپتھپائیں!', bn: '👆 সুতো গোটাতে দ্রুত ট্যাপ করুন!', lo: '👆 ແຕະໄວໆເພື່ອດຶງສາຍ!',
+  ja: '👆 素早くタップしてリールを巻こう！', ar: '👆 اضغط بسرعة لسحب الخيط!', hi: '👆 डोरी खींचने के लिए तेज़ी से टैप करें!',
+  fr: '👆 Appuyez vite pour remonter la ligne !', tl: '👆 Mabilis na pindutin para gulungin!'
+,
+  pt: `👆 Toque rápido para recolher a linha!`, es: `👆 ¡Toca rápido para recoger el hilo!`, uk: `👆 Швидко натискайте, щоб змотати волосінь!`, tet: `👆 Toka lalais atu dada liña!`,
+};
+// 입질 순간을 놓치거나 릴 감기를 제시간에 못 끝냈을 때(물고기가 도망감) 뜨는 문구
+const FISHING_ESCAPED_MSG_MORE = {
+  km: '🐟 វារត់គេចផុតហើយ! សាកល្បងបោះសំណាញ់ម្តងទៀត', ne: '🐟 भाग्यो! फेरि फ्याँक्नुहोस्', id: '🐟 Lolos! Coba lempar lagi',
+  my: '🐟 လွတ်သွားပြီ! နောက်တစ်ခါထပ်ပစ်ကြည့်ပါ', si: '🐟 ගිලිහුණා! නැවත උත්සාහ කරන්න', uz: "🐟 Qochib ketdi! Yana urinib ko'ring",
+  mn: '🐟 Алдчихлаа! Дахин хая шидээрэй', kk: '🐟 Жалт беріп кетті! Тағы қайталап көріңіз', ky: '🐟 Качып кетти! Дагы аракет кылыңыз',
+  ur: '🐟 نکل گئی! دوبارہ کوشش کریں', bn: '🐟 পালিয়ে গেছে! আবার চেষ্টা করুন', lo: '🐟 ມັນຫນີໄປແລ້ວ! ລອງໂຍນອີກຄັ້ງ',
+  ja: '🐟 逃げられた！もう一度挑戦しよう', ar: '🐟 هربت! حاول مرة أخرى', hi: '🐟 भाग गई! फिर से कोशिश करें',
+  fr: "🐟 Elle s'est échappée ! Réessayez", tl: '🐟 Nakatakas! Subukan ulit'
+,
+  pt: `🐟 Escapou! Tente de novo`, es: `🐟 ¡Se escapó! Inténtalo de nuevo`, uk: `🐟 Втекла! Спробуйте ще раз`, tet: `🐟 Halai ona! Tenta fali`,
 };
 
 let lightningDrawInProgress = false;
@@ -4262,6 +4566,21 @@ function jackpotRankCtaLabel(){
   );
 }
 
+// "🔧 세금 기준 바꾸기 →" 링크 — renderJackpotTakeHomeRanking()·renderJackpotCpiRanking() 양쪽에서
+// 씀. 2026-08-03: 두 곳 다 pickLang()이 more 인자 없이 6개 위치인자만 쓰고 있어서 21개 추가
+// 언어에서 영어로 폴백되던 걸 발견해서 채움 — 이미 TAX_BASIS_OVERLAY_TITLE_MORE(같은 파일,
+// openTaxBasisOverlay() 쪽)에 검증된 같은 의미("🔧 세금 기준 변경")의 21개 언어 번역이 있어서,
+// 새로 번역하지 않고 그 값에 화살표(→)만 붙여 재사용함(용어 일관성 유지 목적).
+const CHANGE_TAX_BASIS_LINK_MORE = {
+  ar: '🔧 تغيير أساس الضريبة →', bn: '🔧 কর ভিত্তি পরিবর্তন করুন →', fr: '🔧 Changer la base fiscale →',
+  hi: '🔧 टैक्स आधार बदलें →', id: '🔧 Ubah dasar pajak →', ja: '🔧 税金の基準を変更 →',
+  kk: '🔧 Салық негізін өзгерту →', km: '🔧 ផ្លាស់ប្តូរមូលដ្ឋានពន្ធ →', ky: '🔧 Салык негизин өзгөртүү →',
+  lo: '🔧 ປ່ຽນພື້ນຖານພາສີ →', mn: '🔧 Татварын үндэслэлийг өөрчлөх →', my: '🔧 အခွန်အခြေခံပြောင်းရန် →',
+  ne: '🔧 कर आधार परिवर्तन गर्नुहोस् →', si: '🔧 බදු පදනම වෙනස් කරන්න →', tl: '🔧 Palitan ang basehan ng buwis →',
+  ur: '🔧 ٹیکس کی بنیاد تبدیل کریں →', uz: "🔧 Soliq bazasini o'zgartirish →",
+  pt: `🔧 Alterar base de cálculo do imposto →`, es: `🔧 Cambiar base impositiva →`, uk: `🔧 Змінити податкову базу →`, tet: `🔧 Muda base impostu →`,
+};
+
 function renderJackpotTakeHomeRanking(){
   const listEl = document.getElementById('jh-rank-list');
   if (!listEl) return;
@@ -4294,7 +4613,8 @@ function renderJackpotTakeHomeRanking(){
   const changeBasisLinkEl = document.getElementById('jh-rank-change-basis-link');
   if (changeBasisLinkEl) changeBasisLinkEl.textContent = pickLang(
     '🔧 세금 기준 바꾸기 →', '🔧 Change tax basis →', '🔧 更改税收基准 →',
-    '🔧 Đổi cơ sở thuế →', '🔧 เปลี่ยนฐานภาษี →', '🔧 Изменить налоговую базу →'
+    '🔧 Đổi cơ sở thuế →', '🔧 เปลี่ยนฐานภาษี →', '🔧 Изменить налоговую базу →',
+    CHANGE_TAX_BASIS_LINK_MORE
   );
 
   const gameNameKo = { powerball: '파워볼', megamillions: '메가밀리언즈' };
@@ -4564,7 +4884,8 @@ function renderJackpotIndexCpiRanking(){
   const changeBasisLinkEl2 = document.getElementById('ji-cpi-change-basis-link');
   if (changeBasisLinkEl2) changeBasisLinkEl2.textContent = pickLang(
     '🔧 세금 기준 바꾸기 →', '🔧 Change tax basis →', '🔧 更改税收基准 →',
-    '🔧 Đổi cơ sở thuế →', '🔧 เปลี่ยนฐานภาษี →', '🔧 Изменить налоговую базу →'
+    '🔧 Đổi cơ sở thuế →', '🔧 เปลี่ยนฐานภาษี →', '🔧 Изменить налоговую базу →',
+    CHANGE_TAX_BASIS_LINK_MORE
   );
 
   const gameNameKo = { powerball: '파워볼', megamillions: '메가밀리언즈' };
@@ -5839,6 +6160,77 @@ const CHECK_PAYTO_MORE = {
   pt: 'Beneficiário', es: 'Beneficiario', uk: 'Отримувач', tet: "Simu-na'in",
 };
 
+// 2026-08-03: 이 수표 카드의 MEMO 줄/서명란 라벨 3개(아래 CHECK_MEMO_LABEL_MORE/
+// CHECK_MEMO_TEXT_MORE/CHECK_SIGN_LABEL_MORE)가 more 인자 없이 pickLang() 6개 위치인자만
+// 쓰고 있어서, 21개 추가 언어에서 전부 영어로 조용히 폴백되고 있던 걸 뒤늦게 발견해서 채움
+// (사용자가 "언어가 100% 다 들어갔는지 확인해달라"고 요청해서 발견 — i18n_coverage_audit.js는
+// translations.json의 키 완성도만 검사해서 이런 pickLang() 누락은 못 잡음, 다음에 비슷한 걸
+// 찾으려면 이 파일에서 `pickLang(`로 시작하는 호출이 6개 언어만 채우고 more를 빠뜨렸는지
+// 직접 점검할 것 — 자동 테스트로는 못 잡히는 사각지대임).
+const CHECK_MEMO_LABEL_MORE = {
+  ar: 'مذكرة',
+  bn: 'মেমো',
+  fr: 'Mémo',
+  hi: 'मेमो',
+  id: 'Memo',
+  ja: 'メモ',
+  kk: 'Ескерту',
+  km: 'កំណត់ចំណាំ',
+  ky: 'Эскертүү',
+  lo: 'ບັນທຶກ',
+  mn: 'Тэмдэглэл',
+  my: 'မှတ်ချက်',
+  ne: 'टिप्पणी',
+  si: 'සටහන',
+  tl: 'Memo',
+  ur: 'نوٹ',
+  uz: 'Eslatma',
+
+  pt: 'Memo', es: 'Nota', uk: 'Примітка', tet: 'Nota',
+};
+const CHECK_MEMO_TEXT_MORE = {
+  ar: 'محاكاة المبلغ الصافي المقدر بعد الضريبة',
+  bn: 'করের পরে আনুমানিক প্রকৃত প্রাপ্তির সিমুলেশন',
+  fr: 'Simulation du montant net estimé après impôt',
+  hi: 'कर के बाद अनुमानित शुद्ध प्राप्ति का सिमुलेशन',
+  id: 'Simulasi perkiraan jumlah bersih setelah pajak',
+  ja: '税引き後の手取り予想シミュレーション',
+  kk: 'Салықтан кейінгі болжамды қолға тиетін соманы модельдеу',
+  km: 'ការក្លែងធ្វើចំនួនទឹកប្រាក់ដែលទទួលបានផ្ទាល់ប៉ាន់ស្មានក្រោយពន្ធ',
+  ky: 'Салыктан кийинки болжолдуу колго тие турган суммага симуляция',
+  lo: 'ການຈຳລອງຈຳນວນເງິນສຸດທິຄາດຄະເນຫຼັງຫັກພາສີ',
+  mn: 'Татварын дараах ойролцоо гарт орох дүнгийн симуляц',
+  my: 'အခွန်ပြီးနောက် ခန့်မှန်းရရှိမည့်ငွေပမာဏ အတုအယောင်ပုံစံ',
+  ne: 'करपछि अनुमानित हातमा पर्ने रकमको सिमुलेसन',
+  si: 'බදු පසු ඇස්තමේන්තුගත අත් ලැබෙන මුදලේ අනුකරණය',
+  tl: 'Simulasyon ng tinatayang natatanggap pagkatapos ng buwis',
+  ur: 'ٹیکس کے بعد متوقع خالص رقم کی نقالی',
+  uz: "Soliqdan keyingi taxminiy qo'lga tegadigan summa simulyatsiyasi",
+
+  pt: 'Simulação do valor líquido estimado após impostos', es: 'Simulación del monto neto estimado después de impuestos', uk: 'Симуляція орієнтовної суми на руки після оподаткування', tet: 'Simulasaun kuantia likidu estimadu depois taxa',
+};
+const CHECK_SIGN_LABEL_MORE = {
+  ar: 'التوقيع (نموذج) · ليس توقيعًا حقيقيًا',
+  bn: 'স্বাক্ষর (নমুনা) · প্রকৃত স্বাক্ষর নয়',
+  fr: 'Signature (exemple) · pas une vraie signature',
+  hi: 'हस्ताक्षर (नमूना) · वास्तविक हस्ताक्षर नहीं',
+  id: 'Tanda tangan (contoh) · bukan tanda tangan asli',
+  ja: '署名（サンプル）・実際の署名ではありません',
+  kk: 'Қолтаңба (үлгі) · нақты қолтаңба емес',
+  km: 'ហត្ថលេខា (គំរូ) · មិនមែនហត្ថលេខាពិតប្រាកដទេ',
+  ky: 'Кол тамга (үлгү) · чыныгы кол тамга эмес',
+  lo: 'ລາຍເຊັນ (ຕົວຢ່າງ) · ບໍ່ແມ່ນລາຍເຊັນຈິງ',
+  mn: 'Гарын үсэг (жишээ) · бодит гарын үсэг биш',
+  my: 'လက်မှတ် (နမူနာ) · အမှန်တကယ်လက်မှတ်မဟုတ်ပါ',
+  ne: 'हस्ताक्षर (नमूना) · वास्तविक हस्ताक्षर होइन',
+  si: 'අත්සන (නියැදිය) · සැබෑ අත්සනක් නොවේ',
+  tl: 'Lagda (halimbawa) · hindi tunay na lagda',
+  ur: 'دستخط (نمونہ) · حقیقی دستخط نہیں',
+  uz: "Imzo (namuna) · haqiqiy imzo emas",
+
+  pt: 'Assinatura (exemplo) · não é uma assinatura real', es: 'Firma (ejemplo) · no es una firma real', uk: 'Підпис (зразок) · не справжній підпис', tet: "Asinatura (ezemplu) · la'ós asinatura tuir loloos",
+};
+
 // 홈 결과 카드("얼마 남을까")를 이미지로 저장 — "🖼️ 이미지로 저장"(내 번호 티켓)과 같은 Canvas
 // 직접 그리기 방식 재사용. 새 텍스트를 pickLang으로 또 다 번역하는 대신, 이미 화면에 렌더링된
 // DOM 값(이미 26개 언어로 번역·포맷 완료된 상태)을 그대로 읽어와서 캔버스에 옮겨 그림 — 새로
@@ -6072,7 +6464,7 @@ function buildHomeResultCheckCanvas(){
   ctx.textAlign = 'left';
   ctx.fillStyle = '#8A8371';
   ctx.font = "600 12px 'Pretendard', -apple-system, sans-serif";
-  const memoLabel = pickLang('MEMO', 'MEMO', '备注', 'Ghi chú', 'บันทึก', 'ПРИМЕЧАНИЕ', undefined);
+  const memoLabel = pickLang('MEMO', 'MEMO', '备注', 'Ghi chú', 'บันทึก', 'ПРИМЕЧАНИЕ', CHECK_MEMO_LABEL_MORE);
   ctx.fillText(memoLabel, leftX, bandY);
   ctx.fillStyle = '#262420';
   ctx.font = "500 13px 'Pretendard', -apple-system, sans-serif";
@@ -6083,7 +6475,7 @@ function buildHomeResultCheckCanvas(){
     'Mô phỏng số tiền thực nhận sau thuế',
     'จำลองยอดรับสุทธิหลังหักภาษี',
     'Симуляция суммы на руки после налога',
-    undefined
+    CHECK_MEMO_TEXT_MORE
   );
   fitFontSize(ctx, memoText, 500, 13, 10, (W / 2 - bandMidGap) - leftX);
   ctx.fillText(memoText, leftX, bandY + 20);
@@ -6115,7 +6507,7 @@ function buildHomeResultCheckCanvas(){
     'Chữ ký (mẫu) · không phải chữ ký thật',
     'ลายเซ็น (ตัวอย่าง) · ไม่ใช่ลายเซ็นจริง',
     'Подпись (образец) · не настоящая подпись',
-    undefined
+    CHECK_SIGN_LABEL_MORE
   );
   fitFontSize(ctx, signLabel, 600, 11, 9, rightX - (W / 2 + bandMidGap));
   ctx.fillText(signLabel, rightX, bandY + 44);
@@ -10920,6 +11312,32 @@ const COUNTRY_TAX_DISCLAIMERS = {
   )
 };
 
+// 홈 화면 입력 카드의 실시간 미리보기 줄(" · 실수령 XX (예상 XX%)") — updateHomeCalc() 안
+// #home-input-preview 참고. 2026-08-03: pickLang()이 more 인자 없이 6개 위치인자만 쓰고
+// 있어서 21개 추가 언어에서 영어로 폴백되던 걸 발견해서 채움(홈 화면 자체라 노출 빈도가 높은
+// 곳이었음).
+const HOME_INPUT_PREVIEW_MORE = (previewAmt, previewPct) => ({
+  ar: ` · صافي المبلغ ${previewAmt} (تقديري ${previewPct}%)`,
+  bn: ` · প্রকৃত প্রাপ্তি ${previewAmt} (আনুমানিক ${previewPct}%)`,
+  fr: ` · net perçu ${previewAmt} (est. ${previewPct}%)`,
+  hi: ` · हाथ में ${previewAmt} (अनुमानित ${previewPct}%)`,
+  id: ` · diterima bersih ${previewAmt} (perkiraan ${previewPct}%)`,
+  ja: ` · 手取り${previewAmt}(予想${previewPct}%)`,
+  kk: ` · қолға тиетін ${previewAmt} (болжам ${previewPct}%)`,
+  km: ` · ទទួលបានផ្ទាល់ ${previewAmt} (ប៉ាន់ស្មាន ${previewPct}%)`,
+  ky: ` · колго тийген ${previewAmt} (болжол ${previewPct}%)`,
+  lo: ` · ໄດ້ຮັບຈິງ ${previewAmt} (ຄາດຄະເນ ${previewPct}%)`,
+  mn: ` · гарт орох ${previewAmt} (тооцоолол ${previewPct}%)`,
+  my: ` · အမှန်ရငွေ ${previewAmt} (ခန့်မှန်း ${previewPct}%)`,
+  ne: ` · हातमा पर्ने ${previewAmt} (अनुमानित ${previewPct}%)`,
+  si: ` · අත ලැබෙන ${previewAmt} (ඇස්තමේන්තු ${previewPct}%)`,
+  tl: ` · natatanggap ${previewAmt} (tinatayang ${previewPct}%)`,
+  ur: ` · خالص وصولی ${previewAmt} (تخمینی ${previewPct}%)`,
+  uz: ` · qo'lga tegadigan ${previewAmt} (taxminiy ${previewPct}%)`,
+
+  pt: ` · líquido ${previewAmt} (est. ${previewPct}%)`, es: ` · neto recibido ${previewAmt} (est. ${previewPct}%)`, uk: ` · на руки ${previewAmt} (прибл. ${previewPct}%)`, tet: ` · simu loloos ${previewAmt} (estimadu ${previewPct}%)`,
+});
+
 function updateHomeCalc(usdOverride){
   // usdOverride 없이 호출되는 경우(환율 재조회·언어전환·국가/주 변경·URL 파라미터 반영 등)는
   // 전부 "입력값은 그대로, 다른 이유로 화면만 다시 그려줘"가 의도라 항상 sharedAmountUsd(정확한
@@ -11152,7 +11570,7 @@ function updateHomeCalc(usdOverride){
       ` · thực nhận ${previewAmt} (ước tính ${previewPct}%)`,
       ` · รับจริง ${previewAmt} (ประมาณ ${previewPct}%)`,
       ` · на руки ${previewAmt} (ок. ${previewPct}%)`,
-      undefined
+      HOME_INPUT_PREVIEW_MORE(previewAmt, previewPct)
     );
   }
   // 세전→세후 차액(빨간 -46% 줄)은 바로 위 home-final-amt(카운트업)와 달리 값이 바뀔 때마다
@@ -11437,11 +11855,10 @@ function updateHomeCalc(usdOverride){
   }
   filingNote.style.display = showFiling ? 'none' : 'block';
 
-  // 2026-08-01: 언어 기반 세금 기준 자동 추정(LANG_TO_COUNTRY, setLanguage() 참고) 결과를
-  // 사용자가 아직 직접 확인(수동 선택)하지 않았으면 항상 보이는 자리에 안내함 — 통화 자동
-  // 전환과 달리 이 값은 세금 계산 결과 자체를 바꾸므로, 조용히 자동 적용만 하고 끝내면 확신
-  // 있게 틀린 세금 결과를 보여줄 위험이 있음(2026-08-01 세션에서 이 위험을 이유로 처음엔
-  // 자동 전환 자체를 보류하기로 했다가, 이 안내 문구를 조건으로 다시 추가하기로 함)
+  // 언어 기반 세금 기준 자동 추정(2026-08-01 추가, 2026-08-03 제거 — setLanguage() 위쪽 주석
+  // 참고)이 켜져있던 동안 쓰던 안내 문구. 지금은 countryWasAutoGuessed가 될 방법이 없어서 이
+  // 블록이 실행되진 않지만, HTML의 #home-country-autoguess-hint 자리 자체는 남아있어도 무해하고
+  // 자동 추정을 다시 켤 일이 생기면 그대로 재사용 가능해서 지우지 않고 남겨둠.
   const autoGuessHint = document.getElementById('home-country-autoguess-hint');
   if (autoGuessHint) {
     if (countryWasAutoGuessed) {

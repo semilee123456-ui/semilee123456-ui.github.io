@@ -121,12 +121,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.css?v=20260731-2">
+<link rel="stylesheet" href="styles.css?v=20260803-4">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.js?v=20260802-1" defer></script>
+<script src="script.js?v=20260803-3" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1784,12 +1784,51 @@
             <button type="button" class="lightning-game-btn active" id="lightning-game-pb" onclick="setLightningGame('powerball')" data-i18n="odds.lightningPbBtn">🔴 파워볼</button>
             <button type="button" class="lightning-game-btn" id="lightning-game-mega" onclick="setLightningGame('megamillions')" data-i18n="odds.lightningMegaBtn">🟡 메가밀리언즈</button>
           </div>
-          <div class="lightning-result" id="lightning-result">
-            <span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball pb" id="lightning-special-ball">?</span>
+          <!-- 2026-08-03: 사용자 요청으로 "낚시로 뽑기" 모드 신설 — 그냥 뽑기(기존, 기본값)와 낚시
+               미니게임(신규) 중 고를 수 있게 함. 기존 lightning-quick-mode는 그대로 두고 그 옆에
+               낚시 모드를 통째로 추가하는 방식이라, 기본값(그냥 뽑기)을 쓰는 사람에게는 회귀
+               위험이 없음. -->
+          <div class="lightning-mode-toggle" role="group">
+            <button type="button" class="lightning-mode-btn active" id="lightning-mode-quick" onclick="setLightningMode('quick')" data-i18n="odds.lightningModeQuickBtn">⚡ 바로 뽑기</button>
+            <button type="button" class="lightning-mode-btn" id="lightning-mode-fishing" onclick="setLightningMode('fishing')" data-i18n="odds.lightningModeFishingBtn">🎣 낚시로 뽑기</button>
           </div>
-          <p class="sr-only" id="lightning-result-announcer" role="status" aria-live="polite"></p>
-          <button class="cta-btn" id="lightning-draw-btn" onclick="drawLightningNumbers()" data-i18n="odds.drawBtn">⚡⚡⚡ 번호 뽑아보기</button>
-          <p class="foot-note" style="margin-top:10px; text-align:center;" id="lightning-draw-note">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
+          <div id="lightning-quick-mode">
+            <div class="lightning-result" id="lightning-result">
+              <span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball pb" id="lightning-special-ball">?</span>
+            </div>
+            <p class="sr-only" id="lightning-result-announcer" role="status" aria-live="polite"></p>
+            <button class="cta-btn" id="lightning-draw-btn" onclick="drawLightningNumbers()" data-i18n="odds.drawBtn">⚡⚡⚡ 번호 뽑아보기</button>
+            <p class="foot-note" style="margin-top:10px; text-align:center;" id="lightning-draw-note">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
+          </div>
+          <div id="lightning-fishing-mode" style="display:none;">
+            <p class="panel-desc" data-i18n="odds.fishingHint">🎣 낚싯대를 던져서 번호를 하나씩 낚아보세요</p>
+            <div class="fishing-pond" id="fishing-pond" aria-hidden="true" onclick="castFishingLine()">
+              <div class="fishing-rod-wrap" id="fishing-rod-wrap">
+                <span class="fishing-rod" id="fishing-rod">🎣</span>
+                <span class="fishing-line" id="fishing-line"></span>
+                <span class="fishing-hook-wrap">
+                  <span class="fishing-hook" id="fishing-hook">🪝</span>
+                  <span class="fishing-caught-fish" id="fishing-caught-fish">🐟</span>
+                </span>
+              </div>
+              <div class="fishing-water">
+                <span class="fishing-wave"></span><span class="fishing-wave"></span><span class="fishing-wave"></span>
+                <span class="fishing-idle-fish fishing-idle-fish-1">🐟</span>
+                <span class="fishing-idle-fish fishing-idle-fish-2">🐠</span>
+                <span class="fishing-splash" id="fishing-splash"></span>
+              </div>
+            </div>
+            <div class="lightning-result" id="fishing-result">
+              <span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball pb fishing-slot" id="fishing-special-ball">?</span>
+            </div>
+            <p class="sr-only" id="fishing-result-announcer" role="status" aria-live="polite"></p>
+            <div class="fishing-reel-gauge-wrap" id="fishing-reel-gauge-wrap" style="display:none;" aria-hidden="true">
+              <div class="fishing-reel-gauge-fill" id="fishing-reel-gauge-fill"></div>
+            </div>
+            <button class="cta-btn" id="fishing-cast-btn" onclick="castFishingLine()" data-i18n="odds.fishingCastBtn">🎣 낚싯대 던지기</button>
+            <p class="fishing-status-msg" id="fishing-status-msg" aria-live="polite"></p>
+            <p class="foot-note" style="margin-top:10px; text-align:center;" id="fishing-draw-note">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
+          </div>
         </details>
 
         <p class="disclaimer" data-i18n="odds.disclaimer">확률 수치는 공식 발표 자료 기준이에요. 원화 환산은 참고용 환율 적용이라 실제와 다를 수 있어요.</p>

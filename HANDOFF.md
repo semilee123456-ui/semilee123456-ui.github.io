@@ -68,6 +68,14 @@ Claude에게 읽게 하세요.**
    독립적인 변경사항(예: 사용자가 다른 경로로 추가한 기능)을 덮어써서 되돌려버릴 위험이
    있음(실제로 2026-07-28에 `index.html`의 금액 슬라이더 기능을 이렇게 잃어버릴 뻔했다가
    병합으로 막음).
+7. **`script.js`나 `styles.css` 내용을 고쳤으면, `index.html`이 그 파일을 부르는 캐시버스팅
+   버전 쿼리(`script.js?v=YYYYMMDD-N`, `styles.css?v=YYYYMMDD-N`)도 반드시 같이 올릴 것.**
+   2026-08-03 세션에서 이걸 빠뜨려서, 병합 직후 사용자가 확인한 스크린샷에 수정 사항이 전혀
+   반영 안 된 것처럼 보인 사고가 있었음 — GitHub Pages 원본에는 이미 새 파일이 있었지만
+   Cloudflare가 예전 버전 URL의 응답을 최대 4시간(`cache-control: max-age=14400`)까지 그대로
+   캐싱하고 있었음(자세한 진단 경위는 아래 "작업 이력"의 2026-08-03 해당 항목 참고). 버전을
+   안 올리면 실제 배포가 아무리 잘 됐어도 방문자는 계속 예전 코드를 받게 됨 — 파일 내용만
+   고치고 이 단계를 빠뜨리는 실수를 반복하지 말 것.
 
 ---
 
@@ -344,19 +352,16 @@ tests/               회귀 테스트 스크립트 9개 (아래 "회귀 테스�
 - **`sharedCountry`**: 'kr'/'us'/'cn'/'in'/... — 사용자가 고른 "세금 계산 기준". 홈 화면과
   국가비교 화면이 이 값을 공유함. `data-basis="kr"` 같은 속성으로 FAQ 항목을 세금 기준별로도
   필터링함(`filterFaq()`).
-- **`LANG_TO_COUNTRY`(2026-08-01 신규)**: 언어 전환 시 `sharedCountry`를 자동으로 맞춰줌 —
-  기존에 이미 있던 `LANG_TO_CURRENCY`(통화 자동감지) 패턴을 그대로 국가에도 적용한 것.
-  `setLanguage()` 안에서 `isCountryManuallyEdited`가 false일 때만 자동 적용(사용자가 국가를
-  한 번이라도 직접 바꾸면 그 뒤로는 언어를 바꿔도 더 이상 안 따라감 — `setHomeCountry(country,
-  isManual=true)`의 `isManual` 파라미터로 구분). 자동으로 맞춰졌을 때만 보이는 안내 문구
-  (`#home-country-autoguess-hint`)를 추가해서, 세금 기준 오인식으로 인한 실수를 방지함(통화
-  오인식보다 세금 기준 오인식이 훨씬 파급력이 커서 currency보다 신중하게 접근 — 사용자가 직접
-  확인·정정할 수 있게 유도). **이 기능을 넣으면서 실제 회귀 버그 하나 발견·수정함**: 영어
-  방문자가 이제 `country=us`로 자동 진입하게 되면서, 그동안 `country`가 항상 'kr' 기본값이라
-  거의 노출된 적 없던 "50개 주 전체 비교표"(`us-state-row`)가 좁은 화면(240~280px)에서 실제로
-  열리는 경우가 많아짐 — `.us-state-row-name`(주 이름)이 길 때 금액(`.us-state-row-amt`,
-  white-space:nowrap 유지)이 카드 밖으로 삐져나가던 CSS 버그를 `flex-wrap`으로 해결(styles.css,
-  480px 이하 미디어쿼리 블록).
+- **`LANG_TO_COUNTRY`는 더 이상 존재하지 않음(2026-08-01 도입 → 2026-08-03 제거)**: 한때
+  언어 전환 시 `sharedCountry`(세금 계산 기준)를 자동으로 맞춰주는 기능이 있었으나, 브라우저
+  언어가 실제 거주국과 무관한 경우가 흔해서(예: 한국 거주자가 영어 Windows 사용) 사용자가
+  "홈페이지가 한국에서 외국중심으로 됐다"고 지적해 제거함(자세한 경위는 아래 "작업 이력"의
+  2026-08-03 해당 항목 참고). **지금은 `sharedCountry`가 언어와 무관하게 항상 'kr' 기본값을
+  유지하고, 사용자가 직접 고르거나(`#homeCountryToggle`, `?country=` URL 파라미터 등) 명시적
+  신호가 있을 때만 바뀜.** `LANG_TO_CURRENCY`(통화 자동감지)는 표시 단위만 바꿀 뿐 세금 계산
+  자체에는 영향 없어 리스크가 낮다고 판단해 계속 유지 중 — "언어 기반 자동 전환을 다시
+  추가해달라"는 요청이 오면, 화면 표시(언어/통화)와 세금 계산 기준(국가)을 같은 리스크로
+  묶지 말 것.
 - **`currentLang`**: 'ko'/'en'/... — 표시 언어. localStorage에 저장 안 되고 새로고침하면
   'ko'로 리셋됨(`?lang=` URL 파라미터로 시작은 가능, 적용 후 URL에서 자동 제거).
 - **`sharedInputCurrency`**(2026-07-28 신규, 같은 날 후속 세션에서 국가별 비교 탭까지 확장):
@@ -4504,12 +4509,15 @@ GPT 양쪽에 검토 요청 → 두 검토를 종합해 최종 우선순위 확�
    통과. 영문판은 필드명도 전부 영어로(`name: "ChamTax"` 등), 한글판과 원문 값 자체(로고
    URL, applicationCategory 등)는 동일. 이 두 페이지는 h2 헤딩이 이미 대체로 질문형/자연어라
    추가 손질 안 함, FAQPage도 이미 있어서 HowTo만 신규 추가.
-2. **남은 페이지**: `us-lottery-basics-en.html` 1개(원래 계획한 5개 중 4번째). 5번째로
-   잡았던 `us-lottery-basics-ko.html`은 **파일 자체가 없음**(확인 완료 — `ls
-   us-lottery-basics-*.html`을 실행하면 언어 접미사 붙은 파일들만 나오고 `-ko`나 접미사 없는
-   기본판이 없음, 대신 `korea-resident-us-lottery-tax.html`가 사실상 한국어 허브 역할을 함).
-   다음 페이지를 고를 땐 다른 고트래픽 랜딩페이지(`powerball-tax.html`,
-   `megamillions-tax.html`, `us-lottery-tax-rate.html` 등)로 대체할 것.
+2. ~~`powerball-tax.html`, `megamillions-tax.html`~~ — **완료(2026-08-03, 다른 세션 이어서)**:
+   원래 계획했던 `us-lottery-basics-en.html`/`us-lottery-basics-ko.html` 대신(5번째로 잡았던
+   `-ko`는 파일 자체가 없음을 이미 확인해뒀었음) 더 고트래픽인 이 두 페이지로 대체 적용.
+   둘 다 Organization/WebSite/SoftwareApplication/HowTo JSON-LD 신규 + 엔터티 문장 + 최종
+   업데이트 날짜 추가, JSON-LD 6개 블록씩 문법 검증 통과. 이 두 페이지도 h2가 이미 질문형
+   ("왜 세금을 두 번 내요?" 등)이고 quick-answer 박스에 대표 시나리오 수치가 이미 있어서
+   추가 손질 불필요했음 — 지금까지 작업한 5개 페이지 전부 같은 패턴(신규 추가는 주로
+  (c)(d)뿐)이었다는 게 재확인됨. `us-lottery-tax-rate.html`은 아직 미착수 — 다음에 여유
+  있으면 이어서 할 것(필수는 아님, 소수 페이지로도 이미 대표성 있는 커버리지 확보).
 3. 각 페이지 작업 시 체크리스트: (a) 엔터티 정의 문장 (b) 최종 업데이트 날짜 (c)
    Organization/WebSite/SoftwareApplication JSON-LD — **반드시 index.html 값과 동일하게**
    (d) FAQPage/HowTo JSON-LD — 이미 FAQPage 있으면 HowTo만 추가 (e) 대표 시나리오 정적
@@ -4526,14 +4534,13 @@ GPT 양쪽에 검토 요청 → 두 검토를 종합해 최종 우선순위 확�
    검토 모두에서 지적됨), ARIA/헤딩 구조 전체 감사.
 6. 원본 대화(제미나이·GPT 검토 전문)는 이 저장소에 없음 — 사용자 채팅에만 있으므로, 세부
    근거가 더 필요하면 사용자에게 다시 물어볼 것.
-7. **이 작업 전체가 아직 `main`에 병합 안 됨** — 지금 `claude/adoring-curie-rcv0vy`
-   브랜치에만 있음(커밋 `d40a36c`, `242f88a`). 사용자에게 PR 병합 여부 확인 필요(하네스
-   지침상 명시적 요청 없이 PR을 만들지 않음).
+7. ~~이 작업 전체가 아직 `main`에 병합 안 됨~~ — **병합 완료(PR #90, #99 등 여러 세션에
+   나눠서)**.
 
-변경 파일(누적): `korea-resident-us-lottery-tax.html`, `lottery-jackpot-amount.html`,
-`lottery-jackpot-amount-en.html` — 전부 JSON-LD 3~4개 신규(Organization/WebSite/
-SoftwareApplication/HowTo) + 엔터티 문장 + 최종 업데이트 날짜. `llms.txt`는 기존 파일
-그대로 유지(신규 작성 안 함, 이미 잘 돼있었음).
+변경 파일(누적, 5개 페이지): `korea-resident-us-lottery-tax.html`, `lottery-jackpot-amount.html`,
+`lottery-jackpot-amount-en.html`, `powerball-tax.html`, `megamillions-tax.html` — 전부
+JSON-LD 3~4개 신규(Organization/WebSite/SoftwareApplication/HowTo) + 엔터티 문장 + 최종
+업데이트 날짜. `llms.txt`는 기존 파일 그대로 유지(신규 작성 안 함, 이미 잘 돼있었음).
 
 ### 2026-08-03 이어서 — 홈 결과 "합계" 줄에 일시불 표기 추가 + "이 결과 공유하기" 항상 금액 카드로 공유
 
@@ -4565,3 +4572,419 @@ PR 불필요, 커밋 `c6c2a33`→`fde29fa`가 `587924f`의 직계 부모).
 
 변경 파일: `script.js`(`taxTotalLumpsumSuffix()` 신규, `taxTotalLinePrefix()` 호출부 2곳
 갱신, `shareResult()` 게이트 제거, `shareGenericPromo()` 삭제).
+
+### 2026-08-03 이어서 — "홈페이지가 한국에서 외국중심으로 됐다" 사용자 지적 → 언어 기반 세금 기준 국가 자동 전환 제거
+
+**배경**: 사용자가 "홈페이지가 한국에서 외국중심으로 됐는데 수정할 부분이 있을까?"라고 물음.
+`script.js`를 조사해서 2026-08-01에 추가된 `LANG_TO_COUNTRY`(언어 감지 → 세금 계산 기준
+국가 자동 전환) 기능이 원인임을 특정함: 브라우저/OS 언어(`navigator.language`)가 한국어가
+아니면(영어 Windows를 쓰는 한국 거주자 등 실제로 흔함 — 이 기능을 만든 세션 본인의 주석에도
+"네이버에서 '참택스' 검색해 들어왔는데 기기 언어가 키르기스어라 화면이 통째로 키르기스어로
+뜬" 사고 사례가 이미 기록돼있었음) 첫 화면부터 다른 나라 세금 계산 결과가 뜸 — 사이트 주
+타겟(한국 거주 40~60대)에게 정확히 사용자가 지적한 문제를 일으키는 원인이었음.
+
+**추가 근거**: 이 자동 전환 기능은 이미 2026-08-02에 두 번이나 방어 코드를 낳았었음
+(`goToKoreaCalculator()`, `goWithLangSelect(forceKoreaContext)` — "한국에 살아요"를 명시적으로
+눌러도 계산은 다른 나라 기준으로 나가는 모순을 막던 패치들). 증상별로 계속 땜질했는데도
+사용자가 다시 문제를 지적한 것 — 근본 원인(자동 전환 자체)을 제거하는 게 맞다고 판단.
+
+**조치**: `setLanguage()` 안의 `LANG_TO_COUNTRY` 자동 전환 트리거를 완전히 제거. **언어 자동
+감지(화면 표시 텍스트)는 그대로 유지**(한국 거주 외국인 EPS 근로자를 위한 기존 기능이라 안
+건드림), **통화 자동 전환(`LANG_TO_CURRENCY`)도 유지**(2026-07-29 사용자 요청으로 추가된
+기존 기능이고, 표시 단위만 바꿀 뿐 세금 계산 자체를 바꾸지 않아 리스크가 낮음). **세금 계산
+기준 국가만 항상 한국(또는 사용자의 명시적 선택)으로 유지**하도록 되돌림 — 화면 언어와 세금
+계산 기준을 분리하는 게 핵심 판단.
+
+**정리한 것**: `LANG_TO_COUNTRY` 상수 삭제(더 이상 아무 데서도 안 씀), 이 상수를 참조하던
+stale 주석 3곳(`goToKoreaCalculator()`, `goWithLangSelect()`, `#home-country-autoguess-hint`
+근처)을 과거형으로 갱신. `countryWasAutoGuessed`/`#home-country-autoguess-hint`(안내 배너)는
+이제 켜질 방법이 없어서 사실상 죽은 코드지만, HTML 요소 자체는 무해하고 나중에 자동 추정을
+다시 켤 일이 생기면 재사용 가능해서 **일부러 안 지움** — 다음 세션이 "빠진 줄" 착각하지
+않도록 여기 기록.
+
+**검증**: `node --check script.js` 통과. Playwright로 직접 시나리오 재현 확인 — 영어
+locale(`en-US`)로 처음 방문 시 `lang: 'en', country: 'kr', currency: 'USD'`(언어·통화는
+자동 전환되지만 국가는 한국 유지) 확인. `index.html?country=cn`처럼 랜딩페이지가 명시적으로
+보내는 신호는 여전히 정상 작동 확인(`country: 'cn'`). 회귀 테스트 13개 전부(`console_error_audit`
+161개 설정, `home_audit`/`wrap_audit`/`lang_leak_audit`/`nav_slider_audit`/`map_scroll_audit`/
+`audit_odds_compare`/`faq_audit`, `i18n_attr_lint`/`i18n_coverage_audit`(739개 키)/
+`fact_consistency_audit`(93개 파일)/`broken_link_audit`(90개 파일)/`draw_archive_integrity_check`)
+0건 확인.
+
+**다음 세션 참고**: 이 되돌림이 또 재발하지 않도록 — 언어 기반 추정으로 **세금 계산 결과 자체를
+바꾸는 값**(국가 등)을 자동 전환하는 기능을 다시 제안받으면, 이 항목과 위 2026-08-02 방어
+코드 이력을 먼저 보여줄 것. 통화처럼 "표시 단위만 바뀌는" 낮은 리스크 자동화와, 국가처럼
+"계산 결과 자체가 바뀌는" 높은 리스크 자동화는 구분해서 판단해야 함.
+
+변경 파일: `script.js`(`LANG_TO_COUNTRY` 상수 삭제, `setLanguage()`의 자동 전환 트리거 제거,
+관련 stale 주석 3곳 갱신).
+
+### 2026-08-03 이어서 — "궁금해요" 플로팅 버튼이 스크롤/충돌 상황에서 흐려지는 문제, 사용자 스크린샷으로 지적 → 항상 표시로 변경
+
+**배경**: 사용자가 실제 라이브 사이트 스크린샷을 보내며 "사이트 오른쪽에 궁금해요 계속 떠있게
+해줘. 중간에 흐릿하게 변하니까 더 불편해"라고 요청. 코드를 보니 `#faqFloatWrap`(`.faq-float-wrap`)에
+세 겹의 자동 숨김/흐림 로직이 쌓여있었음: (1) 로드 직후엔 숨겨뒀다가 `FAQ_FLOAT_SCROLL_THRESHOLD`
+(150px)를 넘게 스크롤해야 나타남 (2) 아래로 스크롤하는 동안은 `is-scroll-hidden`으로 완전히
+사라짐 (3) 스크롤이 멈춘 자리에서 뒤에 읽을 텍스트가 있으면 `is-colliding`으로 opacity 0.16까지
+흐려짐(2026-07-25~07-30 사이 여러 세션이 "버튼이 콘텐츠를 가린다"는 반대 방향 이슈를 고치려고
+쌓아온 것들). 사용자 피드백은 정반대 우선순위(항상 보이는 게 가림보다 낫다)라 이 세 로직을
+전부 무력화하기로 결정.
+
+**조치**: `styles.css`의 `.faq-float-wrap` 관련 규칙만 수정(`script.js`는 안 건드림 — 클래스
+토글 로직은 그대로 두고 CSS에서 그 클래스들의 시각적 효과만 제거). 기본 상태를
+`opacity:1; pointer-events:auto`로 바꾸고, `.is-visible`/`.is-colliding`/`.is-scroll-hidden`
+전부 opacity를 낮추지 않도록 수정. **그대로 유지한 것**: `.is-over-control`(뒤에 진짜 버튼/
+링크가 있으면 시각적 변화 없이 탭만 통과시키는 안전장치, 흐려지는 게 아니라 그냥 무해함)과
+`.is-hidden`(우측 상단 ✕로 사용자가 직접 영구히 닫는 기능) — 둘 다 이번 피드백과 무관하고
+계속 필요함.
+
+**검증**: Playwright로 직접 시나리오 재현 — 로드 직후(스크롤 0)에도 opacity 1로 바로 보임,
+900px 스크롤 후에도 opacity 1 유지(전엔 여기서 0.16 또는 0으로 흐려졌음), 클릭 시 FAQ 오버레이
+정상 오픈, ✕로 닫으면 새로고침해도 계속 닫힌 상태 유지. 스크린샷으로 실제 렌더링도 확인.
+회귀 테스트 13개 전부 0건(위 항목과 동일한 목록).
+
+**다음 세션 참고**: 이 버튼이 실제 콘텐츠를 가리는 사례가 다시 보고되면, 예전 방식(opacity로
+흐리기)으로 되돌리기 전에 이번 피드백부터 먼저 검토할 것 — "흐려짐 자체가 불편하다"는 것도
+사용자의 명시적 의견이라, 가림 문제를 풀더라도 흐리기 말고 다른 방식(예: 그 화면에서만 위치를
+살짝 옮기기)을 먼저 고려하는 게 나음.
+
+변경 파일: `styles.css`(`.faq-float-wrap`/`.is-visible`/`.is-colliding`/`.is-scroll-hidden`
+규칙 수정, `.is-over-control`/`.is-hidden`은 그대로).
+
+### 2026-08-03 이어서 — 낚시 미니게임 재구성 + "pickLang() more 인자 누락"이라는 새로운 종류의 번역 사각지대 6곳 발견·수정
+
+**요청 1 — 낚시 미니게임(오늘의 번개 번호 뽑기 → 낚시로 뽑기, PR #93에서 프로토타입으로 신설된
+기능)이 재미없다는 사용자 스크린샷 지적**: 기존 구현은 낚싯줄 높이가 늘었다 줄었다 하고 바늘이
+살짝 흔들리는 정도가 전부였음. 물고기가 항상 헤엄쳐 다니고(`.fishing-idle-fish` 2마리, 좌우
+왕복+turn마다 flip), 캐스팅 시 낚싯대가 실제로 휘두르는 것처럼 회전하고(`.fishing-rod`,
+`fishing-rod-swing` 키프레임), 바늘이 수면에 닿는 순간 물결 효과(`.fishing-splash`, 캐스팅마다
+reflow로 재시작), 입질 때 물고기가 바늘에 나타나고(`.fishing-caught-fish`, 🐟/🐠/🐡 중
+캐스팅마다 무작위), 릴을 감으면(`.fishing-hook-wrap`이 `.fishing-line` 바로 다음 flex 자식이라
+줄 높이가 줄 때 자연스럽게 같이 위로 올라감 — 별도 translateY 애니메이션 불필요) 물고기가
+파닥거리며 딸려 올라오는 흐름으로 재구성. `prefers-reduced-motion: reduce`에서 전부 무력화.
+Playwright로 캐스팅→입질→릴감기→결과 전 구간 스크린샷 확인, 6마리 전부 낚기·재시작·320px
+좁은 화면까지 검증(사이트 다른 곳처럼 `overflow:hidden`으로 감싸져 있어 좁은 화면에서도 실제
+튀어나오진 않음).
+
+**요청 2 — "사이트 전체를 하나하나 보고 언어가 100% 다 들어갔는지 확인해달라"**: 기존
+`tests/i18n_coverage_audit.js`는 `translations.json`의 키 완성도만 검사(739개 키, 26개 언어
+전부 채워짐 재확인 — 0건)해서, **이번에 처음으로 다른 종류의 사각지대를 발견함**:
+`script.js` 안에서 직접 `pickLang(ko, en, zh, vi, th, ru, more)`을 호출하는 곳 중 일부가
+**7번째 인자(`more`, 나머지 21개 언어분)를 아예 안 넘기거나 `undefined`로 넘겨서**, 그
+지점만 21개 추가 언어(km/ne/id/my/si/uz/mn/kk/ky/ur/bn/lo/ja/ar/hi/fr/tl/pt/es/uk/tet)에서
+조용히 영어로 폴백되고 있었음 — `translations.json` 체계 밖이라 `i18n_coverage_audit.js`가
+구조적으로 못 잡는 종류의 버그. Python으로 `script.js`의 `pickLang(...)` 호출 410개를
+전수 파싱(괄호 깊이·따옴표를 고려해 top-level 인자 개수를 세는 스크립트를 그때그때 작성)해서
+"인자 6개뿐이거나 7번째가 `undefined`인 호출"만 걸러내는 방식으로 찾음. **실제 발견된 6곳**:
+1. 수표(giant novelty check) 카드 이미지의 `MEMO` 라벨(`memoLabel`)
+2. 같은 카드의 MEMO 본문 "세후 예상 실수령액 시뮬레이션"(`memoText`)
+3. 같은 카드의 서명란 라벨 "서명(예시용) · 실제 서명 아님"(`signLabel`)
+4. 잭팟 실수령 랭킹 위젯의 "🔧 세금 기준 바꾸기 →" 링크(`renderJackpotTakeHomeRanking`)
+5. 물가보정 랭킹 위젯의 같은 링크(`renderJackpotCpiRanking`, 4번과 중복된 문구)
+6. 홈 화면 입력 카드 실시간 미리보기 " · 실수령 XX (예상 XX%)"(`updateHomeCalc`의
+   `#home-input-preview`) — **노출 빈도가 가장 높은 곳**(홈 화면에서 금액 입력할 때마다 보임)이라
+   6개 중 가장 영향이 컸던 것으로 보임.
+
+**수정**: `CHECK_MEMO_LABEL_MORE`/`CHECK_MEMO_TEXT_MORE`/`CHECK_SIGN_LABEL_MORE`(신규, 21개
+언어 직접 번역)/`CHANGE_TAX_BASIS_LINK_MORE`(신규, 기존 `TAX_BASIS_OVERLAY_TITLE_MORE`의
+검증된 번역에 "→"만 붙여 재사용 — 같은 개념 새로 번역 안 함)/`HOME_INPUT_PREVIEW_MORE`(신규,
+변수 보간이 필요해서 객체가 아니라 `(previewAmt, previewPct) => ({...})` 함수 형태)를 추가해
+6개 호출부에 전부 연결. Playwright로 `ADDITIONAL_LANGS`(21개) 전체를 순회하며 5개 상수/함수의
+모든 키가 비어있지 않은지 프로그램적으로 검증(0건 누락) + km/uz/ar/tet/fr 5개 언어에서 실제
+렌더링 값 직접 확인.
+
+**다음 세션이 알아야 할 것**: `i18n_coverage_audit.js`는 여전히 `translations.json` 키만
+검사함 — `script.js` 안의 `pickLang()` 직접 호출은 커버 못 하는 구조적 한계가 이번에 확인됨.
+새 기능을 추가하며 `pickLang(...)`을 새로 쓸 때마다 7번째 인자(`more`)를 빠뜨리지 않았는지
+직접 확인할 것(코드 리뷰 시 "6개 언어만 나열하고 끝났는지" 눈으로 볼 것). 이번에 쓴 것과
+비슷한 재검사 스크립트(괄호/따옴표 깊이를 고려해 top-level 인자 개수 세기)를 다음에도 급하면
+그대로 재사용 가능 — 이 문서에는 스크립트 원문을 남기지 않았으니 필요하면 이 세션의 접근
+방식(Python으로 `pickLang\(` 정규식 매치 후 괄호 깊이 추적)을 다시 재현할 것. **아직 전수
+검사 안 한 부분**: `index.html`에 직접 박힌 인라인 텍스트(주로 `data-i18n` 계열로 커버되지만
+100% 확신은 못 함), 89개 정적 랜딩페이지(애초에 언어별로 분리된 별개 파일이라 이런 종류의
+버그 자체가 구조적으로 발생 불가능함, 대상 아님).
+
+변경 파일: `index.html`(낚시 연못 마크업에 물고기/물결 효과 요소 추가), `styles.css`(낚시
+애니메이션 전면 재구성), `script.js`(낚시 캐스팅 로직에 물튀김·무작위 물고기 이모지 추가,
+신규 MORE 상수/함수 5개 + 기존 6개 호출부 연결).
+
+### 2026-08-03 이어서 — "홈페이지보고 못한 거 알아서 해달라"는 요청으로 시각 점검 + AEO 백로그 잔여분 마무리
+
+**배경**: 사용자가 구체적인 지시 없이 "홈페이지보고 못한 거 알아서 해주고"라고 요청. 두 갈래로
+접근함: (1) 실제 라이브 사이트를 직접 눈으로 훑어서 눈에 띄는 문제가 있는지 점검 (2) 이 문서에
+이미 "다음에 할 것"으로 명시적으로 남아있던 미완료 작업이 있으면 마저 처리.
+
+**(1) 시각 점검 결과 — 문제 없음**: Playwright로 홈/비교/확률체감/FAQ 4개 화면을 라이트·다크
+모드, 390px·320px 폭에서 스크롤하며 전수 스크린샷 촬영. 콘솔 에러 0건, 명백한 레이아웃 깨짐
+없음. 320px 다크모드에서 `.amount-tab-panel`/`.slider-track-wrap`에 `scrollWidth`가
+`clientWidth`보다 4px 큰 게 스크립트로 잡혔으나, 시각적으로는 안 보이고 기존
+`wrap_audit.js`(같은 폭 포함 168개 조합 검사)도 이미 이 상태로 0건이라 노이즈로 판단하고
+건드리지 않음(과거에도 `.fishing-water`에서 같은 패턴이 있었음 — `overflow:hidden`으로
+의도적으로 클리핑되는 장식 요소는 이 스크립트가 오탐할 수 있다는 걸 재확인).
+
+**(2) AEO 백로그 잔여분 처리**: 위 "다음 세션이 이어서 할 것" 2번 항목에 남아있던 마지막 2개
+페이지(`powerball-tax.html`, `megamillions-tax.html`)에 같은 패턴 적용 완료 — 이걸로 애초
+계획했던 5개 페이지 작업이 전부 끝남. 자세한 내용은 바로 위 2번 항목(취소선 처리됨) 참고.
+
+**검증**: 두 페이지 JSON-LD 6개 블록씩 문법 검증 통과, `broken_link_audit`(90개 파일)·
+`fact_consistency_audit`(93개 파일) 재실행 0건, 사이트 전체 90개 HTML JSON-LD 재검증 0건.
+
+변경 파일: `powerball-tax.html`, `megamillions-tax.html`(JSON-LD 3개 신규 + HowTo, 엔터티
+문장, 최종 업데이트 날짜 — 위 5개 페이지와 동일 패턴).
+
+### 2026-08-03 이어서 — "모든 기기·모든 외국어 빠짐없이" 오버플로우 전수 검사 요청 → RTL(아랍어·우르두어) 설정 패널 실제 버그 발견·수정
+
+**배경**: 사용자가 "전체 스샷 찍어서 오버플로우 확인해줘. 모든 기기로 다 외국어도 전부 다
+빠짐없이"라고 요청. 기존 오버플로우 검사 스크립트들의 실제 언어 커버리지를 재확인해보니
+**전부 반쪽짜리였음**: `home_audit.js`는 ko/en 2개만, `wrap_audit.js`는 아예 언어 전환을
+한 번도 안 하고 항상 ko만, `audit_odds_compare.js`도 ko/en 2개만 테스트하고 있었음(각각
+"168개/40개 조합 검사, 0건"이라고 보고했지만 전부 한국어 UI만 본 것). `console_error_audit.js`는
+23개 언어만 커버(2026-07-28 추가된 pt/es/uk/tet 4개 누락). 사이트가 지원하는 27개 언어(ko
++ 26개 전환 언어) 중 실질적으로 20개 이상이 오버플로우 관점에서 한 번도 검증된 적 없던
+사각지대였음.
+
+**신규 스크립트**: `tests/full_overflow_sweep.js` — 27개 언어 × 화면폭 5개(320/375/390/
+412/430, 대표적인 폰 크기 스펙트럼) × 화면 7개(home/compare/odds/faq/privacy/disclaimer/
+contact) = 945개 조합 전수 검사. 언어별로 페이지를 새로 로드하지 않고 `setLanguage()`로
+전환(재사용)해서 속도 확보.
+
+**1차 시도 실패(오탐 100%)**: 처음엔 `scrollWidth > clientWidth`로 판정했는데 945개 전부
+걸림 — 원인은 `.menu-links button::after{ position:absolute; top:-6px; left:-6px;
+right:-6px; bottom:-6px; }`(터치 영역을 안 보이게 넓히는 흔한 접근성 트릭)가 부모의
+scrollWidth를 부풀린 것. 화면엔 전혀 안 보이는 값이라 실사용자에게 의미 없는 신호였음 —
+이 프로젝트의 기존 `audit_odds_compare.js`가 이미 쓰던 "실제 렌더링된 요소의
+`getBoundingClientRect()`가 뷰포트 경계를 벗어나는지" 방식으로 교체(가상요소는 이 방식으로는
+안 잡힘, 실제 눈에 보이는 요소만 검사됨).
+
+**2차 시도(수정된 방식)에서 실제 버그 발견**: 945개 중 70개 조합에서 이슈 — 전부
+**아랍어(ar)·우르두어(ur) 딱 2개 언어에만 집중**(각 35개 = 5개 폭 × 7개 화면 전부),
+`.settings-panel`(⚙️ 다크모드/글자크기/고대비/언어 전환 패널)이 화면 밖으로 최대 116px
+이탈. **원인**: `.settings-panel{ position:absolute; right:0; ... }`의 `right:0`이 물리적
+속성이라 `document.documentElement.dir='rtl'`(RTL_LANGS=['ar','ur']에서만 적용)이 걸려도
+자동으로 안 뒤집힘 — 톱니바퀴 버튼 자체는 RTL 레이아웃을 따라 반대쪽으로 이동하는데 패널은
+계속 "물리적 오른쪽 끝 기준"으로 펼쳐져서 실제 여유 공간이 없는 쪽으로 튀어나감. **수정**:
+`html[dir="rtl"] .settings-panel{ right:auto; left:0; }` 추가. 이 사이트가 지금까지 RTL
+대응을 텍스트 방향(`unicode-bidi`)·숫자 배치로만 해왔고 `position:absolute` 앵커링을 RTL에
+맞게 뒤집은 적은 이번이 처음이라, **다른 곳에도 비슷한 사각지대가 있을 수 있음** — 다음에
+새 `position:absolute; right:...` 또는 `left:...` 패턴을 쓰는 컴포넌트를 추가하면 반드시
+`html[dir="rtl"]` 오버라이드가 필요한지 검토할 것.
+
+**검증**: 수정 후 945개 조합 재실행 → 0건. 기존 회귀 테스트 13개(console_error_audit 161개
+설정, home_audit, wrap_audit, lang_leak_audit, nav_slider_audit, map_scroll_audit,
+audit_odds_compare, faq_audit, i18n_attr_lint, i18n_coverage_audit, fact_consistency_audit,
+broken_link_audit, draw_archive_integrity_check) 전부 0건. Playwright로 ar/ur 둘 다
+설정 패널을 실제로 열어서 스크린샷 확인(뷰포트 안에 정상적으로 들어옴). 추가로 27개 언어
+전부 홈 화면 320px 풀페이지 스크린샷을 찍어서 시각적으로도 스팟체크(RTL 2개 + 크메르어·
+미얀마어 등 복잡한 문자권 위주로 직접 확인, 이상 없음).
+
+**다음 세션이 알아야 할 것**: `home_audit.js`/`wrap_audit.js`/`audit_odds_compare.js`는
+여전히 ko/en(또는 ko만) 위주로만 도는 기존 상태 그대로 둠(이번 세션은 새 스크립트를
+추가하기만 했지 기존 스크립트를 재작성하진 않음) — 필요하면 이 셋의 언어 커버리지를
+`full_overflow_sweep.js` 수준으로 넓히는 것도 고려할 수 있으나, 지금은 새 스크립트가 그
+공백을 메우고 있어서 급하지 않음. `console_error_audit.js`의 LANGS 목록에 pt/es/uk/tet
+4개가 빠져있는 것도 별개로 발견됨 — 콘솔 에러 관점에서는 아직 미확인 상태(이번 세션은
+오버플로우만 다룸, 콘솔 에러는 범위 밖).
+
+변경 파일: `styles.css`(`.settings-panel`에 `html[dir="rtl"]` 오버라이드 추가),
+`tests/full_overflow_sweep.js`(신규), `index.html`(styles.css 캐시버스팅 버전
+`20260803-3`으로 갱신).
+
+### 2026-08-03 이어서 — "6개 페르소나" 재검증 요청(추가 버그 없음) + 페르소나 추가/제외 검토
+
+**배경**: 사용자가 "사이트 전체 6개 페르소나에 잘 맞게 들어가 있는지 확인해주고 더 추가하거나
+빼야될거 확인해줘"라고 요청. "6가지 페르소나"의 정의는 이미 이 문서(위쪽 "2026-08-02/03
+이어서 — '6가지 페르소나' 전수 재검증" 항목)에 사용자가 직접 확인해준 것으로 확정돼있음:
+①사는 나라를 골라서 바로 보기 ②한국에 살아요 ③해외에 살지만 한국 국적 ④한국에 사는 외국인
+⑤미국 거주자 ⑥기타 국가.
+
+**재검증**: 이 문서에 남아있던 유일한 미해결 흔적("us|ar 조합 State 'AVG' 라벨 영어 폴백")을
+`translations.json`에서 직접 확인 — **이미 다른 세션이 고쳐놨음**(`state.AVG`의 `ar` 값
+"المتوسط (50 ولاية + العاصمة، ~4.7%)" 정상 존재). Playwright로 5개 페르소나(③은 계산기와
+무관한 정적 페이지라 제외)를 실제 진입 함수(`goRealAbroadFromSelect`/`goToKoreaCalculator`/
+`goWithLangSelect`/`setHomeCountry`)로 하나씩 재현하고, 초대형 금액(8억 달러)을 넣어
+마일스톤 배지(과거 2번 버그가 나왔던 지점)까지 트리거해서 헤드라인·마일스톤 배지·환율
+참고 줄·확률체감 탭 잭팟 랭킹/물가보정 위젯을 전부 확인함.
+
+**1차 시도에서 오탐 발견**: `element.textContent`로 읽었더니 통화≠KRW인 페르소나(①⑤⑥)에서도
+"환율...원"류 문구가 섞여 나와서 순간 버그처럼 보였음 — `getComputedStyle().display`로
+재확인하니 실제로는 `display:none`으로 정상적으로 숨겨져 있었고, `textContent`가 숨겨진
+요소의 글자까지 그대로 반환하는 것뿐이었음(CSS 가시성을 무시함). **이 프로젝트의 이런 종류의
+Playwright 검증에서 앞으로 주의할 점**: 화면에 실제로 보이는지 확인하려면 `textContent`
+단독이 아니라 반드시 `getComputedStyle(el).display`/`visibility`까지 같이 확인할 것 —
+안 그러면 이미 고쳐진 버그를 다시 발견했다고 착각하기 쉬움.
+
+**결론**: 5개 페르소나 전부 헤드라인/마일스톤 배지/환율 줄/오즈 탭 위젯 통화 일치 확인,
+이슈 0건. 코드 변경 없음.
+
+**"추가/제외" 검토(판단, 실행 안 함)**: 6개 각각 서로 다른 실제 상황을 커버하고 있어서
+**뺄 만한 게 없어 보임**. 추가로 고려해볼 만한 것 하나만 있음 — 페르소나①(20개국 드롭다운)
+안에 "미국"도 포함돼있는데(persona⑤ "미국 거주자"와 별개 경로로 US에 도달 가능), 이건
+중복이라기보다 미국이 이 사이트 핵심 시나리오(파워볼/메가밀리언즈 자체가 미국 복권)라서
+전용 단축 진입점을 하나 더 둔 것으로 보이고 실제로 문제는 없음. 굳이 하나 제안한다면 **중국도
+비슷한 이유로 전용 단축 진입점을 고려할 수 있음**(`calcTakeHome()`의 `cn` 분기가 다른
+19개국과 달리 FTC 상계가 아니라 중국 자체 세율로 별도 계산되는 특수 케이스라, 미국처럼
+"국내법 직접 계산"이라는 공통점이 있음) — 다만 이건 사용성 개선 아이디어일 뿐 버그도 결함도
+아니라서 실행은 사용자 판단에 맡김.
+
+변경 파일: 없음(검증만 수행, 코드 변경 없음).
+
+### 2026-08-03 이어서 — 낚시 미니게임을 "진짜 게임"으로 재구성(탭 타이밍 + 릴 게이지)
+
+**요청 배경**: 사용자가 "낚싯대 움직이면서 진짜 물고기 잡는 것처럼 게임하게 가능할까"라고
+질문 → 가능하다고 답하고 방향(입질 타이밍에 탭해야 걸림 + 릴 감기 연타 게이지) 제안 →
+"그 방향으로 해줘"로 확정.
+
+**기존 구조**: 캐스팅→입질→당기기가 전부 `setTimeout` 체인으로 자동 재생되는 "관람형"
+애니메이션이었음(버튼 한 번 누르면 결과가 자동으로 나옴).
+
+**새 구조 — 상태 5개**(`fishingState`): `idle`(대기) → `casting`(캐스팅 애니메이션,
+450ms) → `waiting`(입질까지 무작위 대기 600~1500ms — 매번 타이밍이 달라서 예측 불가) →
+`biting`(제한시간 900ms 안에 탭해야 걸림, 버튼이 주황색으로 펄스하며 "지금 탭하세요!") →
+`reeling`(제한시간 3000ms 안에 연타로 게이지 100%를 채워야 함, 탭 1번당 +18%). 입질을
+놓치거나 릴 감기를 제시간에 못 끝내면 "놓쳤어요! 다시 던져보세요" 메시지와 함께 `idle`로
+돌아가고 **같은 슬롯을 다시 시도**함(이미 낚은 번호는 그대로 유지, 불이익 없음 — 시니어
+타겟 고려해 실패해도 관대하게).
+
+**버튼 하나가 상태에 따라 다른 일을 함**: `#fishing-cast-btn`의 `onclick="castFishingLine()"`은
+그대로 두고, 함수 내부에서 `fishingState`를 보고 분기(`idle`=새 캐스팅 시작 /
+`biting`=입질 탭 / `reeling`=릴 탭). `casting`/`waiting` 중엔 버튼이 `disabled`라 너무
+일찍 눌러도 그냥 무시됨(오조작 불이익 없음). `#fishing-pond`(연못 전체, `aria-hidden="true"`)에도
+같은 `onclick`을 달아서 마우스/터치 사용자에게 더 큰 보너스 탭 영역을 줌 — 실제 접근 가능한
+컨트롤은 여전히 진짜 `<button>`이라 키보드 Enter 연타로도 플레이 가능.
+
+**신규 UI**: `.fishing-btn-urgent`(입질 순간 버튼 펄스 애니메이션 + 주황색,
+`prefers-reduced-motion`에서 무력화), `#fishing-reel-gauge-wrap`/`-fill`(릴 감기 진행
+게이지 바), `#fishing-status-msg`(놓쳤을 때 뜨는 빨간 안내 문구, reflow 재시작 패턴으로
+매번 처음부터 페이드인).
+
+**⚠️ Playwright 테스트 함정 발견(다음 세션 참고)**: 처음 `page.click()`으로 테스트했더니
+입질 탭이 계속 새 캐스팅으로 잘못 처리됨(마치 버그처럼 보였음) — 원인은 Playwright의
+"요소가 안정될 때까지 대기" 액셔너빌리티 체크가 `.fishing-btn-urgent`의 무한 펄스
+애니메이션 때문에 "요소가 안 멈춘다"고 판단해서 클릭을 계속 지연시킨 것이었음(실제
+사용자의 진짜 탭/클릭은 이런 지연이 전혀 없음 — 순수 테스트 자동화 아티팩트). **펄스
+애니메이션이 걸린 버튼을 Playwright로 테스트할 땐 `page.click()` 대신
+`page.evaluate(() => el.click())`(DOM 직접 클릭)을 쓸 것** — 안 그러면 정상 동작을
+회귀로 오판하기 쉬움.
+
+**검증**: 성공 플로우(6마리 전부 낚기)·입질 놓침(자동 미스)·릴 감기 실패(연타 부족) 3개
+시나리오 전부 Playwright로 재현 확인. 320px 아랍어(RTL)에서 입질/릴 감기 상태 오버플로우
+0건. 새 번역 3개(`FISHING_BITE_PROMPT_MORE`/`FISHING_REEL_PROMPT_MORE`/
+`FISHING_ESCAPED_MSG_MORE`) 21개 추가 언어 전부 빠짐없이 채움(프로그램적 재확인). 회귀
+테스트 13개 전부 `ISSUES: 0`. `node --check`/CSS 중괄호 짝 통과.
+
+**"중국 전용 단축 진입점" 제안 재확인 — 이미 존재함, 착오였음**: 앞선 항목에서 "미국처럼
+중국도 전용 진입점을 만들면 좋겠다"고 제안했는데, 실제 `index.html`의
+`#homeCountryToggle`을 다시 보니 **`cn`(중국 기준)이 이미 `kr`/`us`와 나란히 최상위
+4개 버튼(kr/us/cn/jp) 중 하나로, "더보기" 그리드에 안 묻히고 항상 바로 보임** — 제안
+당시 코드를 다시 안 열어보고 기억만으로 판단한 착오였음. 실제로는 이미 미국과 동등한
+대우를 받고 있어서 **추가 작업 불필요**. 다음 세션은 이 항목을 다시 "할 일"로 착각하지
+말 것.
+
+변경 파일: `script.js`(낚시 상태 머신 재작성, 신규 함수 8개, 신규 번역 상수 3개),
+`index.html`(연못 onclick, 릴 게이지·상태 메시지 마크업 추가, 캐시버스팅
+`script.js?v=20260803-3`/`styles.css?v=20260803-4`), `styles.css`(펄스/게이지/메시지 스타일).
+
+### 2026-08-03 이어서 — "잠자는 내 돈 찾기" 위젯(FAQ, Hometax/Gov24/FSS/NHIS/카드포인트) 6개 페르소나 재검증 → 버그 아님, 내 자체 테스트 오류였음
+
+**요청 배경**: 사용자가 중국어(zh) 화면에 이 위젯(한국 국세청 Hometax·정부24·금융감독원
+잠자는 내 돈·건강보험공단·여신금융협회 카드포인트 — 전부 한국 국내 전용 서비스)이 뜬
+스크린샷을 보내며 "여기 각 6가지 페르소나에 맞는지 확인해줘"라고 요청.
+
+**1차 조사(직전 세션, 이 항목 작성 전)에서 "버그처럼 보였던" 결과**: `사는 나라를 골라서
+바로 보기`(페르소나①)에서 중국을 고르면(`goToRealAbroad('cn','zh')`) 이 위젯이 숨어야
+정상인데, Playwright로 `document.querySelector('.refund-step-card[data-basis]')`로 확인하니
+계속 `display:block`으로 나와서 "버그"로 의심하고 조사를 이어가던 중이었음.
+
+**진짜 원인 — 테스트 스크립트가 엉뚱한 요소를 짚고 있었음**: `index.html`에
+`.refund-step-card` 클래스를 가진 `<div>`가 **3개** 있음(1904번째 줄 —
+`data-basis="kr,vn,cn,in,id,ph,th,jp,ru,np,lk,uz,kz,kg,mm,bd,pk,kh,mn,la"`로 `cn`도 포함된
+전혀 다른 위젯 / 2071번째 줄 — 스크린샷 속 그 위젯, `data-basis="kr"`만 / 2186번째 줄 —
+FTC 서류 체크리스트, `data-basis="kr"`만). `querySelector`(단수)는 DOM 순서상 **첫 번째**
+것(1904번째 줄, `cn` 포함이라 중국에서도 정상적으로 계속 보임)을 짚어버려서, 정작
+스크린샷 속 위젯(2071번째 줄)의 실제 상태는 확인도 안 하고 있었던 것 — 내 테스트 코드
+결함이었지 사이트 버그가 아니었음.
+
+**재검증(올바른 요소 — `#refund-site-hometax` 링크의 부모 `.refund-step-card`를
+`closest()`로 정확히 짚어서 확인)**:
+```
+1-사는나라(CN,zh)      country=cn    widgetVisible=false  ✅ (숨어야 정상 — 숨음)
+1-사는나라(VN,vi)      country=vn    widgetVisible=false  ✅
+1-사는나라(US,en)      country=us    widgetVisible=false  ✅
+2-한국거주             country=kr    widgetVisible=true   ✅ (핵심 타겟 — 당연히 보임)
+4-한국거주외국인(zh)   country=kr    widgetVisible=true   ✅ (의도된 동작, 아래 설명)
+4-한국거주외국인(vi)   country=kr    widgetVisible=true   ✅
+5-미국거주자           country=us    widgetVisible=false  ✅
+6-기타국가             country=other widgetVisible=false  ✅
+```
+`filterFaq()`의 `basisMatch`가 보는 건 **화면 표시 언어(`currentLang`)가 아니라 세금
+기준국(`sharedCountry`)** — `data-basis="kr"`는 `sharedCountry==='kr'`일 때만 보임. 이
+로직 자체는 처음부터 정확했음.
+
+**페르소나④(한국에 사는 외국인)에서 중국어로 이 위젯이 보이는 게 왜 버그가 아니라 의도인지**:
+페르소나④는 세금 계산 기준국이 항상 `kr`로 고정됨(언어만 바뀌고 나라는 안 바뀜) — 즉
+"한국에 살면서 한국 소득세를 내는 외국인 근로자"를 가리키는 페르소나라서, 실제로 이
+위젯이 안내하는 항목(연말정산 환급, 지방세, 예전 계좌, 건강보험·국민연금, 카드포인트)이
+전부 문자 그대로 적용 대상임 — 오히려 한국어를 잘 못 읽는 외국인 근로자일수록 이런 환급금이
+있는지도 모르고 못 찾아가는 경우가 많아서, 언어를 안 가리고 보여주는 게 맞는 설계임.
+
+**번역 완성도도 같이 재확인**: 이 위젯이 쓰는 16개 i18n 키(`faq.q10`, `faq.checklistTitle`,
+`faq.check1~8`, `faq.linkHometax/Gov24/Fine/Health/Cardpoint`, `faq.checklistFooter`) ×
+추가 25개 언어 전부 `i18n-source/translations.json`에 값이 채워져 있음(누락 0건) — 이번
+세션 초반에 여러 차례 발견됐던 "`pickLang()` 7번째 인자 누락" 패턴과는 다른 경로(정적
+`data-i18n` 속성 기반)라 그 버그의 영향을 안 받음.
+
+**주의할 점(버그는 아니지만 알아둘 것)**: Hometax·정부24·금융감독원·건강보험공단·여신금융협회
+5개 링크는 전부 **한국 정부/공공기관 사이트라 한국어만 지원**함(이 사이트가 통제할 수 없는
+외부 시스템 문제). 화면 안내 문구는 26개 언어로 다 번역돼 있지만, 실제로 링크를 눌러
+들어간 뒤부터는 외국인 방문자가 한국어 UI를 마주하게 됨 — 개선하려면 각 사이트가 다국어를
+지원해야 하는데 우리 쪽에서 손댈 수 있는 부분이 아님. 사용자가 요청하면 "이 사이트는
+한국어만 지원해요" 같은 안내 문구 추가를 고려할 수 있으나, 지금은 버그 리포트에 대한
+답이 "없음"이라 별도 조치 안 함.
+
+**결론: 실제 버그 없음, 코드 변경 없음.** 6개 페르소나 전부(③ 정적 페이지 제외, 계산기가
+있는 5개) 검증 완료.
+
+변경 파일: 없음(검증만 수행). 이 항목은 다음 세션이 같은 착오(첫 번째 `.refund-step-card`를
+짚는 테스트)를 반복하지 않도록 남겨둠.
+
+### 2026-08-03 이어서 — "오늘의 번개 번호 뽑기"에 낚시 미니게임 모드 추가 (프로토타입, PR #93)
+
+**요청 배경**: 사용자가 "여기에 재밌는 게임 넣는 건 어때?"라고 제안 — 처음엔 "낚시게임
+볼링게임 등 여러가지"를 원했으나, 완전히 별도의 범용 아케이드 게임은 (1) 복권 번호와
+무관한 콘텐츠라 사이트 정체성("복권 세금 계산기")과 멀어지고 (2) 물리 연산·애니메이션
+등 개발 부담이 훨씬 크다고 설명 → 대신 "번호를 뽑는다"는 핵심 동작은 유지하면서 재미를
+더하는 방향(번호 생성 자체가 게임의 결과물)으로 좁혀서 합의. 여러 개를 한꺼번에 만들지
+않고 낚시 테마 하나만 먼저 프로토타입으로 구현하기로 함(AskUserQuestion으로 낚시/볼링/
+둘 다 빠르게 중 선택받음 — 낚시 선택).
+
+**구현**: 기존 "⚡ 바로 뽑기"(그대로 유지, 기본값 — 회귀 위험 없음)에 "🎣 낚시로 뽑기"
+모드를 추가. 낚싯대를 던지면 캐스팅→입질→당기기 3단계 CSS 애니메이션(진동 피드백 포함)
+후 번호가 하나씩 공개되고, 6번 던지면 5개+특별번호 1개가 완성됨. 파워볼/메가밀리언즈
+전환 시 기존 `LIGHTNING_GAMES` 설정(mainMax/specialMax/specialClass/oddsText)을 그대로
+재사용해서 새 로직 없이 낚시 모드에도 정확한 범위·색상이 반영되게 함. 게임을 바꾸거나
+6마리를 전부 낚은 뒤 다시 던지면 새 판을 시작함(`resetFishingRound()`).
+
+**새 번역**: 모드 토글 2개(`odds.lightningModeQuickBtn`/`odds.lightningModeFishingBtn`)·
+힌트(`odds.fishingHint`)·캐스팅 버튼(`odds.fishingCastBtn`)은 `i18n-source/
+translations.json`에 26개 언어 전체 추가 후 `build-i18n.js`로 `i18n/*.json` 재생성.
+캐스팅 중/재시작 시 바뀌는 동적 버튼 문구·스크린리더 알림 접두사는 기존 `DRAWING_BTN_MORE`
+관례대로 `script.js`에 `FISHING_WAITING_MORE`/`FISHING_RESTART_MORE`/
+`FISHING_CAUGHT_PREFIX_MORE`로 추가(각 20개 언어).
+
+**검증**: Playwright로 6회 캐스팅 전체 사이클(게임 전환 시 리셋, 6번째 완료 후 재시작,
+언어 전환 시 라벨 갱신) 확인, 아랍어(RTL)·벵골어 등 실제 렌더링 스크린샷 확인(레이아웃
+깨짐 없음), 다크모드 확인. 회귀 테스트 `console_error_audit`(161, 0)·
+`lang_leak_audit`(104, 0)·`home_audit`(18, 0)·`i18n_coverage_audit`(739, 0)·
+`broken_link_audit`(90, 0)·`fact_consistency_audit`(93, 0) 전부 클린. PR #93 squash
+merge 완료.
+
+**다음 세션이 참고할 것**: 이건 "프로토타입, 반응 보고 결정"으로 시작한 기능 — 사용자가
+실제로 써보고 반응이 안 좋거나 다른 방향을 원하면 `setLightningMode('fishing')` 관련
+코드(`castFishingLine()`/`resetFishingRound()`/`.fishing-*` CSS)만 들어내면 기존
+"바로 뽑기" 흐름에는 전혀 영향 없이 깔끔하게 제거 가능(독립적으로 설계함). 볼링 등
+다른 테마를 추가로 원하면 같은 패턴(`LIGHTNING_GAMES` 재사용 + 모드 토글 추가)을
+반복하면 됨.
+
+변경 파일: `index.html`(모드 토글 + 낚시 마크업 추가), `script.js`(낚시 상태·로직 함수
+추가), `styles.css`(`.fishing-*`/`.lightning-mode-*` 신설), `i18n-source/
+translations.json`(4개 키 추가) + `i18n/*.json`(26개 재생성).

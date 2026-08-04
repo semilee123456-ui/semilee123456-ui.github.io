@@ -5011,6 +5011,51 @@
     "uk": "⚡⚡⚡ Згенерувати номери",
     "tet": "⚡⚡⚡ Sorteiu númeru"
   },
+  "odds.lightningModeQuickBtn": {
+    "en": "⚡ Quick pick", "zh": "⚡ 直接抽取", "vi": "⚡ Rút nhanh", "th": "⚡ สุ่มเลย", "ru": "⚡ Быстрый выбор",
+    "km": "⚡ ទាញភ្លាមៗ", "ne": "⚡ छिटो निकाल्नुहोस्", "id": "⚡ Undi langsung", "my": "⚡ ချက်ချင်းဆွဲမည်",
+    "si": "⚡ ඉක්මනින් අදින්න", "uz": "⚡ Tezkor tanlash", "mn": "⚡ Шууд сугалах", "kk": "⚡ Жылдам таңдау",
+    "ky": "⚡ Тез тандоо", "ur": "⚡ فوری نکالیں", "bn": "⚡ দ্রুত টানুন", "lo": "⚡ ດຶງທັນທີ", "ja": "⚡ すぐ抽選",
+    "ar": "⚡ سحب سريع", "hi": "⚡ तुरंत निकालें", "fr": "⚡ Tirage rapide", "tl": "⚡ Mabilisang pagkuha",
+    "pt": "⚡ Sorteio rápido", "es": "⚡ Sorteo rápido", "uk": "⚡ Швидкий вибір", "tet": "⚡ Sorteiu lalais"
+  },
+  "odds.lightningModeFishingBtn": {
+    "en": "🎣 Fish for numbers", "zh": "🎣 钓鱼抽号", "vi": "🎣 Câu cá lấy số", "th": "🎣 ตกปลาสุ่มเลข",
+    "ru": "🎣 Порыбачить за числами", "km": "🎣 នេសាទរកលេខ", "ne": "🎣 माछा मारेर नम्बर निकाल्नुहोस्",
+    "id": "🎣 Mancing angka", "my": "🎣 ငါးဖမ်းပြီးဂဏန်းရှာမည်", "si": "🎣 මාළු අල්ලා අංක ලබාගන්න",
+    "uz": "🎣 Baliq tutib raqam olish", "mn": "🎣 Загас барьж дугаар авах", "kk": "🎣 Балық аулап сан алу",
+    "ky": "🎣 Балык уулап сан алуу", "ur": "🎣 مچھلی پکڑ کر نمبر نکالیں", "bn": "🎣 মাছ ধরে সংখ্যা বের করুন",
+    "lo": "🎣 ຕົກປາເອົາເລກ", "ja": "🎣 釣りで番号ゲット", "ar": "🎣 اصطد الأرقام بالصيد",
+    "hi": "🎣 मछली पकड़कर नंबर पाएं", "fr": "🎣 Pêcher les numéros", "tl": "🎣 Mangisda ng numero",
+    "pt": "🎣 Pescar números", "es": "🎣 Pescar números", "uk": "🎣 Виловити номери",
+    "tet": "🎣 Kaer isin atu hetan númeru"
+  },
+  "odds.fishingHint": {
+    "en": "🎣 Cast your line and reel in your numbers one by one", "zh": "🎣 抛竿把号码一个一个钓上来吧",
+    "vi": "🎣 Quăng cần và câu từng số một", "th": "🎣 โยนเบ็ดแล้วตกเลขทีละตัว",
+    "ru": "🎣 Забросьте удочку и вылавливайте числа одно за другим",
+    "km": "🎣 គប់ខ្សែនេសាទ ហើយនេសាទលេខម្តងមួយៗ", "ne": "🎣 बल्छी फ्याँकेर एक एक गर्दै नम्बर निकाल्नुहोस्",
+    "id": "🎣 Lempar kailmu dan pancing angkanya satu per satu",
+    "my": "🎣 ငါးမှုတ်တံပစ်ပြီး ဂဏန်းတွေကို တစ်လုံးချင်း ဖမ်းယူပါ", "si": "🎣 කොක්කක් දමා අංක එකින් එක ඇද ගන්න",
+    "uz": "🎣 Qarmoqni tashlab, raqamlarni birma-bir tuting",
+    "mn": "🎣 Гохоо шидээд дугааруудыг нэг нэгээр нь бариарай", "kk": "🎣 Қармақты лақтырып, сандарды бір-бірлеп аулаңыз",
+    "ky": "🎣 Кайырманы ыргытып, сандарды бирден кармаңыз", "ur": "🎣 ڈوری پھینکیں اور نمبر ایک ایک کر کے پکڑیں",
+    "bn": "🎣 বড়শি ফেলে একটা একটা করে সংখ্যা ধরুন", "lo": "🎣 ຖິ້ມເບັດແລ້ວຕົກເລກເທື່ອລະໂຕ",
+    "ja": "🎣 釣り竿を投げて番号を1つずつ釣り上げよう", "ar": "🎣 ألقِ بصنارتك واصطد الأرقام واحدًا تلو الآخر",
+    "hi": "🎣 अपनी छड़ी डालें और एक-एक करके नंबर पकड़ें", "fr": "🎣 Lancez votre ligne et attrapez vos numéros un par un",
+    "tl": "🎣 Ihagis ang iyong pamingwit at kunin ang mga numero isa-isa", "pt": "🎣 Lance sua vara e pesque os números um a um",
+    "es": "🎣 Lanza tu caña y pesca los números uno por uno", "uk": "🎣 Закиньте вудку та виловлюйте числа одне за одним",
+    "tet": "🎣 Fahe ó-nia vara no kaer númeru ida-idak"
+  },
+  "odds.fishingCastBtn": {
+    "en": "🎣 Cast your line", "zh": "🎣 抛竿", "vi": "🎣 Quăng cần câu", "th": "🎣 โยนเบ็ด",
+    "ru": "🎣 Забросить удочку", "km": "🎣 គប់ខ្សែនេសាទ", "ne": "🎣 बल्छी फ्याँक्नुहोस्", "id": "🎣 Lempar kail",
+    "my": "🎣 ငါးမှုတ်တံပစ်မည်", "si": "🎣 කොක්කක් දමන්න", "uz": "🎣 Qarmoqni tashlash", "mn": "🎣 Гохоо шидэх",
+    "kk": "🎣 Қармақты лақтыру", "ky": "🎣 Кайырманы ыргытуу", "ur": "🎣 ڈوری پھینکیں", "bn": "🎣 বড়শি ফেলুন",
+    "lo": "🎣 ຖິ້ມເບັດ", "ja": "🎣 釣り竿を投げる", "ar": "🎣 ألقِ بصنارتك", "hi": "🎣 छड़ी डालें",
+    "fr": "🎣 Lancer la ligne", "tl": "🎣 Ihagis ang pamingwit", "pt": "🎣 Lançar a vara", "es": "🎣 Lanzar la caña",
+    "uk": "🎣 Закинути вудку", "tet": "🎣 Fahe vara"
+  },
   "odds.payoutTitle": {
     "en": "How much do you win for each match?",
     "zh": "猜中几个能拿多少奖金？",
