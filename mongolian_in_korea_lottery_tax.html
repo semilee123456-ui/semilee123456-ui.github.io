@@ -124,6 +124,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax бол АНУ-ын Powerball болон Mega Millions лотерейд хожсоны дараа татвар суутгасны дараах бодит гарт орох мөнгөн дүнг тооцоолдог үнэ төлбөргүй тооцоолуур юм."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "АНУ-ын лотерейн ялалтын мөнгийг (Powerball, Mega Millions) татвар суутгасны дараах гарт орох дүнгийн үнэ төлбөргүй веб тооцоолуур бөгөөд АНУ-ын оршин суугч бус хүмүүсийн суутгал зэрэг 21 улс/бүс нутгийг хамардаг.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "АНУ-ын лотерейд хожсоны дараах татвар суутгасан гарт орох дүнг хэрхэн тооцоолох вэ",
+  "step": [
+    { "@type": "HowToStep", "name": "Хожлын дүнг оруулах", "text": "Powerball эсвэл Mega Millions хожлын дүнгээ оруулна уу (зарласан джекпот эсвэл нэг удаагийн бэлэн мөнгөн үнэ цэн)." },
+    { "@type": "HowToStep", "name": "Оршин суугаа улсаа сонгох", "text": "Та Солонгост оршин суугч уу, эсвэл өөр улсад оршин суугч уу гэдгээ сонгоно уу." },
+    { "@type": "HowToStep", "name": "АНУ-ын мужийг сонгох", "text": "Тасалбар худалдаж авсан АНУ-ын мужаа сонгоно уу — нэмэлт суутгалын хувь хэмжээ муж бүрээр өөр байдаг." },
+    { "@type": "HowToStep", "name": "Татвар суутгасны дараах дүнг шалгах", "text": "АНУ-ын холбооны 30% суутгал болон Солонгосын татвар (давхар татварын тохируулгыг оруулан тооцсон)-ыг тооцсоны дараах гарт орох тооцоолсон дүнг харна уу." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -152,6 +200,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   .quick-answer{ background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px; padding:20px; margin-bottom:24px; }
   .quick-answer p.label{ font-size:var(--fs-small); font-weight:700; color:var(--teal); margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em; }
   .quick-answer .row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:6px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px; }
@@ -195,7 +244,8 @@
   </div>
 
   <h1>Солонгост амьдардаг монголчууд АНУ-ын лотерейд хожвол татвар төлөх үү?</h1>
-  <p class="lead">Солонгост амьдардаг байхдаа АНУ-ын Powerball эсвэл Mega Millions лотерейд хожсон уу? Татварын талаар юу болохыг энгийн үгээр тайлбарлая.</p>
+  <p class="lead">ChamTax бол АНУ-ын Powerball болон Mega Millions лотерейд хожсоны дараа татвар суутгасны дараах бодит гарт орох мөнгөн дүнг харуулдаг үнэ төлбөргүй тооцоолуур юм. Солонгост амьдардаг байхдаа АНУ-ын Powerball эсвэл Mega Millions лотерейд хожсон уу? Татварын талаар юу болохыг энгийн үгээр тайлбарлая.</p>
+  <p class="updated-date">Сүүлд шинэчилсэн: 2026-08-04</p>
 
   <button type="button" id="share-btn" class="share-btn" onclick="shareThisPage()">📤 Энэ хуудсыг хуваалцах</button>
 

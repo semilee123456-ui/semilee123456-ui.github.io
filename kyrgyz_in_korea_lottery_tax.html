@@ -124,6 +124,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax — АКШ-тын Powerball жана Mega Millions лотереясындагы утуштан салык кармалгандан кийин колго тиер накта суманы көрсөткөн акысыз калькулятор."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "АКШ лотерея джекпотторунун (Powerball, Mega Millions) салыктан кийинки колго тиер суммасы үчүн акысыз веб-калькулятор, 21 өлкө/юрисдикцияны камтыйт, анын ичинде АКШ резидент эместери үчүн салык кармоо да бар.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "АКШ лотереясындагы утуштун салыктан кийинки суммасын кантип эсептөө керек",
+  "step": [
+    { "@type": "HowToStep", "name": "Утуш суммасын киргизиңиз", "text": "Powerball же Mega Millions утуш суммаңызды киргизиңиз (жарыяланган джекпот же бир жолку накта акча наркы)." },
+    { "@type": "HowToStep", "name": "Жашаган өлкөнү тандаңыз", "text": "Сиз Кореянын жашоочусу белеңиз же башка өлкөнүн жашоочусу белеңиз, ошону тандаңыз." },
+    { "@type": "HowToStep", "name": "АКШ штатын тандаңыз", "text": "Билетти сатып алган АКШ штатын тандаңыз — кошумча кармоо ставкасы штатка жараша ар башка болот." },
+    { "@type": "HowToStep", "name": "Салыктан кийинки суманы текшериңиз", "text": "АКШ федералдык 30% салыгын кармоо жана Корея салыгын (кош салык салууну оңдоону эске алуу менен) эсептегенден кийинки болжолдуу суманы караңыз." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -152,6 +200,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   .quick-answer{ background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px; padding:20px; margin-bottom:24px; }
   .quick-answer p.label{ font-size:var(--fs-small); font-weight:700; color:var(--teal); margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em; }
   .quick-answer .row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:6px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px; }
@@ -195,7 +244,8 @@
   </div>
 
   <h1>Кореяда жашаган кыргыздар АКШ лотереясында утса, салык төлөө керекпи?</h1>
-  <p class="lead">Сиз Кореяда жашап, АКШ-тын Powerball же Mega Millions лотереясында уттуңузбу? Салыкка эмне болорун жөнөкөй тил менен түшүндүрөбүз.</p>
+  <p class="lead">ChamTax — АКШ-тын Powerball жана Mega Millions лотереясындагы утуштан кийин колго тиер накта суманы көрсөткөн акысыз калькулятор. Сиз Кореяда жашап, АКШ-тын Powerball же Mega Millions лотереясында уттуңузбу? Салыкка эмне болорун жөнөкөй тил менен түшүндүрөбүз.</p>
+  <p class="updated-date">Акыркы жаңыртылган күн: 2026-08-04</p>
 
   <button type="button" id="share-btn" class="share-btn" onclick="shareThisPage()">📤 Бул баракты бөлүшүү</button>
 
