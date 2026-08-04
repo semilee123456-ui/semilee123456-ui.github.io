@@ -4585,6 +4585,10 @@ function getCombinedJackpotHistory(){
 // 다시 호출해도) 펼쳐본 만큼은 유지되도록 모듈 스코프에 보관(페이지 새로고침 전까지 유지)
 const JACKPOT_HISTORY_PAGE_SIZE = 15;
 let jackpotHistoryVisibleCount = null;
+// 2026-08-04: 외부 랜딩 페이지의 "이 금액으로 계산해보기" 링크로 지목된 특정 회차 —
+// { date, game } 또는 null. renderJackpotHistory()가 매번 이 값을 확인해서 목록 맨 위에
+// 별도로 얹어줌(아래 jumpToJackpotHistoryRecord() 참고).
+let jackpotSpotlightRecord = null;
 function expandJackpotHistory(){
   jackpotHistoryVisibleCount += JACKPOT_HISTORY_PAGE_SIZE;
   renderJackpotHistory();
@@ -4688,24 +4692,55 @@ function renderJackpotHistory(){
     return;
   }
   if (jackpotHistoryVisibleCount === null) jackpotHistoryVisibleCount = JACKPOT_HISTORY_PAGE_SIZE;
+  const sorted = combined.slice(0, jackpotHistoryVisibleCount);
+  const rowsHtml = sorted.map(entry => buildJackpotHistoryRowHtml(entry)).join('');
+
+  // 2026-08-04: 외부 랜딩 페이지("역대 최고 잭팟" 순위표)의 "이 금액으로 계산해보기" 링크로
+  // 지목된 회차(jumpToJackpotHistoryRecord()가 채워둠) — 이미 위 sorted(현재 페이지)에 보이면
+  // 또 안 넣고, 안 보이면(대부분 오래된 회차라 페이지 훨씬 아래에 있음) 목록 맨 위에 별도로
+  // 얹음. 이 블록을 renderJackpotHistory() 안에 둔 이유: 통화 전환·환율 갱신·언어 전환 등
+  // 무엇이 이 함수를 다시 불러도(전부 listEl.innerHTML을 통째로 새로 씀) 스포트라이트가 같이
+  // 다시 그려지게 하기 위함 — 바깥에서 한 번만 DOM에 꽂아두는 방식은 그 다음 재렌더에 지워짐.
+  let spotlightHtml = '';
+  if (jackpotSpotlightRecord) {
+    const alreadyShown = sorted.some(e => e.date === jackpotSpotlightRecord.date && e.game === jackpotSpotlightRecord.game);
+    if (!alreadyShown) {
+      const spotlightEntry = combined.find(e => e.date === jackpotSpotlightRecord.date && e.game === jackpotSpotlightRecord.game);
+      if (spotlightEntry) spotlightHtml = buildJackpotHistoryRowHtml(spotlightEntry, 'jh-spotlight-row');
+    }
+  }
+
+  const remaining = combined.length - jackpotHistoryVisibleCount;
+  const moreBtnHtml = remaining > 0
+    ? `<button type="button" class="jh-more-btn" onclick="expandJackpotHistory()">${pickLang(
+        `${remaining}건 더 보기`, `Show ${remaining} more`, `再显示${remaining}条`, `Xem thêm ${remaining} mục`, `ดูอีก ${remaining} รายการ`, `Показать ещё ${remaining}`,
+        buildJhMoreBtnMore(remaining)
+      )}</button>`
+    : '';
+  listEl.innerHTML = spotlightHtml + rowsHtml + moreBtnHtml;
+}
+
+// renderJackpotHistory()의 각 행 마크업 — 정상 페이지 목록과 스포트라이트(아래
+// jumpToJackpotHistoryRecord() 참고) 둘 다 이 함수 하나로 그려서 마크업이 어긋나지 않게 함.
+// 17개 언어 모두 "Powerball"/"Mega Millions"를 그대로 라틴 문자로 표기 — home.powerballName/
+// home.megaName의 번역(translations.json)과 같은 관례
+function buildJackpotHistoryRowHtml(entry, extraClass){
   const gameNameKo = { powerball: '파워볼', megamillions: '메가밀리언즈' };
   const gameNameEn = { powerball: 'Powerball', megamillions: 'Mega Millions' };
   const gameNameZh = { powerball: '强力球', megamillions: '超级百万' };
   const gameNameVi = { powerball: 'Powerball', megamillions: 'Mega Millions' };
   const gameNameTh = { powerball: 'พาวเวอร์บอล', megamillions: 'เมกะมิลเลียน' };
   const gameNameRu = { powerball: 'Powerball', megamillions: 'Mega Millions' };
-  // 17개 언어 모두 "Powerball"/"Mega Millions"를 그대로 라틴 문자로 표기 — home.powerballName/
-  // home.megaName의 번역(translations.json)과 같은 관례
-  const sorted = combined.slice(0, jackpotHistoryVisibleCount);
-  const rowsHtml = sorted.map(entry => {
-    const cashUsd = entry.cashUsd || entry.amountUsd * CASH_VALUE_RATIO;
-    const gameLabel = pickLang(gameNameKo[entry.game], gameNameEn[entry.game], gameNameZh[entry.game], gameNameVi[entry.game], gameNameTh[entry.game], gameNameRu[entry.game], GAME_NAME_MORE[entry.game]);
-    const note = pickLang(entry.noteKo, entry.noteEn, entry.noteZh, entry.noteVi, entry.noteTh, entry.noteRu, entry.noteMore);
-    const noteHtml = note ? `<p class="jh-note">${note}</p>` : '';
-    const amountBreakdownHtml = renderAmountBreakdownHtml(cashUsd, entry.stateCode);
-    const gameTagClass = entry.game === 'powerball' ? 'pb' : 'mm';
-    const gameTagEmoji = entry.game === 'powerball' ? '🔴' : '🟡';
-    return `<div class="jackpot-history-row" data-date="${entry.date}" data-game="${entry.game}">
+  const cashUsd = entry.cashUsd || entry.amountUsd * CASH_VALUE_RATIO;
+  const gameLabel = pickLang(gameNameKo[entry.game], gameNameEn[entry.game], gameNameZh[entry.game], gameNameVi[entry.game], gameNameTh[entry.game], gameNameRu[entry.game], GAME_NAME_MORE[entry.game]);
+  const note = pickLang(entry.noteKo, entry.noteEn, entry.noteZh, entry.noteVi, entry.noteTh, entry.noteRu, entry.noteMore);
+  const noteHtml = note ? `<p class="jh-note">${note}</p>` : '';
+  const amountBreakdownHtml = renderAmountBreakdownHtml(cashUsd, entry.stateCode);
+  const gameTagClass = entry.game === 'powerball' ? 'pb' : 'mm';
+  const gameTagEmoji = entry.game === 'powerball' ? '🔴' : '🟡';
+  const rowClass = extraClass ? `jackpot-history-row ${extraClass}` : 'jackpot-history-row';
+  const rowId = extraClass === 'jh-spotlight-row' ? ' id="jh-spotlight-row"' : '';
+  return `<div class="${rowClass}"${rowId} data-date="${entry.date}" data-game="${entry.game}">
       <div class="jh-timeline">
         <span class="jh-timeline-dot ${gameTagClass}"></span>
         <span class="jh-timeline-line"></span>
@@ -4719,17 +4754,42 @@ function renderJackpotHistory(){
         ${amountBreakdownHtml}
       </div>
     </div>`;
-  }).join('');
-
-  const remaining = combined.length - jackpotHistoryVisibleCount;
-  const moreBtnHtml = remaining > 0
-    ? `<button type="button" class="jh-more-btn" onclick="expandJackpotHistory()">${pickLang(
-        `${remaining}건 더 보기`, `Show ${remaining} more`, `再显示${remaining}条`, `Xem thêm ${remaining} mục`, `ดูอีก ${remaining} รายการ`, `Показать ещё ${remaining}`,
-        buildJhMoreBtnMore(remaining)
-      )}</button>`
-    : '';
-  listEl.innerHTML = rowsHtml + moreBtnHtml;
 }
+
+// 2026-08-04: 외부 랜딩 페이지("역대 최고 잭팟" 순위표, biggest-jackpot-payouts.html 등)의
+// "이 금액으로 계산해보기" 링크가 넘겨준 ?jgame=&jdate=로 특정 회차를 지목하면, 확률체감 탭으로
+// 이동해 그 회차를 목록 맨 위에 스포트라이트로 꽂아서 보여줌.
+// jackpotSpotlightRecord(모듈 전역)만 세팅해두면 renderJackpotHistory()가 알아서 매번 그
+// 회차를 얹어주므로(통화 전환·환율 갱신·언어 전환 등 무엇이 다시 그려도 유지됨 — 위
+// jackpotSpotlightRecord 선언부 참고), 여기서는 go('odds')만 부르면 됨. 다만 go('odds')의
+// 실제 렌더는 odds-data.js 지연 로드가 끝난 뒤 비동기로 일어나므로, 행이 실제 DOM에 나타날
+// 때까지 짧게 폴링한 뒤에만 스크롤+아코디언 펼치기+하이라이트를 함(폴링 대신 프라미스 체인에
+// 직접 걸면 go() 내부 체인과의 실행 순서를 보장할 수 없어서 더 위험함 — 실제로 이전 버전에서
+// 그 순서 문제로 스포트라이트가 렌더 직후 지워지는 버그가 있었음).
+function jumpToJackpotHistoryRecord(jgame, jdate){
+  jackpotSpotlightRecord = { game: jgame, date: jdate };
+  go('odds');
+  let attempts = 0;
+  const poll = () => {
+    const row = document.getElementById('jh-spotlight-row');
+    if (row) {
+      const detailsEl = row.closest('details');
+      if (detailsEl && !detailsEl.open) detailsEl.open = true;
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.classList.remove('field-autofill-flash');
+      void row.offsetWidth;
+      row.classList.add('field-autofill-flash');
+      return;
+    }
+    // 회차를 못 찾아 렌더가 아예 안 될 수도 있으므로(잘못된 날짜 등) 무한 폴링하지 않고
+    // 2초(40 × 50ms) 안에 안 나타나면 조용히 포기 — 홈 화면엔 이미 ?amount= 처리로 금액이
+    // 채워져 있어서 최소한의 결과는 항상 보장됨
+    if (++attempts > 40) return;
+    setTimeout(poll, 50);
+  };
+  poll();
+}
+
 function buildJhMoreBtnMore(remaining){
   return {
     ar: `عرض ${remaining} المزيد`, bn: `আরও ${remaining}টি দেখুন`, fr: `Afficher ${remaining} de plus`, hi: `${remaining} और दिखाएं`,
@@ -7141,15 +7201,21 @@ function placeAnnotateTextInput(canvasPt, clientX, clientY, opts){
   const drawCanvas = document.getElementById('annotateOverlayCanvas');
   if (!wrap || !drawCanvas) return;
   const wrapRect = wrap.getBoundingClientRect();
-  const BOTTOM_MARGIN = 74; // 아래 크기조절/삭제 버튼 줄까지 감안한 여유(기존 30px에서 확장)
+  // 2026-08-04: [손잡이+입력창]과 [A−/A+/삭제]를 세로로 쌓지 않고 한 줄로 나란히 배치(아래
+  // styles.css .annotate-text-input-wrap 주석 참고)하면서 필요한 여유 공간도 같이 바뀜 — 세로
+  // 여유(ROW_MARGIN)는 예전 두 줄 높이(74px) 대신 한 줄 높이만큼만 필요(translateY(-50%)로
+  // 위아래 반반 걸치므로 그 절반씩), 가로 여유(WIDTH_MARGIN)는 반대로 다섯 요소가 한 줄에
+  // 나란히 놓이며 늘어난 폭만큼 넉넉히 잡음.
+  const ROW_MARGIN = 30;
+  const WIDTH_MARGIN = 230;
 
   const color = existing ? existing.color : annotateColor;
   let fontSize = existing ? existing.fontSize : (opts.fontSize || annotateFontSize);
 
   const container = document.createElement('span');
   container.className = 'annotate-text-input-wrap';
-  container.style.left = Math.max(0, Math.min(wrapRect.width - 120, clientX - wrapRect.left)) + 'px';
-  container.style.top = Math.max(0, Math.min(wrapRect.height - BOTTOM_MARGIN, clientY - wrapRect.top)) + 'px';
+  container.style.left = Math.max(0, Math.min(wrapRect.width - WIDTH_MARGIN, clientX - wrapRect.left)) + 'px';
+  container.style.top = Math.max(ROW_MARGIN, Math.min(wrapRect.height - ROW_MARGIN, clientY - wrapRect.top)) + 'px';
 
   const inputRow = document.createElement('span');
   inputRow.className = 'annotate-text-input-row';
@@ -7275,8 +7341,8 @@ function placeAnnotateTextInput(canvasPt, clientX, clientY, opts){
   handle.addEventListener('pointermove', (e) => {
     if (dragPointerId === null || e.pointerId !== dragPointerId) return;
     const r = wrap.getBoundingClientRect();
-    const left = Math.max(0, Math.min(r.width - 120, e.clientX - r.left - dragOffsetX));
-    const top = Math.max(0, Math.min(r.height - BOTTOM_MARGIN, e.clientY - r.top - dragOffsetY));
+    const left = Math.max(0, Math.min(r.width - WIDTH_MARGIN, e.clientX - r.left - dragOffsetX));
+    const top = Math.max(ROW_MARGIN, Math.min(r.height - ROW_MARGIN, e.clientY - r.top - dragOffsetY));
     container.style.left = left + 'px';
     container.style.top = top + 'px';
   });
@@ -8976,6 +9042,26 @@ document.addEventListener('DOMContentLoaded', () => {
     params.delete('amount');
     const newSearch3 = params.toString();
     history.replaceState(null, '', location.pathname + (newSearch3 ? '?' + newSearch3 : '') + location.hash);
+  }
+
+  // 2026-08-04: "역대 최고 잭팟" 류 랜딩 페이지(biggest-jackpot-payouts.html 등 3개 언어판)의
+  // 5개 순위 카드마다 있는 "이 금액으로 계산해보기" 링크가 "?amount="만 넘겨서, 위 블록이
+  // 홈 화면 금액은 정확히 채워주지만 "이게 2022-11-07 파워볼 역대 1위였다"는 맥락이나 한국·
+  // 미국 말고 다른 나라 기준 금액은 아무 데도 안 보인다는 사용자 지적으로 "?jgame=&jdate="
+  // 추가함. 확률체감 탭의 "역대 잭팟 확인 기록"(jackpot-history-list)이 바로 그 회차를
+  // COUNTRY_TAX_PROFILES 전체(랜딩 페이지가 보여주는 4개국보다 훨씬 많음) 기준으로 이미
+  // 보여주고 있어서, 새 UI를 만드는 대신 그 목록의 해당 행으로 바로 스크롤+하이라이트함.
+  // odds-data.js가 아직 없으면(지연 로드) 비동기로 기다렸다가 처리하고, 혹시 회차를 못 찾으면
+  // (데이터 변경 등) 위에서 이미 채워둔 홈 화면 금액을 그대로 둔 채 조용히 포기함 — 링크가
+  // 최소한 "금액은 맞게 채워짐"까지는 항상 보장되게.
+  const urlJgame = params.get('jgame');
+  const urlJdate = params.get('jdate');
+  if ((urlJgame === 'powerball' || urlJgame === 'megamillions') && /^\d{4}-\d{2}-\d{2}$/.test(urlJdate || '')) {
+    params.delete('jgame');
+    params.delete('jdate');
+    const newSearchJ = params.toString();
+    history.replaceState(null, '', location.pathname + (newSearchJ ? '?' + newSearchJ : '') + location.hash);
+    jumpToJackpotHistoryRecord(urlJgame, urlJdate);
   }
 
   // "?state=CA"는 세금 기준이 미국일 때만 의미가 있음 — 이 요청(urlCountry) 또는 이미 위에서
