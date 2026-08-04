@@ -3959,6 +3959,11 @@ function buildDrawScheduleMore(days){
 // cashUsd: 공식 사이트가 발표한 실제 일시불 현금가치(확인 가능하면 채움) — 없으면 화면 표시 시
 // CASH_VALUE_RATIO(58%) 추정치로 대체됨(getJackpotCashUsd() 참고). 공식 발표는 추첨 직전까지
 // 계속 갱신되니 "확인 필요" 없이 확실할 때만 채우고, 애매하면 비워서 추정치를 쓰게 둘 것.
+// 2026-08-04: 사용자가 usamega.com 스크린샷 전달(파워볼 8/3 회차 8,30,41,48,54+4 확인,
+// 메가밀리언즈는 7/31 회차 그대로) — 메가밀리언즈는 이미 $60M/$25.5M로 정확히 일치해서 안 바꿈.
+// 파워볼은 이 $748M/$325.1M이 8/3(월) 추첨용이었던 옛 값인데, 같은 스크린샷에 다음 추첨(8/5 수)
+// 잭팟이 아직 "Pending"으로 떠 있어서(공식 미발표) 추측으로 안 덮어쓰고 그대로 둠 — 다음
+// 세션/사용자가 "Pending"이 실제 금액으로 바뀐 뒤 갱신할 것.
 const JACKPOT_DATA = {
   powerball:    { amountUsd: 786000000, cashUsd: 341600000 },
   megamillions: { amountUsd: 60000000, cashUsd: 25500000 },
@@ -3984,7 +3989,8 @@ const GAME_NAME_MORE = {
 // 다음 추첨(8/5) 잭팟이 $786M(현금가치 $341.6M)로 증가, 위 JACKPOT_DATA.powerball도 같이 갱신함.
 // 메가밀리언즈는 7/31 회차 그대로 최신(다음 추첨이 오늘 8/4 저녁이라 아직 결과 없음, WebSearch로
 // 8/4 추첨 예고 잭팟 $60M/현금 $25.5M 확인 — 기존 JACKPOT_DATA.megamillions와 이미 일치해서
-// 변경 없음).
+// 변경 없음). (같은 날 다른 세션이 독립적으로 같은 8/3 회차 번호를 3개 출처 교차검증으로도
+// 재확인함 — 이 항목과 세부 출처만 다를 뿐 결론 일치.)
 const LATEST_DRAW = {
   powerball:    { date: '2026-08-03', numbers: [8, 30, 41, 48, 54], special: 4 },
   megamillions: { date: '2026-07-31', numbers: [4, 18, 26, 43, 51], special: 4 },
