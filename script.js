@@ -6679,11 +6679,19 @@ function buildHomeResultCheckCanvas(){
   // 넓어진 캔버스에 맞춰 살짝 더 키움(58px→66px). 폭을 넘으면 fitFontSize로 방어.
   // 2026-07-31 디자인팀 반영 가이드: 바로 아래 있던 "일시불 예상 실수령액" 캡션(resultLabelText)
   // 삭제 — 그 역할은 아래 MEMO 줄("세후 예상 실수령액 시뮬레이션")이 이미 겸하고 있어서 중복
-  // 이었음. 금액 자체의 y좌표(256)는 그대로 유지.
+  // 이었음.
+  // 2026-08-04: 위 "금액 y좌표(256)는 그대로 유지" 지침이 실제로는 잘못된 판단이었음이 밝혀짐
+  // — 사용자가 스크린샷으로 "받는 사람" 밑줄(payToLineY=214)과 금액 숫자가 겹쳐 보인다고
+  // 지적함. 66px 굵은 한글은 alphabetic 베이스라인 기준 ascent가 실제로 47~52px에 달해서
+  // (CJK 글리프는 라틴 문자보다 em 박스를 거의 꽉 채움), y=256 기준으로 글자 윗부분이
+  // 206px 근처까지 올라가 payToLineY(214)보다 위로 삐져나갔던 것 — 폭 방향(fitFontSize)만
+  // 방어하고 있었고 세로 여백은 애초에 검증한 적이 없었음. 최대 폰트를 66→58px로, y좌표를
+  // 256→284로 내려서 payToLineY와 최소 19px 여유를 확보(어느 언어든 짧은 금액 문자열은
+  // 항상 이 최대 크기 근처로 그려지므로, 언어별로 따로 확인할 필요 없이 이 여백이 공통 적용됨).
   ctx.fillStyle = '#155445';
   ctx.textAlign = 'center';
-  fitFontSize(ctx, finalAmt, 800, 66, 40, cardW - PAD * 2);
-  ctx.fillText(finalAmt, W / 2, 256);
+  fitFontSize(ctx, finalAmt, 800, 58, 40, cardW - PAD * 2);
+  ctx.fillText(finalAmt, W / 2, 284);
 
   // MEMO 줄 + 서명란 — 2026-07-31 하드 제약 #3 완화(사용자 승인, 위 안전장치 문단 참고). 기존
   // "세전 → 세후차액" 줄(beforeTax/taxDiff)은 사용자 요청으로 이 카드에서 아예 뺌 — 그 정보는

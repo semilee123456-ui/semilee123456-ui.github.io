@@ -2153,10 +2153,16 @@
     display:flex; align-items:center; justify-content:center; position:fixed; inset:0; z-index:2200; padding:16px;
   }
   .annotate-overlay-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.55); }
+  /* 2026-08-04: 40~60대 사용자가 이 팝업(펜/텍스트 도구·저장·공유 버튼) 전체가 작게 느껴진다고
+     재지적 — 2026-08-03에 도구 버튼(.annotate-tool-btn) 폰트만 한 차례 키웠었는데, 모달
+     자체 폭·여백과 하단 CTA(저장/공유) 버튼은 그때 손 안 대고 넘어갔던 부분. 다른 모달(예:
+     .tax-basis-overlay-panel 420px, .select-sheet-panel 480px)보다 이 모달만 한 단계 더
+     키움 — 이 모달만 유일하게 그림 그리기 캔버스+글자 조작까지 하는 조작형 모달이라 다른
+     단순 목록형 모달과 같은 폭 기준을 안 따라도 됨. */
   .annotate-overlay-panel{
-    position:relative; width:100%; max-width:480px; max-height:calc(100vh - 32px); overflow-y:auto;
-    background:var(--card); border-radius:16px; padding:16px; box-shadow:0 12px 32px rgba(0,0,0,0.28);
-    display:flex; flex-direction:column; gap:10px;
+    position:relative; width:100%; max-width:560px; max-height:calc(100vh - 32px); overflow-y:auto;
+    background:var(--card); border-radius:16px; padding:20px; box-shadow:0 12px 32px rgba(0,0,0,0.28);
+    display:flex; flex-direction:column; gap:12px;
   }
   .annotate-overlay-header{
     display:flex; align-items:center; justify-content:space-between; gap:8px;
@@ -2189,7 +2195,7 @@
      시니어 가독성 최소 폰트(--fs-small)를 본문급(--fs-body)으로 올리고, 터치 타깃도
      이 코드베이스의 44px 최소 기준(예: .tts-btn-icon)에 맞춤 */
   .annotate-tool-btn{
-    font-family:inherit; font-size:var(--fs-body); font-weight:700; padding:10px 16px; min-height:44px;
+    font-family:inherit; font-size:var(--fs-body); font-weight:700; padding:12px 18px; min-height:48px;
     border-radius:12px; border:1.5px solid var(--border); background:var(--bg); color:var(--text-dark); cursor:pointer;
   }
   .annotate-tool-btn.is-active{ background:var(--teal); border-color:var(--teal); color:var(--on-accent); }
@@ -2213,7 +2219,7 @@
   .annotate-date-skip input[type="checkbox"]{ width:16px; height:16px; cursor:pointer; accent-color:var(--teal); }
   .check-date-input:disabled{ opacity:0.5; cursor:not-allowed; }
   .annotate-color-swatch{
-    width:26px; height:26px; border-radius:50%; border:2px solid var(--border); cursor:pointer; padding:0;
+    width:32px; height:32px; border-radius:50%; border:2px solid var(--border); cursor:pointer; padding:0;
   }
   .annotate-color-swatch.is-active{ border-color:var(--text-dark); box-shadow:0 0 0 2px var(--card), 0 0 0 4px var(--text-dark); }
   /* line-height:0으로 base 캔버스 아래 생기는 인라인 여백을 없애서 wrap 높이가 캔버스 실제
@@ -2224,7 +2230,11 @@
   }
   #annotateBaseCanvas{ display:block; width:100%; height:auto; }
   #annotateOverlayCanvas{ position:absolute; inset:0; width:100%; height:100%; }
-  .annotate-hint{ font-size:var(--fs-small); color:var(--text-muted); margin:0; text-align:center; }
+  .annotate-hint{ font-size:var(--fs-note); color:var(--text-muted); margin:0; text-align:center; }
+  /* 저장/공유 버튼(#annotateSaveBtn·#annotateShareBtn)은 이 모달 안에서만 다른 곳의
+     .share-btn(예: 홈 화면 결과 버튼)보다 한 단계 더 크게 — 이 두 버튼이 이 모달의 최종 액션
+     이라 40~60대 사용자가 가장 크게 봐야 하는 버튼임 */
+  .annotate-overlay-panel .share-btn{ font-size:var(--fs-body); padding:14px; min-height:50px; }
   /* 2026-08-03: 예전엔 <input> 자체가 absolute였는데, 타이핑 중(키보드 열려있는 동안)엔 옮길
      방법이 없다는 지적으로 작은 드래그 손잡이(.annotate-text-drag-handle)를 추가함 — 손잡이+
      입력창을 한 wrap으로 묶어서 wrap을 absolute로 옮기고, 손잡이를 끌면 입력 포커스(키보드)는
