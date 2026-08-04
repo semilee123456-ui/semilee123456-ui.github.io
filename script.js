@@ -2112,7 +2112,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260802';
+    script.src = 'odds-data.js?v=20260804';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -3970,7 +3970,7 @@ function buildDrawScheduleMore(days){
 // CASH_VALUE_RATIO(58%) 추정치로 대체됨(getJackpotCashUsd() 참고). 공식 발표는 추첨 직전까지
 // 계속 갱신되니 "확인 필요" 없이 확실할 때만 채우고, 애매하면 비워서 추정치를 쓰게 둘 것.
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 748000000, cashUsd: 325100000 },
+  powerball:    { amountUsd: 786000000, cashUsd: 341600000 },
   megamillions: { amountUsd: 60000000, cashUsd: 25500000 },
 };
 
@@ -3985,16 +3985,18 @@ const GAME_NAME_MORE = {
 // 🎱 최신 추첨 당첨번호 — 잭팟 확인할 때 공식 사이트(powerball.com/megamillions.com) 보고 같이 갱신.
 // 재미 요소 + 공유 유도용(사용자 피드백: "사이트가 너무 교과서 같다") — 세금 계산기 본질은 그대로 두고
 // 잭팟 카드 안에 양념처럼 추가한 것이라, 갱신을 깜빡해도 계산기 기능엔 영향 없음.
-// 2026-07-28 사용자가 채팅으로 공식 결과 직접 전달해서 갱신: 파워볼 7/25 → 7/27 회차
-// (6,26,46,58,65 + 파워볼 25, Power Play 2x는 이 위젯 스코프 밖이라 표시 안 함). 2026-07-29
-// 사용자가 스크린샷으로 메가밀리언즈 7/28 회차 결과도 전달해서 갱신
-// (34,48,49,59,70 + 메가볼 12). 2026-07-30 사용자가 usamega.com 스크린샷으로 파워볼
-// 7/27 → 7/29 회차 결과 전달해서 갱신(30,36,40,42,57 + 파워볼 2, Power Play 2x·더블플레이는
-// 이 위젯 스코프 밖). 메가밀리언즈는 같은 스크린샷에도 7/28 회차 그대로(다음 추첨 7/31 아직
-// 안 함)라 안 바꿈 — 위 JACKPOT_DATA.powerball도 같은 스크린샷의 "Next Jackpot $707
-// Million"으로 같이 갱신함.
+// 2026-08-04 이어서: "네가 보고 혼자 할 수 있는 거 전부 해줘" 요청으로 WebSearch(뉴스 3곳)+
+// WebFetch(powerball.com 공식 페이지)로 교차검증 후 갱신. 자동 백필 루틴(커밋 fd78d6f)이
+// odds-data.js의 POWERBALL_DRAW_ARCHIVE에는 8/3 회차를 이미 넣어놨는데, 이 상수(LATEST_DRAW)와
+// POWERBALL_JACKPOT_ARCHIVE는 빠뜨린 채였음 — 위 "알려진 미해결 항목"에 이미 문서화된 "3개
+// 데이터 소스 중 하나만 빠지는" 패턴이 이번에도 그대로 재발한 것(자세한 배경은 그 섹션 참고).
+// 파워볼 8/1 → 8/3 회차(8,30,41,48,54 + 파워볼 4, Power Play 2x는 스코프 밖) — 당첨자 없어서
+// 다음 추첨(8/5) 잭팟이 $786M(현금가치 $341.6M)로 증가, 위 JACKPOT_DATA.powerball도 같이 갱신함.
+// 메가밀리언즈는 7/31 회차 그대로 최신(다음 추첨이 오늘 8/4 저녁이라 아직 결과 없음, WebSearch로
+// 8/4 추첨 예고 잭팟 $60M/현금 $25.5M 확인 — 기존 JACKPOT_DATA.megamillions와 이미 일치해서
+// 변경 없음).
 const LATEST_DRAW = {
-  powerball:    { date: '2026-08-01', numbers: [6, 17, 27, 48, 50], special: 5 },
+  powerball:    { date: '2026-08-03', numbers: [8, 30, 41, 48, 54], special: 4 },
   megamillions: { date: '2026-07-31', numbers: [4, 18, 26, 43, 51], special: 4 },
 };
 
