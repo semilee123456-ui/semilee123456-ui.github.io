@@ -85,6 +85,53 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "Ang ChamTax ay libreng calculator para sa after-tax take-home amount ng mga panalo sa Powerball at Mega Millions lottery ng US."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "Isang libreng web calculator para sa after-tax take-home amount ng mga jackpot ng US lottery (Powerball, Mega Millions), sumasaklaw sa 21 bansa/hurisdiksyon kabilang ang US non-resident withholding.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "Paano Kalkulahin ang After-Tax Take-Home Amount ng Panalo sa US Lottery",
+  "step": [
+    { "@type": "HowToStep", "name": "Ilagay ang halaga ng panalo", "text": "Ilagay ang halaga ng panalo sa Powerball o Mega Millions (ipinahayag na jackpot o cash value kung lump sum)." },
+    { "@type": "HowToStep", "name": "Piliin ang bansang tinitirhan", "text": "Piliin ang bansa kung saan ka legal na naninirahan para sa batayan ng buwis." },
+    { "@type": "HowToStep", "name": "Piliin ang US state", "text": "Piliin ang estado sa US kung saan binili ang tiket — magkakaiba ang karagdagang withholding tax rate depende sa estado." },
+    { "@type": "HowToStep", "name": "Tingnan ang after-tax take-home amount", "text": "Tingnan ang tinatayang after-tax take-home amount matapos ang 30% na US federal withholding (para sa non-resident) at buwis sa bansang tinitirhan (kasama ang pagsasaayos para sa double taxation)." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -113,6 +160,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   h2{ font-size:var(--fs-h2); margin:32px 0 12px; }
   h3{ font-size:var(--fs-h3); margin:20px 0 8px; }
   p{ font-size:var(--fs-body); margin:0 0 14px; }
@@ -156,7 +204,8 @@
   </div>
 
   <h1>Kaya ano ba talaga ang US lottery?</h1>
-  <p class="lead">Para sa mga nagbanggit nito sa usapan at nakatanggap ng nakalitong tingin — narito ang totoong paliwanag mula sa simula. Ano ang Powerball at Mega Millions, paano ito laruin, kung gaano talaga kababa ang tsansa, at bakit naglalaro pa rin ang mga tao.</p>
+  <p class="lead">Ang ChamTax ay libreng calculator na nagpapakita ng aktwal na after-tax take-home amount ng mga panalo sa Powerball at Mega Millions ng US. Para sa mga nagbanggit nito sa usapan at nakatanggap ng nakalitong tingin — narito ang totoong paliwanag mula sa simula. Ano ang Powerball at Mega Millions, paano ito laruin, kung gaano talaga kababa ang tsansa, at bakit naglalaro pa rin ang mga tao.</p>
+  <p class="updated-date">Huling na-update: 2026-08-04</p>
 
   <h2>1. Ang US Lottery = Powerball + Mega Millions</h2>
   <p>May sarili ring lottery ang bawat estado ng US, pero ang “US lottery” ay karaniwang tumutukoy sa dalawang napakalaking larong ito na magkasamang ibinebenta sa halos lahat ng estado.</p>
