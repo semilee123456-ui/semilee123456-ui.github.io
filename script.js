@@ -498,6 +498,19 @@ document.addEventListener('toggle', (e) => {
     fitCountryToggleButtons();
   }
 }, true);
+// 2026-08-04: "일시불 대신 연금으로 받으면?" 아코디언을 한 번 열었다가 다시 누르면 안 닫힌다는
+// 사용자 제보 — 이 사이트 <details> 구조가 최대 3중 중첩(결과 더 자세히 보기 > 연금으로
+// 받으면? > 30년 전체 지급표 보기)인데, 안쪽 <details>가 열린 채로 바깥 <details>를 닫으면
+// 브라우저(특히 WebKit 계열)가 바깥쪽 접기 렌더링을 제대로 못 하는 게 원인으로 보임(자식
+// 콘텐츠가 여전히 펼쳐진 상태로 레이아웃에 남는 알려진 부류의 버그). 이 sandbox의 Chromium으로는
+// 재현이 안 돼서 100% 확진은 못 했지만, 재현 여부와 무관하게 "부모를 닫았는데 자식이 여전히
+// 열려있는" 상태 자체가 다음에 그 부모를 다시 열었을 때도 안 써도 될 내용을 계속 펼쳐두는 것도
+// 좋은 UX가 아니라서, 방어적으로 부모가 닫힐 때 그 안의 모든 자식 <details>도 같이 닫음.
+document.addEventListener('toggle', (e) => {
+  if (e.target && e.target.tagName === 'DETAILS' && !e.target.open) {
+    e.target.querySelectorAll('details[open]').forEach(child => { child.open = false; });
+  }
+}, true);
 // 웹폰트(Pretendard)가 초기 측정 이후에 늦게 로드되면 글자 폭이 바뀌어 판단이 틀어질 수 있어서,
 // 폰트 로드 완료 시점에 한 번 더 재확인
 if (document.fonts && document.fonts.ready) {
