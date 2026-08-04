@@ -2307,3 +2307,47 @@ Cloudflare가 폐지**했지만 이 프로젝트는 이미 `script.min.js`/`styl
 관계상 검증만 하고 넘어감).
 
 변경 파일: `HANDOFF.md`만(이 항목 — 코드 변경 없음, 전부 검증 작업).
+
+### 2026-08-05 — 공유 문구 끝 사이트 링크 제거 (아이메시지 등에서 이미지+텍스트+
+### 링크미리보기카드로 메시지가 3덩이로 쪼개져 나오는 문제)
+
+**배경**: 사용자가 아이메시지 스크린샷을 보내줌 — "🎱 최근 당첨번호" 공유 시 (1) 이미지
+카드 (2) "...확인해보세요 https://chamtax.com/"라는 텍스트+링크 (3) 그 링크를 아이메시지가
+자동으로 스크랩해서 만든 별도의 링크 미리보기 카드, 이렇게 메시지가 3덩이로 쪼개져 나와서
+지저분함. "맨 밑에 사이트 링크는 없는 게 나은 거 같아, 전부 수정해줘. 모든 언어랑 모든
+공유"라고 명시적으로 요청함.
+
+**조사**: `grep`으로 공유 관련 함수 6개(`shareLatestDraw`/`shareDreamResult`/`shareResult`/
+`shareRefundChecklist`/`shareUsUnclaimedMoneyChecklist`/`shareInUnclaimedMoneyChecklist`)
+전부가 `shareText`에 `shareUrl`을 붙이거나 `navigator.share()`에 별도 `url` 파라미터로
+넘기고 있는 걸 확인. 그중 `shareResult`("이 결과 공유하기")만 예외적으로 링크에 실질
+기능이 있음을 발견 — `?amount=&country=&state=` 쿼리파라미터가 실려있어서 받는 사람이
+누르면 나와 똑같은 계산 결과를 그대로 보여주는 딥링크였음(단순 사이트 홍보 링크가 아님).
+사용자에게 확인받아 **이것만 예외로 남기고 나머지 5개는 전부 링크 제거**하기로 함.
+
+**구현**: 5개 함수에서 `shareUrl` 변수·`wrapWithOgShareCard()` 호출·`url:` 파라미터를
+전부 제거 — 이미지가 있는 2개(`shareLatestDraw`/`shareDreamResult`)는 `shareText`에서
+`${shareUrl}` 접미사만 제거(이미지 자체엔 이미 "chamtax.com" 워터마크가 있어서 브랜딩은
+유지됨), 텍스트만 있는 3개(체크리스트 공유)는 `navigator.share()`/클립보드 폴백/
+`window.prompt` 폴백 3곳 전부에서 링크를 빼서 순수 텍스트만 공유되게 함. `shareResult`는
+전혀 안 건드림. **번역 작업은 불필요했음** — 26개 언어 문구 자체엔 애초에 URL이 안
+박혀있었고(템플릿 리터럴로 나중에 붙이는 방식이었음), 코드에서 그 접미사만 떼어내면 되는
+구조였기 때문.
+
+**부수 정리 — 죽은 코드 제거**: 5개 함수의 호출부를 없애자 `wrapWithOgShareCard()`
+함수(카카오톡 등 링크 미리보기 봇용 동적 OG 카드를 만들어주던 헬퍼, `og.chamtax.com`
+Cloudflare Worker 호출)와 `OG_SHARE_WORKER_BASE` 상수가 호출부 0개인 죽은 코드가 됨 —
+`grep`으로 전체 저장소(소스 파일 기준, `script.min.js` 제외) 재확인 후 완전히 삭제.
+**단, `og-share-worker/` 폴더(실제 배포된 Cloudflare Worker 소스)는 그대로 둠** — 배포
+자체를 되돌리는 건 이 세션 요청 범위 밖이라고 판단(인프라 변경은 신중하게). 나중에 링크
+공유를 다시 붙이고 싶으면 `og-share-worker/README.md` 참고해서 `OG_SHARE_WORKER_BASE`
+상수와 `wrapWithOgShareCard()`를 되살리면 됨(git 히스토리에 남아있음).
+
+**검증**: `node --check` 통과. Playwright로 `navigator.share`를 스텁으로 갈아끼워서
+6개 함수 전부 실제로 어떤 데이터가 넘어가는지 직접 캡처 — 5개는 `url` 필드/텍스트 접미사
+전부 없음 확인, `shareResult`만 여전히 `?amount=342&country=kr` 딥링크가 텍스트에 살아있는
+것 확인. 회귀 테스트(`home_audit` 18·`console_error_audit` 161·`i18n_coverage_audit`
+766키·`i18n_attr_lint` 0후보) 전부 `ISSUES: 0`.
+
+변경 파일: `script.js`/`script.min.js`(`OG_SHARE_WORKER_BASE`/`wrapWithOgShareCard()`
+삭제, 5개 공유 함수에서 링크 제거), `index.html`(캐시버스팅 `20260804-4`→`20260805-1`).
