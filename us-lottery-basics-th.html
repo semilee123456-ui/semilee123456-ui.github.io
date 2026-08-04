@@ -85,6 +85,53 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "ChamTax คือเครื่องคำนวณฟรีสำหรับเงินสุทธิหลังหักภาษีของเงินรางวัลลอตเตอรี่พาวเวอร์บอลและเมกะมิลเลียนของสหรัฐฯ"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "เครื่องคำนวณเว็บฟรีสำหรับเงินสุทธิหลังหักภาษีของเงินรางวัลแจ็คพอตลอตเตอรี่สหรัฐฯ (พาวเวอร์บอล เมกะมิลเลียน) ครอบคลุม 21 ประเทศ/เขตอำนาจศาล รวมถึงภาษีหัก ณ ที่จ่ายสำหรับผู้ไม่มีถิ่นพำนักในสหรัฐฯ",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "วิธีคำนวณเงินสุทธิหลังหักภาษีของเงินรางวัลลอตเตอรี่อเมริกา",
+  "step": [
+    { "@type": "HowToStep", "name": "กรอกเงินรางวัล", "text": "กรอกเงินรางวัลพาวเวอร์บอลหรือเมกะมิลเลียน (มูลค่าแจ็คพอตที่ประกาศ หรือมูลค่าเงินสดแบบรับก้อนเดียว)" },
+    { "@type": "HowToStep", "name": "เลือกประเทศที่พำนัก", "text": "เลือกเกณฑ์ภาษีตามประเทศที่คุณพำนักอยู่" },
+    { "@type": "HowToStep", "name": "เลือกรัฐในอเมริกาที่ซื้อ", "text": "เลือกรัฐในอเมริกาที่ซื้อลอตเตอรี่ — แต่ละรัฐมีอัตราภาษีหัก ณ ที่จ่ายเพิ่มเติมต่างกัน" },
+    { "@type": "HowToStep", "name": "ดูเงินสุทธิหลังหักภาษี", "text": "ดูยอดเงินสุทธิโดยประมาณหลังหักภาษีของรัฐบาลกลางสหรัฐฯ 30% (สำหรับผู้ไม่มีถิ่นพำนัก) และภาษีในประเทศที่พำนัก (รวมการปรับเพื่อลดการเก็บภาษีซ้ำซ้อน)" }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -113,6 +160,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   h2{ font-size:var(--fs-h2); margin:32px 0 12px; }
   h3{ font-size:var(--fs-h3); margin:20px 0 8px; }
   p{ font-size:var(--fs-body); margin:0 0 14px; }
@@ -156,7 +204,8 @@
   </div>
 
   <h1>แล้วลอตเตอรี่อเมริกาคืออะไรกันแน่?</h1>
-  <p class="lead">สำหรับใครที่เคยพูดเรื่องนี้แล้วเจอสีหน้างงๆ กลับมา — นี่คือคำอธิบายแบบเริ่มต้นจริงๆ ว่าพาวเวอร์บอลกับเมกะมิลเลียนคืออะไร เล่นยังไง โอกาสถูกรางวัลแย่แค่ไหน และทำไมคนถึงยังเล่นกันอยู่</p>
+  <p class="lead">ChamTax คือเครื่องคำนวณฟรีที่แสดงเงินสุทธิหลังหักภาษีจริงของเงินรางวัลลอตเตอรี่พาวเวอร์บอลและเมกะมิลเลียนของสหรัฐฯ สำหรับใครที่เคยพูดเรื่องนี้แล้วเจอสีหน้างงๆ กลับมา — นี่คือคำอธิบายแบบเริ่มต้นจริงๆ ว่าพาวเวอร์บอลกับเมกะมิลเลียนคืออะไร เล่นยังไง โอกาสถูกรางวัลแย่แค่ไหน และทำไมคนถึงยังเล่นกันอยู่</p>
+  <p class="updated-date">อัปเดตล่าสุด: 2026-08-04</p>
 
   <h2>1. ลอตเตอรี่อเมริกา = พาวเวอร์บอล + เมกะมิลเลียน</h2>
   <p>แต่ละรัฐในอเมริกาก็มีลอตเตอรี่ของตัวเอง แต่คำว่า “ลอตเตอรี่อเมริกา” ปกติหมายถึงเกมใหญ่สองเกมนี้ที่ขายร่วมกันในเกือบทุกรัฐ</p>
