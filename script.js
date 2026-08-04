@@ -50,7 +50,7 @@ let I18N_LOAD_PROMISE = null;
 
 function loadI18nLanguage(lang){
   if (lang === "ko" || I18N_CACHE[lang]) return Promise.resolve();
-  return fetch(`i18n/${lang}.json?v=20260721`)
+  return fetch(`i18n/${lang}.json?v=20260804`)
     .then(res => { if (!res.ok) throw new Error("i18n fetch failed: " + res.status); return res.json(); })
     .then(data => { I18N_CACHE[lang] = data; })
     .catch(err => { console.error("[i18n] failed to load", lang, err); });
@@ -432,7 +432,6 @@ function applyTranslations(){
   initJackpotCardAmt();
   refreshJackpotDrawerIfOpen();
   updateJcTapLabel();
-  updateHiddenMoneyChannelsForLang();
   renderJackpotHistory();
   renderJackpotTakeHomeRanking();
   renderJackpotIndexRollover();
@@ -2326,37 +2325,17 @@ function jackpotOddsText(game){
    pt: `1 / 292M`, es: `1 / 292M`, uk: `1 / 292М`, tet: `1 / 292M`});
 }
 
-// 놓친 돈 체크리스트의 5개 채널 링크 — 한국 사이트는 전부 주민등록번호 인증이 필요한
-// 한국 국내 시스템이라, 한국 연고가 없는 영어권 사용자에게는 그대로 도움이 안 됨.
-// 그래서 영어 모드에서는 실제 미국에서 통용되는 자산 찾기 서비스로 링크 자체를 바꿔줌
-// (href·아이콘·출처명 모두 교체, 텍스트는 data-i18n으로 별도 처리)
-const HIDDEN_MONEY_CHANNELS_EN = {
-  hometax:   { href: 'https://www.irs.gov/refunds', icon: '🏛️', sub: 'IRS.gov' },
-  gov24:     { href: 'https://www.usa.gov/unclaimed-money', icon: '🏢', sub: 'USA.gov' },
-  fine:      { href: 'https://www.missingmoney.com', icon: '💰', sub: 'MissingMoney' },
-  health:    { href: 'https://www.unclaimedretirementbenefits.com', icon: '💼', sub: 'Unclaimed Retirement' },
-  cardpoint: { href: 'https://www.treasurydirect.gov/indiv/tools/treasuryhunt.htm', icon: '🏦', sub: 'TreasuryDirect' },
-};
-const HIDDEN_MONEY_CHANNELS_KO = {
-  hometax:   { href: 'https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&tmIdx=42&tm2lIdx=4203000000&tm3lIdx=4203010000', icon: '🏛️', sub: 'Hometax' },
-  gov24:     { href: 'https://www.gov.kr/portal/service/serviceInfo/174100000054', icon: '🏢', sub: 'Gov24' },
-  fine:      { href: 'https://fine.fss.or.kr/fine/main/contents.do?menuNo=900032', icon: '💰', sub: 'FSS Fine' },
-  health:    { href: 'https://www.nhis.or.kr/nhis/minwon/retrieveHwangub.do', icon: '🏥', sub: 'NHIS' },
-  cardpoint: { href: 'https://www.cardpoint.or.kr', icon: '💳', sub: 'Yeosin Finance' },
-};
-function updateHiddenMoneyChannelsForLang(){
-  const isEnHm = (typeof currentLang !== 'undefined' && currentLang === 'en');
-  const map = isEnHm ? HIDDEN_MONEY_CHANNELS_EN : HIDDEN_MONEY_CHANNELS_KO;
-  Object.keys(map).forEach(site => {
-    const a = document.getElementById('refund-site-' + site);
-    if (!a) return;
-    a.href = map[site].href;
-    const iconEl = a.querySelector('.refund-link-btn-icon');
-    if (iconEl) iconEl.textContent = map[site].icon;
-    const subEl = a.querySelector('.refund-link-btn-sub');
-    if (subEl) subEl.textContent = map[site].sub;
-  });
-}
+// 2026-08-04에 제거됨 — 예전엔 currentLang === 'en'일 때 놓친 돈 체크리스트 5개 링크를
+// 한국 사이트(Hometax/Gov24/FSS/NHIS/카드포인트)에서 미국 사이트(IRS.gov/USA.gov/
+// MissingMoney/TreasuryDirect 등)로 통째로(href·아이콘·출처명) 바꿔치기했었음. 그런데 이
+// 위젯 자체가 data-basis="kr"이라 sharedCountry==='kr'일 때만 보임(filterFaq() 참고) —
+// 즉 이 스위치를 보는 사람은 언제나 세금 기준이 한국인 사람뿐이고, 그중엔 "한국에 사는
+// 외국인"(페르소나④, 표시 언어만 영어로 바꾼 경우)도 포함됨. 이 사람들의 돈은 실제로
+// 한국 시스템에 있는데 영어를 쓴다는 이유만으로 IRS.gov(자기와 무관한 미국 국세청)로
+// 보내던 버그 — 화면 표시 언어와 실제 거주국을 혼동한 LANG_TO_COUNTRY와 같은 종류의
+// 문제였음. 정적 HTML(index.html)에 이미 올바른 한국 링크가 박혀 있어서, 이 함수는
+// 그 값을 미국 링크로 "덮어쓰는" 역할만 하고 있었으므로 함수 자체를 삭제함 — 이제
+// 표시 언어와 무관하게 항상 실제 한국 공식 채널로 연결됨.
 
 function checkHiddenMoney(){
   const checks = document.querySelectorAll('.refund-check-row input[type="checkbox"]');
