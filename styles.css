@@ -679,7 +679,7 @@
   .country-toggle-btn .flag-badge{ background:var(--text-dark); }
   .country-toggle-btn.active .flag-badge{ background:var(--teal); }
   .rate-input{
-    width:80px; border:none; border-bottom:1.5px dashed var(--teal); background:transparent;
+    width:100px; border:none; border-bottom:1.5px dashed var(--teal); background:transparent;
     font-family:inherit; font-size:var(--fs-body); font-weight:700; color:var(--teal); text-align:center; padding:0 2px;
   }
   .rate-input:focus{ outline:none; border-bottom-style:solid; }

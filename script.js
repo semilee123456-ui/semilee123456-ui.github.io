@@ -50,7 +50,7 @@ let I18N_LOAD_PROMISE = null;
 
 function loadI18nLanguage(lang){
   if (lang === "ko" || I18N_CACHE[lang]) return Promise.resolve();
-  return fetch(`i18n/${lang}.json?v=20260804-3`)
+  return fetch(`i18n/${lang}.json?v=20260804-4`)
     .then(res => { if (!res.ok) throw new Error("i18n fetch failed: " + res.status); return res.json(); })
     .then(data => { I18N_CACHE[lang] = data; })
     .catch(err => { console.error("[i18n] failed to load", lang, err); });
@@ -614,8 +614,8 @@ let EXCHANGE_RATE_LAK = 22600;  // 기본값(fallback), USD/LAK (2026-07-18 확�
 function syncRateInputsDisplay(){
   const homeInput = document.getElementById('home-rate-input');
   const compareInput = document.getElementById('compare-rate-input');
-  if (homeInput && document.activeElement !== homeInput) homeInput.value = EXCHANGE_RATE.toLocaleString('ko-KR');
-  if (compareInput && document.activeElement !== compareInput) compareInput.value = EXCHANGE_RATE.toLocaleString('ko-KR');
+  if (homeInput && document.activeElement !== homeInput) homeInput.value = EXCHANGE_RATE.toLocaleString('ko-KR', { maximumFractionDigits: 1 });
+  if (compareInput && document.activeElement !== compareInput) compareInput.value = EXCHANGE_RATE.toLocaleString('ko-KR', { maximumFractionDigits: 1 });
 }
 let exchangeRateSourceName = null; // 실시간 조회에 성공했을 때, 어느 제공처에서 가져온 값인지 화면에 표시하기 위해 저장
 let exchangeRateIsLive = false; // 실시간 fetch 성공 여부 표시용
@@ -643,7 +643,7 @@ function showForeignRateEditor(code, rate){
     if (!row || !input || !codeEl) return;
     // 사용자가 지금 이 칸에 타이핑 중이면(activeElement) 값을 덮어쓰지 않음 — home-rate-input의
     // 기존 패턴과 동일(타이핑 도중 재계산이 커서 위치를 흩트리지 않도록)
-    if (document.activeElement !== input) input.value = rate.toLocaleString('en-US', { maximumFractionDigits: 4 });
+    if (document.activeElement !== input) input.value = rate.toLocaleString('en-US', { maximumFractionDigits: 2 });
     codeEl.textContent = code;
     row.style.display = 'block';
   });
@@ -933,7 +933,7 @@ function syncHomeFromShared(){
     btn.classList.toggle('active', btn.dataset.country === sharedCountry);
   });
   document.getElementById('homeStateSelect').value = sharedState;
-  document.getElementById('home-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR');
+  document.getElementById('home-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR', { maximumFractionDigits: 1 });
   updateHomeCalc(sharedAmountUsd);
   filterFaq();
 }
@@ -956,7 +956,7 @@ function syncCompareFromShared(){
   setSliderMillions(slider, millions);
   updateSliderFill(slider);
   document.getElementById('compareStateSelect').value = sharedState;
-  document.getElementById('compare-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR');
+  document.getElementById('compare-rate-input').value = EXCHANGE_RATE.toLocaleString('ko-KR', { maximumFractionDigits: 1 });
   const compareCurrencySelect = document.getElementById('compareCurrencySelect');
   if (compareCurrencySelect && compareCurrencySelect.value !== sharedInputCurrency) compareCurrencySelect.value = sharedInputCurrency;
   updateAmountUnitLabels();
@@ -2562,7 +2562,7 @@ function checkUsUnclaimedMoney(){
   }
 
   const recommendedSites = new Set(checkedBoxes.map(c => c.dataset.site));
-  const allSites = ['irs', 'usagov', 'missingmoney'];
+  const allSites = ['irs', 'usagov', 'missingmoney', 'pbgc'];
   allSites.forEach(site => {
     const btn = document.getElementById('refund-us-site-' + site);
     if (!btn) return;
