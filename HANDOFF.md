@@ -1475,3 +1475,30 @@ minify를 제대로 하려면 `terser`/`clean-css`를 npm 의존성으로 추가
 숫자(terser/clean-css 조합, 30%/66% 추가 절감)를 그대로 재현할 수 있음.
 
 변경 파일: `screenshots/` 폴더 삭제(11개 파일), `script.js`(죽은 함수 2개 삭제).
+
+### 2026-08-04 이어서 — "이제 더 100프로 완벽해지려면 뭐 해야되?" → `i18n_attr_lint.js`가
+### 잡은 후보 1건(`faq.usCheck4`) 정리
+
+**배경**: 회귀 테스트 중 `i18n_attr_lint.js`(정적 분석, 브라우저 안 씀)가 `data-i18n`
+속성인데 한글 텍스트에 "글자(괄호"/")글자" 패턴이 있어서 좁은 화면에서 줄바꿈이 어색하게
+날 수 있는 후보를 찾아냄 — `faq.usCheck4`(미국 401(k) 관련 FAQ 문항) 1건, "확정 버그"가
+아니라 "후보"였음.
+
+**처리**: `i18n-source/translations.json`에서 이 키의 26개 언어 번역값 전부 확인한 뒤
+(`ko` 키는 없음 — 한국어는 index.html에 직접 박혀있는 구조), 어느 값에도 `<`/`>`/`&`가
+없는 걸 확인해서 `data-i18n-html`로 바꿔도 다른 언어 렌더링에 영향이 없다는 걸 검증.
+`index.html`의 해당 `<span data-i18n="faq.usCheck4">...</span>`를
+`data-i18n-html`로 바꾸고, 줄바꿈 위험 구간("퇴직연금(401(k)·기업연금)을")만
+`<span style="white-space:nowrap">`로 감쌈(이 사이트에서 기존에 써오던 표준 패턴).
+
+**검증**: `i18n_attr_lint.js` 재실행 → `ISSUES: 0`(후보 완전 해소). Playwright로
+기본 언어(영어)와 `?lang=ko` 강제 둘 다 확인 — 영어는 `data-i18n-html`이 정상적으로
+평문 텍스트를 렌더링(특수문자 없어서 `data-i18n`과 동일하게 보임), 한국어는 nowrap
+span이 살아있는 채로 `textContent`가 원래 문구와 정확히 일치하는 것 확인. 콘솔 에러
+4건은 전부 샌드박스에서 광고/GA 등 외부 origin 요청이 막혀서 나는 `ERR_CONNECTION_RESET`이라
+이 변경과 무관.
+
+이 fix는 `script.js`/`styles.css`를 건드리지 않아서 `node scripts/build-min.js`
+재실행 불필요.
+
+변경 파일: `index.html`(`faq.usCheck4`를 `data-i18n-html`로 전환 + nowrap span 추가).
