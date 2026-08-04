@@ -1365,3 +1365,60 @@ i18n_coverage_audit.js`(760개 키, 0건)·`console_error_audit.js`(0건)·`wrap
 
 변경 파일: `script.js`(`COUNTRY_NAMES_MORE`의 `kr` 값 20개 언어 수정), `index.html`
 (`script.js?v=` 캐시버스팅 20260804-5→20260804-6).
+
+### 2026-08-04 이어서 — "네가 보고 혼자 할 수 있는 거 전부 해줘" 요청으로 자율 점검 →
+### 로또 데이터 3곳 어긋남 발견·수정 + 회귀 테스트에 교차검증 로직 신설
+
+**착수**: 대시보드 접근이 필요 없고 이 세션 혼자 검증·수정까지 끝낼 수 있는 항목부터 훑음.
+"알려진 미해결 항목" 중 로또 잭팟 데이터(`LATEST_DRAW`/`JACKPOT_DATA`/`odds-data.js` 아카이브
+3곳, 이 문서에 반복 재발 이력이 문서화돼있음)부터 실제로 최신인지부터 확인.
+
+**발견 1 — 자동 백필 루틴(커밋 `fd78d6f`)이 이번에도 3곳 중 일부만 갱신**: `git log`로 확인해보니
+그 루틴이 `POWERBALL_DRAW_ARCHIVE`에 8/3(월) 회차를 이미 넣어놨었는데, `script.js`의
+`LATEST_DRAW.powerball`/`JACKPOT_DATA.powerball`과 `POWERBALL_JACKPOT_ARCHIVE`는 여전히
+8/1 기준으로 멈춰있었음 — 이 문서에 이미 문서화된 "3개 데이터 소스 중 하나만 빠지는" 패턴이
+또 재발한 것. `WebSearch`(뉴스 3곳 교차확인) + `WebFetch`(powerball.com 공식 페이지)로
+8/3 회차(8,30,41,48,54 + 파워볼 4, 당첨자 없음)와 다음 추첨(8/5) 잭팟 $786M/현금가치 $341.6M을
+확인 후 세 곳 전부 갱신. 메가밀리언즈는 다음 추첨이 이 세션 당일 저녁(8/4)이라 아직 결과가
+없어서(WebSearch로 예고 잭팟 $60M/현금 $25.5M만 확인 — 기존 값과 이미 일치해서 변경 없음),
+`LATEST_DRAW.megamillions`는 7/31 그대로 최신 상태 유지.
+
+**발견 2 — 이 참에 `tests/draw_archive_integrity_check.js`를 다시 돌려보니, 그 테스트가
+애초에 `POWERBALL_JACKPOT_ARCHIVE`/`MEGAMILLIONS_JACKPOT_ARCHIVE`(당첨번호만 있는
+DRAW_ARCHIVE와 별개로, 그 회차 잭팟 발표액까지 담은 배열) 자체를 전혀 검사한 적이 없었다는
+걸 발견** — 그래서 이 반복되는 사고 패턴을 회귀 테스트가 애초에 잡을 수 없는 구조였음.
+테스트를 실제로 확장해서 재실행하자 **이미 있던 어긋남 2건을 추가로 발견**:
+- 파워볼 `2026-07-29` 회차(30,36,40,42,57 + 파워볼 2)가 DRAW_ARCHIVE엔 있는데
+  JACKPOT_ARCHIVE엔 통째로 빠져있었음(7/27→8/1로 바로 건너뜀).
+- 메가밀리언즈 `2026-07-31` 회차(4,18,26,43,51 + 메가볼 4)도 마찬가지로 JACKPOT_ARCHIVE만
+  7/28에 멈춰있었음.
+둘 다 `WebSearch`+`WebFetch`(powerball.com 해당 날짜 페이지)로 그 회차 자체의 잭팟
+발표액을 교차확인(파워볼 7/29: $668M, 메가밀리언즈 7/31: $50M — 둘 다 이미 DRAW_ARCHIVE에
+있던 당첨번호와 짝지어 삽입)한 뒤 반영.
+
+**회귀 테스트 자체도 보강**: `draw_archive_integrity_check.js`에 (1) 두 JACKPOT_ARCHIVE의
+자체 형식 검증(4번째 필드가 유효한 양수 잭팟액인지) (2) DRAW_ARCHIVE 최신 20건이
+JACKPOT_ARCHIVE에도 전부 있는지 교차검증 로직을 새로 추가함 — 앞으로 이런 "한쪽만 갱신"
+사고가 나면 이 테스트가 바로 잡아냄(과거엔 사람이 손으로 발견해야 했음). 반대 방향(JACKPOT_
+ARCHIVE에만 있고 DRAW_ARCHIVE엔 없는 오래된 "Big Game" 시절 항목)은 정상 설계라 검사 안 함.
+
+**보류한 것 — CPI_BASE_YEAR(2025년으로 갱신) — 근거 불충분으로 손 안 댐**: `WebSearch`/
+`WebFetch`로 2025년 연평균 CPI-U를 확인하려 했으나, 서로 다른 출처가 315.1과 321.943로
+크게 다른 값을 보고함(전년(2024) 313.7 대비 각각 +0.4%/+2.6%로 후자가 훨씬 현실적이긴
+하지만) — 이 수치는 "물가보정 실질가치 랭킹" 위젯의 핵심 계산에 쓰이는 값이라 확신 없이
+반영하면 안 됨(이 문서의 기존 원칙: "근거 없이 갱신 금지"). BLS 공식 PDF를 직접 열어보려는
+시도는 URL을 정확히 몰라 실패 — 지금처럼 `CPI_BASE_YEAR=2024`로 두면 2025년 이후 회차는
+이 랭킹에서 자동 제외되는 안전한 상태가 유지되므로, 다음 세션이 BLS 공식 표를 정확한 URL로
+열어볼 수 있으면 그때 갱신할 것.
+
+**검증**: `node --check` 통과(script.js/odds-data.js/새 테스트 파일), `draw_archive_integrity_
+check.js` 재실행 ISSUES: 0(4개 배열 전부), `console_error_audit.js`/`audit_odds_compare.js`/
+`wrap_audit.js` 재실행 전부 0건. Playwright로 홈 카운트업 카드·이월 스트릭 위젯이 새 데이터
+반영해서 정상 렌더링되는 것도 확인.
+
+변경 파일: `script.js`(`LATEST_DRAW.powerball`/`JACKPOT_DATA.powerball` 갱신,
+`odds-data.js?v=` 캐시버스팅 20260802→20260804), `odds-data.js`(POWERBALL_DRAW_ARCHIVE는
+이미 최신이었음, POWERBALL_JACKPOT_ARCHIVE에 07-29·08-03 2건 추가, MEGAMILLIONS_JACKPOT_
+ARCHIVE에 07-31 1건 추가), `tests/draw_archive_integrity_check.js`(JACKPOT_ARCHIVE
+자체 검증 + DRAW/JACKPOT 교차검증 로직 신설), `index.html`(`script.js?v=` 캐시버스팅
+20260804-6→20260804-7).

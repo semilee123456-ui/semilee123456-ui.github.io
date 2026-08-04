@@ -27,8 +27,9 @@ function extractArray(varName) {
   return arr;
 }
 
-function checkArchive(varName, arr, expected) {
+function checkArchive(varName, arr, expected, tupleLen) {
   if (!arr) return;
+  tupleLen = tupleLen || 3;
 
   console.log(`--- ${varName} ---`);
   console.log('entries:', arr.length);
@@ -43,11 +44,11 @@ function checkArchive(varName, arr, expected) {
   let ascending = true;
 
   arr.forEach((entry, i) => {
-    if (!Array.isArray(entry) || entry.length !== 3) {
-      issues.push(`${varName}[${i}]: 항목이 [date, nums[5], megaBall] 형태가 아님 - ${JSON.stringify(entry)}`);
+    if (!Array.isArray(entry) || entry.length !== tupleLen) {
+      issues.push(`${varName}[${i}]: 항목이 [date, nums[5], special${tupleLen === 4 ? ', jackpotMillions' : ''}] 형태가 아님 - ${JSON.stringify(entry)}`);
       return;
     }
-    const [dateStr, nums, special] = entry;
+    const [dateStr, nums, special, jackpotMillions] = entry;
 
     // 날짜 유효성
     if (typeof dateStr !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
@@ -91,6 +92,11 @@ function checkArchive(varName, arr, expected) {
     if (!Number.isInteger(special) || special <= 0) {
       issues.push(`${varName}[${i}] (${dateStr}): 유효하지 않은 보너스 번호 - ${JSON.stringify(special)}`);
     }
+
+    // 잭팟 발표액(JACKPOT_ARCHIVE류, 4번째 항목 — 백만 달러 단위)
+    if (tupleLen === 4 && (typeof jackpotMillions !== 'number' || !(jackpotMillions > 0))) {
+      issues.push(`${varName}[${i}] (${dateStr}): 유효하지 않은 잭팟 발표액 - ${JSON.stringify(jackpotMillions)}`);
+    }
   });
 
   console.log('날짜 오름차순 정렬:', ascending);
@@ -128,7 +134,36 @@ checkArchive('POWERBALL_DRAW_ARCHIVE', pb, {
   maxFirstDate: '1992-04-22',
 });
 
+// 2026-08-04 신설: DRAW_ARCHIVE(당첨번호만)와 JACKPOT_ARCHIVE(당첨번호+그 회차 잭팟 발표액)는
+// odds-data.js 안에서 완전히 별개로 관리되는 배열이라, 한쪽만 갱신하고 다른 쪽을 빠뜨리는 사고가
+// 실제로 여러 번 반복됐음(이번에도 자동 백필 루틴이 POWERBALL_DRAW_ARCHIVE에는 2026-08-03
+// 회차를 넣었는데 POWERBALL_JACKPOT_ARCHIVE는 빠뜨림 — HANDOFF.md "알려진 미해결 항목"에
+// 문서화된 패턴). 이 위쪽 두 checkArchive() 호출은 여태 DRAW_ARCHIVE만 검사하고 JACKPOT_ARCHIVE
+// 자체의 형식도, 두 배열 사이의 정합성도 전혀 검사하지 않고 있었음 — 그래서 이번 사고를
+// 놓쳤던 것. 아래에서 (1) JACKPOT_ARCHIVE 자체 형식 검증 + (2) DRAW_ARCHIVE 최신 20건이
+// JACKPOT_ARCHIVE에도 전부 있는지 교차검증(과거 "Big Game" 시절처럼 JACKPOT_ARCHIVE에만 있고
+// DRAW_ARCHIVE엔 없는 오래된 항목은 정상이므로 반대 방향은 검사 안 함 — 최신 방향 누락만 실제
+// 버그이므로 그쪽만 검사)한다.
+const mmJackpot = extractArray('MEGAMILLIONS_JACKPOT_ARCHIVE');
+checkArchive('MEGAMILLIONS_JACKPOT_ARCHIVE', mmJackpot, null, 4);
+
+const pbJackpot = extractArray('POWERBALL_JACKPOT_ARCHIVE');
+checkArchive('POWERBALL_JACKPOT_ARCHIVE', pbJackpot, null, 4);
+
+function checkDrawJackpotSync(gameLabel, drawArr, jackpotArr, recentN) {
+  if (!drawArr || !jackpotArr) return;
+  const jackpotDates = new Set(jackpotArr.map(e => e[0]));
+  const recent = drawArr.slice(-recentN);
+  recent.forEach(([dateStr]) => {
+    if (!jackpotDates.has(dateStr)) {
+      issues.push(`${gameLabel}: DRAW_ARCHIVE의 최근 회차(${dateStr})가 JACKPOT_ARCHIVE에 없음 - 두 배열이 어긋남(한쪽만 갱신됨)`);
+    }
+  });
+}
+checkDrawJackpotSync('POWERBALL', pb, pbJackpot, 20);
+checkDrawJackpotSync('MEGAMILLIONS', mm, mmJackpot, 20);
+
 console.log('');
 console.log(JSON.stringify(issues, null, 2));
-console.log('TOTAL ARCHIVES CHECKED:', 2, 'ISSUES:', issues.length);
+console.log('TOTAL ARCHIVES CHECKED:', 4, 'ISSUES:', issues.length);
 process.exitCode = issues.length > 0 ? 1 : 0;
