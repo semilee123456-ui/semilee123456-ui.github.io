@@ -1338,3 +1338,30 @@ full_overflow_sweep.js`(27개 언어 × 5개 화면폭 × 7개 화면 = 945개 �
 영역 코드를 전혀 안 건드렸다는 점과도 일치. **코드 변경 없음** — 검증만 수행.
 
 변경 파일: `HANDOFF.md`만(이 항목).
+
+### 2026-08-04 이어서 — 공유 문구 27개 언어 감사 중 발견한 "한국"/"South Korea" 표기 불일치 수정
+
+**발견 경위**: 위 세션들의 공유 기능 27개 언어 감사(모든 `flagged` 항목 0건 — undefined/NaN/
+콘솔에러 없음) 도중, `shareResult()` 문구의 나라 표기가 핵심 6개 언어(ko/en/zh/vi/th/ru —
+"Korea"/"한국"/"韩国" 등, "South" 없음)와 나머지 20개 언어(예: "South Korea"/"Korea
+Selatan"/"Corée du Sud"/"Оңтүстік Корея" 등) 사이에서 다르다는 걸 발견. 틀린 번역은
+아니지만(둘 다 통용됨) 사이트 전체가 "South" 없이 "Korea"로 통일해온 관례와 어긋남.
+
+**원인**: `COUNTRY_NAMES_MORE`(script.js, 21개 추가 언어 나라 이름 테이블)의 `kr` 값이
+20개 언어(일본어 제외 — 일본어는 원래 "韓国"로 "南"이 안 붙어서 문제 없었음)에서 전부
+"South Korea" 계열로 되어있었음. 이 값은 `buildCountryMore()`/`buildAdditionalTaxMore()`/
+`buildAlsoPayMore()` 세 헬퍼가 공통으로 참조하는 단일 소스라, 여기 하나만 고치면
+`basisSuffix`(공유 문구·비교 카드 등에서 두루 쓰임)를 포함해 이 값을 쓰는 모든 곳에
+한 번에 반영됨.
+
+**수정**: 20개 언어 전부 `kr` 값에서 "South"/"남쪽" 뜻의 수식어만 제거(예: 우즈베크어
+"Janubiy Koreya" → "Koreya", 프랑스어 "Corée du Sud" → "Corée", 아랍어 "كوريا الجنوبية"
+→ "كوريا"). 나라 이름 자체(다른 국가 19개)는 안 건드림.
+
+**검증**: 수정 후 9개 언어(mn/uz/kk/ar/ur/fr/pt/tl/km) 표본으로 `calcTakeHome(1,'kr',null)
+.basisSuffix`를 직접 호출해 "South" 계열 단어가 전부 사라졌는지 확인. `tests/
+i18n_coverage_audit.js`(760개 키, 0건)·`console_error_audit.js`(0건)·`wrap_audit.js`
+(0건) 재실행 통과.
+
+변경 파일: `script.js`(`COUNTRY_NAMES_MORE`의 `kr` 값 20개 언어 수정), `index.html`
+(`script.js?v=` 캐시버스팅 20260804-5→20260804-6).
