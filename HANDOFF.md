@@ -84,10 +84,13 @@ Claude에게 읽게 하세요.**
    (`terser`/`clean-css`로 압축, gzip 대비 script.js 30%·styles.css 66% 추가 절감 확인,
    자세한 배경은 아래 "작업 이력"의 2026-08-04 "사이트 가볍게" 항목 참고). `npm install`이
    아직 안 되어있으면 먼저 한 번 실행(`package.json`의 devDependencies, `node_modules`는
-   `.gitignore`에 이미 있음). **이 단계를 빠뜨리면 원본 파일을 아무리 고쳐도 라이브 사이트엔
-   그 변경이 하나도 반영 안 됨** — `i18n-source/translations.json`→`i18n/*.json`(3번
-   항목 아래 지금까지 계속 강조된 패턴)과 완전히 같은 종류의 실수이니 절대 반복하지 말 것.
-   원본 파일(`script.js`/`styles.css`) 맨 위에도 이 경고가 그대로 적혀있음.
+   `.gitignore`에 이미 있음). **이 단계를 로컬에서 빠뜨려도 `.github/workflows/
+   minify-assets.yml`이 main에 push될 때 자동으로 재생성·커밋해주는 안전망이 2026-08-04에
+   추가됨** — 다만 그 사이(같은 세션에서 Artifact 미리보기로 즉시 확인할 때 등)엔 `.min`
+   파일이 구버전으로 남아있으니, 직접 결과를 바로 보려면 여전히 로컬에서 이 스크립트를
+   돌릴 것. `i18n-source/translations.json`→`i18n/*.json`(3번 항목 아래 지금까지 계속
+   강조된 패턴)과 같은 종류의 실수이니 자동화가 있다고 방심하지 말 것. 원본 파일
+   (`script.js`/`styles.css`) 맨 위에도 이 안내가 적혀있음.
 
 ---
 
@@ -361,6 +364,17 @@ tests/               회귀 테스트 스크립트 9개 (아래 "회귀 테스�
 
 ## 코드 아키텍처 핵심 패턴
 
+- **`script.min.js`/`styles.min.css`(2026-08-04 신규)**: `index.html`이 실제로 로드하는 건
+  `script.js`/`styles.css`가 아니라 이 압축본 두 파일임(`i18n/*.json`이 `i18n-source/
+  translations.json`의 생성 파일인 것과 동일한 패턴). **`script.js`/`styles.css`를 고치면
+  `node scripts/build-min.js`로 압축본을 다시 만들어야 화면에 반영됨** — 로컬에서 깜빡해도
+  `.github/workflows/minify-assets.yml`이 main에 push될 때(`script.js`/`styles.css` 변경
+  감지) 자동으로 재생성·커밋해주므로 라이브에는 결국 반영되지만, 같은 세션에서 Artifact
+  미리보기 등으로 즉시 확인하려면 직접 돌려야 함. `sw.js`의 `APP_SHELL_PATHS`도 `.min` 파일
+  경로를 캐싱하므로, 이 두 파일의 경로 자체를 바꿀 일이 있으면 `sw.js`도 같이 갱신할 것
+  (놓치면 서비스 워커 오프라인 폴백이 구버전 또는 존재하지 않는 파일을 참조하게 됨). gzip
+  대비 추가 절감 효과: script.js 30%(573KB→401KB), styles.css 66%(62KB→21KB) — 자세한 배경은
+  아래 "작업 이력"의 2026-08-04 해당 항목 참고.
 - **`sharedCountry`**: 'kr'/'us'/'cn'/'in'/... — 사용자가 고른 "세금 계산 기준". 홈 화면과
   국가비교 화면이 이 값을 공유함. `data-basis="kr"` 같은 속성으로 FAQ 항목을 세금 기준별로도
   필터링함(`filterFaq()`).
@@ -1701,6 +1715,36 @@ FAQ `mn.sub`·상세설명패널 `mn` 항목 26개 언어 재작성).
 
 변경 파일: `script.js`(`TAX_MODEL.vn_resident`·`TAX_MODEL.ru_resident` 주석에 2026-08-04
 추가 확인 내용 보강, 세율·계산 로직 변경 없음).
+
+### 2026-08-04 이어서 — 위 "경량화 2단계"(script.min.js/styles.min.css 도입)에 사용자가
+### "유지보수 자동화까지 해달라"고 승인 → GitHub Actions 자동 재생성 워크플로 추가
+
+**배경**: 다른 병렬 세션이 이미 "사이트 경량화 2단계: script.js/styles.css 실제 minify 도입"
+(PR #115, 위 og:image·몽골 세율 세션들과 같은 PR로 함께 병합됨)으로 `script.min.js`/
+`styles.min.css` 도입 자체는 main에 먼저 반영해둔 상태였음. 이 세션은 그 사실을 모른 채
+같은 작업을 독립적으로 만들다가(동일한 아이디어·거의 동일한 코드) 병합 시점에 발견 — main
+버전(package.json/scripts/build-min.js/script.min.js/styles.min.css/index.html의 파일 자체는
+이미 존재하고 검증됨, `new Function(result.code)` 구문 안전장치까지 있어 이 세션이 만든
+버전보다 더 꼼꼼함)을 그대로 채택하고, **이 세션이 실제로 새로 기여한 부분만** 병합함:
+`.github/workflows/minify-assets.yml`. main 버전은 minify를 도입했지만 재생성 자동화까지는
+안 돼있었음(HANDOFF.md에 "고칠 때마다 직접 `node scripts/build-min.js`를 돌릴 것"이라는
+수동 안내만 있었음) — 사용자가 "그럼 유지보수는 어떻게 하냐"고 물어서 자동화 쪽으로
+가기로 승인받아 이 워크플로를 추가함.
+
+**만든 것**: `.github/workflows/minify-assets.yml`(신규, `lottery-backfill.yml`과 동일
+구조): main에 `script.js`/`styles.css` push 감지 → `node scripts/build-min.js` 실행 →
+`node --check`로 문법 검증 → 변경 있으면 `script.min.js`/`styles.min.css`만 봇이 커밋·푸시.
+**아직 실제 push로 트리거되는 걸 눈으로 확인 안 함 — 다음에 `script.js`나 `styles.css`가
+실제로 main에 반영될 때 Actions 탭에서 이 워크플로가 정상 실행되는지 최초 1회 확인할 것**
+(로또 워크플로도 최초엔 수동 `workflow_dispatch`로 검증했던 것과 같은 이유).
+
+**교훈 — 병렬 세션 충돌**: 같은 날 서로 다른 두 세션이 같은 작업("사이트 가볍게 해줘")을
+독립적으로 진행하다 병합 시점에 대부분 겹치는 코드가 부딪힘. 이번엔 겹친 부분(minify 도입
+자체)은 먼저 병합된 main 버전을 그대로 쓰고 이 세션은 차이나는 부분(자동화)만 얹는 식으로
+무손실 해결했지만, 다음에 비슷한 상황이 생기면 병합 전에 `git fetch origin main && git log
+main..HEAD`로 먼저 겹치는 작업이 없는지 확인하는 습관이 필요함.
+
+변경 파일: `.github/workflows/minify-assets.yml`(신규), `HANDOFF.md`(이 항목).
 
 ### 2026-08-04 — AI 에이전트 인용 최적화, 나머지 84개 페이지로 일괄 확장 (서브에이전트 4개 병렬, 세션 한도로 일부 중단) + 로고 마스코트 유휴 애니메이션 추가
 
