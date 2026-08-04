@@ -1518,3 +1518,33 @@ Hei)·일본어(IPAGothic) 전부 스크린샷에서 실제로 정상 렌더링�
 변경 파일: `og-image-hook-en.png`/`og-image-hook-zh.png`/`og-image-hook-ja.png`(신규),
 `english_in_korea_lottery_tax.html`/`china_in_korea_lottery_tax.html`/`japanese_in_korea_lottery_tax.html`
 (`og:image`/`twitter:image` 교체).
+
+### 2026-08-04 이어서 — 베트남어/러시아어도 같은 방식으로 후크형 og:image 추가
+
+**배경**: 사용자가 "계속해줘"라고 해서, 바로 위 항목에서 폰트 안전 언어로 분류해둔 나머지
+2개(베트남어·러시아어)도 같은 패턴으로 이어감. 대상 페이지는
+`vietnamese-in-korea-lottery-tax.html`/`russian_in_korea_lottery_tax.html` — 먼저
+`example-box`를 확인해서 en/zh/ja와 **완전히 동일한 검증된 숫자**("100만 달러 →
+미국 30% 원천징수 → 7,000만 달러 → 한국 거주자면 최종 5,300만~7,000만 달러")가 이미
+번역돼 있는 걸 확인하고 그대로 재사용(새 세금 계산 안 만듦, 앞선 항목과 같은 원칙).
+
+**폰트 검증**: 베트남어 성조 기호(ệ/ạ/ộ 등)와 키릴 문자 둘 다 `Liberation Sans`로
+커버되는지 `fc-match`로 먼저 확인 후 제작 → 스크린샷에서 실제로 깨짐 없이 정상 렌더링됨을
+직접 확인(추측 아님).
+
+**제작 방식**: 앞 항목과 동일(헤드리스 Chromium 스크린샷, 사이트 실제 브랜드 색상·마스코트
+SVG 재사용, 배경 단색 유지로 파일 크기 60~64KB 수준 확보).
+
+**적용**: 두 페이지 각각 `og:image`/`twitter:image`를 `og-image.png` → `og-image-hook-vi.png`/
+`-ru.png`로 교체.
+
+**검증**: `node tests/broken_link_audit.js` 재실행 — 90개 파일 이슈 0건.
+
+**남은 것**: 이걸로 "폰트 안전"으로 분류했던 5개 언어(영어/중국어/일본어/베트남어/러시아어)
+전부 완료. 나머지 21개 언어는 이 샌드박스에 해당 폰트가 없는 경우가 많아(크메르어/미얀마어/
+신할라어/벵골어/힌디어/라오어 등) 폰트 파일을 구해서 설치하는 등 별도 작업이 필요함 — 다음
+세션이 시도하려면 먼저 `fc-list :lang=<코드>`로 폰트 존재 여부부터 확인할 것.
+
+변경 파일: `og-image-hook-vi.png`/`og-image-hook-ru.png`(신규),
+`vietnamese-in-korea-lottery-tax.html`/`russian_in_korea_lottery_tax.html`
+(`og:image`/`twitter:image` 교체).
