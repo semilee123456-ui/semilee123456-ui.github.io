@@ -1453,19 +1453,58 @@
   }
   .lightning-mode-btn.active{ color:var(--teal); border-color:var(--teal); background:rgba(var(--teal-rgb),0.06); }
 
-  /* 낚시 연못 — 위쪽(공기)은 패널 배경색 그대로, 아래쪽(물)만 그러데이션으로 구분. 낚싯대는
-     연못 위에 고정하고, 줄(.fishing-line)의 height를 캐스팅 상태에 따라 늘였다 줄였다 해서
-     "던지고 당기는" 움직임을 표현함(실제 물리 연산 없이 CSS transition만으로 구현) */
+  /* 2026-08-04: "너무 엉성하다, 더 진짜 게임처럼" 요청으로 시각적으로 크게 보강함 — 연못만
+     달랑 있고 결과칸은 따로 떨어진 원 6개였던 걸, 카드(.fishing-game-frame) 하나로 감싸서
+     "낚시터 화면 하나" 느낌을 줌. 연못 안에는 해·구름(하늘)과 물고기 3마리·떠오르는 기포(물),
+     양옆에 풀을 추가해서 빈 파란 네모가 아니라 작은 장면처럼 보이게 함. 기존 상태 클래스
+     (is-casting/is-biting/is-reeling)와 그걸 참조하는 script.js 로직은 전혀 안 건드림 —
+     여기서 늘어난 건 전부 장식 요소일 뿐이라 JS 변경 없이 CSS/마크업만으로 완결됨. */
+  .fishing-game-frame{
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:14px 14px 16px; margin:4px 0 14px;
+  }
+  /* 낚시 연못 — 위쪽(하늘)과 아래쪽(물)을 그러데이션으로 구분. 낚싯대는 연못 위에 고정하고,
+     줄(.fishing-line)의 height를 캐스팅 상태에 따라 늘였다 줄였다 해서 "던지고 당기는" 움직임을
+     표현함(실제 물리 연산 없이 CSS transition만으로 구현) */
   .fishing-pond{
-    position:relative; height:110px; border-radius:10px; overflow:hidden; margin:4px 0 14px;
-    background:linear-gradient(180deg, var(--bg) 0%, var(--bg) 40%, #BFE3F0 40%, #8FCBE0 100%);
+    position:relative; height:150px; border-radius:12px; overflow:hidden; margin:0 0 14px;
+    background:linear-gradient(180deg, #CFEAF7 0%, #CFEAF7 32%, #6FC1DE 32%, #2F8FB8 100%);
   }
   :root[data-theme="dark"] .fishing-pond{
-    background:linear-gradient(180deg, var(--bg) 0%, var(--bg) 40%, #1B4A5C 40%, #0E2933 100%);
+    background:linear-gradient(180deg, #16222B 0%, #16222B 32%, #123544 32%, #06181F 100%);
   }
+  /* 하늘 장식 — 해는 은은한 발광(box-shadow)만 주고, 구름은 타원 3개(본체+::before+::after)를
+     겹쳐 뭉게구름처럼 보이게 한 뒤 아주 느리게 좌우로 흘러가게 함 */
+  .fishing-sun{
+    position:absolute; top:10px; right:16px; width:22px; height:22px; border-radius:50%; z-index:1;
+    background:radial-gradient(circle, #FFE9A8 0%, #FFD25C 70%, rgba(255,210,92,0) 100%);
+    box-shadow:0 0 14px 4px rgba(255,210,92,0.45);
+  }
+  :root[data-theme="dark"] .fishing-sun{
+    background:radial-gradient(circle, #E9E4C8 0%, #C9C48C 70%, rgba(201,196,140,0) 100%);
+    box-shadow:0 0 10px 3px rgba(201,196,140,0.3); opacity:0.75;
+  }
+  .fishing-cloud{
+    position:absolute; top:10px; width:24px; height:8px; border-radius:50%; z-index:1;
+    background:rgba(255,255,255,0.8);
+  }
+  .fishing-cloud::before, .fishing-cloud::after{ content:''; position:absolute; border-radius:50%; background:inherit; }
+  .fishing-cloud::before{ width:13px; height:10px; top:-5px; left:3px; }
+  .fishing-cloud::after{ width:9px; height:7px; top:-3px; left:13px; }
+  .fishing-cloud-1{ left:10%; animation:fishing-cloud-drift 22s linear infinite; }
+  .fishing-cloud-2{ left:62%; top:20px; transform:scale(0.7); opacity:0.7; animation:fishing-cloud-drift 28s linear infinite reverse; }
+  :root[data-theme="dark"] .fishing-cloud{ background:rgba(255,255,255,0.16); }
+  @keyframes fishing-cloud-drift{ 0%{ transform:translateX(0); } 100%{ transform:translateX(36px); } }
+  /* 연못 양옆 풀 — 딱 붙어있지 않고 아주 살짝(-2px) 겹쳐서 "물가에 자란 풀" 느낌만 가볍게 줌 */
+  .fishing-grass{
+    position:absolute; bottom:-2px; font-size:20px; line-height:1; z-index:2;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,0.15));
+  }
+  .fishing-grass-l{ left:2px; }
+  .fishing-grass-r{ right:2px; transform:scaleX(-1); }
   .fishing-rod-wrap{
-    position:absolute; top:2px; left:50%; transform:translateX(-50%);
-    display:flex; flex-direction:column; align-items:center; z-index:2;
+    position:absolute; top:6px; left:50%; transform:translateX(-50%);
+    display:flex; flex-direction:column; align-items:center; z-index:3;
   }
   /* 2026-08-03: "너무 재미없다, 낚싯대도 움직이고 물고기 잡듯이 해달라"는 사용자 피드백(스크린샷)으로
      정적이던 낚시 미니게임을 다시 만듦 — 낚싯대가 실제로 휘두르듯 움직이고(is-casting), 연못에
@@ -1476,7 +1515,7 @@
      튀는 효과(fishing-splash)는 캐스팅이 끝나고 바늘이 수면에 닿는 순간(is-biting 진입 시점)
      script.js가 클래스를 재트리거해서 보여줌(.lightning-ball.drawn과 같은 reflow 재시작 패턴).
      아래 전부 prefers-reduced-motion에서 무력화됨(맨 아래 미디어쿼리 참고). */
-  .fishing-rod{ font-size:26px; line-height:1; transform:rotate(15deg); transform-origin:75% 25%; }
+  .fishing-rod{ font-size:30px; line-height:1; transform:rotate(15deg); transform-origin:75% 25%; filter:drop-shadow(0 2px 2px rgba(0,0,0,0.18)); }
   .fishing-pond.is-casting .fishing-rod{ animation:fishing-rod-swing 0.45s ease; }
   @keyframes fishing-rod-swing{
     0%{ transform:rotate(15deg); }
@@ -1484,13 +1523,20 @@
     100%{ transform:rotate(15deg); }
   }
   .fishing-line{
-    width:2px; background:rgba(var(--ink-rgb),0.35); height:6px;
+    width:2px; background:rgba(255,255,255,0.8); height:8px;
     transition:height 0.45s cubic-bezier(0.34,1.56,0.64,1);
   }
-  .fishing-pond.is-casting .fishing-line{ height:60px; }
-  .fishing-pond.is-reeling .fishing-line{ height:6px; transition:height 0.35s ease-in; }
-  .fishing-hook-wrap{ display:flex; align-items:center; gap:1px; }
-  .fishing-hook{ font-size:13px; line-height:1; }
+  .fishing-pond.is-casting .fishing-line{ height:88px; }
+  .fishing-pond.is-reeling .fishing-line{ height:8px; transition:height 0.35s ease-in; }
+  /* 대기 중(캐스팅 전이거나 릴 감기까지 끝난 뒤)엔 찌가 수면 위에서 살랑살랑 흔들리게 해서
+     "가만히 멈춰있는 그림"처럼 보이지 않게 함 — 캐스팅/입질/릴 감기 중엔 각자의 전용 애니메이션이
+     있으므로 이 idle 흔들림은 끔(아래 예외 규칙) */
+  .fishing-hook-wrap{ display:flex; align-items:center; gap:1px; animation:fishing-bob-idle 2.4s ease-in-out infinite; }
+  .fishing-pond.is-casting .fishing-hook-wrap,
+  .fishing-pond.is-biting .fishing-hook-wrap,
+  .fishing-pond.is-reeling .fishing-hook-wrap{ animation:none; }
+  @keyframes fishing-bob-idle{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(3px); } }
+  .fishing-hook{ font-size:18px; line-height:1; filter:drop-shadow(0 1px 1px rgba(0,0,0,0.25)); }
   .fishing-pond.is-biting .fishing-hook{ animation:fishing-bite-wobble 0.18s ease-in-out infinite; }
   @keyframes fishing-bite-wobble{
     0%,100%{ transform:translate(0,0) rotate(0); }
@@ -1501,7 +1547,7 @@
      릴 감기(is-reeling) 동안 파닥거리며 줄을 따라 올라옴. script.js가 캐스팅마다 이모지를
      🐟/🐠/🐡 중 무작위로 바꿔서 매번 다른 물고기를 낚는 느낌을 줌(castFishingLine 참고) */
   .fishing-caught-fish{
-    font-size:14px; line-height:1; opacity:0; transform:scale(0.4); transition:opacity 0.12s ease;
+    font-size:18px; line-height:1; opacity:0; transform:scale(0.4); transition:opacity 0.12s ease;
   }
   .fishing-pond.is-biting .fishing-caught-fish,
   .fishing-pond.is-reeling .fishing-caught-fish{ opacity:1; transform:scale(1); }
@@ -1510,40 +1556,57 @@
     0%,100%{ transform:scale(1) rotate(-14deg); }
     50%{ transform:scale(1) rotate(14deg); }
   }
-  .fishing-water{ position:absolute; left:0; right:0; bottom:0; height:60%; overflow:hidden; }
+  .fishing-water{ position:absolute; left:0; right:0; bottom:0; height:68%; overflow:hidden; }
   .fishing-wave{
-    position:absolute; left:-10%; width:120%; height:14px; border-radius:50%;
+    position:absolute; left:-10%; width:120%; height:16px; border-radius:50%;
     background:rgba(255,255,255,0.3); opacity:0.55;
   }
-  .fishing-wave:nth-child(1){ bottom:12px; animation:fishing-wave-drift 4s ease-in-out infinite; }
-  .fishing-wave:nth-child(2){ bottom:28px; animation:fishing-wave-drift 5s ease-in-out infinite reverse; }
+  .fishing-wave:nth-child(1){ bottom:16px; animation:fishing-wave-drift 4s ease-in-out infinite; }
+  .fishing-wave:nth-child(2){ bottom:36px; animation:fishing-wave-drift 5s ease-in-out infinite reverse; }
   .fishing-wave:nth-child(3){ bottom:2px; animation:fishing-wave-drift 3.5s ease-in-out infinite; }
   @keyframes fishing-wave-drift{ 0%,100%{ transform:translateX(0); } 50%{ transform:translateX(12px); } }
-  /* 평소 연못을 채우는 헤엄치는 물고기 — 낚시와 무관하게 항상 좌우로 왔다갔다 하며 "살아있는
-     연못" 느낌을 줌. 입질/릴 감기 중엔 낚인 물고기에 시선이 집중되도록 살짝 흐려짐(아래 참고) */
+  /* 평소 연못을 채우는 헤엄치는 물고기 3마리 — 크기·투명도를 다르게 줘서(가까운/먼 물고기)
+     입체감을 냄. 낚시와 무관하게 항상 좌우로 왔다갔다 하며 "살아있는 연못" 느낌을 줌. 입질/
+     릴 감기 중엔 낚인 물고기에 시선이 집중되도록 살짝 흐려짐(아래 참고) */
   .fishing-idle-fish{
-    position:absolute; bottom:10px; left:12%; font-size:13px; line-height:1; opacity:0.85;
+    position:absolute; bottom:14px; left:10%; font-size:17px; line-height:1; opacity:0.9;
     animation:fishing-idle-swim 6s ease-in-out infinite; transition:opacity 0.2s ease;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,0.15));
   }
-  .fishing-idle-fish-2{ left:58%; bottom:20px; font-size:11px; animation-duration:7.5s; animation-delay:-3s; opacity:0.65; }
+  .fishing-idle-fish-2{ left:55%; bottom:26px; font-size:14px; animation-duration:7.5s; animation-delay:-3s; opacity:0.7; }
+  .fishing-idle-fish-3{ left:30%; bottom:8px; font-size:12px; animation-duration:5.5s; animation-delay:-1.5s; opacity:0.55; }
   .fishing-pond.is-biting .fishing-idle-fish,
-  .fishing-pond.is-reeling .fishing-idle-fish{ opacity:0.2; }
+  .fishing-pond.is-reeling .fishing-idle-fish{ opacity:0.15; }
   @keyframes fishing-idle-swim{
     0%,100%{ transform:translateX(0) scaleX(1); }
-    48%{ transform:translateX(38px) scaleX(1); }
-    50%{ transform:translateX(38px) scaleX(-1); }
+    48%{ transform:translateX(46px) scaleX(1); }
+    50%{ transform:translateX(46px) scaleX(-1); }
     98%{ transform:translateX(0) scaleX(-1); }
+  }
+  /* 수면 아래에서 천천히 떠오르는 기포 — 순수 장식, 물속에 "활기"를 더함 */
+  .fishing-bubble{
+    position:absolute; bottom:4px; width:5px; height:5px; border-radius:50%;
+    background:rgba(255,255,255,0.55); opacity:0; animation:fishing-bubble-rise 3.6s ease-in infinite;
+  }
+  .fishing-bubble-1{ left:22%; animation-delay:0.2s; }
+  .fishing-bubble-2{ left:68%; width:4px; height:4px; animation-delay:1.6s; }
+  .fishing-bubble-3{ left:80%; width:3px; height:3px; animation-delay:2.6s; }
+  @keyframes fishing-bubble-rise{
+    0%{ transform:translateY(0) scale(0.6); opacity:0; }
+    15%{ opacity:0.7; }
+    90%{ opacity:0.3; }
+    100%{ transform:translateY(-70px) scale(1); opacity:0; }
   }
   /* 바늘이 수면에 닿는 순간(is-biting 진입) 잠깐 퍼지는 물결 — script.js가 캐스팅마다
      .play 클래스를 지웠다 다시 붙여서(reflow 재시작) 매번 처음부터 재생되게 함 */
   .fishing-splash{
-    position:absolute; left:50%; bottom:56%; width:6px; height:6px; margin-left:-3px;
-    border-radius:50%; border:2px solid rgba(255,255,255,0.75); opacity:0; pointer-events:none;
+    position:absolute; left:50%; bottom:64%; width:6px; height:6px; margin-left:-3px;
+    border-radius:50%; border:2px solid rgba(255,255,255,0.85); opacity:0; pointer-events:none;
   }
-  .fishing-splash.play{ animation:fishing-splash-ring 0.4s ease-out; }
+  .fishing-splash.play{ animation:fishing-splash-ring 0.45s ease-out; }
   @keyframes fishing-splash-ring{
     0%{ width:6px; height:6px; margin-left:-3px; opacity:0.9; }
-    100%{ width:34px; height:34px; margin-left:-17px; opacity:0; }
+    100%{ width:44px; height:44px; margin-left:-22px; opacity:0; }
   }
   /* 2026-08-03: "낚싯대도 움직이고 진짜 물고기 잡는 것처럼" 요청으로 자동재생을 탭 타이밍
      게임으로 바꾸며 추가 — 입질 순간엔 버튼 자체가 눈에 띄게 펄스(.fishing-btn-urgent)해서
@@ -1562,12 +1625,19 @@
     background:var(--status-amber) !important;
   }
   .fishing-pond.is-biting, .fishing-pond.is-reeling{ cursor:pointer; }
+  /* 2026-08-04: 얇은 단색 막대였던 릴 게이지를 그러데이션+반짝이는 하이라이트가 옆으로
+     흐르는 애니메이션으로 바꿔서 "진행 중"인 느낌을 더 살림(background-size를 실제 폭의
+     2배로 두고 position을 반복 이동시키는 방식 — 채워지는 폭(width)과는 별개로 항상 재생됨) */
   .fishing-reel-gauge-wrap{
-    height:14px; border-radius:7px; background:var(--border); overflow:hidden; margin:10px 0 0;
+    position:relative; height:16px; border-radius:8px; background:var(--border); overflow:hidden; margin:10px 0 0;
+    box-shadow:inset 0 1px 2px rgba(0,0,0,0.12);
   }
   .fishing-reel-gauge-fill{
-    height:100%; width:0%; background:var(--teal); border-radius:7px; transition:width 0.12s ease;
+    height:100%; width:0%; border-radius:8px; transition:width 0.12s ease;
+    background:linear-gradient(90deg, var(--teal), #4FD1A5, var(--teal));
+    background-size:200% 100%; animation:fishing-gauge-shine 1.1s linear infinite;
   }
+  @keyframes fishing-gauge-shine{ 0%{ background-position:0% 0; } 100%{ background-position:-200% 0; } }
   .fishing-status-msg{
     min-height:1.4em; text-align:center; font-size:var(--fs-small); font-weight:700;
     color:var(--status-red); margin:8px 0 0; opacity:0; transition:opacity 0.2s ease;
@@ -1580,6 +1650,10 @@
     .fishing-idle-fish{ animation:none; }
     .fishing-splash.play{ animation:none; }
     .fishing-btn-urgent{ animation:none; }
+    .fishing-hook-wrap{ animation:none; }
+    .fishing-cloud{ animation:none; }
+    .fishing-bubble{ animation:none; }
+    .fishing-reel-gauge-fill{ animation:none; }
   }
 
   .prize-card{
