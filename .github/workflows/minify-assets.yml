@@ -1,0 +1,53 @@
+name: Minify assets
+
+# script.js/styles.css가 main에 push되면 자동으로 script.min.js/styles.min.css(방문자가 실제로
+# 받는 압축본)를 재생성해서 커밋함. index.html은 항상 .min 파일을 로드하므로, 이 워크플로가
+# 없으면 소스만 고치고 압축본 재생성을 깜빡하는 사고(이 프로젝트가 i18n/*.json·odds-data.js
+# 등에서 반복해온 패턴)로 이어짐 — scripts/build-min.js 상단 주석 참고.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'script.js'
+      - 'styles.css'
+  workflow_dispatch: {}   # Actions 탭에서 수동 실행 가능
+
+permissions:
+  contents: write
+
+concurrency:
+  group: minify-assets
+  cancel-in-progress: false
+
+jobs:
+  minify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build minified assets
+        run: node scripts/build-min.js
+
+      - name: Syntax check
+        run: node --check script.min.js
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet -- script.min.js styles.min.css; then
+            echo "No changes — nothing to commit."
+            exit 0
+          fi
+          git config user.name "chamtax-bot"
+          git config user.email "actions@github.com"
+          git add script.min.js styles.min.css
+          git commit -m "chore: rebuild minified script.min.js/styles.min.css"
+          git push
