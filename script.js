@@ -3427,9 +3427,16 @@ let fishingSessionValues = null; // 이번 판 전체 6개 값 — 캐스팅마�
 // 자동으로 나오는 "관람형"이었음) — "낚싯대도 움직이고 진짜 물고기 잡는 것처럼" 요청으로
 // 실제 탭 타이밍이 필요한 상태 5개(idle/casting/waiting/biting/reeling)로 재구성함.
 // idle=대기, casting=캐스팅 애니메이션 재생 중, waiting=입질 기다리는 중(입질 순간은 무작위),
-// biting=제한시간 내에 탭해야 걸리는 순간, reeling=탭 연타로 게이지를 채워야 하는 순간.
+// biting=제한시간 내에 탭해야 걸리는 순간, reeling=버튼을 누르고 있는 동안 게이지가 채워지는 순간.
+// 2026-08-04: reeling 단계가 원래 "빠르게 연타"였는데 사용자가 "탭하는 게 불편하다"고 지적함 —
+// 손가락 연타 대신 "꾹 누르고 있기"로 바꿈(누르는 동안 채워지고, 떼면 살짝 빠짐 — 진짜 낚싯줄
+// 당기는 긴장감은 유지하면서 반복 탭 부담은 없앰). 상태 자체(reeling)와 성공/실패 판정 흐름은
+// 그대로 두고, 그 안의 "게이지를 채우는 입력 방식"만 바꾼 것.
 let fishingState = 'idle';
 let fishingReelGaugeValue = 0;
+let fishingReelHolding = false; // 지금 버튼을 누르고 있는 중인지
+let fishingReelRafId = null;
+let fishingReelLastTs = null;
 let fishingWaitTimer = null;
 let fishingBiteTimer = null;
 let fishingReelDeadlineTimer = null;
@@ -3437,8 +3444,9 @@ const FISHING_CAST_MS = 450;
 const FISHING_WAIT_MIN_MS = 600;   // 캐스팅 후 입질까지 최소 대기(무작위 구간의 아래쪽) — 너무 짧으면 반응할 틈이 없음
 const FISHING_WAIT_MAX_MS = 1500;  // 위쪽 — 너무 길면 지루해짐, 시니어 타겟 고려해 3초 이내로 제한
 const FISHING_BITE_WINDOW_MS = 900; // 입질 순간 탭 제한시간 — 반응 속도가 느려도 잡을 수 있게 넉넉히
-const FISHING_REEL_TIME_LIMIT_MS = 3000; // 릴 감기 전체 제한시간
-const FISHING_REEL_TAP_GAIN = 18;  // 탭 1번당 게이지 증가량(100/18 ≈ 6번 탭이면 성공, 3초 안에 충분히 가능한 페이스)
+const FISHING_REEL_TIME_LIMIT_MS = 3000; // 릴 감기 전체 제한시간(누르지 않고 방치하면 이 시간 뒤 실패 처리)
+const FISHING_REEL_FILL_RATE = 55;  // 누르고 있는 동안 초당 게이지 증가량(%) — 계속 누르면 약 1.8초면 꽉 참
+const FISHING_REEL_DRAIN_RATE = 22; // 손을 뗐을 때 초당 게이지 감소량(%) — 채우는 속도보다 느리게 둬서, 살짝 떼도 크게 불리하지 않음
 function fishingVibrate(pattern){ try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
 
 // 언어 전환 시에도 재사용해야 해서, 이미 뽑아둔 번호는 그대로 두고 문구·토글 상태만 새로 그림
@@ -3505,6 +3513,8 @@ function resetFishingRound(){
   fishingSessionValues = null;
   fishingState = 'idle';
   fishingReelGaugeValue = 0;
+  fishingReelHolding = false;
+  stopFishingReelLoop();
   clearTimeout(fishingWaitTimer);
   clearTimeout(fishingBiteTimer);
   clearTimeout(fishingReelDeadlineTimer);
@@ -3533,7 +3543,7 @@ function resetFishingRound(){
 // 무시되는 효과 — 시니어 타겟이라 오조작에 불이익을 주지 않기로 함).
 function castFishingLine(){
   if (fishingState === 'biting') { handleFishingBiteTap(); return; }
-  if (fishingState === 'reeling') { handleFishingReelTap(); return; }
+  if (fishingState === 'reeling') return; // 릴 감기는 이제 누르고 있기(pointerdown/up)로 처리 — 클릭 자체는 무시
   if (fishingState !== 'idle') return;
 
   if (fishingCaughtValues.length >= 6) resetFishingRound();
@@ -3607,44 +3617,70 @@ function fishingMissed(){
   showFishingEscapedMessage();
 }
 
-// 릴 감기(연타) 단계 진입 — 게이지를 100까지 채우면 성공, 제한시간 안에 못 채우면 fishingReelFailed()
+// 릴 감기(꾹 누르기) 단계 진입 — 게이지를 100까지 채우면 성공, 제한시간 안에 못 채우면 fishingReelFailed()
 function enterFishingReelState(){
   fishingState = 'reeling';
   fishingReelGaugeValue = 0;
+  fishingReelHolding = false;
   const pond = document.getElementById('fishing-pond');
   const btn = document.getElementById('fishing-cast-btn');
   if (pond) { pond.classList.remove('is-biting'); pond.classList.add('is-reeling'); }
   updateFishingReelGaugeUi();
   const gaugeWrap = document.getElementById('fishing-reel-gauge-wrap');
   if (gaugeWrap) gaugeWrap.style.display = '';
-  btn.textContent = pickLang('👆 빠르게 탭해서 감아요!', '👆 Tap fast to reel it in!', '👆 快速点击收线！', '👆 Chạm nhanh để cuộn dây!', '👆 แตะเร็วๆ เพื่อดึงสาย!', '👆 Нажимайте быстро, чтобы смотать леску!', FISHING_REEL_PROMPT_MORE);
+  btn.textContent = pickLang('👆 꾹 눌러서 감아요!', '👆 Hold to reel it in!', '👆 按住收线！', '👆 Giữ để cuộn dây!', '👆 กดค้างเพื่อดึงสาย!', '👆 Удерживайте, чтобы смотать леску!', FISHING_REEL_PROMPT_MORE);
   fishingReelDeadlineTimer = setTimeout(fishingReelFailed, FISHING_REEL_TIME_LIMIT_MS);
+  startFishingReelLoop();
 }
 
-function handleFishingReelTap(){
-  fishingReelGaugeValue = Math.min(100, fishingReelGaugeValue + FISHING_REEL_TAP_GAIN);
+// 2026-08-04: 탭 연타 대신 "누르고 있는 동안 채워지는" rAF 루프로 교체 — pointerdown/pointerup이
+// fishingReelHolding만 켜고/끄고, 실제 게이지 증감은 매 프레임 여기서 경과시간(dtSec) 기준으로
+// 계산함(탭 이벤트 개수가 아니라 시간 기반이라 기기 성능/입력 빈도와 무관하게 일정한 속도로 채워짐)
+function fishingReelLoop(ts){
+  if (fishingState !== 'reeling') { fishingReelRafId = null; return; }
+  if (fishingReelLastTs == null) fishingReelLastTs = ts;
+  const dtSec = Math.min(0.1, (ts - fishingReelLastTs) / 1000); // 탭 전환 등으로 프레임이 크게 벌어져도 한 번에 과도하게 안 채워지게 상한
+  fishingReelLastTs = ts;
+  const rate = fishingReelHolding ? FISHING_REEL_FILL_RATE : -FISHING_REEL_DRAIN_RATE;
+  fishingReelGaugeValue = Math.max(0, Math.min(100, fishingReelGaugeValue + rate * dtSec));
   updateFishingReelGaugeUi();
-  fishingVibrate(8);
   if (fishingReelGaugeValue >= 100) {
     clearTimeout(fishingReelDeadlineTimer);
+    fishingReelRafId = null;
     fishingCaughtSuccess();
+    return;
   }
+  fishingReelRafId = requestAnimationFrame(fishingReelLoop);
+}
+
+function startFishingReelLoop(){
+  fishingReelLastTs = null;
+  if (fishingReelRafId == null) fishingReelRafId = requestAnimationFrame(fishingReelLoop);
+}
+
+function stopFishingReelLoop(){
+  if (fishingReelRafId != null) { cancelAnimationFrame(fishingReelRafId); fishingReelRafId = null; }
+  fishingReelLastTs = null;
 }
 
 function updateFishingReelGaugeUi(){
   const fill = document.getElementById('fishing-reel-gauge-fill');
   if (fill) fill.style.width = fishingReelGaugeValue + '%';
+  const gaugeWrap = document.getElementById('fishing-reel-gauge-wrap');
+  if (gaugeWrap) gaugeWrap.classList.toggle('is-holding', fishingReelHolding);
 }
 
 function hideFishingReelGauge(){
   const gaugeWrap = document.getElementById('fishing-reel-gauge-wrap');
-  if (gaugeWrap) gaugeWrap.style.display = 'none';
+  if (gaugeWrap) { gaugeWrap.style.display = 'none'; gaugeWrap.classList.remove('is-holding'); }
   fishingReelGaugeValue = 0;
+  fishingReelHolding = false;
   updateFishingReelGaugeUi();
 }
 
 function fishingReelFailed(){
   fishingState = 'idle';
+  stopFishingReelLoop();
   const pond = document.getElementById('fishing-pond');
   const btn = document.getElementById('fishing-cast-btn');
   if (pond) pond.classList.remove('is-casting', 'is-biting', 'is-reeling');
@@ -3653,6 +3689,32 @@ function fishingReelFailed(){
   btn.textContent = fishingCastBtnDefaultLabel();
   showFishingEscapedMessage();
 }
+
+// 2026-08-04: #fishing-cast-btn을 누르고 있는 동안만 릴 감기 게이지가 차오르게 하는 포인터
+// 이벤트 — reeling 상태가 아닐 때는 아무 효과 없음(캐스팅/입질 탭은 기존 onclick이 그대로 처리).
+// setPointerCapture로 터치 중 손가락이 버튼 밖으로 살짝 벗어나도 계속 "누르고 있음"으로 인정함
+// (안 그러면 손 떨림 등으로 살짝만 밀려도 채우던 게이지가 도로 빠지는 게 불편할 수 있어서).
+function initFishingReelHoldEvents(){
+  const btn = document.getElementById('fishing-cast-btn');
+  if (!btn) return;
+  const startHold = (e) => {
+    if (fishingState !== 'reeling') return;
+    fishingReelHolding = true;
+    updateFishingReelGaugeUi();
+    if (btn.setPointerCapture && e.pointerId != null) { try { btn.setPointerCapture(e.pointerId); } catch (err) {} }
+    fishingVibrate(10);
+  };
+  const endHold = () => {
+    if (!fishingReelHolding) return;
+    fishingReelHolding = false;
+    updateFishingReelGaugeUi();
+  };
+  btn.addEventListener('pointerdown', startHold);
+  btn.addEventListener('pointerup', endHold);
+  btn.addEventListener('pointerleave', endHold);
+  btn.addEventListener('pointercancel', endHold);
+}
+document.addEventListener('DOMContentLoaded', initFishingReelHoldEvents);
 
 function showFishingEscapedMessage(){
   const msgEl = document.getElementById('fishing-status-msg');
@@ -3761,16 +3823,17 @@ const FISHING_BITE_PROMPT_MORE = {
 ,
   pt: `👆 Toque agora!`, es: `👆 ¡Toca ahora!`, uk: `👆 Натисніть зараз!`, tet: `👆 Toka agora!`,
 };
-// 릴 감기(연타) 단계에서 뜨는 문구
+// 릴 감기(꾹 누르기) 단계에서 뜨는 문구 — 2026-08-04: "빠르게 연타" 문구를 "꾹 눌러서"로 교체
+// (아래 로직도 연타 대신 홀드 방식으로 바뀜, 이 파일 위쪽 fishingReelLoop 근처 참고)
 const FISHING_REEL_PROMPT_MORE = {
-  km: '👆 ចុចញាប់ៗដើម្បីទាញខ្សែ!', ne: '👆 डोरी तान्न छिटो ट्याप गर्नुहोस्!', id: '👆 Ketuk cepat untuk menggulung!',
-  my: '👆 လိုင်းဆွဲရန် လျင်မြန်စွာနှိပ်ပါ!', si: '👆 නූල ඇදගැනීමට වේගයෙන් තට්ටු කරන්න!', uz: '👆 Yigirish uchun tez-tez bosing!',
-  mn: '👆 Утсыг сойхын тулд хурдан дараарай!', kk: '👆 Жіпті орау үшін жылдам басыңыз!', ky: '👆 Жипти ороо үчүн тез-тез басыңыз!',
-  ur: '👆 ڈوری کھینچنے کے لیے تیزی سے تھپتھپائیں!', bn: '👆 সুতো গোটাতে দ্রুত ট্যাপ করুন!', lo: '👆 ແຕະໄວໆເພື່ອດຶງສາຍ!',
-  ja: '👆 素早くタップしてリールを巻こう！', ar: '👆 اضغط بسرعة لسحب الخيط!', hi: '👆 डोरी खींचने के लिए तेज़ी से टैप करें!',
-  fr: '👆 Appuyez vite pour remonter la ligne !', tl: '👆 Mabilis na pindutin para gulungin!'
+  km: '👆 ចុចសង្កត់ដើម្បីទាញខ្សែ!', ne: '👆 डोरी तान्न थिचिराख्नुहोस्!', id: '👆 Tekan dan tahan untuk menggulung!',
+  my: '👆 လိုင်းဆွဲရန် ဖိထားပါ!', si: '👆 නූල ඇදගැනීමට ඔබාගෙන සිටින්න!', uz: "👆 Yigirish uchun bosib turing!",
+  mn: '👆 Утсыг сойхын тулд дараад барина уу!', kk: '👆 Жіпті орау үшін басып тұрыңыз!', ky: '👆 Жипти ороо үчүн басып туруңуз!',
+  ur: '👆 ڈوری کھینچنے کے لیے دبائے رکھیں!', bn: '👆 সুতো গোটাতে চেপে ধরে রাখুন!', lo: '👆 ກົດຄ້າງໄວ້ເພື່ອດຶງສາຍ!',
+  ja: '👆 長押ししてリールを巻こう！', ar: '👆 اضغط مطولاً لسحب الخيط!', hi: '👆 डोरी खींचने के लिए दबाकर रखें!',
+  fr: '👆 Maintenez appuyé pour remonter la ligne !', tl: '👆 Pindutin at hawakan para gulungin!'
 ,
-  pt: `👆 Toque rápido para recolher a linha!`, es: `👆 ¡Toca rápido para recoger el hilo!`, uk: `👆 Швидко натискайте, щоб змотати волосінь!`, tet: `👆 Toka lalais atu dada liña!`,
+  pt: `👆 Mantenha pressionado para recolher a linha!`, es: `👆 ¡Mantén presionado para recoger el hilo!`, uk: `👆 Утримуйте натиснутим, щоб змотати волосінь!`, tet: `👆 Kaer metin atu dada liña!`,
 };
 // 입질 순간을 놓치거나 릴 감기를 제시간에 못 끝냈을 때(물고기가 도망감) 뜨는 문구
 const FISHING_ESCAPED_MSG_MORE = {
