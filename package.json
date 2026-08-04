@@ -1,0 +1,12 @@
+{
+  "name": "chamtax",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build:min": "node scripts/build-min.js"
+  },
+  "devDependencies": {
+    "terser": "^5.49.1",
+    "clean-css": "^5.3.3"
+  }
+}

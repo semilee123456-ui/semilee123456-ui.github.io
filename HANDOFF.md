@@ -349,6 +349,17 @@ tests/               회귀 테스트 스크립트 9개 (아래 "회귀 테스�
 
 ## 코드 아키텍처 핵심 패턴
 
+- **`script.min.js`/`styles.min.css`(2026-08-04 신규)**: `index.html`이 실제로 로드하는 건
+  `script.js`/`styles.css`가 아니라 이 압축본 두 파일임(`i18n/*.json`이 `i18n-source/
+  translations.json`의 생성 파일인 것과 동일한 패턴). **`script.js`/`styles.css`를 고치면
+  `node scripts/build-min.js`로 압축본을 다시 만들어야 화면에 반영됨** — 로컬에서 깜빡해도
+  `.github/workflows/minify-assets.yml`이 main에 push될 때(`script.js`/`styles.css` 변경
+  감지) 자동으로 재생성·커밋해주므로 라이브에는 결국 반영되지만, 같은 세션에서 Artifact
+  미리보기 등으로 즉시 확인하려면 직접 돌려야 함. `sw.js`의 `APP_SHELL_PATHS`도 `.min` 파일
+  경로를 캐싱하므로, 이 두 파일의 경로 자체를 바꿀 일이 있으면 `sw.js`도 같이 갱신할 것
+  (놓치면 서비스 워커 오프라인 폴백이 구버전 또는 존재하지 않는 파일을 참조하게 됨). gzip
+  대비 추가 절감 효과: script.js 30%(573KB→401KB), styles.css 66%(62KB→21KB) — 자세한 배경은
+  아래 "작업 이력"의 2026-08-04 해당 항목 참고.
 - **`sharedCountry`**: 'kr'/'us'/'cn'/'in'/... — 사용자가 고른 "세금 계산 기준". 홈 화면과
   국가비교 화면이 이 값을 공유함. `data-basis="kr"` 같은 속성으로 FAQ 항목을 세금 기준별로도
   필터링함(`filterFaq()`).
@@ -1463,3 +1474,47 @@ minify를 제대로 하려면 `terser`/`clean-css`를 npm 의존성으로 추가
 숫자(terser/clean-css 조합, 30%/66% 추가 절감)를 그대로 재현할 수 있음.
 
 변경 파일: `screenshots/` 폴더 삭제(11개 파일), `script.js`(죽은 함수 2개 삭제).
+
+### 2026-08-04 이어서 — 위 minify 제안에 사용자가 "유지보수 자동화까지 해달라"고 승인 →
+### GitHub Actions 자동 재생성 워크플로까지 같이 구축(수동 체크리스트 방식은 안 씀)
+
+**판단**: 이전 세션이 "minify를 쓰면 소스(`script.js`/`styles.css`)를 고칠 때마다 압축본을
+재생성해야 하는데, 이 프로젝트가 `i18n/*.json`·`odds-data.js`류 생성 파일에서 이미 여러 번
+겪은 '재생성 깜빡함' 사고를 하나 더 만들 위험'이라고 지적했었음. 사용자에게 "HANDOFF.md
+체크리스트만 추가(수동, 기억 의존)" vs "GitHub Actions 자동화(사람이 신경 안 써도 됨)" 두
+선택지를 제시했고, 이미 이 저장소에 같은 패턴(`lottery-backfill.yml`, push 감지 후 자동
+커밋)이 있어서 자동화 쪽을 추천 → 승인받아 그대로 구현.
+
+**만든 것**:
+- `package.json`(신규) + `npm install`로 `terser`/`clean-css`를 devDependency로 추가
+  (`node_modules/`는 기존 `.gitignore`가 이미 커버).
+- `scripts/build-min.js`(신규, `scripts/build-i18n.js`와 같은 문서화 스타일): `script.js`→
+  `script.min.js`(terser, compress+mangle), `styles.css`→`styles.min.css`(clean-css level 2)
+  생성. 로컬 실행: `npm install && node scripts/build-min.js`.
+- `.github/workflows/minify-assets.yml`(신규, `lottery-backfill.yml`과 동일 구조): main에
+  `script.js`/`styles.css` push 감지 → `build-min.js` 실행 → `node --check`로 문법 검증 →
+  변경 있으면 `script.min.js`/`styles.min.css`만 봇이 커밋·푸시. **아직 실제 push로 트리거되는
+  걸 눈으로 확인 안 함 — 다음에 `script.js`나 `styles.css`가 실제로 main에 반영될 때 Actions
+  탭에서 이 워크플로가 정상 실행되는지 최초 1회 확인할 것**(로또 워크플로도 최초엔 수동
+  `workflow_dispatch`로 검증했던 것과 같은 이유).
+- `index.html`: `styles.css?v=20260804-3`→`styles.min.css?v=20260804-4`,
+  `script.js?v=20260804-7`→`script.min.js?v=20260804-8`로 로드 대상 전환(다른 페이지는
+  `script.js`/`styles.css`를 실제로 로드하지 않는 것을 grep으로 확인 후 index.html만 수정 —
+  나머지 2개 파일에서 나온 매치는 전부 주석 속 언급이었음).
+- `sw.js`: `APP_SHELL_PATHS`의 `/styles.css`/`/script.js`를 `/styles.min.css`/`/script.min.js`로
+  교체, `CACHE_NAME`을 `chamtax-shell-v1`→`v2`로 올림(파일 상단 주석이 이미 "앱 셸 내용
+  바뀌면 이 문자열 올릴 것"이라고 안내해둔 그대로 따름 — 안 올리면 재방문자가 구버전 캐시를
+  계속 씀).
+- 로컬 검증: `node scripts/build-min.js` 실행 후 `node --check script.min.js` 통과,
+  `gzip -c`로 실측한 크기가 이전 세션이 측정했던 값과 동일(script.min.js gzip 401,859B ≈
+  401KB, styles.min.css gzip 21,155B ≈ 21KB)함을 재확인.
+
+**다음 세션이 참고할 것**: `script.js`나 `styles.css`를 고치는 모든 향후 세션(자동 루틴
+포함)은 이제 `index.html`이 `.min` 파일을 로드한다는 걸 알아야 함 — 로컬에서 즉시 결과를
+확인하려면(Artifact 프리뷰 등) `node scripts/build-min.js`를 먼저 돌릴 것, 그렇지 않아도
+main에 push되면 워크플로가 대신 처리하지만 그 사이엔 `.min` 파일이 구버전으로 남아있음.
+
+변경 파일: `package.json`(신규), `package-lock.json`(신규), `scripts/build-min.js`(신규),
+`.github/workflows/minify-assets.yml`(신규), `script.min.js`(신규), `styles.min.css`(신규),
+`index.html`(로드 경로 전환), `sw.js`(캐시 경로·버전 갱신), `HANDOFF.md`(이 항목 + "코드
+아키텍처 핵심 패턴" 섹션).
