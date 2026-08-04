@@ -121,12 +121,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.css?v=20260731-2">
+<link rel="stylesheet" href="styles.css?v=20260803-4">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.js?v=20260802-1" defer></script>
+<script src="script.js?v=20260804-2" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1032,7 +1032,7 @@
               </div>
             </details>
             <div class="detail-note-box" style="background:var(--bg); border-radius:10px; padding:12px 14px; margin-top:10px;">
-              <p class="flow-explain-title" data-i18n="home.flowExplainTitle">💡 미국 로또는 두 가지 방식으로 받아요</p>
+              <p class="flow-explain-title" data-i18n="home.flowExplainTitle">ℹ️ 미국 로또는 두 가지 방식으로 받아요</p>
               <!-- 2026-07-30: "총액의 약 45~60%"라는 같은 사실이 이 목록·입력.krwHintFull(일시불
                    탭)·입력.announcedHint(연금액 탭) 3곳에서 표현만 바꿔 반복된다는 지적 —
                    뒤 2곳은 "지금 이 칸에 뭘 입력해야 하는지" 알려주는 필수 안내라 못 지우지만,
@@ -1784,12 +1784,51 @@
             <button type="button" class="lightning-game-btn active" id="lightning-game-pb" onclick="setLightningGame('powerball')" data-i18n="odds.lightningPbBtn">🔴 파워볼</button>
             <button type="button" class="lightning-game-btn" id="lightning-game-mega" onclick="setLightningGame('megamillions')" data-i18n="odds.lightningMegaBtn">🟡 메가밀리언즈</button>
           </div>
-          <div class="lightning-result" id="lightning-result">
-            <span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball pb" id="lightning-special-ball">?</span>
+          <!-- 2026-08-03: 사용자 요청으로 "낚시로 뽑기" 모드 신설 — 그냥 뽑기(기존, 기본값)와 낚시
+               미니게임(신규) 중 고를 수 있게 함. 기존 lightning-quick-mode는 그대로 두고 그 옆에
+               낚시 모드를 통째로 추가하는 방식이라, 기본값(그냥 뽑기)을 쓰는 사람에게는 회귀
+               위험이 없음. -->
+          <div class="lightning-mode-toggle" role="group">
+            <button type="button" class="lightning-mode-btn active" id="lightning-mode-quick" onclick="setLightningMode('quick')" data-i18n="odds.lightningModeQuickBtn">⚡ 바로 뽑기</button>
+            <button type="button" class="lightning-mode-btn" id="lightning-mode-fishing" onclick="setLightningMode('fishing')" data-i18n="odds.lightningModeFishingBtn">🎣 낚시로 뽑기</button>
           </div>
-          <p class="sr-only" id="lightning-result-announcer" role="status" aria-live="polite"></p>
-          <button class="cta-btn" id="lightning-draw-btn" onclick="drawLightningNumbers()" data-i18n="odds.drawBtn">⚡⚡⚡ 번호 뽑아보기</button>
-          <p class="foot-note" style="margin-top:10px; text-align:center;" id="lightning-draw-note">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
+          <div id="lightning-quick-mode">
+            <div class="lightning-result" id="lightning-result">
+              <span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball pb" id="lightning-special-ball">?</span>
+            </div>
+            <p class="sr-only" id="lightning-result-announcer" role="status" aria-live="polite"></p>
+            <button class="cta-btn" id="lightning-draw-btn" onclick="drawLightningNumbers()" data-i18n="odds.drawBtn">⚡⚡⚡ 번호 뽑아보기</button>
+            <p class="foot-note" style="margin-top:10px; text-align:center;" id="lightning-draw-note">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
+          </div>
+          <div id="lightning-fishing-mode" style="display:none;">
+            <p class="panel-desc" data-i18n="odds.fishingHint">🎣 낚싯대를 던져서 번호를 하나씩 낚아보세요</p>
+            <div class="fishing-pond" id="fishing-pond" aria-hidden="true" onclick="castFishingLine()">
+              <div class="fishing-rod-wrap" id="fishing-rod-wrap">
+                <span class="fishing-rod" id="fishing-rod">🎣</span>
+                <span class="fishing-line" id="fishing-line"></span>
+                <span class="fishing-hook-wrap">
+                  <span class="fishing-hook" id="fishing-hook">🪝</span>
+                  <span class="fishing-caught-fish" id="fishing-caught-fish">🐟</span>
+                </span>
+              </div>
+              <div class="fishing-water">
+                <span class="fishing-wave"></span><span class="fishing-wave"></span><span class="fishing-wave"></span>
+                <span class="fishing-idle-fish fishing-idle-fish-1">🐟</span>
+                <span class="fishing-idle-fish fishing-idle-fish-2">🐠</span>
+                <span class="fishing-splash" id="fishing-splash"></span>
+              </div>
+            </div>
+            <div class="lightning-result" id="fishing-result">
+              <span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball pb fishing-slot" id="fishing-special-ball">?</span>
+            </div>
+            <p class="sr-only" id="fishing-result-announcer" role="status" aria-live="polite"></p>
+            <div class="fishing-reel-gauge-wrap" id="fishing-reel-gauge-wrap" style="display:none;" aria-hidden="true">
+              <div class="fishing-reel-gauge-fill" id="fishing-reel-gauge-fill"></div>
+            </div>
+            <button class="cta-btn" id="fishing-cast-btn" onclick="castFishingLine()" data-i18n="odds.fishingCastBtn">🎣 낚싯대 던지기</button>
+            <p class="fishing-status-msg" id="fishing-status-msg" aria-live="polite"></p>
+            <p class="foot-note" style="margin-top:10px; text-align:center;" id="fishing-draw-note">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
+          </div>
         </details>
 
         <p class="disclaimer" data-i18n="odds.disclaimer">확률 수치는 공식 발표 자료 기준이에요. 원화 환산은 참고용 환율 적용이라 실제와 다를 수 있어요.</p>
@@ -2112,6 +2151,40 @@
             <summary class="faq-q" data-i18n-html="faq.q17">계산기에 나오는 '신고 <span style="white-space:nowrap">상태(싱글/기혼)'가</span> 뭐예요?</summary>
             <p class="faq-a" data-i18n-html="faq.a17">미국에서 세금 신고할 때 자격에 따라 세율 구간이 달라져요. 다만 복권 당첨금처럼 큰 금액에서는 이 차이가 거의 없어요 — 2026년 기준 최고세율(37%) 구간이 싱글은 약 64만 달러, 기혼 공동은 약 77만 달러부터라 그 차이는 반올림 오차 수준이에요.</p>
           </details>
+          <details class="faq-item" data-cat="refund" data-basis="us">
+            <summary class="faq-q" data-i18n="faq.usMoneyQ">복권 말고, 미국에 원래 내 돈인데 못 찾은 것도 있을까요?</summary>
+            <p class="faq-a" data-i18n-html="faq.usMoneyA">있을 수 있어요. 미국은 <span style="white-space:nowrap">주(State)마다</span> 미청구 재산(Unclaimed Property) 제도를 운영해서, 예전 계좌·급여·보험금 등이 주 정부로 넘어가 보관돼 있는 경우가 많아요. 국세청(IRS) 환급금도 못 받은 채 남아있을 수 있고요. 아래 체크리스트로 확인해보세요.</p>
+          </details>
+          <div class="refund-step-card" id="usMoneyStepCard" data-basis="us">
+            <p class="refund-step-tag" data-i18n="faq.step">STEP</p>
+            <p class="refund-step-title" data-i18n="faq.checklistTitle">아래 중 하나라도 해당되면 체크해보세요</p>
+            <label class="refund-check-row"><input type="checkbox" data-site="irs" onchange="checkUsUnclaimedMoney()"> <span data-i18n="faq.usCheck1">최근 몇 년 안에 미국에서 세금 신고를 했는데 환급금을 못 받은 적 있다</span></label>
+            <label class="refund-check-row"><input type="checkbox" data-site="usagov" onchange="checkUsUnclaimedMoney()"> <span data-i18n="faq.usCheck2">예전에 미국에서 살거나 일했던 주에서 못 받은 급여·보험금·배당금이 있을 수도 있다</span></label>
+            <label class="refund-check-row"><input type="checkbox" data-site="missingmoney" onchange="checkUsUnclaimedMoney()"> <span data-i18n="faq.usCheck3">예전에 쓰던 미국 은행 계좌·안전금고·배당금을 몇 년째 확인 안 했다</span></label>
+            <p class="refund-wizard-result" id="usMoneyResult" data-i18n="faq.checkDefault">하나라도 해당되면, 아래에서 실제로 확인해보세요 👇</p>
+            <div class="refund-link-buttons" style="margin-top:10px;">
+              <a class="refund-link-btn" id="refund-us-site-irs" href="https://www.irs.gov/refunds" target="_blank" rel="noopener noreferrer">
+                <span class="refund-link-btn-badge" data-i18n="faq.recommend">⭐ 추천</span>
+                <span class="refund-link-btn-icon">🏛️</span>
+                <span class="refund-link-btn-title" data-i18n-html="faq.usLinkIrs">세금 환급<br>조회</span>
+                <span class="refund-link-btn-sub">IRS.gov</span>
+              </a>
+              <a class="refund-link-btn" id="refund-us-site-usagov" href="https://www.usa.gov/unclaimed-money" target="_blank" rel="noopener noreferrer">
+                <span class="refund-link-btn-badge" data-i18n="faq.recommend">⭐ 추천</span>
+                <span class="refund-link-btn-icon">🏢</span>
+                <span class="refund-link-btn-title" data-i18n-html="faq.usLinkUsaGov">미청구 자산<br>찾기</span>
+                <span class="refund-link-btn-sub">USA.gov</span>
+              </a>
+              <a class="refund-link-btn" id="refund-us-site-missingmoney" href="https://missingmoney.com/" target="_blank" rel="noopener noreferrer">
+                <span class="refund-link-btn-badge" data-i18n="faq.recommend">⭐ 추천</span>
+                <span class="refund-link-btn-icon">💰</span>
+                <span class="refund-link-btn-title" data-i18n-html="faq.usLinkMissingMoney">주별 미청구<br>재산 찾기</span>
+                <span class="refund-link-btn-sub">MissingMoney</span>
+              </a>
+            </div>
+            <p class="qty-a" style="margin-top:10px;" data-i18n-html="faq.usChecklistFooter">저희가 직접 조회는 못 해드려요 — 대신 진짜 공식 채널로 바로 연결해드렸어요. 사이트마다 필요한 인증이 달라요(이름만 있어도 검색되는 곳이 있고, SSN이 필요한 곳도 있어요). 10분이면 확인 끝나요.</p>
+            <button class="share-btn" id="refund-us-share-btn" style="margin-top:10px;" onclick="shareRefundChecklist()" data-i18n="faq.shareChecklist">이거 친구한테 공유하기</button>
+          </div>
           <details class="faq-item" data-cat="purchase">
             <summary class="faq-q" data-i18n="faq.q18">당첨되면 실제로 어떤 절차를 거쳐요?</summary>
             <p class="faq-a" data-i18n-html="faq.a18">미국에서 구매 → 당첨 확인 → 청구까지, 총 6단계로 진행돼요. 자세한 절차는 아래 <b>구매 절차, 자세히 알아볼까요?</b>에서 확인해보세요.</p>

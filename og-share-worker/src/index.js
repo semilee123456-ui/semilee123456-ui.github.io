@@ -47,19 +47,28 @@ const LANG_FONT_FAMILY = {
   // 못 했던 것 — 이번엔 됨) 이 두 폰트로 "مليار"(십억)·"ملین"(백만) 같은 흔한 단어가 포함된
   // 카드가 HTTP 200에 본문 0바이트(완전히 빈 이미지)로 깨지는 걸 재현함. 둘 다 Noto Sans
   // Arabic으로 바꿔서 우르두어는 고쳐졌지만, 아랍어는 "ل+ي+ا" 연속(특히 "مليار") 같은 특정
-  // 글자 조합에서 여전히 재현됨 — satori(렌더링 엔진)가 리가처/RTL을 공식적으로 지원 안 해서
-  // (vercel/satori 이슈 트래커에 명시) 아랍어 문자 결합(joining) 처리 중 이 조합에서 폰트와
-  // 무관하게 죽는 것으로 보임. **Cairo로 한 번 더 시도해봤다가 되돌림** — Cairo는 이 특정 문자
-  // 조합에 대한 Google Fonts 서브셋 응답 자체가 `content-length: 0`(빈 폰트 파일)이라, "مليار"
-  // 뿐 아니라 "تجربة" 같은 멀쩡한 단어까지 전부 폴백 카드로 떨어지는 더 나쁜 결과였음(직접
-  // `curl`로 폰트 바이너리 응답까지 확인함) — Cairo 자체가 이 프로젝트가 쓰는 서브셋 요청
-  // 방식과 안 맞는 것으로 보여 폐기. **Noto Sans Arabic이 그나마 가장 넓은 범위에서 정상
-  // 동작하는 걸 확인**(글자 대부분 정상, "مليار" 부류만 여전히 실패) — 이 특정 사각지대는
-  // 폰트 교체로는 더 해결 안 될 가능성이 높아서(3개 폰트 다 시도), 대신 `handleOgImage()`에
-  // 렌더링 실패 시 안전한 대체 카드로 폴백하는 구조를 추가함(아래 참고) — 실패해도 최소한
-  // 빈 이미지 대신 유효한 이미지가 나감. 사이트 본문(styles.css)의 폰트는 안 건드림(브라우저는
-  // 이 문제가 없음, 이 Worker만의 문제).
-  ar: 'Noto Sans Arabic',
+  // 글자 조합에서 여전히 재현됨 — 같은 날 다른 세션이 이 사각지대를 `handleOgImage()`의
+  // 안전한 대체 카드 폴백 구조(아래 참고)로 우회했었는데, **뒤이은 세션이 로컬 `wrangler dev`로
+  // 직접 재현해서 진짜 원인을 특정함**: satori(이 Worker가 쓰는 렌더링 엔진)가 특정 OpenType
+  // GSUB 규칙(lookupType 5, format 3 — Chaining Contextual Substitution)을 아예 지원 안 해서
+  // (런타임에 "lookupType: 5 - substFormat: 3 is not yet supported"로 즉시 크래시) —
+  // Naskh/Nastaliq·Noto Sans Arabic·Noto Kufi Arabic 전부 이 GSUB 규칙을 갖고 있어서 "ل+ي+ا"
+  // 3글자 연속에서 폰트와 무관하게 동일하게 크래시함을 로컬 재현으로 확인(리가처 문제가 아니라
+  // 이 규칙 자체를 satori가 못 읽는 문제였음). 반면 Cairo·Tajawal·IBM Plex Sans Arabic·Almarai
+  // 등 이 GSUB 규칙 자체를 안 쓰는 폰트들은 크래시 없이 정상 렌더링됨을 확인 — 그중 Tajawal로
+  // 교체(사이트 본문에서도 흔히 쓰이는 무난한 산세리프 아랍어 폰트, 아랍어 문자 조인 자체는
+  // 정상 지원). `i18n-source/translations.json`의 짧은 아랍어 문자열 387개 전부(로컬
+  // `wrangler dev`로 일괄 재현 테스트) 크래시 0건 확인 — **Cairo는 시도 당시 이 문자 조합에
+  // 대한 Google Fonts 서브셋 응답 자체가 `content-length: 0`(빈 폰트 파일)이라 되돌렸던 적이
+  // 있었는데(다른 세션 기록), Tajawal은 그 문제 없이 정상 응답됨을 같이 확인함.** 아래
+  // `handleOgImage()`의 안전한 대체 카드 폴백 구조는 이 근본 수정과 별개로 그대로 유지 —
+  // 지금은 안 쓰이지만 앞으로 다른 언어/조합에서 satori가 또 다른 사각지대를 만나면 여전히
+  // 최후 방어선 역할을 함. 우르두어(ur)는 재확인해보니 Noto Sans Arabic으로 이미 정상
+  // 렌더링되고 있어서(이 3글자 연속 자체가 없는 문구들이라 우연히 안 걸린 것으로 보임) 그대로
+  // 둠 — 다만 다음 세션이 우르두어 카드도 같은 증상을 보면 이 항목도 Tajawal(또는 같은 검증을
+  // 거친 다른 폰트)로 바꿀 것. 사이트 본문(styles.css)의 폰트는 안 건드림(브라우저는 이 문제가
+  // 없음, 이 Worker만의 문제).
+  ar: 'Tajawal',
   ur: 'Noto Sans Arabic',
   hi: 'Noto Sans Devanagari',
   ne: 'Noto Sans Devanagari',
