@@ -1892,3 +1892,84 @@ lottery-backfill.yml`이 매일 GitHub Actions에서 data.ny.gov 공식 오픈�
 루틴으로 계속 처리.
 
 변경 파일: 없음(이 항목은 브랜치/루틴 정리, 코드 변경은 PR #118 병합분뿐 — 그쪽 로그 참고).
+
+### 2026-08-04 이어서 — "이제 더 100프로 완벽해지려면 뭐 해야되?" → `i18n_attr_lint.js`가
+### 잡은 후보 1건(`faq.usCheck4`) 정리
+
+**배경**: 회귀 테스트 중 `i18n_attr_lint.js`(정적 분석, 브라우저 안 씀)가 `data-i18n`
+속성인데 한글 텍스트에 "글자(괄호"/")글자" 패턴이 있어서 좁은 화면에서 줄바꿈이 어색하게
+날 수 있는 후보를 찾아냄 — `faq.usCheck4`(미국 401(k) 관련 FAQ 문항) 1건, "확정 버그"가
+아니라 "후보"였음.
+
+**처리**: `i18n-source/translations.json`에서 이 키의 26개 언어 번역값 전부 확인한 뒤
+(`ko` 키는 없음 — 한국어는 index.html에 직접 박혀있는 구조), 어느 값에도 `<`/`>`/`&`가
+없는 걸 확인해서 `data-i18n-html`로 바꿔도 다른 언어 렌더링에 영향이 없다는 걸 검증.
+`index.html`의 해당 `<span data-i18n="faq.usCheck4">...</span>`를
+`data-i18n-html`로 바꾸고, 줄바꿈 위험 구간("퇴직연금(401(k)·기업연금)을")만
+`<span style="white-space:nowrap">`로 감쌈(이 사이트에서 기존에 써오던 표준 패턴).
+
+**검증**: `i18n_attr_lint.js` 재실행 → `ISSUES: 0`(후보 완전 해소). Playwright로
+기본 언어(영어)와 `?lang=ko` 강제 둘 다 확인 — 영어는 `data-i18n-html`이 정상적으로
+평문 텍스트를 렌더링(특수문자 없어서 `data-i18n`과 동일하게 보임), 한국어는 nowrap
+span이 살아있는 채로 `textContent`가 원래 문구와 정확히 일치하는 것 확인. 콘솔 에러
+4건은 전부 샌드박스에서 광고/GA 등 외부 origin 요청이 막혀서 나는 `ERR_CONNECTION_RESET`이라
+이 변경과 무관.
+
+이 fix는 `script.js`/`styles.css`를 건드리지 않아서 `node scripts/build-min.js`
+재실행 불필요.
+
+변경 파일: `index.html`(`faq.usCheck4`를 `data-i18n-html`로 전환 + nowrap span 추가).
+
+### 2026-08-04 이어서 — 나머지 51개 페이지 og:image 확장 완료 (26 basics + 19 resident + 6 misc)
+
+**배경**: 오늘 앞서 만든 27개 og:image(`*_in_korea_lottery_tax.html` 계열)는 전체 사이트의
+일부일 뿐 — `us-lottery-basics-XX.html`(26개 언어), `XX-resident-us-lottery-tax.html`(19개국),
+그 외 잡다한 6개 페이지가 여전히 언어중립 `og-image.png`를 쓰고 있었음. "나머지 51개 페이지의
+og:image ... 이거 해줘" 요청으로 세 그룹 전부 처리.
+
+**공통 원칙 — 새 카피는 최소화, 이미 검증된 실제 콘텐츠를 최대한 재사용**:
+- 헤드라인(h1)은 각 언어 페이지에 이미 게시돼있는 실제 문구를 그대로 재사용(새로 번역 안 함,
+  오역 리스크 0)
+- 카드에 들어가는 라벨류는 가능한 한 `script.js`에 이미 있는 검증된 다국어 상수를 그대로
+  재사용 — `US_FED_TAX_NONRESIDENT_MORE`("미국 연방세 (비거주자)" 26개 언어),
+  `ALSO_PAY_PHRASE_MORE`+`COUNTRY_NAMES_MORE`("~에서도 또 내요?" 패턴)
+- 내가 새로 쓴 문구(eyebrow/subtext/cta 등)는 전부 짧고 단순한 문장으로 제한(저자원 언어일수록
+  오류 리스크가 문장 길이에 비례하기 때문) — 오늘 앞서 제미나이/GPT 원어민 검수를 받았던
+  11개 언어(km/my/lo/si/mn/kk/ky/uz/ne/bn/ur)는 그때 검수된 표현을 그대로 재사용
+
+**Group A — `us-lottery-basics-XX.html` 26개 언어**: "실제 확률" 카드(파워볼 배당률 vs
+한국 로또 6/45 배당률 비교, "35배 낮음" 델타) 디자인. 각 언어 페이지에 이미 게시된 실제
+배당률 수치(정규식으로 추출, 예: 영어 "1 in 292.2M", 중국어 "1 / 2亿9200万")를 그대로 사용.
+`/tmp/og_gen2/build_a.py`로 생성 → 헤드리스 크로미움 스크린샷 → `og-image-hook-basics-XX.png`
+26개로 저장. 스팟체크 10개 언어(en/ar/my/zh/si/ur/km/hi/th/mn) 전부 글자 깨짐/오버플로우
+없음 확인.
+
+**Group B — `XX-resident-us-lottery-tax.html` 19개국**: 각국 거주자가 미국 복권에 당첨됐을 때
+"미국 연방 원천징수 30%(비거주자, 전 국가 공통 — `TAX_MODEL.nonresident.us_withholding`)"를
+보여주는 카드. 국가별 자국 추가세율은 이미지에 안 넣음(일부는 `unverified_estimate` 상태라
+이미지에 박아넣기엔 확신도가 낮음 — 페이지 본문의 전체 설명/경고 문구는 그대로 유지되니
+이미지는 "확실히 맞는 사실 하나"만 보여주는 티저로 설계). `/tmp/og_gen3/build_b.py`로 생성 →
+`og-image-hook-resident-{country}.png` 19개. 전 언어 스크린샷 확인(우르두 RTL 미러링 포함) —
+글자 깨짐/카드 침범 없음.
+
+**Group C(misc) — 나머지 6개 페이지**: `biggest-lottery-jackpots-after-tax.html`(en/zh) —
+페이지에 이미 있는 역대 1위 실측치(2022-11-07 파워볼 $2.04B, 미국 거주자 실수령 ≈$581.4M)를
+카드에 재사용. `korean-abroad-us-lottery-tax.html`(en/zh) — 판정 기준이 국적이 아니라
+"한국 세법상 거주자 여부(183일 기준)"라는 페이지의 핵심 포인트를 카드에 요약.
+`lottery-jackpot-amount-en/zh.html` — 이 페이지는 매주 잭팟 금액이 바뀌는 실시간 페이지라
+구체적 금액을 이미지에 박으면 금방 낡아버리므로, 금액 대신 "실시간 추적 중 · 파워볼·메가밀리언즈"
+문구로 디자인(스테일 데이터 방지). `/tmp/og_gen4/build_c.py`로 생성 → `og-image-hook-{slug}.png`
+6개.
+
+**검증**: 그룹별로 `node tests/broken_link_audit.js` 실행해 `ISSUES: 0` 확인 후 커밋(3회 분할
+커밋: Group A → Group B → Group C). 최종적으로 `node --check script.js`,
+`node tests/broken_link_audit.js`, `node tests/fact_consistency_audit.js` 전부 통과 확인.
+
+변경 파일: `us-lottery-basics-*.html`(26, og:image 메타태그만), `*-resident-us-lottery-tax.html`
+(19, 마찬가지), `biggest-lottery-jackpots-after-tax.html`/`biggest_lottery_jackpots_after_tax_zh.html`
+/`korean-abroad-us-lottery-tax.html`/`korean_abroad_us_lottery_tax_zh.html`/
+`lottery-jackpot-amount-en.html`/`lottery-jackpot-amount-zh.html`(6, 마찬가지) + 신규 이미지
+파일 51개(`og-image-hook-basics-*.png` 26 + `og-image-hook-resident-*.png` 19 +
+`og-image-hook-{slug}.png` 6). `script.js`/`styles.css` 변경 없음 — 빌드 재실행 불필요.
+이로써 오늘 오전 27개(`*_in_korea_lottery_tax.html`) + 이번 51개 = 사이트 전체 og:image
+언어중립 이미지 교체 작업 완료.
