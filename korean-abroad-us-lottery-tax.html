@@ -99,6 +99,54 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "A free calculator for the after-tax take-home amount of US Powerball and Mega Millions lottery winnings."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "A free web calculator for the after-tax take-home amount of US lottery jackpots (Powerball, Mega Millions), covering 21 countries/jurisdictions including US non-resident withholding.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Calculate the After-Tax Take-Home Amount for a US Lottery Win",
+  "step": [
+    { "@type": "HowToStep", "name": "Enter the jackpot amount", "text": "Enter the Powerball or Mega Millions jackpot amount (announced jackpot or lump-sum cash value)." },
+    { "@type": "HowToStep", "name": "Select your country of residence", "text": "Select whether you're a Korean resident or apply a different country's tax rules." },
+    { "@type": "HowToStep", "name": "Select the US state", "text": "Select the US state where the ticket was purchased — additional withholding rates vary by state." },
+    { "@type": "HowToStep", "name": "See your after-tax take-home amount", "text": "See your estimated take-home amount after 30% US federal withholding and Korean tax (with double-taxation adjustment) are applied." }
+  ]
+}
+</script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <style>
@@ -127,6 +175,7 @@
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
   .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
+  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
   .quick-answer{ background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px; padding:20px; margin-bottom:24px; }
   .quick-answer p.label{ font-size:var(--fs-small); font-weight:700; color:var(--teal); margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em; }
   .quick-answer .row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:6px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px; }
@@ -162,7 +211,8 @@
   </div>
 
   <h1>Living Abroad and Won a US Lottery? Here's Your Korea Tax Question</h1>
-  <p class="lead">Moving overseas doesn't automatically end your Korean tax obligations. If you win Powerball or Mega Millions while living outside Korea, here's how to figure out whether Korea's National Tax Service (NTS) still expects to hear from you — and how the US and Korean tax bites actually interact.</p>
+  <p class="lead"><b>ChamTax</b> is a free calculator that shows the actual after-tax take-home amount for US Powerball and Mega Millions winnings. Moving overseas doesn't automatically end your Korean tax obligations. If you win Powerball or Mega Millions while living outside Korea, here's how to figure out whether Korea's National Tax Service (NTS) still expects to hear from you — and how the US and Korean tax bites actually interact.</p>
+  <p class="updated-date">Last updated: 2026-08-03</p>
 
   <div class="quick-answer">
     <p class="label">30-second summary</p>
