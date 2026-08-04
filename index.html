@@ -126,7 +126,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.js?v=20260804-2" defer></script>
+<script src="script.js?v=20260804-3" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -2267,6 +2267,33 @@
             <summary class="faq-q"><span data-i18n="faq.aud.in.q2">인도 온 지 얼마 안 됐는데도 세금을 내야 하나요?</span><span class="faq-audience-badge" data-i18n="faq.audienceForeignBadge">🏠 거주 외국인 전용</span></summary>
             <p class="faq-a" data-i18n-html="faq.aud.in.a2">한 회계연도에 182일 이상 인도에 머물면 거주자로 분류돼 전 세계 소득에 과세돼요. 다만 최근 인도로 이주했거나 오래 해외에 있었다면 “RNOR(비일반거주자)”라는 중간 신분을 얻을 수 있는<span style="white-space:nowrap">데(</span>예: 최근 7년 중 인도 체류가 730일 미만 등 조건 충족 시, 최대 3년간 적용), 이 기간 동안은 이 복권 당첨금 같은 해외소득에 인도 세금이 부과되지 않아요. 정확한 RNOR 해당 여부는 최근 수년간의 인도 체류 이력을 따져야 해서 전문가 상담을 권해요.</p>
           </details>
+          <details class="faq-item" data-cat="refund" data-basis="in">
+            <summary class="faq-q" data-i18n="faq.inMoneyQ">복권 말고, 인도에 원래 내 돈인데 못 찾은 것도 있을까요?</summary>
+            <p class="faq-a" data-i18n-html="faq.inMoneyA">있을 수 있어요. 인도준비은행(RBI)이 여러 은행에 흩어진 미청구 예금을 한 번에 검색할 수 있는 UDGAM 포털을 운영하고, 기업부(MCA) 산하 IEPF는 7년 이상 못 찾아간 배당금·주식을 관리해요. 아래 체크리스트로 확인해보세요.</p>
+          </details>
+          <div class="refund-step-card" id="inMoneyStepCard" data-basis="in">
+            <p class="refund-step-tag" data-i18n="faq.step">STEP</p>
+            <p class="refund-step-title" data-i18n="faq.checklistTitle">아래 중 하나라도 해당되면 체크해보세요</p>
+            <label class="refund-check-row"><input type="checkbox" data-site="udgam" onchange="checkInUnclaimedMoney()"> <span data-i18n="faq.inCheck1">여러 은행에 계좌가 있는데 그중 10년 넘게 거래 안 한 계좌가 있을 수도 있다</span></label>
+            <label class="refund-check-row"><input type="checkbox" data-site="iepf" onchange="checkInUnclaimedMoney()"> <span data-i18n="faq.inCheck2">예전에 주식을 갖고 있었는데 배당금이나 주식 자체를 오랫동안 확인 안 했다</span></label>
+            <p class="refund-wizard-result" id="inMoneyResult" data-i18n="faq.checkDefault">하나라도 해당되면, 아래에서 실제로 확인해보세요 👇</p>
+            <div class="refund-link-buttons" style="margin-top:10px;">
+              <a class="refund-link-btn" id="refund-in-site-udgam" href="https://udgam.rbi.org.in/unclaimed-deposits/" target="_blank" rel="noopener noreferrer">
+                <span class="refund-link-btn-badge" data-i18n="faq.recommend">⭐ 추천</span>
+                <span class="refund-link-btn-icon">🏦</span>
+                <span class="refund-link-btn-title" data-i18n-html="faq.inLinkUdgam">은행 예금<br>통합조회</span>
+                <span class="refund-link-btn-sub">UDGAM (RBI)</span>
+              </a>
+              <a class="refund-link-btn" id="refund-in-site-iepf" href="https://www.iepf.gov.in/" target="_blank" rel="noopener noreferrer">
+                <span class="refund-link-btn-badge" data-i18n="faq.recommend">⭐ 추천</span>
+                <span class="refund-link-btn-icon">📈</span>
+                <span class="refund-link-btn-title" data-i18n-html="faq.inLinkIepf">배당금·주식<br>찾기</span>
+                <span class="refund-link-btn-sub">IEPF (MCA)</span>
+              </a>
+            </div>
+            <p class="qty-a" style="margin-top:10px;" data-i18n-html="faq.inChecklistFooter">저희가 직접 조회는 못 해드려요 — 대신 진짜 공식 채널로 바로 연결해드렸어요. UDGAM은 등록된 휴대폰 번호와 OTP 인증이 필요하고, IEPF는 예전 주식 증서의 폴리오 번호가 있으면 더 정확해요. 10분이면 확인 끝나요.</p>
+            <button class="share-btn" id="refund-in-share-btn" style="margin-top:10px;" onclick="shareInUnclaimedMoneyChecklist()" data-i18n="faq.shareChecklist">이거 친구한테 공유하기</button>
+          </div>
           <details class="faq-item" data-cat="tax" data-basis="vn">
             <summary class="faq-q" data-i18n="faq.q19vn">세금 신고는 진짜 어떻게 해야 돼요?</summary>
             <p class="faq-a" data-i18n-html="faq.a19vn">미국에서 먼저 30% 원천징수되고, 베트남에서는 이 소득을 <b>"상금소득(trúng thưởng)"</b>으로 분류해 1회당 1천만동 초과분에 10% 단일세율을 적용해요(2026-07-01 시행 신소득세법으로 면세 한도가 2천만동으로 올랐지만, 잭팟 규모는 이 기준을 항상 넘어요). 베트남은 미국과 정식 발효된 조세조약이 없지만, 국내법(시행규칙 111/2013호 제26조)에 따라 조약 여부와 무관하게 미국에서 낸 세금을 베트남 세액 한도 내에서 공제받을 수 있어요. 다만 근로소득처럼 매년 5월에 하는 정기 확정신고와 달리 상금소득은 받을 때마다 별도 신고하는 방식이라, 정확한 신고 서식·절차는 베트남 세무 전문가에게 확인하시길 권해요.</p>
@@ -2422,6 +2449,11 @@
           <details class="faq-item" data-cat="tax" data-basis="bd" data-audience="resident-foreign">
             <summary class="faq-q"><span data-i18n="faq.aud.bd.q2">방글라데시 온 지 얼마 안 됐는데도 세금을 내야 하나요?</span><span class="faq-audience-badge" data-i18n="faq.audienceForeignBadge">🏠 거주 외국인 전용</span></summary>
             <p class="faq-a" data-i18n-html="faq.aud.bd.a2">한 소득연도에 182일 이<span style="white-space:nowrap">상(</span>또는 90일 이상 체류 + 과거 4년간 누적 365일 이상) 체류하면 거주자로 분류돼 전 세계 소득에 과세돼요. 미만이면 비거주자로 방글라데시 내 소득에만 30% 단일세율이 적용돼요.</p>
+          </details>
+          <details class="faq-item" data-cat="refund" data-basis="bd">
+            <summary class="faq-q" data-i18n="faq.bdMoneyQ">복권 말고, 방글라데시에 원래 내 돈인데 못 찾은 것도 있을까요?</summary>
+            <p class="faq-a" data-i18n-html="faq.bdMoneyA">있을 수 있어요. 방글라데시 중앙은행(Bangladesh Bank)이 10년 넘게 거래 없는 계좌 명단을 은행별로 공개하고 있어요 — 저희가 직접 조회는 못 해드리지만, 아래에서 은행별 명단을 직접 확인해보실 수 있어요.</p>
+            <p class="faq-a" style="margin-top:-8px;"><a class="jp-official-link" href="https://www.bb.org.bd/en/index.php/services/searchunclaimed" target="_blank" rel="noopener noreferrer" data-i18n="home.officialLink">🔗 공식 사이트에서 확인</a></p>
           </details>
           <details class="faq-item" data-cat="tax" data-basis="pk">
             <summary class="faq-q" data-i18n="faq.q19pk">세금 신고는 진짜 어떻게 해야 돼요?</summary>

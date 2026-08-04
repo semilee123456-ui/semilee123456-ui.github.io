@@ -50,7 +50,7 @@ let I18N_LOAD_PROMISE = null;
 
 function loadI18nLanguage(lang){
   if (lang === "ko" || I18N_CACHE[lang]) return Promise.resolve();
-  return fetch(`i18n/${lang}.json?v=20260804-2`)
+  return fetch(`i18n/${lang}.json?v=20260804-3`)
     .then(res => { if (!res.ok) throw new Error("i18n fetch failed: " + res.status); return res.json(); })
     .then(data => { I18N_CACHE[lang] = data; })
     .catch(err => { console.error("[i18n] failed to load", lang, err); });
@@ -2565,6 +2565,125 @@ function checkUsUnclaimedMoney(){
   const allSites = ['irs', 'usagov', 'missingmoney'];
   allSites.forEach(site => {
     const btn = document.getElementById('refund-us-site-' + site);
+    if (!btn) return;
+    if (checkedCount === 0) {
+      btn.classList.remove('recommended', 'dimmed');
+    } else if (recommendedSites.has(site)) {
+      btn.classList.add('recommended');
+      btn.classList.remove('dimmed');
+    } else {
+      btn.classList.remove('recommended');
+      btn.classList.add('dimmed');
+    }
+  });
+}
+
+// 인도 거주자용 "찾지 못한 돈 찾기" 체크리스트 — checkUsUnclaimedMoney()와 완전히 같은 패턴
+// (동적 안내문도 나라를 특정 안 하는 범용 문구라 그대로 재사용). 대상: RBI의 UDGAM(여러 은행
+// 미청구 예금 통합조회)과 기업부(MCA) 산하 IEPF(7년 이상 미청구 배당금·주식)
+function checkInUnclaimedMoney(){
+  const checks = document.querySelectorAll('.refund-check-row input[type="checkbox"][onchange="checkInUnclaimedMoney()"]');
+  checks.forEach(c => {
+    const row = c.closest('.refund-check-row');
+    if (row) row.classList.toggle('checked', c.checked);
+  });
+  const checkedBoxes = Array.from(checks).filter(c => c.checked);
+  const checkedCount = checkedBoxes.length;
+  const resultEl = document.getElementById('inMoneyResult');
+
+  if (checkedCount === 0) {
+    resultEl.textContent = pickLang(
+      '하나라도 해당되면, 아래에서 실제로 확인해보세요 👇',
+      'If even one applies to you, check below to find out 👇',
+      '如果有符合的项目，请在下方实际确认一下 👇',
+      'Nếu dù chỉ một điều đúng với bạn, hãy kiểm tra bên dưới để tìm hiểu 👇',
+      'หากมีข้อใดตรงกับคุณ ตรวจสอบด้านล่างเพื่อดูรายละเอียด 👇',
+      'Если хоть бы одно из этого относится к вам, проверьте ниже, чтобы узнать больше 👇',
+      {
+        ar: 'إذا انطبق عليك ولو واحد منها، تحقق أدناه لمعرفة ذلك 👇',
+        bn: 'যদি একটি বিষয়ও আপনার সাথে মেলে, নিচে গিয়ে দেখুন 👇',
+        fr: "Si ne serait-ce qu'un point vous concerne, vérifiez ci-dessous 👇",
+        hi: 'अगर एक भी बात आप पर लागू होती है, तो नीचे जाकर पता करें 👇',
+        id: 'Jika ada satu saja yang berlaku untukmu, cek di bawah untuk tahu lebih lanjut 👇',
+        ja: '一つでも当てはまるなら、下で確認してみましょう 👇',
+        kk: 'Тым болмаса біреуі сізге қатысты болса, төменнен тексеріп көріңіз 👇',
+        km: 'ប្រសិនបើមួយណាមួយអនុវត្តទៅអ្នក សូមពិនិត្យខាងក្រោមដើម្បីដឹង 👇',
+        ky: 'Жок дегенде бирөө сизге тиешелүү болсо, төмөндөн текшерип көрүңүз 👇',
+        lo: 'ຖ້າແມ່ນແຕ່ອັນດຽວກ່ຽວຂ້ອງກັບທ່ານ ລອງກວດເບິ່ງລຸ່ມນີ້ 👇',
+        mn: 'Дор хаяж нэг нь танд хамаарвал, доор шалгаж үзнэ үү 👇',
+        my: 'တစ်ခုခုသက်ဆိုင်ရင် အောက်တွင်စစ်ဆေးကြည့်ပါ 👇',
+        ne: 'यदि एउटा मात्र पनि तपाईंलाई लागू हुन्छ भने, तल गएर पत्ता लगाउनुहोस् 👇',
+        si: 'එකක් හෝ ඔබට අදාළ නම්, පහත බලන්න 👇',
+        tl: 'Kung kahit isa ay naaangkop sa iyo, tingnan sa ibaba para malaman 👇',
+        ur: 'اگر ایک بھی آپ پر لاگو ہوتی ہے تو نیچے جا کر معلوم کریں 👇',
+        uz: "Agar hech bo'lmasa bittasi sizga tegishli bo'lsa, pastda tekshirib ko'ring 👇",
+       pt: `Se ao menos um se aplicar a você, confira abaixo para descobrir 👇`, es: `Si al menos uno se aplica a ti, consulta a continuación para averiguarlo 👇`, uk: `Якщо до вас стосується хоча б один пункт, перевірте нижче 👇`, tet: `Se ida de'it aplika ba ó, verifika iha kraik hodi hatene 👇`}
+    );
+    resultEl.className = 'refund-wizard-result';
+  } else if (checkedCount === 1) {
+    resultEl.textContent = pickLang(
+      '✅ 해당하시는 게 있네요 — 못 받은 돈이 있을 가능성이 있어요. 아래에서 회원님한테 맞는 곳을 추천해드렸어요',
+      '✅ You checked one — there may be money you haven’t claimed. We’ve highlighted the right place for you below',
+      '✅ 有一项符合——可能有您还没领取的钱。我们已经在下方为您标出了对应的查询渠道',
+      '✅ Bạn có một mục đúng — có thể bạn có khoản tiền chưa nhận. Chúng tôi đã đánh dấu nơi phù hợp cho bạn bên dưới',
+      '✅ คุณมีข้อที่ตรงหนึ่งข้อ — อาจมีเงินที่คุณยังไม่ได้รับ เราไฮไลต์ที่ที่เหมาะกับคุณไว้ด้านล่างแล้ว',
+      '✅ У вас есть одно совпадение — возможно, у вас есть невостребованные деньги. Мы выделили для вас подходящее место ниже',
+      {
+        ar: '✅ لديك مورد واحد ينطبق — قد يكون لديك أموال لم تستلمها. لقد أبرزنا لك المكان المناسب أدناه',
+        bn: '✅ আপনার একটি বিষয় মিলেছে — আপনার কাছে অদাবিকৃত টাকা থাকতে পারে। আমরা নিচে আপনার জন্য সঠিক জায়গাটি চিহ্নিত করেছি',
+        fr: "✅ Un point vous concerne — il pourrait y avoir de l'argent que vous n'avez pas réclamé. Nous avons mis en évidence l'endroit approprié ci-dessous",
+        hi: '✅ आप पर एक बात लागू होती है — हो सकता है आपके पास बिना दावे का पैसा हो। हमने नीचे आपके लिए सही जगह हाइलाइट कर दी है',
+        id: '✅ Ada satu yang berlaku untukmu — mungkin ada uang yang belum kamu klaim. Kami sudah menyorot tempat yang tepat untukmu di bawah',
+        ja: '✅ 一つ当てはまりました — 未請求のお金があるかもしれません。以下にあなたに合った場所をハイライトしました',
+        kk: '✅ Сізге бір нәрсе қатысты — алмаған ақшаңыз болуы мүмкін. Төменде сізге сәйкес жерді белгіледік',
+        km: '✅ អ្នកមានលក្ខខណ្ឌមួយត្រូវនឹងអ្នក — អាចមានលុយដែលអ្នកមិនបានទាមទារ។ យើងបានគូសបញ្ជាក់ទីកន្លែងសមស្របសម្រាប់អ្នកខាងក្រោម',
+        ky: '✅ Сизге бир нерсе туура келет — алынбаган акчаңыз болушу мүмкүн. Төмөндө сизге туура келген жерди белгиледик',
+        lo: '✅ ທ່ານມີຫນຶ່ງຂໍ້ທີ່ກົງກັນ — ອາດມີເງິນທີ່ທ່ານຍັງບໍ່ໄດ້ຮັບ. ພວກເຮົາໄດ້ເນັ້ນບ່ອນທີ່ເໝາະສົມສໍາລັບທ່ານໄວ້ລຸ່ມນີ້',
+        mn: '✅ Танд нэг зүйл тохирсон байна — авч амжаагүй мөнгө байж болзошгүй. Бид танд тохирох газрыг доор онцолсон байна',
+        my: '✅ သင့်အတွက် တစ်ခုကိုက်ညီပါသည် — မတောင်းယူထားသောငွေရှိနိုင်ပါသည်။ သင့်အတွက်သင့်တော်သောနေရာကို အောက်တွင်မီးမောင်းထိုးပြထားပါသည်',
+        ne: '✅ तपाईंलाई एउटा कुरा लागू हुन्छ — तपाईंसँग दाबी नगरिएको पैसा हुन सक्छ। हामीले तलमा तपाईंका लागि उपयुक्त ठाउँ हाइलाइट गरेका छौं',
+        si: '✅ ඔබට එකක් ගැලපේ — ඔබට ඉල්ලා නොසිටින මුදලක් තිබිය හැක. ඔබට ගැලපෙන ස්ථානය පහත උද්දීපනය කර ඇත',
+        tl: '✅ May isang bagay na naaangkop sa iyo — maaaring may perang hindi mo pa na-claim. Naka-highlight na namin ang tamang lugar para sa iyo sa ibaba',
+        ur: '✅ آپ پر ایک بات لاگو ہوتی ہے — ممکن ہے آپ کے پاس غیر دعویٰ شدہ پیسہ ہو۔ ہم نے نیچے آپ کے لیے صحیح جگہ نمایاں کر دی ہے',
+        uz: "✅ Sizga bittasi mos keladi — da'vo qilinmagan pulingiz bo'lishi mumkin. Quyida siz uchun to'g'ri joyni belgilab qo'ydik",
+       pt: `✅ Você marcou um — pode haver dinheiro que você não resgatou. Destacamos o local certo para você abaixo`, es: `✅ Marcaste uno: podría haber dinero que no has reclamado. Hemos destacado el lugar adecuado a continuación`, uk: `✅ Ви позначили один пункт — можливо, є незатребувані гроші. Ми виділили потрібне місце нижче`, tet: `✅ Ó marka tiha ida — pode iha osan ne'ebé ó la reklama. Ami hatudu fatin lós ba ó iha kraik`}
+    );
+    resultEl.className = 'refund-wizard-result tag-hit';
+  } else {
+    resultEl.textContent = pickLang(
+      `✅ ${checkedCount}개나 해당되시네요 — 실제로 못 받은 돈이 있을 가능성이 꽤 높아요. 아래에서 회원님한테 맞는 곳을 추천해드렸어요`,
+      `✅ You checked ${checkedCount} — there’s a good chance you have unclaimed money. We’ve highlighted the right places for you below`,
+      `✅ 有${checkedCount}项符合——很有可能有您还没领取的钱。我们已经在下方为您标出了对应的查询渠道`,
+      `✅ Bạn có ${checkedCount} mục đúng — rất có thể bạn có khoản tiền chưa nhận. Chúng tôi đã đánh dấu những nơi phù hợp cho bạn bên dưới`,
+      `✅ คุณมี ${checkedCount} ข้อที่ตรง — มีโอกาสสูงที่คุณมีเงินที่ยังไม่ได้รับ เราไฮไลต์ที่ที่เหมาะกับคุณไว้ด้านล่างแล้ว`,
+      `✅ У вас ${checkedCount} совпадений — вполне возможно, у вас есть невостребованные деньги. Мы выделили для вас подходящие места ниже`,
+      {
+        ar: `✅ لديك ${checkedCount} موارد تنطبق — هناك فرصة جيدة أن يكون لديك أموال لم تستلمها. لقد أبرزنا لك الأماكن المناسبة أدناه`,
+        bn: `✅ আপনার ${checkedCount}টি বিষয় মিলেছে — সম্ভবত আপনার কাছে অদাবিকৃত টাকা আছে। আমরা নিচে আপনার জন্য সঠিক জায়গাগুলো চিহ্নিত করেছি`,
+        fr: `✅ ${checkedCount} points vous concernent — il y a de bonnes chances que vous ayez de l'argent non réclamé. Nous avons mis en évidence les endroits appropriés ci-dessous`,
+        hi: `✅ आप पर ${checkedCount} बातें लागू होती हैं — अच्छी संभावना है कि आपके पास बिना दावे का पैसा हो। हमने नीचे आपके लिए सही जगहें हाइलाइट कर दी हैं`,
+        id: `✅ Ada ${checkedCount} yang berlaku untukmu — kemungkinan besar ada uang yang belum kamu klaim. Kami sudah menyorot tempat-tempat yang tepat untukmu di bawah`,
+        ja: `✅ ${checkedCount}個当てはまりました — 未請求のお金がある可能性が高いです。以下にあなたに合った場所をハイライトしました`,
+        kk: `✅ Сізге ${checkedCount} нәрсе қатысты — алмаған ақшаңыз болу мүмкіндігі жоғары. Төменде сізге сәйкес жерлерді белгіледік`,
+        km: `✅ អ្នកមានលក្ខខណ្ឌ ${checkedCount} ត្រូវនឹងអ្នក — មានឱកាសខ្ពស់ដែលអ្នកមានលុយមិនបានទាមទារ។ យើងបានគូសបញ្ជាក់ទីកន្លែងសមស្របសម្រាប់អ្នកខាងក្រោម`,
+        ky: `✅ Сизге ${checkedCount} нерсе туура келет — алынбаган акчаңыз болуу ыктымалдыгы жогору. Төмөндө сизге туура келген жерлерди белгиледик`,
+        lo: `✅ ທ່ານມີ ${checkedCount} ຂໍ້ທີ່ກົງກັນ — ມີໂອກາດສູງທີ່ທ່ານຈະມີເງິນທີ່ຍັງບໍ່ໄດ້ຮັບ. ພວກເຮົາໄດ້ເນັ້ນບ່ອນທີ່ເໝາະສົມສໍາລັບທ່ານໄວ້ລຸ່ມນີ້`,
+        mn: `✅ Танд ${checkedCount} зүйл тохирсон байна — авч амжаагүй мөнгөтэй байх магадлал өндөр. Бид танд тохирох газруудыг доор онцолсон байна`,
+        my: `✅ သင့်အတွက် ${checkedCount} ခုကိုက်ညီပါသည် — မတောင်းယူထားသောငွေရှိနိုင်ခြေမြင့်ပါသည်။ သင့်အတွက်သင့်တော်သောနေရာများကို အောက်တွင်မီးမောင်းထိုးပြထားပါသည်`,
+        ne: `✅ तपाईंलाई ${checkedCount} कुरा लागू हुन्छन् — तपाईंसँग दाबी नगरिएको पैसा हुने सम्भावना उच्च छ। हामीले तलमा तपाईंका लागि उपयुक्त ठाउँहरू हाइलाइट गरेका छौं`,
+        si: `✅ ඔබට ${checkedCount}ක් ගැලපේ — ඔබට ඉල්ලා නොසිටින මුදලක් තිබීමේ හැකියාව වැඩිය. ඔබට ගැලපෙන ස්ථාන පහත උද්දීපනය කර ඇත`,
+        tl: `✅ May ${checkedCount} bagay na naaangkop sa iyo — malaki ang posibilidad na may perang hindi mo pa na-claim. Naka-highlight na namin ang mga tamang lugar para sa iyo sa ibaba`,
+        ur: `✅ آپ پر ${checkedCount} باتیں لاگو ہوتی ہیں — امکان ہے کہ آپ کے پاس غیر دعویٰ شدہ پیسہ ہو۔ ہم نے نیچے آپ کے لیے صحیح جگہیں نمایاں کر دی ہیں`,
+        uz: `✅ Sizga ${checkedCount} ta narsa mos keladi — da'vo qilinmagan pulingiz bo'lish ehtimoli yuqori. Quyida siz uchun to'g'ri joylarni belgilab qo'ydik`,
+       pt: `✅ Você marcou ${checkedCount} — há uma boa chance de você ter dinheiro não resgatado. Destacamos os locais certos para você abaixo`, es: `✅ Marcaste ${checkedCount}: hay muchas probabilidades de que tengas dinero no reclamado. Hemos destacado los lugares adecuados a continuación`, uk: `✅ Ви позначили ${checkedCount} — є великі шанси, що у вас є незатребувані гроші. Ми виділили потрібні місця нижче`, tet: `✅ Ó marka tiha ${checkedCount} — iha chance boot katak ó iha osan ne'ebé la reklama. Ami hatudu fatin lós ba ó iha kraik`}
+    );
+    resultEl.className = 'refund-wizard-result tag-hit';
+  }
+
+  const recommendedSites = new Set(checkedBoxes.map(c => c.dataset.site));
+  const allSites = ['udgam', 'iepf'];
+  allSites.forEach(site => {
+    const btn = document.getElementById('refund-in-site-' + site);
     if (!btn) return;
     if (checkedCount === 0) {
       btn.classList.remove('recommended', 'dimmed');
@@ -10779,6 +10898,98 @@ async function shareUsUnclaimedMoneyChecklist(){
   );
   let shareUrl = location.href;
   const btn = document.getElementById('refund-us-share-btn');
+  const shareTitle = pickLang(
+    '나도 모르는 잠자는 내 돈 찾기 체크리스트',
+    'Find money you didn’t know you had — checklist',
+    '找出你不知道的沉睡资产 — 检查清单',
+    'Danh sách tìm tiền bạn không biết mình có',
+    'เช็คลิสต์ค้นหาเงินที่คุณไม่รู้ว่ามี',
+    'Чек-лист: найдите деньги, о которых не знали',
+    {
+      ar: 'قائمة للعثور على أموال لم تكن تعرف أنك تملكها',
+      bn: 'তুমি যে টাকার কথা জানতে না তা খুঁজে বের করার চেকলিস্ট',
+      fr: "Checklist pour trouver de l'argent que vous ignoriez avoir",
+      hi: 'वह पैसा खोजें जिसके बारे में आपको पता नहीं था — चेकलिस्ट',
+      id: 'Checklist untuk menemukan uang yang tidak kamu tahu kamu punya',
+      ja: '知らずに眠っていたお金を見つけるチェックリスト',
+      kk: 'Барын білмеген ақшаңды табу чек-парағы',
+      km: 'បញ្ជីត្រួតពិនិត្យរកលុយដែលអ្នកមិនដឹងថាមាន',
+      ky: 'Барын билбеген акчаңды табуу текшерүү тизмеси',
+      lo: 'ລາຍການກວດສອບຄົ້ນຫາເງິນທີ່ເຈົ້າບໍ່ຮູ້ວ່າມີ',
+      mn: 'Байгааг нь мэдээгүй мөнгөө олох чеклист',
+      my: 'သင်ပိုင်ဆိုင်တာမသိတဲ့ငွေကို ရှာဖွေဖို့ စစ်ဆေးစာရင်း',
+      ne: 'तपाईंलाई थाहा नभएको पैसा फेला पार्ने — चेकलिस्ट',
+      si: 'ඔබ නොදැන සිටි මුදල් සොයා ගැනීමේ විමර්ශන ලැයිස්තුව',
+      tl: 'Checklist para mahanap ang perang hindi mo alam na meron ka',
+      ur: 'وہ پیسہ ڈھونڈیں جس کا آپ کو علم نہیں تھا — چیک لسٹ',
+      uz: "Bor ekanini bilmagan pulingizni topish tekshiruv ro'yxati",
+     pt: `Encontre dinheiro que você não sabia que tinha — checklist`, es: `Encuentra dinero que no sabías que tenías: lista de verificación`, uk: `Знайдіть гроші, про які ви не знали — чекліст`, tet: `Buka osan ne'ebé ó la hatene katak ó iha — lista verifikasaun`}
+  );
+  shareUrl = wrapWithOgShareCard(shareUrl, { main: shareTitle });
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = shareFallbackCopyToast();
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
+    }
+  } catch (e) {
+    window.prompt(pickLang(
+      '아래 내용을 길게 눌러 복사해서 공유해주세요',
+      'Press and hold to copy, then share it',
+      '长按下方内容复制后分享',
+      'Nhấn giữ để sao chép rồi chia sẻ',
+      'กดค้างเพื่อคัดลอกแล้วแชร์',
+      'Нажмите и удерживайте, чтобы скопировать, затем поделитесь',
+      PRESS_HOLD_COPY_MORE
+    ), `${shareText} ${shareUrl}`);
+  }
+}
+
+// 인도 거주자용 "찾지 못한 돈 찾기" 체크리스트 공유 — shareUsUnclaimedMoneyChecklist()와 같은
+// 구조(shareTitle·메커니즘 재사용), shareText만 인도(UDGAM/IEPF)를 언급하도록 새로 작성.
+// 버튼 id도 #refund-in-share-btn으로 분리해서 다른 위젯 버튼과 안 겹치게 함
+async function shareInUnclaimedMoneyChecklist(){
+  const shareText = pickLang(
+    '나도 모르게 못 받은 돈이 있는지 체크리스트로 확인해봐요. 인도는 RBI의 UDGAM 포털에서 여러 은행 미청구 예금을 한 번에 찾을 수 있고, IEPF에서는 7년 넘게 못 찾아간 배당금·주식도 확인할 수 있대요. 참택스 FAQ에서 10분이면 확인 끝나요!',
+    'I checked whether I had unclaimed money using this checklist. In India, you can search unclaimed deposits across banks at once through the RBI’s UDGAM portal, and check dividends or shares unclaimed for 7+ years through IEPF. Takes 10 minutes to check on the ChamTax FAQ!',
+    '我用这个清单确认了自己是否有不知道的未领取的钱。据说在印度可以通过RBI的UDGAM门户网站一次性查找多家银行的未认领存款，还可以通过IEPF确认7年以上未领取的股息或股票。在ChamTax的FAQ里10分钟就能确认完！',
+    'Tôi đã kiểm tra xem mình có khoản tiền chưa nhận nào không bằng danh sách này. Ở Ấn Độ, bạn có thể tra cứu tiền gửi chưa nhận ở nhiều ngân hàng cùng lúc qua cổng UDGAM của RBI, và kiểm tra cổ tức hoặc cổ phiếu chưa nhận hơn 7 năm qua IEPF. Chỉ mất 10 phút để kiểm tra trên FAQ của ChamTax!',
+    'ฉันตรวจสอบว่ามีเงินที่ไม่รู้ว่ายังไม่ได้รับหรือไม่ด้วยเช็คลิสต์นี้ ในอินเดียสามารถค้นหาเงินฝากที่ยังไม่ได้รับจากหลายธนาคารพร้อมกันผ่านพอร์ทัล UDGAM ของ RBI และตรวจสอบเงินปันผลหรือหุ้นที่ยังไม่ได้รับมานานกว่า 7 ปีผ่าน IEPF ได้ ใช้เวลาแค่ 10 นาทีในการตรวจสอบที่ FAQ ของ ChamTax!',
+    'Я проверил, есть ли у меня невостребованные деньги, с помощью этого чек-листа. В Индии можно искать невостребованные депозиты сразу в нескольких банках через портал UDGAM от RBI, а также проверить дивиденды или акции, невостребованные более 7 лет, через IEPF. Проверка на FAQ ChamTax занимает всего 10 минут!',
+    {
+      ar: 'تحققت مما إذا كان لدي أموال لم أستلمها باستخدام هذه القائمة. في الهند، يمكنك البحث عن الودائع غير المطالب بها في عدة بنوك دفعة واحدة عبر بوابة UDGAM التابعة لـ RBI، والتحقق من الأرباح أو الأسهم غير المطالب بها لأكثر من 7 سنوات عبر IEPF. يستغرق الأمر 10 دقائق للتحقق في FAQ الخاصة بـ ChamTax!',
+      bn: 'আমি এই চেকলিস্ট দিয়ে আমার কোনো না পাওয়া টাকা আছে কিনা পরীক্ষা করেছি। ভারতে RBI-এর UDGAM পোর্টালে একসাথে একাধিক ব্যাংকের দাবি না করা আমানত খোঁজা যায়, আর IEPF-এ ৭ বছরের বেশি দাবি না করা লভ্যাংশ বা শেয়ারও যাচাই করা যায়। ChamTax-এর FAQ-তে ১০ মিনিটেই যাচাই শেষ!',
+      fr: "J'ai vérifié si j'avais de l'argent non réclamé avec cette checklist. En Inde, on peut rechercher des dépôts non réclamés dans plusieurs banques à la fois via le portail UDGAM de la RBI, et vérifier des dividendes ou actions non réclamés depuis plus de 7 ans via l'IEPF. Il suffit de 10 minutes pour vérifier sur la FAQ de ChamTax !",
+      hi: 'मैंने इस चेकलिस्ट से जांचा कि मेरे पास कोई अनक्लेम्ड पैसा तो नहीं है। भारत में RBI के UDGAM पोर्टल से कई बैंकों में बिना दावे की जमा राशि एक साथ खोजी जा सकती है, और IEPF से 7 साल से ज़्यादा समय से बिना दावे के लाभांश या शेयर भी जांचे जा सकते हैं। ChamTax के FAQ पर सिर्फ 10 मिनट में जांच पूरी!',
+      id: 'Aku memeriksa apakah ada uangku yang belum diklaim pakai checklist ini. Di India, kamu bisa mencari simpanan tak diklaim di beberapa bank sekaligus lewat portal UDGAM milik RBI, dan memeriksa dividen atau saham yang belum diklaim lebih dari 7 tahun lewat IEPF. Cuma butuh 10 menit untuk cek di FAQ ChamTax!',
+      ja: 'このチェックリストで、自分が知らずに受け取っていないお金がないか確認しました。インドではRBIのUDGAMポータルで複数の銀行の未請求預金を一度に検索でき、IEPFでは7年以上未請求の配当金・株式も確認できるそうです。ChamTaxのFAQなら10分で確認できます！',
+      kk: 'Мен осы чек-парақ арқылы алмаған ақшам бар-жоғын тексердім. Үндістанда RBI-дың UDGAM порталы арқылы бірнеше банктегі талап етілмеген депозиттерді бір мезгілде іздеуге, ал IEPF арқылы 7 жылдан астам талап етілмеген дивидендтер мен акцияларды тексеруге болады екен. ChamTax-тың FAQ-нда тексеру бар-жоғы 10 минут алады!',
+      km: 'ខ្ញុំបានពិនិត្យមើលថាតើខ្ញុំមានលុយដែលមិនបានទាមទារដែរឬទេ ដោយប្រើបញ្ជីត្រួតពិនិត្យនេះ។ នៅឥណ្ឌា អ្នកអាចស្វែងរកប្រាក់បញ្ញើមិនទាន់ទាមទារនៅធនាគារជាច្រើនក្នុងពេលតែមួយតាមរយៈវេទិកា UDGAM របស់ RBI ហើយពិនិត្យភាគលាភ ឬហ៊ុនមិនទាន់ទាមទារលើសពី 7 ឆ្នាំតាមរយៈ IEPF។ ត្រូវការតែ 10 នាទីដើម្បីពិនិត្យនៅលើ FAQ របស់ ChamTax!',
+      ky: "Мен ушул текшерүү тизмеси менен алынбаган акчам бар-жогун текшердим. Индияда RBI'дын UDGAM порталы аркылуу бир нече банктагы талап кылынбаган депозиттерди бир учурда издөөгө, ал эми IEPF аркылуу 7 жылдан ашык талап кылынбаган дивиденддерди жана акцияларды текшерүүгө болот экен. ChamTax'тын FAQ'унда текшерүү болгону 10 мүнөт алат!",
+      lo: 'ຂ້ອຍໄດ້ກວດເບິ່ງວ່າມີເງິນທີ່ຍັງບໍ່ໄດ້ຮັບຫຼືບໍ່ດ້ວຍລາຍການກວດສອບນີ້. ຢູ່ອິນເດຍ ທ່ານສາມາດຄົ້ນຫາເງິນຝາກທີ່ຍັງບໍ່ໄດ້ຮ້ອງຂໍໃນຫຼາຍທະນາຄານພ້ອມກັນຜ່ານພອດຟອມ UDGAM ຂອງ RBI ແລະກວດສອບເງິນປັນຜົນ ຫຼືຫຸ້ນທີ່ຍັງບໍ່ໄດ້ຮ້ອງຂໍເກີນ 7 ປີຜ່ານ IEPF ໄດ້. ໃຊ້ເວລາພຽງ 10 ນາທີໃນການກວດສອບທີ່ FAQ ຂອງ ChamTax!',
+      mn: 'Би энэ чеклистээр өөрийн авч амжаагүй мөнгө байгаа эсэхийг шалгасан. Энэтхэгт RBI-ийн UDGAM порталаар олон банкны нэхэмжлээгүй хадгаламжийг нэг дор хайх, IEPF-ээр 7-оос дээш жил нэхэмжлээгүй ногдол ашиг, хувьцааг шалгах боломжтой гэнэ. ChamTax-ийн FAQ дээр ердөө 10 минутад шалгаж болно!',
+      my: 'ဒီစစ်ဆေးစာရင်းနဲ့ ငါမရသေးတဲ့ငွေရှိလားဆိုတာ စစ်ဆေးကြည့်ခဲ့တယ်။ အိန္ဒိယမှာ RBI ရဲ့ UDGAM ပလက်ဖောင်းကနေ ဘဏ်များစွာရဲ့ တောင်းယူမှုမရှိသေးသော ငွေစုငွေချေးတွေကို တစ်ပြိုင်နက်ရှာဖွေနိုင်ပြီး၊ IEPF ကနေ 7 နှစ်ကျော် တောင်းယူမှုမရှိသေးသော အမြတ်ဝေစု၊ ရှယ်ယာတွေကိုလည်း စစ်ဆေးနိုင်တယ်လို့ ဆိုပါတယ်။ ChamTax ရဲ့ FAQ မှာ ၁၀ မိနစ်နဲ့ စစ်ဆေးပြီးသွားနိုင်တယ်!',
+      ne: 'यो चेकलिस्ट प्रयोग गरेर मैले नपाएको पैसा छ कि छैन जाँचें। भारतमा RBI को UDGAM पोर्टलबाट धेरै बैंकहरूमा दाबी नगरिएको निक्षेप एकैचोटि खोज्न सकिन्छ, र IEPF बाट 7 वर्षभन्दा बढी समयदेखि दाबी नगरिएको लाभांश वा सेयरहरू पनि जाँच गर्न सकिन्छ। ChamTax को FAQ मा जम्मा १० मिनेटमा जाँच सकिन्छ!',
+      si: 'මම මෙම විමර්ශන ලැයිස්තුව භාවිතයෙන් මට නොලැබුණු මුදල් තිබේදැයි පරීක්ෂා කළෙමි. ඉන්දියාවේ RBI හි UDGAM වේදිකාව හරහා බැංකු කිහිපයක ඉල්ලා නොසිටින තැන්පතු එකවර සෙවිය හැකි අතර, IEPF හරහා වසර 7කට වඩා ඉල්ලා නොසිටින ලාභාංශ හෝ කොටස් ද පරීක්ෂා කළ හැක. ChamTax හි FAQ හි විනාඩි 10කින් පරීක්ෂා කළ හැක!',
+      tl: 'Sinuri ko kung mayroon akong pera na hindi pa na-claim gamit ang checklist na ito. Sa India, puwede kang maghanap ng unclaimed deposits sa maraming bangko nang sabay-sabay gamit ang UDGAM portal ng RBI, at suriin ang mga dividend o shares na hindi na-claim sa loob ng mahigit 7 taon gamit ang IEPF. 10 minuto lang para suriin sa FAQ ng ChamTax!',
+      ur: 'میں نے اس چیک لسٹ سے دیکھا کہ کہیں میرا کوئی ان کلیمڈ پیسہ تو نہیں ہے۔ بھارت میں RBI کے UDGAM پورٹل سے متعدد بینکوں میں غیر دعویٰ شدہ ڈپازٹس بیک وقت تلاش کیے جا سکتے ہیں، اور IEPF سے 7 سال سے زیادہ عرصے سے غیر دعویٰ شدہ منافع یا حصص بھی چیک کیے جا سکتے ہیں۔ ChamTax کے FAQ پر صرف 10 منٹ میں چیک مکمل!',
+      uz: "Men ushbu tekshiruv ro'yxati orqali da'vo qilinmagan pulim bor-yo'qligini tekshirdim. Hindistonda RBI'ning UDGAM portali orqali bir nechta bankdagi da'vo qilinmagan omonatlarni bir vaqtning o'zida qidirish, IEPF orqali esa 7 yildan ortiq da'vo qilinmagan dividend yoki aksiyalarni tekshirish mumkin ekan. ChamTax'ning FAQ sahifasida tekshirish atigi 10 daqiqa oladi!",
+     pt: `Verifiquei se tinha dinheiro não resgatado usando este checklist. Na Índia, dá para buscar depósitos não resgatados em vários bancos de uma vez pelo portal UDGAM do RBI, e verificar dividendos ou ações não resgatados há mais de 7 anos pelo IEPF. Leva 10 minutos para verificar no FAQ do ChamTax!`, es: `Comprobé si tenía dinero no reclamado usando esta lista. En la India, se pueden buscar depósitos no reclamados en varios bancos a la vez a través del portal UDGAM del RBI, y consultar dividendos o acciones no reclamados durante más de 7 años a través del IEPF. ¡Lleva 10 minutos verificarlo en el FAQ de ChamTax!`, uk: `Я перевірив(-ла), чи є в мене незатребувані гроші, за допомогою цього списку. В Індії можна шукати незатребувані депозити одразу в кількох банках через портал UDGAM від RBI, а також перевірити дивіденди чи акції, незатребувані понад 7 років, через IEPF. Перевірка займає 10 хвилин у FAQ на ChamTax!`, tet: `Ha'u verifika se ha'u iha osan ne'ebé la reklama uza lista verifikasaun ne'e. Iha Índia, bele buka depósitu la reklama iha banku barak hamutuk liuhusi portál UDGAM RBI nian, no verifika dividendu ka aksaun la reklama liu tinan 7 liuhusi IEPF. Foti menutu 10 hodi verifika iha FAQ ChamTax nian!`}
+  );
+  let shareUrl = location.href;
+  const btn = document.getElementById('refund-in-share-btn');
   const shareTitle = pickLang(
     '나도 모르는 잠자는 내 돈 찾기 체크리스트',
     'Find money you didn’t know you had — checklist',
