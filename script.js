@@ -50,7 +50,7 @@ let I18N_LOAD_PROMISE = null;
 
 function loadI18nLanguage(lang){
   if (lang === "ko" || I18N_CACHE[lang]) return Promise.resolve();
-  return fetch(`i18n/${lang}.json?v=20260804`)
+  return fetch(`i18n/${lang}.json?v=20260804-2`)
     .then(res => { if (!res.ok) throw new Error("i18n fetch failed: " + res.status); return res.json(); })
     .then(data => { I18N_CACHE[lang] = data; })
     .catch(err => { console.error("[i18n] failed to load", lang, err); });
@@ -2325,7 +2325,11 @@ function jackpotOddsText(game){
 // 표시 언어와 무관하게 항상 실제 한국 공식 채널로 연결됨.
 
 function checkHiddenMoney(){
-  const checks = document.querySelectorAll('.refund-check-row input[type="checkbox"]');
+  // 2026-08-04: FTC 서류 체크리스트(checkFtcDocs)에 이어 미국용 찾지 못한 돈 체크리스트
+  // (checkUsUnclaimedMoney)까지 같은 .refund-check-row 클래스를 쓰게 되면서, 스코프 없이
+  // 셀렉터를 쓰면 다른 위젯의 체크박스까지 섞여서 개수가 잘못 셀 수 있음 — onchange
+  // 속성으로 좁혀서(checkFtcDocs가 이미 쓰던 방식) 이 위젯의 체크박스만 잡히게 함
+  const checks = document.querySelectorAll('.refund-check-row input[type="checkbox"][onchange="checkHiddenMoney()"]');
   checks.forEach(c => {
     const row = c.closest('.refund-check-row');
     if (row) row.classList.toggle('checked', c.checked);
@@ -2428,6 +2432,126 @@ function checkHiddenMoney(){
   const allSites = ['hometax', 'gov24', 'fine', 'health', 'cardpoint'];
   allSites.forEach(site => {
     const btn = document.getElementById('refund-site-' + site);
+    if (!btn) return;
+    if (checkedCount === 0) {
+      btn.classList.remove('recommended', 'dimmed');
+    } else if (recommendedSites.has(site)) {
+      btn.classList.add('recommended');
+      btn.classList.remove('dimmed');
+    } else {
+      btn.classList.remove('recommended');
+      btn.classList.add('dimmed');
+    }
+  });
+}
+
+// 미국 거주자용 "찾지 못한 돈 찾기" 체크리스트 — checkHiddenMoney()(한국용)와 완전히 같은
+// 패턴이지만 대상 체크박스·버튼·결과 문구 엘리먼트만 다름. 결과 안내 문구(0/1/여러 개 체크)는
+// 어느 나라 얘기인지 특정하지 않는 범용 문구라 checkHiddenMoney()의 번역을 그대로 재사용함
+// (faq.a10/check1 등처럼 나라별 내용이 아니라 "체크한 개수에 따른 반응"만 다르므로 안전)
+function checkUsUnclaimedMoney(){
+  const checks = document.querySelectorAll('.refund-check-row input[type="checkbox"][onchange="checkUsUnclaimedMoney()"]');
+  checks.forEach(c => {
+    const row = c.closest('.refund-check-row');
+    if (row) row.classList.toggle('checked', c.checked);
+  });
+  const checkedBoxes = Array.from(checks).filter(c => c.checked);
+  const checkedCount = checkedBoxes.length;
+  const resultEl = document.getElementById('usMoneyResult');
+
+  if (checkedCount === 0) {
+    resultEl.textContent = pickLang(
+      '하나라도 해당되면, 아래에서 실제로 확인해보세요 👇',
+      'If even one applies to you, check below to find out 👇',
+      '如果有符合的项目，请在下方实际确认一下 👇',
+      'Nếu dù chỉ một điều đúng với bạn, hãy kiểm tra bên dưới để tìm hiểu 👇',
+      'หากมีข้อใดตรงกับคุณ ตรวจสอบด้านล่างเพื่อดูรายละเอียด 👇',
+      'Если хоть бы одно из этого относится к вам, проверьте ниже, чтобы узнать больше 👇',
+      {
+        ar: 'إذا انطبق عليك ولو واحد منها، تحقق أدناه لمعرفة ذلك 👇',
+        bn: 'যদি একটি বিষয়ও আপনার সাথে মেলে, নিচে গিয়ে দেখুন 👇',
+        fr: "Si ne serait-ce qu'un point vous concerne, vérifiez ci-dessous 👇",
+        hi: 'अगर एक भी बात आप पर लागू होती है, तो नीचे जाकर पता करें 👇',
+        id: 'Jika ada satu saja yang berlaku untukmu, cek di bawah untuk tahu lebih lanjut 👇',
+        ja: '一つでも当てはまるなら、下で確認してみましょう 👇',
+        kk: 'Тым болмаса біреуі сізге қатысты болса, төменнен тексеріп көріңіз 👇',
+        km: 'ប្រសិនបើមួយណាមួយអនុវត្តទៅអ្នក សូមពិនិត្យខាងក្រោមដើម្បីដឹង 👇',
+        ky: 'Жок дегенде бирөө сизге тиешелүү болсо, төмөндөн текшерип көрүңүз 👇',
+        lo: 'ຖ້າແມ່ນແຕ່ອັນດຽວກ່ຽວຂ້ອງກັບທ່ານ ລອງກວດເບິ່ງລຸ່ມນີ້ 👇',
+        mn: 'Дор хаяж нэг нь танд хамаарвал, доор шалгаж үзнэ үү 👇',
+        my: 'တစ်ခုခုသက်ဆိုင်ရင် အောက်တွင်စစ်ဆေးကြည့်ပါ 👇',
+        ne: 'यदि एउटा मात्र पनि तपाईंलाई लागू हुन्छ भने, तल गएर पत्ता लगाउनुहोस् 👇',
+        si: 'එකක් හෝ ඔබට අදාළ නම්, පහත බලන්න 👇',
+        tl: 'Kung kahit isa ay naaangkop sa iyo, tingnan sa ibaba para malaman 👇',
+        ur: 'اگر ایک بھی آپ پر لاگو ہوتی ہے تو نیچے جا کر معلوم کریں 👇',
+        uz: "Agar hech bo'lmasa bittasi sizga tegishli bo'lsa, pastda tekshirib ko'ring 👇",
+       pt: `Se ao menos um se aplicar a você, confira abaixo para descobrir 👇`, es: `Si al menos uno se aplica a ti, consulta a continuación para averiguarlo 👇`, uk: `Якщо до вас стосується хоча б один пункт, перевірте нижче 👇`, tet: `Se ida de'it aplika ba ó, verifika iha kraik hodi hatene 👇`}
+    );
+    resultEl.className = 'refund-wizard-result';
+  } else if (checkedCount === 1) {
+    resultEl.textContent = pickLang(
+      '✅ 해당하시는 게 있네요 — 못 받은 돈이 있을 가능성이 있어요. 아래에서 회원님한테 맞는 곳을 추천해드렸어요',
+      '✅ You checked one — there may be money you haven’t claimed. We’ve highlighted the right place for you below',
+      '✅ 有一项符合——可能有您还没领取的钱。我们已经在下方为您标出了对应的查询渠道',
+      '✅ Bạn có một mục đúng — có thể bạn có khoản tiền chưa nhận. Chúng tôi đã đánh dấu nơi phù hợp cho bạn bên dưới',
+      '✅ คุณมีข้อที่ตรงหนึ่งข้อ — อาจมีเงินที่คุณยังไม่ได้รับ เราไฮไลต์ที่ที่เหมาะกับคุณไว้ด้านล่างแล้ว',
+      '✅ У вас есть одно совпадение — возможно, у вас есть невостребованные деньги. Мы выделили для вас подходящее место ниже',
+      {
+        ar: '✅ لديك مورد واحد ينطبق — قد يكون لديك أموال لم تستلمها. لقد أبرزنا لك المكان المناسب أدناه',
+        bn: '✅ আপনার একটি বিষয় মিলেছে — আপনার কাছে অদাবিকৃত টাকা থাকতে পারে। আমরা নিচে আপনার জন্য সঠিক জায়গাটি চিহ্নিত করেছি',
+        fr: "✅ Un point vous concerne — il pourrait y avoir de l'argent que vous n'avez pas réclamé. Nous avons mis en évidence l'endroit approprié ci-dessous",
+        hi: '✅ आप पर एक बात लागू होती है — हो सकता है आपके पास बिना दावे का पैसा हो। हमने नीचे आपके लिए सही जगह हाइलाइट कर दी है',
+        id: '✅ Ada satu yang berlaku untukmu — mungkin ada uang yang belum kamu klaim. Kami sudah menyorot tempat yang tepat untukmu di bawah',
+        ja: '✅ 一つ当てはまりました — 未請求のお金があるかもしれません。以下にあなたに合った場所をハイライトしました',
+        kk: '✅ Сізге бір нәрсе қатысты — алмаған ақшаңыз болуы мүмкін. Төменде сізге сәйкес жерді белгіледік',
+        km: '✅ អ្នកមានលក្ខខណ្ឌមួយត្រូវនឹងអ្នក — អាចមានលុយដែលអ្នកមិនបានទាមទារ។ យើងបានគូសបញ្ជាក់ទីកន្លែងសមស្របសម្រាប់អ្នកខាងក្រោម',
+        ky: '✅ Сизге бир нерсе туура келет — алынбаган акчаңыз болушу мүмкүн. Төмөндө сизге туура келген жерди белгиледик',
+        lo: '✅ ທ່ານມີຫນຶ່ງຂໍ້ທີ່ກົງກັນ — ອາດມີເງິນທີ່ທ່ານຍັງບໍ່ໄດ້ຮັບ. ພວກເຮົາໄດ້ເນັ້ນບ່ອນທີ່ເໝາະສົມສໍາລັບທ່ານໄວ້ລຸ່ມນີ້',
+        mn: '✅ Танд нэг зүйл тохирсон байна — авч амжаагүй мөнгө байж болзошгүй. Бид танд тохирох газрыг доор онцолсон байна',
+        my: '✅ သင့်အတွက် တစ်ခုကိုက်ညီပါသည် — မတောင်းယူထားသောငွေရှိနိုင်ပါသည်။ သင့်အတွက်သင့်တော်သောနေရာကို အောက်တွင်မီးမောင်းထိုးပြထားပါသည်',
+        ne: '✅ तपाईंलाई एउटा कुरा लागू हुन्छ — तपाईंसँग दाबी नगरिएको पैसा हुन सक्छ। हामीले तलमा तपाईंका लागि उपयुक्त ठाउँ हाइलाइट गरेका छौं',
+        si: '✅ ඔබට එකක් ගැලපේ — ඔබට ඉල්ලා නොසිටින මුදලක් තිබිය හැක. ඔබට ගැලපෙන ස්ථානය පහත උද්දීපනය කර ඇත',
+        tl: '✅ May isang bagay na naaangkop sa iyo — maaaring may perang hindi mo pa na-claim. Naka-highlight na namin ang tamang lugar para sa iyo sa ibaba',
+        ur: '✅ آپ پر ایک بات لاگو ہوتی ہے — ممکن ہے آپ کے پاس غیر دعویٰ شدہ پیسہ ہو۔ ہم نے نیچے آپ کے لیے صحیح جگہ نمایاں کر دی ہے',
+        uz: "✅ Sizga bittasi mos keladi — da'vo qilinmagan pulingiz bo'lishi mumkin. Quyida siz uchun to'g'ri joyni belgilab qo'ydik",
+       pt: `✅ Você marcou um — pode haver dinheiro que você não resgatou. Destacamos o local certo para você abaixo`, es: `✅ Marcaste uno: podría haber dinero que no has reclamado. Hemos destacado el lugar adecuado a continuación`, uk: `✅ Ви позначили один пункт — можливо, є незатребувані гроші. Ми виділили потрібне місце нижче`, tet: `✅ Ó marka tiha ida — pode iha osan ne'ebé ó la reklama. Ami hatudu fatin lós ba ó iha kraik`}
+    );
+    resultEl.className = 'refund-wizard-result tag-hit';
+  } else {
+    resultEl.textContent = pickLang(
+      `✅ ${checkedCount}개나 해당되시네요 — 실제로 못 받은 돈이 있을 가능성이 꽤 높아요. 아래에서 회원님한테 맞는 곳을 추천해드렸어요`,
+      `✅ You checked ${checkedCount} — there’s a good chance you have unclaimed money. We’ve highlighted the right places for you below`,
+      `✅ 有${checkedCount}项符合——很有可能有您还没领取的钱。我们已经在下方为您标出了对应的查询渠道`,
+      `✅ Bạn có ${checkedCount} mục đúng — rất có thể bạn có khoản tiền chưa nhận. Chúng tôi đã đánh dấu những nơi phù hợp cho bạn bên dưới`,
+      `✅ คุณมี ${checkedCount} ข้อที่ตรง — มีโอกาสสูงที่คุณมีเงินที่ยังไม่ได้รับ เราไฮไลต์ที่ที่เหมาะกับคุณไว้ด้านล่างแล้ว`,
+      `✅ У вас ${checkedCount} совпадений — вполне возможно, у вас есть невостребованные деньги. Мы выделили для вас подходящие места ниже`,
+      {
+        ar: `✅ لديك ${checkedCount} موارد تنطبق — هناك فرصة جيدة أن يكون لديك أموال لم تستلمها. لقد أبرزنا لك الأماكن المناسبة أدناه`,
+        bn: `✅ আপনার ${checkedCount}টি বিষয় মিলেছে — সম্ভবত আপনার কাছে অদাবিকৃত টাকা আছে। আমরা নিচে আপনার জন্য সঠিক জায়গাগুলো চিহ্নিত করেছি`,
+        fr: `✅ ${checkedCount} points vous concernent — il y a de bonnes chances que vous ayez de l'argent non réclamé. Nous avons mis en évidence les endroits appropriés ci-dessous`,
+        hi: `✅ आप पर ${checkedCount} बातें लागू होती हैं — अच्छी संभावना है कि आपके पास बिना दावे का पैसा हो। हमने नीचे आपके लिए सही जगहें हाइलाइट कर दी हैं`,
+        id: `✅ Ada ${checkedCount} yang berlaku untukmu — kemungkinan besar ada uang yang belum kamu klaim. Kami sudah menyorot tempat-tempat yang tepat untukmu di bawah`,
+        ja: `✅ ${checkedCount}個当てはまりました — 未請求のお金がある可能性が高いです。以下にあなたに合った場所をハイライトしました`,
+        kk: `✅ Сізге ${checkedCount} нәрсе қатысты — алмаған ақшаңыз болу мүмкіндігі жоғары. Төменде сізге сәйкес жерлерді белгіледік`,
+        km: `✅ អ្នកមានលក្ខខណ្ឌ ${checkedCount} ត្រូវនឹងអ្នក — មានឱកាសខ្ពស់ដែលអ្នកមានលុយមិនបានទាមទារ។ យើងបានគូសបញ្ជាក់ទីកន្លែងសមស្របសម្រាប់អ្នកខាងក្រោម`,
+        ky: `✅ Сизге ${checkedCount} нерсе туура келет — алынбаган акчаңыз болуу ыктымалдыгы жогору. Төмөндө сизге туура келген жерлерди белгиледик`,
+        lo: `✅ ທ່ານມີ ${checkedCount} ຂໍ້ທີ່ກົງກັນ — ມີໂອກາດສູງທີ່ທ່ານຈະມີເງິນທີ່ຍັງບໍ່ໄດ້ຮັບ. ພວກເຮົາໄດ້ເນັ້ນບ່ອນທີ່ເໝາະສົມສໍາລັບທ່ານໄວ້ລຸ່ມນີ້`,
+        mn: `✅ Танд ${checkedCount} зүйл тохирсон байна — авч амжаагүй мөнгөтэй байх магадлал өндөр. Бид танд тохирох газруудыг доор онцолсон байна`,
+        my: `✅ သင့်အတွက် ${checkedCount} ခုကိုက်ညီပါသည် — မတောင်းယူထားသောငွေရှိနိုင်ခြေမြင့်ပါသည်။ သင့်အတွက်သင့်တော်သောနေရာများကို အောက်တွင်မီးမောင်းထိုးပြထားပါသည်`,
+        ne: `✅ तपाईंलाई ${checkedCount} कुरा लागू हुन्छन् — तपाईंसँग दाबी नगरिएको पैसा हुने सम्भावना उच्च छ। हामीले तलमा तपाईंका लागि उपयुक्त ठाउँहरू हाइलाइट गरेका छौं`,
+        si: `✅ ඔබට ${checkedCount}ක් ගැලපේ — ඔබට ඉල්ලා නොසිටින මුදලක් තිබීමේ හැකියාව වැඩිය. ඔබට ගැලපෙන ස්ථාන පහත උද්දීපනය කර ඇත`,
+        tl: `✅ May ${checkedCount} bagay na naaangkop sa iyo — malaki ang posibilidad na may perang hindi mo pa na-claim. Naka-highlight na namin ang mga tamang lugar para sa iyo sa ibaba`,
+        ur: `✅ آپ پر ${checkedCount} باتیں لاگو ہوتی ہیں — امکان ہے کہ آپ کے پاس غیر دعویٰ شدہ پیسہ ہو۔ ہم نے نیچے آپ کے لیے صحیح جگہیں نمایاں کر دی ہیں`,
+        uz: `✅ Sizga ${checkedCount} ta narsa mos keladi — da'vo qilinmagan pulingiz bo'lish ehtimoli yuqori. Quyida siz uchun to'g'ri joylarni belgilab qo'ydik`,
+       pt: `✅ Você marcou ${checkedCount} — há uma boa chance de você ter dinheiro não resgatado. Destacamos os locais certos para você abaixo`, es: `✅ Marcaste ${checkedCount}: hay muchas probabilidades de que tengas dinero no reclamado. Hemos destacado los lugares adecuados a continuación`, uk: `✅ Ви позначили ${checkedCount} — є великі шанси, що у вас є незатребувані гроші. Ми виділили потрібні місця нижче`, tet: `✅ Ó marka tiha ${checkedCount} — iha chance boot katak ó iha osan ne'ebé la reklama. Ami hatudu fatin lós ba ó iha kraik`}
+    );
+    resultEl.className = 'refund-wizard-result tag-hit';
+  }
+
+  const recommendedSites = new Set(checkedBoxes.map(c => c.dataset.site));
+  const allSites = ['irs', 'usagov', 'missingmoney'];
+  allSites.forEach(site => {
+    const btn = document.getElementById('refund-us-site-' + site);
     if (!btn) return;
     if (checkedCount === 0) {
       btn.classList.remove('recommended', 'dimmed');
@@ -10554,6 +10678,100 @@ async function shareRefundChecklist(){
   shareUrl = wrapWithOgShareCard(shareUrl, {
     main: shareTitle,
   });
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = shareFallbackCopyToast();
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
+    }
+  } catch (e) {
+    window.prompt(pickLang(
+      '아래 내용을 길게 눌러 복사해서 공유해주세요',
+      'Press and hold to copy, then share it',
+      '长按下方内容复制后分享',
+      'Nhấn giữ để sao chép rồi chia sẻ',
+      'กดค้างเพื่อคัดลอกแล้วแชร์',
+      'Нажмите и удерживайте, чтобы скопировать, затем поделитесь',
+      PRESS_HOLD_COPY_MORE
+    ), `${shareText} ${shareUrl}`);
+  }
+}
+
+// 미국 거주자용 "찾지 못한 돈 찾기" 체크리스트 공유 — shareRefundChecklist()(한국용)와 거의 같은
+// 구조(shareTitle·공유 메커니즘은 나라를 특정하지 않는 문구라 그대로 재사용)이지만, shareText는
+// "한국"이 아니라 "미국 주별 미청구 재산 제도"를 언급해야 해서 새로 작성함. 버튼 id도 KR 위젯의
+// #refund-share-btn과 겹치지 않게 #refund-us-share-btn을 따로 씀(안 그러면 숨겨진 KR 버튼이
+// 잘못 애니메이션됨)
+async function shareUsUnclaimedMoneyChecklist(){
+  const shareText = pickLang(
+    '나도 모르게 못 받은 돈이 있는지 체크리스트로 확인해봐요. 미국은 주(State)마다 미청구 재산 제도가 있어서 예전 계좌·급여·보험금이 청구자 없이 그냥 남아있을 수 있대요. 참택스 FAQ에서 10분이면 확인 끝나요!',
+    'I checked whether I had unclaimed money using this checklist. Apparently every US state runs its own unclaimed property program, so old bank accounts, wages, or insurance payouts can just sit there unclaimed. Takes 10 minutes to check on the ChamTax FAQ!',
+    '我用这个清单确认了自己是否有不知道的未领取的钱。据说美国每个州都有自己的未认领财产制度，以前的银行账户、工资、保险金可能就这样一直没人认领。在ChamTax的FAQ里10分钟就能确认完！',
+    'Tôi đã kiểm tra xem mình có khoản tiền chưa nhận nào không bằng danh sách này. Ở Mỹ, mỗi bang đều có chương trình tài sản chưa nhận riêng, nên tài khoản ngân hàng, tiền lương, hay bảo hiểm cũ có thể vẫn đang nằm im chưa ai nhận. Chỉ mất 10 phút để kiểm tra trên FAQ của ChamTax!',
+    'ฉันตรวจสอบว่ามีเงินที่ไม่รู้ว่ายังไม่ได้รับหรือไม่ด้วยเช็คลิสต์นี้ ในสหรัฐฯ แต่ละรัฐมีระบบทรัพย์สินที่ไม่มีผู้เรียกร้องของตัวเอง บัญชีธนาคาร เงินเดือน หรือเงินประกันเก่าอาจจะยังไม่มีใครมารับก็ได้ ใช้เวลาแค่ 10 นาทีในการตรวจสอบที่ FAQ ของ ChamTax!',
+    'Я проверил, есть ли у меня невостребованные деньги, с помощью этого чек-листа. Оказывается, в каждом штате США есть своя программа невостребованного имущества, так что старые банковские счета, зарплата или страховые выплаты могут просто оставаться невостребованными. Проверка на FAQ ChamTax занимает всего 10 минут!',
+    {
+      ar: 'تحققت مما إذا كان لدي أموال لم أستلمها باستخدام هذه القائمة. يبدو أن كل ولاية أمريكية لديها برنامجها الخاص للممتلكات غير المطالب بها، لذا قد تظل الحسابات المصرفية القديمة أو الرواتب أو مدفوعات التأمين دون مطالبة. يستغرق الأمر 10 دقائق للتحقق في FAQ الخاصة بـ ChamTax!',
+      bn: 'আমি এই চেকলিস্ট দিয়ে আমার কোনো না পাওয়া টাকা আছে কিনা পরীক্ষা করেছি। মনে হচ্ছে প্রতিটি মার্কিন রাজ্যের নিজস্ব অদাবিকৃত সম্পত্তি কর্মসূচি আছে, তাই পুরনো ব্যাংক অ্যাকাউন্ট, বেতন, বা বীমার টাকা দাবি না করেই পড়ে থাকতে পারে। ChamTax-এর FAQ-তে ১০ মিনিটেই যাচাই শেষ!',
+      fr: "J'ai vérifié si j'avais de l'argent non réclamé avec cette checklist. Il paraît que chaque État américain gère son propre programme de biens non réclamés, donc d'anciens comptes bancaires, salaires ou indemnités d'assurance peuvent rester en attente. Il suffit de 10 minutes pour vérifier sur la FAQ de ChamTax !",
+      hi: 'मैंने इस चेकलिस्ट से जांचा कि मेरे पास कोई अनक्लेम्ड पैसा तो नहीं है। लगता है हर अमेरिकी राज्य का अपना अनक्लेम्ड प्रॉपर्टी प्रोग्राम होता है, तो पुराने बैंक खाते, वेतन या बीमा भुगतान बिना दावे के पड़े रह सकते हैं। ChamTax के FAQ पर सिर्फ 10 मिनट में जांच पूरी!',
+      id: 'Aku memeriksa apakah ada uangku yang belum diklaim pakai checklist ini. Ternyata setiap negara bagian AS punya program properti tak diklaim sendiri, jadi rekening bank, gaji, atau pembayaran asuransi lama bisa saja tertidur begitu saja tanpa diklaim. Cuma butuh 10 menit untuk cek di FAQ ChamTax!',
+      ja: 'このチェックリストで、自分が知らずに受け取っていないお金がないか確認しました。アメリカでは州ごとに未請求資産制度があって、昔の銀行口座・給与・保険金がそのまま眠っていることがあるそうです。ChamTaxのFAQなら10分で確認できます！',
+      kk: 'Мен осы чек-парақ арқылы алмаған ақшам бар-жоғын тексердім. АҚШ-тың әр штатында өзінің талап етілмеген мүлік бағдарламасы бар екен, сондықтан ескі банк шоттары, жалақы немесе сақтандыру төлемдері талап етілмей қалуы мүмкін. ChamTax-тың FAQ-нда тексеру бар-жоғы 10 минут алады!',
+      km: 'ខ្ញុំបានពិនិត្យមើលថាតើខ្ញុំមានលុយដែលមិនបានទាមទារដែរឬទេ ដោយប្រើបញ្ជីត្រួតពិនិត្យនេះ។ ស្តាប់ទៅដូចជារដ្ឋនីមួយៗនៅសហរដ្ឋអាមេរិកមានកម្មវិធីទ្រព្យសម្បត្តិមិនទាន់ទាមទាររបស់ខ្លួន ដូច្នេះគណនីធនាគារ ប្រាក់ខែ ឬប្រាក់ធានារ៉ាប់រងចាស់អាចនៅសល់ដោយគ្មានអ្នកទាមទារ។ ត្រូវការតែ 10 នាទីដើម្បីពិនិត្យនៅលើ FAQ របស់ ChamTax!',
+      ky: "Мен ушул текшерүү тизмеси менен алынбаган акчам бар-жогун текшердим. АКШнын ар бир штатында өзүнүн талап кылынбаган мүлк программасы бар экен, ошондуктан эски банк эсептери, айлык же камсыздандыруу төлөмдөрү талап кылынбай калышы мүмкүн. ChamTax'тын FAQ'унда текшерүү болгону 10 мүнөт алат!",
+      lo: 'ຂ້ອຍໄດ້ກວດເບິ່ງວ່າມີເງິນທີ່ຍັງບໍ່ໄດ້ຮັບຫຼືບໍ່ດ້ວຍລາຍການກວດສອບນີ້. ແຕ່ລະລັດຂອງສະຫະລັດອາເມລິກາມີໂຄງການຊັບສິນທີ່ຍັງບໍ່ໄດ້ຮ້ອງຂໍຂອງຕົນເອງ ດັ່ງນັ້ນບັນຊີທະນາຄານເກົ່າ, ເງິນເດືອນ, ຫຼືເງິນປະກັນອາດຍັງບໍ່ມີໃຜມາຮ້ອງຂໍ. ໃຊ້ເວລາພຽງ 10 ນາທີໃນການກວດສອບທີ່ FAQ ຂອງ ChamTax!',
+      mn: 'Би энэ чеклистээр өөрийн авч амжаагүй мөнгө байгаа эсэхийг шалгасан. АНУ-ын муж бүр өөрийн гэсэн нэхэмжлээгүй өмчийн хөтөлбөртэй гэнэ, тиймээс хуучин банкны данс, цалин, эсвэл даатгалын төлбөр нэхэмжлэлгүйгээр үлдэж болно. ChamTax-ийн FAQ дээр ердөө 10 минутад шалгаж болно!',
+      my: 'ဒီစစ်ဆေးစာရင်းနဲ့ ငါမရသေးတဲ့ငွေရှိလားဆိုတာ စစ်ဆေးကြည့်ခဲ့တယ်။ အမေရိကန်ပြည်နယ်တစ်ခုချင်းစီမှာ ကိုယ်ပိုင်တောင်းယူမှုမရှိသေးသောပိုင်ဆိုင်မှုအစီအစဉ်ရှိတယ်လို့ ဆိုပါတယ်၊ ဒါကြောင့် ဟောင်းနွမ်းသောဘဏ်အကောင့်၊ လစာ၊ သို့မဟုတ် အာမခံငွေတွေ တောင်းယူသူမရှိဘဲ ရှိနေနိုင်ပါတယ်။ ChamTax ရဲ့ FAQ မှာ ၁၀ မိနစ်နဲ့ စစ်ဆေးပြီးသွားနိုင်တယ်!',
+      ne: 'यो चेकलिस्ट प्रयोग गरेर मैले नपाएको पैसा छ कि छैन जाँचें। लाग्छ हरेक अमेरिकी राज्यको आफ्नै दाबी नगरिएको सम्पत्ति कार्यक्रम हुन्छ, त्यसैले पुराना बैंक खाता, तलब, वा बीमा भुक्तानी दाबी नगरिकनै त्यसै रहन सक्छन्। ChamTax को FAQ मा जम्मा १० मिनेटमा जाँच सकिन्छ!',
+      si: 'මම මෙම විමර්ශන ලැයිස්තුව භාවිතයෙන් මට නොලැබුණු මුදල් තිබේදැයි පරීක්ෂා කළෙමි. එක් එක් ඇමරිකානු ප්‍රාන්තයට තමන්ගේම ඉල්ලා නොසිටින දේපළ වැඩසටහනක් ඇති බව පෙනේ, ඒ නිසා පැරණි බැංකු ගිණුම්, වැටුප්, හෝ රක්ෂණ ගෙවීම් ඉල්ලා නොසිටිනු ලැබ එසේම පවතිය හැක. ChamTax හි FAQ හි විනාඩි 10කින් පරීක්ෂා කළ හැක!',
+      tl: 'Sinuri ko kung mayroon akong pera na hindi pa na-claim gamit ang checklist na ito. Lumalabas na bawat estado sa US ay may sariling programa para sa unclaimed property, kaya maaaring naiwang hindi kinukuha ang mga lumang bank account, sahod, o insurance payout. 10 minuto lang para suriin sa FAQ ng ChamTax!',
+      ur: 'میں نے اس چیک لسٹ سے دیکھا کہ کہیں میرا کوئی ان کلیمڈ پیسہ تو نہیں ہے۔ لگتا ہے ہر امریکی ریاست کا اپنا ان کلیمڈ پراپرٹی پروگرام ہوتا ہے، اس لیے پرانے بینک اکاؤنٹس، تنخواہ، یا بیمہ کی ادائیگیاں غیر دعویٰ شدہ پڑی رہ سکتی ہیں۔ ChamTax کے FAQ پر صرف 10 منٹ میں چیک مکمل!',
+      uz: "Men ushbu tekshiruv ro'yxati orqali da'vo qilinmagan pulim bor-yo'qligini tekshirdim. Har bir AQSh shtatida o'zining da'vo qilinmagan mulk dasturi bor ekan, shuning uchun eski bank hisoblari, ish haqi yoki sug'urta to'lovlari da'vo qilinmasdan qolishi mumkin. ChamTax'ning FAQ sahifasida tekshirish atigi 10 daqiqa oladi!",
+     pt: `Verifiquei se tinha dinheiro não resgatado usando este checklist. Aparentemente, cada estado dos EUA tem seu próprio programa de bens não resgatados, então contas bancárias, salários ou pagamentos de seguro antigos podem ficar parados sem serem resgatados. Leva 10 minutos para verificar no FAQ do ChamTax!`, es: `Comprobé si tenía dinero no reclamado usando esta lista. Al parecer, cada estado de EE. UU. tiene su propio programa de bienes no reclamados, así que cuentas bancarias, salarios o pagos de seguros antiguos pueden quedar ahí sin reclamar. ¡Lleva 10 minutos verificarlo en el FAQ de ChamTax!`, uk: `Я перевірив(-ла), чи є в мене незатребувані гроші, за допомогою цього списку. Виявляється, кожен штат США має власну програму незатребуваного майна, тож старі банківські рахунки, зарплата чи страхові виплати можуть просто лежати незатребуваними. Перевірка займає 10 хвилин у FAQ на ChamTax!`, tet: `Ha'u verifika se ha'u iha osan ne'ebé la reklama uza lista verifikasaun ne'e. Dalaruma kada estadu EUA iha ó-nia programa própriu propredade la reklama, entaun konta bankária, saláriu, ka pagamentu seguru tuan bele nakloke la reklama. Foti menutu 10 hodi verifika iha FAQ ChamTax nian!`}
+  );
+  let shareUrl = location.href;
+  const btn = document.getElementById('refund-us-share-btn');
+  const shareTitle = pickLang(
+    '나도 모르는 잠자는 내 돈 찾기 체크리스트',
+    'Find money you didn’t know you had — checklist',
+    '找出你不知道的沉睡资产 — 检查清单',
+    'Danh sách tìm tiền bạn không biết mình có',
+    'เช็คลิสต์ค้นหาเงินที่คุณไม่รู้ว่ามี',
+    'Чек-лист: найдите деньги, о которых не знали',
+    {
+      ar: 'قائمة للعثور على أموال لم تكن تعرف أنك تملكها',
+      bn: 'তুমি যে টাকার কথা জানতে না তা খুঁজে বের করার চেকলিস্ট',
+      fr: "Checklist pour trouver de l'argent que vous ignoriez avoir",
+      hi: 'वह पैसा खोजें जिसके बारे में आपको पता नहीं था — चेकलिस्ट',
+      id: 'Checklist untuk menemukan uang yang tidak kamu tahu kamu punya',
+      ja: '知らずに眠っていたお金を見つけるチェックリスト',
+      kk: 'Барын білмеген ақшаңды табу чек-парағы',
+      km: 'បញ្ជីត្រួតពិនិត្យរកលុយដែលអ្នកមិនដឹងថាមាន',
+      ky: 'Барын билбеген акчаңды табуу текшерүү тизмеси',
+      lo: 'ລາຍການກວດສອບຄົ້ນຫາເງິນທີ່ເຈົ້າບໍ່ຮູ້ວ່າມີ',
+      mn: 'Байгааг нь мэдээгүй мөнгөө олох чеклист',
+      my: 'သင်ပိုင်ဆိုင်တာမသိတဲ့ငွေကို ရှာဖွေဖို့ စစ်ဆေးစာရင်း',
+      ne: 'तपाईंलाई थाहा नभएको पैसा फेला पार्ने — चेकलिस्ट',
+      si: 'ඔබ නොදැන සිටි මුදල් සොයා ගැනීමේ විමර්ශන ලැයිස්තුව',
+      tl: 'Checklist para mahanap ang perang hindi mo alam na meron ka',
+      ur: 'وہ پیسہ ڈھونڈیں جس کا آپ کو علم نہیں تھا — چیک لسٹ',
+      uz: "Bor ekanini bilmagan pulingizni topish tekshiruv ro'yxati",
+     pt: `Encontre dinheiro que você não sabia que tinha — checklist`, es: `Encuentra dinero que no sabías que tenías: lista de verificación`, uk: `Знайдіть гроші, про які ви не знали — чекліст`, tet: `Buka osan ne'ebé ó la hatene katak ó iha — lista verifikasaun`}
+  );
+  shareUrl = wrapWithOgShareCard(shareUrl, { main: shareTitle });
 
   if (navigator.share) {
     try {
