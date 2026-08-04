@@ -121,12 +121,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.css?v=20260804-1">
+<link rel="stylesheet" href="styles.css?v=20260804-3">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.js?v=20260804-4" defer></script>
+<script src="script.js?v=20260804-5" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1802,31 +1802,47 @@
           </div>
           <div id="lightning-fishing-mode" style="display:none;">
             <p class="panel-desc" data-i18n="odds.fishingHint">🎣 낚싯대를 던져서 번호를 하나씩 낚아보세요</p>
-            <div class="fishing-pond" id="fishing-pond" aria-hidden="true" onclick="castFishingLine()">
-              <div class="fishing-rod-wrap" id="fishing-rod-wrap">
-                <span class="fishing-rod" id="fishing-rod">🎣</span>
-                <span class="fishing-line" id="fishing-line"></span>
-                <span class="fishing-hook-wrap">
-                  <span class="fishing-hook" id="fishing-hook">🪝</span>
-                  <span class="fishing-caught-fish" id="fishing-caught-fish">🐟</span>
-                </span>
+            <!-- 2026-08-04: "너무 엉성하다, 더 진짜 게임처럼" 요청 — 연못을 낚싯대/결과칸과 분리된
+                 얇은 직사각형 하나로만 보이게 하던 걸, 하늘(해)+연못(물고기 3마리+기포)+결과칸을
+                 전부 하나의 게임 화면(.fishing-game-frame)으로 감싸서 통일감을 줌. 기존 게임
+                 로직(script.js의 castFishingLine 등)이 참조하는 id는 전부 그대로 유지 — 여기서
+                 늘어난 건 순수 장식 요소(해·풀·기포·물고기 1마리 추가)뿐이라 JS 변경 없음. -->
+            <div class="fishing-game-frame">
+              <div class="fishing-pond" id="fishing-pond" aria-hidden="true" onclick="castFishingLine()">
+                <span class="fishing-sun"></span>
+                <span class="fishing-cloud fishing-cloud-1"></span>
+                <span class="fishing-cloud fishing-cloud-2"></span>
+                <div class="fishing-rod-wrap" id="fishing-rod-wrap">
+                  <span class="fishing-rod" id="fishing-rod">🎣</span>
+                  <span class="fishing-line" id="fishing-line"></span>
+                  <span class="fishing-hook-wrap">
+                    <span class="fishing-hook" id="fishing-hook">🪝</span>
+                    <span class="fishing-caught-fish" id="fishing-caught-fish">🐟</span>
+                  </span>
+                </div>
+                <div class="fishing-water">
+                  <span class="fishing-wave"></span><span class="fishing-wave"></span><span class="fishing-wave"></span>
+                  <span class="fishing-idle-fish fishing-idle-fish-1">🐟</span>
+                  <span class="fishing-idle-fish fishing-idle-fish-2">🐠</span>
+                  <span class="fishing-idle-fish fishing-idle-fish-3">🐡</span>
+                  <span class="fishing-bubble fishing-bubble-1"></span>
+                  <span class="fishing-bubble fishing-bubble-2"></span>
+                  <span class="fishing-bubble fishing-bubble-3"></span>
+                  <span class="fishing-splash" id="fishing-splash"></span>
+                </div>
+                <span class="fishing-grass fishing-grass-l">🌿</span>
+                <span class="fishing-grass fishing-grass-r">🌿</span>
               </div>
-              <div class="fishing-water">
-                <span class="fishing-wave"></span><span class="fishing-wave"></span><span class="fishing-wave"></span>
-                <span class="fishing-idle-fish fishing-idle-fish-1">🐟</span>
-                <span class="fishing-idle-fish fishing-idle-fish-2">🐠</span>
-                <span class="fishing-splash" id="fishing-splash"></span>
+              <div class="lightning-result" id="fishing-result">
+                <span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball pb fishing-slot" id="fishing-special-ball">?</span>
               </div>
+              <p class="sr-only" id="fishing-result-announcer" role="status" aria-live="polite"></p>
+              <div class="fishing-reel-gauge-wrap" id="fishing-reel-gauge-wrap" style="display:none;" aria-hidden="true">
+                <div class="fishing-reel-gauge-fill" id="fishing-reel-gauge-fill"></div>
+              </div>
+              <button class="cta-btn" id="fishing-cast-btn" onclick="castFishingLine()" data-i18n="odds.fishingCastBtn">🎣 낚싯대 던지기</button>
+              <p class="fishing-status-msg" id="fishing-status-msg" aria-live="polite"></p>
             </div>
-            <div class="lightning-result" id="fishing-result">
-              <span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball pb fishing-slot" id="fishing-special-ball">?</span>
-            </div>
-            <p class="sr-only" id="fishing-result-announcer" role="status" aria-live="polite"></p>
-            <div class="fishing-reel-gauge-wrap" id="fishing-reel-gauge-wrap" style="display:none;" aria-hidden="true">
-              <div class="fishing-reel-gauge-fill" id="fishing-reel-gauge-fill"></div>
-            </div>
-            <button class="cta-btn" id="fishing-cast-btn" onclick="castFishingLine()" data-i18n="odds.fishingCastBtn">🎣 낚싯대 던지기</button>
-            <p class="fishing-status-msg" id="fishing-status-msg" aria-live="polite"></p>
             <p class="foot-note" style="margin-top:10px; text-align:center;" id="fishing-draw-note">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
           </div>
         </details>
