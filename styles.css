@@ -1708,11 +1708,6 @@
   .jc-tap-cta{
     text-align:center; font-size:var(--fs-note); color:var(--teal); font-weight:700; margin:-2px 0 10px; cursor:pointer;
   }
-  .flow-explain{ font-size:var(--fs-small); color:var(--text-muted); text-align:left; margin:0 0 4px; }
-  .flow-explain-title{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0 0 6px; }
-  .flow-explain-list{ margin:0 0 8px; padding-left:20px; font-size:var(--fs-small); color:var(--text-dark); }
-  .flow-explain-list li{ margin:3px 0; }
-  .flow-explain-note{ font-size:var(--fs-small); color:var(--text-muted); margin:0; }
   .filing-note{
     font-size:var(--fs-small); color:var(--text-muted); line-height:1.55; margin:10px 0;
   }

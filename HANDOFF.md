@@ -2559,3 +2559,47 @@ Playwright로 스타일 수정 전/후 스크린샷 비교, 형제 레벨(연금
 `20260805-6`), `script.js`/`script.min.js`(`updateHomeCalc()`에 요약 문구 생성 로직
 추가), `styles.css`/`styles.min.css`(`.home-summary-text`, `.jh-more .jh-more` 중첩
 구분 스타일 추가).
+
+### 2026-08-05 이어서 — "결과 더 자세히 보기" 안 중복 정리 (사용자가 스크린샷 보내며
+### "불필요한 부분 정리하고 아코디언도 정리할 수 없을까, 너무 복잡해")
+
+바로 위 세션에서 "3줄 AI 요약"을 추가하고 나니, 같은 "결과 더 자세히 보기" 아코디언 안에
+같은 정보를 세 번 반복하는 구조가 됨 — 사용자가 실제 화면 스크린샷을 보내며 지적함. 코드로
+전수 확인한 뒤 두 곳을 지움(`AskUserQuestion`으로 정리 범위 확인 후 사용자가 "네가 괜찮다는
+거 전부 해줘"로 위임):
+
+1. **세율 상세표 삭제** (`home-tax1/2-label/val` + `home-tax-total-line`, "미국 연방세
+   -30% / 한국 추가 납부 -16.5% / 합계 -39%"): 3줄 요약 두 번째 문장이 이미 같은 두 항목·
+   비율을 말로 풀어주고, 세전→세후 합계 diff(%포함)는 이 아코디언을 펼치기 전부터
+   `result-hero`(`#tax-impact-diff`)에 이미 보이고 있어서 3중 중복이었음. `label1/val1/
+   label2/val2` 변수(3줄 요약이 계속 씀)는 안 건드리고, 이 두 `<p>` id에 대입하던 4줄과
+   `taxImpactPctPrecise`/`home-tax-total-line` 대입만 지움.
+2. **"ℹ️ 미국 로또는 두 가지 방식으로 받아요" 안내박스 삭제** (연금/일시불 정의 목록): 바로
+   위 "일시불 대신 연금으로 받으면?" 아코디언이 이미 같은 내용을 설명 중이라 중복. 그 박스
+   안에서 유일하게 다른 정보였던 "이 계산기는 일시불 기준" 문구(`home.flowExplainNote`
+   i18n 키 그대로 재사용)는 연금 아코디언 안 note로 옮겨 살려둠 — 정보 손실 없이 박스 하나를
+   통째로 없앤 것. 이제 아무도 안 쓰는 `flowExplainTitle`/`flowAnnuityLabel`/
+   `flowAnnuityDesc`/`flowLumpsumLabel`/`flowLumpsumDesc` i18n 키는 `translations.json`에서
+   지우지 않고 남겨둠(다른 화면이 참조할 가능성을 매번 재확인하는 비용 대비 이득이 적음,
+   빌드 산출물 크기 영향도 미미) — 대신 `styles.css`의 전용 CSS 클래스(`.flow-explain*`
+   5개)는 다른 화면에서 안 쓰는 게 확인돼서 지움.
+3. **아코디언 구조 자체는 유지**: 연금(annuity) 안에 30년 지급표가 중첩된 depth 2 구조는
+   "펼친 사람만 더 깊이 볼 수 있는" 의도된 계층이라 안 건드림 — 위 두 항목을 지운 것만으로
+   이 섹션 분량이 확 줄어서 체감 복잡도가 낮아졌다고 판단.
+4. **메타 정보 줄("342M USD 당첨 · 한국 거주자" / "국세청·IRS 공식자료 기반 · 세율·환율")은
+   그대로 둠**: 처음엔 정리 후보로 사용자에게 제시했으나, 코드 확인 결과 `home-final-basis-mini`가
+   공유 이미지 생성(`saveHomeResultAsImage()` 등)에서 다시 읽어가는 값이라 삭제하면 그
+   기능이 깨짐 — 그리고 내용 자체도(이 계산이 어느 나라 기준/어느 환율로 됐는지) 다른 곳에
+   없는 고유 정보라 실제로는 중복이 아니라고 판단해 손 안 댐.
+
+**검증**: `node --check script.js` 통과, `node scripts/build-min.js`로 압축본 재생성,
+Playwright로 이 섹션만 스크린샷 확보(3줄 요약 → 연금 아코디언(30년표 포함) → 당첨자 여러
+명 아코디언 → 원천징수 설명 버튼 → 참고용 문구 순서로 정상 렌더링, 삭제한 두 블록은 화면에
+안 보임 확인). 회귀 테스트 `home_audit`(18)·`console_error_audit`(161)·`wrap_audit`(168)·
+`nav_slider_audit`·`map_scroll_audit`(10)·`faq_audit`(18)·`full_overflow_sweep`(945조합)
+전부 `ISSUES: 0`.
+
+변경 파일: `index.html`(세율표·안내박스 삭제, `flowExplainNote`를 연금 박스 안으로 이동,
+캐시버스팅 `20260805-6`→`20260805-7`), `script.js`/`script.min.js`(`updateHomeCalc()`에서
+해당 4곳 대입 로직 삭제), `styles.css`/`styles.min.css`(`.flow-explain*` 미사용 규칙 5개
+삭제), `sw.js`(`CACHE_NAME` v6→v7).
