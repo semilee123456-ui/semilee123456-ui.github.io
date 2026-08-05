@@ -419,6 +419,12 @@
   
   .cta-btn{ transition:transform 0.1s ease, background 0.15s ease; }
   .cta-btn:active{ transform:scale(0.98); }
+  /* 2026-08-05: 지금까지 .cta-btn엔 disabled 스타일이 없어서, 낚시 게임(#fishing-cast-btn)처럼
+     진행 중엔 버튼이 disabled 처리되는 화면에서 "눌러도 반응 없는 멀쩡해 보이는 버튼"처럼 보이는
+     문제가 있었음(실제 사용자가 "눌러도 아무 변화가 없다"고 신고해서 발견) — 눈에 띄게 흐리고
+     cursor를 바꿔서 "지금은 여기 말고 다른 곳을 조작할 차례"라는 신호를 줌. */
+  .cta-btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .cta-btn:disabled:active{ transform:none; }
   .panel{ transition:box-shadow 0.15s ease; }
   @media (hover: hover) {
   .feature-card:hover{ border-color:var(--teal); transform:translateY(-3px); box-shadow:0 6px 16px rgba(var(--ink-rgb),0.12); }
@@ -1620,6 +1626,24 @@
     color:var(--status-red); margin:8px 0 0; opacity:0; transition:opacity 0.2s ease;
   }
   .fishing-status-msg.show{ opacity:1; }
+  /* 2026-08-05: "낚싯대 던지기" 버튼을 누른 뒤 실제 조작(연못 드래그)이 어디서 일어나는지
+     안내가 전혀 없어서 못 찾는다는 실사용자 신고로 추가 — 문구 대신 손가락 아이콘이 찌 옆에서
+     좌우로 스윽 움직이는 순수 시각 힌트라 26개 언어 번역이 전혀 필요 없음(언어 무관 아이콘).
+     script.js가 판 시작(castFishingLine) 시 .show를 붙이고, 사용자가 연못을 처음 누르는 순간
+     (fishingDragStart)에 바로 지워서 게임을 가리지 않게 함 — 즉 "안 써본 사람에게만" 잠깐 보임.
+     pointer-events:none이라 힌트를 눌러도 그 아래 연못 드래그가 그대로 시작됨. */
+  .fishing-drag-hint{
+    position:absolute; top:52px; left:50%; z-index:4; font-size:22px; line-height:1;
+    pointer-events:none; opacity:0; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.35));
+  }
+  .fishing-drag-hint.show{ animation:fishing-drag-hint-swipe 1.6s ease-in-out infinite; }
+  @keyframes fishing-drag-hint-swipe{
+    0%{ opacity:0; transform:translateX(calc(-50% - 26px)); }
+    15%{ opacity:1; }
+    50%{ transform:translateX(calc(-50% + 26px)); }
+    85%{ opacity:1; }
+    100%{ opacity:0; transform:translateX(calc(-50% - 26px)); }
+  }
   @media (prefers-reduced-motion: reduce){
     .fishing-idle-fish{ animation:none; }
     .fishing-splash.play{ animation:none; }
@@ -1627,6 +1651,7 @@
     .fishing-target-fish.shake{ animation:none; }
     .fishing-hook-wrap{ animation:none; }
     .fishing-cloud{ animation:none; }
+    .fishing-drag-hint.show{ animation:none; opacity:1; }
     .fishing-bubble{ animation:none; }
   }
 
