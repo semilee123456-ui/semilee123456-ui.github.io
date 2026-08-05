@@ -2559,3 +2559,60 @@ Playwright로 스타일 수정 전/후 스크린샷 비교, 형제 레벨(연금
 `20260805-6`), `script.js`/`script.min.js`(`updateHomeCalc()`에 요약 문구 생성 로직
 추가), `styles.css`/`styles.min.css`(`.home-summary-text`, `.jh-more .jh-more` 중첩
 구분 스타일 추가).
+
+### 2026-08-05 이어서 — "낚시로 뽑기" 미니게임을 반사신경 게임 → 드래그 위치 맞추기 게임으로
+### 전면 교체 (사용자가 "아무리 고쳐도 번거롭다"고 지적)
+
+**배경**: 낚시 미니게임은 2026-08-03~04에 이미 여러 세션이 세부 버그(트레일링 클릭, 연타→
+꾹누르기 전환 등)를 고쳤지만, 사용자가 "이 게임 아무리 고쳐도 안 되는 거 같은데, 전체적으로
+번거롭다"고 재차 지적함. `AskUserQuestion`으로 확인해보니 특정 버그가 아니라 "캐스팅 대기(0.6~
+1.5초 무작위) → 제한시간 내 입질 탭(900ms) → 제한시간 내 꾹 눌러서 게이지 채우기(3초)"라는
+3단계 반사신경 게임 **구조 자체**가 문제였음 — 세부 버그를 아무리 잡아도 "번거로움" 자체는
+안 없어지는 게 당연했던 것. 사용자가 "낚싯대를 옮겨서 물고기를 잡는 방식"을 제안 → 스타듀밸리
+등 유명 낚시 게임 사례를 WebSearch로 조사한 뒤, 반사신경이 아니라 **위치 맞추기**(제한시간 없음)
+방식을 추천하고 조작 방식(직접 드래그 vs 화살표 버튼 vs 물고기 탭)을 `AskUserQuestion`으로
+확인 → "손가락으로 직접 드래그"로 결정.
+
+**새 설계**: 상태를 5개(idle/casting/waiting/biting/reeling)에서 2개(idle/aiming, +성공 직후
+짧은 전환용 caught)로 단순화. 물고기 한 마리가 연못 안을 좌우로 계속 헤엄치고
+(`fishingSwimLoop`, rAF 기반, 시간 경과 기준이라 기기 성능 무관), 사용자가 연못 아무 곳이나
+누른 채로 낚싯대(찌)를 드래그하면 그 지점으로 따라오다가(`fishingDragMove`), 손을 떼는 순간
+(`fishingDragEnd`→`fishingAttemptCatch`) 찌와 물고기 위치가 일정 범위(9%) 안이면 성공. **제한
+시간이 전혀 없어서** 몇 번을 놓쳐도 불이익 없이 바로 다시 시도 가능 — 이게 "서두르지 않아도
+된다"는 핵심 차이. 연못을 드래그 없이 그냥 탭만 해도(찌가 이미 근처에 있으면) 같은
+pointerdown→pointerup 흐름으로 바로 낚임. 버튼(`#fishing-cast-btn`)은 이제 판 시작/재시작
+전용(진행 중엔 disabled)이고, 실제 조작은 전부 연못에서 일어남.
+
+**키보드 접근성**: 연못이 aria-hidden 장식 요소에서 실제 1차 조작 대상으로 바뀌면서, 기존
+"버튼을 Enter로 연타"하던 키보드 경로가 사라지는 회귀가 될 뻔함 — `#fishing-pond`에
+`tabindex="0"` 추가하고, 포커스 상태에서 화살표(좌우 이동)+Enter/Space(낚시 시도)를 처리하는
+`initFishingKeyboardControls()`를 새로 추가함(페이지 전체가 아니라 연못에 포커스가 있을 때만
+동작해서 스크롤 키와 충돌 안 함). aria-label은 새 번역 문구를 26개 언어로 추가하는 대신 이미
+번역된 `odds.fishingHint`를 그대로 재사용(`updateLightningGameUi()`가 언어 전환마다 갱신) —
+번역 작업 없이 접근성 확보.
+
+**i18n 영향 최소화**: 게임 문구(상단 힌트, 낚싯대 던지기 버튼, "낚은 번호:" 접두사, "처음부터
+다시 낚시하기", "놓쳤어요! 다시 던져보세요")는 전부 기존 26개 언어 번역을 그대로 재사용하고
+새 문구를 하나도 추가하지 않음 — 이번 세션 판단으로, 게임 메커니즘이 완전히 바뀌어도 텍스트가
+여전히 대략 들어맞고("낚싯대로 번호를 낚는다"는 전제는 유지됨), 26개 언어 번역 리스크(과거
+세션들이 여러 번 지적한 흔한 실수 지점)를 피하는 게 우선이라고 판단함. 못 쓰게 된
+`FISHING_WAITING_MORE`/`FISHING_BITE_PROMPT_MORE`/`FISHING_REEL_PROMPT_MORE`(입질/릴감기 전용
+문구) 3개 다국어 상수와 그걸 쓰던 함수(`enterFishingBiteState`/`handleFishingBiteTap`/
+`enterFishingReelState`/`fishingReelLoop`/`fishingReelFailed`/`initFishingReelHoldEvents`/
+`updateFishingReelGaugeUi`/`hideFishingReelGauge` 등)는 전부 삭제, CSS도 캐스팅/입질/릴감기
+전용 애니메이션(`fishing-rod-swing`/`fishing-bite-wobble`/`fishing-fish-struggle`/릴 게이지
+그러데이션 등)과 `.fishing-btn-urgent` 펄스를 전부 제거해서 죽은 코드가 안 남게 함.
+
+**검증**: `node --check script.js` 통과. Playwright로 전체 흐름 직접 재현 — (1) 판 시작→물고기
+헤엄치는 위치를 실시간으로 읽어 그 좌표로 드래그→릴리스 6번 반복해서 6개 슬롯 전부 정상 채워짐,
+재시작 버튼 라벨("Fish again from scratch") 정상 전환 확인. (2) 의도적으로 먼 위치에서 릴리스해
+"실패" 경로도 확인(상태는 계속 `aiming` 유지, 안내 문구 정상 표시, 판 진행 상태는 안 지워짐).
+(3) 연못에 포커스 후 방향키로 찌가 실제로 이동하는 것 확인(키보드 대체 경로 정상). 콘솔 에러
+0건. 라이트/다크 모드 스크린샷으로 타겟 물고기(발광 효과로 장식용 헤엄 물고기 3마리와 구분)와
+낚싯대 드래그 상태 실제 렌더링 확인. 회귀 테스트(`home_audit` 18·`console_error_audit` 161·
+`i18n_attr_lint` 0후보·`wrap_audit` 168) 전부 `ISSUES: 0`.
+
+변경 파일: `index.html`(연못에 `tabindex="0"` 추가·타겟 물고기 마크업 추가·릴 게이지 마크업
+제거, 캐시버스팅 `20260805-6`→`20260805-7`), `script.js`/`script.min.js`(낚시 상태 머신·조작
+로직 전면 교체, 못 쓰게 된 다국어 상수 3개 삭제), `styles.css`/`styles.min.css`(드래그·타겟
+물고기 스타일 추가, 캐스팅/입질/릴감기 전용 스타일 제거), `sw.js`(`CACHE_NAME` v6→v7).

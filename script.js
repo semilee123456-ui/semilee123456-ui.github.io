@@ -3438,40 +3438,24 @@ let currentLightningGame = 'powerball';
 let currentLightningMode = 'quick';
 let fishingCaughtValues = [];   // 이번 판에서 지금까지 낚은 값들(순서대로, 5개+특별번호 1개)
 let fishingSessionValues = null; // 이번 판 전체 6개 값 — 캐스팅마다 하나씩 공개
-// 2026-08-03: 예전엔 fishingCastInProgress(불리언) 하나로 "애니메이션 재생 중" 여부만 표시하고
-// 나머지는 전부 setTimeout 체인이 알아서 순서대로 진행했음(사용자가 버튼만 누르면 결과가
-// 자동으로 나오는 "관람형"이었음) — "낚싯대도 움직이고 진짜 물고기 잡는 것처럼" 요청으로
-// 실제 탭 타이밍이 필요한 상태 5개(idle/casting/waiting/biting/reeling)로 재구성함.
-// idle=대기, casting=캐스팅 애니메이션 재생 중, waiting=입질 기다리는 중(입질 순간은 무작위),
-// biting=제한시간 내에 탭해야 걸리는 순간, reeling=버튼을 누르고 있는 동안 게이지가 채워지는 순간.
-// 2026-08-04: reeling 단계가 원래 "빠르게 연타"였는데 사용자가 "탭하는 게 불편하다"고 지적함 —
-// 손가락 연타 대신 "꾹 누르고 있기"로 바꿈(누르는 동안 채워지고, 떼면 살짝 빠짐 — 진짜 낚싯줄
-// 당기는 긴장감은 유지하면서 반복 탭 부담은 없앰). 상태 자체(reeling)와 성공/실패 판정 흐름은
-// 그대로 두고, 그 안의 "게이지를 채우는 입력 방식"만 바꾼 것.
+// 2026-08-05: "번거롭다"(캐스팅 대기 → 순간 탭 → 꾹 눌러 게이지 채우기 3단계 타이밍 게임)는
+// 사용자 피드백으로, 반사신경 게임을 전면 폐기하고 "낚싯대를 직접 드래그해서 헤엄치는 물고기
+// 위치에 맞춘 뒤 손을 떼면 낚는" 위치 맞추기 방식으로 재구성함(제한시간 없음 — 서두를 필요가
+// 없어서 실수해도 부담이 적음). 상태는 idle(시작 전/한 판 종료)과 aiming(물고기가 헤엄치고
+// 있고 드래그로 낚을 수 있는 중) 2개뿐 — caught는 성공 직후 다음 물고기가 나타나기 전까지의
+// 짧은 전환 잠금 상태.
 let fishingState = 'idle';
-let fishingReelGaugeValue = 0;
-let fishingReelHolding = false; // 지금 버튼을 누르고 있는 중인지
-let fishingReelRafId = null;
-let fishingReelLastTs = null;
-let fishingWaitTimer = null;
-let fishingBiteTimer = null;
-let fishingReelDeadlineTimer = null;
-const FISHING_CAST_MS = 450;
-const FISHING_WAIT_MIN_MS = 600;   // 캐스팅 후 입질까지 최소 대기(무작위 구간의 아래쪽) — 너무 짧으면 반응할 틈이 없음
-const FISHING_WAIT_MAX_MS = 1500;  // 위쪽 — 너무 길면 지루해짐, 시니어 타겟 고려해 3초 이내로 제한
-const FISHING_BITE_WINDOW_MS = 900; // 입질 순간 탭 제한시간 — 반응 속도가 느려도 잡을 수 있게 넉넉히
-const FISHING_REEL_TIME_LIMIT_MS = 3000; // 릴 감기 전체 제한시간(누르지 않고 방치하면 이 시간 뒤 실패 처리)
-const FISHING_REEL_FILL_RATE = 55;  // 누르고 있는 동안 초당 게이지 증가량(%) — 계속 누르면 약 1.8초면 꽉 참
-const FISHING_REEL_DRAIN_RATE = 22; // 손을 뗐을 때 초당 게이지 감소량(%) — 채우는 속도보다 느리게 둬서, 살짝 떼도 크게 불리하지 않음
-// 2026-08-04: 릴 감기가 성공/실패로 끝나는 순간, 대부분 사용자 손가락이 아직 버튼 위에 있다가
-// 그제서야 떼기 때문에("잡았다!"를 보고 반응해서 손을 떼는 거라 타이밍이 겹침) 그 떼는 동작이
-// 브라우저 click 이벤트를 만들어서 곧바로 다음 캐스팅이 의도치 않게 시작돼버리는 버그를
-// Playwright로 pointerdown/up을 직접 재현하다가 발견함(결과를 볼 틈도 없이 다음 입질 타이머가
-// 조용히 돌기 시작 — "왜 자꾸 놓쳐요"의 또 다른 원인이 될 뻔함). reeling이 끝난 직후 잠깐(아래
-// 값만큼) castFishingLine()이 클릭을 무시하게 해서 막음(fishingCaughtSuccess/fishingReelFailed
-// 에서 세팅).
-let fishingClickLockUntil = 0;
-const FISHING_CLICK_LOCK_MS = 450;
+let fishingRodXPct = 50;      // 낚싯대(찌)의 현재 가로 위치(연못 폭 대비 %)
+let fishingTargetXPct = 50;   // 지금 헤엄치는 물고기의 가로 위치(%)
+let fishingTargetDirection = 1; // 물고기 이동 방향(1=오른쪽, -1=왼쪽)
+let fishingTargetSpeedPct = 16; // 물고기 초당 이동 속도(연못 폭 대비 %) — 서두르지 않아도 따라잡을 수 있는 여유로운 속도
+let fishingSwimRafId = null;
+let fishingSwimLastTs = null;
+let fishingDragActive = false;
+const FISHING_TARGET_MIN_PCT = 10;
+const FISHING_TARGET_MAX_PCT = 90;
+const FISHING_CATCH_TOLERANCE_PCT = 9; // 찌와 물고기 위치가 이 범위(%) 안이면 성공 — 손 떨림 등을 감안해 넉넉히
+const FISHING_NEXT_FISH_DELAY_MS = 500; // 성공 직후 다음 물고기가 나타나기까지의 짧은 축하 연출 시간
 function fishingVibrate(pattern){ try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
 
 // 언어 전환 시에도 재사용해야 해서, 이미 뽑아둔 번호는 그대로 두고 문구·토글 상태만 새로 그림
@@ -3486,6 +3470,11 @@ function updateLightningGameUi(){
   noteEl.textContent = oddsText;
   const fishingNoteEl = document.getElementById('fishing-draw-note');
   if (fishingNoteEl) fishingNoteEl.textContent = oddsText;
+  // 2026-08-05: 연못(#fishing-pond)이 키보드 포커스를 받을 수 있게 됐는데, 이 조작법 설명을
+  // 위해 새 번역 문구를 26개 언어로 추가하는 대신 이미 번역돼있는 상단 안내(odds.fishingHint)를
+  // aria-label로 재사용함 — 언어 전환마다 이 함수가 다시 불리므로 여기서 같이 갱신
+  const pond = document.getElementById('fishing-pond');
+  if (pond) pond.setAttribute('aria-label', resolveI18n('odds.fishingHint') || '🎣 낚싯대를 던져서 번호를 하나씩 낚아보세요');
 }
 
 // 게임을 바꾸면 특별볼(파워볼/메가볼) 색상 표시와 숫자 범위가 달라지므로, 이미 뽑아둔 번호는
@@ -3537,16 +3526,13 @@ function resetFishingRound(){
   fishingCaughtValues = [];
   fishingSessionValues = null;
   fishingState = 'idle';
-  fishingReelGaugeValue = 0;
-  fishingReelHolding = false;
-  stopFishingReelLoop();
-  clearTimeout(fishingWaitTimer);
-  clearTimeout(fishingBiteTimer);
-  clearTimeout(fishingReelDeadlineTimer);
+  fishingDragActive = false;
+  stopFishingSwimLoop();
   const pond = document.getElementById('fishing-pond');
-  if (pond) pond.classList.remove('is-casting', 'is-biting', 'is-reeling');
-  const gaugeWrap = document.getElementById('fishing-reel-gauge-wrap');
-  if (gaugeWrap) gaugeWrap.style.display = 'none';
+  if (pond) pond.classList.remove('is-aiming', 'is-dragging');
+  fishingSetRodX(50);
+  const targetFish = document.getElementById('fishing-target-fish');
+  if (targetFish) targetFish.style.display = 'none';
   const msgEl = document.getElementById('fishing-status-msg');
   if (msgEl) msgEl.classList.remove('show');
   document.querySelectorAll('#fishing-result .lightning-ball').forEach(b => {
@@ -3556,21 +3542,15 @@ function resetFishingRound(){
   const resultEl = document.getElementById('fishing-result');
   if (resultEl) resultEl.classList.remove('celebrate');
   const btn = document.getElementById('fishing-cast-btn');
-  if (btn) { btn.disabled = false; btn.classList.remove('fishing-btn-urgent'); btn.textContent = fishingCastBtnDefaultLabel(); }
+  if (btn) { btn.disabled = false; btn.textContent = fishingCastBtnDefaultLabel(); }
 }
 
-// 2026-08-03: "낚싯대도 움직이고 진짜 물고기 잡는 것처럼" 요청으로 관람형 자동 재생을 실제
-// 탭 타이밍 게임으로 재구성함(기존 설계 배경 — 캐스팅마다 한 번호씩만 공개하는 것 — 은 그대로
-// 유지). 버튼 하나(#fishing-cast-btn)가 상태에 따라 하는 일이 다름:
-// idle=새로 캐스팅 시작 / biting=입질 순간 탭(걸기) / reeling=릴 감기 탭(연타) — HTML의
-// onclick="castFishingLine()"은 그대로 두고 이 함수 내부에서 fishingState를 보고 분기함.
-// casting/waiting 중엔 버튼이 disabled라 클릭 자체가 안 들어옴(= 너무 일찍 누르면 그냥
-// 무시되는 효과 — 시니어 타겟이라 오조작에 불이익을 주지 않기로 함).
+// 2026-08-05: 낚싯대를 드래그해서 헤엄치는 물고기 위치에 맞춘 뒤 손을 떼면 낚는 방식(위
+// state 변수 선언부 주석 참고). 버튼(#fishing-cast-btn)은 이제 판을 "시작/재시작"하는 역할만
+// 하고, 실제 조작은 연못(#fishing-pond)에서 포인터 드래그로 이뤄짐 — initFishingDragEvents()가
+// pointerdown/move/up을 연못에 직접 바인딩함.
 function castFishingLine(){
-  if (performance.now() < fishingClickLockUntil) return; // 릴 감기 직후 손 떼는 동작이 만든 트레일링 클릭 무시(위 fishingClickLockUntil 설명 참고)
-  if (fishingState === 'biting') { handleFishingBiteTap(); return; }
-  if (fishingState === 'reeling') return; // 릴 감기는 이제 누르고 있기(pointerdown/up)로 처리 — 클릭 자체는 무시
-  if (fishingState !== 'idle') return;
+  if (fishingState !== 'idle') return; // 진행 중엔 버튼이 disabled라 클릭 자체가 안 들어옴
 
   if (fishingCaughtValues.length >= 6) resetFishingRound();
 
@@ -3584,164 +3564,140 @@ function castFishingLine(){
 
   const pond = document.getElementById('fishing-pond');
   const btn = document.getElementById('fishing-cast-btn');
-
-  // 캐스팅마다 낚이는 물고기 이모지를 무작위로 바꿔서(styles.css의 .fishing-caught-fish) 매번
-  // 다른 물고기를 낚는 느낌을 줌 — 결과 자체(번호)와는 무관한 순수 장식
-  const caughtFishEl = document.getElementById('fishing-caught-fish');
-  if (caughtFishEl) caughtFishEl.textContent = ['🐟', '🐠', '🐡'][Math.floor(Math.random() * 3)];
-
-  fishingState = 'casting';
-  btn.disabled = true;
-  btn.textContent = pickLang('기다리는 중... 🎣', 'Waiting for a bite... 🎣', '等待上钩中... 🎣', 'Đang chờ cá cắn câu... 🎣', 'กำลังรอปลากิน... 🎣', 'Ждём поклёвку... 🎣', FISHING_WAITING_MORE);
-  if (pond) { pond.classList.remove('is-biting', 'is-reeling'); pond.classList.add('is-casting'); }
-
-  setTimeout(() => {
-    if (fishingState !== 'casting') return; // 그 사이 게임/모드가 바뀌어 리셋됐으면 중단
-    if (pond) pond.classList.remove('is-casting');
-    fishingState = 'waiting';
-    // 입질 시점을 무작위로 흔들어서(600~1500ms) 매번 타이밍을 예측 못 하게 함 — 진짜 낚시처럼
-    const waitMs = FISHING_WAIT_MIN_MS + Math.random() * (FISHING_WAIT_MAX_MS - FISHING_WAIT_MIN_MS);
-    fishingWaitTimer = setTimeout(enterFishingBiteState, waitMs);
-  }, FISHING_CAST_MS);
+  if (btn) btn.disabled = true;
+  if (pond) pond.classList.add('is-aiming');
+  const targetFish = document.getElementById('fishing-target-fish');
+  if (targetFish) targetFish.style.display = '';
+  fishingState = 'aiming';
+  fishingSpawnTargetFish();
+  startFishingSwimLoop();
 }
 
-// 입질 순간 진입 — 제한시간(FISHING_BITE_WINDOW_MS) 안에 탭해야 걸림, 못 하면 fishingMissed()
-function enterFishingBiteState(){
-  fishingState = 'biting';
-  const pond = document.getElementById('fishing-pond');
-  const btn = document.getElementById('fishing-cast-btn');
-  if (pond) pond.classList.add('is-biting');
-  // 물 튀는 효과(.fishing-splash)를 매번 처음부터 재생 — .lightning-ball.drawn과 같은
-  // reflow 강제 재시작 패턴(클래스를 지웠다가 offsetWidth를 읽어 강제로 리플로우한 뒤 다시 붙임)
-  const splash = document.getElementById('fishing-splash');
-  if (splash) { splash.classList.remove('play'); void splash.offsetWidth; splash.classList.add('play'); }
-  btn.disabled = false;
-  btn.classList.add('fishing-btn-urgent');
-  btn.textContent = pickLang('👆 지금 탭하세요!', '👆 Tap now!', '👆 现在点一下！', '👆 Chạm ngay!', '👆 แตะตอนนี้เลย!', '👆 Нажмите сейчас!', FISHING_BITE_PROMPT_MORE);
-  fishingVibrate([10, 40, 10, 40]);
-  fishingBiteTimer = setTimeout(fishingMissed, FISHING_BITE_WINDOW_MS);
-}
-
-function handleFishingBiteTap(){
-  clearTimeout(fishingBiteTimer);
-  const btn = document.getElementById('fishing-cast-btn');
-  btn.classList.remove('fishing-btn-urgent');
-  fishingVibrate([15, 30, 20]);
-  enterFishingReelState();
-}
-
-// 입질 제한시간을 놓쳤을 때 — 판 진행 상태(이미 낚은 번호)는 그대로 두고 지금 시도만 실패
-// 처리, 같은 슬롯을 다시 캐스팅하면 재도전 가능(불이익 없음)
-function fishingMissed(){
-  fishingState = 'idle';
-  const pond = document.getElementById('fishing-pond');
-  const btn = document.getElementById('fishing-cast-btn');
-  if (pond) pond.classList.remove('is-casting', 'is-biting', 'is-reeling');
-  btn.classList.remove('fishing-btn-urgent');
-  btn.disabled = false;
-  btn.textContent = fishingCastBtnDefaultLabel();
-  showFishingEscapedMessage();
-}
-
-// 릴 감기(꾹 누르기) 단계 진입 — 게이지를 100까지 채우면 성공, 제한시간 안에 못 채우면 fishingReelFailed()
-function enterFishingReelState(){
-  fishingState = 'reeling';
-  fishingReelGaugeValue = 0;
-  fishingReelHolding = false;
-  const pond = document.getElementById('fishing-pond');
-  const btn = document.getElementById('fishing-cast-btn');
-  if (pond) { pond.classList.remove('is-biting'); pond.classList.add('is-reeling'); }
-  updateFishingReelGaugeUi();
-  const gaugeWrap = document.getElementById('fishing-reel-gauge-wrap');
-  if (gaugeWrap) gaugeWrap.style.display = '';
-  btn.textContent = pickLang('👆 꾹 눌러서 감아요!', '👆 Hold to reel it in!', '👆 按住收线！', '👆 Giữ để cuộn dây!', '👆 กดค้างเพื่อดึงสาย!', '👆 Удерживайте, чтобы смотать леску!', FISHING_REEL_PROMPT_MORE);
-  fishingReelDeadlineTimer = setTimeout(fishingReelFailed, FISHING_REEL_TIME_LIMIT_MS);
-  startFishingReelLoop();
-}
-
-// 2026-08-04: 탭 연타 대신 "누르고 있는 동안 채워지는" rAF 루프로 교체 — pointerdown/pointerup이
-// fishingReelHolding만 켜고/끄고, 실제 게이지 증감은 매 프레임 여기서 경과시간(dtSec) 기준으로
-// 계산함(탭 이벤트 개수가 아니라 시간 기반이라 기기 성능/입력 빈도와 무관하게 일정한 속도로 채워짐)
-function fishingReelLoop(ts){
-  if (fishingState !== 'reeling') { fishingReelRafId = null; return; }
-  if (fishingReelLastTs == null) fishingReelLastTs = ts;
-  const dtSec = Math.min(0.1, (ts - fishingReelLastTs) / 1000); // 탭 전환 등으로 프레임이 크게 벌어져도 한 번에 과도하게 안 채워지게 상한
-  fishingReelLastTs = ts;
-  const rate = fishingReelHolding ? FISHING_REEL_FILL_RATE : -FISHING_REEL_DRAIN_RATE;
-  fishingReelGaugeValue = Math.max(0, Math.min(100, fishingReelGaugeValue + rate * dtSec));
-  updateFishingReelGaugeUi();
-  if (fishingReelGaugeValue >= 100) {
-    clearTimeout(fishingReelDeadlineTimer);
-    fishingReelRafId = null;
-    fishingCaughtSuccess();
-    return;
+// 새 물고기 한 마리를 무작위 위치·방향·모양으로 등장시킴(캐스팅마다, 그리고 각 성공 직후 다음
+// 슬롯으로 넘어갈 때마다 호출) — 낚싯대(찌) 위치는 건드리지 않아서 연속으로 자연스럽게 이어짐
+function fishingSpawnTargetFish(){
+  fishingTargetXPct = FISHING_TARGET_MIN_PCT + Math.random() * (FISHING_TARGET_MAX_PCT - FISHING_TARGET_MIN_PCT);
+  fishingTargetDirection = Math.random() < 0.5 ? 1 : -1;
+  const fishEl = document.getElementById('fishing-target-fish');
+  if (fishEl) {
+    fishEl.textContent = ['🐟', '🐠', '🐡'][Math.floor(Math.random() * 3)];
+    fishEl.style.left = fishingTargetXPct + '%';
+    fishEl.style.transform = `translateX(-50%) scaleX(${fishingTargetDirection})`;
   }
-  fishingReelRafId = requestAnimationFrame(fishingReelLoop);
 }
 
-function startFishingReelLoop(){
-  fishingReelLastTs = null;
-  if (fishingReelRafId == null) fishingReelRafId = requestAnimationFrame(fishingReelLoop);
+// 물고기가 연못 양쪽 경계 사이를 계속 왕복하게 하는 rAF 루프 — 경과시간(dtSec) 기준이라
+// 기기 성능과 무관하게 항상 같은 속도로 움직임(fishingReelLoop가 쓰던 것과 같은 패턴)
+function fishingSwimLoop(ts){
+  if (fishingState !== 'aiming') { fishingSwimRafId = null; fishingSwimLastTs = null; return; }
+  if (fishingSwimLastTs == null) fishingSwimLastTs = ts;
+  const dtSec = Math.min(0.1, (ts - fishingSwimLastTs) / 1000);
+  fishingSwimLastTs = ts;
+  fishingTargetXPct += fishingTargetDirection * fishingTargetSpeedPct * dtSec;
+  if (fishingTargetXPct <= FISHING_TARGET_MIN_PCT) { fishingTargetXPct = FISHING_TARGET_MIN_PCT; fishingTargetDirection = 1; }
+  else if (fishingTargetXPct >= FISHING_TARGET_MAX_PCT) { fishingTargetXPct = FISHING_TARGET_MAX_PCT; fishingTargetDirection = -1; }
+  const fishEl = document.getElementById('fishing-target-fish');
+  if (fishEl) { fishEl.style.left = fishingTargetXPct + '%'; fishEl.style.transform = `translateX(-50%) scaleX(${fishingTargetDirection})`; }
+  fishingSwimRafId = requestAnimationFrame(fishingSwimLoop);
 }
 
-function stopFishingReelLoop(){
-  if (fishingReelRafId != null) { cancelAnimationFrame(fishingReelRafId); fishingReelRafId = null; }
-  fishingReelLastTs = null;
+function startFishingSwimLoop(){
+  fishingSwimLastTs = null;
+  if (fishingSwimRafId == null) fishingSwimRafId = requestAnimationFrame(fishingSwimLoop);
 }
 
-function updateFishingReelGaugeUi(){
-  const fill = document.getElementById('fishing-reel-gauge-fill');
-  if (fill) fill.style.width = fishingReelGaugeValue + '%';
-  const gaugeWrap = document.getElementById('fishing-reel-gauge-wrap');
-  if (gaugeWrap) gaugeWrap.classList.toggle('is-holding', fishingReelHolding);
+function stopFishingSwimLoop(){
+  if (fishingSwimRafId != null) { cancelAnimationFrame(fishingSwimRafId); fishingSwimRafId = null; }
+  fishingSwimLastTs = null;
 }
 
-function hideFishingReelGauge(){
-  const gaugeWrap = document.getElementById('fishing-reel-gauge-wrap');
-  if (gaugeWrap) { gaugeWrap.style.display = 'none'; gaugeWrap.classList.remove('is-holding'); }
-  fishingReelGaugeValue = 0;
-  fishingReelHolding = false;
-  updateFishingReelGaugeUi();
+// 낚싯대(찌)를 pct(0~100, 연못 폭 대비) 위치로 옮김 — 양 끝 여백(4~96%)을 둬서 풀 장식 뒤로
+// 완전히 숨어버리지 않게 함
+function fishingSetRodX(pct){
+  fishingRodXPct = Math.max(4, Math.min(96, pct));
+  const rodWrap = document.getElementById('fishing-rod-wrap');
+  if (rodWrap) rodWrap.style.left = fishingRodXPct + '%';
 }
 
-function fishingReelFailed(){
-  fishingState = 'idle';
-  fishingClickLockUntil = performance.now() + FISHING_CLICK_LOCK_MS;
-  stopFishingReelLoop();
+// 포인터의 화면 좌표(clientX)를 연못 요소 기준 0~100 퍼센트로 환산
+function fishingPointerToPct(clientX){
   const pond = document.getElementById('fishing-pond');
-  const btn = document.getElementById('fishing-cast-btn');
-  if (pond) pond.classList.remove('is-casting', 'is-biting', 'is-reeling');
-  hideFishingReelGauge();
-  btn.disabled = false;
-  btn.textContent = fishingCastBtnDefaultLabel();
-  showFishingEscapedMessage();
+  if (!pond) return fishingRodXPct;
+  const rect = pond.getBoundingClientRect();
+  if (!rect.width) return fishingRodXPct;
+  return ((clientX - rect.left) / rect.width) * 100;
 }
 
-// 2026-08-04: #fishing-cast-btn을 누르고 있는 동안만 릴 감기 게이지가 차오르게 하는 포인터
-// 이벤트 — reeling 상태가 아닐 때는 아무 효과 없음(캐스팅/입질 탭은 기존 onclick이 그대로 처리).
-// setPointerCapture로 터치 중 손가락이 버튼 밖으로 살짝 벗어나도 계속 "누르고 있음"으로 인정함
-// (안 그러면 손 떨림 등으로 살짝만 밀려도 채우던 게이지가 도로 빠지는 게 불편할 수 있어서).
-function initFishingReelHoldEvents(){
-  const btn = document.getElementById('fishing-cast-btn');
-  if (!btn) return;
-  const startHold = (e) => {
-    if (fishingState !== 'reeling') return;
-    fishingReelHolding = true;
-    updateFishingReelGaugeUi();
-    if (btn.setPointerCapture && e.pointerId != null) { try { btn.setPointerCapture(e.pointerId); } catch (err) {} }
-    fishingVibrate(10);
-  };
-  const endHold = () => {
-    if (!fishingReelHolding) return;
-    fishingReelHolding = false;
-    updateFishingReelGaugeUi();
-  };
-  btn.addEventListener('pointerdown', startHold);
-  btn.addEventListener('pointerup', endHold);
-  btn.addEventListener('pointerleave', endHold);
-  btn.addEventListener('pointercancel', endHold);
+// 2026-08-05: 연못 전체를 드래그 영역으로 씀(찌의 작은 이모지만 잡게 하면 시니어 타겟에게
+// 손끝 정밀도 부담이 큼) — pointerdown 즉시 그 지점으로 찌가 순간이동하고, 그대로 손가락을
+// 따라 움직이다가 손을 떼는 순간(pointerup) 물고기와 겹쳐있는지 판정함. 드래그 없이 그냥
+// 탭만 해도(이미 찌가 물고기 근처에 있을 때) 같은 pointerdown→pointerup 흐름으로 동작함.
+function fishingDragStart(e){
+  if (fishingState !== 'aiming') return;
+  fishingDragActive = true;
+  const pond = document.getElementById('fishing-pond');
+  if (pond) {
+    pond.classList.add('is-dragging');
+    if (pond.setPointerCapture && e.pointerId != null) { try { pond.setPointerCapture(e.pointerId); } catch (err) {} }
+  }
+  fishingSetRodX(fishingPointerToPct(e.clientX));
 }
-document.addEventListener('DOMContentLoaded', initFishingReelHoldEvents);
+
+function fishingDragMove(e){
+  if (!fishingDragActive) return;
+  fishingSetRodX(fishingPointerToPct(e.clientX));
+}
+
+function fishingDragEnd(){
+  if (!fishingDragActive) return;
+  fishingDragActive = false;
+  const pond = document.getElementById('fishing-pond');
+  if (pond) pond.classList.remove('is-dragging');
+  fishingAttemptCatch();
+}
+
+function initFishingDragEvents(){
+  const pond = document.getElementById('fishing-pond');
+  if (!pond) return;
+  pond.addEventListener('pointerdown', fishingDragStart);
+  pond.addEventListener('pointermove', fishingDragMove);
+  pond.addEventListener('pointerup', fishingDragEnd);
+  pond.addEventListener('pointercancel', fishingDragEnd);
+}
+document.addEventListener('DOMContentLoaded', initFishingDragEvents);
+
+// 2026-08-05: 포인터 드래그가 안 되는 환경(키보드 사용자)을 위한 최소한의 대체 조작 —
+// 연못에 포커스가 있을 때만 동작해서 페이지 스크롤과 충돌하지 않음(연못에 tabindex="0" 추가,
+// index.html 참고). 화살표로 찌를 옮기고 Enter/Space로 지금 위치에서 낚시 시도.
+function initFishingKeyboardControls(){
+  const pond = document.getElementById('fishing-pond');
+  if (!pond) return;
+  pond.addEventListener('keydown', (e) => {
+    if (fishingState !== 'aiming') return;
+    if (e.key === 'ArrowLeft') { fishingSetRodX(fishingRodXPct - 5); e.preventDefault(); }
+    else if (e.key === 'ArrowRight') { fishingSetRodX(fishingRodXPct + 5); e.preventDefault(); }
+    else if (e.key === ' ' || e.key === 'Enter') { fishingAttemptCatch(); e.preventDefault(); }
+  });
+}
+document.addEventListener('DOMContentLoaded', initFishingKeyboardControls);
+
+// 찌와 물고기 위치를 비교해 성공/실패를 판정 — 제한시간이 없어서 몇 번을 실패해도 불이익 없이
+// 바로 다시 시도 가능
+function fishingAttemptCatch(){
+  if (fishingState !== 'aiming') return;
+  const dist = Math.abs(fishingRodXPct - fishingTargetXPct);
+  if (dist <= FISHING_CATCH_TOLERANCE_PCT) fishingCaughtSuccess();
+  else fishingMissed();
+}
+
+// 위치가 안 맞아서 놓쳤을 때 — 판 진행 상태(이미 낚은 번호)는 그대로 두고 안내 문구만 보여줌,
+// 물고기는 계속 헤엄치는 중이라 바로 다시 시도 가능(재도전에 불이익 없음)
+function fishingMissed(){
+  fishingVibrate(15);
+  showFishingEscapedMessage();
+  const targetFish = document.getElementById('fishing-target-fish');
+  if (targetFish) { targetFish.classList.remove('shake'); void targetFish.offsetWidth; targetFish.classList.add('shake'); }
+}
 
 function showFishingEscapedMessage(){
   const msgEl = document.getElementById('fishing-status-msg');
@@ -3752,16 +3708,9 @@ function showFishingEscapedMessage(){
   msgEl.classList.add('show');
 }
 
-// 릴 감기 게이지를 제시간에 다 채웠을 때 — 실제로 번호 한 개를 확정·공개함(예전 setTimeout
-// 체인의 마지막 단계와 같은 역할, 트리거만 타이머 대신 사용자의 성공적인 탭 연타로 바뀜)
+// 위치가 맞아서 성공했을 때 — 번호 한 개를 확정·공개하고, 남은 슬롯이 있으면 짧은 축하 연출
+// 후 다음 물고기를 새로 등장시킴(찌 위치는 그대로 유지 — 계속 이어지는 흐름을 위해 초기화 안 함)
 function fishingCaughtSuccess(){
-  const pond = document.getElementById('fishing-pond');
-  const btn = document.getElementById('fishing-cast-btn');
-  hideFishingReelGauge();
-  if (pond) pond.classList.remove('is-reeling');
-  fishingState = 'idle';
-  fishingClickLockUntil = performance.now() + FISHING_CLICK_LOCK_MS;
-
   const slotIndex = fishingCaughtValues.length;
   const value = fishingSessionValues[slotIndex];
   const slots = document.querySelectorAll('#fishing-result .lightning-ball');
@@ -3778,14 +3727,39 @@ function fishingCaughtSuccess(){
     announcer.textContent = prefix + fishingCaughtValues.join(', ');
   }
   fishingVibrate([20, 40, 30, 40, 50]);
+
+  const splash = document.getElementById('fishing-splash');
+  if (splash) { splash.style.left = fishingRodXPct + '%'; splash.classList.remove('play'); void splash.offsetWidth; splash.classList.add('play'); }
+  const caughtFishEl = document.getElementById('fishing-caught-fish');
+  const targetFishEl = document.getElementById('fishing-target-fish');
+  if (caughtFishEl && targetFishEl) {
+    caughtFishEl.textContent = targetFishEl.textContent;
+    caughtFishEl.classList.remove('play');
+    void caughtFishEl.offsetWidth;
+    caughtFishEl.classList.add('play');
+  }
+  if (targetFishEl) targetFishEl.style.display = 'none';
+
+  const btn = document.getElementById('fishing-cast-btn');
   if (fishingCaughtValues.length >= 6) {
+    fishingState = 'idle';
+    stopFishingSwimLoop();
+    const pond = document.getElementById('fishing-pond');
+    if (pond) pond.classList.remove('is-aiming');
     const resultEl = document.getElementById('fishing-result');
     if (resultEl) { void resultEl.offsetWidth; resultEl.classList.add('celebrate'); }
-    btn.disabled = false;
-    btn.textContent = pickLang('🎣 처음부터 다시 낚시하기', '🎣 Fish again from scratch', '🎣 重新钓一次', '🎣 Câu lại từ đầu', '🎣 ตกปลาใหม่อีกครั้ง', '🎣 Порыбачить заново', FISHING_RESTART_MORE);
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = pickLang('🎣 처음부터 다시 낚시하기', '🎣 Fish again from scratch', '🎣 重新钓一次', '🎣 Câu lại từ đầu', '🎣 ตกปลาใหม่อีกครั้ง', '🎣 Порыбачить заново', FISHING_RESTART_MORE);
+    }
   } else {
-    btn.disabled = false;
-    btn.textContent = fishingCastBtnDefaultLabel();
+    fishingState = 'caught';
+    setTimeout(() => {
+      if (fishingState !== 'caught') return;
+      fishingSpawnTargetFish();
+      if (targetFishEl) targetFishEl.style.display = '';
+      fishingState = 'aiming';
+    }, FISHING_NEXT_FISH_DELAY_MS);
   }
 }
 
@@ -3805,16 +3779,6 @@ const DRAWN_ANNOUNCE_PREFIX_MORE = {
   ar: 'الأرقام المسحوبة: ', hi: 'निकाले गए नंबर: ', fr: 'Numéros tirés : ', tl: 'Mga numerong nakuha: '
 ,
   pt: `Números sorteados: `, es: `Números sorteados: `, uk: `Виграшні номери: `, tet: `Númeru ne'ebé sai: `,
-};
-
-// 2026-08-03 낚시로 뽑기 모드 신설 — 캐스팅 도중(입질 기다리는 중) 버튼에 뜨는 문구
-const FISHING_WAITING_MORE = {
-  km: 'កំពុងរង់ចាំ... 🎣', ne: 'पर्खंदै... 🎣', id: 'Menunggu... 🎣', my: 'စောင့်နေသည်... 🎣', si: 'රැඳී සිටිමින්... 🎣',
-  uz: 'Kutilmoqda... 🎣', mn: 'Хүлээж байна... 🎣', kk: 'Күтілуде... 🎣', ky: 'Күтүлүүдө... 🎣',
-  ur: 'انتظار ہو رہا ہے... 🎣', bn: 'অপেক্ষা করা হচ্ছে... 🎣', lo: 'ກຳລັງລໍຖ້າ... 🎣', ja: '待っています... 🎣',
-  ar: 'في انتظار... 🎣', hi: 'इंतज़ार हो रहा है... 🎣', fr: "En attente d'une touche... 🎣", tl: 'Naghihintay... 🎣'
-,
-  pt: `Aguardando... 🎣`, es: `Esperando... 🎣`, uk: `Очікування... 🎣`, tet: `Hein hela... 🎣`,
 };
 
 // 6마리(번호 6개) 전부 낚은 뒤, 버튼을 다시 누르면 새 판을 시작하도록 안내하는 문구
@@ -3839,31 +3803,7 @@ const FISHING_CAUGHT_PREFIX_MORE = {
   pt: `Números pescados: `, es: `Números pescados: `, uk: `Спіймані числа: `, tet: `Númeru ne'ebé kaer: `,
 };
 
-// 2026-08-03: "낚싯대도 움직이고 진짜 물고기 잡는 것처럼 게임하게" 요청으로, 자동 재생되던
-// 낚시 미니게임을 실제 탭 타이밍 게임으로 바꿈 — 아래 3개는 그 과정에서 새로 필요해진 문구.
-// 입질 순간에 뜨는 문구(제한시간 내에 탭해야 걸림)
-const FISHING_BITE_PROMPT_MORE = {
-  km: '👆 ចុចឥឡូវនេះ!', ne: '👆 अहिले ट्याप गर्नुहोस्!', id: '👆 Ketuk sekarang!', my: '👆 အခုနှိပ်ပါ!',
-  si: '👆 දැන් තට්ටු කරන්න!', uz: '👆 Hozir bosing!', mn: '👆 Одоо дараарай!', kk: '👆 Қазір басыңыз!',
-  ky: '👆 Азыр басыңыз!', ur: '👆 ابھی تھپتھپائیں!', bn: '👆 এখনই ট্যাপ করুন!', lo: '👆 ແຕະດຽວນີ້!',
-  ja: '👆 今タップ！', ar: '👆 اضغط الآن!', hi: '👆 अभी टैप करें!', fr: '👆 Appuyez maintenant !',
-  tl: '👆 Pindutin ngayon!'
-,
-  pt: `👆 Toque agora!`, es: `👆 ¡Toca ahora!`, uk: `👆 Натисніть зараз!`, tet: `👆 Toka agora!`,
-};
-// 릴 감기(꾹 누르기) 단계에서 뜨는 문구 — 2026-08-04: "빠르게 연타" 문구를 "꾹 눌러서"로 교체
-// (아래 로직도 연타 대신 홀드 방식으로 바뀜, 이 파일 위쪽 fishingReelLoop 근처 참고)
-const FISHING_REEL_PROMPT_MORE = {
-  km: '👆 ចុចសង្កត់ដើម្បីទាញខ្សែ!', ne: '👆 डोरी तान्न थिचिराख्नुहोस्!', id: '👆 Tekan dan tahan untuk menggulung!',
-  my: '👆 လိုင်းဆွဲရန် ဖိထားပါ!', si: '👆 නූල ඇදගැනීමට ඔබාගෙන සිටින්න!', uz: "👆 Yigirish uchun bosib turing!",
-  mn: '👆 Утсыг сойхын тулд дараад барина уу!', kk: '👆 Жіпті орау үшін басып тұрыңыз!', ky: '👆 Жипти ороо үчүн басып туруңуз!',
-  ur: '👆 ڈوری کھینچنے کے لیے دبائے رکھیں!', bn: '👆 সুতো গোটাতে চেপে ধরে রাখুন!', lo: '👆 ກົດຄ້າງໄວ້ເພື່ອດຶງສາຍ!',
-  ja: '👆 長押ししてリールを巻こう！', ar: '👆 اضغط مطولاً لسحب الخيط!', hi: '👆 डोरी खींचने के लिए दबाकर रखें!',
-  fr: '👆 Maintenez appuyé pour remonter la ligne !', tl: '👆 Pindutin at hawakan para gulungin!'
-,
-  pt: `👆 Mantenha pressionado para recolher a linha!`, es: `👆 ¡Mantén presionado para recoger el hilo!`, uk: `👆 Утримуйте натиснутим, щоб змотати волосінь!`, tet: `👆 Kaer metin atu dada liña!`,
-};
-// 입질 순간을 놓치거나 릴 감기를 제시간에 못 끝냈을 때(물고기가 도망감) 뜨는 문구
+// 위치가 안 맞아서 놓쳤을 때(물고기가 도망감) 뜨는 문구
 const FISHING_ESCAPED_MSG_MORE = {
   km: '🐟 វារត់គេចផុតហើយ! សាកល្បងបោះសំណាញ់ម្តងទៀត', ne: '🐟 भाग्यो! फेरि फ्याँक्नुहोस्', id: '🐟 Lolos! Coba lempar lagi',
   my: '🐟 လွတ်သွားပြီ! နောက်တစ်ခါထပ်ပစ်ကြည့်ပါ', si: '🐟 ගිලිහුණා! නැවත උත්සාහ කරන්න', uz: "🐟 Qochib ketdi! Yana urinib ko'ring",
