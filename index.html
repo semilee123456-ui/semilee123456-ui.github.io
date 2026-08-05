@@ -121,12 +121,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260805-7">
+<link rel="stylesheet" href="styles.min.css?v=20260805-9">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260805-7" defer></script>
+<script src="script.min.js?v=20260805-9" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1807,13 +1807,15 @@
           </div>
           <div id="lightning-fishing-mode" style="display:none;">
             <p class="panel-desc" data-i18n="odds.fishingHint">🎣 낚싯대를 던져서 번호를 하나씩 낚아보세요</p>
-            <!-- 2026-08-04: "너무 엉성하다, 더 진짜 게임처럼" 요청 — 연못을 낚싯대/결과칸과 분리된
-                 얇은 직사각형 하나로만 보이게 하던 걸, 하늘(해)+연못(물고기 3마리+기포)+결과칸을
-                 전부 하나의 게임 화면(.fishing-game-frame)으로 감싸서 통일감을 줌. 기존 게임
-                 로직(script.js의 castFishingLine 등)이 참조하는 id는 전부 그대로 유지 — 여기서
-                 늘어난 건 순수 장식 요소(해·풀·기포·물고기 1마리 추가)뿐이라 JS 변경 없음. -->
+            <!-- 2026-08-05: "번거롭다"는 피드백으로 캐스팅→입질탭→릴감기 3단계 반사신경 게임을
+                 폐기하고, 낚싯대(#fishing-rod-wrap)를 직접 드래그해서 헤엄치는 물고기
+                 (#fishing-target-fish)에 맞춘 뒤 손을 떼면 낚는 방식으로 교체함(script.js의
+                 fishingDragStart/fishingAttemptCatch 등 참고). 연못에 tabindex를 줘서 포커스가
+                 가능하게 하고 aria-label은 JS가 언어 전환 시마다 odds.fishingHint 번역을 그대로
+                 재사용해서 채움(새 번역 문구 추가 없이 키보드 접근성 확보, updateFishingAriaLabel
+                 참고) — 화살표로 낚싯대 이동, Enter/Space로 낚시 시도 가능. -->
             <div class="fishing-game-frame">
-              <div class="fishing-pond" id="fishing-pond" aria-hidden="true" onclick="castFishingLine()">
+              <div class="fishing-pond" id="fishing-pond" tabindex="0">
                 <span class="fishing-sun"></span>
                 <span class="fishing-cloud fishing-cloud-1"></span>
                 <span class="fishing-cloud fishing-cloud-2"></span>
@@ -1830,6 +1832,13 @@
                   <span class="fishing-idle-fish fishing-idle-fish-1">🐟</span>
                   <span class="fishing-idle-fish fishing-idle-fish-2">🐠</span>
                   <span class="fishing-idle-fish fishing-idle-fish-3">🐡</span>
+                  <!-- 2026-08-05: 실제로 낚을 수 있는 물고기를 1마리에서 최대 3마리(동시 등장)로
+                       늘림 — 슬롯 3개를 미리 마련해두고 script.js의 fishingFish 배열이 필요한
+                       만큼만 보여줌(FISHING_MAX_FISH 참고). 서로 다른 높이(bottom)에 둬서 겹쳐
+                       보이지 않게 함(fishingSpawnFishSlot이 매번 위치를 다시 계산) -->
+                  <span class="fishing-target-fish fishing-target-fish-0" id="fishing-target-fish-0" style="display:none;">🐟</span>
+                  <span class="fishing-target-fish fishing-target-fish-1" id="fishing-target-fish-1" style="display:none;">🐟</span>
+                  <span class="fishing-target-fish fishing-target-fish-2" id="fishing-target-fish-2" style="display:none;">🐟</span>
                   <span class="fishing-bubble fishing-bubble-1"></span>
                   <span class="fishing-bubble fishing-bubble-2"></span>
                   <span class="fishing-bubble fishing-bubble-3"></span>
@@ -1842,9 +1851,6 @@
                 <span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball pb fishing-slot" id="fishing-special-ball">?</span>
               </div>
               <p class="sr-only" id="fishing-result-announcer" role="status" aria-live="polite"></p>
-              <div class="fishing-reel-gauge-wrap" id="fishing-reel-gauge-wrap" style="display:none;" aria-hidden="true">
-                <div class="fishing-reel-gauge-fill" id="fishing-reel-gauge-fill"></div>
-              </div>
               <button class="cta-btn" id="fishing-cast-btn" onclick="castFishingLine()" data-i18n="odds.fishingCastBtn">🎣 낚싯대 던지기</button>
               <p class="fishing-status-msg" id="fishing-status-msg" aria-live="polite"></p>
             </div>
