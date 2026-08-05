@@ -3546,6 +3546,8 @@ function resetFishingRound(){
   stopFishingSwimLoop();
   const pond = document.getElementById('fishing-pond');
   if (pond) pond.classList.remove('is-aiming', 'is-dragging');
+  const dragHint = document.getElementById('fishing-drag-hint');
+  if (dragHint) dragHint.classList.remove('show');
   fishingSetRodX(50);
   for (let i = 0; i < FISHING_MAX_FISH; i++) fishingHideFishSlot(i);
   const msgEl = document.getElementById('fishing-status-msg');
@@ -3581,6 +3583,10 @@ function castFishingLine(){
   const btn = document.getElementById('fishing-cast-btn');
   if (btn) btn.disabled = true;
   if (pond) pond.classList.add('is-aiming');
+  // 2026-08-05: 판이 시작되면 "여기를 누르고 밀어서 낚으세요"를 알려주는 손가락 힌트를 보여줌 —
+  // fishingDragStart()에서 사용자가 실제로 연못을 처음 눌러보는 순간 바로 지움(아래 참고).
+  const dragHint = document.getElementById('fishing-drag-hint');
+  if (dragHint) dragHint.classList.add('show');
   fishingState = 'aiming';
   fishingSpawnInitialFish();
   startFishingSwimLoop();
@@ -3675,6 +3681,9 @@ function fishingDragStart(e){
     pond.classList.add('is-dragging');
     if (pond.setPointerCapture && e.pointerId != null) { try { pond.setPointerCapture(e.pointerId); } catch (err) {} }
   }
+  // 사용자가 연못을 직접 눌러본 순간 = 조작법을 찾은 것이므로 손가락 힌트를 바로 치움
+  const dragHint = document.getElementById('fishing-drag-hint');
+  if (dragHint) dragHint.classList.remove('show');
   fishingSetRodX(fishingPointerToPct(e.clientX));
 }
 
@@ -6764,7 +6773,10 @@ function buildHomeResultCheckCanvas(){
   const metaY = cardY + bandH + 32;
   ctx.fillStyle = '#262420';
   ctx.textAlign = anchorAlign;
-  fitFontSize(ctx, basisMini, 700, 16, 11, cornerMaxW * 1.4);
+  // 2026-08-05: 40~60대 타겟인데 이 줄("342M USD 당첨 · 한국 거주자")이 실제 저장 이미지에서
+  // 너무 작게 보인다는 지적(사용자가 "꾸며서 저장하기" 모달 스크린샷으로 직접 제보) — 다른
+  // 카드들의 본문 텍스트 크기(예: 아래 실수령액 밑 MEMO 계열)에 맞춰 최대/최소 모두 3px씩 키움.
+  fitFontSize(ctx, basisMini, 700, 19, 14, cornerMaxW * 1.4);
   ctx.fillText(basisMini, anchorX, metaY);
   // 2026-07-31: 날짜 자체를 아예 안 넣고 싶은 사용자를 위해 "날짜 표시 안 함" 체크박스 추가
   // (모달 #annotateDateSkipCheckbox) — checkCardDateHidden이 true면 날짜·수표번호 줄을
@@ -6774,7 +6786,7 @@ function buildHomeResultCheckCanvas(){
     // 수표 번호(No.) — 2026-07-31 하드 제약 #3 완화(위 안전장치 문단 참고)의 일부. 실제 은행
     // 라우팅/계좌번호가 아니라 오늘 날짜에서 뽑은 장식용 일련번호일 뿐이라 기능이 없음.
     ctx.fillStyle = '#8A8371';
-    ctx.font = "600 13px 'Pretendard', -apple-system, sans-serif";
+    ctx.font = "600 15px 'Pretendard', -apple-system, sans-serif";
     ctx.textAlign = oppositeAlign;
     ctx.fillText(dateStr + '  ·  No. ' + dateStr.replace(/-/g, '').slice(2), oppositeX, metaY);
   }
@@ -6794,7 +6806,9 @@ function buildHomeResultCheckCanvas(){
   ctx.fillStyle = '#262420';
   ctx.textAlign = anchorAlign;
   const payToLabel = pickLang('받는 사람', 'PAY TO THE ORDER OF', '收款人', 'Người nhận', 'ผู้รับ', 'ПОЛУЧАТЕЛЬ', CHECK_PAYTO_MORE);
-  fitFontSize(ctx, payToLabel, 700, 18, 13, cornerMaxW * 1.6);
+  // 2026-08-05: 위 basisMini와 같은 이유로 라벨도 21/15px로 키움(하드 제약: 빈 밑줄 길이는
+  // payToLabelW를 그리기 직후 다시 측정해서 자동으로 맞춰지므로, 폰트만 키우면 됨).
+  fitFontSize(ctx, payToLabel, 700, 21, 15, cornerMaxW * 1.6);
   const payToLabelW = ctx.measureText(payToLabel).width;
   ctx.fillText(payToLabel, anchorX, payToY);
   ctx.strokeStyle = 'rgba(138,131,113,0.65)';
@@ -6850,11 +6864,12 @@ function buildHomeResultCheckCanvas(){
   const bandY = 386, bandMidGap = 30;
   ctx.textAlign = 'left';
   ctx.fillStyle = '#8A8371';
-  ctx.font = "600 12px 'Pretendard', -apple-system, sans-serif";
+  ctx.font = "600 13px 'Pretendard', -apple-system, sans-serif";
   const memoLabel = pickLang('MEMO', 'MEMO', '备注', 'Ghi chú', 'บันทึก', 'ПРИМЕЧАНИЕ', CHECK_MEMO_LABEL_MORE);
   ctx.fillText(memoLabel, leftX, bandY);
   ctx.fillStyle = '#262420';
-  ctx.font = "500 13px 'Pretendard', -apple-system, sans-serif";
+  // 2026-08-05: 위 basisMini/payToLabel과 같은 40~60대 가독성 지적에 맞춰 MEMO 계열도 2px씩 키움.
+  ctx.font = "500 15px 'Pretendard', -apple-system, sans-serif";
   const memoText = pickLang(
     '세후 예상 실수령액 시뮬레이션',
     'After-tax take-home simulation',
@@ -6864,7 +6879,7 @@ function buildHomeResultCheckCanvas(){
     'Симуляция суммы на руки после налога',
     CHECK_MEMO_TEXT_MORE
   );
-  fitFontSize(ctx, memoText, 500, 13, 10, (W / 2 - bandMidGap) - leftX);
+  fitFontSize(ctx, memoText, 500, 15, 12, (W / 2 - bandMidGap) - leftX);
   ctx.fillText(memoText, leftX, bandY + 20);
   ctx.strokeStyle = 'rgba(138,131,113,0.45)';
   ctx.lineWidth = 1;
@@ -6886,7 +6901,7 @@ function buildHomeResultCheckCanvas(){
   });
   ctx.textAlign = 'right';
   ctx.fillStyle = '#8A8371';
-  ctx.font = "600 11px 'Pretendard', -apple-system, sans-serif";
+  ctx.font = "600 13px 'Pretendard', -apple-system, sans-serif";
   const signLabel = pickLang(
     '서명(예시용) · 실제 서명 아님',
     'Signature (sample) · not a real signature',
@@ -6896,7 +6911,9 @@ function buildHomeResultCheckCanvas(){
     'Подпись (образец) · не настоящая подпись',
     CHECK_SIGN_LABEL_MORE
   );
-  fitFontSize(ctx, signLabel, 600, 11, 9, rightX - (W / 2 + bandMidGap));
+  // 2026-08-05: 나머지 텍스트와 같은 이유로 2px씩 키움 — 이 줄은 폭 여유가 넉넉해서
+  // (rightX - (W/2+bandMidGap) ≈ 500px) fitFontSize가 실제로 줄일 일은 거의 없음.
+  fitFontSize(ctx, signLabel, 600, 13, 10, rightX - (W / 2 + bandMidGap));
   ctx.fillText(signLabel, rightX, bandY + 44);
 
   // 참고용 배지 — 크기·두께(카드 폭 전체에 가까운 띠, 18px 굵게)는 하드 제약 4번 그대로 유지
