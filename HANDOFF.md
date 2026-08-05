@@ -3112,3 +3112,32 @@ styles.css + 캐시버스팅 20260805-12), `e3155d7`(yandex 인증 파일). 전�
 merge(사용자가 세션 초반에 "sitemap.xml lastmod 수정을 main에 바로 병합해도 되냐"는
 질문에 승인한 것을 이후 전체 세션의 기본 워크플로로 그대로 유지함 — PR 안 거치고 직접
 `git push origin HEAD:main`).
+
+### 2026-08-05 이어서 — Dataset 구조화 데이터 추가 + 90개 페이지 로고 아이콘 통일 +
+Kaggle/Disquiet/GeekNews 실제 게시 진행
+
+위 세션 바로 이어서 진행. 토큰 절약을 위해 이번 항목은 간략히만 기록.
+
+- **Dataset JSON-LD**: `index.html`에 `@type: Dataset` 구조화 데이터 신규 추가(구글
+  Dataset Search 노출용) — `press-kit.html`은 noindex라 넣어도 소용없어서 실제 색인되는
+  `index.html`에 넣음. GitHub 오픈데이터셋 + Kaggle 게시본을 `sameAs`로 연결. 커밋
+  `cd3d937`.
+- **로고 아이콘 통일**: `index.html` 네비게이션에만 곰 마스코트 아이콘이 있고 나머지 90개
+  페이지는 텍스트만 있던 불일치를 사용자가 직접 발견 — 전부 동일 SVG(테마 변수 사용) 삽입.
+  1차 문자열 완전일치 방식으로 39개만 되고 51개는 `href`에 쿼리스트링(`?lang=..&country=..`)
+  이 붙어있어 실패 → 정규식 기반 2차 스크립트로 재처리해서 전부 해결. RTL 언어(아랍어·
+  우르두어) 페이지는 `direction:ltr` 유지하며 로고만 강제 LTR로 잘 나오는 것까지 Playwright로
+  확인(단, 이 샌드박스에서 Pretendard 웹폰트 CDN 요청이 매우 느려서 `page.screenshot()` 기본
+  타임아웃 5초로는 계속 실패 — `timeout: 20000`으로 올려서 해결, 다음에도 이 샌드박스에서
+  스크린샷 찍을 때 참고). 커밋 `955e054`.
+- **Kaggle**: 사용자가 신규 가입 → `us-lottery-tax-data` 데이터셋 업로드 완료(Public,
+  CC0, Title/Subtitle/Description/Tags/564×284 전용 썸네일까지 전부 채움). URL:
+  `kaggle.com/datasets/chamtax/us-lottery-jackpot-tax-by-country`.
+- **디스콰이엇**: 프로덕트 등록 완료, "승인 대기중" 상태로 제출됨.
+- **긱뉴스**: 시도했으나 **"가입 후 일주일이 지나야 작성할 수 있습니다"**(스팸 방지 정책)에
+  막힘 — 사용자가 방금 가입한 신규 계정이라 지금 당장은 게시 불가. **다음 세션(1주일 후)에
+  다시 시도할 것**, 초안은 이 파일 상단 세션 기록 또는 채팅 로그에 이미 있음(제목: "미국
+  복권(파워볼/메가밀리언즈) 당첨금 실수령액 계산기 – 21개국 세금 비교, 오픈 데이터셋 포함",
+  링크: chamtax.com).
+- 그 외 검토 후 보류: AlternativeTo(할 만하지만 아직 안 함), Product Hunt/BetaList/
+  Softpedia 등(우선순위 낮음), ZUM(서비스 자체 폐지)·바이두(가입 불가, 이미 위 세션에 기록).
