@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>참택스 미니 계산기</title>
+<meta name="robots" content="noindex">
+<!-- noindex인 이유: 이 페이지는 검색 노출용이 아니라 외부 블로그/사이트에 <iframe>으로
+     심는 임베드 전용 위젯. 실제 콘텐츠 페이지(lottery-prize-tiers.html 등)와 검색
+     결과에서 경쟁하게 둘 이유가 없어서 press-kit.html과 같은 이유로 의도적으로 뺌. -->
+<link rel="canonical" href="https://chamtax.com/widget-embed.html">
+<link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
+<noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
+<style>
+  :root{
+    --teal:#155445; --teal-rgb:21,84,69; --bg:#FFFFFF; --card:#F4F5F7; --text-dark:#262420; --text-muted:#544E42; --border:#E3E6EA;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--bg); color:var(--text-dark); line-height:1.5; font-size:15px;
+  }
+  .box{ padding:16px 18px 14px; max-width:480px; }
+  .head{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .head svg{ flex:0 0 auto; }
+  .head b{ font-size:16px; font-weight:800; }
+  .head b span{ color:var(--teal); }
+  .head .tagline{ font-size:12px; color:var(--text-muted); margin-left:auto; }
+
+  label{ display:block; font-size:12px; font-weight:700; color:var(--text-muted); margin:10px 0 4px; }
+  select, input[type=number]{
+    width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:8px;
+    font-size:15px; font-family:inherit; background:var(--card); color:var(--text-dark);
+  }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+  .result{
+    margin-top:14px; background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:14px 16px;
+  }
+  .result .label{ font-size:12px; color:var(--text-muted); margin-bottom:4px; }
+  .result .amt{ font-size:26px; font-weight:800; color:var(--teal); line-height:1.2; }
+  .result .sub{ font-size:12px; color:var(--text-muted); margin-top:6px; }
+
+  .cta{
+    display:block; text-align:center; margin-top:12px; background:var(--teal); color:#fff;
+    text-decoration:none; font-weight:700; font-size:14px; padding:11px; border-radius:8px;
+  }
+  .powered{ margin-top:10px; text-align:center; font-size:11px; color:var(--text-muted); }
+  .powered a{ color:var(--teal); font-weight:700; text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="head">
+    <svg width="26" height="26" viewBox="0 0 28 28" aria-hidden="true">
+      <ellipse cx="6.1" cy="10.4" rx="2.7" ry="4" fill="#FFFFFF" stroke="#155445" stroke-width="1.7" transform="rotate(-24 6.1 10.4)"/>
+      <ellipse cx="21.9" cy="10.4" rx="2.7" ry="4" fill="#FFFFFF" stroke="#155445" stroke-width="1.7" transform="rotate(24 21.9 10.4)"/>
+      <circle cx="14" cy="15.6" r="9.7" fill="#FFFFFF" stroke="#155445" stroke-width="1.8"/>
+      <ellipse cx="8.5" cy="17.5" rx="1.6" ry="1.05" fill="#F0A98C" opacity="0.55"/>
+      <ellipse cx="19.5" cy="17.5" rx="1.6" ry="1.05" fill="#F0A98C" opacity="0.55"/>
+      <circle cx="10.5" cy="14.4" r="1.7" fill="#262420"/><circle cx="11.05" cy="13.85" r="0.5" fill="#fff"/>
+      <circle cx="17.5" cy="14.4" r="1.7" fill="#262420"/><circle cx="18.05" cy="13.85" r="0.5" fill="#fff"/>
+      <ellipse cx="14" cy="17.75" rx="1.85" ry="1.3" fill="#155445"/>
+      <path d="M14 19.1v0.55M8.9 19.9c1.7 3.3 8.6 3.3 10.2 0" fill="none" stroke="#155445" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <b>참<span>택스</span> 미니 계산기</b>
+    <span class="tagline">미국 복권 세후 실수령액</span>
+  </div>
+
+  <div class="row2">
+    <div>
+      <label for="w-country">거주 국가</label>
+      <select id="w-country">
+        <option value="kr" data-pct="53.5">대한민국</option>
+        <option value="us" data-pct="58.3">미국</option>
+        <option value="vn" data-pct="70">베트남</option>
+        <option value="cn" data-pct="70">중국</option>
+        <option value="in" data-pct="61">인도</option>
+        <option value="ph" data-pct="65">필리핀</option>
+        <option value="jp" data-pct="70">일본</option>
+      </select>
+    </div>
+    <div>
+      <label for="w-amount">잭팟 금액 (백만 달러)</label>
+      <input type="number" id="w-amount" value="100" min="1" step="1">
+    </div>
+  </div>
+
+  <div class="result">
+    <div class="label">세후 예상 실수령액 (참고용)</div>
+    <div class="amt" id="w-result">$58.3M</div>
+    <div class="sub" id="w-sub">발표 금액 $100M 기준, 대한민국 거주자 약 53.5% 실수령 — 대형 일시불(약 $100M) 시나리오 기준 참고치예요. 금액이 다르면 누진세율 등으로 비율이 달라질 수 있어요.</div>
+  </div>
+
+  <a class="cta" id="w-cta" href="https://chamtax.com/?utm_source=widget&amp;utm_medium=embed" target="_top" rel="noopener">내 상황에 맞는 정확한 계산 →</a>
+  <div class="powered">Powered by <a href="https://chamtax.com/?utm_source=widget&amp;utm_medium=embed" target="_top" rel="noopener">ChamTax (참택스)</a> — 무료 미국 복권 세금 계산기</div>
+</div>
+
+<script>
+// 여기 쓰는 국가별 %는 press-kit.html의 "Reference scenario: ~$100M lump-sum" 표와
+// 동일한 수치(참택스 계산 엔진에서 뽑은 값) — 이 위젯은 정밀 계산이 아니라 임베드용
+// 티저이므로, 실제 계산 로직(script.js의 calcTakeHome, 21개국 전체)을 통째로 복제하지
+// 않고 대표 국가 몇 개의 고정 참고치만 보여줌. 세율이 바뀌면 press-kit.html 표와 함께
+// 이 <option data-pct>도 같이 갱신할 것.
+const COUNTRY_NAMES = { kr:'대한민국', us:'미국', vn:'베트남', cn:'중국', in:'인도', ph:'필리핀', jp:'일본' };
+
+function render(){
+  const sel = document.getElementById('w-country');
+  const pct = parseFloat(sel.selectedOptions[0].dataset.pct);
+  const amount = Math.max(1, parseFloat(document.getElementById('w-amount').value) || 100);
+  const name = COUNTRY_NAMES[sel.value];
+  const takeHome = amount * pct / 100;
+
+  document.getElementById('w-result').textContent = '$' + takeHome.toLocaleString('en-US', {maximumFractionDigits: 1}) + 'M';
+  document.getElementById('w-sub').textContent =
+    '발표 금액 $' + amount.toLocaleString('en-US') + 'M 기준, ' + name + ' 거주자 약 ' + pct + '% 실수령 — 대형 일시불(약 $100M) 시나리오 기준 참고치예요. 금액이 다르면 누진세율 등으로 비율이 달라질 수 있어요.';
+  document.getElementById('w-cta').href = 'https://chamtax.com/?amount=' + Math.round(amount) + '&utm_source=widget&utm_medium=embed';
+}
+document.getElementById('w-country').addEventListener('change', render);
+document.getElementById('w-amount').addEventListener('input', render);
+render();
+</script>
+</body>
+</html>
