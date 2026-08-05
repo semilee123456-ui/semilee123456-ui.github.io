@@ -437,7 +437,7 @@
   .cta-btn:hover{ background:var(--btn-hover-teal); }
   .share-btn:hover{ background:rgba(var(--ink-rgb),0.08); }
   .refund-link-btn:hover{ background:rgba(var(--ink-rgb),0.08); }
-  .footer-links button:hover{ text-decoration:underline; }
+  .footer-links button:hover, .footer-links a:hover{ text-decoration:underline; }
 }
   .feature-title{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 2px; }
   .feature-sub{ display:flex; flex-wrap:wrap; align-items:center; gap:4px; font-size:var(--fs-small); color:var(--text-muted); margin:0 0 10px; }
@@ -2609,7 +2609,7 @@
 
   .site-footer{ border-top:1px solid var(--border); margin-top:24px; padding-top:18px; }
   .footer-links{ display:flex; justify-content:center; gap:8px 10px; margin-bottom:10px; flex-wrap:wrap; }
-  .footer-links button{ background:none; border:none; font-family:inherit; font-size:var(--fs-small); color:var(--teal); cursor:pointer; padding:0; }
+  .footer-links button, .footer-links a{ background:none; border:none; font-family:inherit; font-size:var(--fs-small); color:var(--teal); cursor:pointer; padding:0; text-decoration:none; }
   
   .footer-copy{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; margin:0; }
 
@@ -2724,7 +2724,7 @@
     .prize-card.jackpot .prize-amt{ font-size:17px; }
     .menu{ gap:8px; flex-wrap:wrap; }
     .footer-links{ gap:6px 10px; }
-    .footer-links button{ font-size:16px; }
+    .footer-links button, .footer-links a{ font-size:16px; }
     .panel{ padding:10px; }
     .refund-link-buttons{ grid-template-columns:1fr; }
     .result-seal{ width:36px; height:36px; font-size:11px; }
