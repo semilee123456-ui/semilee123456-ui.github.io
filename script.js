@@ -12222,6 +12222,49 @@ function updateHomeCalc(usdOverride){
   document.getElementById('home-tax2-val').textContent = val2;
 
   const taxImpactPct = 억 > 0 ? Math.round(100 - (final / 억 * 100)) : 0;
+  // 2026-08-05: "3줄 AI 요약" 백로그 항목 — 이름은 "AI"지만 실제로는 이미 계산된 값(label1/val1/
+  // label2/val2/final)을 문장 템플릿에 끼워 넣는 것뿐이라 LLM 호출 불필요. "결과 더 자세히 보기"
+  // 안(이미 접혀있는 영역)에만 넣어서 메인 화면이 복잡해지는 걸 피함(사용자가 명시적으로 요청한
+  // 배치). label1/val1/label2/val2/basisSuffix는 calcTakeHome()이 이미 26개 언어로 번역해서
+  // 반환하므로 그대로 재사용하고, result.label(기존 i18n 키, "일시불 예상 실수령액")도 재사용 —
+  // 새로 번역이 필요한 건 이 3문장을 잇는 짧은 틀뿐이라 번역 리스크를 최소화함.
+  const homeSummaryEl = document.getElementById('home-summary-text');
+  if (homeSummaryEl) {
+    const summaryAmt = formatEokKrwInDisplayCurrency(억, homeKrwRefCurrency);
+    const summaryFinal = formatEokKrwInDisplayCurrency(final, homeKrwRefCurrency);
+    const resultLabel = resolveI18n('result.label') || '일시불 예상 실수령액';
+    homeSummaryEl.textContent = pickLang(
+      `${summaryAmt} 당첨 시, ${basisSuffix} 기준으로 계산했어요.\n${label1} ${val1}, ${label2} ${val2}가 적용돼요.\n${resultLabel}은 약 ${summaryFinal}이에요.`,
+      `If you win ${summaryAmt}, this is calculated based on ${basisSuffix}.\n${label1} ${val1} and ${label2} ${val2} apply.\nYour ${resultLabel} is about ${summaryFinal}.`,
+      `如果您赢得${summaryAmt}，这是根据${basisSuffix}计算的。\n适用${label1} ${val1}和${label2} ${val2}。\n您的${resultLabel}约为${summaryFinal}。`,
+      `Nếu bạn trúng ${summaryAmt}, đây là tính toán dựa trên ${basisSuffix}.\nÁp dụng ${label1} ${val1} và ${label2} ${val2}.\n${resultLabel} của bạn khoảng ${summaryFinal}.`,
+      `หากคุณถูกรางวัล ${summaryAmt} นี่คือการคำนวณตาม ${basisSuffix}\nใช้ ${label1} ${val1} และ ${label2} ${val2}\n${resultLabel}ของคุณอยู่ที่ประมาณ ${summaryFinal}`,
+      `Если вы выиграете ${summaryAmt}, расчёт основан на ${basisSuffix}.\nПрименяются ${label1} ${val1} и ${label2} ${val2}.\nВаш «${resultLabel}» составит около ${summaryFinal}.`,
+      {
+        km: `ប្រសិនបើអ្នកឈ្នះ${summaryAmt} នេះជាការគណនាផ្អែកលើ${basisSuffix}។\n${label1} ${val1} និង${label2} ${val2} ត្រូវបានអនុវត្ត។\n${resultLabel}របស់អ្នកប្រហែល${summaryFinal}។`,
+        ne: `${summaryAmt} जित्नुभयो भने, यो ${basisSuffix} अनुसार गणना गरिएको हो।\n${label1} ${val1} र ${label2} ${val2} लागू हुन्छ।\nतपाईंको ${resultLabel} लगभग ${summaryFinal} हुन्छ।`,
+        id: `Jika Anda menang ${summaryAmt}, ini dihitung berdasarkan ${basisSuffix}.\n${label1} ${val1} dan ${label2} ${val2} berlaku.\n${resultLabel} Anda sekitar ${summaryFinal}.`,
+        my: `${summaryAmt} အနိုင်ရရှိပါက ${basisSuffix} အခြေခံ၍ တွက်ချက်ထားသည်။\n${label1} ${val1} နှင့် ${label2} ${val2} သက်ဆိုင်သည်။\nသင့် ${resultLabel} မှာ ${summaryFinal} ခန့်ဖြစ်သည်။`,
+        si: `ඔබ ${summaryAmt} දිනුවහොත්, මෙය ${basisSuffix} මත පදනම්ව ගණනය කර ඇත.\n${label1} ${val1} සහ ${label2} ${val2} අදාළ වේ.\nඔබේ ${resultLabel} ආසන්නව ${summaryFinal} වේ.`,
+        uz: `Agar ${summaryAmt} yutsangiz, bu ${basisSuffix} asosida hisoblangan.\n${label1} ${val1} va ${label2} ${val2} qo'llaniladi.\nSizning ${resultLabel} taxminan ${summaryFinal} bo'ladi.`,
+        mn: `${summaryAmt}-ийг хожсон тохиолдолд ${basisSuffix} дээр үндэслэн тооцсон.\n${label1} ${val1}, ${label2} ${val2} хэрэглэгдэнэ.\nТаны ${resultLabel} ойролцоогоор ${summaryFinal} байна.`,
+        kk: `Егер сіз ${summaryAmt} ұтып алсаңыз, бұл ${basisSuffix} негізінде есептелген.\n${label1} ${val1} және ${label2} ${val2} қолданылады.\nСіздің ${resultLabel} шамамен ${summaryFinal} болады.`,
+        ky: `Эгер сиз ${summaryAmt} утуп алсаңыз, бул ${basisSuffix} негизинде эсептелген.\n${label1} ${val1} жана ${label2} ${val2} колдонулат.\nСиздин ${resultLabel} болжол менен ${summaryFinal} болот.`,
+        ur: `اگر آپ ${summaryAmt} جیتتے ہیں تو یہ ${basisSuffix} کی بنیاد پر شمار کیا گیا ہے۔\n${label1} ${val1} اور ${label2} ${val2} لاگو ہوتے ہیں۔\nآپ کا ${resultLabel} تقریباً ${summaryFinal} ہوگا۔`,
+        bn: `আপনি ${summaryAmt} জিতলে, এটি ${basisSuffix} এর ভিত্তিতে হিসাব করা হয়েছে।\n${label1} ${val1} এবং ${label2} ${val2} প্রযোজ্য।\nআপনার ${resultLabel} প্রায় ${summaryFinal}।`,
+        lo: `ຖ້າທ່ານຖືກລາງວັນ ${summaryAmt} ນີ້ແມ່ນການຄິດໄລ່ໂດຍອີງໃສ່ ${basisSuffix}។\n${label1} ${val1} ແລະ ${label2} ${val2} ຖືກນຳໃຊ້.\n${resultLabel}ຂອງທ່ານແມ່ນປະມານ ${summaryFinal}.`,
+        ja: `${summaryAmt}に当選した場合、${basisSuffix}を基準に計算しています。\n${label1} ${val1}、${label2} ${val2}が適用されます。\nあなたの${resultLabel}は約${summaryFinal}です。`,
+        ar: `إذا فزت بـ ${summaryAmt}، فهذا محسوب استنادًا إلى ${basisSuffix}.\nيتم تطبيق ${label1} ${val1} و${label2} ${val2}.\nسيكون ${resultLabel} الخاص بك حوالي ${summaryFinal}.`,
+        hi: `यदि आप ${summaryAmt} जीतते हैं, तो यह ${basisSuffix} के आधार पर गणना की गई है।\n${label1} ${val1} और ${label2} ${val2} लागू होते हैं।\nआपका ${resultLabel} लगभग ${summaryFinal} होगा।`,
+        fr: `Si vous gagnez ${summaryAmt}, ce calcul est basé sur ${basisSuffix}.\n${label1} ${val1} et ${label2} ${val2} s'appliquent.\nVotre ${resultLabel} sera d'environ ${summaryFinal}.`,
+        tl: `Kung mananalo ka ng ${summaryAmt}, ito ay kinakalkula batay sa ${basisSuffix}.\nInilalapat ang ${label1} ${val1} at ${label2} ${val2}.\nAng iyong ${resultLabel} ay humigit-kumulang ${summaryFinal}.`,
+       pt: `Se você ganhar ${summaryAmt}, isso é calculado com base em ${basisSuffix}.\n${label1} ${val1} e ${label2} ${val2} se aplicam.\nSeu ${resultLabel} será de aproximadamente ${summaryFinal}.`,
+       es: `Si ganas ${summaryAmt}, esto se calcula según ${basisSuffix}.\nSe aplican ${label1} ${val1} y ${label2} ${val2}.\nTu ${resultLabel} será de aproximadamente ${summaryFinal}.`,
+       uk: `Якщо ви виграєте ${summaryAmt}, це розраховано на основі ${basisSuffix}.\nЗастосовуються ${label1} ${val1} та ${label2} ${val2}.\nВаш «${resultLabel}» становитиме приблизно ${summaryFinal}.`,
+       tet: `Se ó hetan ${summaryAmt}, ida ne'e kalkula bazeia ba ${basisSuffix}.\n${label1} ${val1} no ${label2} ${val2} aplika.\nÓ-nia ${resultLabel} sei aproximadamente ${summaryFinal}.`,
+      }
+    );
+  }
   // 2026-08-01: 바로 위 히어로(home-final-amt)를 표시 통화 기준으로 바꿨는데 이 세전/세후
   // 비교 줄만 원화로 남아있으면 같은 카드 안에서 통화가 서로 안 맞아 보임 — 같이 맞춤
   document.getElementById('tax-impact-before').textContent = formatEokKrwInDisplayCurrency(억, sharedInputCurrency);
