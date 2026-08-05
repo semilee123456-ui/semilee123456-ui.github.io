@@ -2415,3 +2415,37 @@ Cloudflare Worker 호출)와 `OG_SHARE_WORKER_BASE` 상수가 호출부 0개인 
 
 변경 파일: `script.js`/`script.min.js`(`OG_SHARE_WORKER_BASE`/`wrapWithOgShareCard()`
 삭제, 5개 공유 함수에서 링크 제거), `index.html`(캐시버스팅 `20260804-4`→`20260805-1`).
+
+### 2026-08-05 이어서 — "이미지로 저장" 다운로드는 되는데 사진첩(Photos)에 안 들어간다는
+### 후속 신고 → navigator.share(files) 우선 시도로 교체
+
+**배경**: 바로 위 항목에서 data: URI를 blob: URL로 바꾼 뒤, 사용자가 스크린샷으로 실제
+다운로드가 진행되는 걸 확인해줌(사파리 상단 "'chamtax-result.png' 다운로드 중..." 배너 +
+체크마크) — 1차 수정 자체는 효과가 있었던 것으로 확인됨. 다만 "다운로드된 파일이 어디
+갔는지 모르겠다, 사진첩에 넣을 수 없냐"는 후속 요청이 들어옴.
+
+**원인**: `<a download>`는 아이폰 사파리에서 항상 **파일 앱**(다운로드 폴더)으로만 가고,
+사진첩(Photos)엔 API 차원에서 직접 저장할 방법이 없음 — 사진첩에 넣는 유일한 경로는 OS
+공유 시트를 띄워서 사용자가 그 안의 "이미지 저장"을 직접 누르는 것뿐임. 이 사이트엔 이미
+그 방식(`navigator.share({files})`)을 쓰는 "공유하기" 버튼이 있었지만, "이미지로 저장"
+버튼(`openAnnotateOverlay`의 `mode==='save'` 경로)에는 안 붙어있어서 사용자가 접근할 방법이
+없었음.
+
+**수정**: `finishAnnotateAndDownload()`를 `finishAnnotateAndShare()`와 같은 패턴으로
+바꿈 — `navigator.canShare({files})`를 지원하면(대부분의 모바일) `navigator.share({files})`
+를 먼저 시도(공유 시트가 뜨고 "이미지 저장"을 누르면 사진첩으로 감), 취소(`AbortError`)는
+모달을 열어둔 채 무시, 그 외 실패나 애초에 미지원(대부분의 데스크톱)이면 기존 blob 다운로드로
+폴백. **공유하기 버튼과 달리 `title`/`text` 없이 파일만 넘김** — 이건 "누군가에게 보내기"가
+아니라 "저장" 의도라서, 메시지 앱 등으로 갔을 때 불필요한 문구가 안 딸려가게 함.
+
+**검증**: `node --check script.js` 통과. Playwright로 `navigator.share`/`canShare`를
+스텁으로 갈아끼워 두 경로 모두 직접 확인 — (1) 공유 지원 환경: `navigator.share`가
+`{files:[...]}`만 받고 호출됨(제목/텍스트 없음), 실제 다운로드 이벤트는 안 뜸, 성공 후
+모달 정상 닫힘. (2) 공유 미지원 환경: 기존처럼 blob 다운로드 정상 발생. `home_audit`/
+`console_error_audit` 재실행 `ISSUES: 0`. **이 샌드박스는 실제 iOS 공유 시트 UI 자체는
+재현 못 하므로(스텁으로 API 호출 여부만 확인), "이미지 저장" 탭 후 실제로 사진첩에 들어가는지는
+사용자가 실기기에서 최종 확인 필요.**
+
+변경 파일: `script.js`(`finishAnnotateAndDownload()` 공유 우선 방식으로 교체),
+`script.min.js`(재생성), `index.html`(캐시버스팅 `20260805-2`→`20260805-3`), `sw.js`
+(`CACHE_NAME` v3→v4).

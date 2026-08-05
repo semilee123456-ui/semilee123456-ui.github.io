@@ -7476,22 +7476,42 @@ function mergeAnnotateCanvases(){
 // URI 다운로드를 처리할 때 확인창까지는 뜨는데 실제로는 저장도 안 되고 보기도 안 되는 사례가
 // 알려져 있음(용량이 클수록 잘 재현되는 WebKit 쪽 신뢰성 문제, 이 카드 PNG는 ~600KB대). 같은
 // 파일 안 finishAnnotateAndShare()의 폴백 경로가 이미 blob: URL(out.toBlob + URL.
-// createObjectURL)을 써서 신고된 적 없었으므로, 여기도 같은 방식으로 통일함. revokeObjectURL은
-// 클릭 직후 바로 하지 않고 살짝 늦춰서(사파리가 다운로드를 실제로 읽어가는 타이밍과 안 겹치게)
-// 안전 마진을 둠.
+// createObjectURL)을 써서 신고된 적 없었으므로, 여기도 같은 방식으로 통일함(1차 수정).
+// 2026-08-05: 그 다음엔 "다운로드는 되는데 사진첩(Photos)이 아니라 파일 앱에 들어가서
+// 못 찾겠다"는 신고 — <a download>는 아이폰 사파리에서 절대 사진첩에 직접 못 넣음(파일 앱
+// 전용). 사진첩에 넣는 유일한 방법은 OS 공유 시트를 띄워서 사용자가 그 안의 "이미지 저장"을
+// 직접 누르는 것뿐이라, finishAnnotateAndShare()와 같은 navigator.share(files) 우선 시도를
+// 이 함수에도 추가함 — 파일 공유를 지원하면(대부분의 모바일) 공유 시트가 뜨고, 거기서
+// "이미지 저장"을 누르면 사진첩으로 들어감. title/text 없이 파일만 넘겨서(공유하기 버튼과
+// 달리 이건 "누군가에게 보내기"가 아니라 "저장" 의도이므로) 메시지 앱으로 갔을 때 불필요한
+// 문구가 안 딸려가게 함. 지원 안 하는 환경(대부분의 데스크톱)은 기존 blob 다운로드로 폴백.
 function finishAnnotateAndDownload(){
   removeAnnotateTextInput();
   const out = mergeAnnotateCanvases();
   if (!out) return;
-  out.toBlob((blob) => {
+  out.toBlob(async (blob) => {
     if (!blob) return;
+    const file = new File([blob], annotateDownloadFilename, { type: 'image/png' });
+    const canShareFile = navigator.canShare && navigator.canShare({ files: [file] });
+    if (navigator.share && canShareFile) {
+      try {
+        await navigator.share({ files: [file] });
+        closeAnnotateOverlay();
+        return;
+      } catch (e) {
+        // 사용자가 OS 공유 시트에서 취소한 경우 — 모달은 열어둔 채로 그대로 둠(다시 시도하거나
+        // 직접 닫기를 누를 수 있게), finishAnnotateAndShare()의 취소 처리와 동일한 원칙
+        if (e && e.name === 'AbortError') return;
+        // 그 외 공유 실패(권한 없음 등) — 아래 폴백(다운로드)으로 계속 진행
+      }
+    }
     const link = document.createElement('a');
     link.download = annotateDownloadFilename;
     link.href = URL.createObjectURL(blob);
     link.click();
     setTimeout(() => URL.revokeObjectURL(link.href), 2000);
+    closeAnnotateOverlay();
   }, 'image/png');
-  closeAnnotateOverlay();
 }
 
 // 2026-08-03: "공유하기" 계열 버튼들이 이 모달을 거치게 되면서 추가 — 완성된 카드 이미지를
