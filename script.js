@@ -758,53 +758,73 @@ async function fetchLiveExchangeRate(force){
   // force=true: 유저가 배지를 직접 클릭해서 재시도하는 경우 — 수동 편집 상태였어도 우선권을 줌
   if (isRateManuallyEdited && !force) return;
 
+  // 2026-08-05: 예전엔 "첫 소스가 KRW를 구하는 데 성공하면 그 자리에서 return"이라, 1순위
+  // 소스(Frankfurter, 중앙은행 고시라 KRW/CNY/INR/IDR/JPY/PHP/THB 7개만 지원)가 거의 항상
+  // 성공하는 바람에 2순위 소스(open.er-api.com, 19개 전부 지원)를 사실상 영원히 못 열어봄 —
+  // 그 결과 VND/RUB/NPR/LKR/UZS/KZT/KGS/MMK/BDT/PKR/KHR/MNT/LAK 13개 통화가 "실시간 환율
+  // 적용됨" 배지가 뜨는데도 실제로는 항상 코드에 박힌 기본값(수 주 전 스냅샷)에 묶여있던
+  // 버그였음(실제 API 응답을 직접 떠서 확인함). 이제 모든 소스를 순서대로 다 돌면서, 아직
+  // 못 채운 통화만 다음 소스에서 마저 채우는 방식으로 고침 — 1순위가 이미 채운 통화는
+  // 그대로 우선(중앙은행 고시가 더 신뢰도 높은 출처라는 원래 우선순위 유지), 1순위가 안
+  // 주는 통화만 2순위가 보충함.
+  let krwCaptured = false;
+  const filledCodes = new Set();
   for (const source of EXCHANGE_RATE_SOURCES) {
+    if (krwCaptured && filledCodes.size === CURRENCY_RATE_CONFIG.length) break; // 이미 다 채웠으면 나머지 소스는 안 열어봄
     try {
       const res = await fetchWithTimeout(source.url, 6000); // 6초 안에 응답 없으면 다음 소스로 넘어감
       const data = await res.json();
-      const rate = source.getRate(data, 'KRW');
-      if (rate) {
-        // fetch가 진행되는 동안(최대 약 12초, 소스 2개 × 6초 타임아웃) 사용자가 환율을 직접
-        // 수정했을 수 있음 — 맨 위의 isRateManuallyEdited 체크는 fetch 시작 "전"에 한 번만
-        // 확인하므로, 진행 중에 수정된 경우를 못 잡아서 사용자 입력이 뒤늦게 덮어써지는
-        // 레이스 컨디션이 있었음. await 이후 여기서 한 번 더 확인해서 방지함
-        if (isRateManuallyEdited && !force) return false;
-        EXCHANGE_RATE = Math.round(rate * 100) / 100; // 소수점 둘째자리까지 유지 (기준환율은 보통 소수점 단위로 고시됨)
-        // KRW 외 19개 참고 통화는 CURRENCY_RATE_CONFIG를 돌면서 한 번에 반영 — 응답에 없는 통화(소스에 따라
-        // 커버리지가 다름)는 조용히 건너뛰고 기존 기본값을 그대로 유지함
-        for (const cfg of CURRENCY_RATE_CONFIG) {
-          const v = source.getRate(data, cfg.code);
-          if (v) cfg.apply(v);
+      if (!krwCaptured) {
+        const rate = source.getRate(data, 'KRW');
+        if (rate) {
+          // fetch가 진행되는 동안(최대 약 12초, 소스 2개 × 6초 타임아웃) 사용자가 환율을 직접
+          // 수정했을 수 있음 — 맨 위의 isRateManuallyEdited 체크는 fetch 시작 "전"에 한 번만
+          // 확인하므로, 진행 중에 수정된 경우를 못 잡아서 사용자 입력이 뒤늦게 덮어써지는
+          // 레이스 컨디션이 있었음. await 이후 여기서 한 번 더 확인해서 방지함
+          if (isRateManuallyEdited && !force) return false;
+          EXCHANGE_RATE = Math.round(rate * 100) / 100; // 소수점 둘째자리까지 유지 (기준환율은 보통 소수점 단위로 고시됨)
+          exchangeRateSourceName = source;
+          krwCaptured = true;
         }
-        exchangeRateSourceName = source;
-        exchangeRateIsLive = true;
-        exchangeRateFetchFailed = false;
-        isRateManuallyEdited = false; // 실시간 값으로 갱신됐으니 수동 편집 플래그 해제
-
-        // 현재 화면에 켜져있는(active) 뷰의 입력값을 원본(source of truth)으로 삼아 동기화.
-        // 잘못하면 방문한 적 없는 다른 탭의 기본값(100M)이 공유 상태를 덮어써버리는 레이스 컨디션이 생김.
-        const homeIsOn = document.getElementById('view-home').classList.contains('on');
-        const compareIsOn = document.getElementById('view-compare').classList.contains('on');
-        if (homeIsOn) {
-          syncHomeFromShared();
-        } else if (compareIsOn) {
-          syncCompareFromShared();
-        } else {
-          // 홈/비교 화면 둘 다 안 보고 있을 때는 화면 갱신 없이 계산 로직만 공유 데이터 기준으로 조용히 갱신
-          updateHomeCalc(sharedAmountUsd);
-          updateCalc(sharedAmountUsd);
-        }
-        initJackpotCardAmt();
-        renderJackpotHistory(); // onHomeRateChanged()/setSharedInputCurrency()와 같은 이유 — 실시간 환율이 늦게 들어와도 반영돼야 함
-        refreshJackpotDrawerIfOpen();
-        updateExchangeRateBadges();
-        refreshAmountInputDisplaysForCurrency(); // KRW/다른 통화로 보이는 입력칸·눈금도 새 환율을 즉시 반영
-        return true;
+      }
+      // KRW 외 19개 참고 통화는 아직 못 채운 것만 이 소스에서 마저 채움 — 이미 앞선(우선순위 높은)
+      // 소스에서 채운 통화는 건드리지 않음
+      for (const cfg of CURRENCY_RATE_CONFIG) {
+        if (filledCodes.has(cfg.code)) continue;
+        const v = source.getRate(data, cfg.code);
+        if (v) { cfg.apply(v); filledCodes.add(cfg.code); }
       }
     } catch (e) {
       // 이 소스가 타임아웃/네트워크 오류/지역 차단이면 다음 소스로 계속 시도
     }
   }
+
+  if (krwCaptured) {
+    exchangeRateIsLive = true;
+    exchangeRateFetchFailed = false;
+    isRateManuallyEdited = false; // 실시간 값으로 갱신됐으니 수동 편집 플래그 해제
+
+    // 현재 화면에 켜져있는(active) 뷰의 입력값을 원본(source of truth)으로 삼아 동기화.
+    // 잘못하면 방문한 적 없는 다른 탭의 기본값(100M)이 공유 상태를 덮어써버리는 레이스 컨디션이 생김.
+    const homeIsOn = document.getElementById('view-home').classList.contains('on');
+    const compareIsOn = document.getElementById('view-compare').classList.contains('on');
+    if (homeIsOn) {
+      syncHomeFromShared();
+    } else if (compareIsOn) {
+      syncCompareFromShared();
+    } else {
+      // 홈/비교 화면 둘 다 안 보고 있을 때는 화면 갱신 없이 계산 로직만 공유 데이터 기준으로 조용히 갱신
+      updateHomeCalc(sharedAmountUsd);
+      updateCalc(sharedAmountUsd);
+    }
+    initJackpotCardAmt();
+    renderJackpotHistory(); // onHomeRateChanged()/setSharedInputCurrency()와 같은 이유 — 실시간 환율이 늦게 들어와도 반영돼야 함
+    refreshJackpotDrawerIfOpen();
+    updateExchangeRateBadges();
+    refreshAmountInputDisplaysForCurrency(); // KRW/다른 통화로 보이는 입력칸·눈금도 새 환율을 즉시 반영
+    return true;
+  }
+
   // 모든 소스가 실패한 경우 — 기본값(EXCHANGE_RATE 초기값) 그대로 사용, 계산 자체는 문제없이 계속 작동함
   exchangeRateFetchFailed = true;
   updateExchangeRateBadges(true);
