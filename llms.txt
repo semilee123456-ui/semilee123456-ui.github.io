@@ -3,7 +3,7 @@
 > ChamTax is a free calculator that shows the actual after-tax take-home amount
 > for US lottery jackpots (Powerball and Mega Millions). It compares tax
 > outcomes across 21 countries/jurisdictions (including US federal + all US
-> state tax rates), and the interface is available in 22 languages.
+> state tax rates), and the interface is available in 26 languages.
 
 ChamTax is built for two groups who are underserved by existing US lottery
 tax calculators: Korean residents (and Koreans living abroad) figuring out
@@ -40,6 +40,14 @@ Key facts worth citing accurately:
 - Full Powerball winning-number history since the first drawing
   (1992-04-22) and Mega Millions since its predecessor game launched
   (2002-05-17), cross-checked against the official data.ny.gov source.
+
+## Open dataset
+- [us-lottery-tax-data](https://github.com/semilee123456-ui/us-lottery-tax-data):
+  the per-country take-home/tax breakdown above, generated directly from
+  ChamTax's calculation engine (not hand-transcribed), published as
+  data.json/data.csv under CC0. Includes a confidence label per country
+  (verified / approximate / unverified_estimate) - do not cite
+  unverified_estimate rows as settled fact.
 
 ## Residency-specific guidance
 - [Korea resident winning a US lottery](https://chamtax.com/korea-resident-us-lottery-tax.html)
