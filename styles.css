@@ -755,18 +755,31 @@
   /* 나라별 비교 카드가 텍스트/숫자로만 쭉 나열돼서 폰으로 보면 심심하다는 피드백 — 카드를
      탭하면 이 지도 위 해당 국가 위치에 핀이 표시되게 함. 실제 국경선(Natural Earth 기반)을
      등장방형 도법으로 투영한 지도라, 탭 상호작용 보조 외에 지리 참고용으로도 무리 없음 */
-  .country-map-wrap{ position:relative; margin-top:14px; border:1px solid var(--border); border-radius:14px; }
+  /* 지도가 평면적이고 심심해 보인다는 피드백 — 카드 자체에 은은한 입체감(다른 카드와 같은
+     그림자 톤 재사용)을 주고, 핀에 hover/focus 피드백을 추가해 "눌러볼 수 있다"는 게
+     클릭 전에도 느껴지게 함 */
+  .country-map-wrap{ position:relative; margin-top:14px; border:1px solid var(--border); border-radius:14px; box-shadow:0 1px 3px rgba(var(--ink-rgb),0.08), 0 8px 24px rgba(var(--ink-rgb),0.06); }
   .country-map-svg{ display:block; width:100%; height:auto; border-radius:14px; overflow:hidden; }
   .country-map-sea{ fill:var(--card); }
-  .country-map-land{ fill:rgba(var(--ink-rgb),0.1); stroke:rgba(var(--ink-rgb),0.18); stroke-width:1.5; transition:fill 0.3s ease, stroke 0.3s ease; }
+  .country-map-land{ fill:rgba(var(--ink-rgb),0.12); stroke:rgba(var(--ink-rgb),0.22); stroke-width:1.5; transition:fill 0.3s ease, stroke 0.3s ease; }
   /* 국가 카드를 탭하면 핀뿐 아니라 실제 국경선 자체도 브랜드 색으로 옅게 채워져서,
      그 나라가 지도 위 어디에 어떤 모양으로 있는지 바로 확인 가능 */
   .country-map-land.active{ fill:rgba(var(--teal-rgb),0.35); stroke:var(--teal); stroke-width:2; }
   /* 미국 클러스터만 라벨을 남김 — 아시아 쪽은 나라 수가 많아 실제 국경선 모양만으로도
      어디가 어디인지 충분히 구분되지만, 미국은 단독 대륙이라 시각적 맥락이 필요함 */
   .country-map-labels text{ fill:rgba(var(--ink-rgb),0.32); font-size:15px; font-weight:700; letter-spacing:0.5px; }
-  .country-map-pin{ fill:var(--teal); stroke:var(--card); stroke-width:1.2; cursor:pointer; }
-  .country-map-pin.active{ fill:var(--status-red); animation:countryMapPinPulse 1.6s ease-in-out infinite; transform-origin:center; transform-box:fill-box; }
+  .country-map-pin{
+    fill:var(--teal); stroke:var(--card); stroke-width:1.2; cursor:pointer;
+    transition:transform 0.15s ease, filter 0.15s ease; transform-origin:center; transform-box:fill-box;
+  }
+  /* 핀이 클릭 가능한 걸 누르기 전에도 알 수 있게, 마우스를 올리거나 키보드로 포커스하면
+     살짝 커지고 밝아지는 피드백을 줌(선택된 상태의 펄스 애니메이션과는 별개) */
+  .country-map-pin:hover, .country-map-pin:focus-visible{ transform:scale(1.5); filter:brightness(1.15); outline:none; }
+  .country-map-pin.active{ fill:var(--status-red); animation:countryMapPinPulse 1.6s ease-in-out infinite; }
+  .country-map-pin.active:hover, .country-map-pin.active:focus-visible{ filter:brightness(1.1); }
+  @media (prefers-reduced-motion: reduce){
+    .country-map-pin{ transition:none; }
+  }
   /* 지도가 심심해 보인다는 피드백 — 선택된 핀이 은은하게 맥박치듯 커졌다 작아지게 해서
      "여기 선택됐어요"가 색만으로 바뀔 때보다 눈에 잘 띄고 재미있게 보이도록 함 */
   @keyframes countryMapPinPulse{
