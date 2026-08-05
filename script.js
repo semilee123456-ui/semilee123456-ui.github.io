@@ -27,6 +27,15 @@
 // 않음), 다만 지금은 사이트 어디서도 이 Worker를 호출하지 않는 상태. 나중에 링크 공유를
 // 다시 붙이게 되면 og-share-worker/README.md 참고해서 이 상수를 되살릴 것.
 
+// 2026-08-05: GA4 커스텀 이벤트 — "유입→계산→공유" 퍼널을 실제로 측정하기 위해 추가함(그동안
+// gtag('config', ...)만 있어서 페이지뷰만 잡히고, 몇 명이 실제로 계산/공유까지 했는지는 전혀
+// 알 수 없었음). gtag 자체는 index.html <head>에서 이미 로드하고, 개인정보처리방침에도 이미
+// "방문 통계 분석(Google Analytics)"로 고지돼있어서 새 동의/고지 없이 이벤트 이름만 추가하는
+// 것 — 광고 차단기 등으로 gtag가 없을 수 있어 항상 존재 여부를 확인하고 없으면 조용히 무시함.
+function trackEvent(name, params){
+  if (typeof gtag === 'function') gtag('event', name, params || {});
+}
+
 let currentLang = 'ko';
 let resultBarAnimatedIn = false; // 홈 실수령/세금 비율 막대가 최초 1회만 0%→목표값 애니메이션되도록 하는 플래그
 // 언어 코드 -> Intl 로케일 문자열(숫자 포맷 toLocaleString 등에 공용으로 씀)
@@ -6939,6 +6948,7 @@ function buildHomeResultCheckCanvas(){
 }
 
 function saveHomeResultAsImage(){
+  trackEvent('save_result_image');
   const { canvas, hotspots } = buildHomeResultCheckCanvas();
   openAnnotateOverlay(canvas, 'chamtax-result.png', { dateEditable: true, textHotspots: hotspots });
 }
@@ -9768,6 +9778,7 @@ function hideAnnouncedConvertNote(){
   if (note) note.style.display = 'none';
 }
 
+let _calcTrackDebounceTimer = null;
 function onHomeAmountTyped(){
   hideAnnouncedConvertNote(); // 일시불 칸을 직접 고치면 더는 연금 환산값과 일치한다고 보장 못하므로 안내 숨김
   sanitizeAmountInputLive(document.getElementById('homeAmountInput'));
@@ -9780,6 +9791,13 @@ function onHomeAmountTyped(){
   // "0"을 직접 입력한 경우는 millions===0이어도 유효한 입력으로 인정해서 그대로 반영함
   // (예전엔 millions>0으로만 판단해서 "0"을 입력해도 무시되고 이전 값에 멈춰있던 문제가 있었음)
   updateHomeCalc(rawValue.trim() === '' ? undefined : millions * 1000000);
+  // 2026-08-05: 타이핑할 때마다 매번 GA4 이벤트를 보내면 키 입력 수만큼 이벤트가 쌓여 노이즈만
+  // 커지므로, 리사이즈 디바운스(_resizeDebounceTimer)와 같은 패턴으로 "타이핑이 멈춘 뒤" 한 번만
+  // "실제로 계산까지 갔다"고 집계함
+  if (rawValue.trim() !== '') {
+    clearTimeout(_calcTrackDebounceTimer);
+    _calcTrackDebounceTimer = setTimeout(() => trackEvent('calculate_amount'), 1200);
+  }
 }
 
 // "일시불이 발표액의 몇 %인지" 감으로 어림잡아야 하는 진입장벽을 없애기 위한 보조 입력칸 —
@@ -10906,6 +10924,7 @@ function formatUsdMillionsNatural(amountMillions, lang){
 }
 
 async function shareResult(){
+  trackEvent('share_result');
   // 2026-08-03: 예전엔 !isAmountManuallyEdited(사용자가 금액을 직접 건드린 적 없음)면
   // shareGenericPromo()(금액 없는 사이트 소개 카드)로 빠졌는데, 사용자가 "금액 카드가 항상
   // 뜨게 해달라"고 요청함(기본값이라도 카드에 금액이 있는 게 아무 정보 없는 소개 카드보다

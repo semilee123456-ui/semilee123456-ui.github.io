@@ -121,12 +121,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260805-7">
+<link rel="stylesheet" href="styles.min.css?v=20260805-8">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260805-7" defer></script>
+<script src="script.min.js?v=20260805-8" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1078,6 +1078,13 @@
               <p style="margin:10px 0 0;"><b data-i18n-html="home.taxTermFtcTitle"><span style="white-space:nowrap">외국납부세액공제(FTC)란</span>?</b> <span data-i18n="home.taxTermFtcDesc">미국에서 이미 낸 세금을, 거주국에서 세금을 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요.</span></p>
             </div>
             <p class="sim-note" style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);" data-i18n-html="compare.simNote">💡 종합소득세 누진세율과 <span style="white-space:nowrap">외국납부세액공제(FTC)를</span> 반영한 참고용 계산이에요 — 실제 세액은 개인 상황에 따라 달라질 수 있어 세무 전문가 상담을 권해요</p>
+            <!-- 2026-08-05: 기자·블로거가 이 결과를 기사/글에 인용할 때 출처를 명확히 남기도록
+                 유도하는 문구. "이미지로 저장"이 만드는 수표 카드는 이미 상단 밴드에 브랜드
+                 로고+chamtax.com이 박혀있어서 그 경로는 이미 출처가 자연히 따라가지만, 사이트를
+                 직접 보고 텍스트로 인용하는 사람(기사 표 등)에게는 출처 표기 요청이 따로 없었음
+                 — 홍보 전략 논의 중 나온 제안을 반영. sim-note와 같은 톤의 부차 정보라 바로
+                 아래에 이어붙임(새 박스 안 만듦, 밀도 문제 없음). -->
+            <p class="sim-note" data-i18n="home.citationNote">📎 인용·보도 시 출처를 'ChamTax(chamtax.com)'으로 표기해 주세요.</p>
           </details>
         </div>
 

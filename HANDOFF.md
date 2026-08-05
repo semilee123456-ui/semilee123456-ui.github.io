@@ -2603,3 +2603,44 @@ Playwright로 이 섹션만 스크린샷 확보(3줄 요약 → 연금 아코디
 캐시버스팅 `20260805-6`→`20260805-7`), `script.js`/`script.min.js`(`updateHomeCalc()`에서
 해당 4곳 대입 로직 삭제), `styles.css`/`styles.min.css`(`.flow-explain*` 미사용 규칙 5개
 삭제), `sw.js`(`CACHE_NAME` v6→v7).
+
+### 2026-08-05 이어서 — 홍보 전략 논의(제미나이/GPT 교차검수) 중 나온 제안 2개 실행:
+### GA4 유입→계산→공유 퍼널 이벤트 + 결과 인용 출처 표기
+
+**배경**: 사용자가 GSC 지표(28일 노출 32·클릭 1)를 보고 홍보 전략을 세우다가, 제미나이·GPT
+양쪽에 검수를 요청함(검수 파일+실사이트 스크린샷 4장 전달, `SendUserFile`로 별도 제공,
+저장소에는 안 남김 — 공개 저장소 부적절 내용은 아니지만 홍보 전략 문서 자체가 이 프로젝트
+코드/사이트와 무관해서 스크래치패드에만 둠). 양쪽 다 "지금 병목은 기능이 아니라 노출/유통"
+이라는 결론에 수렴했고, 그중 **코드로 바로 실행 가능한 제안 2개**만 골라 반영함(만료 도메인
+매입[구글 스팸정책 위반 확인, WebSearch], 이메일 뉴스레터 수집[개인정보 부담으로 이미 배제
+결정] 등 리스크 있는 제안은 명시적으로 제외).
+
+1. **GA4 커스텀 이벤트 3개 추가** (`trackEvent(name, params)` 헬퍼 신설, script.js 최상단):
+   - `calculate_amount` — `onHomeAmountTyped()`에서 타이핑 멈춘 뒤 1.2초 디바운스(리사이즈
+     디바운스와 같은 패턴, `_calcTrackDebounceTimer`) 후 1회만 발생. 매 키 입력마다 쏘면
+     노이즈만 커져서 디바운스 필수.
+   - `share_result` — `shareResult()` 진입 시.
+   - `save_result_image` — `saveHomeResultAsImage()` 진입 시.
+   - 그동안 `gtag('config', ...)`만 있어서 페이지뷰만 잡히고 "몇 명이 실제로 계산/공유까지
+     했는지"는 전혀 측정 불가능했음(사용자가 "유입→계산→공유 퍼널을 측정해야 한다"고 지적한
+     그 결핍). 개인정보처리방침에 Google Analytics 사용이 이미 고지돼있어(`privacy.b4`/`b5`)
+     새 동의·고지 불필요 — 이벤트 이름만 추가하는 것이라 광고 정책상 문제 없음. `gtag`가 없는
+     환경(광고 차단기 등)에서도 조용히 무시하도록 `typeof gtag === 'function'` 가드 처리.
+2. **결과 카드 인용 출처 표기 문구 신설** (`home.citationNote`, 26개 언어): "결과 더 자세히
+   보기" 맨 아래 기존 `sim-note`(세무 전문가 상담 권유) 바로 밑에 "📎 인용·보도 시 출처를
+   'ChamTax(chamtax.com)'으로 표기해 주세요" 한 줄 추가. **"이미지로 저장" 카드는 이미
+   `buildHomeResultCheckCanvas()`가 상단 밴드에 로고+`chamtax.com`을 그려 넣고 있어서
+   따로 손 안 댐**(코드 확인 후 판단 — 이미지 공유 경로는 이미 출처가 박혀있음, 이 문구는
+   사이트를 직접 보고 텍스트로 인용하는 기자/블로거 대상). 새 i18n 키라 `i18n_coverage_audit.js`
+   로 763개 키 전부(신규 1개 포함) 26개 언어 커버리지 확인함.
+
+**검증**: `node --check script.js`, `i18n_coverage_audit.js`(763 keys, ISSUES: 0),
+회귀 테스트 7개(`home_audit`(18)·`console_error_audit`(161)·`wrap_audit`(168)·
+`nav_slider_audit`·`map_scroll_audit`(10)·`faq_audit`(18)·`full_overflow_sweep`(945조합))
+전부 `ISSUES: 0`. Playwright로 새 인용 문구 한/영 렌더링 직접 확인 + 이미지저장 버튼 클릭
+시 콘솔 에러 0건 확인(GA 이벤트가 예외를 던지지 않는지 스모크 테스트).
+
+변경 파일: `index.html`(인용 문구 `<p>` 추가, 캐시버스팅 `20260805-7`→`20260805-8`),
+`script.js`/`script.min.js`(`trackEvent()` 헬퍼 신설 + 3개 호출부 추가),
+`i18n-source/translations.json`/`i18n/*.json`(`home.citationNote` 26개 언어 신규),
+`sw.js`(`CACHE_NAME` v7→v8).
