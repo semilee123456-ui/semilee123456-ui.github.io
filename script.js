@@ -2154,7 +2154,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260804';
+    script.src = 'odds-data.js?v=20260805';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -4073,7 +4073,7 @@ function buildDrawScheduleMore(days){
 // 세션/사용자가 "Pending"이 실제 금액으로 바뀐 뒤 갱신할 것.
 const JACKPOT_DATA = {
   powerball:    { amountUsd: 786000000, cashUsd: 341600000 },
-  megamillions: { amountUsd: 60000000, cashUsd: 25500000 },
+  megamillions: { amountUsd: 70000000, cashUsd: 29700000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
@@ -4098,9 +4098,16 @@ const GAME_NAME_MORE = {
 // 8/4 추첨 예고 잭팟 $60M/현금 $25.5M 확인 — 기존 JACKPOT_DATA.megamillions와 이미 일치해서
 // 변경 없음). (같은 날 다른 세션이 독립적으로 같은 8/3 회차 번호를 3개 출처 교차검증으로도
 // 재확인함 — 이 항목과 세부 출처만 다를 뿐 결론 일치.)
+// 2026-08-05 이어서: 사용자가 공유한 스크린샷(파워볼/메가밀리언즈 요약 카드)을 계기로 메가밀리언즈
+// 8/4 추첨 결과를 확인 — WebSearch 요약이 파워볼 $786M와 메가밀리언즈를 한 문장에 섞어 잘못
+// 답해서(도구 자체의 취합 오류), 그 요약은 버리고 개별 소스 2곳(valottery.com 공식 주정부
+// 페이지 + DraftKings 기사)을 직접 WebFetch로 교차검증함 — 둘 다 14,21,51,55,65 / 메가볼 21로
+// 일치. 다음 추첨(8/7) 잭팟은 $70M, 현금가치는 사용자 스크린샷 $29.7M(29.7/70=0.424, 직전
+// 회차 25.5/60=0.425와 비율이 거의 같아 신뢰) 채택 — valottery는 $29.0M로 약간 낮게 표시했는데
+// 잭팟 예고액은 하루에도 판매량 따라 여러 번 갱신되는 값이라 흔한 오차로 판단.
 const LATEST_DRAW = {
   powerball:    { date: '2026-08-03', numbers: [8, 30, 41, 48, 54], special: 4 },
-  megamillions: { date: '2026-07-31', numbers: [4, 18, 26, 43, 51], special: 4 },
+  megamillions: { date: '2026-08-04', numbers: [14, 21, 51, 55, 65], special: 21 },
 };
 
 
