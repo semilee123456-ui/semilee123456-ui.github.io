@@ -3236,3 +3236,91 @@ Kaggle/Disquiet/GeekNews 실제 게시 진행
 뉴스 대응, 국가별 콘텐츠 추가, 권위 사이트 백링크 1개)에 집중. 이 중 GSC CTR
 개선/백링크 컨택은 사용자가 Search Console 데이터를 캡처해서 보여주거나, 이메일
 발송을 직접 해줘야 진행 가능(에이전트가 이메일 계정에 접근할 수 없으므로).
+
+### 2026-08-05 이어서 — 4번째 제미나이 목록(30개) 검토, 채널 브레인스토밍 패턴 공식 종료
+
+사용자가 또 새 제미나이 목록(New Tab 디렉터리/Firefox 웹앱 추천/Awesome 리스트/Indie
+뉴스레터/Ask HN/Reddit Wiki/각종 대체 검색엔진 14개/이미지·PDF·CSV·JSON SEO 등 30개)을
+전달. 검토 결과, 전부 아래 중 하나에 해당함(항목 전체를 다시 나열하지 않음 — 다음
+세션도 마찬가지 결론일 것이므로 재검토 불필요):
+- 이미 커버됨: Kagi/Mojeek/Yep/Ecosia/Swisscows/Startpage/Qwant/Brave 같은 대체
+  검색엔진들은 전부 Bing 인덱스 재사용이거나 별도 등록 자체가 없음(제미나이도 스스로
+  인정).
+- 이메일/계정 로그인이 마지막 단계에 필요: Indie 뉴스레터 소개, Reddit Wiki 편집(운영진
+  승인 필요), Naver 지식인 답변 — 전부 계정 활동형이라 앞 세션 결론과 동일하게 불가.
+  Ask HN도 마찬가지로 HN 계정 필요.
+- 명백히 부적합(제미나이 스스로 ❌ 표시): Google Business Profile(오프라인 매장
+  아님), Apple App Clip, Google Patent.
+- **이미지/PDF/CSV/JSON SEO(26~30번)** — 실제로 확인함: `index.html`에 `<img>` 태그
+  자체가 없음(마스코트가 인라인 SVG라 이미지 파일이 아님, 데이터는 이미지가 아니라
+  HTML 표로 렌더링됨). 즉 이 사이트엔 "이미지 최적화"할 인포그래픽 이미지가 아예 없어서
+  적용 대상이 없음. PDF 리포트는 존재하지 않는 새 산출물을 만드는 것이라 "기존 걸
+  활용"이 아니라 범위 추가에 해당 — 하지 않기로 함. CSV/JSON은 이미
+  `raw.githubusercontent.com`에 공개되어 있고 index.html Dataset 스키마로 이미 연결됨
+  (앞선 세션에서 완료).
+
+**이 세션의 최종 판단**: 제미나이의 "채널 브레인스토밍" 목록은 이제 완전히 바닥났고,
+계속 새 목록이 와도 패턴이 반복될 뿐임(이미 한 것 / 계정·이메일 필요해서 못 함 /
+사이트 성격과 안 맞음 중 하나). **다음 세션은 "제미나이가 준 목록에서 할 수 있는 거
+찾기" 요청이 다시 와도, 이 섹션과 위 두 섹션(브레인스토밍 종료 선언·실행 시도 결론)을
+먼저 보여주고 정말 새로운 항목만 걸러낼 것 — 처음부터 다시 훑지 말 것.**
+제미나이가 이 메시지에서 제안한 "월 1만 방문자를 만든 사이트들의 성장 채널을
+역분석하는" 방향은 실행형 작업이 아니라 리서치 작업이라 별도로 요청이 오면 진행
+가능(웹서치로 성공 사례 조사) — 단, 이것도 결국 "그래서 뭘 하라는 건데"로 수렴하면
+위에서 이미 다룬 채널들과 겹칠 가능성이 큼.
+
+### 2026-08-05 이어서 — GitHub Awesome List PR 완료 + AlternativeTo 7일 제한 대기중
+
+- **GitHub Awesome List PR 완료**: `stefanneculai/best-personal-finance-tools` 저장소를
+  fork(`semilee123456-ui/best-personal-finance-tools`)해서 README.md "8. Tax
+  Preparation" 표에 ChamTax 행 추가 후 PR #4("Add ChamTax") 오픈 완료. 병합 여부는
+  저장소 주인 승인 대기중 — 나중에 확인만 하면 됨, 추가 작업 불필요.
+- **AlternativeTo 가입 완료, 등록은 7일 제한 대기중**: Google/GitHub OAuth 로그인 둘 다
+  AlternativeTo 쪽 에러로 실패해서 이메일로 가입(계정명 `chamtax`). 이메일 인증까지
+  완료. 그런데 "New app submissions require an account age of at least 7 days" 제한에
+  걸림 — GeekNews와 동일한 패턴. **2026-08-12 이후 재시도 가능**(정확히는 2026-08-12
+  15:56 Stockholm 시간 이후). 등록할 정보는 이미 확정:
+  - Name: ChamTax / Website: https://chamtax.com
+  - Description: "Free calculator for US Powerball and Mega Millions winners showing
+    after-tax take-home amount, compared across 21 countries of residency. Includes an
+    open CC0 dataset."
+  - Tags: lottery, tax calculator, finance, calculator
+  - `send_later`로 2026-08-12 14:00 UTC에 사용자에게 리마인더 예약해둠(trigger_id
+    `trig_01HGhnN1czbgiNANMUAq3mCy`) — 이 리마인더가 오면 AlternativeTo와 GeekNews
+    (둘 다 신규 계정 7일 제한 걸렸던 것) 등록을 같이 마무리할 것.
+
+### 2026-08-05 이어서 — 5번째 제미나이 목록("극단적 외곽 채널") 반려 + og-image-hook.png 로고 수정
+
+**5번째 목록 검토 결과** (스토어 패키징/개발자 생태계/HARO 대체/2세대 디렉터리/아웃바운드
+이메일) — 전부 반려, 이유:
+- Google Play Store(TWA)/Chrome Web Store/Microsoft Store — 전부 개발자 등록비가
+  있어("무료" 조건 위반) + 이미 위에서 "브라우저 확장프로그램/npm 패키지는 계산기
+  웹앱 성격과 안 맞음"이라고 반려했던 것과 같은 카테고리(스토어 앱으로 재포장하는 것도
+  결국 신규 제품을 새로 만드는 것).
+- RapidAPI — 참택스는 정적 사이트라 백엔드 서버 자체가 없음, API 서버를 새로 구축해야
+  해서 완전히 다른 프로젝트가 됨.
+- Connectively(구 HARO) — 기자 질문에 계속 반응해야 하는 상시 대응형이라 사용자가
+  이미 거부한 "능동적 반복 활동" 카테고리.
+- 복권 구매대행업체 콜드 이메일 아웃바운드 — 이메일 발송 수단 없음(반복 확인된 구조적
+  한계) + 스팸 리스크.
+- NPM 패키지 배포 — 유일하게 논리적으로 가능하지만, 계산 로직을 별도 패키지로 분리하는
+  신규 코딩 작업이 필요하고 `npm publish` 마지막 단계(로그인/2단계 인증)는 사용자가
+  직접 해야 함. 효과도 불확실해서 보류(사용자가 먼저 원한다고 하면 그때 재검토).
+- **BetaPage/LaunchingNext/StartupStash/KillerStartups**(2세대 스타트업 디렉터리)만
+  실제로 살아있고 스팸 아님(WebSearch로 확인) — 다만 전부 계정 가입 필요(AlternativeTo와
+  동일 패턴), SEO 효과도 nofollow 위주라 낮음. 사용자가 원하면 다음에 AlternativeTo
+  했던 것과 같은 방식으로 안내 가능 — 먼저 안 하기로 함(우선순위 낮다고 판단, 진행
+  여부는 다음 세션에서 사용자가 먼저 꺼내면 그때 진행).
+
+**og-image-hook.png(기본 공유카드) 로고 교체 완료**: 위 "알려진 미해결 항목"에서
+예고했던 대로, Playwright로 HTML/CSS 재현 후 1200×630 스크린샷 방식으로 재생성함.
+기존 문구("20억 달러 당첨되면, 실수령액은 얼마일까요?" 등)·레이아웃·색상은 전부
+그대로 유지하고, 로고만 index.html 최신 마스코트 SVG(볼터치·눈 하이라이트 포함)로
+교체. 파일 크기 64KB→59KB, 육안 비교로 레이아웃 깨짐 없음 확인. **`og-image-hook-*.png`
+78개(페이지별 전용 카드)는 여전히 미착수** — 위 "알려진 미해결 항목" 설명대로 언어별
+폰트 조달까지 필요해 범위가 훨씬 크므로, 진행 여부는 사용자에게 먼저 확인할 것.
+
+**회귀 검증**: `tests/broken_link_audit.js`(95개 파일, ISSUES:0), 
+`tests/draw_archive_integrity_check.js`(4개 아카이브 전부 정렬·중복 없음, ISSUES:0)
+실행 확인 — 이번 세션 변경사항(HANDOFF 기록, og-image-hook.png)이 사이트 기능에
+영향 없음.
