@@ -1181,6 +1181,15 @@
   .result-tertiary-box .result-hero-basis-mini{ font-size:14px; }
   .result-tertiary-box .foot-note{ font-size:14px; }
   .result-tertiary-box .usd-actual-note{ font-size:14px; }
+  /* 2026-08-05: "3줄 AI 요약" — "결과 더 자세히 보기" 아코디언을 펼쳤을 때 숫자표(위
+     .result-tertiary-box 등)보다 먼저 보이는 쉬운 말 설명. white-space:pre-line으로
+     script.js가 \n으로 구분해 넣은 3문장이 실제로 줄바꿈되어 보이게 함. 아래 숫자표들과
+     구분되도록 옅은 민트 배경(브랜드 컬러, --teal 계열)을 씀 */
+  .home-summary-text{
+    font-size:var(--fs-body); line-height:1.6; color:var(--text-dark); white-space:pre-line;
+    background:rgba(79,209,165,0.1); border-radius:10px; padding:12px 14px; margin:0 0 10px;
+  }
+  .home-summary-text:empty{ display:none; }
   .sim-note{ font-size:var(--fs-small); color:var(--text-muted); text-align:left; margin:6px 0 0; line-height:1.5; }
   .usd-actual-note{
     font-size:var(--fs-small); color:var(--navy); font-weight:700; text-align:center; margin:4px 0 0;
@@ -2032,6 +2041,16 @@
   .jh-more-summary::after{ content:'▾'; font-weight:400; transition:transform 0.2s ease; }
   .jh-more[open] > .jh-more-summary::after{ transform:rotate(180deg); }
   .jh-more-summary::-webkit-details-marker{ display:none; }
+  /* 2026-08-05: "연금으로 받으면?" 안의 "30년 지급표 보기"(중첩)가 바로 옆 형제 아코디언
+     "당첨자가 여러 명이면?"(같은 레벨, 중첩 아님)과 들여쓰기 없이 똑같아 보여서 계층 구조가
+     안 보인다는 지적(사용자 스크린샷·아이폰) — 부모 .jh-more 안에 있는 중첩 .jh-more에만
+     왼쪽 들여쓰기+연결선을 추가해서 "이 위 박스에 속한 하위 항목"임을 표시. 글자 크기는 시니어
+     가독성 최소 기준(--fs-small)이라 더 줄이지 않고, 정렬만 중앙→왼쪽으로 바꿔 형제 레벨과
+     다른 리듬을 줌 */
+  .jh-more .jh-more{
+    margin-left:2px; padding-left:12px; border-left:2px solid rgba(var(--teal-rgb),0.22);
+  }
+  .jh-more .jh-more-summary{ justify-content:flex-start; text-align:left; }
   .jh-more-btn{
     display:block; width:100%; margin-top:12px; padding:10px; border-radius:10px; border:1px solid var(--border);
     background:var(--bg); color:var(--teal); font-family:inherit; font-size:var(--fs-small); font-weight:700; cursor:pointer;
