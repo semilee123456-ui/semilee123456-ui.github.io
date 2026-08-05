@@ -12197,11 +12197,6 @@ function updateHomeCalc(usdOverride){
       uz: `${usdMillions}M USD yutuq · ${basisSuffix}`,
      pt: `Prêmio de ${usdMillions}M USD · ${basisSuffix}`, es: `Premio de ${usdMillions}M USD · ${basisSuffix}`, uk: `Приз ${usdMillions}M USD · ${basisSuffix}`, tet: `Prémiu ${usdMillions}M USD · ${basisSuffix}`}
   );
-  document.getElementById('home-tax1-label').textContent = label1;
-  document.getElementById('home-tax1-val').textContent = val1;
-  document.getElementById('home-tax2-label').textContent = label2;
-  document.getElementById('home-tax2-val').textContent = val2;
-
   const taxImpactPct = 억 > 0 ? Math.round(100 - (final / 억 * 100)) : 0;
   // 2026-08-05: "3줄 AI 요약" 백로그 항목 — 이름은 "AI"지만 실제로는 이미 계산된 값(label1/val1/
   // label2/val2/final)을 문장 템플릿에 끼워 넣는 것뿐이라 LLM 호출 불필요. "결과 더 자세히 보기"
@@ -12282,13 +12277,10 @@ function updateHomeCalc(usdOverride){
     void taxDiffEl.offsetWidth;
     taxDiffEl.classList.add('diff-pop');
   }
-  // "합계" 줄만 소수 첫째자리까지 보여줌 — 바로 위 두 항목(연방세/한국 추가납부)이 각각 -30%,
-  // -16.5%처럼 소수점이 있는 값인데 합계를 정수로 반올림하면(-46%) 30+16.5=46.5와 안 맞아
-  // "계산이 틀렸나?" 오해를 살 수 있음. 히어로 영역 상단의 taxImpactPct(정수)는 그대로 둠 —
-  // 거기는 단독으로만 보여서 소수점 유무가 문제되지 않음
-  const taxImpactPctPrecise = 억 > 0 ? (100 - (final / 억 * 100)) : 0;
-  document.getElementById('home-tax-total-line').textContent =
-    taxTotalLinePrefix() + '-' + taxImpactPctPrecise.toFixed(1) + '%' + taxTotalLumpsumSuffix();
+  // 2026-08-05: 여기 있던 home-tax-total-line("합계 -39%") 대입을 지움 — index.html에서 해당
+  // <p>를 지우면서 같이 정리(사용자 지적으로 세율 상세표 전체를 3줄 AI 요약과 중복이라 판단해 뺌,
+  // 자세한 이유는 index.html의 관련 주석 참고). taxImpactPct(정수, 아래 시각 막대바/미리보기에서
+  // 계속 씀)는 그대로 유지.
 
   // 실수령/세금 비율을 숫자로만 보여주는 대신 막대그래프로도 한눈에 보이게 함 —
   // 다른 복권 세금 계산기들(infinitycalculator 등)에 공통으로 있는 시각적 breakdown 패턴 참고

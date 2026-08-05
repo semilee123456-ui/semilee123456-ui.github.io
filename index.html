@@ -121,12 +121,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260805-8">
+<link rel="stylesheet" href="styles.min.css?v=20260805-9">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260805-8" defer></script>
+<script src="script.min.js?v=20260805-9" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1023,6 +1023,7 @@
                 <div class="jc-row"><span data-i18n="odds.jcAnnuityMonth">🗓️ 한 달로 치면</span><span class="jc-val" id="home-annuity-month-net">-</span></div>
                 <p class="jc-note" data-i18n-html="odds.jcAnnuityNote">일시불과 달리 연금은 <b>발표된 잭팟 총액을 그대로</b> 29년에 걸쳐 30번 나눠 받아요 (첫 회 이후 매년 5%씩 증액). 한 해에 몰리지 않아 세금 부담도 분산돼요.</p>
                 <p class="jc-note" data-i18n-html="odds.jcAnnuityNote2" style="margin-top:6px;">※ 위 금액은 30년 단순 평균이라 실제 첫 회 수령액은 이보다 적어요.</p>
+                <p class="jc-note" data-i18n-html="home.flowExplainNote" style="margin-top:6px;">ℹ️ 이 계산기는 대부분이 선택하는 <b>일시불(세전)</b> 기준으로 계산돼요.</p>
                 <details class="jh-more" style="margin-top:10px;">
                   <summary class="jh-more-summary" data-i18n="odds.annuityScheduleToggle">📊 30년 전체 지급표 보기 (회차별 실제 금액)</summary>
                   <div class="annuity-schedule-wrap">
@@ -1044,19 +1045,14 @@
                 <p class="jc-note" data-i18n="home.splitNote">※ 세금은 총액이 아니라 1인당 나눠 받은 금액 기준으로 다시 계산돼요 — 누진세를 쓰는 나라는 총액 기준보다 유리할 수 있어요. 실제 공동 당첨 시엔 지분을 명확히 정해두는 게 안전해요.</p>
               </div>
             </details>
-            <div class="detail-note-box" style="background:var(--bg); border-radius:10px; padding:12px 14px; margin-top:10px;">
-              <p class="flow-explain-title" data-i18n="home.flowExplainTitle">ℹ️ 미국 로또는 두 가지 방식으로 받아요</p>
-              <!-- 2026-07-30: "총액의 약 45~60%"라는 같은 사실이 이 목록·입력.krwHintFull(일시불
-                   탭)·입력.announcedHint(연금액 탭) 3곳에서 표현만 바꿔 반복된다는 지적 —
-                   뒤 2곳은 "지금 이 칸에 뭘 입력해야 하는지" 알려주는 필수 안내라 못 지우지만,
-                   여기(용어 설명용 목록)는 입력칸과 무관한 순수 설명이라 숫자 없이 축약함 —
-                   정확한 비율이 필요하면 위/아래 입력 힌트에서 이미 보임 -->
-              <ul class="flow-explain-list">
-                <li><b data-i18n="home.flowAnnuityLabel">연금</b>: <span data-i18n="home.flowAnnuityDesc">29년 분할 수령 (뉴스 발표 기준)</span></li>
-                <li><b data-i18n="home.flowLumpsumLabel">일시불</b>: <span data-i18n="home.flowLumpsumDesc">한 번에 수령</span></li>
-              </ul>
-              <p class="flow-explain-note" data-i18n-html="home.flowExplainNote">ℹ️ 이 계산기는 대부분이 선택하는 <b>일시불(세전)</b> 기준으로 계산돼요.</p>
-            </div>
+            <!-- 2026-08-05: 여기 있던 "ℹ️ 미국 로또는 두 가지 방식으로 받아요" 안내박스(연금/일시불
+                 정의 목록)를 지움 — 바로 위 "일시불 대신 연금으로 받으면?" 아코디언이 이미 같은 내용을
+                 설명하고 있어서 중복이었음(사용자 지적, "결과 더 자세히 보기가 너무 복잡함"). 그
+                 박스에서 유일하게 다른 정보였던 "이 계산기는 일시불 기준" 문구(home.flowExplainNote)는
+                 위 연금 아코디언 안 note로 옮겨 살려둠 — 삭제된 나머지 키(flowExplainTitle/
+                 flowAnnuityLabel/flowAnnuityDesc/flowLumpsumLabel/flowLumpsumDesc)는 이제 아무
+                 데서도 안 쓰이지만, i18n-source/translations.json에서 지우면 다른 페이지가 참조할
+                 가능성을 매번 재확인해야 하니 그대로 둠(빌드 산출물 크기 영향 미미). -->
             <!-- 2026-07-30: 이 문단 바로 위에 있던 "📅 연금 선택 시 차이점 확인하기 →" 버튼(openHomeAnnuityDetail())을
                  지움 — 그 버튼이 여는 아코디언(#home-annuity-detail)이 이미 결과 카드 상단에서 펼치지
                  않고도 바로 보이는 자리에 있어서, "결과 더 자세히 보기"까지 펼쳐야만 나오는 이 버튼은
@@ -1068,17 +1064,13 @@
                  소스만 보고 낸 오판이었음, 실제로 보이는 중복은 없었음). 어차피 안 보이던 죽은
                  마크업이라 문구를 고치는 대신 통째로 삭제 — script.js의 해당 textContent 대입
                  코드와 styles.css의 이 숨김 규칙도 같이 지움 -->
-            <div class="result-grid" style="margin-top:8px; grid-template-columns:1fr 1fr;">
-              <div class="result-cell">
-                <p class="result-label" id="home-tax1-label">미국 연방세 (비거주자)</p>
-                <p class="result-value" id="home-tax1-val">-30%</p>
-              </div>
-              <div class="result-cell">
-                <p class="result-label" id="home-tax2-label">한국 추가 납부 (FTC 적용)</p>
-                <p class="result-value" id="home-tax2-val">-16.5%</p>
-              </div>
-            </div>
-            <p class="result-total-line" id="home-tax-total-line" style="margin-top:8px; text-align:center; font-weight:700; color:var(--status-red);">합계 -39%</p>
+            <!-- 2026-08-05: 여기 있던 세율 상세표(미국 연방세 -30% / 한국 추가 납부 -16.5% / 합계
+                 -39%, home-tax1/2-label/val + home-tax-total-line)를 지움 — 바로 위 "3줄 AI 요약"
+                 (home-summary-text)이 같은 두 항목·비율을 이미 문장으로 말해주고, 세전→세후 합계
+                 diff(%포함)는 이 아코디언을 펼치기 전부터 result-hero(#tax-impact-diff)에 이미
+                 보이고 있어서 3중 중복이었음(사용자 지적, "결과 더 자세히 보기가 너무 복잡함").
+                 label1/val1/label2/val2 변수 자체는 updateHomeCalc()가 3줄 요약 조립에 계속 쓰므로
+                 script.js 계산 로직은 그대로 둠 — 이 두 <p> id에 대입하던 4줄만 지움. -->
             <button type="button" class="annuity-info-link" style="margin-top:2px;" onclick="toggleInlineTermBox('tax-term-box')" data-i18n="home.taxTermToggle">❓ 원천징수·누진세율·FTC가 뭐예요? →</button>
             <div class="detail-note-box" id="tax-term-box" style="display:none; background:var(--bg); border-radius:10px; padding:12px 14px; margin-top:6px;">
               <p style="margin:0;"><b data-i18n="home.taxTermWithholdingTitle">원천징수란?</b> <span data-i18n-html="home.taxTermWithholdingDesc">돈을 주는 <span style="white-space:nowrap">쪽(미국)이</span> 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 "일단 떼어가는 선불금"이라고 보시면 돼요.</span></p>
