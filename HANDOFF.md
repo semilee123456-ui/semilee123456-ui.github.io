@@ -2975,3 +2975,140 @@ not-allowed·힌트 표시 (3) 연못을 실제로 눌러 드래그 시작하면
 `script.js`/`script.min.js`(캔버스 폰트 크기 확대, 낚시 힌트 show/hide 로직),
 `styles.css`/`styles.min.css`(`.cta-btn:disabled`, `.fishing-drag-hint` 스타일·애니메이션),
 `sw.js`(`CACHE_NAME` v10→v11). 커밋 `ae41b32`.
+
+### 2026-08-05 이어서(다른 세션, `claude/github-work-review-d175at` 브랜치) — 홍보/SEO
+전면 점검: 잭팟 데이터 갱신, 신규 콘텐츠 페이지, HTML 사이트맵, 검색엔진 등록까지
+
+**배경**: 사용자가 "혼자 할 수 있는 홍보 다 해달라"는 요청으로 시작해서, 코드 레벨 SEO부터
+Google/Naver/Bing/Daum/Yandex 검색엔진 등록, Kaggle 데이터셋 업로드까지 한 세션 안에서
+쭉 이어짐(대화가 매우 길어서 아래는 실제로 실행·반영된 것만 요약, 검토만 하고 기각한
+아이디어는 생략).
+
+**1. 사이트 정합성 점검 및 데이터 최신화**
+- `sitemap.xml`의 `lastmod` 88건이 실제 파일 최종 수정일과 안 맞던 것 발견 → git log 기준으로
+  전부 동기화(`4270ce4`).
+- 메가밀리언즈 8/4 회차(14,21,51,55,65/MB21) 결과가 `LATEST_DRAW`/`JACKPOT_DATA`/
+  `odds-data.js` 아카이브 어디에도 반영 안 된 상태였음 — 사용자가 스크린샷으로 알려줘서
+  발견, valottery.com(버지니아주 공식)+DraftKings 교차검증 후 반영. 잭팟 $60M→$70M(현금
+  $29.7M), `draw_archive_integrity_check.js` 통과 확인(`a49f9ef`). **참고**: 이 저장소엔
+  이미 "메가밀리언즈 잭팟 갱신 체크"(수·토 UTC 15:03)·"파워볼 잭팟 갱신 체크"(일·화·목
+  UTC 15:07) Routine이 떠 있어서 원래 자동으로 처리될 예정이었는데, 사용자가 스크린샷으로
+  먼저 물어봐서 그 전에 수동으로 처리한 것 — 다음에 이 Routine이 돌 때 "이미 최신"이라 조용히
+  종료될 것이므로 정상.
+- `tests/faq_audit.js`가 `page.goto()`에 `waitUntil` 옵션이 빠져 있어(기본값 `load`) 네트워크
+  제한 샌드박스에서 광고/폰트CDN/환율API가 pending 상태로 안 끝나서 영원히 멈추는 버그 발견·
+  수정(다른 audit 스크립트들처럼 `domcontentloaded`로 통일). 태국어 페이지
+  (`thai_in_korea_lottery_tax.html`) meta description이 179자로 SERP 절단 구간이었던 것도
+  같이 발견해 138자로 압축, og/twitter description 동기화(`45b7ca6`).
+- `llms.txt`(AI 검색엔진용)에 "22 languages"라고 적혀있던 게 실제 26개(i18n/*.json 기준)와
+  안 맞던 걸 발견해 정정, 오픈 데이터셋 저장소(`us-lottery-tax-data`) 링크도 누락돼있어서
+  추가(`566d3fa`).
+- `og:image`/`twitter:image` 180개 참조, CSS `url()` 참조, `ads.txt`, `sw.js` 캐시 범위를
+  전부 추가로 감사 — 전부 이상 없거나(og:image 전부 정상 파일 참조) 의도된 설계(서비스워커는
+  index.html 하나만 담당, 랜딩페이지는 원래 범위 밖)로 확인됨.
+
+**2. 신규 콘텐츠 페이지 — `lottery-prize-tiers.html`("등수별 당첨금 총정리")**
+후보 주제 4개(등수별 당첨금/일시불vs연금 심화/주별 세율 순위표/해외 구매 방법)를
+`GEMINI-REVIEW-new-content-page-2026-08-05.md`에 정리했었는데(`2bc8cde`), 그중 리스크가
+제일 낮은 걸 골라 바로 진행 — `script.js`의 `PRIZE_TIERS`(계산기 확률체감 탭이 실제로 쓰는
+검증된 데이터)를 그대로 재사용해서 새 사실관계 검증 없이 작성. "아무 등수나 당첨될 확률"
+(파워볼 1/25, 메가밀리언즈 1/23)은 `PRIZE_TIERS`의 등수별 확률을 직접 합산해서 계산 — 외부
+소스 대신 사이트 자체 데이터와 내적으로 일관되게 함. sitemap 등록, 관련 페이지 4곳에
+상호링크, Playwright로 6개 너비×라이트/다크 렌더링 검증(`6bb3f5f`). 전용 OG 공유카드 이미지도
+Playwright로 HTML→스크린샷 생성해서 추가했는데, 처음엔 파비콘용 단순 마스코트 아이콘을
+썼다가 사용자가 "지금 홈페이지 로고 쓴 거 맞아?"라고 물어봐서 확인해보니 실제 `index.html`
+네비게이션 로고(볼터치·눈 하이라이트 있는 디테일 버전)와 다른 걸 발견 — 정확한 SVG로
+다시 렌더링함(`9767287`→`acc7856`).
+
+**3. 임베드 위젯 — `widget-embed.html`**
+외부 블로거가 `<iframe>`으로 가져다 붙일 수 있는 미니 계산기. 전체 계산 엔진(21개국)을
+복제하지 않고 `press-kit.html`의 이미 검증된 "Reference scenario ~$100M" 참고치 7개국만
+재사용하는 티저 방식으로 설계(정밀 계산 대신 "정확한 계산은 본 사이트에서" CTA로 유도) —
+계산 로직을 두 곳에 따로 유지하면서 세율 갱신할 때 한쪽을 빠뜨리는 이 저장소의 반복된
+실수 패턴을 피하기 위함. `noindex` 처리(검색 노출용 아님). **사용자에게 솔직하게 전달한
+것**: 이 위젯은 만들어놓기만 하면 아무 효과 없고, 사용자가 직접 블로거 등에게 배포해야만
+가치가 생김(`2fddaca`).
+
+**4. `README.md` 신규 작성**
+`github.com/semilee123456-ui/semilee123456-ui.github.io`를 직접 열면 설명 하나 없이 파일
+목록만 보이는 상태였음 — `us-lottery-tax-data` 저장소 README가 이미 "이게 chamtax.com
+원본 데이터"라며 이 저장소로 링크 걸고 있는데 정작 도착하면 빈손이라 발견. 프로젝트 설명,
+핵심 수치, 오픈 데이터셋/임베드 위젯/llms.txt 링크, 기술 스택 개요 정리(`adbf78d`). GitHub
+저장소 설명(description)·topics 태그는 이 세션의 도구로 편집 불가(API 접근 자체가 없음
+확인함) — 사용자가 직접 About 옆 톱니바퀴로 설정.
+
+**5. `sitemap.html`(HTML 사이트맵) 신규 + 전체 페이지 상호링크**
+제미나이 검수(사용자가 별도로 물어봄) 의견으로 "91개 페이지 중 87개가 index.html에 정적
+`href`로 안 걸려있고 JS 드롭다운을 통해서만 도달 가능 — 크롤링 고립(Orphan Pages)" 지적을
+받고 실제로 검증(index.html 정적 링크 3개뿐, script.js가 동적으로 45개는 만들어주지만
+JS 실행 안 하는 크롤러엔 안 보임) → sitemap.xml의 89개 URL을 카테고리별(핵심 도구/21개국
+거주자별/한국거주 외국인용 27개 언어/해외거주 한국인용/26개 언어 초보가이드/영중 버전)로
+정리한 사람이 읽는 정적 페이지 신규 제작(`sitemap.html`, noindex 안 걸어서 색인 허용).
+90개 콘텐츠 페이지(+404.html, 부수효과) 전부의 `related-links` 블록에 "전체 사이트맵" 링크를
+각 페이지 `html lang` 속성 기준으로 27개 언어 번역해 스크립트로 일괄 삽입. `index.html`은
+SPA라 `related-links` 패턴이 없어서 `.site-footer .footer-links`에 별도로 "Sitemap" 링크
+추가 — 근데 CSS가 `.footer-links button`만 스타일링하고 있어서 `a` 태그가 안 먹혀서
+`styles.css` 3곳도 같이 수정(`a` 선택자 추가), `build-min.js` 재빌드, 캐시버스팅
+`20260805-11`→`20260805-12`. 전체 정적 감사+Playwright 렌더링 검증 이슈 0건(`7d1f175`).
+
+**6. 라이브 사이트 직접 검증(제미나이가 준 체크리스트를 curl로 직접 확인)**
+이 샌드박스의 Playwright 브라우저는 외부 인터넷(라이브 chamtax.com)에 직접 접속이 안 되지만
+(faq_audit.js 조사 때 이미 발견한 제약), `curl`은 프록시를 타서 라이브 사이트 접근 가능 —
+www→비www 301, http→https 301, 파비콘/apple-touch-icon 응답, 라이브 OG 태그·이미지 로드
+전부 정상 확인. **제미나이가 "문의 이메일(support@chamtax.com)로 테스트 메일 보내보라"고
+제안했는데, 그런 이메일 주소는 사이트 어디에도 없음을 확인**(실제 문의 방식은
+`formspree.io` 폼) — 잘못된 전제를 사용자에게 바로잡아 전달함.
+
+**7. Yandex Webmaster 소유권 인증 파일**
+사용자가 Yandex Webmaster에서 받은 HTML 파일 인증 코드를 이 세션이 저장소에 직접
+추가·배포(`e3155d7`) — 라이브 반영까지 curl로 확인. 사용자가 처음 "Verify" 눌렀을 때
+"service is temporarily unavailable" 에러가 났는데, YandexBot User-Agent로 직접 요청해도
+200 정상 응답이라 우리 쪽(Cloudflare 등) 문제가 아니라 Yandex 쪽 일시 장애로 판단 — 나중에
+재시도해서 성공, sitemap.xml도 Yandex에 제출 완료.
+
+**8. 검색엔진/외부 플랫폼 등록 현황 (사용자가 직접 실행, 이 세션이 화면 캡처 보고 안내)**
+- 구글 서치콘솔·네이버 서치어드바이저·빙 웹마스터도구: 이미 등록돼 있었음(사용자가 세션
+  시작 전에 완료). 이 세션에서 신규 페이지 2개(`lottery-prize-tiers.html`, `sitemap.html`)
+  색인 요청 완료.
+- 다음(Daum)/카카오 웹마스터도구: 신규 등록 + "수집요청" 탭에서 `sitemap.xml` 제출 완료
+  (첫 시도는 "문서등록" 박스에 잘못 넣어서 "중복 URL" 에러 났었는데, 나중에 올바른 박스
+  ("수집 Seed URL 등록 (사이트맵)")로 재시도해서 성공).
+- Yandex Webmaster: 위 7번 항목대로 인증·제출 완료.
+- **ZUM**: 제미나이가 처음 준 URL(help.zum.com/submit 등)이 전부 404 — WebSearch로 실제
+  주소(`help.zum.com/search/site/register`)를 찾아도 마찬가지로 404. 사용자가 직접 확인한
+  결과 **ZUM은 수동 URL 제출 서비스를 공식 종료**했고 지금은 Bing 색인·자체 크롤러로만
+  자동 수집 — 이미 Bing 등록이 끝나 있어서 별도 조치 불필요로 결론.
+- **바이두(Baidu)**: WebSearch로 확인한 결과 2022년 5월부터 중국 본토 휴대폰 번호로만 가입
+  가능(해외 번호·이메일 가입 전부 불가) — 한국 번호로는 가입 자체가 안 됨. ICP 备案 없이는
+  설령 가입해도 노출이 잘 안 되는 구조. **결론: 스킵, 대신 이미 등록된 Bing이 중국어권
+  IT/재테크 관심층을 어느 정도 커버**(사이트에 이미 `us-lottery-basics-zh.html`,
+  `china-resident-us-lottery-tax.html` 등 중국어 콘텐츠 다수 존재).
+- **GitHub 저장소**: Description, Website(`https://chamtax.com`), Topics(`lottery`
+  `powerball` `tax-calculator` `mega-millions`) 사용자가 직접 채움(중간에 자동완성으로
+  `mega-millions-drawing-tonight`이 잘못 들어간 걸 발견해서 바로잡음).
+- **Kaggle**: 사용자가 신규 가입(표시 이름은 실명 대신 "ChamTax"로 설정 추천해서 그렇게 함)
+  → `us-lottery-tax-data`의 `data.csv`/`data.json`을 데이터셋으로 업로드. Title(50자
+  제한 걸려서 "US Lottery Jackpot Take-Home Tax by Country (21 Countries)"→"US Lottery
+  Jackpot Tax by Country"로 축약), Subtitle, Description(README 기반), License(CC0),
+  Tags(Finance/Government/Economics/Lottery — "taxes"·"tax" 검색은 결과 없어서 스킵), 이
+  세션이 Playwright로 만들어준 564×284 전용 썸네일 이미지까지 전부 채워서 Public 게시 완료.
+
+**사용자가 명시적으로 거절/보류한 것**: Kaggle 등 새 계정으로 "막 홍보 다니는" 느낌이 부담
+된다고 해서, 신규 계정으로 무리하게 활동하는 것 자제 — 이 세션도 "한 번 올리고 끝, 정기적
+활동 불필요"라고 명확히 안내함. 중국 커뮤니티(즈후·바이두톄바) 직접 홍보도 언어 장벽+같은
+이유로 제안했다가 기각. Wikidata 시딩은 애초에 스팸 리스크로 제안조차 안 함.
+
+**검증**: 매 커밋마다 `node tests/broken_link_audit.js`·`fact_consistency_audit.js`·
+`i18n_coverage_audit.js` 재실행(전부 이슈 0건 유지 확인), JSON-LD 유효성 전수 검사, XML
+유효성 검사. `sitemap.html` 신규 작업은 Playwright로 5개 너비×라이트/다크 렌더링 확인.
+
+변경 파일(주요 커밋 순): `4270ce4`(sitemap.xml lastmod), `a49f9ef`(메가밀리언즈 데이터),
+`45b7ca6`(faq_audit.js, thai 메타설명), `566d3fa`(llms.txt), `2bc8cde`(GEMINI-REVIEW 파일
+신규), `6bb3f5f`(lottery-prize-tiers.html 신규 + sitemap.xml + 관련페이지 4곳), `9767287`→
+`acc7856`(전용 OG 이미지), `2fddaca`(widget-embed.html + press-kit.html), `adbf78d`
+(README.md 신규), `7d1f175`(sitemap.html 신규 + 90개 페이지 관련링크 + index.html 푸터 +
+styles.css + 캐시버스팅 20260805-12), `e3155d7`(yandex 인증 파일). 전부
+`claude/github-work-review-d175at` 브랜치에서 작업 후 매번 즉시 main에 fast-forward
+merge(사용자가 세션 초반에 "sitemap.xml lastmod 수정을 main에 바로 병합해도 되냐"는
+질문에 승인한 것을 이후 전체 세션의 기본 워크플로로 그대로 유지함 — PR 안 거치고 직접
+`git push origin HEAD:main`).
