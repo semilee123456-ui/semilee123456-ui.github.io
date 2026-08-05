@@ -1,0 +1,50 @@
+name: IndexNow ping
+
+# HTML 페이지나 sitemap.xml이 main에 push되면 Bing/Yandex/Seznam/Naver(IndexNow 참여
+# 검색엔진)에 "이 URL들 다시 크롤링해줘"라고 즉시 알림. 홍보 전략 검토 중 나온 제안 —
+# 신생 도메인이라 구글 색인이 느린 것과 별개로, IndexNow 참여 엔진들은 수동 신청 없이도
+# 몇 분 안에 재크롤을 시도함(공식 프로토콜, https://www.indexnow.org). 실패해도 사이트
+# 배포 자체에는 영향 없으므로 이 워크플로 실패가 다른 작업을 막지 않게 독립 워크플로로 둠.
+# 키 파일(9eb667e49373bae82b27cb8821ef4b83.txt, 저장소 루트)로 도메인 소유를 증명함 —
+# 이 파일은 절대 지우거나 이름을 바꾸지 말 것(지우면 앞으로의 ping이 전부 실패함).
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.html'
+      - 'sitemap.xml'
+  workflow_dispatch: {}   # Actions 탭에서 수동 실행 가능(예: 잭팟 대형 회차 콘텐츠 갱신 직후)
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Submit sitemap URLs to IndexNow
+        run: |
+          KEY="9eb667e49373bae82b27cb8821ef4b83"
+          HOST="chamtax.com"
+          # sitemap.xml의 <loc> 값을 그대로 뽑아서 URL 목록으로 씀 — 매번 전체 목록을 다시
+          # 보내도 IndexNow는 재제출에 페널티가 없음(공식 문서 기준), 바뀐 파일만 골라내는
+          # 로직보다 훨씬 단순하고 안전함.
+          URLS=$(grep -oP '(?<=<loc>)[^<]+' sitemap.xml | jq -R . | jq -s .)
+          COUNT=$(echo "$URLS" | jq 'length')
+          echo "제출 대상 URL 개수: $COUNT"
+          BODY=$(jq -n --arg host "$HOST" --arg key "$KEY" --arg keyLocation "https://$HOST/$KEY.txt" --argjson urlList "$URLS" \
+            '{host: $host, key: $key, keyLocation: $keyLocation, urlList: $urlList}')
+          STATUS=$(curl -s -o /tmp/indexnow_resp.txt -w '%{http_code}' \
+            -X POST 'https://api.indexnow.org/indexnow' \
+            -H 'Content-Type: application/json; charset=utf-8' \
+            --data "$BODY")
+          echo "IndexNow 응답 코드: $STATUS"
+          cat /tmp/indexnow_resp.txt || true
+          # 200/202가 정상 성공. 실패해도(네트워크 문제 등) 배포 자체를 막을 이유는 없어서
+          # 워크플로를 실패 처리하지 않고 로그만 남김.
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "202" ]; then
+            echo "::warning::IndexNow 제출이 실패했을 수 있음 (HTTP $STATUS) — 다음 push 때 재시도됨"
+          fi
