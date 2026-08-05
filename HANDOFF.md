@@ -2843,3 +2843,52 @@ Configure → Repository access)에서 `us-lottery-tax-data`를 명시적으로 
 
 전부 main에 병합·배포 완료, 회귀 테스트 전부 통과. 다음 세션에 남은 일 없음 — 사용자가
 제미나이/GPT 검수 결과를 더 가져오면 그때 이어서 우선순위 논의.
+
+### 2026-08-05 이어서 — "이미지로 저장" 카드 폰트 확대 + 낚시 게임 조작 안내 부족(진짜 사용자
+### 신고) 수정
+
+**배경 1 — 이미지로 저장 카드**: 사용자가 "꾸며서 저장하기" 모달 스크린샷을 보내며 "40~60대
+타겟인데 글씨가 작은 것 같다, 홈페이지 전부 확인해달라"고 요청. 홈 화면 CSS는 이미
+`--fs-small:16px`(시니어 가독성 최소 floor)를 전역 변수로 강제하고 있어서(`styles.css`
+:root 선언, index.html에 인라인 font-size 하드코딩 0건 확인) 문제 없음을 코드로 확인 —
+9~13px로 찍힌 것들은 전부 원형 아이콘 버튼/배지/낚시 장식 등 순수 장식 요소였음. 실제
+문제는 `buildHomeResultCheckCanvas()`(script.js)가 그리는 캔버스 이미지 — CSS 변수를 안 타는
+하드코딩 픽셀값이라 별도로 확인해야 했음. `basisMini`("342M USD 당첨 · 한국 거주자") 16→19px,
+`payToLabel`("받는 사람") 18→21px, 날짜/수표번호 줄 13→15px, MEMO 라벨/문구 12→13px·13→15px,
+서명 라벨 11→13px로 각각 확대(최소값도 비례해서 같이 올림). "받는 사람" 밑줄은
+`payToLabelW`를 그린 직후 다시 측정해서 자동으로 위치가 맞춰지므로 별도 좌표 보정 불필요.
+캔버스를 직접 `toDataURL()`로 export해서 실제 픽셀 스크린샷으로 겹침·잘림 없음 확인함.
+
+**배경 2 — 낚시 게임 "눌러도 반응 없다" 신고**: 같은 대화 중 사용자가 "낚싯대 던지기를 눌러도
+아무 변화가 없고 직접 낚싯대를 눌러야 되는 것 같다"고 신고, "인기 있는 방식(입질 오면 탭)으로
+차라리 바꾸자"고 제안. 코드 확인 결과 게임 로직 자체는 정상(사용자가 이미 직접 드래그로 5개
+낚았음) — 진짜 원인은 2가지: (1) `.cta-btn`에 `:disabled` 스타일이 전혀 없어서, 판 진행
+중(`aiming` 상태) 의도적으로 비활성화된 버튼이 눌러도 되는 멀쩡한 버튼처럼 보임. (2) 판
+시작 후 실제 조작(연못을 눌러서 드래그)을 알려주는 안내가 어디에도 없음 — 상단 문구는 "낚싯대를
+던져서 낚아보세요" 한 줄뿐이고 드래그를 언급 안 함. **"인기 있는 방식으로 되돌리자"는 제안은
+채택 안 함**(AskUserQuestion으로 사용자에게 직접 확인받고 "지금 방식 + 안내 보강"을 선택받음) —
+2026-08-05 앞선 세션이 시간 압박 있는 탭 방식(캐스팅→입질탭→릴감기)을 "자꾸 놓쳐요" 불만으로
+이미 걷어내고 지금의 무제한시간 드래그 방식으로 바꾼 전례가 있어서, 되돌리면 그 문제가 재발할
+위험이 큼 — 지금 필요한 건 메커니즘 교체가 아니라 안내 보강이라고 판단.
+- `.cta-btn:disabled{ opacity:0.5; cursor:not-allowed; }` 추가(styles.css) — 낚시 버튼뿐 아니라
+  `#lightning-draw-btn`("뽑는 중...") 등 다른 disabled 버튼에도 동일하게 적용돼 일관성도 개선.
+- `#fishing-drag-hint`(👆 아이콘) 신규 — 판이 시작되면(`castFishingLine()`) `.show` 클래스를
+  붙여 찌 옆에서 좌우로 스윽 움직이는 CSS 애니메이션으로 "여기를 눌러서 밀어보세요"를 알려주고,
+  사용자가 연못을 처음 눌러보는 순간(`fishingDragStart()`) 바로 사라짐(`pointer-events:none`이라
+  힌트를 눌러도 그 아래 드래그가 그대로 시작됨). **문구 대신 아이콘만 써서 26개 언어 번역이
+  전혀 필요 없음** — 2026-08-05 낚시 게임 리팩터 세션이 세운 "게임 문구는 새로 안 만들고
+  기존 번역 재사용" 원칙과 같은 이유(번역 리스크 회피)를 시각적 해법으로 지킨 것.
+  `prefers-reduced-motion`에서는 애니메이션 없이 항상 보이게 처리.
+
+**검증**: `node --check script.js` 통과, `node scripts/build-min.js`로 압축본 재생성. Playwright로
+(1) 판 시작 전 버튼 opacity 1·힌트 안 보임 (2) 판 시작 후(aiming) 버튼 opacity 0.5·cursor
+not-allowed·힌트 표시 (3) 연못을 실제로 눌러 드래그 시작하면 힌트 즉시 사라짐, 3단계 전부
+스크린샷으로 확인. 회귀 테스트 12개 전부 `home_audit`(18)·`faq_audit`(18)·`audit_odds_compare`(40)·
+`wrap_audit`(168)·`console_error_audit`(161)·`map_scroll_audit`(10)·`nav_slider_audit`·
+`lang_leak_audit`(104)·`i18n_coverage_audit`(763키)·`i18n_attr_lint`·`broken_link_audit`(91)·
+`draw_archive_integrity_check`·`fact_consistency_audit`(95) `ISSUES: 0`.
+
+변경 파일: `index.html`(낚시 힌트 마크업 추가, 캐시버스팅 `20260805-10`→`20260805-11`),
+`script.js`/`script.min.js`(캔버스 폰트 크기 확대, 낚시 힌트 show/hide 로직),
+`styles.css`/`styles.min.css`(`.cta-btn:disabled`, `.fishing-drag-hint` 스타일·애니메이션),
+`sw.js`(`CACHE_NAME` v10→v11). 커밋 `ae41b32`.
