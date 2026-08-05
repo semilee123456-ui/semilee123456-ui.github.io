@@ -2803,3 +2803,26 @@ main이 진행되는 동안 이 세션(낚시 미니게임 작업)이 별도 브
 변경 파일: `.github/workflows/indexnow.yml`(신규), `9eb667e49373bae82b27cb8821ef4b83.txt`
 (신규, IndexNow 키 파일), `press-kit.html`(신규). GitHub 저장소 `us-lottery-tax-data`는
 이 저장소 밖이라 커밋 이력에 안 잡힘(위 2번 항목 참고).
+
+### 2026-08-05 이어서 — GitHub 앱 권한 확장: `us-lottery-tax-data`도 이제 이 세션이 직접 push 가능
+
+바로 위 2번 항목에서 "이 세션은 `semilee123456-ui.github.io` 밖 저장소엔 push 권한이 없다"고
+적었는데, 사용자가 GitHub 계정 설정(`github.com/settings/installations` → Claude 앱 →
+Configure → Repository access)에서 `us-lottery-tax-data`를 명시적으로 추가해줘서 해결됨
+(처음엔 "All repositories"로 바꾸려다, 계정에 다른 민감한 저장소가 생길 경우 대비해
+"Only select repositories" + 필요한 저장소만 추가하는 쪽을 권해서 그렇게 함 — 최소 권한
+원칙). `mcp__github__create_or_update_file`로 테스트 커밋(`.gitattributes`)이 실제로
+성공하는 것까지 확인함. **다음 세션이 새 GitHub 저장소를 또 만들 일이 있으면**: 이전처럼
+"이 세션은 새 저장소에 못 씀"이라고 바로 포기하지 말고, 먼저 push 시도해보고 안 되면
+위 경로로 저장소를 추가해달라고 요청할 것 — 매번 zip 파일 우회로 갈 필요 없음.
+
+**이 세션에서 실행한 전체 작업 요약** (다음 세션이 빠르게 파악할 수 있도록):
+1. "결과 더 자세히 보기" 세율표·안내박스 중복 제거 (커밋 `23344cb`)
+2. GA4 계산/공유 퍼널 이벤트 + 결과 인용 출처 표기 (`ec0483c`)
+3. IndexNow 연동, Bing/Yandex/Naver 자동 재크롤 요청 (`7484b12`)
+4. 기자/블로거용 미디어킷 페이지 `press-kit.html` 신설 (`1012ae7`)
+5. GitHub 공개 데이터셋 저장소 `github.com/semilee123456-ui/us-lottery-tax-data` 신설
+   (이 저장소 밖, 커밋 이력 없음 — README.md/data.json/data.csv/.gitattributes 4개 파일)
+
+전부 main에 병합·배포 완료, 회귀 테스트 전부 통과. 다음 세션에 남은 일 없음 — 사용자가
+제미나이/GPT 검수 결과를 더 가져오면 그때 이어서 우선순위 논의.
