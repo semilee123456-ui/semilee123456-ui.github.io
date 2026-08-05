@@ -3441,13 +3441,20 @@ let fishingSessionValues = null; // 이번 판 전체 6개 값 — 캐스팅마�
 // 2026-08-05: "번거롭다"(캐스팅 대기 → 순간 탭 → 꾹 눌러 게이지 채우기 3단계 타이밍 게임)는
 // 사용자 피드백으로, 반사신경 게임을 전면 폐기하고 "낚싯대를 직접 드래그해서 헤엄치는 물고기
 // 위치에 맞춘 뒤 손을 떼면 낚는" 위치 맞추기 방식으로 재구성함(제한시간 없음 — 서두를 필요가
-// 없어서 실수해도 부담이 적음). 상태는 idle(시작 전/한 판 종료)과 aiming(물고기가 헤엄치고
-// 있고 드래그로 낚을 수 있는 중) 2개뿐 — caught는 성공 직후 다음 물고기가 나타나기 전까지의
-// 짧은 전환 잠금 상태.
+// 없어서 실수해도 부담이 적음). 상태는 idle(시작 전/한 판 종료)과 aiming(드래그로 낚을 수 있는
+// 중) 2개뿐.
+// 2026-08-05 추가: "실제로 잡을 수 있는 물고기가 더 많으면 좋겠다"는 요청으로 동시에 낚을 수
+// 있는 물고기를 1마리→최대 3마리로 늘림(FISHING_MAX_FISH) — 슬롯(인덱스)별로 독립된 위치·방향
+// 상태를 배열로 관리하고, 하나를 낚아도 게임 전체를 멈추지 않고 그 슬롯만 짧게 비웠다가 다시
+// 채움(다른 물고기는 그동안 계속 헤엄침) — 그래서 더 이상 전역 "caught" 잠금 상태가 필요 없어짐.
 let fishingState = 'idle';
 let fishingRodXPct = 50;      // 낚싯대(찌)의 현재 가로 위치(연못 폭 대비 %)
-let fishingTargetXPct = 50;   // 지금 헤엄치는 물고기의 가로 위치(%)
-let fishingTargetDirection = 1; // 물고기 이동 방향(1=오른쪽, -1=왼쪽)
+const FISHING_MAX_FISH = 3;   // 동시에 헤엄치며 낚을 수 있는 물고기 최대 마리 수
+let fishingFish = [
+  { active: false, xPct: 50, dir: 1 },
+  { active: false, xPct: 50, dir: 1 },
+  { active: false, xPct: 50, dir: 1 },
+];
 let fishingTargetSpeedPct = 16; // 물고기 초당 이동 속도(연못 폭 대비 %) — 서두르지 않아도 따라잡을 수 있는 여유로운 속도
 let fishingSwimRafId = null;
 let fishingSwimLastTs = null;
@@ -3455,7 +3462,7 @@ let fishingDragActive = false;
 const FISHING_TARGET_MIN_PCT = 10;
 const FISHING_TARGET_MAX_PCT = 90;
 const FISHING_CATCH_TOLERANCE_PCT = 9; // 찌와 물고기 위치가 이 범위(%) 안이면 성공 — 손 떨림 등을 감안해 넉넉히
-const FISHING_NEXT_FISH_DELAY_MS = 500; // 성공 직후 다음 물고기가 나타나기까지의 짧은 축하 연출 시간
+const FISHING_NEXT_FISH_DELAY_MS = 500; // 낚은 슬롯이 다시 채워지기까지의 짧은 축하 연출 시간
 function fishingVibrate(pattern){ try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
 
 // 언어 전환 시에도 재사용해야 해서, 이미 뽑아둔 번호는 그대로 두고 문구·토글 상태만 새로 그림
@@ -3531,8 +3538,7 @@ function resetFishingRound(){
   const pond = document.getElementById('fishing-pond');
   if (pond) pond.classList.remove('is-aiming', 'is-dragging');
   fishingSetRodX(50);
-  const targetFish = document.getElementById('fishing-target-fish');
-  if (targetFish) targetFish.style.display = 'none';
+  for (let i = 0; i < FISHING_MAX_FISH; i++) fishingHideFishSlot(i);
   const msgEl = document.getElementById('fishing-status-msg');
   if (msgEl) msgEl.classList.remove('show');
   document.querySelectorAll('#fishing-result .lightning-ball').forEach(b => {
@@ -3566,38 +3572,58 @@ function castFishingLine(){
   const btn = document.getElementById('fishing-cast-btn');
   if (btn) btn.disabled = true;
   if (pond) pond.classList.add('is-aiming');
-  const targetFish = document.getElementById('fishing-target-fish');
-  if (targetFish) targetFish.style.display = '';
   fishingState = 'aiming';
-  fishingSpawnTargetFish();
+  fishingSpawnInitialFish();
   startFishingSwimLoop();
 }
 
-// 새 물고기 한 마리를 무작위 위치·방향·모양으로 등장시킴(캐스팅마다, 그리고 각 성공 직후 다음
-// 슬롯으로 넘어갈 때마다 호출) — 낚싯대(찌) 위치는 건드리지 않아서 연속으로 자연스럽게 이어짐
-function fishingSpawnTargetFish(){
-  fishingTargetXPct = FISHING_TARGET_MIN_PCT + Math.random() * (FISHING_TARGET_MAX_PCT - FISHING_TARGET_MIN_PCT);
-  fishingTargetDirection = Math.random() < 0.5 ? 1 : -1;
-  const fishEl = document.getElementById('fishing-target-fish');
-  if (fishEl) {
-    fishEl.textContent = ['🐟', '🐠', '🐡'][Math.floor(Math.random() * 3)];
-    fishEl.style.left = fishingTargetXPct + '%';
-    fishEl.style.transform = `translateX(-50%) scaleX(${fishingTargetDirection})`;
+// 새 물고기 한 마리를 슬롯 i에 무작위 위치·방향·모양으로 등장시킴(판 시작, 그리고 각 슬롯이
+// 성공 후 다시 채워질 때 호출) — 낚싯대(찌) 위치는 건드리지 않아서 연속으로 자연스럽게 이어짐
+function fishingSpawnFishSlot(i){
+  const f = fishingFish[i];
+  f.active = true;
+  f.xPct = FISHING_TARGET_MIN_PCT + Math.random() * (FISHING_TARGET_MAX_PCT - FISHING_TARGET_MIN_PCT);
+  f.dir = Math.random() < 0.5 ? 1 : -1;
+  const el = document.getElementById('fishing-target-fish-' + i);
+  if (el) {
+    el.textContent = ['🐟', '🐠', '🐡'][Math.floor(Math.random() * 3)];
+    el.style.display = '';
+    el.style.left = f.xPct + '%';
+    el.style.transform = `translateX(-50%) scaleX(${f.dir})`;
   }
 }
 
-// 물고기가 연못 양쪽 경계 사이를 계속 왕복하게 하는 rAF 루프 — 경과시간(dtSec) 기준이라
-// 기기 성능과 무관하게 항상 같은 속도로 움직임(fishingReelLoop가 쓰던 것과 같은 패턴)
+function fishingHideFishSlot(i){
+  fishingFish[i].active = false;
+  const el = document.getElementById('fishing-target-fish-' + i);
+  if (el) el.style.display = 'none';
+}
+
+// 판 시작 시, 남은 번호 수만큼(최대 FISHING_MAX_FISH) 슬롯을 채움 — 새 판은 항상 6개가 남아있는
+// 상태라 사실상 매번 3마리 전부 등장함
+function fishingSpawnInitialFish(){
+  const count = Math.min(FISHING_MAX_FISH, 6 - fishingCaughtValues.length);
+  for (let i = 0; i < FISHING_MAX_FISH; i++) {
+    if (i < count) fishingSpawnFishSlot(i); else fishingHideFishSlot(i);
+  }
+}
+
+// 활성 상태인 물고기들이 각자 연못 양쪽 경계 사이를 계속 왕복하게 하는 rAF 루프 — 경과시간
+// (dtSec) 기준이라 기기 성능과 무관하게 항상 같은 속도로 움직임(예전 fishingReelLoop와 같은 패턴)
 function fishingSwimLoop(ts){
   if (fishingState !== 'aiming') { fishingSwimRafId = null; fishingSwimLastTs = null; return; }
   if (fishingSwimLastTs == null) fishingSwimLastTs = ts;
   const dtSec = Math.min(0.1, (ts - fishingSwimLastTs) / 1000);
   fishingSwimLastTs = ts;
-  fishingTargetXPct += fishingTargetDirection * fishingTargetSpeedPct * dtSec;
-  if (fishingTargetXPct <= FISHING_TARGET_MIN_PCT) { fishingTargetXPct = FISHING_TARGET_MIN_PCT; fishingTargetDirection = 1; }
-  else if (fishingTargetXPct >= FISHING_TARGET_MAX_PCT) { fishingTargetXPct = FISHING_TARGET_MAX_PCT; fishingTargetDirection = -1; }
-  const fishEl = document.getElementById('fishing-target-fish');
-  if (fishEl) { fishEl.style.left = fishingTargetXPct + '%'; fishEl.style.transform = `translateX(-50%) scaleX(${fishingTargetDirection})`; }
+  for (let i = 0; i < FISHING_MAX_FISH; i++) {
+    const f = fishingFish[i];
+    if (!f.active) continue;
+    f.xPct += f.dir * fishingTargetSpeedPct * dtSec;
+    if (f.xPct <= FISHING_TARGET_MIN_PCT) { f.xPct = FISHING_TARGET_MIN_PCT; f.dir = 1; }
+    else if (f.xPct >= FISHING_TARGET_MAX_PCT) { f.xPct = FISHING_TARGET_MAX_PCT; f.dir = -1; }
+    const el = document.getElementById('fishing-target-fish-' + i);
+    if (el) { el.style.left = f.xPct + '%'; el.style.transform = `translateX(-50%) scaleX(${f.dir})`; }
+  }
   fishingSwimRafId = requestAnimationFrame(fishingSwimLoop);
 }
 
@@ -3681,22 +3707,33 @@ function initFishingKeyboardControls(){
 }
 document.addEventListener('DOMContentLoaded', initFishingKeyboardControls);
 
-// 찌와 물고기 위치를 비교해 성공/실패를 판정 — 제한시간이 없어서 몇 번을 실패해도 불이익 없이
-// 바로 다시 시도 가능
+// 찌와 물고기들 위치를 비교해 가장 가까운 물고기를 찾고 성공/실패를 판정 — 여러 마리가 동시에
+// 헤엄치므로 그중 제일 가까운 것 하나만 대상으로 삼음. 제한시간이 없어서 몇 번을 실패해도
+// 불이익 없이 바로 다시 시도 가능
 function fishingAttemptCatch(){
   if (fishingState !== 'aiming') return;
-  const dist = Math.abs(fishingRodXPct - fishingTargetXPct);
-  if (dist <= FISHING_CATCH_TOLERANCE_PCT) fishingCaughtSuccess();
-  else fishingMissed();
+  let bestIndex = -1;
+  let bestDist = Infinity;
+  for (let i = 0; i < FISHING_MAX_FISH; i++) {
+    const f = fishingFish[i];
+    if (!f.active) continue;
+    const dist = Math.abs(fishingRodXPct - f.xPct);
+    if (dist < bestDist) { bestDist = dist; bestIndex = i; }
+  }
+  if (bestIndex !== -1 && bestDist <= FISHING_CATCH_TOLERANCE_PCT) fishingCaughtSuccess(bestIndex);
+  else fishingMissed(bestIndex);
 }
 
 // 위치가 안 맞아서 놓쳤을 때 — 판 진행 상태(이미 낚은 번호)는 그대로 두고 안내 문구만 보여줌,
-// 물고기는 계속 헤엄치는 중이라 바로 다시 시도 가능(재도전에 불이익 없음)
-function fishingMissed(){
+// 물고기들은 계속 헤엄치는 중이라 바로 다시 시도 가능(재도전에 불이익 없음). 제일 가까웠던
+// 물고기가 있으면(연못에 물고기가 하나라도 있었다면) 그 물고기만 살짝 흔들어 "아깝다" 피드백
+function fishingMissed(nearestIndex){
   fishingVibrate(15);
   showFishingEscapedMessage();
-  const targetFish = document.getElementById('fishing-target-fish');
-  if (targetFish) { targetFish.classList.remove('shake'); void targetFish.offsetWidth; targetFish.classList.add('shake'); }
+  if (nearestIndex != null && nearestIndex >= 0) {
+    const el = document.getElementById('fishing-target-fish-' + nearestIndex);
+    if (el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+  }
 }
 
 function showFishingEscapedMessage(){
@@ -3708,13 +3745,14 @@ function showFishingEscapedMessage(){
   msgEl.classList.add('show');
 }
 
-// 위치가 맞아서 성공했을 때 — 번호 한 개를 확정·공개하고, 남은 슬롯이 있으면 짧은 축하 연출
-// 후 다음 물고기를 새로 등장시킴(찌 위치는 그대로 유지 — 계속 이어지는 흐름을 위해 초기화 안 함)
-function fishingCaughtSuccess(){
-  const slotIndex = fishingCaughtValues.length;
-  const value = fishingSessionValues[slotIndex];
+// 위치가 맞아서 성공했을 때 — 번호 한 개를 확정·공개하고, 낚인 슬롯만 잠깐 비웠다가(다른
+// 물고기들은 그동안 계속 헤엄침) 아직 남은 번호가 있으면 짧은 축하 연출 후 그 슬롯만 다시
+// 채움(찌 위치는 그대로 유지 — 계속 이어지는 흐름을 위해 초기화 안 함)
+function fishingCaughtSuccess(slotIndex){
+  const caughtValueIndex = fishingCaughtValues.length;
+  const value = fishingSessionValues[caughtValueIndex];
   const slots = document.querySelectorAll('#fishing-result .lightning-ball');
-  const slotEl = slots[slotIndex];
+  const slotEl = slots[caughtValueIndex];
   fishingCaughtValues.push(value);
   if (slotEl) {
     slotEl.textContent = value;
@@ -3731,19 +3769,20 @@ function fishingCaughtSuccess(){
   const splash = document.getElementById('fishing-splash');
   if (splash) { splash.style.left = fishingRodXPct + '%'; splash.classList.remove('play'); void splash.offsetWidth; splash.classList.add('play'); }
   const caughtFishEl = document.getElementById('fishing-caught-fish');
-  const targetFishEl = document.getElementById('fishing-target-fish');
-  if (caughtFishEl && targetFishEl) {
-    caughtFishEl.textContent = targetFishEl.textContent;
+  const caughtFishSourceEl = document.getElementById('fishing-target-fish-' + slotIndex);
+  if (caughtFishEl && caughtFishSourceEl) {
+    caughtFishEl.textContent = caughtFishSourceEl.textContent;
     caughtFishEl.classList.remove('play');
     void caughtFishEl.offsetWidth;
     caughtFishEl.classList.add('play');
   }
-  if (targetFishEl) targetFishEl.style.display = 'none';
+  fishingHideFishSlot(slotIndex);
 
   const btn = document.getElementById('fishing-cast-btn');
   if (fishingCaughtValues.length >= 6) {
     fishingState = 'idle';
     stopFishingSwimLoop();
+    for (let i = 0; i < FISHING_MAX_FISH; i++) fishingHideFishSlot(i);
     const pond = document.getElementById('fishing-pond');
     if (pond) pond.classList.remove('is-aiming');
     const resultEl = document.getElementById('fishing-result');
@@ -3753,12 +3792,14 @@ function fishingCaughtSuccess(){
       btn.textContent = pickLang('🎣 처음부터 다시 낚시하기', '🎣 Fish again from scratch', '🎣 重新钓一次', '🎣 Câu lại từ đầu', '🎣 ตกปลาใหม่อีกครั้ง', '🎣 Порыбачить заново', FISHING_RESTART_MORE);
     }
   } else {
-    fishingState = 'caught';
+    // 다른 슬롯의 물고기들은 이 동안에도 계속 헤엄침(fishingState는 계속 'aiming' 유지) —
+    // 아직 남은 번호보다 지금 보이는 물고기 수가 적을 때만 이 슬롯을 다시 채움(막바지엔 자연스럽게
+    // 1~2마리로 줄어듦, 위 state 선언부 주석 참고)
     setTimeout(() => {
-      if (fishingState !== 'caught') return;
-      fishingSpawnTargetFish();
-      if (targetFishEl) targetFishEl.style.display = '';
-      fishingState = 'aiming';
+      if (fishingState !== 'aiming') return;
+      const stillNeeded = 6 - fishingCaughtValues.length;
+      const currentlyVisible = fishingFish.filter(f => f.active).length;
+      if (currentlyVisible < Math.min(FISHING_MAX_FISH, stillNeeded)) fishingSpawnFishSlot(slotIndex);
     }, FISHING_NEXT_FISH_DELAY_MS);
   }
 }

@@ -1544,12 +1544,18 @@
   }
   /* 실제로 낚는 대상 — 연못 안을 좌우로 헤엄쳐 다니고(script.js의 fishingSwimLoop), 사용자가
      낚싯대를 이 위치에 맞춘 뒤 손을 떼면 낚임. 장식용 idle-fish 3마리와 구분되도록 은은한
-     발광 효과를 줌. 방향 전환 시 scaleX로 좌우 반전(script.js가 인라인 transform으로 처리) */
+     발광 효과를 줌. 방향 전환 시 scaleX로 좌우 반전(script.js가 인라인 transform으로 처리).
+     2026-08-05: 슬롯을 최대 3개(fishing-target-fish-0/1/2)로 늘리면서, 서로 다른 높이(bottom)에
+     둬서 동시에 헤엄쳐도 겹쳐 보이지 않게 함 — x좌표(left)는 독립적으로 각자 헤엄치므로 계속
+     스쳐 지나갈 순 있지만, 세로로는 항상 분리돼있어 뭐가 뭔지 헷갈리지 않음 */
   .fishing-target-fish{
-    position:absolute; bottom:20px; left:50%; font-size:20px; line-height:1; z-index:2;
+    position:absolute; left:50%; font-size:20px; line-height:1; z-index:2;
     transform:translateX(-50%);
     filter:drop-shadow(0 0 5px rgba(255,255,255,0.75)) drop-shadow(0 1px 1px rgba(0,0,0,0.2));
   }
+  .fishing-target-fish-0{ bottom:34px; }
+  .fishing-target-fish-1{ bottom:20px; font-size:18px; }
+  .fishing-target-fish-2{ bottom:8px; font-size:16px; }
   .fishing-target-fish.shake{ animation:fishing-target-shake 0.3s ease; }
   @keyframes fishing-target-shake{
     0%,100%{ transform:translateX(-50%); }
