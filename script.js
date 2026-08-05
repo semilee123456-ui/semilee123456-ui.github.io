@@ -10915,7 +10915,7 @@ async function shareResult(){
   // 발음으로 시작하는 나라만 an을 씀
   const article = (homeCountryVal === 'in' || homeCountryVal === 'id' || homeCountryVal === 'other') ? 'an' : 'a';
   const shareText = pickLang(
-    `나 미국 복권(${amountTextKo}) 당첨되면 ${country} 기준 ${finalAmt} 실수령! 너도 얼마 받을 수 있는지 참택스에서 확인해봐 (참고용 시뮬레이션이에요)`,
+    `나 미국 복권(${amountTextKo}) 당첨되면 ${country} 기준 ${finalAmt} 실수령! 너도 얼마 받을 수 있는지 참택스에서 확인해봐 (참고용 시뮬레이션이야)`,
     `If I won the US lottery (${amountTextEn}), my take-home as ${article} ${country} would be about ${finalAmt}. See how much you'd actually keep after tax on ChamTax! (This is a reference simulation)`,
     `如果中了美国彩票（${amountTextZh}），按${country}计算实得金额大约是${finalAmt}。来ChamTax算算你扣税后实际能拿到多少吧！（仅供参考的模拟计算）`,
     `Nếu trúng xổ số Mỹ (${amountText} triệu USD), số tiền thực nhận theo ${country} sẽ khoảng ${finalAmt}. Xem bạn thực sự giữ lại bao nhiêu sau thuế trên ChamTax! (Đây là kết quả mô phỏng tham khảo)`,
