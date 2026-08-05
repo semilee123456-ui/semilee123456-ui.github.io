@@ -3266,3 +3266,23 @@ Kaggle/Disquiet/GeekNews 실제 게시 진행
 역분석하는" 방향은 실행형 작업이 아니라 리서치 작업이라 별도로 요청이 오면 진행
 가능(웹서치로 성공 사례 조사) — 단, 이것도 결국 "그래서 뭘 하라는 건데"로 수렴하면
 위에서 이미 다룬 채널들과 겹칠 가능성이 큼.
+
+### 2026-08-05 이어서 — GitHub Awesome List PR 완료 + AlternativeTo 7일 제한 대기중
+
+- **GitHub Awesome List PR 완료**: `stefanneculai/best-personal-finance-tools` 저장소를
+  fork(`semilee123456-ui/best-personal-finance-tools`)해서 README.md "8. Tax
+  Preparation" 표에 ChamTax 행 추가 후 PR #4("Add ChamTax") 오픈 완료. 병합 여부는
+  저장소 주인 승인 대기중 — 나중에 확인만 하면 됨, 추가 작업 불필요.
+- **AlternativeTo 가입 완료, 등록은 7일 제한 대기중**: Google/GitHub OAuth 로그인 둘 다
+  AlternativeTo 쪽 에러로 실패해서 이메일로 가입(계정명 `chamtax`). 이메일 인증까지
+  완료. 그런데 "New app submissions require an account age of at least 7 days" 제한에
+  걸림 — GeekNews와 동일한 패턴. **2026-08-12 이후 재시도 가능**(정확히는 2026-08-12
+  15:56 Stockholm 시간 이후). 등록할 정보는 이미 확정:
+  - Name: ChamTax / Website: https://chamtax.com
+  - Description: "Free calculator for US Powerball and Mega Millions winners showing
+    after-tax take-home amount, compared across 21 countries of residency. Includes an
+    open CC0 dataset."
+  - Tags: lottery, tax calculator, finance, calculator
+  - `send_later`로 2026-08-12 14:00 UTC에 사용자에게 리마인더 예약해둠(trigger_id
+    `trig_01HGhnN1czbgiNANMUAq3mCy`) — 이 리마인더가 오면 AlternativeTo와 GeekNews
+    (둘 다 신규 계정 7일 제한 걸렸던 것) 등록을 같이 마무리할 것.
