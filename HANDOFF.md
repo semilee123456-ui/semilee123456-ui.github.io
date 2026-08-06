@@ -8,6 +8,15 @@
 > 직접 말할 것** — 조용히 빼놓기만 하지 말고 "이런 내용이 있는데 공개 파일엔 못 적어서 여기
 > 따로 말씀드려요"라고 알려줄 것. 자세한 내용은 아래 "새 세션 시작 시 지켜야 할 것" 2~3번 참고.
 
+> ## ⚠️ 이 저장소는 `petscan-ai`와 완전히 무관한 별개 프로젝트입니다
+> 사용자 GitHub 계정에는 이 저장소(`semilee123456-ui.github.io`, 참택스/ChamTax) 말고도
+> `petscan-ai`(다른 팀이 만드는 특수동물 AI 스캐너 서비스)·`us-lottery-tax-data`·
+> `best-personal-finance-tools` 저장소가 있음(2026-08-06 확인). **`petscan-ai`는 이 세션이
+> 다루는 프로젝트가 아니고, 이 저장소의 코드/커밋/인수인계와 아무 관련이 없음** — 저장소를
+> 헷갈려서 `petscan-ai` 관련 작업을 여기 커밋하거나, 반대로 참택스 작업 맥락을 `petscan-ai`로
+> 착각해서 진행하지 말 것. 작업 시작 전 저장소 이름(`semilee123456-ui.github.io`)이 맞는지
+> 항상 확인할 것.
+
 이 파일 하나가 **유일한 정식 인수인계 문서**입니다. `handoff-*.md`로 흩어져있던 예전 문서들
 (2026-07-17 ~ 2026-07-23)을 이 파일 하나로 합쳤습니다. **새 세션을 시작하면 이 파일 전체를
 Claude에게 읽게 하세요.**
@@ -582,6 +591,27 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   iOS Safari 기기로 검증은 못 했음** — 다시 발생하면 이 조치가 원인을 못 잡은
   것이니 사용자에게 재현 스크린샷(몇 번째 자리 숫자를 입력했는지, 스크롤 위치,
   아코디언을 이미 펼쳐둔 채로 금액을 바꿨는지)을 다시 요청해서 범위를 좁힐 것.
+- **아랍어(RTL)에서 `#realAbroadSelect`("US · English" 옵션)가 "JS · English"로 오타처럼
+  보임(2026-08-06 주간 헬스체크 능동 탐색에서 발견)**: `html[dir="rtl"]`을 상속받는
+  네이티브 `<select>`(홈 탭 "🌐 사는 나라를 골라서 바로 보기" 줄, `index.html` `#realAbroadSelect`
+  근처)에서 값 `us|en`의 "US · English" 옵션만 "U" 글자가 시각적으로 사라져 "JS ·
+  English"로 렌더링됨(다른 나라 옵션 — `IN · English`, `JP · 日本語` 등 — 은 같은 RTL
+  상태에서도 정상 렌더링, `US`만 재현됨). `textContent`/`.value`는 정상이라 순수 렌더링
+  버그(Chromium 네이티브 select의 bidi 글자모양 처리 특이 케이스로 추정, 이 샌드박스
+  폰트셋 특유의 문제일 가능성도 배제 못함). `direction:ltr`로 강제하면 사라지긴 하는데
+  그러면 드롭다운 화살표가 반대쪽으로 붙는 트레이드오프가 생겨서 임의로 안 고침 — 재현:
+  `index.html` 아무 폭에서나 `setLanguage('ar', true)` 후 홈 탭 `#realAbroadSelect`에서
+  `US · English` 옵션 확인. 다음 세션은 (1) 실제 기기/다른 브라우저에서도 재현되는지
+  먼저 확인하고 (2) 고치기로 하면 select 자체를 JS 커스텀 드롭다운으로 바꾸지 않는 선에서
+  가능한 방법(예: 옵션 라벨 자체에 유니코드 격리 문자 삽입)부터 검토할 것.
+- **240~280px 폭에서 `.intro-lang-select`(홈 탭 언어 골라보기 select)가 말줄임표 없이
+  텍스트를 그냥 잘라버림(2026-08-06 주간 헬스체크 능동 탐색에서 발견, RTL 무관 — 태국어·
+  베트남어·아랍어 전부 재현)**: `styles.css` `.intro-lang-select`(`flex:1; min-width:0`
+  근처)가 240~280px에서 네이티브 `<select>` 자체 렌더링이 "US ·"나 "glish"처럼 중간이
+  잘린 채로 보임(320px부터는 정상). 실제 폰이 240~280px까지 좁은 경우는 드물어 우선순위는
+  낮지만 재현은 100%. 고치려면 라벨을 더 짧게 하거나, 말줄임표가 가능한 JS 커스텀
+  드롭다운으로 바꾸거나, 버튼을 옆이 아니라 아래로 쌓는 등 디자인 판단이 필요해서 이번엔
+  코드 안 건드림.
 - ~~**240px처럼 아주 좁은 화면에서 "다른 나라 기준 더보기"(`country-toggle-more-grid`) 국가
   버튼 그리드의 국가명이 카드 밖으로 약 17.6px 삐져나감**~~ — **해결됨(2026-07-30,
   `claude/progress-checkpoint-lw2oss` 세션)**: 원인은 `grid-template-columns:1fr 1fr`가
@@ -2729,3 +2759,110 @@ HANDOFF 기록만 보고 답하지 않고 매번 코드/워크플로 파일을 �
   조각(숫자·영문·통화기호)이 하나라도 섞여 있으면 반드시 `bidiIsolateLtrRuns()`로
   감쌀 것** — `ctx.direction`만으론 부족하다는 게 이번에 실측으로 확인됨. 이 함수는
   `layoutShareContent()` 바로 위에 있음.
+
+### 2026-08-06 — 주간 사이트 헬스체크(9개 항목 전체 점검, `claude/progress-checkpoint-pbf93h`)
+
+로또 데이터 점검과 별개인 주간 사이트 전반 헬스체크. 서브에이전트 4개(회귀 테스트/
+외부링크·SEO 스팟체크/세율·환율 스팟체크/능동적 버그 탐색)를 병렬로 돌림. **참고**:
+2026-08-03에 이 통합 체크리스트가 15개 개별 루틴으로 쪼개졌다는 기록이 위에 있는데,
+이번 세션은 그 개별 루틴이 아니라 예전 통합 체크리스트(1~9번) 그대로 다시 들어와서
+실행함 — 15개 루틴이 실제로 살아있는지는 이 세션 도구로 확인 불가(트리거 목록 조회 권한
+없음), 다음에 이 통합 체크리스트가 또 들어오면 그때도 있는 그대로 수행하면 됨.
+
+- **1. 라이브 배포 상태 — ⚠️ 문제 발견, GitHub Pages가 몇 시간째 최신 커밋을 못 따라감**:
+  `chamtax.com`의 `index.html`/`sw.js` 응답 헤더 `last-modified`가 `2026-08-06 10:32:17
+  GMT`에 멈춰있는데, main은 그 이후로도 최소 5개 커밋이 더 진행됨(마지막은 `13:06:35
+  GMT`, PR #151 머지). 세션 시작 시점(14:54 GMT)과 끝난 시점(15:38 GMT) 두 번 모두
+  `?_cb=<timestamp>` 캐시버스팅 쿼리로 재확인했지만 값이 안 바뀜 — `cf-cache-status:
+  DYNAMIC`(Cloudflare 캐시가 아니라 매번 오리진에 실제로 물어보는 상태)이라 CDN 캐시
+  문제가 아니라 **GitHub Pages 오리진 자체가 재배포를 안 하고 있는 것으로 보임**(HANDOFF.md
+  7번 항목이 설명하는 "Cloudflare 최대 4시간 캐시"로는 설명 안 되는 지속적 정체 — 이미
+  4시간 넘게 정체 중이었고 캐시 문제라면 `cf-cache-status: HIT`이어야 하는데 `DYNAMIC`).
+  실제 영향: 방문자가 받는 `script.min.js?v=20260806-5`/`styles.min.css?v=20260806-6`/
+  `sw.js`의 `CACHE_NAME='chamtax-shell-v14'`가 로컬 main 최신값(`-6`/`-7`/`v16`)보다
+  뒤처짐 — 아랍어/우르두어 bidi 버그 수정 등 오늘 배포됐어야 할 변경사항이 아직 라이브에
+  하나도 안 나가 있을 가능성이 높음.
+  **2026-08-06 후속(다른 세션이 원인 확정)**: GitHub Actions API로 직접 확인한 결과,
+  "pages build and deployment" 워크플로의 Jekyll 빌드 자체는 매번 성공하는데, 배포
+  단계가 `deployment_queued` 상태에서 멈춰 10분 타임아웃으로 계속 취소되고 있었음(PR #147
+  머지 `3e03b505`부터 반복, PR #150 `d600fd13`까지는 정상 배포됐던 게 마지막). 워크플로
+  재실행(`rerun_workflow_run`)도 403(Resource not accessible by integration)으로 막혀서
+  이 세션도 직접 못 고침 — **사용자가 Actions 탭에서 실패한 "pages build and deployment"
+  실행을 찾아 "Re-run all jobs"를 눌러야 함.** `gh` CLI가 이 세션에 없고 GitHub REST API도
+  프록시가 막아놔서(`Access to this GitHub API path is not permitted through this proxy`)
+  Actions/Pages 배포 로그를 직접 확인 못 함 — **사용자가 저장소 Settings→Pages에서 배포
+  상태 배너나 Actions 탭의 "pages build and deployment" 워크플로 실행 이력을 직접
+  확인해줘야 진짜 원인(빌드 실패/큐 정체/설정 문제)을 알 수 있음.** 도메인 자체(A레코드/
+  CNAME/SSL)는 전부 정상이라 DNS 문제는 아님(아래 2번 참고).
+- **2. 도메인/SSL — 정상**: `https://chamtax.com/` 200, 인증서 `CN=chamtax.com`(Google
+  Trust Services 발급) `2026-10-29`까지 유효, `http://chamtax.com` → 301 → https 정상,
+  `https://www.chamtax.com` → 301 → apex 정상, `http://semilee123456-ui.github.io/` →
+  301 → `https://chamtax.com/` 정상. 리다이렉트 루프·인증서 오류 없음.
+- **3. 회귀 테스트 — 14개 전체 `ISSUES: 0` (기존 문서엔 "12개"로 적혀있었는데 실제로는
+  `fact_consistency_audit.js`/`full_overflow_sweep.js`가 이미 추가되어 14개임 — 문서
+  숫자가 코드보다 뒤처져 있던 것, 참고용으로 지금 이 항목에 실제 개수 기록)**:
+  audit_odds_compare(40)·broken_link_audit(95파일)·console_error_audit(161)·
+  draw_archive_integrity_check(4)·fact_consistency_audit(99파일)·faq_audit(18)·
+  full_overflow_sweep(27개 언어×5개 폭×7개 화면=945 조합, 100초 타임아웃보다 오래
+  걸려서 처음엔 하네스 타임아웃으로 죽었다가 재실행 2번으로 완주 확인)·home_audit(18)·
+  i18n_attr_lint·i18n_coverage_audit(764키)·lang_leak_audit(104)·map_scroll_audit(10)·
+  nav_slider_audit·wrap_audit(168) 전부 통과.
+- **4. 외부 링크 스팟체크 (이번 주 10/27개 확인, 로테이션 기록)**: 전체 41개(가 아니라
+  실제로는 90개) 랜딩페이지 + index.html에서 외부 링크는 총 27개뿐(대부분 index.html에
+  몰려있음 — irs.gov/refunds, missingmoney.com, usa.gov/unclaimed-money, gov.kr
+  미수령환급 포털, pbgc.gov, udgam.rbi.org.in, bb.org.bd, iepf.gov.in, jsdelivr
+  Pretendard CDN 등 + press-kit.html의 github.com 저장소 링크 + Google Fonts, 나머지
+  랜딩페이지는 폰트 CDN 링크만 공유). 이번 주 10개 확인: **죽은 링크 확정 0건**. 7개는
+  200 정상, 3개(`missingmoney.com`/`udgam.rbi.org.in`/`iepf.gov.in`)는 Cloudflare/Akamai
+  봇 차단(403/connection-reset)이라 이 샌드박스에서 죽었는지 살았는지 판단 불가 — 사람이
+  브라우저로 직접 열어서 확인 필요. **다음 주는 나머지 17개(주로 index.html 안의 각국
+  미수령상금 링크들) 중심으로 이어갈 것**, 이번에 봇차단으로 판정 못 한 3개도 브라우저로
+  재확인 권장.
+- **5. 세율/환율 폴백값 스팟체크 (이번 주 국가 3/21·주 3/51·통화 3/21, 로테이션 기록)**:
+  국가 인도·베트남·카자흐스탄(전부 2026년 세법 개정 주석이 달려있어 드리프트 위험이 가장
+  큰 항목 위주로 선택), 미국 주 메인·메릴랜드·애리조나, 통화 JPY·RUB·VND 확인. **확정
+  오류 0건**. 인도의 25% 서차지(고소득 구간)와 카자흐스탄 제379조 "당첨금" 10%
+  세율 2건은 검색 결과가 불충분해 "확인 필요"로만 남김(코드 미수정). 환율 3개
+  전부 현재 시세와 4% 이내 차이(20% 기준 미달, 정상). **다음 주는 나머지 18개국/
+  48개 주/18개 통화 중 이번에 안 본 항목으로 이어갈 것** — 특히 아직 한 번도 스팟체크
+  안 된 국가/주/통화 위주로.
+- **6. HANDOFF.md 라이브 반영 — 1번과 동일한 문제로 뒤처짐**: 라이브 HANDOFF.md가 로컬
+  대비 230줄 적음(라이브 2,501줄 vs 로컬 세션 시작 시점 2,731줄) — 별도 문제가 아니라
+  1번의 GitHub Pages 배포 정체가 이 파일에도 그대로 적용된 것.
+- **7. 능동적 버그 탐색 (이번 주 로테이션: 뷰포트 240/280/320/960/1280px × 아랍어(RTL)·
+  태국어·베트남어, 홈/비교/확률체감/FAQ 4개 화면, 총 60조합 자동 오버플로 검사 + 클릭
+  시퀀스 3회(일반/다크모드/다크+고대비))**: 자동 오버플로 검출기는 60조합 전부 0건.
+  육안 확인에서 신규 버그 2건 발견(코드 미수정, 위 "알려진 미해결 항목"에 정확한 재현
+  방법과 함께 기록함) — (1) 아랍어에서 `#realAbroadSelect`의 "US · English" 옵션이
+  "JS · English"로 보이는 bidi 글자모양 버그(디자인 판단 필요해서 안 고침), (2) 240~280px
+  폭에서 `.intro-lang-select`가 말줄임표 없이 텍스트 잘림(태국어/베트남어/아랍어 전부
+  재현, 우선순위 낮음). 클릭 시퀀스(국가→통화→탭전환→아코디언→언어전환→재계산, 다크·
+  고대비 조합 포함)는 3회 전부 상태 불일치·콘솔 에러 없이 정상. **다음 주는 아직 안 써본
+  뷰포트(예: 375/414/768/1440px)와 언어(예: 중국어·일본어·러시아어·크메르어) 조합으로
+  이어갈 것.**
+- **8. SEO/콘텐츠 최신성 (이번 주 랜딩페이지 5개 + index.html 샘플, 로테이션 기록)**:
+  `bangladesh-resident-us-lottery-tax.html`/`english_in_korea_lottery_tax.html`/
+  `us-lottery-basics.html`/`powerball-tax.html`/`biggest-lottery-jackpots-after-tax.html`
+  + `index.html` 확인 — title/meta description/OG/JSON-LD 전부 정상(JSON 파싱 성공),
+  hreflang 대상 파일 전부 실존 확인(`test -f`), sitemap.xml 90개 URL 전부 저장소 파일과
+  매칭 확인 + 9개 실제 라이브 200 확인, robots.txt가 사이트맵 URL을 막고 있지 않음.
+  콘텐츠 최신성: 하드코딩된 낡은 연도·"최신 잭팟" 금액 없음(FAQ 안의 "2025년"류 언급은
+  전부 각국 세법 개정 시행일 인용이라 정상). **검색 노출 스팟체크**: "메가밀리언즈
+  실수령액" WebSearch 결과에 chamtax.com 미노출(뉴스매체·나무위키·경쟁사 `lotterytexts.com`이
+  상위) — 신생 도메인 특성상 예상 범위(기존 GA4/GSC 진단과 일치). 명백한 콘텐츠 공백은
+  못 찾음(일시불/연금 설명은 이미 FAQ에 있음 확인). **다음 주는 다른 5개 랜딩페이지
+  샘플로 이어갈 것.**
+- **9. 저장소 위생 — 정상**: `upload_batch*`류 중복 폴더, 루트에 `scripts/`/`i18n-source/`/
+  `.github/workflows/`와 겹치는 미참조 중복 파일 없음. (참고, 이번 항목 범위 밖이라 안
+  건드림: 루트에 `DESIGN-REVIEW-*.md`/`GEMINI-REVIEW-*.md`/`HANDOFF-branch-cleanup-*.md`/
+  `HANDOFF-og-share-*.md`/`handoff_hero_declutter.md` 같은 1회성 검토 메모 파일들이
+  누적되어 있음 — `scripts/`나 `i18n-source/`처럼 "정식 위치와 겹치는 중복"은 아니라서
+  이번 항목의 삭제 대상은 아니지만, 계속 쌓이는 중이니 언젠가 정리가 필요하면 참고.)
+- **결론**: 코드 변경 없음(발견된 버그 2건 모두 디자인 판단 필요해서 미수정, 세율/링크
+  전부 확정 오류 없음) — 이 세션이 실제로 수정한 건 이 HANDOFF.md 문서(알려진 미해결
+  항목 2건 추가 + 이 작업 이력)뿐. **1번 배포 정체는 이 세션 권한으로는 못 고침 — 사용자가
+  Settings→Pages/Actions 탭에서 직접 확인 필요**, 다음 세션은 이 문제가 여전한지부터
+  재확인할 것(재확인 시 `?_cb=<timestamp>` 캐시버스팅 쿼리로 `last-modified` 헤더를 보는
+  방법을 그대로 쓰면 됨). **후속(같은 날, 다른 세션이 원인 확정)**: 위 1번 항목에 추가
+  기록한 대로, 배포 정체의 정확한 원인(Pages 배포 큐 타임아웃)을 GitHub Actions API로
+  확정함 — 다음 세션은 재현/원인 조사를 반복하지 말고, Actions 탭 재실행 여부만 확인할 것.
