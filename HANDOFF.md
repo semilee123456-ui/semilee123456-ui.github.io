@@ -1932,3 +1932,58 @@ fix-og-logo.js`, 커밋 dacfbea): 위 세션에서 78개 카드를 고칠 때 �
 스크립트 수정만 커밋). `og-image-hook.png`(한국어 "참택스", 아이콘 잉크 크기가
 42×25px로 다른 파일들의 37×34px과 달라 정사각형 필터 밖)는 자동 스킵되는 게
 정상 동작 — 이미 다른 방식으로 고쳐져 있어서 문제 없음.
+
+### 2026-08-05 이어서 — 비교 탭 지도 시각 개선 + "기타 국가" 칩 2줄 쪼개짐 수정
+
+**1. 비교 탭 국가 지도 시각 개선(사용자 요청 "지도나 애니 더 멋지게")**: CSS만 변경,
+JS/데이터 로직은 그대로.
+- `.country-map-wrap`에 다른 카드와 같은 톤의 은은한 그림자(`box-shadow`) 추가로
+  입체감 부여, 국경선 기본 대비(fill/stroke opacity)를 살짝 올림.
+- `.country-map-pin`에 hover/focus 피드백 추가(`transform:scale(1.5)` +
+  `filter:brightness(1.15)`, `transition`) — 클릭 가능한 핀이란 걸 클릭 전에도
+  알 수 있게 함. 기존 "선택된 국가" 빨간 펄스 애니메이션(`.active`)과는 별개 규칙이라
+  서로 안 겹침, `prefers-reduced-motion` 존중.
+- 마스코트 로고 idle 애니메이션(바운스+윙크)은 최근 세션에서 이미 잘 구현돼 있어서
+  손 안 댐.
+- `home_audit`·`console_error_audit`·`broken_link_audit`·`wrap_audit` 전부
+  `ISSUES: 0`.
+
+**2. "🌐 기타 국가" 칩이 "기타"/"국가" 사이에서 줄바꿈되어 2줄로 보이는 문제**
+(사용자가 실제 폰 스크린샷으로 재제보, `renderAmountBreakdownHtml()`의 잭팟
+히스토리 국가별 실수령액 칩): 시행착오가 있었으므로 다음 세션이 또 같은 삽질을
+반복하지 않도록 상세히 남김.
+- **1차 시도(실패)**: `otherLabelText` 안의 공백을 전부 nbsp로 바꿔 라벨 전체를
+  강제로 한 줄 처리 — 모든 언어에 적용했더니 영어("Other country")가 전역
+  `overflow-wrap:break-word` 때문에 단어 경계가 아니라 "Other c/ountry"처럼 글자
+  중간에서 끊기는 더 나쁜 회귀 발생. 한국어(`currentLang==='ko'`)로 범위를 좁혀도
+  "기타"/"국가" 사이가 이번엔 "국"/"가" 음절 중간에서 끊기는 동일 증상 재현 —
+  텍스트 조작(nbsp)으로는 근본 해결 안 됨.
+- **원인 정확히 특정**: Playwright로 실측한 결과 이 칩의 실제 콘텐츠 폭(패딩 제외,
+  약 85px)이 "🌐 기타 국가" 라벨이 필요로 하는 폭(약 93px)보다 **진짜로 8px
+  부족**해서 생기는 순수 공간 문제였음(CSS 버그도 텍스트 문제도 아니었음). 폰트
+  크기는 이 코드베이스의 시니어 가독성 최소 기준(`--fs-small:16px`) 밑으로 줄일 수
+  없고, 칩을 다시 전체 폭으로 넓히면 2026-07-29에 되돌렸던 "혼자 유독 커 보임"
+  문제가 재발함.
+- **최종 해결(성공)**: `html[lang="ko"] .jh-amt-chip-other`에만 좌우 패딩을
+  10px→5px로 줄여 필요한 폭(약 100px)을 확보하고, 같은 범위에서 `white-space:
+  nowrap`으로 강제 한 줄 처리. 다른 언어는 라벨 자체가 한국어보다 길어서(예:
+  "Другая страна", "Boshqa mamlakat") 이 정도 여유로도 어차피 부족하므로 손대지
+  않고 기존 동작(단어 경계에서 자연스럽게 줄바꿈) 그대로 유지 — nowrap을 전 언어에
+  걸었으면 그 언어들에서 실제로 텍스트가 칩 밖으로 튀어나오는 진짜 오버플로우가
+  났을 것(Playwright 실측으로 사전에 확인하고 막음: ko/en/ru/uz 4개 언어 전부
+  `scrollWidth - clientWidth`로 오버플로우 0px 확인).
+- **교훈**: `getBoundingClientRect().width`는 flex/grid 아이템이 부모 폭에 맞춰
+  늘어나 있으면(stretch) 실제 텍스트 폭이 아니라 늘어난 박스 폭을 그대로 반환해서
+  오버플로우 여부 판단에 못 씀 — `scrollWidth` vs `clientWidth` 비교(nowrap 상태에서)
+  가 진짜 필요한 폭을 확인하는 정확한 방법. 다음에 비슷한 "칩/좁은 박스 안 텍스트
+  줄바꿈" 문제가 나오면 처음부터 이 방법으로 실측부터 할 것 — 텍스트(nbsp 등)나
+  `overflow-wrap` 값을 추측으로 먼저 바꾸지 말 것.
+- `node --check`, `home_audit`·`console_error_audit`·`i18n_coverage_audit`·
+  `broken_link_audit`·`wrap_audit` 5개 회귀 테스트 전부 `ISSUES: 0`.
+
+**병합 메모**: 이 두 작업을 push하는 중 다른 세션이 각각 한 번씩 먼저 main에
+푸시해놔서(먼저 og-image 78개 로고 교체 세션, 나중엔 CLAUDE.md·모바일 사파리 텍스트
+겹침 대응 세션) 두 번 다 `git fetch`+`git merge`로 병합함 — 두 번째는
+`script.min.js`(생성 파일)에서만 충돌 나서 `npm run build:min`으로 다시 빌드해
+해결(수동으로 diff 짜맞추지 않음, 생성 파일은 항상 재빌드가 정답). 회귀 테스트는
+병합 후 최종 상태 기준으로 다시 한번 전부 재확인함.
