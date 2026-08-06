@@ -2056,3 +2056,31 @@ Lobsters/Hugging Face — Kaggle·디스콰이엇·GeekNews·AlternativeTo와 �
 실행 가능한 무료 홍보 작업은 정말로 0건. 다음 세션에 또 새 AI 생성 목록이 오면,
 바로 이 섹션을 사용자에게 보여주고 "코드로 검증 가능한 새 항목이 진짜 있는지"만
 빠르게 스캔한 뒤 없으면 그대로 종료할 것 — 전체 재검토 반복 금지.
+
+### 2026-08-06 이어서 — 동남아 로컬 채널(9번째 목록) 검토 + Cốc Cốc 등록 상태 확인·완료
+
+**1. 동남아 로컬 채널 목록 검토**: Cốc Cốc(베트남 검색엔진) 등록, VOZ/Tinh tế(베트남)·
+Pantip(태국)·Kaskus(인도네시아) 포럼 게시, r/PHInvest·r/Philippines 게시, 해외
+복권 블로그 위젯 제공 제안 이메일. 사이트에 실제로 `i18n/vi.json`·`th.json`·
+`id.json`·`tl.json` 4개 다 있고 전용 랜딩페이지도 존재해 전제는 맞음(제미나이 목록이
+매번 근거 없는 얘기만 하는 건 아님). 다만:
+- **포럼 게시(VOZ/Tinh tế/Pantip/Kaskus/Reddit)**: "커뮤니티에 직접 홍보글 게시"라
+  이전 세션에서 이미 명시적으로 거절한 "Reddit 직접 활동... 활동 안 하고 싶다"와
+  동일 카테고리 — 사용자에게 재확인 요청함, 아직 답 안 옴(다음 세션이 먼저 나서서
+  진행하지 말 것, 사용자 확답 필요).
+- **블로그 위젯 제공 제안 이메일**: 이메일 발송 수단 없음, 기존과 동일한 구조적
+  한계로 스킵.
+
+**2. Cốc Cốc 검색엔진 등록 — 조사 결과 이미 100% 완료 상태였음**: 처음엔 Yandex처럼
+계정 생성+소유권 인증이 필요할 거라 짐작했으나, 실제 공식 문서(`coccoc.com/search/
+console/en/submit-sitemap-to-coc-coc-search`) 확인 결과 **계정/로그인/소유권 인증
+전혀 불필요** — `robots.txt`에 `Sitemap:` 지시어만 있으면 끝. chamtax.com의
+`robots.txt`는 이미 `Sitemap: https://chamtax.com/sitemap.xml`+`User-agent: *
+Allow: /`(Coccocbot 포함 전체 허용)로 조건 완전 충족 상태였음 — **추가 조치 불필요,
+콘솔 가입도 필요 없음**. URL 수동 제출 폼(`get-your-website-on-coc-coc-search`)은
+JS 렌더링 SPA라 API 엔드포인트가 정적 HTML에 없어 curl로 자동화 불가 확인했으나,
+공식 가이드 자체가 "수동 제출보다 robots.txt/크롤러 접근성이 우선"이라고 명시하고
+있어 자동화 시도 자체가 불필요한 것으로 결론. 색인 여부 확인은 사용자가
+`coccoc.com/search`에서 `site:chamtax.com chamtax.com` 검색으로 직접 확인 가능,
+0건이어도 크롤링 시차 문제(Google/Bing 초기와 동일 패턴)이지 콘솔에서 추가로 할
+조치는 없음.
