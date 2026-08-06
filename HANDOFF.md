@@ -2116,3 +2116,24 @@ AlternativeTo·GeekNews와 같은 7일 대기 패턴. r/SideProject·r/IndieHack
 게시글 초안은 작성해서 `SendUserFile`로 사용자에게 전달함(위 "홍보 전략 논의"
 항목과 동일한 이유로 이 저장소엔 초안 원문을 남기지 않음 — 사이트 코드와 무관한
 홍보 카피이고, 필요하면 사용자가 채팅 기록에서 다시 찾을 수 있음).
+
+**같은 날 이어서 — 동남아 7개 언어(vi/th/id/tl/km/lo/my) 페르소나별 전수 감사
+(서브에이전트) + 실제 버그 2개 발견·수정**: 사용자 요청으로 6개 페르소나 카테고리 ×
+7개 언어(21개 정적 페이지) + 기존 SPA 회귀 테스트 전체를 서브에이전트로 점검.
+- **결과**: vi/th/id/lo/my는 전부 깨끗함(오버플로우·번역누락·언어혼입 0건).
+  "한글 잔존" 경고는 전부 오탐(의도된 "한국어로 보기" 링크·"종합소득세" 같은
+  한국 세법 용어 병기) — 실제 번역 누락 아님. hreflang 전부 정상(국가 거주자용
+  18개 페이지는 원래 사이트 전체가 hreflang 없음 — SEA만의 문제 아니라 기존
+  패턴). 21개 페이지 전부 sitemap.xml에 있음. `vietnamese-in-korea-lottery-tax.html`
+  파일명만 하이픈(나머지 26개는 언더스코어) — 링크는 정상이라 안 깨짐, 그냥 이름
+  스타일 아웃라이어(안 고침, 사소함).
+- **실제 버그**: `us-lottery-basics-tl.html`(타갈로그어)·`us-lottery-basics-km.html`
+  (크메르어)의 "Powerball vs Mega Millions" 비교 표가 320px 폭에서 페이지 밖으로
+  삐져나감(테이블에 `overflow-x` 감싸는 요소도 `table-layout:fixed`도 없었음,
+  375px 이상은 문제없었음). **수정**: 두 파일 다 표를 `.table-scroll`
+  (`overflow-x:auto`) div로 감싸서 표 자체는 그대로 두고 좁은 화면에서 표만
+  가로 스크롤되게 함(레이아웃/디자인 변경 없이 최소 수정). Playwright로
+  `document.documentElement.scrollWidth`가 더 이상 `innerWidth`를 안 넘는 것
+  320/344/375px 3개 폭에서 재검증, `tests/broken_link_audit.js`(95개 파일,
+  ISSUES:0) 재실행 확인. 다른 25개 basics 페이지는 같은 표 구조에서도 문제
+  없었음(텍스트 길이 차이) — 이 두 파일에만 국한된 수정.

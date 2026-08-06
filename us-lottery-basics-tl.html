@@ -177,7 +177,8 @@
   p{ font-size:var(--fs-body); margin:0 0 14px; }
   ul{ margin:0 0 14px; padding-left:22px; }
   li{ font-size:var(--fs-body); margin-bottom:6px; }
-  table{ width:100%; border-collapse:collapse; margin:16px 0; font-size:var(--fs-note); }
+  .table-scroll{ overflow-x:auto; margin:16px 0; }
+  table{ width:100%; border-collapse:collapse; font-size:var(--fs-note); }
   th,td{ text-align:left; padding:8px; border-bottom:1px solid var(--border); vertical-align:top; }
   th{ color:var(--text-muted); font-weight:700; }
   .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; }
@@ -230,13 +231,13 @@
 
   <h2>1. Ang US Lottery = Powerball + Mega Millions</h2>
   <p>May sarili ring lottery ang bawat estado ng US, pero ang “US lottery” ay karaniwang tumutukoy sa dalawang napakalaking larong ito na magkasamang ibinebenta sa halos lahat ng estado.</p>
-  <table>
+  <div class="table-scroll"><table>
     <tr><th></th><th>Powerball</th><th>Mega Millions</th></tr>
     <tr><td>Mga araw ng draw</td><td>Lun / Miy / Sab</td><td>Mar / Biy</td></tr>
     <tr><td>Pagpili ng numero</td><td>5 numero (1–69) + 1 Powerball na numero (1–26)</td><td>5 numero (1–70) + 1 Mega Ball na numero (1–24)</td></tr>
     <tr><td>Tsansa sa jackpot</td><td>humigit-kumulang 1 sa 292.2 milyon</td><td>humigit-kumulang 1 sa 290.5 milyon</td></tr>
     <tr><td>Pinakamababang jackpot</td><td>$20 milyon</td><td>$50 milyon</td></tr>
-  </table>
+  </table></div>
   <p>Pareho silang gumagana sa parehong pangunahing paraan — pumili ng 5 numero at isang espesyal na numero — kaya laging magkasama itong tinatalakay ng site na ito.</p>
 
   <h2>2. Paano talaga ito laruin?</h2>
