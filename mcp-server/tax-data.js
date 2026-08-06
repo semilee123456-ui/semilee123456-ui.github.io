@@ -1,0 +1,243 @@
+// Numeric tax rules for the "calculate_lottery_takehome" MCP tool.
+//
+// Source of truth is the main site's script.js (TAX_MODEL / STATE_TAX_RATES /
+// KOREA_TAX_BRACKETS / calcTakeHome(), roughly lines 1158-1990 as of 2026-08-06).
+// This file is a numeric-only re-derivation of that logic for a headless (no-DOM)
+// Node context — it intentionally drops the 26-language label strings, keeping
+// only the math and a short English note per country. If the rates in script.js
+// change, this file needs to be updated to match by hand; it is NOT auto-generated
+// and there is no build step wiring the two together. Last synced with script.js: 2026-08-06.
+//
+// Every "additional country tax" branch below assumes the amount you pass in is
+// the actual payout you're evaluating (e.g. lump-sum cash value), not an announced
+// annuity total.
+
+const US_WITHHOLDING_RATE = 0.30; // IRC §871(a) — US non-resident withholding on gambling/lottery winnings
+
+const STATE_TAX_RATES = {
+  AVG: { labelEn: 'Average (50 states + DC)', rate: 0 }, // recomputed below from the other 51 entries
+  AL: { labelEn: 'Alabama', rate: 0.05 },
+  AK: { labelEn: 'Alaska', rate: 0.0 },
+  AZ: { labelEn: 'Arizona', rate: 0.025 },
+  AR: { labelEn: 'Arkansas', rate: 0.039 },
+  CA: { labelEn: 'California (lottery winnings exempt)', rate: 0.0 },
+  CO: { labelEn: 'Colorado', rate: 0.044 },
+  CT: { labelEn: 'Connecticut', rate: 0.0699 },
+  DE: { labelEn: 'Delaware', rate: 0.066 },
+  FL: { labelEn: 'Florida', rate: 0.0 },
+  GA: { labelEn: 'Georgia', rate: 0.0539 },
+  HI: { labelEn: 'Hawaii', rate: 0.11 },
+  ID: { labelEn: 'Idaho', rate: 0.053 },
+  IL: { labelEn: 'Illinois', rate: 0.0495 },
+  IN: { labelEn: 'Indiana', rate: 0.0295 },
+  IA: { labelEn: 'Iowa', rate: 0.038 },
+  KS: { labelEn: 'Kansas', rate: 0.0558 },
+  KY: { labelEn: 'Kentucky', rate: 0.035 },
+  LA: { labelEn: 'Louisiana', rate: 0.03 },
+  ME: { labelEn: 'Maine', rate: 0.0915 },
+  MD: { labelEn: 'Maryland', rate: 0.065 },
+  MA: { labelEn: 'Massachusetts', rate: 0.09 },
+  MI: { labelEn: 'Michigan', rate: 0.0425 },
+  MN: { labelEn: 'Minnesota', rate: 0.0985 },
+  MS: { labelEn: 'Mississippi', rate: 0.04 },
+  MO: { labelEn: 'Missouri', rate: 0.047 },
+  MT: { labelEn: 'Montana', rate: 0.0565 },
+  NE: { labelEn: 'Nebraska', rate: 0.0455 },
+  NV: { labelEn: 'Nevada', rate: 0.0 },
+  NH: { labelEn: 'New Hampshire', rate: 0.0 },
+  NJ: { labelEn: 'New Jersey', rate: 0.1075 },
+  NM: { labelEn: 'New Mexico', rate: 0.059 },
+  NY: { labelEn: 'New York', rate: 0.109 },
+  NC: { labelEn: 'North Carolina', rate: 0.0399 },
+  ND: { labelEn: 'North Dakota', rate: 0.0195 },
+  OH: { labelEn: 'Ohio', rate: 0.0275 },
+  OK: { labelEn: 'Oklahoma', rate: 0.045 },
+  OR: { labelEn: 'Oregon', rate: 0.099 },
+  PA: { labelEn: 'Pennsylvania', rate: 0.0307 },
+  RI: { labelEn: 'Rhode Island', rate: 0.0599 },
+  SC: { labelEn: 'South Carolina', rate: 0.062 },
+  SD: { labelEn: 'South Dakota', rate: 0.0 },
+  TN: { labelEn: 'Tennessee', rate: 0.0 },
+  TX: { labelEn: 'Texas', rate: 0.0 },
+  UT: { labelEn: 'Utah', rate: 0.0455 },
+  VT: { labelEn: 'Vermont', rate: 0.0875 },
+  VA: { labelEn: 'Virginia', rate: 0.0575 },
+  WA: { labelEn: 'Washington', rate: 0.0 },
+  DC: { labelEn: 'Washington D.C.', rate: 0.1075 },
+  WV: { labelEn: 'West Virginia', rate: 0.0482 },
+  WI: { labelEn: 'Wisconsin', rate: 0.0765 },
+  WY: { labelEn: 'Wyoming', rate: 0.0 },
+};
+(function computeAvgStateTaxRate() {
+  const codes = Object.keys(STATE_TAX_RATES).filter((code) => code !== 'AVG');
+  const sum = codes.reduce((total, code) => total + STATE_TAX_RATES[code].rate, 0);
+  STATE_TAX_RATES.AVG.rate = sum / codes.length;
+})();
+
+// 2026 Korean comprehensive income tax brackets (KRW), 8 tiers.
+// tax = taxableIncome * rate - deduction
+const KOREA_TAX_BRACKETS = [
+  { limit: 14000000, rate: 0.06, deduction: 0 },
+  { limit: 50000000, rate: 0.15, deduction: 1260000 },
+  { limit: 88000000, rate: 0.24, deduction: 5760000 },
+  { limit: 150000000, rate: 0.35, deduction: 15440000 },
+  { limit: 300000000, rate: 0.38, deduction: 19940000 },
+  { limit: 500000000, rate: 0.40, deduction: 25940000 },
+  { limit: 1000000000, rate: 0.42, deduction: 35940000 },
+  { limit: Infinity, rate: 0.45, deduction: 65940000 },
+];
+
+function calcKoreaProgressiveTaxWon(wonAmount) {
+  for (const b of KOREA_TAX_BRACKETS) {
+    if (wonAmount <= b.limit) return Math.max(wonAmount * b.rate - b.deduction, 0);
+  }
+  return 0;
+}
+
+// Flat-rate country tax model: { rate, ftcAvailable, note }
+// FTC = Foreign Tax Credit — offsets US withholding against the home-country tax,
+// up to whichever is smaller. ftcAvailable:false means the country tax stacks in
+// full on top of the US withholding (no credit / no treaty basis found).
+const FLAT_COUNTRY_MODEL = {
+  cn: { rate: 0.20, ftcAvailable: true, note: 'China: incidental income tax, flat rate.' },
+  in: { rate: 0.30 * 1.25 * 1.04, ftcAvailable: true, note: 'India: 30% base + 25% surcharge + 4% cess, no deductions (Sec 115BB).' },
+  vn: { rate: 0.10, ftcAvailable: true, note: 'Vietnam: prize income tax, flat rate; FTC via domestic law, not a tax treaty (US-VN treaty not yet in force).' },
+  id: { rate: 0.25, ftcAvailable: true, note: 'Indonesia: lottery winnings final tax, flat rate.' },
+  ph: { rate: 0.35, ftcAvailable: true, note: 'Philippines: approximated at the top progressive bracket (foreign lottery winnings do not get the 20% local-lottery final tax rate).' },
+  th: { rate: 0.35, ftcAvailable: true, note: '⚠️ Thailand: no clear official guidance found for foreign lottery winnings; approximated at the top personal income tax bracket.' },
+  jp: { rate: 0.55945 * 0.5, ftcAvailable: true, note: 'Japan: foreign lottery winnings are "temporary income" (ichiji shotoku) with 1/2 inclusion, approximated at the top effective rate.' },
+  ru: { rate: 0.22, ftcAvailable: false, note: '⚠️ Russia: FTC believed unavailable — the US-Russia tax treaty\'s double-taxation article has been suspended since 2023.' },
+  np: { rate: 0.25, ftcAvailable: true, note: 'Nepal: "windfall gain" flat final tax (lottery, gifts, prizes).' },
+  lk: { rate: 0.36, ftcAvailable: true, note: '⚠️ Sri Lanka: approximated at the top progressive bracket; a possible 15% preferential rate for remitted foreign income has unclear applicability to lottery winnings.' },
+  uz: { rate: 0.12, ftcAvailable: true, note: 'Uzbekistan: flat rate on all personal income.' },
+  kz: { rate: 0.10, ftcAvailable: true, note: 'Kazakhstan: flat rate on "winnings"-category income for residents.' },
+  kg: { rate: 0.10, ftcAvailable: true, note: 'Kyrgyzstan: flat rate on personal income including winnings.' },
+  mm: { rate: 0.25, ftcAvailable: true, note: 'Myanmar: approximated at the top bracket for "income from other sources".' },
+  bd: { rate: 0.25, ftcAvailable: true, note: 'Bangladesh: flat rate on "income from other sources" (prizes).' },
+  kh: { rate: 0, ftcAvailable: true, note: '⚠️ Cambodia: no clear legal basis found for taxing personal lottery/prize income — treated as 0 pending verification, NOT a confirmed exemption.' },
+  mn: { rate: 0.40, ftcAvailable: true, note: '⚠️ Mongolia: approximated at 40% per PwC Worldwide Tax Summaries ("Lotteries (net)"); not independently verified against primary legislation.' },
+  la: { rate: 0.05, ftcAvailable: false, note: '⚠️ Laos: flat rate under the new income tax law; no US-Laos tax treaty, so no FTC — this stacks fully on top of US withholding.' },
+};
+
+const SUPPORTED_COUNTRIES = ['kr', 'us', 'pk', 'other', ...Object.keys(FLAT_COUNTRY_MODEL)];
+
+function round2(n) {
+  return Math.round(n * 100) / 100;
+}
+
+/**
+ * @param {number} amountUsd - the actual payout amount to evaluate (e.g. lump-sum
+ *   cash value), NOT an announced annuity total.
+ * @param {string} country - one of SUPPORTED_COUNTRIES.
+ * @param {string} [stateCode] - US state code, only used when country === 'us'.
+ * @param {number} [krwPerUsd] - USD/KRW exchange rate, only used when country ===
+ *   'kr' (Korea's progressive brackets are defined in absolute KRW, unlike every
+ *   other country here which is a flat rate and therefore currency-invariant).
+ *   Defaults to an approximate, deliberately-stale placeholder — pass a current
+ *   rate for anything beyond a rough estimate.
+ */
+function calculateTakeHome(amountUsd, country, stateCode, krwPerUsd) {
+  if (typeof amountUsd !== 'number' || !Number.isFinite(amountUsd) || amountUsd <= 0) {
+    throw new Error('amountUsd must be a positive finite number');
+  }
+  country = String(country || 'kr').toLowerCase();
+  if (!SUPPORTED_COUNTRIES.includes(country)) {
+    throw new Error(`Unsupported country "${country}". Supported: ${SUPPORTED_COUNTRIES.join(', ')}`);
+  }
+
+  if (country === 'us') {
+    const state = STATE_TAX_RATES[String(stateCode || 'AVG').toUpperCase()] || STATE_TAX_RATES.AVG;
+    const federalRate = 0.37; // simplified: real US withholding is 24% up front, true rate up to 37% at filing
+    const federalTax = amountUsd * federalRate;
+    const stateTax = amountUsd * state.rate;
+    const takeHomeUsd = amountUsd - federalTax - stateTax;
+    return {
+      country, stateCode: (stateCode || 'AVG').toUpperCase(),
+      breakdown: [
+        { label: 'US federal tax (simplified flat top-rate estimate)', amountUsd: round2(federalTax), ratePct: round2(federalRate * 100) },
+        { label: `${state.labelEn} state tax`, amountUsd: round2(stateTax), ratePct: round2(state.rate * 100) },
+      ],
+      takeHomeUsd: round2(takeHomeUsd),
+      effectiveTaxRatePct: round2(((amountUsd - takeHomeUsd) / amountUsd) * 100),
+      note: 'US resident basis. Federal tax is simplified to a flat top-rate estimate for this tool; real US filing uses progressive brackets.',
+    };
+  }
+
+  if (country === 'other') {
+    const usWithholding = amountUsd * US_WITHHOLDING_RATE;
+    const takeHomeUsd = amountUsd - usWithholding;
+    return {
+      country,
+      breakdown: [{ label: 'US non-resident withholding (IRC §871(a))', amountUsd: round2(usWithholding), ratePct: round2(US_WITHHOLDING_RATE * 100) }],
+      takeHomeUsd: round2(takeHomeUsd),
+      effectiveTaxRatePct: round2((usWithholding / amountUsd) * 100),
+      note: 'Country not in the supported list — only the confirmed US non-resident withholding is deducted. Your home country almost certainly taxes this too; that is NOT included here, verify separately.',
+    };
+  }
+
+  const usWithholding = amountUsd * US_WITHHOLDING_RATE;
+
+  if (country === 'kr') {
+    const rate = typeof krwPerUsd === 'number' && krwPerUsd > 0 ? krwPerUsd : 1500;
+    const krw = amountUsd * rate;
+    const usWithholdingKrw = krw * US_WITHHOLDING_RATE;
+    const koreaCalculatedTaxKrw = calcKoreaProgressiveTaxWon(krw);
+    const ftcCreditKrw = Math.min(usWithholdingKrw, koreaCalculatedTaxKrw);
+    const koreaAdditionalNationalTaxKrw = Math.max(koreaCalculatedTaxKrw - ftcCreditKrw, 0);
+    const koreaLocalTaxKrw = koreaAdditionalNationalTaxKrw * 0.1; // local income tax = 10% of national tax
+    const koreaTotalTaxKrw = koreaAdditionalNationalTaxKrw + koreaLocalTaxKrw;
+    const koreaTotalTaxUsd = koreaTotalTaxKrw / rate;
+    const takeHomeUsd = amountUsd - usWithholding - koreaTotalTaxUsd;
+    return {
+      country,
+      exchangeRateUsed: rate,
+      exchangeRateIsDefaultPlaceholder: typeof krwPerUsd !== 'number' || krwPerUsd <= 0,
+      breakdown: [
+        { label: 'US federal withholding (non-resident, IRC §871(a))', amountUsd: round2(usWithholding), ratePct: round2(US_WITHHOLDING_RATE * 100) },
+        { label: 'Korea additional tax (comprehensive income tax + 10% local surtax, after foreign tax credit)', amountUsd: round2(koreaTotalTaxUsd), ratePct: round2((koreaTotalTaxKrw / krw) * 100) },
+      ],
+      takeHomeUsd: round2(takeHomeUsd),
+      effectiveTaxRatePct: round2(((amountUsd - takeHomeUsd) / amountUsd) * 100),
+      note: 'Korea resident basis. Korea taxes this as "other income" under comprehensive income tax (progressive brackets), with the US withholding offset via foreign tax credit. If exchangeRateIsDefaultPlaceholder is true, pass a current krwPerUsd for an accurate bracket lookup.',
+    };
+  }
+
+  if (country === 'pk') {
+    // Pakistan: FTC only offsets the base rate, not the super tax / surcharge components (mirrors script.js).
+    const base = amountUsd * 0.35;
+    const superTax = amountUsd * 0.08;
+    const surcharge = base * 0.10;
+    const calculatedTax = base + superTax + surcharge;
+    const ftcCredit = Math.min(usWithholding, base);
+    const additionalTax = Math.max(calculatedTax - ftcCredit, 0);
+    const takeHomeUsd = amountUsd - usWithholding - additionalTax;
+    return {
+      country,
+      breakdown: [
+        { label: 'US federal withholding (non-resident, IRC §871(a))', amountUsd: round2(usWithholding), ratePct: round2(US_WITHHOLDING_RATE * 100) },
+        { label: 'Pakistan additional tax (base + super tax + surcharge, FTC offsets base only)', amountUsd: round2(additionalTax), ratePct: round2((additionalTax / amountUsd) * 100) },
+      ],
+      takeHomeUsd: round2(takeHomeUsd),
+      effectiveTaxRatePct: round2(((amountUsd - takeHomeUsd) / amountUsd) * 100),
+      note: '⚠️ Pakistan: whether the domestic lottery withholding statute (Sec 156) even applies to a payout with no Pakistani withholding agent is unclear — this approximates using the general top income tax bracket + super tax + surcharge.',
+    };
+  }
+
+  const model = FLAT_COUNTRY_MODEL[country];
+  const calculatedTax = amountUsd * model.rate;
+  const ftcCredit = model.ftcAvailable ? Math.min(usWithholding, calculatedTax) : 0;
+  const additionalTax = Math.max(calculatedTax - ftcCredit, 0);
+  const takeHomeUsd = amountUsd - usWithholding - additionalTax;
+  return {
+    country,
+    breakdown: [
+      { label: 'US federal withholding (non-resident, IRC §871(a))', amountUsd: round2(usWithholding), ratePct: round2(US_WITHHOLDING_RATE * 100) },
+      { label: `Additional country tax${model.ftcAvailable ? ' (after foreign tax credit)' : ' (no foreign tax credit available — stacks in full)'}`, amountUsd: round2(additionalTax), ratePct: round2((additionalTax / amountUsd) * 100) },
+    ],
+    takeHomeUsd: round2(takeHomeUsd),
+    effectiveTaxRatePct: round2(((amountUsd - takeHomeUsd) / amountUsd) * 100),
+    note: model.note,
+  };
+}
+
+module.exports = { calculateTakeHome, SUPPORTED_COUNTRIES, STATE_TAX_RATES };
