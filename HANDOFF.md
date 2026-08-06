@@ -2220,3 +2220,95 @@ AlternativeTo·GeekNews와 같은 7일 대기 패턴. r/SideProject·r/IndieHack
   초보가이드) + `.stat-card` grid 오버플로우 2개(`kk`/`ky`)뿐이며 전부 수정
   완료. **다음 세션은 이 감사를 반복할 필요 없음** — 새 언어/페이지가 추가되지
   않는 한 이 범위는 완결된 것으로 취급할 것.
+
+### 2026-08-06 이어서 — 낚시 게임 결과 공유 카드 신설 ("국가별 대결" 바이럴 유도,
+서버 없이)
+
+사용자가 "낚시 게임을 진짜 게임처럼 만들어서 나라별 랭킹/대결 구도를 만들면
+어떨까"로 시작, PopCat류 실시간 순위판(서버/DB 필요·조작 위험)은 배제하고 **공유
+카드에 도발적 캡션을 넣는 방식**(서버 없음, 조작 불가능)으로 최종 합의.
+
+**구현 전 바로잡은 전제**: 사용자가 참고한 AI 제안은 "낚시 게임 = 잭팟을 낚는
+게임"이라고 잘못 가정하고 있었음(예시 문구 "$1.5B 잭팟 물고기를 낚았습니다") —
+실제로는 파워볼/메가밀리언즈 번호 6개를 재미있게 뽑는 UI(`fishingCaughtValues`)일
+뿐, 당첨/미당첨 판정이 아예 없음. 그래서 "이 번호가 **이번 주 실제 잭팟**
+(`JACKPOT_DATA`/`getJackpotCashUsd()`)에 당첨됐다고 가정하면, 사용자가 이미
+선택해둔 국가(`sharedCountry`) 기준 실수령액은 얼마"로 설계를 바로잡음 — 거짓
+정보 없이 재미+세금 계산 본질+국가 비교 셋 다 살림.
+
+**구현**(`shareFishingCatch()`, script.js):
+- 기존에 이미 있던 재사용 가능한 카드 생성 함수 `buildShareCard({label, bigText,
+  subText, footerText, balls})`(4400줄)를 그대로 씀 — `shareLatestDraw()`가 쓰는
+  것과 동일 함수, 새로 만들지 않음. `balls` 파라미터(공 그래픽 렌더링)는 시그니처만
+  있고 지금까지 실제로 쓴 caller가 없었던 걸 발견 — 이번이 첫 실사용.
+- 실수령액 계산: `getJackpotCashUsd(game)`(현금가치, 공식 발표 없으면
+  `CASH_VALUE_RATIO` 추정) → KRW 환산 → `calcTakeHome(krw/1억, sharedCountry,
+  sharedState)` → `.final`을 다시 USD로 역환산. 홈/비교 탭과 완전히 같은 계산
+  경로 재사용(새 세금 로직 없음).
+- **국기는 이모지 대신 텍스트 배지**(`KR`/`US` 등, `COUNTRY_TAX_PROFILES`의
+  `flagCode`)로 카드에 그림 — 이미 HTML `.flag-badge`가 쓰는 것과 같은 이유
+  (이모지 폰트별 렌더링 차이 회피, 로고 이모지 문제 재발 방지 원칙 그대로 적용).
+  실제 국기 이모지(`flagEmojiFromCode()` 신설, regional indicator 변환)는 공유
+  텍스트(SNS 게시글)에만 씀 — 텍스트 메시지는 폰트 의존 이슈가 카드 이미지만큼
+  치명적이지 않음.
+- **"기타 국가"(`sharedCountry==='other'`) 처리**: `COUNTRY_TAX_PROFILES`에 없는
+  코드라 `profile`이 `undefined`가 되는데, 이 경우 `flagCode`를 `'??'`로 폴백 —
+  `calcTakeHome()`은 이미 'other' 분기가 있어 계산 자체는 정상 동작(Playwright로
+  실제 검증).
+- 공유 문구(`shareText`)는 26개 언어 신규 번역, 도발적 캡션 포함("이거 넘을 수
+  있어?" 류) — 서버 없이 SNS상에서 "국가 대결" 분위기를 유도하는 유일한 장치.
+  버튼 라벨(`odds.fishingShareBtn`)도 26개 언어 신규 추가.
+- 버튼(`#fishing-share-btn`)은 6개 다 낚기 전엔 숨김, `fishingCaughtSuccess()`의
+  완주 분기에서 표시, `resetFishingRound()`에서 다시 숨김.
+- 공유 흐름은 기존 `openAnnotateOverlay(canvas, filename, {mode:'share',
+  shareTitle, shareText})`(꾸며서 저장/공유 모달) 그대로 재사용.
+
+**검증**: `node --check script.js`, `i18n_coverage_audit.js`(764키, ISSUES:0),
+Playwright로 ko/en/ar 3개 언어 전체 플로우(낚시 완료→공유 버튼→카드 생성→모달)
+직접 실행해 콘솔 에러 0건·캔버스 정상 생성 확인, `sharedCountry='other'`와
+메가밀리언즈 전환 케이스도 별도로 검증(에러 0건). 회귀 테스트 9개(`home_audit`
+18·`console_error_audit`161·`wrap_audit`168·`i18n_coverage_audit`764키·
+`broken_link_audit`95개 파일·`full_overflow_sweep`945조합·`nav_slider_audit`·
+`map_scroll_audit`10·`faq_audit`18) 전부 `ISSUES: 0`. `npm install`(devDependencies
+클린 체크아웃엔 없음, 이 저장소 반복 이슈) 후 `npm run build:min`으로
+`script.min.js`/`styles.min.css` 재빌드, 캐시버스팅 `20260805-13`→`20260806-1`,
+`CACHE_NAME` v12→v13.
+
+**다음 세션 참고**: 이 기능은 실시간 순위판이 아니라 "공유 문구 캡션"으로만
+경쟁을 유도하는 설계라는 걸 잊지 말 것 — 나중에 "진짜 순위판 만들어달라"는
+요청이 다시 오면, 이 세션에서 이미 리스크(서버 필요·조작 가능·정적 사이트
+정체성 훼손) 때문에 명시적으로 배제했던 결정이라는 걸 먼저 알릴 것.
+
+### 2026-08-06 이어서 — 다른 세션이 로컬에서 만들어둔 정기 점검 패치 반영 + 파워볼
+8/5 추첨·잭팟 갱신 + 동시 작업 세션(낚시 공유 카드)과 병합
+
+이 세션은 GitHub 저장소 쓰기 권한이 없는 다른 세션이 정기 점검 중 발견해 로컬에만
+갖고 있던 수정사항을 patch 파일(`git apply`용 diff)로 채팅에 전달받아 대신 반영함.
+
+- **적용한 수정 4건** (patch 내용을 diff로 직접 검증 후 적용):
+  1. 접근성 폰트 하한 위반: `.result-tertiary-box` 안내문 3개(`.foot-note`,
+     `.usd-actual-note`, `.result-hero-basis-mini`)가 7/31 추가 당시 `font-size:14px`로
+     하드코딩돼 `--fs-small`(16px, 접근성 최소 기준) 규칙을 위반 — `var(--fs-small)`로 복원.
+  2. 명암비 이중 저하: `.jp-annuity-basis`/`.prize-pct`에 `color:var(--text-muted)` 위에
+     `opacity:0.6`/`0.75`를 겹쳐 써서 WCAG AA(4.5:1) 밑으로 떨어짐 — opacity 제거.
+  3. 중국어·타갈로그어·태국어·베트남어 "한국거주 외국인" 랜딩페이지 4개에만 남아있던
+     미국 세법 조항(`IRC §871(a)`)·판례 번호(`Park v. Commissioner, 136 T.C. 569`)를,
+     같은 페이지군 22개가 이미 쓰고 있던 평이한 문장으로 재작성(사실관계는 유지).
+  4. `powerball-tax.html`/`megamillions-tax.html`/`biggest-jackpot-payouts.html` 3개가
+     2026-07-27에 33개 파일에서 고쳤던 `.quick-answer .row` 구식 flex 패턴을 여전히 쓰고
+     있던 회귀 위험 패턴 — `grid(minmax(0,1fr) minmax(0,1fr))` 패턴으로 통일.
+- **파워볼 8/5 추첨·잭팟 갱신**: 사용자가 공유한 스크린샷(usamega.com)을 그대로 믿지
+  않고 `powerball.com` 공식 페이지를 WebFetch로 직접 교차검증 — 8/5 추첨
+  `14,20,59,60,61`+파워볼`25`(Power Play 2x), 당첨자 없어 다음 추첨(8/8) 잭팟
+  $856M(현금 $372.0M)로 증가, 완전히 일치 확인. `script.js`의 `LATEST_DRAW`/
+  `JACKPOT_DATA.powerball`과 `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`/
+  `POWERBALL_JACKPOT_ARCHIVE`에 8/5 항목 추가. 메가밀리언즈는 기존 값과 이미 일치해
+  변경 없음.
+- **동시 작업 세션과 병합**: 커밋 준비 중 `origin/main`이 다른 세션의 "낚시 게임 결과
+  공유 카드" 기능(`b70f97b`)으로 이미 앞서 있는 걸 발견 — `git merge origin/main`으로
+  병합. `script.js`/`sw.js`는 자동 병합(내용 충돌 없음), `index.html`의 캐시버스팅
+  버전 줄만 두 세션이 각자 다른 값(`20260806-2` vs `20260806-1`)으로 동시에 올려서
+  충돌 — 병합된 내용(두 세션 변경사항이 합쳐진 새 파일)에 맞게 더 높은 `20260806-3`으로
+  재조정하고 `npm run build:min`으로 `script.min.js`/`styles.min.css` 재빌드.
+- **검증**: 회귀 테스트 12개 전부 병합 전/후 두 번 `ISSUES: 0` 확인
+  (`draw_archive_integrity_check.js`로 새 8/5 항목이 날짜순·중복없음 통과하는 것도 포함).

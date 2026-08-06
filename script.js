@@ -3560,6 +3560,8 @@ function resetFishingRound(){
   if (resultEl) resultEl.classList.remove('celebrate');
   const btn = document.getElementById('fishing-cast-btn');
   if (btn) { btn.disabled = false; btn.textContent = fishingCastBtnDefaultLabel(); }
+  const shareBtn = document.getElementById('fishing-share-btn');
+  if (shareBtn) shareBtn.style.display = 'none';
 }
 
 // 2026-08-05: 낚싯대를 드래그해서 헤엄치는 물고기 위치에 맞춘 뒤 손을 떼면 낚는 방식(위
@@ -3809,6 +3811,8 @@ function fishingCaughtSuccess(slotIndex){
       btn.disabled = false;
       btn.textContent = pickLang('🎣 처음부터 다시 낚시하기', '🎣 Fish again from scratch', '🎣 重新钓一次', '🎣 Câu lại từ đầu', '🎣 ตกปลาใหม่อีกครั้ง', '🎣 Порыбачить заново', FISHING_RESTART_MORE);
     }
+    const shareBtn = document.getElementById('fishing-share-btn');
+    if (shareBtn) shareBtn.style.display = '';
   } else {
     // 다른 슬롯의 물고기들은 이 동안에도 계속 헤엄침(fishingState는 계속 'aiming' 유지) —
     // 아직 남은 번호보다 지금 보이는 물고기 수가 적을 때만 이 슬롯을 다시 채움(막바지엔 자연스럽게
@@ -3820,6 +3824,107 @@ function fishingCaughtSuccess(slotIndex){
       if (currentlyVisible < Math.min(FISHING_MAX_FISH, stillNeeded)) fishingSpawnFishSlot(slotIndex);
     }, FISHING_NEXT_FISH_DELAY_MS);
   }
+}
+
+// 2-letter flagCode(COUNTRY_TAX_PROFILES)를 실제 국기 이모지로 변환 — 캔버스 카드 자체에는
+// 안 씀(다른 이모지 폰트 의존 문제 재발 방지, .flag-badge와 같은 텍스트 배지 방식 유지),
+// 공유 텍스트(shareText)에만 사용 — SNS 게시글에서는 실제 국기 이모지가 자연스러움.
+function flagEmojiFromCode(code){
+  if (!code || code.length !== 2) return '🌐';
+  return String.fromCodePoint(...[...code.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+}
+
+// 2026-08-06: 낚시 게임(번호 6개 뽑기)을 다 마치면, 그 번호가 "이번 주 실제 잭팟"에 당첨됐다고
+// 가정했을 때 사용자가 선택해둔 국가(sharedCountry) 기준 실수령액을 계산해 공유 카드로 만들어줌.
+// 실제 당첨 여부와 무관한 가정 시뮬레이션이라는 걸 카드 자체(참고용 시뮬레이션 문구, buildShareCard
+// 공통 disclaimer)와 공유 문구 어투로 분명히 함 — 순위판/서버 없이 "국가 대결" 분위기만 SNS
+// 공유 문구의 도발적 캡션으로 유도(사용자 요청 배경은 HANDOFF.md "낚시 게임 공유 카드" 참고).
+async function shareFishingCatch(){
+  if (fishingCaughtValues.length < 6) return;
+  const game = currentLightningGame;
+  const config = LIGHTNING_GAMES[game];
+  const gameLabel = pickLang(
+    game === 'powerball' ? '파워볼' : '메가밀리언즈',
+    game === 'powerball' ? 'Powerball' : 'Mega Millions',
+    game === 'powerball' ? '强力球' : '超级百万',
+    game === 'powerball' ? 'Powerball' : 'Mega Millions',
+    game === 'powerball' ? 'พาวเวอร์บอล' : 'เมกะมิลเลียน',
+    game === 'powerball' ? 'Powerball' : 'Mega Millions',
+    GAME_NAME_MORE[game]
+  );
+  const cashUsd = getJackpotCashUsd(game);
+  const cashKrw = cashUsd * EXCHANGE_RATE;
+  const stateCode = sharedCountry === 'us' ? (sharedState || 'AVG') : null;
+  const result = calcTakeHome(cashKrw / 100000000, sharedCountry, stateCode);
+  const finalUsd = result.final * 100000000 / EXCHANGE_RATE;
+  const jackpotM = Math.round(cashUsd / 1000000);
+  const finalM = (finalUsd / 1000000).toFixed(1);
+  const profile = COUNTRY_TAX_PROFILES.find(p => p.code === sharedCountry);
+  const flagCode = profile ? profile.flagCode : '??';
+  const flagEmoji = flagEmojiFromCode(flagCode);
+  const basisSuffix = result.basisSuffix;
+
+  const numbers = fishingCaughtValues.slice(0, 5);
+  const special = fishingCaughtValues[5];
+  const specialColor = config.specialClass === 'pb' ? '#262420' : '#946716';
+
+  const thisJackpotLabel = pickLang('이번 잭팟', 'This jackpot', '本期奖金', 'Jackpot kỳ này', 'แจ็คพอตงวดนี้', 'Этот джекпот', {
+    ar: 'هذا الجاكبوت', bn: 'এই জ্যাকপট', fr: 'Ce jackpot', hi: 'यह जैकपॉट', id: 'Jackpot ini',
+    ja: '今回のジャックポット', kk: 'Осы джекпот', km: 'ជេកផតនេះ', ky: 'Ушул джекпот', lo: 'ແຈັກພອດຄັ້ງນີ້',
+    mn: 'Энэ жекпот', my: 'ဒီဂျက်ပေါ့', ne: 'यो ज्याकपोट', si: 'මෙම ජැක්පොට්', tl: 'Ang jackpot na ito',
+    ur: 'یہ جیک پاٹ', uz: 'Ushbu jekpot',
+    pt: 'Este prêmio', es: 'Este acumulado', uk: 'Цей джекпот', tet: "Jackpot ida ne'e",
+  });
+
+  const label = `🎣 ${gameLabel} · ${flagCode}`;
+  const bigText = `$${finalM}M`;
+  const subText = `${thisJackpotLabel} $${jackpotM}M → ${basisSuffix}`;
+  const footerText = document.querySelector('[data-i18n="hero.tag"]')?.textContent || 'ChamTax';
+
+  const canvas = buildShareCard({
+    label, bigText, subText, footerText,
+    balls: { numbers, special, specialColor },
+  });
+
+  const shareTitle = `${flagEmoji} ${gameLabel}`;
+  const numbersText = numbers.join('-');
+  const shareText = pickLang(
+    `🎣 ${flagEmoji} ${basisSuffix} 기준, 낚시로 뽑은 번호(${numbersText}+${special})가 이번 ${gameLabel} 잭팟($${jackpotM}M)에 당첨됐다면 실수령액은 $${finalM}M! 이거 넘을 수 있어? chamtax.com`,
+    `🎣 ${flagEmoji} As a ${basisSuffix}, if my fished numbers (${numbersText}+${special}) won this ${gameLabel} jackpot ($${jackpotM}M), I'd take home $${finalM}M! Beat that? chamtax.com`,
+    `🎣 ${flagEmoji} 作为${basisSuffix}，如果我钓到的号码（${numbersText}+${special}）中了本期${gameLabel}奖金（$${jackpotM}M），到手实拿$${finalM}M！你能超过我吗？chamtax.com`,
+    `🎣 ${flagEmoji} Là ${basisSuffix}, nếu số tôi câu được (${numbersText}+${special}) trúng jackpot ${gameLabel} này ($${jackpotM}M), tôi sẽ nhận về $${finalM}M! Vượt qua được không? chamtax.com`,
+    `🎣 ${flagEmoji} ในฐานะ${basisSuffix} ถ้าเลขที่ตกได้ (${numbersText}+${special}) ถูกแจ็คพอต ${gameLabel} นี้ ($${jackpotM}M) ฉันจะได้เงินจริง $${finalM}M! เอาชนะได้ไหม? chamtax.com`,
+    `🎣 ${flagEmoji} Как ${basisSuffix}, если бы мои выловленные числа (${numbersText}+${special}) выиграли этот джекпот ${gameLabel} ($${jackpotM}M), я бы получил $${finalM}M на руки! Сможешь побить? chamtax.com`,
+    {
+      ar: `🎣 ${flagEmoji} بصفتي ${basisSuffix}، لو فازت أرقامي المصطادة (${numbersText}+${special}) بجاكبوت ${gameLabel} هذا ($${jackpotM}M)، لحصلت على $${finalM}M! هل يمكنك التفوق؟ chamtax.com`,
+      bn: `🎣 ${flagEmoji} ${basisSuffix} হিসেবে, আমার ধরা সংখ্যা (${numbersText}+${special}) এই ${gameLabel} জ্যাকপটে ($${jackpotM}M) জিতলে আমি হাতে পেতাম $${finalM}M! এটা ছাড়িয়ে যেতে পারবে? chamtax.com`,
+      fr: `🎣 ${flagEmoji} En tant que ${basisSuffix}, si mes numéros pêchés (${numbersText}+${special}) avaient gagné ce jackpot ${gameLabel} ($${jackpotM}M), j'aurais touché $${finalM}M ! Tu peux battre ça ? chamtax.com`,
+      hi: `🎣 ${flagEmoji} ${basisSuffix} के तौर पर, अगर मेरे पकड़े नंबर (${numbersText}+${special}) इस ${gameLabel} जैकपॉट ($${jackpotM}M) में जीत जाते, तो मुझे $${finalM}M मिलते! इसे हरा सकते हो? chamtax.com`,
+      id: `🎣 ${flagEmoji} Sebagai ${basisSuffix}, kalau nomor hasil mancing saya (${numbersText}+${special}) menang jackpot ${gameLabel} ini ($${jackpotM}M), saya bakal bawa pulang $${finalM}M! Bisa kalahkan? chamtax.com`,
+      ja: `🎣 ${flagEmoji} ${basisSuffix}として、釣った番号(${numbersText}+${special})が今回の${gameLabel}ジャックポット($${jackpotM}M)に当たったら、手取りは$${finalM}M！これ超えられる？chamtax.com`,
+      kk: `🎣 ${flagEmoji} ${basisSuffix} ретінде, аулаған сандарым (${numbersText}+${special}) осы ${gameLabel} джекпотында ($${jackpotM}M) ұтса, қолыма $${finalM}M тиер еді! Мұны жеңе аласың ба? chamtax.com`,
+      km: `🎣 ${flagEmoji} ក្នុងនាម${basisSuffix} ប្រសិនបើលេខដែលបានចាប់ (${numbersText}+${special}) ឈ្នះជេកផត ${gameLabel} នេះ ($${jackpotM}M) ខ្ញុំនឹងទទួលបាន $${finalM}M! អាចយកឈ្នះនេះបានទេ? chamtax.com`,
+      ky: `🎣 ${flagEmoji} ${basisSuffix} катары, кармаган сандарым (${numbersText}+${special}) ушул ${gameLabel} джекпотун ($${jackpotM}M) утса, колума $${finalM}M тиймек! Мунусын жеңе аласыңбы? chamtax.com`,
+      lo: `🎣 ${flagEmoji} ໃນນາມ${basisSuffix} ຖ້າເລກທີ່ຕົກໄດ້ (${numbersText}+${special}) ຖືກແຈັກພອດ ${gameLabel} ນີ້ ($${jackpotM}M) ຂ້ອຍຈະໄດ້ຮັບ $${finalM}M! ເອົາຊະນະໄດ້ບໍ່? chamtax.com`,
+      mn: `🎣 ${flagEmoji} ${basisSuffix} байдлаар, барьсан дугаарууд (${numbersText}+${special}) энэ ${gameLabel} жекпотыг ($${jackpotM}M) хожвол гартаа $${finalM}M авах байсан! Үүнийг давж чадах уу? chamtax.com`,
+      my: `🎣 ${flagEmoji} ${basisSuffix} အနေနဲ့၊ ဖမ်းရသောနံပါတ်များ (${numbersText}+${special}) ဒီ ${gameLabel} ဂျက်ပေါ့ ($${jackpotM}M) ကို နိုင်ခဲ့ရင် $${finalM}M ရရှိမှာပါ! ဒါကိုကျော်နိုင်မလား? chamtax.com`,
+      ne: `🎣 ${flagEmoji} ${basisSuffix} को रूपमा, समातिएका नम्बरहरू (${numbersText}+${special}) यो ${gameLabel} ज्याकपोट ($${jackpotM}M) जितेको भए मैले $${finalM}M पाउने थिएँ! यो जित्न सक्छौ? chamtax.com`,
+      si: `🎣 ${flagEmoji} ${basisSuffix} ලෙස, අල්ලාගත් අංක (${numbersText}+${special}) මෙම ${gameLabel} ජැක්පොට් ($${jackpotM}M) දිනුවේ නම් මට $${finalM}M ලැබෙනු ඇත! මෙය පරාජය කළ හැකිද? chamtax.com`,
+      tl: `🎣 ${flagEmoji} Bilang ${basisSuffix}, kung ang nahuli kong numero (${numbersText}+${special}) ay nanalo sa ${gameLabel} jackpot na ito ($${jackpotM}M), $${finalM}M ang madadala ko! Kaya mo bang talunin ito? chamtax.com`,
+      ur: `🎣 ${flagEmoji} ${basisSuffix} کے طور پر، اگر میرے پکڑے نمبر (${numbersText}+${special}) اس ${gameLabel} جیک پاٹ ($${jackpotM}M) میں جیت جاتے تو مجھے $${finalM}M ملتے! اسے شکست دے سکتے ہو؟ chamtax.com`,
+      uz: `🎣 ${flagEmoji} ${basisSuffix} sifatida, tutgan raqamlarim (${numbersText}+${special}) shu ${gameLabel} jekpotini ($${jackpotM}M) yutganida, qo'limga $${finalM}M tegar edi! Buni yenga olasanmi? chamtax.com`,
+      pt: `🎣 ${flagEmoji} Como ${basisSuffix}, se meus números pescados (${numbersText}+${special}) tivessem ganhado este prêmio do ${gameLabel} ($${jackpotM}M), eu levaria $${finalM}M! Consegue superar isso? chamtax.com`,
+      es: `🎣 ${flagEmoji} Como ${basisSuffix}, si mis números pescados (${numbersText}+${special}) hubieran ganado este acumulado de ${gameLabel} ($${jackpotM}M), me llevaría $${finalM}M! ¿Puedes superarlo? chamtax.com`,
+      uk: `🎣 ${flagEmoji} Як ${basisSuffix}, якби мої виловлені числа (${numbersText}+${special}) виграли цей джекпот ${gameLabel} ($${jackpotM}M), я б отримав $${finalM}M на руки! Зможеш побити це? chamtax.com`,
+      tet: `🎣 ${flagEmoji} Nu'udar ${basisSuffix}, se números ne'ebé hau kaer (${numbersText}+${special}) manán jackpot ${gameLabel} ida ne'e ($${jackpotM}M), hau sei simu $${finalM}M! Ita bele vense ida ne'e? chamtax.com`,
+    }
+  );
+
+  openAnnotateOverlay(canvas, `chamtax-fishing-${game}.png`, {
+    mode: 'share',
+    shareTitle,
+    shareText,
+  });
 }
 
 const DRAWING_BTN_MORE = {
