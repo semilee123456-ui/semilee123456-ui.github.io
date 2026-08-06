@@ -2154,7 +2154,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260805';
+    script.src = 'odds-data.js?v=20260806';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -4072,7 +4072,7 @@ function buildDrawScheduleMore(days){
 // 잭팟이 아직 "Pending"으로 떠 있어서(공식 미발표) 추측으로 안 덮어쓰고 그대로 둠 — 다음
 // 세션/사용자가 "Pending"이 실제 금액으로 바뀐 뒤 갱신할 것.
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 786000000, cashUsd: 341600000 },
+  powerball:    { amountUsd: 856000000, cashUsd: 372000000 },
   megamillions: { amountUsd: 70000000, cashUsd: 29700000 },
 };
 
@@ -4105,8 +4105,12 @@ const GAME_NAME_MORE = {
 // 일치. 다음 추첨(8/7) 잭팟은 $70M, 현금가치는 사용자 스크린샷 $29.7M(29.7/70=0.424, 직전
 // 회차 25.5/60=0.425와 비율이 거의 같아 신뢰) 채택 — valottery는 $29.0M로 약간 낮게 표시했는데
 // 잭팟 예고액은 하루에도 판매량 따라 여러 번 갱신되는 값이라 흔한 오차로 판단.
+// 2026-08-06 이어서: 사용자가 공유한 스크린샷(파워볼 8/5 추첨 결과)을 powerball.com 공식
+// 페이지 WebFetch로 교차검증 — 14,20,59,60,61 / 파워볼 25로 일치. 당첨자 없어 다음 추첨(8/8)
+// 잭팟이 $856M(현금가치 $372.0M)로 증가, 위 JACKPOT_DATA.powerball도 같이 갱신함. 메가밀리언즈는
+// 그대로 최신(다음 추첨 8/7 아직 결과 없음).
 const LATEST_DRAW = {
-  powerball:    { date: '2026-08-03', numbers: [8, 30, 41, 48, 54], special: 4 },
+  powerball:    { date: '2026-08-05', numbers: [14, 20, 59, 60, 61], special: 25 },
   megamillions: { date: '2026-08-04', numbers: [14, 21, 51, 55, 65], special: 21 },
 };
 
