@@ -2003,6 +2003,17 @@
      줄을 차지해서 유독 커 보인다는 지적으로, 나머지 칩들과 같은 2열 그리드 안에 나란히
      들어가도록 바꿈(script.js renderAmountBreakdownHtml() 참고) — 점선 테두리만 남겨 구분 유지 */
   .jh-amt-chip-other{ border:1px dashed rgba(var(--ink-rgb),0.28); background:transparent; }
+  /* 2026-08-05: "🌐 기타 국가"가 "기타"/"국가" 사이에서 줄바꿈되어 2줄로 쪼개져 보인다는
+     재제보 — Playwright로 실측한 결과, 이 칩의 실제 콘텐츠 폭(패딩 제외, 약 85px)이 라벨
+     텍스트가 필요로 하는 폭(약 93px)보다 좁아서 생기는 진짜 "안 들어가서 줄바꿈"이었음(CSS
+     버그가 아니라 순수 공간 부족). 폰트 크기는 이 코드베이스의 시니어 가독성 최소 기준
+     (16px) 밑으로 못 줄이고, 칩을 다시 전체 폭으로 넓히면 2026-07-29에 되돌렸던 "혼자
+     유독 커 보임" 문제가 재발함 — 그래서 한국어에서만(다른 언어는 라벨 자체가 더 길어서
+     이 여유로도 부족하므로 그대로 둠) 좌우 패딩을 살짝 줄여 필요한 폭을 확보하고
+     white-space:nowrap으로 강제 한 줄 처리함. 실측: 5px 패딩 기준 콘텐츠 폭 ≈100px >
+     라벨 필요 폭 93px로 여유 있게 들어감 확인(Playwright, 393px 뷰포트 기준) */
+  html[lang="ko"] .jh-amt-chip-other{ padding:7px 5px; }
+  html[lang="ko"] .jh-amt-chip-other .jh-amt-label{ white-space:nowrap; }
   .jh-amt-item{ display:flex; flex-direction:column; gap:1px; min-width:0; }
   .jh-amt-label{ font-size:var(--fs-small); color:var(--text-muted); }
   .jh-amt{ font-size:var(--fs-note); font-weight:800; color:var(--teal); }

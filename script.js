@@ -4748,11 +4748,14 @@ function renderAmountBreakdownHtml(cashUsd, stateCode){
   const otherLabelText = otherResult.basisSuffix.replace(/\s*[（(][^)）]*[)）]\s*$/, '');
   // 2026-08-03: "🌐 " 이모지 접두사 때문에 이 칩(2열 그리드, 폭 100px 안팎)에서 "기타 국가"가
   // "🌐"/"기타"/"국가" 3줄로 어색하게 쪼개져 보인다는 사용자 스크린샷 제보로 한 번 이모지를
-  // 통째로 뺐었는데, 이번엔 사용자가 다시 이모지를 원해서(이 칩이 "다른 나라"라는 걸 한눈에
-  // 알아보는 데 도움이 됐다고 함) 복원 — 이번엔 이모지와 첫 단어 사이를 줄바꿈 없는 공백
-  // (U+00A0)으로 묶어서 "🌐"이 혼자 한 줄을 차지하는 문제만 막음. 나머지 단어 사이는 그대로
-  // 일반 공백이라 줄바꿈 가능해서, 옆 칩들처럼 최대 2줄로는 자연스럽게 접힘
-  const otherLabel = '🌐 ' + otherLabelText;
+  // 통째로 뺐었는데, 이번엔 사용자가 다시 이모지를 원해서(이 칩이 "다른 나라"란 걸 한눈에
+  // 알아보는 데 도움이 되었다고 함) 복원 — 이모지와 첫 단어 사이를 줄바꿈 없는 공백(U+00A0)으로
+  // 묶음. 2026-08-05 재발(기타/국가가 2줄로 쪼개짐) — 원인은 텍스트가 아니라 CSS였음: 전역
+  // overflow-wrap:break-word 때문에 flex 자동 최소폭 계산이 "실제로 다 안 들어가도 어차피
+  // 아무 데서나 끊을 수 있다"고 보고 필요 이상으로 일찍 줄바꿈시킴(실측 결과 "🌐 기타 국가"는
+  // 원래도 칩 안에 여유 있게 들어감, 아래 .jh-amt-chip-other .jh-amt-label의 overflow-wrap:
+  // normal 재정의로 해결 — 텍스트/nbsp 쪽은 그대로 둠)
+  const otherLabel = '🌐 ' + otherLabelText;
   const otherChipHtml = `<span class="jh-amt-item jh-amt-chip jh-amt-chip-other"><span class="jh-amt-label">${otherLabel}</span><span class="jh-amt"><bdi>${formatEokKrwInDisplayCurrency(otherResult.final, sharedInputCurrency)}</bdi></span></span>`;
   const restHtml = `<div class="jh-amounts-grid">${restVisibleGroups.map(g => toAmtItem(g, false)).join('')}${otherChipHtml}</div>`;
   return primaryHtml + restHtml + hiddenHtml;
