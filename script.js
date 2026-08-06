@@ -3456,6 +3456,7 @@ let currentLightningGame = 'powerball';
 // 돌아와도 진행 상황이 그대로 남아있음.
 let currentLightningMode = 'quick';
 let fishingCaughtValues = [];   // 이번 판에서 지금까지 낚은 값들(순서대로, 5개+특별번호 1개)
+let fishingCaughtGoldenFlags = []; // fishingCaughtValues와 같은 순서로, 각 번호가 "황금 물고기"였는지(공유 카드 배지용)
 let fishingSessionValues = null; // 이번 판 전체 6개 값 — 캐스팅마다 하나씩 공개
 // 2026-08-05: "번거롭다"(캐스팅 대기 → 순간 탭 → 꾹 눌러 게이지 채우기 3단계 타이밍 게임)는
 // 사용자 피드백으로, 반사신경 게임을 전면 폐기하고 "낚싯대를 직접 드래그해서 헤엄치는 물고기
@@ -3470,9 +3471,9 @@ let fishingState = 'idle';
 let fishingRodXPct = 50;      // 낚싯대(찌)의 현재 가로 위치(연못 폭 대비 %)
 const FISHING_MAX_FISH = 3;   // 동시에 헤엄치며 낚을 수 있는 물고기 최대 마리 수
 let fishingFish = [
-  { active: false, xPct: 50, dir: 1 },
-  { active: false, xPct: 50, dir: 1 },
-  { active: false, xPct: 50, dir: 1 },
+  { active: false, xPct: 50, dir: 1, golden: false, size: 'medium', hooked: false },
+  { active: false, xPct: 50, dir: 1, golden: false, size: 'medium', hooked: false },
+  { active: false, xPct: 50, dir: 1, golden: false, size: 'medium', hooked: false },
 ];
 let fishingTargetSpeedPct = 16; // 물고기 초당 이동 속도(연못 폭 대비 %) — 서두르지 않아도 따라잡을 수 있는 여유로운 속도
 let fishingSwimRafId = null;
@@ -3482,6 +3483,28 @@ const FISHING_TARGET_MIN_PCT = 10;
 const FISHING_TARGET_MAX_PCT = 90;
 const FISHING_CATCH_TOLERANCE_PCT = 9; // 찌와 물고기 위치가 이 범위(%) 안이면 성공 — 손 떨림 등을 감안해 넉넉히
 const FISHING_NEXT_FISH_DELAY_MS = 500; // 낚은 슬롯이 다시 채워지기까지의 짧은 축하 연출 시간
+// 2026-08-06 추가: 잃어버렸던 세션에서 설계했던 "황금 물고기" 강화안을 인수인계 기록을 바탕으로
+// 재구현 — 속도/판정은 그대로 두고 등장 확률·시각 연출만 다른 4가지 변주(황금 물고기, 6번째
+// 보너스볼 강조, 입질 지연 연출, 크기별 판정폭+자석 스냅)를 기존 상태 머신에 얹음.
+const FISHING_GOLDEN_CHANCE = 0.18; // 물고기 한 마리가 "황금"으로 스폰될 확률(약 15~20%)
+// 크기별 판정 폭(tolerance)·표시 배율(scale)·자석 스냅 여부 — large는 넉넉하게, small은 좁은 대신
+// 낚싯대를 가까이 가져가면 끌려오는 자석 효과로 보완함(아래 fishingSwimLoop 참고)
+const FISHING_SIZE_CONFIG = {
+  large:  { tolerance: 13, scale: 1.3,  snap: false },
+  medium: { tolerance: FISHING_CATCH_TOLERANCE_PCT, scale: 1, snap: false },
+  small:  { tolerance: 6,  scale: 0.72, snap: true },
+};
+const FISHING_SIZE_WEIGHTS = [['large', 0.25], ['medium', 0.5], ['small', 0.25]];
+const FISHING_SLOT_BASE_FONT_PX = [20, 18, 16]; // 슬롯별 기본 폰트 크기(styles.css .fishing-target-fish-0/1/2와 동일) — 크기 배율의 기준값
+function fishingPickSizeTier(){
+  let r = Math.random();
+  for (const [tier, weight] of FISHING_SIZE_WEIGHTS) { if (r < weight) return tier; r -= weight; }
+  return 'medium';
+}
+const FISHING_SNAP_RANGE_PCT = 8;          // 이 거리(%) 안에 찌가 들어오면 작은 물고기가 끌려오기 시작함
+const FISHING_SNAP_PULL_PCT_PER_SEC = 40;  // 자석 효과로 끌려오는 속도(%/초)
+const FISHING_BITE_DELAY_MS = 800; // 성공 판정 직후 번호를 바로 공개하지 않고 "입질" 연출을 잠깐 보여주는 시간
+let fishingBiting = false; // 입질 연출 재생 중엔 다른 낚시 시도를 잠깐 막음(애니메이션 겹침 방지)
 function fishingVibrate(pattern){ try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
 
 // 언어 전환 시에도 재사용해야 해서, 이미 뽑아둔 번호는 그대로 두고 문구·토글 상태만 새로 그림
@@ -3550,21 +3573,25 @@ function fishingCastBtnDefaultLabel(){
 // 다시 시작할 때 호출됨
 function resetFishingRound(){
   fishingCaughtValues = [];
+  fishingCaughtGoldenFlags = [];
   fishingSessionValues = null;
   fishingState = 'idle';
+  fishingBiting = false;
   fishingDragActive = false;
   stopFishingSwimLoop();
   const pond = document.getElementById('fishing-pond');
   if (pond) pond.classList.remove('is-aiming', 'is-dragging');
   const dragHint = document.getElementById('fishing-drag-hint');
   if (dragHint) dragHint.classList.remove('show');
+  const rodWrap = document.getElementById('fishing-rod-wrap');
+  if (rodWrap) rodWrap.classList.remove('biting');
   fishingSetRodX(50);
-  for (let i = 0; i < FISHING_MAX_FISH; i++) fishingHideFishSlot(i);
+  for (let i = 0; i < FISHING_MAX_FISH; i++) { fishingFish[i].hooked = false; fishingHideFishSlot(i); }
   const msgEl = document.getElementById('fishing-status-msg');
   if (msgEl) msgEl.classList.remove('show');
   document.querySelectorAll('#fishing-result .lightning-ball').forEach(b => {
     b.textContent = '?';
-    b.classList.remove('drawn');
+    b.classList.remove('drawn', 'bonus-pop');
   });
   const resultEl = document.getElementById('fishing-result');
   if (resultEl) resultEl.classList.remove('celebrate');
@@ -3609,21 +3636,27 @@ function castFishingLine(){
 function fishingSpawnFishSlot(i){
   const f = fishingFish[i];
   f.active = true;
+  f.hooked = false;
   f.xPct = FISHING_TARGET_MIN_PCT + Math.random() * (FISHING_TARGET_MAX_PCT - FISHING_TARGET_MIN_PCT);
   f.dir = Math.random() < 0.5 ? 1 : -1;
+  f.golden = Math.random() < FISHING_GOLDEN_CHANCE;
+  f.size = fishingPickSizeTier();
   const el = document.getElementById('fishing-target-fish-' + i);
   if (el) {
     el.textContent = ['🐟', '🐠', '🐡'][Math.floor(Math.random() * 3)];
     el.style.display = '';
     el.style.left = f.xPct + '%';
     el.style.transform = `translateX(-50%) scaleX(${f.dir})`;
+    el.style.fontSize = Math.round(FISHING_SLOT_BASE_FONT_PX[i] * FISHING_SIZE_CONFIG[f.size].scale) + 'px';
+    el.classList.toggle('golden', f.golden);
   }
 }
 
 function fishingHideFishSlot(i){
   fishingFish[i].active = false;
+  fishingFish[i].hooked = false;
   const el = document.getElementById('fishing-target-fish-' + i);
-  if (el) el.style.display = 'none';
+  if (el) { el.style.display = 'none'; el.classList.remove('golden'); }
 }
 
 // 판 시작 시, 남은 번호 수만큼(최대 FISHING_MAX_FISH) 슬롯을 채움 — 새 판은 항상 6개가 남아있는
@@ -3644,10 +3677,19 @@ function fishingSwimLoop(ts){
   fishingSwimLastTs = ts;
   for (let i = 0; i < FISHING_MAX_FISH; i++) {
     const f = fishingFish[i];
-    if (!f.active) continue;
+    if (!f.active || f.hooked) continue; // 입질 연출 중인 물고기는 그 자리에 멈춰서 "걸렸다" 느낌을 줌
     f.xPct += f.dir * fishingTargetSpeedPct * dtSec;
     if (f.xPct <= FISHING_TARGET_MIN_PCT) { f.xPct = FISHING_TARGET_MIN_PCT; f.dir = 1; }
     else if (f.xPct >= FISHING_TARGET_MAX_PCT) { f.xPct = FISHING_TARGET_MAX_PCT; f.dir = -1; }
+    // 2026-08-06 추가: 작은 물고기는 판정 폭이 좁은 대신, 드래그 중인 찌가 가까이 오면 살짝
+    // 끌려오는 "자석" 효과를 줘서 좁은 히트박스를 체감상 보완함(FISHING_SIZE_CONFIG.small.snap)
+    if (fishingDragActive && FISHING_SIZE_CONFIG[f.size].snap) {
+      const dist = fishingRodXPct - f.xPct;
+      if (Math.abs(dist) < FISHING_SNAP_RANGE_PCT) {
+        const pull = Math.sign(dist) * Math.min(Math.abs(dist), FISHING_SNAP_PULL_PCT_PER_SEC * dtSec);
+        f.xPct = Math.max(FISHING_TARGET_MIN_PCT, Math.min(FISHING_TARGET_MAX_PCT, f.xPct + pull));
+      }
+    }
     const el = document.getElementById('fishing-target-fish-' + i);
     if (el) { el.style.left = f.xPct + '%'; el.style.transform = `translateX(-50%) scaleX(${f.dir})`; }
   }
@@ -3741,7 +3783,7 @@ document.addEventListener('DOMContentLoaded', initFishingKeyboardControls);
 // 헤엄치므로 그중 제일 가까운 것 하나만 대상으로 삼음. 제한시간이 없어서 몇 번을 실패해도
 // 불이익 없이 바로 다시 시도 가능
 function fishingAttemptCatch(){
-  if (fishingState !== 'aiming') return;
+  if (fishingState !== 'aiming' || fishingBiting) return;
   let bestIndex = -1;
   let bestDist = Infinity;
   for (let i = 0; i < FISHING_MAX_FISH; i++) {
@@ -3750,8 +3792,27 @@ function fishingAttemptCatch(){
     const dist = Math.abs(fishingRodXPct - f.xPct);
     if (dist < bestDist) { bestDist = dist; bestIndex = i; }
   }
-  if (bestIndex !== -1 && bestDist <= FISHING_CATCH_TOLERANCE_PCT) fishingCaughtSuccess(bestIndex);
+  // 2026-08-06: 판정 폭을 물고기 크기별로 다르게 씀(large는 넉넉하게, small은 좁게) — 위
+  // FISHING_SIZE_CONFIG 선언부 주석 참고
+  const tolerance = bestIndex !== -1 ? FISHING_SIZE_CONFIG[fishingFish[bestIndex].size].tolerance : FISHING_CATCH_TOLERANCE_PCT;
+  if (bestIndex !== -1 && bestDist <= tolerance) fishingStartBite(bestIndex);
   else fishingMissed(bestIndex);
+}
+
+// 2026-08-06 추가: 성공 판정이 나도 번호를 바로 공개하지 않고, 낚싯대가 2~3번 까딱거리는 "입질"
+// 연출을 짧게 보여준 뒤(styles.css .fishing-rod-wrap.biting) 공개함 — 실제 낚시의 손맛을 흉내냄.
+// 그동안 이 물고기는 fishingSwimLoop에서 멈춰있고(hooked), 다른 물고기들은 계속 헤엄침.
+function fishingStartBite(slotIndex){
+  fishingBiting = true;
+  fishingFish[slotIndex].hooked = true;
+  const rodWrap = document.getElementById('fishing-rod-wrap');
+  if (rodWrap) { rodWrap.classList.remove('biting'); void rodWrap.offsetWidth; rodWrap.classList.add('biting'); }
+  fishingVibrate([30, 30, 30]);
+  setTimeout(() => {
+    fishingBiting = false;
+    if (rodWrap) rodWrap.classList.remove('biting');
+    fishingCaughtSuccess(slotIndex);
+  }, FISHING_BITE_DELAY_MS);
 }
 
 // 위치가 안 맞아서 놓쳤을 때 — 판 진행 상태(이미 낚은 번호)는 그대로 두고 안내 문구만 보여줌,
@@ -3781,29 +3842,42 @@ function showFishingEscapedMessage(){
 function fishingCaughtSuccess(slotIndex){
   const caughtValueIndex = fishingCaughtValues.length;
   const value = fishingSessionValues[caughtValueIndex];
+  const isGolden = fishingFish[slotIndex].golden;
+  const isBonus = caughtValueIndex === 5; // 6번째(특별번호) — 파워볼/메가볼처럼 이번 판의 마무리 번호
   const slots = document.querySelectorAll('#fishing-result .lightning-ball');
   const slotEl = slots[caughtValueIndex];
   fishingCaughtValues.push(value);
+  fishingCaughtGoldenFlags.push(isGolden);
   if (slotEl) {
     slotEl.textContent = value;
     void slotEl.offsetWidth;
     slotEl.classList.add('drawn');
+    slotEl.classList.toggle('bonus-pop', isBonus);
   }
   const announcer = document.getElementById('fishing-result-announcer');
   if (announcer) {
     const prefix = pickLang('낚은 번호: ', 'Caught numbers: ', '钓到的号码：', 'Số đã câu được: ', 'เลขที่ตกได้: ', 'Пойманные числа: ', FISHING_CAUGHT_PREFIX_MORE);
     announcer.textContent = prefix + fishingCaughtValues.join(', ');
   }
-  fishingVibrate([20, 40, 30, 40, 50]);
+  // 2026-08-06: 6번째(보너스) 번호는 더 강하고 겹겹이 이어지는 패턴으로, 황금 물고기는 살짝 더
+  // 통통 튀는 패턴으로 구분함 — 나머지는 기존 패턴 그대로
+  fishingVibrate(isBonus ? [30, 50, 30, 50, 30, 50, 90] : (isGolden ? [25, 15, 25, 15, 60] : [20, 40, 30, 40, 50]));
 
   const splash = document.getElementById('fishing-splash');
-  if (splash) { splash.style.left = fishingRodXPct + '%'; splash.classList.remove('play'); void splash.offsetWidth; splash.classList.add('play'); }
+  if (splash) {
+    splash.style.left = fishingRodXPct + '%';
+    splash.classList.remove('play', 'big');
+    void splash.offsetWidth;
+    splash.classList.toggle('big', isBonus || isGolden); // 보너스·황금 캐치는 물결도 한층 더 크게
+    splash.classList.add('play');
+  }
   const caughtFishEl = document.getElementById('fishing-caught-fish');
   const caughtFishSourceEl = document.getElementById('fishing-target-fish-' + slotIndex);
   if (caughtFishEl && caughtFishSourceEl) {
     caughtFishEl.textContent = caughtFishSourceEl.textContent;
-    caughtFishEl.classList.remove('play');
+    caughtFishEl.classList.remove('play', 'golden');
     void caughtFishEl.offsetWidth;
+    caughtFishEl.classList.toggle('golden', isGolden);
     caughtFishEl.classList.add('play');
   }
   fishingHideFishSlot(slotIndex);
@@ -3877,6 +3951,8 @@ async function shareFishingCatch(){
   const numbers = fishingCaughtValues.slice(0, 5);
   const special = fishingCaughtValues[5];
   const specialColor = config.specialClass === 'pb' ? '#262420' : '#946716';
+  const goldenFlags = fishingCaughtGoldenFlags.slice(0, 5);
+  const specialGolden = !!fishingCaughtGoldenFlags[5];
 
   const thisJackpotLabel = pickLang('이번 잭팟', 'This jackpot', '本期奖金', 'Jackpot kỳ này', 'แจ็คพอตงวดนี้', 'Этот джекпот', {
     ar: 'هذا الجاكبوت', bn: 'এই জ্যাকপট', fr: 'Ce jackpot', hi: 'यह जैकपॉट', id: 'Jackpot ini',
@@ -3893,7 +3969,7 @@ async function shareFishingCatch(){
 
   const canvas = buildShareCard({
     label, bigText, subText, footerText,
-    balls: { numbers, special, specialColor },
+    balls: { numbers, special, specialColor, goldenFlags, specialGolden },
   });
 
   const shareTitle = `${flagEmoji} ${gameLabel}`;
@@ -4469,6 +4545,32 @@ function drawShareBall(ctx, cx, cy, r, num, bg, fg, border){
   ctx.restore();
 }
 
+// 2026-08-06 추가: 낚시 게임에서 "황금 물고기"로 낚은 번호에 붙는 작은 별 배지 — 위 flagEmojiFromCode
+// 주석과 같은 이유(이모지 폰트 의존 문제 재발 방지)로 텍스트/이모지 대신 path로 직접 그림
+function drawShareBallGoldBadge(ctx, cx, cy, r){
+  const bx = cx + r * 0.68, by = cy - r * 0.68, outerR = r * 0.32, innerR = outerR * 0.45;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(bx, by, outerR + 3, 0, Math.PI * 2);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fill();
+  ctx.beginPath();
+  const spikes = 5;
+  let rot = -Math.PI / 2;
+  const step = Math.PI / spikes;
+  ctx.moveTo(bx + Math.cos(rot) * outerR, by + Math.sin(rot) * outerR);
+  for (let i = 0; i < spikes; i++) {
+    rot += step;
+    ctx.lineTo(bx + Math.cos(rot) * innerR, by + Math.sin(rot) * innerR);
+    rot += step;
+    ctx.lineTo(bx + Math.cos(rot) * outerR, by + Math.sin(rot) * outerR);
+  }
+  ctx.closePath();
+  ctx.fillStyle = '#D9A62E';
+  ctx.fill();
+  ctx.restore();
+}
+
 // label/bigText/balls/subText 블록을 실제로 그리거나(draw:true) 높이만 재고(draw:false) 마침.
 // buildShareCard가 그리기 전에 draw:false로 한 번 태워서 전체 블록 높이를 알아낸 뒤, 그 높이를
 // 콘텐츠 영역 한가운데로 옮겨서(centerY) draw:true로 다시 태우는 방식 — 옵션 필드 조합(bigText만/
@@ -4496,11 +4598,13 @@ function layoutShareContent(ctx, { label, bigText, subText, balls }, { anchorX, 
       // RTL 언어는 읽기 방향이 오른쪽→왼쪽이라 공 배열도 오른쪽 끝을 기준점 삼아 반대 방향으로 배치
       let bx = isRTL ? (anchorX - r) : (anchorX + r);
       const step = isRTL ? -gap : gap;
-      balls.numbers.forEach(n => {
+      balls.numbers.forEach((n, idx) => {
         drawShareBall(ctx, bx, by, r, n, '#FFFFFF', '#262420', '#E3E6EA');
+        if (balls.goldenFlags && balls.goldenFlags[idx]) drawShareBallGoldBadge(ctx, bx, by, r);
         bx += step;
       });
       drawShareBall(ctx, bx, by, r, balls.special, balls.specialColor, '#FFFFFF', balls.specialColor);
+      if (balls.specialGolden) drawShareBallGoldBadge(ctx, bx, by, r);
     }
     y = by + r + 36;
   }

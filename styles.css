@@ -1452,6 +1452,14 @@
   .lightning-ball.pb{ background:rgba(var(--ink-rgb),0.12); border-color:var(--text-dark); color:var(--text-dark); }
   .lightning-ball.mega{ background:rgba(148,103,22,0.12); border-color:var(--status-amber); color:var(--status-amber); }
   .lightning-ball.drawn{ animation:pop 0.3s ease; }
+  /* 2026-08-06 추가: 낚시 게임의 6번째(보너스) 번호만 더 화려한 색상 팝으로 구분(script.js
+     fishingCaughtSuccess의 isBonus 참고) — 같은 요소에 .drawn과 함께 붙으므로 뒤에 선언해 우선시킴 */
+  .lightning-ball.bonus-pop{ animation:fishing-bonus-pop 0.55s ease; }
+  @keyframes fishing-bonus-pop{
+    0%{ transform:scale(0.5); opacity:0; filter:brightness(1); }
+    45%{ transform:scale(1.35); filter:brightness(1.5) saturate(1.4); }
+    100%{ transform:scale(1); opacity:1; filter:brightness(1); }
+  }
   .lightning-ball.spinning{ animation:lightning-spin-pulse 0.15s linear infinite; }
   @keyframes lightning-spin-pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.5; } }
   .lightning-result.celebrate{ animation:lightning-celebrate 0.4s ease; }
@@ -1552,6 +1560,18 @@
   .fishing-hook-wrap{ display:flex; align-items:center; gap:1px; animation:fishing-bob-idle 2.4s ease-in-out infinite; }
   @keyframes fishing-bob-idle{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(3px); } }
   .fishing-hook{ font-size:18px; line-height:1; filter:drop-shadow(0 1px 1px rgba(0,0,0,0.25)); }
+  /* 2026-08-06 추가: 성공 판정 직후 번호를 바로 공개하지 않고, 낚싯대가 2~3번 까딱거리는 "입질"
+     연출을 짧게 보여준 뒤 공개함(script.js의 fishingStartBite, 진동 패턴 [30,30,30]과 맞춤) */
+  .fishing-rod-wrap.biting{ animation:fishing-bite-dip 0.8s ease-in-out; }
+  @keyframes fishing-bite-dip{
+    0%,100%{ transform:translateX(-50%) translateY(0); }
+    15%{ transform:translateX(-50%) translateY(10px); }
+    30%{ transform:translateX(-50%) translateY(0); }
+    45%{ transform:translateX(-50%) translateY(10px); }
+    60%{ transform:translateX(-50%) translateY(2px); }
+    75%{ transform:translateX(-50%) translateY(9px); }
+    90%{ transform:translateX(-50%) translateY(0); }
+  }
   /* 낚은 순간에만 잠깐 나타나 통통 튀며 사라지는 "트로피" 표시 — script.js가 성공할 때마다
      .play 클래스를 재트리거함(.lightning-ball.drawn과 같은 reflow 재시작 패턴) */
   .fishing-caught-fish{ font-size:18px; line-height:1; opacity:0; transform:scale(0.4); }
@@ -1560,6 +1580,15 @@
     0%{ opacity:0; transform:scale(0.4); }
     30%{ opacity:1; transform:scale(1.3); }
     100%{ opacity:0; transform:scale(1) translateY(-14px); }
+  }
+  /* 2026-08-06 추가: "황금 물고기"(약 15~20% 확률로 등장, script.js FISHING_GOLDEN_CHANCE) — 속도·
+     판정폭은 평범한 물고기와 동일하고 순수 시각 연출만 다름. 아이콘/발광 효과만 쓰므로 새 번역
+     문구가 필요 없음. */
+  .fishing-caught-fish.golden.play{ animation:fishing-caught-pop-golden 0.5s ease-out; }
+  @keyframes fishing-caught-pop-golden{
+    0%{ opacity:0; transform:scale(0.4); filter:drop-shadow(0 0 0 rgba(255,210,74,0)); }
+    30%{ opacity:1; transform:scale(1.4); filter:drop-shadow(0 0 12px #FFD24A); }
+    100%{ opacity:0; transform:scale(1) translateY(-14px); filter:drop-shadow(0 0 4px rgba(255,210,74,0.4)); }
   }
   /* 실제로 낚는 대상 — 연못 안을 좌우로 헤엄쳐 다니고(script.js의 fishingSwimLoop), 사용자가
      낚싯대를 이 위치에 맞춘 뒤 손을 떼면 낚임. 장식용 idle-fish 3마리와 구분되도록 은은한
@@ -1575,6 +1604,17 @@
   .fishing-target-fish-0{ bottom:34px; }
   .fishing-target-fish-1{ bottom:20px; font-size:18px; }
   .fishing-target-fish-2{ bottom:8px; font-size:16px; }
+  /* 2026-08-06 추가: 크기 배율(large/medium/small)은 fishingSpawnFishSlot이 슬롯별 기본 폰트
+     크기(FISHING_SLOT_BASE_FONT_PX)를 기준으로 매번 인라인 style.fontSize를 계산해서 직접 넣음 —
+     클래스 특이성 다툼 없이 슬롯별 기본값을 정확히 배율만큼 키우고 줄이기 위함. */
+  .fishing-target-fish.golden{
+    filter:drop-shadow(0 0 6px #FFD24A) drop-shadow(0 0 10px rgba(255,193,7,0.7)) drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+    animation:fishing-golden-glow 1.1s ease-in-out infinite;
+  }
+  @keyframes fishing-golden-glow{
+    0%,100%{ filter:drop-shadow(0 0 6px #FFD24A) drop-shadow(0 0 10px rgba(255,193,7,0.7)) drop-shadow(0 1px 1px rgba(0,0,0,0.2)); }
+    50%{ filter:drop-shadow(0 0 10px #FFE68A) drop-shadow(0 0 16px rgba(255,193,7,0.9)) drop-shadow(0 1px 1px rgba(0,0,0,0.2)); }
+  }
   .fishing-target-fish.shake{ animation:fishing-target-shake 0.3s ease; }
   @keyframes fishing-target-shake{
     0%,100%{ transform:translateX(-50%); }
@@ -1634,6 +1674,13 @@
     0%{ width:6px; height:6px; margin-left:-3px; opacity:0.9; }
     100%{ width:44px; height:44px; margin-left:-22px; opacity:0; }
   }
+  /* 2026-08-06 추가: 6번째(보너스) 번호나 황금 물고기를 낚았을 때만 한층 더 크고 긴 물결 —
+     script.js의 fishingCaughtSuccess(isBonus || isGolden)가 .big을 같이 붙임 */
+  .fishing-splash.play.big{ animation:fishing-splash-ring-big 0.55s ease-out; }
+  @keyframes fishing-splash-ring-big{
+    0%{ width:6px; height:6px; margin-left:-3px; opacity:0.95; border-width:3px; }
+    100%{ width:72px; height:72px; margin-left:-36px; opacity:0; border-width:1px; }
+  }
   .fishing-status-msg{
     min-height:1.4em; text-align:center; font-size:var(--fs-small); font-weight:700;
     color:var(--status-red); margin:8px 0 0; opacity:0; transition:opacity 0.2s ease;
@@ -1660,12 +1707,17 @@
   @media (prefers-reduced-motion: reduce){
     .fishing-idle-fish{ animation:none; }
     .fishing-splash.play{ animation:none; }
+    .fishing-splash.play.big{ animation:none; }
     .fishing-caught-fish.play{ animation:none; }
+    .fishing-caught-fish.golden.play{ animation:none; }
     .fishing-target-fish.shake{ animation:none; }
+    .fishing-target-fish.golden{ animation:none; }
     .fishing-hook-wrap{ animation:none; }
     .fishing-cloud{ animation:none; }
     .fishing-drag-hint.show{ animation:none; opacity:1; }
     .fishing-bubble{ animation:none; }
+    .fishing-rod-wrap.biting{ animation:none; }
+    .lightning-ball.bonus-pop{ animation:none; }
   }
 
   .prize-card{
