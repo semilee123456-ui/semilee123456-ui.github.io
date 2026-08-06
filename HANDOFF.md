@@ -2340,3 +2340,58 @@ HANDOFF 기록만 보고 답하지 않고 매번 코드/워크플로 파일을 �
   "새로 만들자"고 답하지 말고, 실제로 grep/파일 확인 후 답하는 습관을 유지할 것
   (이 세션도 처음엔 ②를 "새로 만들어야 한다"고 잘못 판단했다가 사용자가 "되어있지
   않냐"고 되물어서 `widget-embed.html`을 찾아 정정한 사례가 있음).
+
+### 2026-08-06 이어서 — `og.chamtax.com` 동적 공유카드 Worker 되살림(단, 폴백
+경로에만 한정)
+
+사용자가 참고한 AI 홍보 제안 중 "동적 OG 프리뷰 카드"를 검토하다가, 이게 완전히
+새 제안이 아니라 **이 저장소가 2026-07-31에 이미 만들어서 배포까지 해뒀던 기능**
+(Cloudflare Worker, `og-share-worker/`)이 2026-08-05에 다른 이유로 호출부만
+끊긴 채 방치돼있던 것을 발견함.
+
+- **실제 배포 상태 재확인**: `curl`로 `og.chamtax.com/s?...`·`/api/og.png?...`
+  둘 다 직접 호출해서 지금도 정상 작동 중인 걸 확인함(재배포 불필요, Cloudflare
+  무료 플랜이라 비용도 없음) — 예전 커밋 메시지의 "배포는 그대로 둠" 기록이
+  실제로 맞았음.
+- **되살리되 범위를 좁힘**: git 히스토리(`55f9bb0^`)에서 예전 코드를 확인한 결과,
+  이 Worker가 꺼진 진짜 이유는 "문제가 있어서"가 아니라 **"결과 공유하기"가
+  2026-08-03에 실제 이미지 파일을 `navigator.share()`로 직접 공유하는 방식으로
+  바뀌면서 대체됐기 때문**이었음 — 이미지가 채팅에 바로 보이는 주 경로(모바일
+  공유시트)에서는 이 동적 카드가 어차피 발동 안 하고, 오히려 감싼 링크를 거기
+  섞으면 예전에 문제였던 "이미지+텍스트+링크미리보기 3덩어리 쪼개짐"(2026-08-05
+  이유로 애초에 없앴던 것)이 재발할 위험만 있음. 그래서 **파일 공유가 안 되는
+  폴백 경로**(주로 데스크톱 — 이미지는 다운로드되고 텍스트만 클립보드로 복사되는
+  경우)에만 한정해서 연결함 — 그 경로는 이미지가 같이 안 붙으므로 감싼 링크를
+  써도 중복 문제가 없음.
+- **구현**: `OG_SHARE_WORKER_BASE`/`wrapWithOgShareCard()` 되살림(git 히스토리
+  원본 그대로). `openAnnotateOverlay()`에 `annotateShareTextFallback` 상태 신설
+  (`opts.shareTextFallback`이 없으면 기존 `annotateShareText`와 동일하게 동작 —
+  다른 호출부는 전부 무영향). `finishAnnotateAndShare()`의 클립보드 복사·
+  `window.prompt` 폴백 두 곳만 이 새 변수를 씀. `shareResult()`에서만
+  `shareTextFallback`을 실제로 채워서 넘김(다른 공유 함수들은 안 건드림 —
+  범위를 최소화).
+- **검증**: 살아있는 Worker에 실제로 이 코드가 만드는 정확한 URL 형태로 curl
+  직접 호출해서 카드 HTML/PNG 정상 생성 확인. Playwright로 `shareResult()`
+  실행 후 `annotateShareText`(주경로, og.chamtax.com 미포함 확인)와
+  `annotateShareTextFallback`(og.chamtax.com/s? 포함 확인) 분리 동작 확인,
+  `navigator.canShare`를 강제로 꺼서 실제 폴백 경로(클립보드 복사)까지 끝까지
+  실행해 복사된 텍스트에 감싼 링크가 들어있는 것 확인 — 콘솔 에러 0건.
+  회귀 테스트 9개(`home_audit`18·`console_error_audit`161·`wrap_audit`168·
+  `i18n_coverage_audit`764키·`broken_link_audit`95개·`full_overflow_sweep`945
+  조합·`nav_slider_audit`·`map_scroll_audit`10·`faq_audit`18) 전부 `ISSUES: 0`.
+  `npm run build:min` 재실행, 캐시버스팅 `20260806-1`→`20260806-2`,
+  `CACHE_NAME` v13→v14.
+- **다음 세션 참고**: 다른 공유 함수(`shareLatestDraw`/낚시 게임 공유 등)들의
+  주 경로는 일부러 안 건드림 — 전부 이미지 파일이 직접 공유되는 구조라 그대로가
+  맞음. 이 Worker를 더 넓게 쓰고 싶어지면(예: 폴백 말고 어디든), 위에서 설명한
+  "이미지+링크 중복" 재발 위험부터 먼저 따질 것.
+
+**후속(같은 날, 다른 세션이 병합)**: 이 작업은 원래 `claude/github-handover-docs-2g94p5`
+브랜치(PR #145)에만 커밋되고 오랫동안 main에 병합이 안 된 채 남아있었음 — 그 사이 main이
+한참 더 진행되면서 PR이 conflict 상태(`mergeable_state: dirty`)가 됨. 사용자가 "낚시게임
+황금물고기 작업이 토큰 부족으로 안 올라간 것 같다"고 물어봐서 전체 브랜치를 조사하다가
+이 PR을 발견 — 실제로는 낚시게임 확장 작업(별도, 유실됨)과는 무관한 별개 작업이었고, 이
+작업 자체는 안전하게 살아있었음. `b891a5c` 커밋 하나만 현재 main 위로 cherry-pick해서
+반영(`script.js`는 자동 병합, `index.html`/`script.min.js`/이 문서만 충돌 — 캐시버스팅
+버전은 `20260806-4`로 재조정, `script.min.js`는 `npm run build:min`으로 재생성, 이 문서
+충돌은 두 세션 기록을 순서대로 이어붙여 해결).

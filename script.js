@@ -21,11 +21,16 @@
 //   4) 무엇보다, 150개 넘는 문구의 실제 번역 작업이 코드 작업보다 훨씬 큼
 // 실제 언어가 확정되기 전엔 구조를 미리 넓히지 않기로 결정함 (2026년 7월) — 근거 없이
 // 짐작한 구조가 실제 필요와 안 맞을 위험이 구조를 안 짜두는 비용보다 크다고 판단.
-// 2026-08-05: 공유 문구에서 사이트 링크 자체를 뺐음(아래 shareLatestDraw() 등 주석 참고)에
-// 따라 이 상수를 쓰던 wrapWithOgShareCard()의 호출부가 전부 사라져서 이 상수도 같이 지움 —
-// og.chamtax.com Cloudflare Worker(og-share-worker/) 배포 자체는 그대로 남아있음(되돌리지
-// 않음), 다만 지금은 사이트 어디서도 이 Worker를 호출하지 않는 상태. 나중에 링크 공유를
-// 다시 붙이게 되면 og-share-worker/README.md 참고해서 이 상수를 되살릴 것.
+// 2026-08-06: 되살림 — og.chamtax.com Worker가 실제로 살아있는 것 직접 curl로 재확인함
+// (배포가 끊긴 게 아니라 호출부만 없었던 상태). 단, 2026-08-03에 "결과 공유하기"가 이미지
+// 파일을 navigator.share()로 직접 공유하는 방식으로 바뀌면서, 이미지가 실제로 첨부되는
+// 주 경로(모바일 공유시트)에서는 이 동적 카드가 어차피 안 쓰임(이미지가 이미 채팅창에
+// 바로 보이므로 링크 미리보기 자체가 발동 안 함, 오히려 감싼 링크를 거기 섞으면 예전에
+// 문제였던 "이미지+텍스트+링크미리보기 3덩어리 쪼개짐"이 재발할 위험만 있음) — 그래서
+// 이번엔 **파일 공유가 안 되는 폴백 경로**(데스크톱 등, 이미지는 다운로드되고 텍스트만
+// 클립보드로 복사되는 경우)에만 한정해서 씀. 그 경로는 이미지가 채팅에 같이 안 붙으므로
+// 감싼 링크를 붙여도 중복/쪼개짐 문제가 없음. `annotateShareTextFallback`(아래
+// openAnnotateOverlay/finishAnnotateAndShare) 참고.
 
 // 2026-08-05: GA4 커스텀 이벤트 — "유입→계산→공유" 퍼널을 실제로 측정하기 위해 추가함(그동안
 // gtag('config', ...)만 있어서 페이지뷰만 잡히고, 몇 명이 실제로 계산/공유까지 했는지는 전혀
@@ -35,6 +40,11 @@
 function trackEvent(name, params){
   if (typeof gtag === 'function') gtag('event', name, params || {});
 }
+
+// Worker 배포 주소. 비워두면(기본값) 카드 없이 링크+텍스트만 공유됨(안전한 기본값).
+// og.chamtax.com은 2026-08-06 기준 curl로 직접 살아있음을 재확인함(og-share-worker/
+// README.md 참고 — Cloudflare 무료 플랜, 배포 상태 그대로 유지 중).
+const OG_SHARE_WORKER_BASE = 'https://og.chamtax.com';
 
 let currentLang = 'ko';
 let resultBarAnimatedIn = false; // 홈 실수령/세금 비율 막대가 최초 1회만 0%→목표값 애니메이션되도록 하는 플래그
@@ -4667,6 +4677,26 @@ function shareFallbackCopyToast(){
   return pickLang('✅ 복사 완료! 원하는 곳에 붙여넣어 보세요', '✅ Copied! Paste it wherever you like', '✅ 已复制！粘贴到你想要的地方吧', '✅ Đã sao chép! Dán vào nơi bạn muốn', '✅ คัดลอกแล้ว! วางในที่ที่คุณต้องการ', '✅ Скопировано! Вставьте куда захотите', COPY_DONE_MORE);
 }
 
+// 2026-08-06 되살림(원래 2026-07-31 도입, 2026-08-05 호출부 없어지며 죽은 코드가 됐다가
+// 복원) — 링크를 카카오톡 등 링크 미리보기 봇이 스캔할 때만 og.chamtax.com Worker가 실제
+// 계산 결과(예: "223억원")가 박힌 이미지를 대신 보여주게 하고, 사람이 클릭하면 즉시 실제
+// chamtax.com으로 리다이렉트함. og-share-worker/src/index.js의 /s 라우트가 기대하는 파라미터
+// 스키마와 반드시 맞춰서 같이 고칠 것. title/desc 파라미터는 일부러 안 보냄(카카오톡이 URL이
+// 너무 길면 링크 자체로 인식을 못 하는 문제가 실사용자 재현으로 확인됐었음 — Worker가 이미
+// main/label/sub만으로 desc를 자동 채우는 폴백을 갖고 있어서 안 보내도 카드 내용은 동일).
+function wrapWithOgShareCard(shareUrl, { label, main, sub, taxpct, badge } = {}){
+  if (!OG_SHARE_WORKER_BASE || !main) return shareUrl;
+  const p = new URLSearchParams({ main, to: shareUrl, lang: currentLang || 'ko' });
+  if (label) p.set('label', label);
+  if (sub) p.set('sub', sub);
+  if (badge) p.set('badge', badge);
+  if (typeof taxpct === 'number' && !Number.isNaN(taxpct)) p.set('taxpct', String(taxpct));
+  // 링크 미리보기 봇의 캐시를 우회하기 위한 무효화 타임스탬프 — 리다이렉트(to=) 동작에는
+  // 영향 없음(Worker의 handleSharePage가 이 파라미터를 읽지 않음).
+  p.set('t', Date.now().toString(36));
+  return `${OG_SHARE_WORKER_BASE.replace(/\/$/, '')}/s?${p.toString()}`;
+}
+
 
 async function shareLatestDraw(game, btnEl){
   const draw = LATEST_DRAW[game];
@@ -7105,6 +7135,13 @@ let annotateDownloadFilename = 'chamtax-result.png';
 let annotateMode = 'save';
 let annotateShareTitle = '';
 let annotateShareText = '';
+// 2026-08-06: 파일 공유(navigator.share files)가 안 되는 폴백 경로(주로 데스크톱 — 이미지는
+// 별도 다운로드되고 텍스트만 클립보드로 복사됨) 전용 문구. 이미지가 채팅에 같이 안 붙는
+// 경로라 og.chamtax.com로 감싼 링크를 넣어도 "이미지+링크미리보기 중복" 문제가 없음 —
+// 반대로 주 경로(파일 공유)의 annotateShareText는 그 문제를 피하려고 일부러 안 건드림.
+// opts.shareTextFallback을 안 주는 호출부는 그냥 annotateShareText와 동일하게 동작(기존과
+// 동일, 아무것도 안 깨짐).
+let annotateShareTextFallback = '';
 // "받는 사람"/서명처럼 클릭하면 바로 텍스트 입력이 뜨는 영역 — openAnnotateOverlay() 참고
 let annotateTextHotspots = [];
 let annotateTool = 'pen';
@@ -7136,6 +7173,7 @@ function openAnnotateOverlay(sourceCanvas, filename, opts){
   annotateMode = opts.mode === 'share' ? 'share' : 'save';
   annotateShareTitle = opts.shareTitle || '';
   annotateShareText = opts.shareText || '';
+  annotateShareTextFallback = opts.shareTextFallback || annotateShareText;
   const saveBtn = document.getElementById('annotateSaveBtn');
   const shareBtn = document.getElementById('annotateShareBtn');
   if (saveBtn) saveBtn.style.display = annotateMode === 'share' ? 'none' : '';
@@ -7700,7 +7738,7 @@ async function finishAnnotateAndShare(){
     link.click();
     URL.revokeObjectURL(link.href);
     try {
-      await navigator.clipboard.writeText(annotateShareText);
+      await navigator.clipboard.writeText(annotateShareTextFallback);
       if (shareBtn) {
         const original = shareBtn.textContent;
         shareBtn.textContent = shareFallbackCopyToast();
@@ -7708,7 +7746,7 @@ async function finishAnnotateAndShare(){
         setTimeout(() => { shareBtn.textContent = original; shareBtn.classList.remove('copied'); }, 2000);
       }
     } catch (e) {
-      window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), annotateShareText);
+      window.prompt(pickLang('아래 내용을 길게 눌러 복사해서 공유해주세요', 'Press and hold to copy, then share it', '长按下方内容复制后分享', 'Nhấn giữ để sao chép rồi chia sẻ', 'กดค้างเพื่อคัดลอกแล้วแชร์', 'Нажмите и удерживайте, чтобы скопировать, затем поделитесь', PRESS_HOLD_COPY_MORE), annotateShareTextFallback);
     }
   }, 'image/png');
 }
@@ -11125,16 +11163,21 @@ async function shareResult(){
   // 모달을 먼저 보여주고 그 꾸민 이미지를 공유하는 방식으로 사용자가 다시 요청함 — 예전
   // 결정을 명시적으로 뒤집는 것이므로 인수인계 문서에 그 경위를 남겨둘 것. 카드는 "이미지로
   // 저장"과 완전히 같은 수표 카드(buildHomeResultCheckCanvas)를 재사용 — 새 카드 디자인을
-  // 만들지 않음. 링크 미리보기용 동적 카드 감싸기(wrapWithOgShareCard)는 이제 필요 없음(실제
-  // 이미지 파일을 직접 공유하므로) — 대신 원본(비감싼) shareUrl을 문구에 그대로 붙여서, 받는
-  // 사람이 눌러도 여전히 같은 계산 결과로 이동함.
+  // 만들지 않음. 주 경로(파일 공유)의 shareText는 원본(비감싼) shareUrl을 그대로 붙임(이미지가
+  // 이미 채팅에 보이므로 링크 미리보기가 별도로 안 뜸, 감싸도 소용없고 이미지+링크 중복
+  // 체감만 커짐).
+  // 2026-08-06: 파일 공유가 안 되는 폴백(데스크톱 등, 이미지는 다운로드되고 텍스트만 클립보드로
+  // 복사됨)에서는 이미지가 채팅에 안 붙으므로 og.chamtax.com로 감싼 링크를 써도 중복 문제가
+  // 없음 — 그 경로 전용으로 shareTextFallback을 따로 넘김(위 wrapWithOgShareCard 참고).
   const { canvas: shareCanvas, hotspots: shareHotspots } = buildHomeResultCheckCanvas();
+  const wrappedShareUrl = wrapWithOgShareCard(shareUrl, { label: country, main: finalAmt });
   openAnnotateOverlay(shareCanvas, 'chamtax-result.png', {
     mode: 'share',
     dateEditable: true,
     textHotspots: shareHotspots,
     shareTitle,
     shareText: `${shareText} ${shareUrl}`,
+    shareTextFallback: `${shareText} ${wrappedShareUrl}`,
   });
 }
 
