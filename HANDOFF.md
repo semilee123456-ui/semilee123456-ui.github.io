@@ -974,10 +974,17 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   확인 — 추측이 아닌 실측으로 **불필요 재확정**.
 
 **현재 남아있는 승인/시점 대기 항목**: 구글 애드센스 승인, Disquiet 승인, GitHub Awesome
-List PR 승인, AlternativeTo·GeekNews·Reddit 게시(2026-08-12 이후 가능).
+List PR 승인, AlternativeTo·GeekNews·Reddit·Show HN 게시(2026-08-12 이후 가능).
 
 **정책 최종 상태**: 커뮤니티 상시활동은 항상 거절, 1회성 게시는 케이스별 허용(r/SideProject,
 r/IndieHackers만 현재 승인됨). 채널 브레인스토밍은 여러 차례 공식 종료 선언됨.
+**2026-08-06 후속 — Show HN(news.ycombinator.com) 추가 승인**: r/ShowHN 서브레딧은
+실제 Show HN(HN 본진)과 유저층·유입이 겹치는 중복 채널이라 제외, 대신 HN 본진에 기술
+스토리텔링(다국어 AEO 구조, 클라이언트 사이드 21개국 세금 로직, OG 카드 Worker) 중심으로
+올리는 걸 승인 — **1회성 게시 대상이 r/SideProject·r/IndieHackers·Show HN 3곳으로 확정**.
+3곳 게시글 초안(영문, 서로 다른 문장으로 각각 작성 — 복붙 스팸처럼 안 보이게)을 작성해
+`SendUserFile`로 전달함(위 Reddit 초안과 같은 이유로 이 저장소엔 초안 원문을 남기지
+않음 — 사이트 코드와 무관한 홍보 카피). 실행은 여전히 사용자 몫, 2026-08-12 이후.
 
 ---
 
