@@ -2691,3 +2691,41 @@ HANDOFF 기록만 보고 답하지 않고 매번 코드/워크플로 파일을 �
   절대 직접 조회 불가능 — 사용자가 캡처해서 보여줘야만 진단 가능한 영역임을 인지하고
   있을 것. 이번처럼 사용자가 캡처를 여러 장 순차로 보내면, 이전 진단(예: hreflang 이미
   있음)을 다시 무시하고 재조사하지 말고 이 세션 기록을 먼저 참고할 것.
+
+### 2026-08-06 이어서 — 공유 카드 캔버스의 아랍어/우르두어 bidi(양방향 텍스트) 버그 발견·수정
+
+사용자가 낚시 게임 공유 카드 스크린샷을 보여주며 "낚시로 뽑기 공유하기 글씨가 붙어서
+애매하게 나온다"고 제보 — 캡처만으로는 정확한 위치를 특정할 수 없어서, 27개 언어
+전부 실제로 낚시 공유 카드를 생성해서(Playwright로 `shareFishingCatch()` 직접 호출,
+`openAnnotateOverlay`를 가로채 캔버스를 PNG로 저장) 육안으로 비교함.
+
+- **원인**: 아랍어·우르두어(RTL)에서만 재현되는 버그. `subText`가
+  `` `${thisJackpotLabel} $${jackpotM}M → ${basisSuffix}` `` 형태로 RTL 문장 중간에
+  "$372M" 같은 LTR 조각(숫자·통화기호)을 끼워 넣는데, **캔버스 2D의 `fillText`는
+  브라우저의 일반 텍스트 레이아웃과 달리 완전한 유니코드 양방향(bidi) 알고리즘을
+  적용하지 않음** — `ctx.direction`을 아예 안 정해준 게 1차 원인이었지만(이 사이트
+  전체에서 `ctx.direction`을 설정한 곳이 한 군데도 없었음), 직접 실측해보니
+  `ctx.direction='rtl'`만 추가해도 통화기호($)가 여전히 엉뚱한 자리로 이탈하는 걸
+  확인함(별도 격리 테스트로 재현: `ctx.direction`만으로는 "$372M"가 "372M$"로 나옴).
+- **해결**: `bidiIsolateLtrRuns(text)` 헬퍼를 새로 추가해, RTL 문장 안의 LTR 조각(영문·
+  숫자·통화기호·%)을 유니코드 격리 문자 U+2066(LRI)~U+2069(PDI)로 감싸서 캔버스가
+  그 조각의 내부 순서를 그대로 유지하게 함(격리 문자 유무를 직접 렌더링 비교해서
+  결정 — 격리 문자 있어야만 "$372M"가 깨지지 않고 나옴). `layoutShareContent()`에서
+  `label`/`subText`에 RTL일 때만 적용해서 `buildShareCard()`를 쓰는 4개 공유 카드
+  (낚시 게임·잭팟 랭킹·`shareResult` 등) 전부 한 번에 고침. 같은 패턴(LTR 날짜/금액이
+  RTL 번역문과 섞임)이 있던 `saveMyNumbersAsTicketImage()`(티켓 카드의 "날짜 · 직접
+  선택" 줄)·`buildHomeResultCheckCanvas()`(수표 카드의 "372M USD 당첨 · 한국 거주자"류
+  기준 줄)에도 각각 `ctx.direction` + `bidiIsolateLtrRuns()` 적용.
+- **검증**: 27개 언어 전부 낚시 공유 카드를 재생성해서 아랍어·우르두어만 수정 전/후
+  비교(수정 전: "372$⁩ Mهذا الجاكبوت" 식으로 뒤엉킴 → 수정 후: "هذا الجاكبوت $372M ←
+  مقيم في كوريا"로 정상), 한국어 등 나머지 25개 언어는 변화 없음 확인. 티켓 카드·
+  수표 카드도 아랍어로 별도 재현해서 같은 방식으로 수정 확인. 회귀 테스트
+  (`console_error_audit`161·`home_audit`18·`broken_link_audit`95·`wrap_audit`168·
+  `i18n_coverage_audit`764키·`fact_consistency_audit`99) 전부 `ISSUES: 0`.
+  `npm run build:min` 재실행, 캐시버스팅 `script.min.js` `20260806-5`→`20260806-6`,
+  `sw.js` `CACHE_NAME` v15→v16.
+- **다음 세션 참고**: 캔버스에 RTL 언어로 번역된 문장을 그릴 일이 새로 생기면(신규
+  공유 카드 등), `ctx.direction` 설정을 잊지 말 것은 물론이고 **그 문장 안에 LTR
+  조각(숫자·영문·통화기호)이 하나라도 섞여 있으면 반드시 `bidiIsolateLtrRuns()`로
+  감쌀 것** — `ctx.direction`만으론 부족하다는 게 이번에 실측으로 확인됨. 이 함수는
+  `layoutShareContent()` 바로 위에 있음.
