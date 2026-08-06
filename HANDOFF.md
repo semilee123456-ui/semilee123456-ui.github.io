@@ -2010,3 +2010,25 @@ JS/데이터 로직은 그대로.
 - 새 홍보 채널 발굴은 이미 여러 세션에 걸쳐 바닥까지 검토 끝난 상태(위 "홍보 채널
   브레인스토밍 종료 선언"·"5번째 제미나이 목록 반려" 참고) — 다음 세션에 또 새
   채널 목록이 오면 처음부터 다시 훑지 말고 위 두 섹션부터 먼저 확인할 것.
+
+**같은 날 이어서 — 6·7번째 제미나이(추정) 목록, 사용자가 직접 브레인스토밍 종결
+선언**: PWA 전문 디렉터리 3개(AppScope/PWA Rocks/progressivewebappdirectory.com)+
+개발자 아티클 플랫폼(Dev.to/Hashnode/Medium)+Money Stack Exchange+SaaSHub/
+SoftwareSuggest+Pinterest/SpeakerDeck 목록, 이어서 Wikidata/SNS 자동봇/Web
+Monetization 메타태그 목록이 연달아 옴 — 이번엔 **사용자가 스스로 "실행률 100%,
+더 이상 찾지 말고 손 떼겠다"고 결론**. 실행은 안 하고 사실관계만 간단히 확인:
+- AppScope는 사용자가 적은 도메인(appscope.net)이 아니라 실제로는 `appsco.pe`이고,
+  로그인 없는 제출 폼(`appsco.pe/submit`)이 실제 존재함 — 유일하게 즉시 실행
+  가능했던 항목이었으나 사용자가 이번엔 실행 자체를 원치 않아 스킵.
+- PWA Rocks(`pwarocks/pwa.rocks`)는 GitHub 저장소가 이미 archived 상태라 PR을
+  받지 않는 죽은 채널 — 애초에 실행 불가능했음.
+- progressivewebappdirectory.com은 WebSearch로 실체를 확인 못함(제미나이가
+  지어냈을 가능성 있음, 사용자에게도 이 사실을 전달함).
+- Wikidata/SNS 자동봇/Web Monetization은 이전 세션에서 각각 스팸 위험·상시운영
+  거부·SEO 무관으로 이미 기각한 것과 동일 결론, 사용자도 "권장 안 함"으로 직접 인정.
+
+**다음 세션 지침(강화)**: 홍보 채널 브레인스토밍은 이 시점부로 사용자가 명시적으로
+종결 선언함("생각을 비우고 손 떼겠다"). 새 목록이 또 오더라도 절대 처음부터 검토하지
+말 것 — 이 항목과 위 "홍보 채널 브레인스토밍 종료 선언"·"5번째 제미나이 목록 반려"
+세 섹션을 먼저 보여주고, 사용자가 먼저 재개 의사를 밝히기 전까지 새 채널 제안을
+꺼내지 말 것.
