@@ -1063,6 +1063,20 @@ API는 Custom GPT Action과 같은 문제(`script.js` 세율을 다른 곳에도
   GeekNews와 같은 "신규계정 대기" 묶음으로 재분류, 다음 세션은 이를 "대기 없이 즉시
   가능"이라고 단정하지 말 것.**
 
+**같은 날 이어서 — "영문권 유입은 잭팟뉴스→구글/AI검색→ChamTax 랜딩페이지가 1순위
+노출"이라는 결론을 `WebSearch`로 실측 검증, 틀린 전제였음을 확인**: 사용자가 "새
+채널 안 찾아도 됨, 이미 검색·AI 답변 1순위로 노출됨"이라는 결론을 제시 → 실제로
+`WebSearch`로 "Powerball tax for non-US resident"와 "Powerball jackpot tax
+calculator Korea resident non-US" 두 쿼리를 검색해본 결과 **`chamtax.com`은
+결과에 전혀 안 나옴**(TheLotter·LotteryCalc·PowerballTax.com·USA Mega·
+LotteryUSA만 노출됨) — "이미 1순위 노출된다"는 전제는 틀림. **다만 최종 행동
+결론(새 채널 안 찾고 8/12 이후 Reddit/Show HN 마무리 후 기다림)은 그대로 유효** —
+근거만 "이미 이겼다"가 아니라 "기술적 조치(AEO/SEO)는 다 해놨고, 지금 병목은
+도메인 신뢰도·백링크 축적(시간이 지나야 쌓이는 신호)이라 코드로 더 할 수 있는 게
+없다"로 정정. **다음 세션 참고**: 이 종류의 "이미 잘 되고 있다"류 낙관적 결론이
+다시 나오면, 결론만 보고 넘기지 말고 `WebSearch`로 실제 검색해서 확인하는 습관을
+유지할 것(이번에도 실측 없이 넘어갔으면 틀린 전제를 그대로 문서에 남길 뻔함).
+
 ---
 
 ## 향후 아이디어 백로그 (미착수 — 검증 안 된 아이디어, 지금 진행 안 함)
