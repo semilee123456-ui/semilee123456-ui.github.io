@@ -121,7 +121,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260806-5">
+<link rel="stylesheet" href="styles.min.css?v=20260806-6">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
@@ -2906,6 +2906,30 @@
           </form>
         </div>
         <div class="ad-slot" data-i18n="common.adSlot">광고 영역 (Google AdSense)</div>
+      </div>
+
+      <!-- 2026-08-06: 검색엔진 크롤 예산이 부족한 초기 단계라, 홈(가장 크롤 우선순위가 높은
+           페이지)에서 1홉 만에 닿는 링크를 늘려서 핵심 랜딩페이지들의 색인 확률을 높이려는
+           목적. 전체 90개는 이미 footer의 Sitemap 링크로 닿을 수 있어서(2홉), 여기선 카테고리별
+           대표 페이지만 추림 — 사람이 봐도 자연스러운 "관련 안내" 링크 목록이라 순수 크롤러용
+           숨김 링크(cloaking 소지)가 아님. 새 번역 문구 추가는 안 함(sitemap.html과 같은 관례로,
+           각 나라 페이지는 그 나라 언어 그대로 표기). -->
+      <div class="related-guides">
+        <p class="related-guides-title">더 알아보기</p>
+        <div class="related-guides-links">
+          <a href="powerball-tax.html">파워볼 세금 계산</a>
+          <a href="megamillions-tax.html">메가밀리언즈 세금 계산</a>
+          <a href="us-lottery-basics.html">미국 로또 초보 가이드</a>
+          <a href="lottery-jackpot-amount.html">이번 주 잭팟 실시간 확인</a>
+          <a href="biggest-jackpot-payouts.html">역대 최고 잭팟 실수령액 TOP 5</a>
+          <a href="korea-resident-us-lottery-tax.html">한국 거주자 세금 안내</a>
+          <a href="china-resident-us-lottery-tax.html">中国税收居民指南</a>
+          <a href="vietnam-resident-us-lottery-tax.html">Hướng dẫn cho người Việt Nam</a>
+          <a href="india-resident-us-lottery-tax.html">भारतीय निवासियों के लिए गाइड</a>
+          <a href="philippines-resident-us-lottery-tax.html">Gabay para sa Pilipino</a>
+          <a href="china_in_korea_lottery_tax.html">한국 거주 외국인 가이드(중문)</a>
+          <a href="sitemap.html">전체 페이지 보기 →</a>
+        </div>
       </div>
 
       <div class="site-footer">

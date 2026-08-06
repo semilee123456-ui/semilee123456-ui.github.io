@@ -2683,10 +2683,18 @@
     font-size:var(--fs-note); color:var(--text-muted); margin:20px 0;
   }
 
+  /* 2026-08-06 추가: 홈에서 1홉 만에 닿는 핵심 랜딩페이지 링크 모음(index.html 주석 참고) —
+     footer보다 한 톤 더 옅게 둬서 계산기 UI에 시각적으로 끼어들지 않게 함 */
+  .related-guides{ border-top:1px solid var(--border); margin-top:24px; padding-top:16px; }
+  .related-guides-title{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; margin:0 0 8px; }
+  .related-guides-links{ display:flex; justify-content:center; gap:6px 12px; flex-wrap:wrap; }
+  .related-guides-links a{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
+  .related-guides-links a:hover{ color:var(--teal); text-decoration:underline; }
+
   .site-footer{ border-top:1px solid var(--border); margin-top:24px; padding-top:18px; }
   .footer-links{ display:flex; justify-content:center; gap:8px 10px; margin-bottom:10px; flex-wrap:wrap; }
   .footer-links button, .footer-links a{ background:none; border:none; font-family:inherit; font-size:var(--fs-small); color:var(--teal); cursor:pointer; padding:0; text-decoration:none; }
-  
+
   .footer-copy{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; margin:0; }
 
   @media (max-width: 480px) {
@@ -2929,7 +2937,7 @@
 
     /* 화면 전용 크롬: 상단 nav(로고/탭/설정), 하단 sticky 결과 배지, 우하단 FAQ 플로팅 버튼,
        광고 영역, 공지 배너, 잭팟 퀵필 스파클 이펙트 — 종이에는 의미 없는 인터랙션 요소들 */
-    .nav, .site-footer, #sticky-result-badge, .faq-float-wrap, .ad-slot,
+    .nav, .site-footer, .related-guides, #sticky-result-badge, .faq-float-wrap, .ad-slot,
     .site-notice, .quickfill-spark, .milestone-burst{
       display:none !important;
     }
