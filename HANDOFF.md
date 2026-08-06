@@ -2137,3 +2137,14 @@ AlternativeTo·GeekNews와 같은 7일 대기 패턴. r/SideProject·r/IndieHack
   320/344/375px 3개 폭에서 재검증, `tests/broken_link_audit.js`(95개 파일,
   ISSUES:0) 재실행 확인. 다른 25개 basics 페이지는 같은 표 구조에서도 문제
   없었음(텍스트 길이 차이) — 이 두 파일에만 국한된 수정.
+
+**같은 날 이어서 — 향후 여러 프로젝트 공용 홍보 계정명 `autumnbuilds` 결정**:
+사용자가 "앞으로 다른 사이트도 계속 만들 건데, 매번 홍보할 때마다 계정 새로 만들어야
+하냐"고 물어서, 지금까지 쓴 `chamtax`(Kaggle/Reddit/AlternativeTo) 계정은 이
+프로젝트 전용 이름이라 다음 프로젝트엔 안 맞는다고 안내함 — 프로젝트마다 새 계정을
+파는 대신, **실명과 무관한 공용 메이커 정체성 하나를 여러 프로젝트에 계속 쓰는 쪽을
+추천**(신규 계정 7일 대기 반복 회피 + 활동 이력 누적으로 신뢰도 상승). 여러 후보
+중 사용자가 **`autumnbuilds`**로 확정, Product Hunt 가입에 이 이름 사용함. **다음
+세션 참고**: 이후 새 프로젝트 홍보(Reddit/GitHub/IndieHackers 등)는 `chamtax`가
+아니라 이 `autumnbuilds` 계정으로 진행하는 것이 맞음 — ChamTax 전용이 아닌 사용자의
+장기 메이커 계정이라는 것 혼동하지 말 것.
