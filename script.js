@@ -12286,6 +12286,12 @@ function updateHomeCalc(usdOverride){
        tet: `Se ó hetan ${summaryAmt}, ida ne'e kalkula bazeia ba ${basisSuffix}.\n${label1} ${val1} no ${label2} ${val2} aplika.\nÓ-nia ${resultLabel} sei aproximadamente ${summaryFinal}.`,
       }
     );
+    // 2026-08-05: 모바일 사파리에서 이 textContent 갱신 직후 아래 형제 요소(인용 안내 문구 등)와
+    // 텍스트가 겹쳐 보인다는 제보(사용자 스크린샷) — 이 저장소의 헤드리스 Chrome으로는 재현이
+    // 안 돼서 확정 원인은 아니지만, <details> 안에서 텍스트 길이가 바뀔 때 WebKit이 레이아웃을
+    // 제대로 재계산 못 하는 부류의 버그로 추정됨. 강제 리플로우를 걸어 예방(이 파일의 .diff-pop
+    // 리트리거와 같은 패턴) — 정상 동작 브라우저에는 영향 없음.
+    void homeSummaryEl.offsetHeight;
   }
   // 2026-08-01: 바로 위 히어로(home-final-amt)를 표시 통화 기준으로 바꿨는데 이 세전/세후
   // 비교 줄만 원화로 남아있으면 같은 카드 안에서 통화가 서로 안 맞아 보임 — 같이 맞춤

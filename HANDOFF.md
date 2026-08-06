@@ -561,6 +561,14 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
 
 ## 알려진 미해결 항목
 
+- **모바일 사파리에서 "결과 더 자세히 보기" 안 텍스트가 겹쳐 보인다는 제보(2026-08-05,
+  사용자 아이폰 스크린샷) — 방어적 조치만 함, 확정 원인 못 찾음**: 3줄 AI 요약
+  (`home-summary-text`) 끝부분과 바로 아래 인용 안내 문구(`home.citationNote`)가
+  겹쳐 보임. 이 샌드박스엔 Playwright WebKit이 없어 헤드리스 Chrome으로는 재현
+  안 됨 — `textContent` 갱신 후 강제 리플로우(`void homeSummaryEl.offsetHeight`)를
+  추가했지만 이게 실제 원인을 고쳤는지 검증 못함. **다시 발생하면 사용자에게 재현
+  스크린샷(가능하면 몇 번째 자리 숫자를 입력했는지, 스크롤 위치)을 다시 요청해서
+  범위를 좁힐 것.**
 - ~~**240px처럼 아주 좁은 화면에서 "다른 나라 기준 더보기"(`country-toggle-more-grid`) 국가
   버튼 그리드의 국가명이 카드 밖으로 약 17.6px 삐져나감**~~ — **해결됨(2026-07-30,
   `claude/progress-checkpoint-lw2oss` 세션)**: 원인은 `grid-template-columns:1fr 1fr`가
@@ -1884,3 +1892,43 @@ Seznam Webmaster 등록, GitHub 저장소 신뢰도 문서+Shields.io 배지):
 **5. 병합**: `claude/github-handover-review-spvfz1` 브랜치에서 작업, `origin/main`과
 머지 커밋 1회(`og-image-hook.png` 충돌 해결 포함) 후 이 브랜치를 다시 `main`으로
 병합해 반영함 — 자세한 커밋은 아래 참고.
+
+### 2026-08-05 이어서 — 토큰 절약 메모(CLAUDE.md) + 모바일 사파리 텍스트 겹침 제보 대응 + OG 로고 스크립트 재사용화
+
+**1. `CLAUDE.md` 신규 추가**(커밋 `b00717c`): 사용자가 "토큰 아끼는 법 있어?"라고
+물어서, 이번 세션에서 실제로 낭비됐던 패턴(콘솔에 큰 JSON 그대로 출력, 스크린샷
+과다 열람, 디버깅 스크립트 반복 재작성) 기준으로 정리. `HANDOFF.md`(세션 인수인계
+내용)와는 별개로 "이 저장소에서 작업할 때 컨텍스트 아끼는 법"만 다룸 — 인수인계
+문서 정리는 다른 세션이 맡고 있어서 그쪽은 손 안 댐.
+
+**2. 모바일 사파리 텍스트 겹침 제보 대응**(커밋 `15f96b5`): 사용자가 아이폰 스크린샷
+2장을 보내옴 — "결과 더 자세히 보기" 아코디언 안 "3줄 AI 요약"(`home-summary-text`)
+바로 아래 인용 안내 문구(`home.citationNote`, "📎 인용·보도 시 출처를 'ChamTax
+(chamtax.com)'으로 표기해 주세요")에 요약문 끝자락 숫자("612억원")가 겹쳐 보이는
+버그. 이 샌드박스엔 Playwright WebKit이 없어(Chromium만 설치돼 있음, `/opt/pw-
+browsers/` 참고) 헤드리스 Chrome으로 같은 입력(342M USD, 한국어, 아코디언 열기)을
+재현해봤지만 두 요소 사이 간격이 411px로 정상 — **Chrome에서는 재현 안 됨, 확정
+원인은 못 찾음**. `<details>` 안에서 `textContent`로 텍스트 길이가 바뀔 때 WebKit이
+레이아웃 재계산을 놓치는 부류의 버그로 추정하고, 이 파일에 이미 있던 강제 리플로우
+패턴(`.diff-pop`의 `void el.offsetWidth`)과 동일하게 `homeSummaryEl.textContent`
+대입 직후 `void homeSummaryEl.offsetHeight`를 추가 — 정상 동작하는 브라우저엔 영향
+없고, 문제의 브라우저에는 안전망이 되는 저위험 방어 조치. **재발하면 사용자 손으로
+직접 재현 스크린샷을 다시 받아서, 진짜 원인(예: 특정 스크롤 위치·특정 자리수 조합)을
+좁혀야 함 — 이번엔 증거 부족으로 추정에 머무름.** `broken_link_audit`·`home_audit`
+재실행 이슈 0건, `script.min.js`/`styles.min.css` 재빌드(`npm install` 먼저 필요했음
+— devDependencies가 클린 체크아웃엔 없었음), 캐시버스팅 `20260805-12`→`-13`,
+서비스워커 `CACHE_NAME` v11→v12.
+
+**3. OG 로고 자동 검출 스크립트를 저장소에 재사용 가능하게 저장**(`scripts/
+fix-og-logo.js`, 커밋 dacfbea): 위 세션에서 78개 카드를 고칠 때 스크래치패드에
+여러 번 다시 만들었던 픽셀 스캔 로직을 하나의 스크립트로 정리 — 다음에 로고
+디자인이 또 바뀌면 `ICON_SVG` 상수만 바꿔서 그대로 재사용 가능. **정리하면서
+치명적인 버그 하나 발견·수정**: 로고를 찾는 성공 경로에서 `img.onload` 콜백 안에
+`resolve(...)` 대신 `return ...`을 써서, 검출에 성공할 때마다(=거의 항상) 프라미스가
+영원히 안 풀리고 무한 대기하던 버그 — 테스트 중 스크립트가 계속 멈춰서 발견함.
+`resolve(...); return;`으로 수정, `document.fonts.ready`도 네트워크 정체 시 무한
+대기할 수 있어 5초 타임아웃을 씌움. `og-image-hook-en.png`/`basics-ur.png`로
+재검증 — 이미 고쳐진 로고와 동일한 결과 재생성 확인(파일 자체는 변경 없이 되돌리고
+스크립트 수정만 커밋). `og-image-hook.png`(한국어 "참택스", 아이콘 잉크 크기가
+42×25px로 다른 파일들의 37×34px과 달라 정사각형 필터 밖)는 자동 스킵되는 게
+정상 동작 — 이미 다른 방식으로 고쳐져 있어서 문제 없음.
