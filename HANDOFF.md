@@ -2395,3 +2395,54 @@ HANDOFF 기록만 보고 답하지 않고 매번 코드/워크플로 파일을 �
 반영(`script.js`는 자동 병합, `index.html`/`script.min.js`/이 문서만 충돌 — 캐시버스팅
 버전은 `20260806-4`로 재조정, `script.min.js`는 `npm run build:min`으로 재생성, 이 문서
 충돌은 두 세션 기록을 순서대로 이어붙여 해결).
+
+### 2026-08-06 이어서 — 유실됐던 "황금 물고기" 낚시 게임 강화안 재구현
+
+위 항목에서 언급한 "낚시게임 확장 작업(별도, 유실됨)" 본체 — git 어디에도 커밋된 적이
+없어서(원 세션이 토큰 소진으로 푸시 전에 끊김) 복구가 아니라 **사용자가 붙여넣어준 그
+세션의 대화 기록(설계 스펙)을 근거로 처음부터 다시 구현**함. 4가지 강화안 전부 기존
+낚시 게임 상태 머신(`fishingFish`/`fishingSwimLoop`/`fishingAttemptCatch`/
+`fishingCaughtSuccess`, `odds` 탭 "낚시로 뽑기")에 얹었고, 새 번역 문구는 하나도
+추가하지 않음(아이콘·애니메이션만 사용):
+
+- **황금 물고기**(`FISHING_GOLDEN_CHANCE=0.18`): 스폰 시 약 18% 확률로 `golden` 플래그를
+  받음 — 속도·판정폭은 평범한 물고기와 완전히 동일(난이도 불변), 은은한 금빛 발광
+  펄스(`.fishing-target-fish.golden`)만 다름. 낚으면 트로피 아이콘도 같은 발광으로
+  튀어오르고(`.fishing-caught-fish.golden`), 공유 카드에는 캔버스에 별 배지를
+  직접 path로 그려 넣음(`drawShareBallGoldBadge`) — `flagEmojiFromCode` 옆 주석에 있는
+  기존 규칙(캔버스엔 이모지 폰트 의존 문구 금지)을 그대로 따름, 텍스트/이모지 아님.
+- **6번째(보너스) 캐치 강조**: `fishingCaughtSuccess`가 `caughtValueIndex===5`일 때
+  `isBonus`로 판단 — 물결이 더 크고 오래가는 `.fishing-splash.big`, 더 강하고 겹겹인
+  진동 패턴, 결과 볼에 `.bonus-pop`(색 팝 애니메이션) 부여. 파워볼/메가볼 특별번호를
+  "이번 판 마무리"로 체감시키는 목적.
+  - 황금 물고기가 6번째와 겹치면 두 효과가 자연스럽게 같이 적용됨(별도 처리 불필요).
+- **입질(bite-delay) 연출**: 판정 성공 즉시 번호를 공개하던 것을, `fishingStartBite()`가
+  약 0.8초 지연시키며 낚싯대가 2~3번 까딱거리는 `.fishing-rod-wrap.biting` 애니메이션 +
+  진동 `[30,30,30]`을 먼저 보여준 뒤 기존 `fishingCaughtSuccess`를 호출하도록 재구성.
+  그동안 낚인 물고기는 `hooked` 플래그로 `fishingSwimLoop`에서 제자리에 멈추고(걸린
+  느낌), 나머지 물고기들은 기존 설계 그대로 계속 헤엄침. 이 지연 동안 새 낚시 시도는
+  전역 `fishingBiting` 플래그로 막아 애니메이션이 겹치지 않게 함.
+- **크기 3단계 + 자석 스냅**: 스폰마다 large(25%)/medium(50%)/small(25%) 중 하나를
+  뽑아 판정 폭을 다르게 줌(`FISHING_SIZE_CONFIG`: large 13%·medium 9%(기존값 그대로)·
+  small 6%). 표시 크기도 슬롯별 기본 폰트(`FISHING_SLOT_BASE_FONT_PX`)를 기준으로
+  배율만큼 JS가 직접 `style.fontSize`를 계산해 넣음(CSS 클래스 특이성 다툼을 피하려고
+  일부러 인라인으로 처리 — 기존에도 `left`/`transform`은 이미 인라인이었음). small은
+  좁은 판정을 보완하려고, 드래그 중이고 찌가 8% 이내로 가까워지면 초당 40%씩 끌려오는
+  자석 효과(`FISHING_SNAP_RANGE_PCT`/`FISHING_SNAP_PULL_PCT_PER_SEC`)를 `fishingSwimLoop`
+  안에 얹음.
+- **검증**: Playwright로 내부 함수를 직접 호출해 (1) 스폰마다 golden/size 필드가 채워지는지
+  (2) 입질 지연 동안 `fishingBiting`/`hooked`/`.biting` 클래스가 올바르게 켜졌다 꺼지는지
+  (3) large는 10%거리서도 성공·small은 10%에서 실패·4%에서 성공하는지(판정폭 차등 확인)
+  (4) 드래그 중 small 물고기가 실제로 찌 쪽으로 좌표가 이동하는지(자석 스냅) (5) 6번째
+  캐치에서 `bonus-pop`/`big` 스플래시/공유 버튼 노출까지 정상 완주하는지 (6)
+  `shareFishingCatch()`가 에러 없이 캔버스를 만들고, 강제로 golden 플래그를 섞은 캔버스를
+  실제로 PNG로 저장해 별 배지가 정확한 볼에만(황금 아닌 볼엔 안 그려짐) 렌더되는지 육안
+  확인 — 전부 기대대로 동작, 콘솔 에러 0건. 회귀 테스트(`i18n_coverage_audit`764키,
+  `i18n_attr_lint`, `console_error_audit`161, `home_audit`18) 전부 `ISSUES: 0`.
+  `npm run build:min` 재실행, 캐시버스팅 `20260806-4`→`20260806-5`.
+- **다음 세션 참고**: 이 4가지는 전부 `fishingFish[i]`에 필드(golden/size/hooked)를
+  추가하고 기존 스폰·스윔·판정·공개 함수 안에 조건 분기만 끼워넣는 방식으로 구현했음 —
+  구조를 더 확장하고 싶으면(예: 크기 4단계, 새로운 특수 물고기) 이 패턴을 그대로
+  따르는 게 제일 안전함. `fishingBiting` 전역 플래그는 "동시에 물고기 한 마리만
+  입질 연출 중"을 보장하는 용도라, 여러 마리를 동시에 릴 감게 하고 싶어지면 이 플래그를
+  슬롯별 배열로 바꿔야 함.
