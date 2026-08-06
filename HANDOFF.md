@@ -562,13 +562,26 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
 ## 알려진 미해결 항목
 
 - **모바일 사파리에서 "결과 더 자세히 보기" 안 텍스트가 겹쳐 보인다는 제보(2026-08-05,
-  사용자 아이폰 스크린샷) — 방어적 조치만 함, 확정 원인 못 찾음**: 3줄 AI 요약
+  사용자 아이폰 스크린샷) — 방어적 조치 2차 추가, 여전히 실기기 미검증**: 3줄 AI 요약
   (`home-summary-text`) 끝부분과 바로 아래 인용 안내 문구(`home.citationNote`)가
   겹쳐 보임. 이 샌드박스엔 Playwright WebKit이 없어 헤드리스 Chrome으로는 재현
-  안 됨 — `textContent` 갱신 후 강제 리플로우(`void homeSummaryEl.offsetHeight`)를
-  추가했지만 이게 실제 원인을 고쳤는지 검증 못함. **다시 발생하면 사용자에게 재현
-  스크린샷(가능하면 몇 번째 자리 숫자를 입력했는지, 스크롤 위치)을 다시 요청해서
-  범위를 좁힐 것.**
+  안 됨 — 1차 조치(`textContent` 갱신 후 강제 리플로우)는 실제 원인을 고쳤는지
+  검증 못한 채로 남아있었음.
+  **2026-08-06 후속 — 유력한 원인 후보를 코드에서 발견해 CSS로 선제 조치함**:
+  최신 브라우저는 `<details>` 내용을 `::details-content` 의사 요소로 감싸서
+  펼침/접힘 애니메이션용 높이를 캐싱하는데(이 저장소의 `@media print` 블록이 이미
+  2026-07-24에 Chromium에서 이 의사 요소 관련 버그를 실제로 겪은 전례가 있음 —
+  `styles.css`의 해당 주석 참고), 아코디언이 열린 상태에서 내부 텍스트만 JS로
+  바뀌면 이 캐시된 높이가 갱신 전 값으로 남을 수 있다는 게 유력한 가설. 이 아코디언들
+  (`.calc-detail-toggle`, `.jh-more`)은 애니메이션을 안 쓰므로, `[open]::details-content`에
+  `block-size:auto !important`를 걸어 열려있는 동안은 항상 실제 콘텐츠 높이를 쓰게
+  강제(닫힌 상태는 영향 없음, 브라우저 기본 숨김 동작 그대로 유지). 회귀 테스트
+  4개(`console_error_audit` 161·`home_audit` 18·`wrap_audit` 168·
+  `full_overflow_sweep` 945조합) 전부 `ISSUES:0` 확인, `npm run build:min` 재빌드 +
+  캐시버스팅 `20260806-7` + `sw.js` `CACHE_NAME` v14→v15 반영. **여전히 실제
+  iOS Safari 기기로 검증은 못 했음** — 다시 발생하면 이 조치가 원인을 못 잡은
+  것이니 사용자에게 재현 스크린샷(몇 번째 자리 숫자를 입력했는지, 스크롤 위치,
+  아코디언을 이미 펼쳐둔 채로 금액을 바꿨는지)을 다시 요청해서 범위를 좁힐 것.
 - ~~**240px처럼 아주 좁은 화면에서 "다른 나라 기준 더보기"(`country-toggle-more-grid`) 국가
   버튼 그리드의 국가명이 카드 밖으로 약 17.6px 삐져나감**~~ — **해결됨(2026-07-30,
   `claude/progress-checkpoint-lw2oss` 세션)**: 원인은 `grid-template-columns:1fr 1fr`가
