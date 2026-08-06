@@ -1047,6 +1047,22 @@ without-a-backend-4m9`. **Dev.to 웨이브 항목 완전히 종료** — 남은 
 목록 참고(구글 애드센스, Disquiet, Awesome List PR, AlternativeTo·GeekNews·
 Reddit·Show HN, 전부 계정/승인 대기라 이 세션이 더 할 건 없음).
 
+**같은 날 이어서 — 4개 기술채널(ChatGPT Custom GPT 지식파일, npm/PyPI 패키지, 브라우저
+확장, Cloudflare Worker API 마켓플레이스 등재) 전수 반려**: 사용자가 검토 요청 →
+전부 이전에 반려했던 두 패턴 중 하나로 귀결됨을 확인 — (1) Custom GPT 지식파일·Worker
+API는 Custom GPT Action과 같은 문제(`script.js` 세율을 다른 곳에도 또 유지보수해야
+함), (2) npm 패키지·브라우저 확장은 "개발자가 만들기 재밌지만 실제 타겟층(복권
+당첨자·이민자)은 안 쓰는" 오디언스 불일치. **4개 다 반려 확정, 새로 만들지 않음.**
+- **Show HN 실제 시도 중 발견한 정정 사항**: 이 세션이 채팅에서 "HN은 Reddit 같은
+  신규계정 대기기간이 없다"고 잘못 안내했었음(문서엔 원래도 8/12 대기 목록에 Show HN이
+  들어있어서 이 문서 자체는 틀리지 않았음) — 사용자가 실제로 `autumnbuilds` 계정을
+  만들고 제출을 시도하자 **"Sorry, your account isn't able to submit this site"**
+  에러로 막힘. HN도 신규 계정의 외부 링크 제출을 제한하는 것으로 실측 확인됨(정확한
+  대기 기간은 HN이 공개 안 해서 알 수 없음 — 통상 댓글 몇 개로 활동 이력을 만들고
+  몇 시간~며칠 후 재시도하는 방법이 알려져 있음). **Show HN도 Reddit·AlternativeTo·
+  GeekNews와 같은 "신규계정 대기" 묶음으로 재분류, 다음 세션은 이를 "대기 없이 즉시
+  가능"이라고 단정하지 말 것.**
+
 ---
 
 ## 향후 아이디어 백로그 (미착수 — 검증 안 된 아이디어, 지금 진행 안 함)
