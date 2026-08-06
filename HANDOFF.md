@@ -2148,3 +2148,23 @@ AlternativeTo·GeekNews와 같은 7일 대기 패턴. r/SideProject·r/IndieHack
 세션 참고**: 이후 새 프로젝트 홍보(Reddit/GitHub/IndieHackers 등)는 `chamtax`가
 아니라 이 `autumnbuilds` 계정으로 진행하는 것이 맞음 — ChamTax 전용이 아닌 사용자의
 장기 메이커 계정이라는 것 혼동하지 말 것.
+
+**같은 날 이어서 — Product Hunt 등록 완료(예약됨)**: "제출만 해두고 완전히
+잊어버리기"(백링크 목적, 당일 랭킹/실시간 대응 없음)로 사용자와 합의 후 진행.
+`autumnbuilds` 계정으로 제출 폼 전체 작성 지원함:
+- 슬로건: "See your real Powerball/Mega Millions payout, by country."
+- 설명(500자 이내로 축약): 21개국 비교·미국 비거주자 원천징수·정적사이트 무서버·
+  CC0 오픈 데이터셋 언급.
+- 런치 태그 3개: Open Source / Fintech / Money.
+- 첫 댓글(메이커 후기 톤, "왜 만들었는지" 제작기) 작성.
+- 갤러리 이미지 3장을 Playwright로 직접 캡처해 제공(영문 버전, 계산 결과 화면 ·
+  국가별 비교 지도 · 확률 비교 화면) — Product Hunt가 자동으로 잡아온 첫 이미지가
+  한국어 전용 기본 OG 카드였어서, 소셜 프리뷰용으로 부적절해 영문 스크린샷으로
+  순서 교체 안내함. Pricing=Free, Funding=Bootstrapped, Video/Shoutouts/Investors
+  섹션은 전부 선택사항이라 스킵.
+- 출시 요일·시간 리서치(WebSearch): 화요일 PT 12:01 AM이 트래픽 최대 조합이라고
+  나오나, 이번 세션은 랭킹 목적이 아니라 굳이 안 맞춰도 무방하다고 사용자에게
+  안내함 — 사용자가 예약 완료함(정확한 예약 날짜는 화면에 안 보여서 이 세션은
+  모름, 다음 세션이 확인하려면 Product Hunt 대시보드 참고).
+- **다음 세션 참고**: 출시일이 되면 자동으로 공개됨, 별도 조치 불필요. 당일
+  대시보드 답변은 이 전략상 안 해도 되는 것으로 사용자에게 이미 안내함.
