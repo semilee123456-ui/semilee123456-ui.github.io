@@ -1011,6 +1011,19 @@ r/IndieHackers만 현재 승인됨). 채널 브레인스토밍은 여러 차례 
   배포엔 Hugging Face 계정 로그인이 필요해 이 세션이 끝까지 못함 — 필요하면 다음에
   파일만 준비.
 
+**같은 날 이어서 — Dev.to 계정 생성(`autumnbuilds`) + 글 초안 실제 발행까지 완료
+(공개는 아직 안 함)**: 사용자가 dev.to 온보딩을 직접 진행, API 키(`autumnbuilds-
+publish-script`)를 생성해서 채팅으로 전달 — 이 세션이 그 키로 위 Dev.to 초안을
+실제로 API 호출해 올림(**초안 상태(`published:false`)로 생성 완료**,
+`dev.to/autumnbuilds/how-i-modeled-us-lottery-tax-withholding-for-21-countries-
+without-a-backend-...`). **작업 중 발견한 것**: 제공했던 `publish-to-devto.js`가
+이 세션 환경(에이전트 프록시 필요)에서는 `https.request`가 프록시를 안 타서
+403으로 실패함 — 스크립트 자체는 정상(사용자 로컬 환경에는 이런 프록시가 없어 그대로
+동작함), 이 세션에서만 `curl -x $HTTPS_PROXY`로 대신 호출해서 우회함. **다음
+세션 참고**: (1) 초안 링크를 사용자가 검토 후 dev.to에서 직접 Publish 눌러야
+실제 공개됨(이 세션은 초안까지만 만들었음), (2) 채팅에 노출된 API 키는 다 쓴 뒤
+Extensions에서 Revoke 권장(보안 위생, 강제 아님).
+
 ---
 
 ## 향후 아이디어 백로그 (미착수 — 검증 안 된 아이디어, 지금 진행 안 함)
