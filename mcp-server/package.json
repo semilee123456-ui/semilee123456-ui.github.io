@@ -1,0 +1,19 @@
+{
+  "name": "chamtax-lottery-tax-mcp",
+  "version": "1.0.0",
+  "description": "MCP server exposing ChamTax's US lottery tax take-home calculator as a tool for AI agents.",
+  "license": "MIT",
+  "homepage": "https://chamtax.com",
+  "main": "index.js",
+  "bin": {
+    "chamtax-lottery-tax-mcp": "index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "index.js",
+    "tax-data.js",
+    "README.md"
+  ]
+}
