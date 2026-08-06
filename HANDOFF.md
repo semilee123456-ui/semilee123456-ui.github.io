@@ -1035,7 +1035,17 @@ PUT으로 업데이트(초안 링크는 안 바뀜). **dev.to 공개 API에 프�
 가능) — 그래서 `autumnbuilds` 계정용 로고(가을색 그라디언트 + "ab" 모노그램,
 Playwright로 SVG→PNG 렌더링해 생성)는 API로 못 올리고 사용자가 Settings→Profile→
 Edit profile image에서 직접 업로드해야 함(다음 세션도 이 API 한계를 다시 확인하지
-말 것).
+말 것). 사용자가 로고는 직접 업로드 완료.
+
+**같은 날 이어서 — Dev.to 글 실제 발행 완료**: 사용자가 "발행해줘"로 명시 요청 →
+같은 article id(4329228)에 `body_markdown`의 front matter `published: false`를
+`true`로 바꿔 PUT, 응답에 `published_at` 타임스탬프가 찍히고 URL이 임시 슬러그에서
+실제 슬러그로 바뀐 것까지 확인함. **최종 공개 URL**:
+`dev.to/autumnbuilds/how-i-modeled-us-lottery-tax-withholding-for-21-countries-
+without-a-backend-4m9`. **Dev.to 웨이브 항목 완전히 종료** — 남은 홍보 대기
+항목은 위 "홍보·마케팅 작업 전체 이력" 섹션의 "현재 남아있는 승인/시점 대기 항목"
+목록 참고(구글 애드센스, Disquiet, Awesome List PR, AlternativeTo·GeekNews·
+Reddit·Show HN, 전부 계정/승인 대기라 이 세션이 더 할 건 없음).
 
 ---
 
