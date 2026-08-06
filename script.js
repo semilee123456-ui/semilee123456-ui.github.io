@@ -4576,10 +4576,25 @@ function drawShareBallGoldBadge(ctx, cx, cy, r){
 // 콘텐츠 영역 한가운데로 옮겨서(centerY) draw:true로 다시 태우는 방식 — 옵션 필드 조합(bigText만/
 // balls만/subText 유무 등)에 따라 남는 세로 공간을 매번 다르게 만들지 않고, 항상 의도적으로 짜인
 // 배치처럼 보이게 함(기존엔 고정 y 증가값만 써서 짧은 콘텐츠일 때 카드 중간이 텅 비어 보였음)
+// 2026-08-06 추가: RTL 언어 문장 안에 섞인 "$372M"류 LTR 조각(영문·숫자·통화기호·%)을
+// U+2066(LRI)~U+2069(PDI) 격리 문자로 감싸서, 캔버스가 그 조각의 내부 순서를 원래대로
+// 유지하게 함(직접 실측: ctx.direction='rtl'만으론 통화기호가 자리를 이탈해서 여전히
+// 이상하게 보였고, 이 격리 문자를 추가해야 완전히 고쳐짐) — RTL 문장에서만 필요.
+function bidiIsolateLtrRuns(text) {
+  if (!text) return text;
+  return text.replace(/[A-Za-z0-9$€£¥₩%.,+-]+/g, (m) => `⁦${m}⁩`);
+}
+
 function layoutShareContent(ctx, { label, bigText, subText, balls }, { anchorX, maxWidth, isRTL, startY, draw }){
   let y = startY;
   ctx.textAlign = isRTL ? 'right' : 'left';
   ctx.textBaseline = 'alphabetic';
+
+  // 2026-08-06: 아랍어/우르두어 문장 중간에 "$372M"류 LTR 조각(숫자·통화기호·영문)이 섞이면
+  // 캔버스가 완전한 유니코드 bidi 재정렬을 안 해서(ctx.direction만으론 부족 — 실측 확인,
+  // 통화기호처럼 약한 방향성 문자가 자리 이탈함) 조각 순서가 흐트러져 붙어 보이는 버그가
+  // 있었음 — bidiIsolateLtrRuns()로 그 조각들을 격리 문자로 감싸서 해결(RTL일 때만 적용)
+  if (isRTL) { label = bidiIsolateLtrRuns(label); subText = bidiIsolateLtrRuns(subText); }
 
   ctx.fillStyle = '#544E42';
   ctx.font = `700 30px ${SHARE_CARD_FONT}`;
@@ -4633,6 +4648,12 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
   ctx.scale(SCALE, SCALE);
 
   const isRTL = (typeof RTL_LANGS !== 'undefined') && (typeof currentLang !== 'undefined') && RTL_LANGS.includes(currentLang);
+  // 2026-08-06: ctx.direction을 안 정해주면 캔버스가 유니코드 양방향(bidi) 알고리즘을 안 돌려서,
+  // "$372M" 같은 LTR 조각이 아랍어/우르두어 문장 중간에 섞이면 순서가 뒤엉켜 붙어 보이는 버그가
+  // 있었음(아랍어 텍스트 자체는 정상 정형화되지만 전체 줄의 읽기 순서가 원문 저장 순서 그대로
+  // 나와서 숫자·기호가 문장 중간에 잘못 끼임) — textAlign 우측 정렬만으로는 안 고쳐짐, 실제 bidi
+  // 재정렬이 필요해서 direction을 명시해야 함.
+  ctx.direction = isRTL ? 'rtl' : 'ltr';
 
   label = fixWonSpacing(label);
   bigText = fixWonSpacing(bigText);
@@ -6652,6 +6673,7 @@ function saveMyNumbersAsTicketImage(){
   canvas.height = H * SCALE;
   const ctx = canvas.getContext('2d');
   ctx.scale(SCALE, SCALE);
+  ctx.direction = isRtl ? 'rtl' : 'ltr'; // 2026-08-06: buildShareCard와 같은 bidi 재정렬 버그 수정(아래 참고)
 
   // 2026-07-31 디자인팀 반영 가이드: 평평한 흰 배경+얇은 테두리 대신 다른 카드들과 통일된
   // 둥근 모서리(20px) 카드로 바꾸고, 로고를 상단 그러데이션 헤더 밴드로 옮김.
@@ -6719,7 +6741,9 @@ function saveMyNumbersAsTicketImage(){
   ctx.fillStyle = '#8A8371';
   ctx.font = "600 15px 'Pretendard', -apple-system, sans-serif";
   ctx.textAlign = 'center';
-  ctx.fillText(`${dateStr}  ·  ${selfPick}`, W / 2, bandH + 210);
+  // 2026-08-06: 아랍어/우르두어는 dateStr(LTR 날짜)이 selfPick(RTL 번역문)과 섞여서 같은
+  // bidi 재정렬 버그가 남아있었음 — buildShareCard 쪽 수정과 같은 이유로 격리 문자 적용
+  ctx.fillText(isRtl ? bidiIsolateLtrRuns(`${dateStr}  ·  ${selfPick}`) : `${dateStr}  ·  ${selfPick}`, W / 2, bandH + 210);
 
   // 2026-07-31 디자인팀 반영 가이드: 스캔 가능해 보이는 바코드 장식 삭제 — 모노스페이스
   // "Ticket ID" 코드 한 줄로 교체. 실물 바코드보다 "이건 가짜 티켓"이라는 신호가 더 잘
@@ -6962,6 +6986,7 @@ function buildHomeResultCheckCanvas(){
   canvas.height = H * SCALE;
   const ctx = canvas.getContext('2d');
   ctx.scale(SCALE, SCALE);
+  ctx.direction = isRtl ? 'rtl' : 'ltr'; // 2026-08-06: buildShareCard와 같은 bidi 재정렬 버그 수정(아래 참고)
 
   // 바깥 배경 — "수표 용지" 느낌의 아주 옅은 그린틴트(사이트 브랜드 그린 --teal 계열을 아주
   // 옅게 희석, 이전 버전의 금색 티켓 배경과는 다른 톤으로 의도적으로 구분)
@@ -7029,8 +7054,11 @@ function buildHomeResultCheckCanvas(){
   // 2026-08-05: 40~60대 타겟인데 이 줄("342M USD 당첨 · 한국 거주자")이 실제 저장 이미지에서
   // 너무 작게 보인다는 지적(사용자가 "꾸며서 저장하기" 모달 스크린샷으로 직접 제보) — 다른
   // 카드들의 본문 텍스트 크기(예: 아래 실수령액 밑 MEMO 계열)에 맞춰 최대/최소 모두 3px씩 키움.
-  fitFontSize(ctx, basisMini, 700, 19, 14, cornerMaxW * 1.4);
-  ctx.fillText(basisMini, anchorX, metaY);
+  // 2026-08-06: 아랍어/우르두어는 "372M USD جائزة · 한국 거주자"류로 LTR 금액이 RTL 문장
+  // 중간에 섞여서 buildShareCard와 같은 bidi 재정렬 버그가 있었음 — 같은 이유로 격리 문자 적용
+  const basisMiniDrawn = isRtl ? bidiIsolateLtrRuns(basisMini) : basisMini;
+  fitFontSize(ctx, basisMiniDrawn, 700, 19, 14, cornerMaxW * 1.4);
+  ctx.fillText(basisMiniDrawn, anchorX, metaY);
   // 2026-07-31: 날짜 자체를 아예 안 넣고 싶은 사용자를 위해 "날짜 표시 안 함" 체크박스 추가
   // (모달 #annotateDateSkipCheckbox) — checkCardDateHidden이 true면 날짜·수표번호 줄을
   // 통째로 생략함(다른 요소 좌표는 그대로 둠 — 빈 자리는 자연스러운 여백이 됨).
