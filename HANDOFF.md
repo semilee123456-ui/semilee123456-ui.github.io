@@ -2032,3 +2032,27 @@ Monetization 메타태그 목록이 연달아 옴 — 이번엔 **사용자가 �
 말 것 — 이 항목과 위 "홍보 채널 브레인스토밍 종료 선언"·"5번째 제미나이 목록 반려"
 세 섹션을 먼저 보여주고, 사용자가 먼저 재개 의사를 밝히기 전까지 새 채널 제안을
 꺼내지 말 것.
+
+**같은 날 이어서 — 8번째 제미나이(추정) 목록, 코드로 확인 가능한 2개만 실제 검증
+후 최종 종결**: Product Hunt/Indie Hackers/Dev.to/Medium/HN Show HN/Lobsters/
+Hugging Face/CITATION.cff/GitHub Release·Discussions·Social Preview/robots.txt AI
+크롤러/Dataset Search 노출 확인/경쟁사 추적 등 15개+ 목록. 대부분 위에서 이미
+검토·보류했거나(CITATION.cff, Zenodo, Product Hunt) 계정 가입+이메일 인증이 마지막
+단계라 이 세션이 끝까지 대신 못 하는 구조적 한계(Dev.to/Medium/Indie Hackers/HN/
+Lobsters/Hugging Face — Kaggle·디스콰이엇·GeekNews·AlternativeTo와 동일 패턴)에
+해당해 실행 안 함. **코드로 즉시 검증 가능했던 2개만 실제 확인**:
+- `robots.txt` AI 크롤러 허용 여부: GPTBot/ChatGPT-User/PerplexityBot/ClaudeBot/
+  Google-Extended 전부 이미 명시적으로 `Allow: /`, 나머지(CCBot 등)도 기본
+  `User-agent: * Allow: /`에 걸림 — 손댈 것 없음, 이미 정상.
+- Google Dataset Search용 `index.html` Dataset JSON-LD: `name`/`description`/
+  `url`/`license`/`creator`/`distribution`(DataDownload) 전부 정확히 존재 확인
+  (커밋 cd3d937에서 이미 완료된 것 재확인). 실제 색인 여부는 구글 크롤링 타이밍
+  문제라 이 세션이 확인할 방법 없음 — 사용자가 datasetsearch.research.google.com에서
+  직접 검색해봐야 함.
+- GSC 국가별 성과·Bing 백링크 리포트·경쟁사 신규 콘텐츠 추적 등은 "채널"이 아니라
+  "운영" 작업이고 사용자 대시보드 데이터가 있어야 진행 가능 — 코드 작업 아님.
+
+**최종 결론(이 저장소의 홍보 브레인스토밍 역사상 가장 명확한 종결)**: 이 세션이
+실행 가능한 무료 홍보 작업은 정말로 0건. 다음 세션에 또 새 AI 생성 목록이 오면,
+바로 이 섹션을 사용자에게 보여주고 "코드로 검증 가능한 새 항목이 진짜 있는지"만
+빠르게 스캔한 뒤 없으면 그대로 종료할 것 — 전체 재검토 반복 금지.
