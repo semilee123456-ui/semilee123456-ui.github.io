@@ -178,11 +178,12 @@
   p{ font-size:var(--fs-body); margin:0 0 14px; }
   ul{ margin:0 0 14px; padding-left:22px; }
   li{ font-size:var(--fs-body); margin-bottom:6px; }
-  table{ width:100%; border-collapse:collapse; margin:16px 0; font-size:var(--fs-note); }
+  .table-scroll{ overflow-x:auto; margin:16px 0; }
+  table{ width:100%; border-collapse:collapse; font-size:var(--fs-note); }
   th,td{ text-align:left; padding:8px; border-bottom:1px solid var(--border); vertical-align:top; }
   th{ color:var(--text-muted); font-weight:700; }
   .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; }
-  .stat-card{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; }
+  .stat-card{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; min-width:0; }
   .stat-card .k{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 4px; }
   .stat-card .v{ font-size:20px; font-weight:800; color:var(--teal); margin:0; }
   .compare-bar-row{ margin:10px 0; }
@@ -231,13 +232,13 @@
 
   <h2>1. Америка лотереясы = Powerball + Mega Millions</h2>
   <p>АКШнын ар бир штатынын өз лотереясы бар, бирок “Америка лотереясы” деп адатта дээрлик бардык штатта биргелешип сатылган ушул эки зор оюнду айтышат.</p>
-  <table>
+  <div class="table-scroll"><table>
     <tr><th></th><th>Powerball</th><th>Mega Millions</th></tr>
     <tr><td>Оюн күндөрү</td><td>Дүй / Шр / Ишм</td><td>Шейш / Жума</td></tr>
     <tr><td>Сан тандоо</td><td>5 сан (1–69) + 1 Powerball саны (1–26)</td><td>5 сан (1–70) + 1 Mega Ball саны (1–24)</td></tr>
     <tr><td>Джекпот ыктымалдуулугу</td><td>болжол менен 292,2 миллиондон 1</td><td>болжол менен 290,5 миллиондон 1</td></tr>
     <tr><td>Эң аз джекпот</td><td>20 миллион доллар</td><td>50 миллион доллар</td></tr>
-  </table>
+  </table></div>
   <p>Экөө тең бирдей негизги принцип менен иштейт — 5 сан жана бир өзгөчө санды тандоо — ошондуктан бул сайт аларды дайыма катар карайт.</p>
 
   <h2>2. Кантип ойнолот?</h2>

@@ -178,7 +178,8 @@
   p{ font-size:var(--fs-body); margin:0 0 14px; }
   ul{ margin:0 0 14px; padding-left:22px; }
   li{ font-size:var(--fs-body); margin-bottom:6px; }
-  table{ width:100%; border-collapse:collapse; margin:16px 0; font-size:var(--fs-note); }
+  .table-scroll{ overflow-x:auto; margin:16px 0; }
+  table{ width:100%; border-collapse:collapse; font-size:var(--fs-note); }
   th,td{ text-align:left; padding:8px; border-bottom:1px solid var(--border); vertical-align:top; }
   th{ color:var(--text-muted); font-weight:700; }
   .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; }
@@ -231,13 +232,13 @@
 
   <h2>1. La lotería estadounidense = Powerball + Mega Millions</h2>
   <p>Cada estado de EE. UU. también tiene su propia lotería, pero “la lotería estadounidense” suele referirse a estos dos juegos enormes que se venden conjuntamente en casi todos los estados.</p>
-  <table>
+  <div class="table-scroll"><table>
     <tr><th></th><th>Powerball</th><th>Mega Millions</th></tr>
     <tr><td>Días de sorteo</td><td>Lun / Mié / Sáb</td><td>Mar / Vie</td></tr>
     <tr><td>Elección de números</td><td>5 números (1-69) + 1 número Powerball (1-26)</td><td>5 números (1-70) + 1 número Mega Ball (1-24)</td></tr>
     <tr><td>Probabilidad del premio mayor</td><td>aproximadamente 1 entre 292,2 millones</td><td>aproximadamente 1 entre 290,5 millones</td></tr>
     <tr><td>Premio mayor mínimo</td><td>20 millones de dólares</td><td>50 millones de dólares</td></tr>
-  </table>
+  </table></div>
   <p>Ambas funcionan de la misma manera básica — elegir 5 números más un número especial — por eso este sitio siempre las presenta una junto a la otra.</p>
 
   <h2>2. ¿Cómo se juega en realidad?</h2>

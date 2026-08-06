@@ -178,7 +178,8 @@
   p{ font-size:var(--fs-body); margin:0 0 14px; }
   ul{ margin:0 0 14px; padding-left:22px; }
   li{ font-size:var(--fs-body); margin-bottom:6px; }
-  table{ width:100%; border-collapse:collapse; margin:16px 0; font-size:var(--fs-note); }
+  .table-scroll{ overflow-x:auto; margin:16px 0; }
+  table{ width:100%; border-collapse:collapse; font-size:var(--fs-note); }
   th,td{ text-align:left; padding:8px; border-bottom:1px solid var(--border); vertical-align:top; }
   th{ color:var(--text-muted); font-weight:700; }
   .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; }
@@ -231,13 +232,13 @@
 
   <h2>1. Американская лотерея = Powerball + Mega Millions</h2>
   <p>У каждого штата США есть своя лотерея, но под «американской лотереей» обычно подразумевают эти две гигантские игры, которые продаются совместно почти во всех штатах.</p>
-  <table>
+  <div class="table-scroll"><table>
     <tr><th></th><th>Powerball</th><th>Mega Millions</th></tr>
     <tr><td>Дни розыгрыша</td><td>Пн / Ср / Сб</td><td>Вт / Пт</td></tr>
     <tr><td>Выбор чисел</td><td>5 чисел (1–69) + 1 число Powerball (1–26)</td><td>5 чисел (1–70) + 1 число Mega Ball (1–24)</td></tr>
     <tr><td>Шанс на джекпот</td><td>около 1 к 292,2 млн</td><td>около 1 к 290,5 млн</td></tr>
     <tr><td>Минимальный джекпот</td><td>20 миллионов долларов</td><td>50 миллионов долларов</td></tr>
-  </table>
+  </table></div>
   <p>Обе игры устроены одинаково — выбрать 5 чисел плюс одно специальное число, — поэтому на этом сайте они всегда рассматриваются вместе.</p>
 
   <h2>2. Как вообще играть?</h2>

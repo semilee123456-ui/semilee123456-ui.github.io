@@ -178,7 +178,8 @@
   p{ font-size:var(--fs-body); margin:0 0 14px; }
   ul{ margin:0 0 14px; padding-left:22px; }
   li{ font-size:var(--fs-body); margin-bottom:6px; }
-  table{ width:100%; border-collapse:collapse; margin:16px 0; font-size:var(--fs-note); }
+  .table-scroll{ overflow-x:auto; margin:16px 0; }
+  table{ width:100%; border-collapse:collapse; font-size:var(--fs-note); }
   th,td{ text-align:left; padding:8px; border-bottom:1px solid var(--border); vertical-align:top; }
   th{ color:var(--text-muted); font-weight:700; }
   .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; }
@@ -231,13 +232,13 @@
 
   <h2>1. Америкийн сугалаа = Powerball + Mega Millions</h2>
   <p>АНУ-ын мужууд өөр өөрийн сугалаатай ч “Америкийн сугалаа” гэдэг нь ихэвчлэн бараг бүх мужид хамтран зардаг энэ хоёр асар том тоглоомыг хэлдэг.</p>
-  <table>
+  <div class="table-scroll"><table>
     <tr><th></th><th>Powerball</th><th>Mega Millions</th></tr>
     <tr><td>Сугалаа хийх өдөр</td><td>Дав / Лхаг / Бямба</td><td>Мяг / Баасан</td></tr>
     <tr><td>Тоо сонгох</td><td>5 тоо (1–69) + Powerball тоо 1 (1–26)</td><td>5 тоо (1–70) + Mega Ball тоо 1 (1–24)</td></tr>
     <tr><td>Жекпот хожих магадлал</td><td>ойролцоогоор 292.2 сая тутамд 1</td><td>ойролцоогоор 290.5 сая тутамд 1</td></tr>
     <tr><td>Хамгийн бага жекпот</td><td>20 сая доллар</td><td>50 сая доллар</td></tr>
-  </table>
+  </table></div>
   <p>Хоёулаа адилхан үндсэн байдлаар ажилладаг — 5 тоо, нэг тусгай тоо сонгох — тиймээс энэ сайт үргэлж хоёуланг зэрэгцүүлж авч үздэг.</p>
 
   <h2>2. Хэрхэн тоглодог вэ?</h2>
