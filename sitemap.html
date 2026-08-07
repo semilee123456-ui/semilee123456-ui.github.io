@@ -106,7 +106,7 @@
   .wrap{ max-width:720px; margin:0 auto; padding:20px 20px 60px; }
   .nav{ display:flex; justify-content:space-between; align-items:center; padding:16px 0; }
   .logo{ font-size:20px; font-weight:800; color:var(--text-dark); text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
-  .logo span{ color:var(--teal); }
+  .logo-text{ white-space:nowrap; }
   .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
 
   h1{ font-size:var(--fs-h1); line-height:1.4; margin:20px 0 8px; }
@@ -121,6 +121,11 @@
     font-size:var(--fs-note); background:var(--card); border:1px solid var(--border);
   }
   li a:hover{ border-color:var(--teal); color:var(--teal); }
+  /* 2026-08-07: 링크 목록 중 일부(계산기 핵심 도구·해외 거주 한국인 안내)는 각 링크가 가리키는
+     페이지 자체가 한국어/영어/중국어 등 특정 언어로만 존재해서, sitemap.html이 다른 언어로
+     보일 때도 그 부분만 원래 언어 그대로 남음(의도된 동작, 사용자 확인 후 추가) — 왜 이 링크만
+     안 바뀌는지 헷갈리지 않게 어떤 언어 페이지인지 작은 태그로 표시. */
+  .lang-tag{ color:var(--text-muted); font-weight:400; font-size:0.85em; }
 
   ul.lang-grid{ flex-direction:row; flex-wrap:wrap; }
   ul.lang-grid li{ flex:0 0 auto; }
@@ -143,7 +148,7 @@
       <circle cx="17.5" cy="14.4" r="1.7" fill="var(--text-dark)"/><circle cx="18.05" cy="13.85" r="0.5" fill="#fff"/>
       <ellipse cx="14" cy="17.75" rx="1.85" ry="1.3" fill="var(--teal)"/>
       <path d="M14 19.1v0.55M8.9 19.9c1.7 3.3 8.6 3.3 10.2 0" fill="none" stroke="var(--teal)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>참<span>택스</span></a>
+    </svg><span class="logo-text">참택스</span></a>
     <span style="display:flex; align-items:center;">
       <a class="back" id="sm-back" href="index.html">← 계산기로 바로가기</a>
       <button type="button" id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" aria-label="다크모드 전환">🌙</button>
@@ -155,15 +160,15 @@
 
   <h2 id="sm-h2-core">계산기 &amp; 핵심 도구</h2>
     <ul>
-      <li><a href="index.html">미국 복권 세금 계산기 (홈)</a></li>
-      <li><a href="powerball-tax.html">파워볼 세금 얼마나 떼요? 한국인 기준 실수령액 계산</a></li>
-      <li><a href="megamillions-tax.html">메가밀리언즈 세금 계산 - 한국 거주자 실수령액</a></li>
-      <li><a href="us-lottery-take-home.html">미국 복권 당첨금 실수령액 계산기</a></li>
-      <li><a href="us-lottery-tax-rate.html">미국 복권 세율 정리 (연방세·주세·비거주자)</a></li>
-      <li><a href="lottery-prize-tiers.html">파워볼·메가밀리언즈 등수별 당첨금 총정리</a></li>
-      <li><a href="lottery-jackpot-amount.html">파워볼 얼마? 이번 주 당첨금 실시간 확인 (+실수령액 계산)</a></li>
-      <li><a href="biggest-jackpot-payouts.html">역대 최고 잭팟 실수령액 TOP 5</a></li>
-      <li><a href="us-lottery-basics.html">미국 로또(파워볼·메가밀리언즈)가 뭐예요? 완전 초보 가이드</a></li>
+      <li><a href="index.html">미국 복권 세금 계산기 (홈) <span class="lang-tag">(한국어)</span></a></li>
+      <li><a href="powerball-tax.html">파워볼 세금 얼마나 떼요? 한국인 기준 실수령액 계산 <span class="lang-tag">(한국어)</span></a></li>
+      <li><a href="megamillions-tax.html">메가밀리언즈 세금 계산 - 한국 거주자 실수령액 <span class="lang-tag">(한국어)</span></a></li>
+      <li><a href="us-lottery-take-home.html">미국 복권 당첨금 실수령액 계산기 <span class="lang-tag">(한국어)</span></a></li>
+      <li><a href="us-lottery-tax-rate.html">미국 복권 세율 정리 (연방세·주세·비거주자) <span class="lang-tag">(한국어)</span></a></li>
+      <li><a href="lottery-prize-tiers.html">파워볼·메가밀리언즈 등수별 당첨금 총정리 <span class="lang-tag">(한국어)</span></a></li>
+      <li><a href="lottery-jackpot-amount.html">파워볼 얼마? 이번 주 당첨금 실시간 확인 (+실수령액 계산) <span class="lang-tag">(한국어)</span></a></li>
+      <li><a href="biggest-jackpot-payouts.html">역대 최고 잭팟 실수령액 TOP 5 <span class="lang-tag">(한국어)</span></a></li>
+      <li><a href="us-lottery-basics.html">미국 로또(파워볼·메가밀리언즈)가 뭐예요? 완전 초보 가이드 <span class="lang-tag">(한국어)</span></a></li>
     </ul>
 
   <h2 id="sm-h2-country">거주 국가별 미국 복권 세금 안내 (21개국)</h2>
@@ -225,9 +230,9 @@
 
   <h2 id="sm-h2-abroad">해외 거주 한국인을 위한 안내</h2>
     <ul>
-      <li><a href="korean-abroad-us-lottery-tax.html">Korean Living Abroad Won a US Lottery? Tax Guide</a></li>
-      <li><a href="korean_abroad_us_lottery_tax_ko.html">해외에 살아도 한국 국적이면? 미국 복권 당첨 시 한국 세금 정리</a></li>
-      <li><a href="korean_abroad_us_lottery_tax_zh.html">持有韩国国籍、住在海外，中了美国彩票要交韩国税吗？</a></li>
+      <li><a href="korean-abroad-us-lottery-tax.html">Korean Living Abroad Won a US Lottery? Tax Guide <span class="lang-tag">(English)</span></a></li>
+      <li><a href="korean_abroad_us_lottery_tax_ko.html">해외에 살아도 한국 국적이면? 미국 복권 당첨 시 한국 세금 정리 <span class="lang-tag">(한국어)</span></a></li>
+      <li><a href="korean_abroad_us_lottery_tax_zh.html">持有韩国国籍、住在海外，中了美国彩票要交韩国税吗？ <span class="lang-tag">(中文)</span></a></li>
     </ul>
 
   <h2 id="sm-h2-basics">미국 로또 초보 가이드 (26개 언어)</h2>
