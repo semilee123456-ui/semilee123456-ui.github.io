@@ -2874,3 +2874,60 @@ HANDOFF 기록만 보고 답하지 않고 매번 코드/워크플로 파일을 �
 `v16` — `script.min.js`에 `bidiIsolateLtrRuns` 부재로 확인). 막힌 배포 큐를 새 커밋으로
 우회 트리거하기 위해 이 문서에 사소한 기록만 추가하는 커밋을 만듦 — 다음 세션은 이
 시도가 실제로 배포를 뚫었는지부터 확인할 것(뚫렸으면 이 문단은 지워도 됨).
+
+### 2026-08-07 — 파비콘 로고 통일 + 낚시 공유카드 이모지 깨짐 + PC 네이티브 공유창 폴백
+
+사용자가 브라우저 탭 favicon이 사이트 다른 곳(네비 로고·앱 아이콘)이랑 달라 보인다고
+제보한 것으로 시작, 이어서 낚시 게임 공유 카드 텍스트가 "잘려 보인다"는 제보, 마지막으로
+PC(Windows)에서 "공유하기"를 누르면 윈도우 OS 공유창이 뜨는 게 정상이냐는 질문 + 전체
+점검 요청까지 한 세션에서 이어짐.
+
+- **파비콘 92개 페이지 전부 outline 버전 → 디테일 마스코트로 교체**: `rel="icon"` data URI
+  SVG가 볼터치·눈 하이라이트·웃는 입이 없는 초기 outline 버전으로 전체 페이지에 남아있어서
+  `index.html` 네비 로고(`.mascot-mark`)·`apple-touch-icon.png`/`icon-512.png`와 다른
+  마스코트로 보이고 있었음. `.mascot-mark`의 CSS 변수(`--card`/`--teal`/`--text-dark`)를
+  라이트 테마 고정 hex로 치환해 새 SVG를 만들고 92개 파일에 동일 적용(파이썬 스크립트로
+  정확히 일치하는 old 문자열만 치환, `grep`으로 잔여 0건 확인). `favicon_preview.html`로
+  128/32/16px + 진한 배경 위에서 렌더링 확인.
+- **낚시 게임 공유 카드(`shareFishingCatch()`) 라벨의 "🎣" raw 이모지 → 텍스트만으로 변경**:
+  사용자가 "파워볼 KR 글씨가 잘려있다"고 제보한 스크린샷은 실제로는 텍스트 잘림이 아니라
+  캔버스에 raw 이모지(`🎣 ${gameLabel} · ${flagCode}`)를 직접 그려서 기기별 이모지 폰트에
+  따라 다음 텍스트와 겹치거나 깨져 보이는 문제였음 — 🐻 로고에서 이미 겪고 벡터 드로잉으로
+  바꿔 해결한 것과 동일한 유형(`drawLogoMark()`/`drawBearMascotIcon()` 주석 참고, 2026-08-03
+  기록에도 이 교훈이 남아있었는데 이 라벨만 안 고쳐진 채 남아있었던 것). `label: gameLabel`만
+  쓰는 다른 카드(`shareLatestDraw()`)와 통일해 이모지 제거. Playwright로 `buildShareCard()`를
+  직접 호출해 재현 스크린샷으로 수정 전/후 비교 확인(수정 전엔 깨진 글리프, 수정 후 "파워볼 ·
+  KR" 정상 렌더링). **참고**: 처음 제보된 "이번 잭팟 $372M → 한국 거주자" 줄 자체는 재현·실측
+  결과 카드 폭(792px) 대비 433px만 써서 잘릴 이유가 없었음 — 이 줄은 문제 없는 것으로 결론.
+- **PC(Windows Chrome/Edge)에서 "공유하기"를 누르면 모바일과 똑같이 OS 네이티브 공유창이
+  뜨는 문제 — 표준 동작이지만 PC에서 어색해서 데스크톱은 건너뛰도록 수정**: 코드 주석엔
+  "파일 공유(`navigator.canShare({files})`)를 지원 안 하는 환경(주로 PC 브라우저)"이라는
+  전제가 있었는데, 최신 Windows Chromium이 이 API를 지원하게 되면서 전제가 깨짐 — PC에서도
+  `canShareFile`이 true가 되어 기존 폴백(다운로드+클립보드 복사)이 아예 발동을 안 하고
+  있었음. `isDesktopPointerEnv()`(`matchMedia('(hover: hover) and (pointer: fine)')`) 헬퍼를
+  추가해서 마우스 기반 기기면 `navigator.share` 자체를 건너뛰고 곧장 기존 폴백으로 가게 함.
+  적용 지점: 이미지 파일 공유는 `finishAnnotateAndShare()` 한 곳만 고치면 됨(낚시 결과·추첨
+  결과·꿈 해몽 결과 등 카드 공유 4종 전부 이 함수 하나를 공유해서 거쳐감, `openAnnotateOverlay`
+  모달의 공유 버튼이 항상 이 함수를 호출), 텍스트 전용 공유는 `shareRefundChecklist()`/
+  `shareUsUnclaimedMoneyChecklist()`/`shareInUnclaimedMoneyChecklist()` 3곳 개별 수정 — 총
+  "공유하기 7군데" 요청 전부 반영.
+  **같은 날 후속 — "이미지로 저장" 버튼도 사용자가 이어서 요청해 마저 고침**:
+  `finishAnnotateAndDownload()`(수표 카드·복권 티켓·낚시 결과 등 "이미지로 저장" 3곳이 공유하는
+  함수)도 아이폰 사파리 사진첩 저장 워크어라운드 때문에 같은 `navigator.share(files)` 우선
+  시도 패턴이 있어서 PC에서 저장 버튼을 눌러도 같은 공유창이 뜨는 문제가 동일하게 있었음 —
+  같은 `isDesktopPointerEnv()`로 마우스 기반 기기는 건너뛰고 곧장 blob 다운로드로 가게 수정
+  (모바일 경로의 사진첩 저장 워크어라운드는 그대로 유지). 이제 공유/저장 버튼 전부(7+3=10곳)
+  PC에서 네이티브 공유창을 안 띄움.
+  **PC에서 실제 클릭 테스트는 못 함**(이 샌드박스엔 Windows/마우스 환경 없음) — 로직 자체는
+  표준 `matchMedia` 미디어쿼리라 신뢰할 만하지만, 다음에 PC 피드백이 다시 오면 이 조치가
+  실제로 폴백을 타는지부터 확인할 것.
+- 회귀 테스트 `console_error_audit`(161) · `home_audit`(18) 둘 다 `ISSUES:0`(저장 버튼 수정
+  후 재실행 포함). `npm install`로 devDependencies(terser/clean-css, `.gitignore`에
+  `node_modules/` 이미 있어 커밋 안 됨) 설치 후 `build:min`을 두 커밋에 걸쳐 재실행,
+  `script.min.js` 캐시버스팅 `20260806-6`→`20260807-1`→`20260807-2`, `sw.js` `CACHE_NAME`
+  `v16`→`v17`→`v18`. `styles.css`는 안 건드려서 `styles.min.css`는 재빌드만 하고 버전은
+  그대로 둠.
+- **PR #154**로 `main`에 올림(`claude/handover-file-review-ua989e` → `main`) — 이 세션은
+  이 저장소 워크플로상 `main`에 직접 push 권한/허가가 없어서 PR로 남김, 다음 세션은 이 PR이
+  머지·배포됐는지부터 확인할 것(머지됐는데도 라이브에 안 뜨면 위 "배포 정체" 이슈가 여전한지
+  같이 확인).
