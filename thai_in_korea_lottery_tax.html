@@ -239,6 +239,8 @@
   .disclaimer{ font-size:var(--fs-small); color:var(--text-muted); margin-top:32px; padding-top:16px; border-top:1px solid var(--border); }
   .related-links{ display:flex; flex-direction:column; gap:8px; margin:16px 0 32px; }
   .related-links a{ font-size:var(--fs-note); color:var(--teal); text-decoration:none; font-weight:600; }
+  .share-btn{ display:block; width:100%; background:var(--card); border:2px solid var(--teal); color:var(--teal); font-weight:800; font-size:var(--fs-body); padding:14px; border-radius:12px; cursor:pointer; margin:0 0 24px; font-family:inherit; }
+  .share-btn.copied{ background:var(--teal); color:var(--card); }
 </style>
 </head>
 <body>
@@ -265,6 +267,8 @@
   <h1>คนไทยที่อาศัยอยู่ในเกาหลีถูกรางวัลลอตเตอรี่สหรัฐฯ ต้องเสียภาษีอย่างไร?</h1>
   <p class="lead">ChamTax คือเครื่องคำนวณฟรีที่แสดงจำนวนเงินสุทธิที่ได้รับจริงหลังหักภาษีจากเงินรางวัล Powerball และ Mega Millions ของสหรัฐฯ ถ้าคุณอาศัยอยู่ในเกาหลีแล้วถูกรางวัล Powerball หรือ Mega Millions ของสหรัฐฯ นี่คือขั้นตอนภาษีจริงที่คุณจะเจอ — และวิธีดูว่าคุณต้องเสียภาษีในเกาหลีด้วยหรือไม่</p>
   <p class="updated-date">อัปเดตล่าสุด: 2026-08-04</p>
+
+  <button type="button" id="share-btn" class="share-btn" onclick="shareThisPage()">📤 แชร์หน้านี้</button>
 
   <div class="quick-answer">
     <p class="label">สรุปใน 30 วินาที</p>
@@ -304,13 +308,6 @@
     <li>ในเกาหลี (ถ้าเป็นผู้มีถิ่นที่อยู่ทางภาษี): ยื่นรวมกับรายได้อื่นในเดือนพฤษภาคมของปีถัดไปหลังได้รับเงินรางวัล (ถ้าเข้าข่ายหักภาษีแยกต่างหากอาจไม่ต้องยื่นเพิ่ม — จุดนี้ยังไม่ชัดเจน)</li>
   </ul>
 
-  <details class="faq-item">
-    <summary>📎 ดูคำอธิบายแบบละเอียด</summary>
-    <p>การหักภาษี 30% ของสหรัฐฯ คือวิธีมาตรฐานที่สหรัฐฯ ใช้เก็บภาษีเงินรางวัลลอตเตอรี่จากชาวต่างชาติที่ไม่ได้พำนัก ใช้กับทุกประเทศเหมือนกัน</p>
-    <p>เหตุผลที่ไม่มีข้อยกเว้นตามสนธิสัญญา: เคยมีคำตัดสินของศาลสหรัฐฯ ในคดีที่คล้ายกันเกี่ยวกับรายได้จากคาสิโน ซึ่งยืนยันว่าสิทธิประโยชน์ตามสนธิสัญญาไม่ใช้กับรายได้จากการพนัน รวมถึงลอตเตอรี่ด้วย</p>
-    <p>แบบฟอร์มยื่นภาษีสหรัฐฯ: หากต้องปรับยอดส่วนต่าง ใช้แบบ 1040-NR (สำหรับผู้ไม่มีถิ่นที่อยู่)</p>
-  </details>
-
   <div class="cta-box">
     <p>ถ้าผมถูกรางวัล จะได้เงินจริงเท่าไหร่?</p>
     <a href="index.html?lang=th">คำนวณเลย →</a>
@@ -343,6 +340,34 @@
 
   <p class="disclaimer">หน้านี้เป็นเพียงเครื่องมือจำลองข้อมูลเท่านั้น ไม่ได้เป็นตัวแทนหรือนายหน้าขายสลาก สำหรับกรณีจริง กรุณาปรึกษาผู้เชี่ยวชาญด้านภาษีที่มีความรู้ทั้งระบบภาษีสหรัฐฯ และเกาหลี</p>
 </div>
+<script>
+async function shareThisPage(){
+  const shareTitle = document.title;
+  const shareUrl = location.href;
+  const shareText = 'คนไทยที่อาศัยอยู่ในเกาหลีถูกรางวัลลอตเตอรี่สหรัฐฯ ต้องเสียภาษีอย่างไร? ดูที่นี่:';
+  const btn = document.getElementById('share-btn');
+  const isDesktopPointerEnv = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (navigator.share && !isDesktopPointerEnv) {
+    try {
+      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = '✅ คัดลอกแล้ว!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
+    }
+  } catch (e) {
+    window.prompt('กดค้างเพื่อคัดลอก แล้วแชร์:', `${shareText} ${shareUrl}`);
+  }
+}
+</script>
 <script>
   function syncThemeToggleIcon(){
     var btn = document.getElementById('theme-toggle');
