@@ -258,7 +258,19 @@
     }
   }
 
-  .nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; row-gap:8px; column-gap:10px; }
+  /* 2026-08-07: 사용자가 다른 사이트(펫스캔 AI) 헤더를 참고로 "스크롤해도 헤더가 상단에
+     고정되고, 콘텐츠 카드와 분리된 느낌"을 요청 — 예전엔 .nav가 .page(전체를 감싸는 둥근
+     카드, overflow:hidden) 안에 있어서 position:sticky를 줘도 안 붙었음(overflow:hidden인
+     조상이 있으면 sticky가 그 조상 기준으로만 갇혀서 사실상 안 붙는 것과 같은 효과가 남).
+     .nav를 .page 밖으로 빼서(index.html 마크업 변경) body의 직계 자식으로 만들고, 자체
+     배경·그림자를 줘서 독립된 바처럼 보이게 함. .page와 같은 max-width를 써서 좌우 폭은
+     맞춤(에지-투-에지 전체 폭까지는 안 감 — body 좌우 패딩 안에서 별도 카드로 뜨는 형태). */
+  .nav{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; row-gap:8px; column-gap:10px;
+    position:sticky; top:0; z-index:20; width:100%; max-width:clamp(900px, 78vw, 1200px); margin:0 auto;
+    background:var(--card); border-radius:14px; padding:12px 20px;
+    box-shadow:0 1px 3px rgba(var(--ink-rgb),0.08), 0 8px 24px rgba(var(--ink-rgb),0.06);
+  }
   .logo{
     font-size:17px; font-weight:700; color:var(--navy); letter-spacing:-0.02em; cursor:pointer;
     background:none; border:none; font-family:inherit; padding:0;
