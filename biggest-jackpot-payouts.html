@@ -443,7 +443,8 @@ async function sharePage(){
   const shareUrl = location.href;
   const shareTitle = '역대 최고 잭팟 실수령액 TOP 5 | 참택스';
 
-  if (navigator.share) {
+  const isDesktopPointerEnv = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (navigator.share && !isDesktopPointerEnv) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;

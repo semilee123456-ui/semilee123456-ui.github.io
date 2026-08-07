@@ -351,7 +351,8 @@ async function shareThisPage(){
   const shareUrl = location.href;
   const shareText = 'کوریا میں رہنے والے پاکستانی امریکی لاٹری جیت جائیں تو ٹیکس دینا ہوگا؟ یہاں دیکھیں:';
   const btn = document.getElementById('share-btn');
-  if (navigator.share) {
+  const isDesktopPointerEnv = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (navigator.share && !isDesktopPointerEnv) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;

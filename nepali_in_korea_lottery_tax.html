@@ -347,7 +347,8 @@ async function shareThisPage(){
   const shareUrl = location.href;
   const shareText = 'कोरियामा बस्ने नेपालीले अमेरिकी लटरी जित्दा कर तिर्नुपर्छ? यहाँ हेर्नुहोस्:';
   const btn = document.getElementById('share-btn');
-  if (navigator.share) {
+  const isDesktopPointerEnv = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (navigator.share && !isDesktopPointerEnv) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;

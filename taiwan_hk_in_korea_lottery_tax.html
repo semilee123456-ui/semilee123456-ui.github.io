@@ -347,7 +347,8 @@ async function shareThisPage(){
   const shareUrl = location.href;
   const shareText = '住在韓國，中了美國樂透，要繳稅嗎？看看這裡：';
   const btn = document.getElementById('share-btn');
-  if (navigator.share) {
+  const isDesktopPointerEnv = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (navigator.share && !isDesktopPointerEnv) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;

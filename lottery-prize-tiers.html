@@ -322,7 +322,8 @@ async function sharePage(){
   const shareUrl = location.href;
   const shareTitle = '파워볼·메가밀리언즈 등수별 당첨금 총정리 | 참택스';
 
-  if (navigator.share) {
+  const isDesktopPointerEnv = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (navigator.share && !isDesktopPointerEnv) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;

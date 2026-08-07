@@ -442,7 +442,8 @@ async function sharePage(){
   const shareUrl = location.href;
   const shareTitle = "The 5 Biggest Lottery Jackpots Ever — What Winners Actually Took Home After Tax | ChamTax";
 
-  if (navigator.share) {
+  const isDesktopPointerEnv = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (navigator.share && !isDesktopPointerEnv) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;

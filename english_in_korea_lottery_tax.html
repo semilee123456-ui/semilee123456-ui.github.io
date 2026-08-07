@@ -346,7 +346,8 @@ async function shareThisPage(){
   const shareUrl = location.href;
   const shareText = 'Foreigners living in Korea who win a US lottery — do you owe Korean tax? Check here:';
   const btn = document.getElementById('share-btn');
-  if (navigator.share) {
+  const isDesktopPointerEnv = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (navigator.share && !isDesktopPointerEnv) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;

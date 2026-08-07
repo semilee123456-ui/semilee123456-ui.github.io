@@ -351,7 +351,8 @@ async function shareThisPage(){
   const shareUrl = location.href;
   const shareText = 'العرب المقيمون في كوريا وربح يانصيب أمريكا، هل عليهم دفع ضريبة؟ شاهد هنا:';
   const btn = document.getElementById('share-btn');
-  if (navigator.share) {
+  const isDesktopPointerEnv = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (navigator.share && !isDesktopPointerEnv) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;
