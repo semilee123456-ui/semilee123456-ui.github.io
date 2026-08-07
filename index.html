@@ -1032,7 +1032,14 @@
             <div class="result-tertiary-box" style="margin-top:0;">
               <p class="usd-actual-note" id="home-country-disclaimer" style="display:none; margin-top:8px; color:var(--status-amber); font-weight:600;"></p>
               <div class="result-meta-group">
-                <p class="result-hero-basis-mini" id="home-final-basis-mini">100M USD 당첨 · 한국 거주자</p>
+                <!-- 2026-08-07: "결과 더 자세히 보기"를 펼쳤을 때 이 줄이 바로 위 3줄 AI 요약
+                     (home-summary-text, "OOO원 당첨 시... 한국 거주자 기준으로 계산했어요")와
+                     같은 내용(당첨금·거주국)을 통화만 바꿔서 또 말해서 중복이라는 사용자 지적으로
+                     화면 표시만 숨김(display:none) — 엘리먼트 자체는 지우지 않음. 이 텍스트는
+                     buildHomeResultCheckCanvas() 등 공유용 "기념 수표" 이미지를 그릴 때
+                     textContent를 그대로 읽어서 쓰므로(script.js 6993줄 등, null이면 에러) DOM에서
+                     완전히 지우면 안 됨 — 화면에만 안 보이게 하고 데이터 소스로는 계속 살아있게 함. -->
+                <p class="result-hero-basis-mini" id="home-final-basis-mini" style="display:none;">100M USD 당첨 · 한국 거주자</p>
                 <p class="foot-note" id="home-trust-line">환율 -</p>
               </div>
             </div>
