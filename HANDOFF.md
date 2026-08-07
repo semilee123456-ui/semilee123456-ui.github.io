@@ -3053,3 +3053,46 @@ PC(Windows)에서 "공유하기"를 누르면 윈도우 OS 공유창이 뜨는 �
   화면=945 조합) ISSUES:0. `npm run build:min` 재실행, `styles.min.css` 캐시버스팅
   `20260806-7`→`20260807-3`, `sw.js` `CACHE_NAME` `v18`→`v19`. `curl`로 라이브 확인
   (`styles.min.css?v=20260807-3`, `nav-compare` 버튼에 이모지 span 없어진 것 확인) — 완료.
+
+### 2026-08-07 이어서 — 헤더를 스크롤해도 상단에 고정되는 분리된 카드로 변경 (PR #163, 머지·배포 확인 완료)
+
+바로 위 항목(헤더 compact 한 줄화)에 이어서, 사용자가 펫스캔 AI 헤더 스크린샷 4장을
+추가로 보여주며 "스크롤해도 헤더가 따라 내려오고(고정), 헤더가 콘텐츠랑 분리된 느낌"을
+정확히 짚어줌 — 처음 요청은 "한 줄로 붙는 것"이었는데 실제로는 sticky+분리 배경까지
+원했던 것.
+
+- **구조적 원인**: `.nav`가 사이트 전체를 감싸는 둥근 카드(`.page`, `overflow:hidden`,
+  모든 화면/탭이 이 카드 하나 안에 들어있는 구조)의 첫 자식이었음 — `overflow:hidden`인
+  조상이 있으면 `position:sticky`가 그 조상 기준으로만 붙으려 하는데, `.page`는 자체
+  스크롤이 없고 문서 전체와 같이 흘러가므로 사실상 sticky가 무력화됨(코드로 확인, 짐작
+  아님 — CSS 스펙상 overflow:hidden도 스크롤 컨테이너로 취급됨).
+- **수정**: `index.html`에서 `.nav` 블록을 `<main class="page">` 밖으로 빼서 `body`의
+  직계 자식으로 만듦(계산기의 모든 화면 뷰가 `.page` 안에 있으므로 어느 탭으로 가도 nav는
+  항상 살아있는 형제 요소로 유지됨). `.nav`에 `position:sticky; top:0; z-index:20` +
+  자체 배경(`var(--card)`)·둥근 모서리·그림자를 줘서 독립된 바처럼 보이게 하고, `.page`와
+  동일한 `max-width:clamp(900px,78vw,1200px)`로 좌우 폭을 맞춤(에지-투-에지까지는 안
+  가고 body 좌우 여백 안에서 별도 카드로 뜸 — 펫스캔처럼 완전 풀블리드로 하려면 body의
+  padding/align-items 구조까지 더 크게 손대야 해서 이번엔 이 선에서 마무리).
+  `.settings-panel`(설정 드롭다운)의 `z-index:30`보다 `.nav` 자체는 `z-index:20`으로
+  낮게 둬서 드롭다운이 항상 nav 배경 위에 올바르게 뜨도록 함.
+  **의도적으로 안 건드린 것**: `body`의 `padding:36px 16px 80px`/`gap:28px` 구조는
+  그대로 둠 — nav가 body의 새 직계 자식이 되면서 이 gap이 nav와 `.page` 사이 여백으로
+  자연스럽게 적용됨(별도 조정 없이 그대로 써도 자연스러워 보여서 손 안 댐).
+- **검증**: Playwright로 스크롤 전/후 스크린샷 비교(고정 확인) + 다크모드 + RTL(아랍어,
+  설정 패널이 반대쪽으로 정상적으로 뒤집히는 것까지 확인) + 설정 패널 열림 상태 전부
+  스크린샷으로 눈으로 직접 확인. 회귀 테스트 전부 통과: `nav_slider_audit`·
+  `home_audit`(18)·`wrap_audit`(168)·`console_error_audit`(161)·`map_scroll_audit`(10)·
+  `i18n_attr_lint`·`broken_link_audit`(95) ISSUES:0, `full_overflow_sweep`(945 조합)
+  ISSUES:0. `npm run build:min` 재실행, `styles.min.css` 캐시버스팅
+  `20260807-3`→`20260807-4`, `sw.js` `CACHE_NAME` `v19`→`v20`.
+- **같은 날 후속 — 머지·배포 확인 완료**: `curl`로 라이브 `chamtax.com/index.html` 확인 —
+  `styles.min.css?v=20260807-4` 반영, `styles.min.css` 안에 `position:sticky` 실제 존재,
+  `.nav`가 HTML 소스상 `<main class="page">`보다 앞에 오는 것까지 확인(구조 변경 자체가
+  라이브에 반영됐다는 뜻). 이 세션의 헤더 관련 작업은 여기서 완결.
+- **다음 세션이 참고할 것**: 이 세션에서 sitemap.html 26개 언어 번역(PR #154~162)과
+  계산기 헤더 compact화+sticky화(PR #161, #163)까지 전부 끝냈고 라이브 배포 확인도 다
+  마쳤음. `GEMINI-REVIEW-sitemap-i18n-2026-08-07.md`/`GEMINI-REVIEW-sitemap-i18n-followup-2026-08-07.md`
+  둘 다 사용자가 제미나이 검수 받아서 반영 완료한 상태 — 더 이상 대기 중인 검수 없음.
+  **위 "작업 이력" 섹션이 이번 세션 하나로 8개 넘는 `### ` 항목이 쌓였음** — 파일 상단
+  규칙(3~4개 넘으면 가장 오래된 것부터 `HANDOFF-ARCHIVE.md`로 옮기기)에 따라 다음 세션
+  시작할 때 오래된 항목부터 아카이브로 옮기는 정리가 필요함.
