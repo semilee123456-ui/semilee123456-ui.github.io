@@ -9522,3 +9522,1696 @@ blob화), `script.min.js`(재생성, 캐시버스팅 `20260804-4`→`20260804-5`
 
 변경 파일: `HANDOFF.md`만(이 항목 — 코드 변경 없음, 전부 검증 작업).
 
+### 2026-08-05 — 공유 문구 끝 사이트 링크 제거 (아이메시지 등에서 이미지+텍스트+
+### 링크미리보기카드로 메시지가 3덩이로 쪼개져 나오는 문제)
+
+**배경**: 사용자가 아이메시지 스크린샷을 보내줌 — "🎱 최근 당첨번호" 공유 시 (1) 이미지
+카드 (2) "...확인해보세요 https://chamtax.com/"라는 텍스트+링크 (3) 그 링크를 아이메시지가
+자동으로 스크랩해서 만든 별도의 링크 미리보기 카드, 이렇게 메시지가 3덩이로 쪼개져 나와서
+지저분함. "맨 밑에 사이트 링크는 없는 게 나은 거 같아, 전부 수정해줘. 모든 언어랑 모든
+공유"라고 명시적으로 요청함.
+
+**조사**: `grep`으로 공유 관련 함수 6개(`shareLatestDraw`/`shareDreamResult`/`shareResult`/
+`shareRefundChecklist`/`shareUsUnclaimedMoneyChecklist`/`shareInUnclaimedMoneyChecklist`)
+전부가 `shareText`에 `shareUrl`을 붙이거나 `navigator.share()`에 별도 `url` 파라미터로
+넘기고 있는 걸 확인. 그중 `shareResult`("이 결과 공유하기")만 예외적으로 링크에 실질
+기능이 있음을 발견 — `?amount=&country=&state=` 쿼리파라미터가 실려있어서 받는 사람이
+누르면 나와 똑같은 계산 결과를 그대로 보여주는 딥링크였음(단순 사이트 홍보 링크가 아님).
+사용자에게 확인받아 **이것만 예외로 남기고 나머지 5개는 전부 링크 제거**하기로 함.
+
+**구현**: 5개 함수에서 `shareUrl` 변수·`wrapWithOgShareCard()` 호출·`url:` 파라미터를
+전부 제거 — 이미지가 있는 2개(`shareLatestDraw`/`shareDreamResult`)는 `shareText`에서
+`${shareUrl}` 접미사만 제거(이미지 자체엔 이미 "chamtax.com" 워터마크가 있어서 브랜딩은
+유지됨), 텍스트만 있는 3개(체크리스트 공유)는 `navigator.share()`/클립보드 폴백/
+`window.prompt` 폴백 3곳 전부에서 링크를 빼서 순수 텍스트만 공유되게 함. `shareResult`는
+전혀 안 건드림. **번역 작업은 불필요했음** — 26개 언어 문구 자체엔 애초에 URL이 안
+박혀있었고(템플릿 리터럴로 나중에 붙이는 방식이었음), 코드에서 그 접미사만 떼어내면 되는
+구조였기 때문.
+
+**부수 정리 — 죽은 코드 제거**: 5개 함수의 호출부를 없애자 `wrapWithOgShareCard()`
+함수(카카오톡 등 링크 미리보기 봇용 동적 OG 카드를 만들어주던 헬퍼, `og.chamtax.com`
+Cloudflare Worker 호출)와 `OG_SHARE_WORKER_BASE` 상수가 호출부 0개인 죽은 코드가 됨 —
+`grep`으로 전체 저장소(소스 파일 기준, `script.min.js` 제외) 재확인 후 완전히 삭제.
+**단, `og-share-worker/` 폴더(실제 배포된 Cloudflare Worker 소스)는 그대로 둠** — 배포
+자체를 되돌리는 건 이 세션 요청 범위 밖이라고 판단(인프라 변경은 신중하게). 나중에 링크
+공유를 다시 붙이고 싶으면 `og-share-worker/README.md` 참고해서 `OG_SHARE_WORKER_BASE`
+상수와 `wrapWithOgShareCard()`를 되살리면 됨(git 히스토리에 남아있음).
+
+**검증**: `node --check` 통과. Playwright로 `navigator.share`를 스텁으로 갈아끼워서
+6개 함수 전부 실제로 어떤 데이터가 넘어가는지 직접 캡처 — 5개는 `url` 필드/텍스트 접미사
+전부 없음 확인, `shareResult`만 여전히 `?amount=342&country=kr` 딥링크가 텍스트에 살아있는
+것 확인. 회귀 테스트(`home_audit` 18·`console_error_audit` 161·`i18n_coverage_audit`
+766키·`i18n_attr_lint` 0후보) 전부 `ISSUES: 0`.
+
+변경 파일: `script.js`/`script.min.js`(`OG_SHARE_WORKER_BASE`/`wrapWithOgShareCard()`
+삭제, 5개 공유 함수에서 링크 제거), `index.html`(캐시버스팅 `20260804-4`→`20260805-1`).
+
+### 2026-08-05 이어서 — "이미지로 저장" 다운로드는 되는데 사진첩(Photos)에 안 들어간다는
+### 후속 신고 → navigator.share(files) 우선 시도로 교체
+
+**배경**: 바로 위 항목에서 data: URI를 blob: URL로 바꾼 뒤, 사용자가 스크린샷으로 실제
+다운로드가 진행되는 걸 확인해줌(사파리 상단 "'chamtax-result.png' 다운로드 중..." 배너 +
+체크마크) — 1차 수정 자체는 효과가 있었던 것으로 확인됨. 다만 "다운로드된 파일이 어디
+갔는지 모르겠다, 사진첩에 넣을 수 없냐"는 후속 요청이 들어옴.
+
+**원인**: `<a download>`는 아이폰 사파리에서 항상 **파일 앱**(다운로드 폴더)으로만 가고,
+사진첩(Photos)엔 API 차원에서 직접 저장할 방법이 없음 — 사진첩에 넣는 유일한 경로는 OS
+공유 시트를 띄워서 사용자가 그 안의 "이미지 저장"을 직접 누르는 것뿐임. 이 사이트엔 이미
+그 방식(`navigator.share({files})`)을 쓰는 "공유하기" 버튼이 있었지만, "이미지로 저장"
+버튼(`openAnnotateOverlay`의 `mode==='save'` 경로)에는 안 붙어있어서 사용자가 접근할 방법이
+없었음.
+
+**수정**: `finishAnnotateAndDownload()`를 `finishAnnotateAndShare()`와 같은 패턴으로
+바꿈 — `navigator.canShare({files})`를 지원하면(대부분의 모바일) `navigator.share({files})`
+를 먼저 시도(공유 시트가 뜨고 "이미지 저장"을 누르면 사진첩으로 감), 취소(`AbortError`)는
+모달을 열어둔 채 무시, 그 외 실패나 애초에 미지원(대부분의 데스크톱)이면 기존 blob 다운로드로
+폴백. **공유하기 버튼과 달리 `title`/`text` 없이 파일만 넘김** — 이건 "누군가에게 보내기"가
+아니라 "저장" 의도라서, 메시지 앱 등으로 갔을 때 불필요한 문구가 안 딸려가게 함.
+
+**검증**: `node --check script.js` 통과. Playwright로 `navigator.share`/`canShare`를
+스텁으로 갈아끼워 두 경로 모두 직접 확인 — (1) 공유 지원 환경: `navigator.share`가
+`{files:[...]}`만 받고 호출됨(제목/텍스트 없음), 실제 다운로드 이벤트는 안 뜸, 성공 후
+모달 정상 닫힘. (2) 공유 미지원 환경: 기존처럼 blob 다운로드 정상 발생. `home_audit`/
+`console_error_audit` 재실행 `ISSUES: 0`. **이 샌드박스는 실제 iOS 공유 시트 UI 자체는
+재현 못 하므로(스텁으로 API 호출 여부만 확인), "이미지 저장" 탭 후 실제로 사진첩에 들어가는지는
+사용자가 실기기에서 최종 확인 필요.**
+
+변경 파일: `script.js`(`finishAnnotateAndDownload()` 공유 우선 방식으로 교체),
+`script.min.js`(재생성), `index.html`(캐시버스팅 `20260805-2`→`20260805-3`), `sw.js`
+(`CACHE_NAME` v3→v4).
+
+### 2026-08-05 이어서 — "이 결과 공유하기" 한국어 문구 반말/존댓말 섞임 수정
+
+**배경**: 사용자가 실제 아이메시지 공유 스크린샷을 보내줌 — "...참택스에서 확인해봐
+(참고용 시뮬레이션이에요)"에서 "확인해봐"(반말)와 "시뮬레이션이에요"(존댓말/해요체)가
+한 문장에 섞여 있는 걸 발견. 같은 스크린샷에서 "밑에 링크도 여전히 나온다"는 지적도
+있었는데, 이건 버그가 아니라 **의도된 예외**(이 버튼만 `?amount=&country=` 딥링크가
+실질 기능이 있어서 2026-08-04 세션이 사용자 승인 받고 남겨둔 것) — 사용자에게 이유를
+설명하고 "그래도 뺄지" 재확인 요청함(답변 대기 중, 다음 세션은 이 문서보다 실제 사용자
+답변을 우선할 것).
+
+**수정**: `shareResult()`의 한국어 문구에서 `(참고용 시뮬레이션이에요)` →
+`(참고용 시뮬레이션이야)`로 통일(반말). 다른 25개 언어는 문법적으로 반말/존댓말 구분이
+이 방식으로 드러나지 않아 손 안 댐.
+
+**검증**: `node --check script.js` 통과. Playwright로 `navigator.share`를 스텁으로
+갈아끼우고 `shareResult()`→`finishAnnotateAndShare()`를 직접 호출해 실제 전달되는
+`text` 값을 캡처해서 확인(한국어 강제 `setLanguage('ko')` 후 "확인해봐 (참고용
+시뮬레이션이야)" 정상 출력 확인). `home_audit`/`console_error_audit` 재실행 `ISSUES: 0`.
+
+변경 파일: `script.js`(`shareResult()` 한국어 문구 1곳), `script.min.js`(재생성),
+`index.html`(캐시버스팅 `20260805-3`→`20260805-4`), `sw.js`(`CACHE_NAME` v4→v5).
+
+### 2026-08-05 이어서 — "환율 들어가야 하는 곳 전부 100%냐" 질문에 답하다 발견한 실제 버그:
+### 19개 참고통화 중 13개가 "실시간 환율 적용됨" 배지가 뜨는데도 실제로는 항상 하드코딩값
+
+**배경**: 사용자가 "환율 들어가야 하는 곳 전부 100% 들어가 있어?"라고 물어봄. 코드
+구조(KRW `EXCHANGE_RATE` + 19개 참고통화 `EXCHANGE_RATE_XXX`, 계산 코드 어디에도
+하드코딩 없음, `CURRENCY_DISPLAY_META`로 일원화)는 잘 갖춰져 있어서 "구조는 100%"까지는
+확인했는데, **실제 API 응답을 직접 떠보니 진짜 문제를 발견함**.
+
+**발견한 버그**: `fetchLiveExchangeRate()`가 소스 2개(1순위 Frankfurter, 2순위
+open.er-api.com)를 "순서대로 시도하다 하나 성공하면 그 자리에서 return"하는 구조였음.
+`curl`로 두 소스를 직접 테스트해보니:
+- Frankfurter(중앙은행 고시)는 KRW/CNY/INR/IDR/JPY/PHP/THB **7개만** 지원.
+- open.er-api.com은 19개 **전부** 지원.
+- Frankfurter가 KRW 하나만 성공해도 함수가 그 자리에서 끝나버려서, **VND·RUB·NPR·LKR·
+  UZS·KZT·KGS·MMK·BDT·PKR·KHR·MNT·LAK 13개 통화는 2순위 소스를 아예 열어볼 기회가
+  없었음** — UI엔 "🔄 실시간 환율 적용 중" 배지가 뜨는데(`exchangeRateIsLive=true`),
+  실제 이 13개 통화는 코드에 박힌 2026-07-18~19 스냅샷 그대로 계속 쓰이고 있었음. 이
+  사이트가 타겟하는 재한 외국인 페르소나(베트남·러시아·네팔·스리랑카·우즈베크·카자흐·
+  키르기스·미얀마·방글라데시·파키스탄·캄보디아·몽골·라오스) 상당수가 걸리는 통화들이라
+  실질적 영향이 있었음.
+
+**수정**: 소스를 "하나 성공하면 종료"가 아니라 "아직 못 채운 통화가 남아있으면 다음
+소스도 계속 시도"하는 방식으로 바꿈 — 이미 앞선(우선순위 높은=중앙은행 고시) 소스가
+채운 통화는 그대로 두고, 그 소스가 안 주는 통화만 다음 소스가 마저 채우는 병합 방식.
+기존 우선순위(중앙은행 고시 우선)는 그대로 유지, 실패 시 기본값 폴백 동작도 안 건드림.
+
+**검증**: 로컬 `curl`로 두 API 응답을 실제로 떠서(`api.frankfurter.app`,
+`open.er-api.com`) Playwright `page.route()`로 그대로 주입해 재현 — (1) 정상(양쪽 다
+성공) 시나리오에서 **20/20 통화 전부 라이브 값으로 갱신**되고 CNY 등 Frankfurter가
+주는 통화는 그 값을, VND 등 Frankfurter가 안 주는 통화는 open.er-api 값을 정확히
+쓰는 것 확인. (2) 1순위 소스가 완전히 다운된 시나리오에서도 2순위로 정상 폴백해 20/20
+전부 성공. (3) 양쪽 다 다운된 시나리오에서는 기존과 동일하게 하드코딩 기본값으로 안전하게
+폴백(`exchangeRateFetchFailed=true`) 확인. **참고**: 이 샌드박스에서 Playwright
+Chromium은 세션 프록시(`HTTPS_PROXY`)를 자동으로 안 타서 그냥 실행하면 외부 API가 전부
+막힌 것처럼 보임(405/timeout) — `chromium.launch({ proxy: ... })`로 프록시를 직접
+넘겨봐도 로컬 서버 접속과 충돌해서 잘 안 됐음. 대신 `curl`로 실제 API 응답을 미리 떠서
+`page.route()`로 그대로 주입하는 방식으로 우회함(다음 세션이 비슷한 네트워크 테스트를
+할 때 참고). `home_audit`(18)·`console_error_audit`(161)·`wrap_audit`(168)·
+`nav_slider_audit` 전부 `ISSUES: 0`.
+
+**사용자 요청으로 예방 조치도 추가**: "루틴에도 넣어줘" — 이번처럼 "배지는 성공인데
+실제로는 일부만 갱신됨" 같은 조용한 회귀가 다시 생기지 않도록, 아래 "새 세션 시작 시
+지켜야 할 것" 체크리스트와 월간 세율·환율 재검증 루틴(`trig_01HRBBWeTPz3949kEGYxpwaU`)에
+"19개 참고통화가 실제로 다 갱신되는지"를 확인하는 항목을 추가함(자세한 내용은 그
+루틴 설명 갱신 참고).
+
+변경 파일: `script.js`(`fetchLiveExchangeRate()` 소스 병합 로직 재작성), `script.min.js`
+(재생성), `index.html`(캐시버스팅 `20260805-4`→`20260805-5`), `sw.js`(`CACHE_NAME`
+v5→v6).
+
+### 2026-08-05 이어서 — "3줄 AI 요약" 백로그 항목 신규 구현 + "결과 더 자세히 보기" 안
+### 중첩 아코디언 계층 구분 수정 (사용자가 아이폰 스크린샷으로 지적)
+
+**"3줄 AI 요약" 구현**: 백로그(위 "향후 아이디어 백로그" 섹션)에 있던 항목 — 사용자가
+"사이트가 지저분해지지 않겠냐"고 우려해서, **메인 화면에는 아무것도 안 추가하고 이미
+접혀있는 "결과 더 자세히 보기"(`#home-detail-toggle`) 안, 기존 숫자표(세금 내역 grid)보다
+먼저 보이는 자리에만** 배치하기로 합의 후 진행. 이름은 "AI"지만 실제 LLM 호출은 없음 —
+`calcTakeHome()`이 국가별로 이미 26개 언어로 번역해서 반환하는 `label1`/`val1`/`label2`/
+`val2`/`basisSuffix`와, 기존 i18n 키 `result.label`("일시불 예상 실수령액")을 그대로
+재사용해서 3문장 템플릿에 끼워 넣기만 함(`updateHomeCalc()` 안, `#home-summary-text`).
+새로 번역해야 했던 건 그 3문장을 잇는 짧은 틀뿐이라(예: "{금액} 당첨 시, {기준}으로
+계산했어요.") 26개 언어 번역 리스크를 최소화함. 민트색 배경 박스(`.home-summary-text`,
+`white-space:pre-line`으로 3문장 실제 줄바꿈)로 아래 숫자표들과 구분. **검증**: 8개
+언어(ko/en/zh/ar-RTL/km/tet/vi + 미국/중국/기타국가 세율 분기)로 Playwright 직접 확인,
+콘솔 에러 0건. 회귀 테스트(`home_audit`/`console_error_audit`/`wrap_audit`/
+`full_overflow_sweep` 945조합) 전부 `ISSUES: 0`.
+
+**중첩 아코디언 계층 구분 수정**: 사용자가 아이폰 스크린샷을 보내며 "연금으로 받으면?"
+아래 있는 "당첨자가 여러 명이면?" 아코디언이 이상해 보인다고 지적 — Chromium
+Playwright로 직접 하나씩 열고 닫아보니 기능(화살표 방향·여닫힘·겹침) 자체는 정상이었고,
+`AskUserQuestion`으로 어느 부분이 이상한지 다시 확인한 결과 **"연금 안의 30년 지급표
+보기"(한 단계 더 안쪽에 중첩된 아코디언)와 "당첨자가 여러 명이면?"(바깥쪽과 같은
+레벨의 형제 아코디언)이 들여쓰기 없이 완전히 같은 스타일이라 계층이 안 보인다**는
+게 원인으로 확인됨. `.jh-more .jh-more`(부모 `.jh-more` 안에 중첩된 `.jh-more`)에만
+왼쪽 들여쓰기(`padding-left:12px`) + teal 세로선(`border-left`)을 추가하고, 그 안의
+`.jh-more-summary`만 중앙→왼쪽 정렬로 바꿔서 형제 레벨과 다른 리듬을 줌 — 시니어
+가독성 최소 폰트 크기(`--fs-small`)는 그대로 유지(글자 크기로 구분 안 함). **검증**:
+Playwright로 스타일 수정 전/후 스크린샷 비교, 형제 레벨(연금/당첨자)은 그대로
+중앙 정렬 유지되고 중첩 레벨(30년 지급표)만 들여써짐 확인. 회귀 테스트 전부 통과.
+
+변경 파일: `index.html`(`#home-summary-text` 마크업 추가, 캐시버스팅 `20260805-5`→
+`20260805-6`), `script.js`/`script.min.js`(`updateHomeCalc()`에 요약 문구 생성 로직
+추가), `styles.css`/`styles.min.css`(`.home-summary-text`, `.jh-more .jh-more` 중첩
+구분 스타일 추가).
+
+### 2026-08-05 이어서 — "낚시로 뽑기" 미니게임을 반사신경 게임 → 드래그 위치 맞추기 게임으로
+### 전면 교체 (사용자가 "아무리 고쳐도 번거롭다"고 지적)
+
+**배경**: 낚시 미니게임은 2026-08-03~04에 이미 여러 세션이 세부 버그(트레일링 클릭, 연타→
+꾹누르기 전환 등)를 고쳤지만, 사용자가 "이 게임 아무리 고쳐도 안 되는 거 같은데, 전체적으로
+번거롭다"고 재차 지적함. `AskUserQuestion`으로 확인해보니 특정 버그가 아니라 "캐스팅 대기(0.6~
+1.5초 무작위) → 제한시간 내 입질 탭(900ms) → 제한시간 내 꾹 눌러서 게이지 채우기(3초)"라는
+3단계 반사신경 게임 **구조 자체**가 문제였음 — 세부 버그를 아무리 잡아도 "번거로움" 자체는
+안 없어지는 게 당연했던 것. 사용자가 "낚싯대를 옮겨서 물고기를 잡는 방식"을 제안 → 스타듀밸리
+등 유명 낚시 게임 사례를 WebSearch로 조사한 뒤, 반사신경이 아니라 **위치 맞추기**(제한시간 없음)
+방식을 추천하고 조작 방식(직접 드래그 vs 화살표 버튼 vs 물고기 탭)을 `AskUserQuestion`으로
+확인 → "손가락으로 직접 드래그"로 결정.
+
+**새 설계**: 상태를 5개(idle/casting/waiting/biting/reeling)에서 2개(idle/aiming, +성공 직후
+짧은 전환용 caught)로 단순화. 물고기 한 마리가 연못 안을 좌우로 계속 헤엄치고
+(`fishingSwimLoop`, rAF 기반, 시간 경과 기준이라 기기 성능 무관), 사용자가 연못 아무 곳이나
+누른 채로 낚싯대(찌)를 드래그하면 그 지점으로 따라오다가(`fishingDragMove`), 손을 떼는 순간
+(`fishingDragEnd`→`fishingAttemptCatch`) 찌와 물고기 위치가 일정 범위(9%) 안이면 성공. **제한
+시간이 전혀 없어서** 몇 번을 놓쳐도 불이익 없이 바로 다시 시도 가능 — 이게 "서두르지 않아도
+된다"는 핵심 차이. 연못을 드래그 없이 그냥 탭만 해도(찌가 이미 근처에 있으면) 같은
+pointerdown→pointerup 흐름으로 바로 낚임. 버튼(`#fishing-cast-btn`)은 이제 판 시작/재시작
+전용(진행 중엔 disabled)이고, 실제 조작은 전부 연못에서 일어남.
+
+**키보드 접근성**: 연못이 aria-hidden 장식 요소에서 실제 1차 조작 대상으로 바뀌면서, 기존
+"버튼을 Enter로 연타"하던 키보드 경로가 사라지는 회귀가 될 뻔함 — `#fishing-pond`에
+`tabindex="0"` 추가하고, 포커스 상태에서 화살표(좌우 이동)+Enter/Space(낚시 시도)를 처리하는
+`initFishingKeyboardControls()`를 새로 추가함(페이지 전체가 아니라 연못에 포커스가 있을 때만
+동작해서 스크롤 키와 충돌 안 함). aria-label은 새 번역 문구를 26개 언어로 추가하는 대신 이미
+번역된 `odds.fishingHint`를 그대로 재사용(`updateLightningGameUi()`가 언어 전환마다 갱신) —
+번역 작업 없이 접근성 확보.
+
+**i18n 영향 최소화**: 게임 문구(상단 힌트, 낚싯대 던지기 버튼, "낚은 번호:" 접두사, "처음부터
+다시 낚시하기", "놓쳤어요! 다시 던져보세요")는 전부 기존 26개 언어 번역을 그대로 재사용하고
+새 문구를 하나도 추가하지 않음 — 이번 세션 판단으로, 게임 메커니즘이 완전히 바뀌어도 텍스트가
+여전히 대략 들어맞고("낚싯대로 번호를 낚는다"는 전제는 유지됨), 26개 언어 번역 리스크(과거
+세션들이 여러 번 지적한 흔한 실수 지점)를 피하는 게 우선이라고 판단함. 못 쓰게 된
+`FISHING_WAITING_MORE`/`FISHING_BITE_PROMPT_MORE`/`FISHING_REEL_PROMPT_MORE`(입질/릴감기 전용
+문구) 3개 다국어 상수와 그걸 쓰던 함수(`enterFishingBiteState`/`handleFishingBiteTap`/
+`enterFishingReelState`/`fishingReelLoop`/`fishingReelFailed`/`initFishingReelHoldEvents`/
+`updateFishingReelGaugeUi`/`hideFishingReelGauge` 등)는 전부 삭제, CSS도 캐스팅/입질/릴감기
+전용 애니메이션(`fishing-rod-swing`/`fishing-bite-wobble`/`fishing-fish-struggle`/릴 게이지
+그러데이션 등)과 `.fishing-btn-urgent` 펄스를 전부 제거해서 죽은 코드가 안 남게 함.
+
+**검증**: `node --check script.js` 통과. Playwright로 전체 흐름 직접 재현 — (1) 판 시작→물고기
+헤엄치는 위치를 실시간으로 읽어 그 좌표로 드래그→릴리스 6번 반복해서 6개 슬롯 전부 정상 채워짐,
+재시작 버튼 라벨("Fish again from scratch") 정상 전환 확인. (2) 의도적으로 먼 위치에서 릴리스해
+"실패" 경로도 확인(상태는 계속 `aiming` 유지, 안내 문구 정상 표시, 판 진행 상태는 안 지워짐).
+(3) 연못에 포커스 후 방향키로 찌가 실제로 이동하는 것 확인(키보드 대체 경로 정상). 콘솔 에러
+0건. 라이트/다크 모드 스크린샷으로 타겟 물고기(발광 효과로 장식용 헤엄 물고기 3마리와 구분)와
+낚싯대 드래그 상태 실제 렌더링 확인. 회귀 테스트(`home_audit` 18·`console_error_audit` 161·
+`i18n_attr_lint` 0후보·`wrap_audit` 168) 전부 `ISSUES: 0`.
+
+변경 파일: `index.html`(연못에 `tabindex="0"` 추가·타겟 물고기 마크업 추가·릴 게이지 마크업
+제거, 캐시버스팅 `20260805-6`→`20260805-7`), `script.js`/`script.min.js`(낚시 상태 머신·조작
+로직 전면 교체, 못 쓰게 된 다국어 상수 3개 삭제), `styles.css`/`styles.min.css`(드래그·타겟
+물고기 스타일 추가, 캐스팅/입질/릴감기 전용 스타일 제거), `sw.js`(`CACHE_NAME` v6→v7).
+
+### 2026-08-05 이어서 — 낚시 미니게임, 동시에 낚을 수 있는 물고기를 1마리 → 최대 3마리로 확장
+
+**배경**: 위 드래그 방식으로 전면 교체한 뒤 사용자가 Artifact 미리보기로 직접 써보다가 "낚싯대
+던지기 자체가 안 된다"고 신고함 — 원인을 재현해보니 **실제 게임 코드 문제가 아니라 미리보기용
+자동 네비게이션 스크립트의 버그**였음: `go(view)`가 매 탭 전환마다 자체적으로
+`scrollIntoView({behavior:'smooth', block:'start'})`를 실행하는데(`script.js` 2134번째 줄
+근처), 미리보기 부트스트랩이 그 스무스 스크롤 애니메이션이 끝나기도 전에 곧바로 낚시 패널로
+또 스크롤을 걸어서 두 스크롤이 충돌 — 실제 버튼은 문서 훨씬 아래(정상 위치에서 11,000px+
+어긋남)에 있는데 화면은 엉뚱한 위치에 멈춰 사용자가 못 찾은 것이었음. 미리보기 부트스트립에
+500ms 지연을 추가해 해결(사이트 코드 자체는 원래 문제 없었음).
+
+문제를 재확인하며 사용자가 "실제로 잡을 수 있는 물고기가 더 많으면 좋겠다"고 요청 →
+동시에 낚을 수 있는 물고기(장식용 헤엄 물고기 3마리와는 별개)를 1마리에서 최대 3마리로
+늘림(`FISHING_MAX_FISH`). 슬롯 배열(`fishingFish[]`, 각자 독립된 위치·방향 상태)로 관리하고
+서로 겹쳐 보이지 않게 슬롯마다 다른 높이(`fishing-target-fish-0/1/2`, CSS `bottom` 다르게)에
+배치. 낚싯대 릴리스 시 활성 물고기 중 가장 가까운 것과 판정(`fishingAttemptCatch`가 최소 거리
+탐색). 물고기 한 마리를 낚아도 **게임 전체를 멈추지 않고 그 슬롯만 잠깐 비웠다가 다시 채움**
+(다른 물고기들은 그동안 계속 헤엄침) — 그래서 기존에 있던 전역 "caught" 잠금 상태 자체가
+필요 없어져서 제거함(상태가 idle/aiming 2개로 더 단순해짐). 남은 번호 수보다 지금 떠 있는
+물고기 수가 적을 때만 슬롯을 다시 채우는 방식이라, 막바지엔 3→3→3→2→1→0으로 자연스럽게
+줄어듦(억지로 항상 3마리를 유지하려다 마지막에 남는 번호보다 물고기가 더 많아지는 부자연스러움
+방지).
+
+**검증**: `node --check script.js` 통과. Playwright로 판 시작 시 3마리 전부 활성화되는 것,
+6번 연속으로 낚으면서 활성 물고기 수가 3→3→3→2→1→0으로 정확히 줄어드는 것, 6개 슬롯 전부
+정상 채워지는 것 확인. 콘솔 에러 0건. 라이트/다크 모드 스크린샷으로 3마리가 서로 다른 높이에
+겹치지 않게 보이는 것 확인. 회귀 테스트(`home_audit` 18·`console_error_audit` 161·
+`wrap_audit` 168·`i18n_attr_lint` 0후보) 전부 `ISSUES: 0`.
+
+변경 파일: `index.html`(타겟 물고기 마크업 1개→3개, 캐시버스팅 `20260805-7`→`20260805-8`),
+`script.js`/`script.min.js`(단일 물고기 상태를 슬롯 배열로 리팩터, 전역 caught 잠금 상태 제거),
+`styles.css`/`styles.min.css`(슬롯별 높이 스타일 추가), `sw.js`(`CACHE_NAME` v7→v8).
+
+### 2026-08-05 이어서 — "결과 더 자세히 보기" 안 중복 정리 (사용자가 스크린샷 보내며
+### "불필요한 부분 정리하고 아코디언도 정리할 수 없을까, 너무 복잡해")
+
+바로 위 세션에서 "3줄 AI 요약"을 추가하고 나니, 같은 "결과 더 자세히 보기" 아코디언 안에
+같은 정보를 세 번 반복하는 구조가 됨 — 사용자가 실제 화면 스크린샷을 보내며 지적함. 코드로
+전수 확인한 뒤 두 곳을 지움(`AskUserQuestion`으로 정리 범위 확인 후 사용자가 "네가 괜찮다는
+거 전부 해줘"로 위임):
+
+1. **세율 상세표 삭제** (`home-tax1/2-label/val` + `home-tax-total-line`, "미국 연방세
+   -30% / 한국 추가 납부 -16.5% / 합계 -39%"): 3줄 요약 두 번째 문장이 이미 같은 두 항목·
+   비율을 말로 풀어주고, 세전→세후 합계 diff(%포함)는 이 아코디언을 펼치기 전부터
+   `result-hero`(`#tax-impact-diff`)에 이미 보이고 있어서 3중 중복이었음. `label1/val1/
+   label2/val2` 변수(3줄 요약이 계속 씀)는 안 건드리고, 이 두 `<p>` id에 대입하던 4줄과
+   `taxImpactPctPrecise`/`home-tax-total-line` 대입만 지움.
+2. **"ℹ️ 미국 로또는 두 가지 방식으로 받아요" 안내박스 삭제** (연금/일시불 정의 목록): 바로
+   위 "일시불 대신 연금으로 받으면?" 아코디언이 이미 같은 내용을 설명 중이라 중복. 그 박스
+   안에서 유일하게 다른 정보였던 "이 계산기는 일시불 기준" 문구(`home.flowExplainNote`
+   i18n 키 그대로 재사용)는 연금 아코디언 안 note로 옮겨 살려둠 — 정보 손실 없이 박스 하나를
+   통째로 없앤 것. 이제 아무도 안 쓰는 `flowExplainTitle`/`flowAnnuityLabel`/
+   `flowAnnuityDesc`/`flowLumpsumLabel`/`flowLumpsumDesc` i18n 키는 `translations.json`에서
+   지우지 않고 남겨둠(다른 화면이 참조할 가능성을 매번 재확인하는 비용 대비 이득이 적음,
+   빌드 산출물 크기 영향도 미미) — 대신 `styles.css`의 전용 CSS 클래스(`.flow-explain*`
+   5개)는 다른 화면에서 안 쓰는 게 확인돼서 지움.
+3. **아코디언 구조 자체는 유지**: 연금(annuity) 안에 30년 지급표가 중첩된 depth 2 구조는
+   "펼친 사람만 더 깊이 볼 수 있는" 의도된 계층이라 안 건드림 — 위 두 항목을 지운 것만으로
+   이 섹션 분량이 확 줄어서 체감 복잡도가 낮아졌다고 판단.
+4. **메타 정보 줄("342M USD 당첨 · 한국 거주자" / "국세청·IRS 공식자료 기반 · 세율·환율")은
+   그대로 둠**: 처음엔 정리 후보로 사용자에게 제시했으나, 코드 확인 결과 `home-final-basis-mini`가
+   공유 이미지 생성(`saveHomeResultAsImage()` 등)에서 다시 읽어가는 값이라 삭제하면 그
+   기능이 깨짐 — 그리고 내용 자체도(이 계산이 어느 나라 기준/어느 환율로 됐는지) 다른 곳에
+   없는 고유 정보라 실제로는 중복이 아니라고 판단해 손 안 댐.
+
+**검증**: `node --check script.js` 통과, `node scripts/build-min.js`로 압축본 재생성,
+Playwright로 이 섹션만 스크린샷 확보(3줄 요약 → 연금 아코디언(30년표 포함) → 당첨자 여러
+명 아코디언 → 원천징수 설명 버튼 → 참고용 문구 순서로 정상 렌더링, 삭제한 두 블록은 화면에
+안 보임 확인). 회귀 테스트 `home_audit`(18)·`console_error_audit`(161)·`wrap_audit`(168)·
+`nav_slider_audit`·`map_scroll_audit`(10)·`faq_audit`(18)·`full_overflow_sweep`(945조합)
+전부 `ISSUES: 0`.
+
+변경 파일: `index.html`(세율표·안내박스 삭제, `flowExplainNote`를 연금 박스 안으로 이동,
+캐시버스팅 `20260805-6`→`20260805-7`), `script.js`/`script.min.js`(`updateHomeCalc()`에서
+해당 4곳 대입 로직 삭제), `styles.css`/`styles.min.css`(`.flow-explain*` 미사용 규칙 5개
+삭제), `sw.js`(`CACHE_NAME` v6→v7).
+
+### 2026-08-05 이어서 — 위 두 갈래(낚시 게임 개편, 결과 화면 중복 정리) 병합 + 캐시버스팅
+### 버전/`CACHE_NAME` 재조정
+
+main이 진행되는 동안 이 세션(낚시 미니게임 작업)이 별도 브랜치에서 나란히 작업 중이었어서,
+병합 시 두 브랜치가 각자 독립적으로 캐시버스팅 버전(`20260805-6`→`-7`/`-8`)과
+`CACHE_NAME`(v6→v7/v8)을 올린 지점이 충돌함 — 실제 코드 충돌은 아니고 같은 줄을 각자 다른
+숫자로 올린 것뿐이라, 두 변경을 합친 최종 결과를 반영해 `20260805-9`/`CACHE_NAME` v9로
+한 번 더 올려서 해결. `index.html`/`script.js`/`styles.css`의 실제 기능 변경 내용은 서로 다른
+영역(낚시 게임 vs 결과 화면 아코디언)이라 충돌 없이 그대로 합쳐짐.
+
+### 2026-08-05 이어서 — 홍보 전략 논의(제미나이/GPT 교차검수) 중 나온 제안 2개 실행:
+### GA4 유입→계산→공유 퍼널 이벤트 + 결과 인용 출처 표기
+
+**배경**: 사용자가 GSC 지표(28일 노출 32·클릭 1)를 보고 홍보 전략을 세우다가, 제미나이·GPT
+양쪽에 검수를 요청함(검수 파일+실사이트 스크린샷 4장 전달, `SendUserFile`로 별도 제공,
+저장소에는 안 남김 — 공개 저장소 부적절 내용은 아니지만 홍보 전략 문서 자체가 이 프로젝트
+코드/사이트와 무관해서 스크래치패드에만 둠). 양쪽 다 "지금 병목은 기능이 아니라 노출/유통"
+이라는 결론에 수렴했고, 그중 **코드로 바로 실행 가능한 제안 2개**만 골라 반영함(만료 도메인
+매입[구글 스팸정책 위반 확인, WebSearch], 이메일 뉴스레터 수집[개인정보 부담으로 이미 배제
+결정] 등 리스크 있는 제안은 명시적으로 제외).
+
+1. **GA4 커스텀 이벤트 3개 추가** (`trackEvent(name, params)` 헬퍼 신설, script.js 최상단):
+   - `calculate_amount` — `onHomeAmountTyped()`에서 타이핑 멈춘 뒤 1.2초 디바운스(리사이즈
+     디바운스와 같은 패턴, `_calcTrackDebounceTimer`) 후 1회만 발생. 매 키 입력마다 쏘면
+     노이즈만 커져서 디바운스 필수.
+   - `share_result` — `shareResult()` 진입 시.
+   - `save_result_image` — `saveHomeResultAsImage()` 진입 시.
+   - 그동안 `gtag('config', ...)`만 있어서 페이지뷰만 잡히고 "몇 명이 실제로 계산/공유까지
+     했는지"는 전혀 측정 불가능했음(사용자가 "유입→계산→공유 퍼널을 측정해야 한다"고 지적한
+     그 결핍). 개인정보처리방침에 Google Analytics 사용이 이미 고지돼있어(`privacy.b4`/`b5`)
+     새 동의·고지 불필요 — 이벤트 이름만 추가하는 것이라 광고 정책상 문제 없음. `gtag`가 없는
+     환경(광고 차단기 등)에서도 조용히 무시하도록 `typeof gtag === 'function'` 가드 처리.
+2. **결과 카드 인용 출처 표기 문구 신설** (`home.citationNote`, 26개 언어): "결과 더 자세히
+   보기" 맨 아래 기존 `sim-note`(세무 전문가 상담 권유) 바로 밑에 "📎 인용·보도 시 출처를
+   'ChamTax(chamtax.com)'으로 표기해 주세요" 한 줄 추가. **"이미지로 저장" 카드는 이미
+   `buildHomeResultCheckCanvas()`가 상단 밴드에 로고+`chamtax.com`을 그려 넣고 있어서
+   따로 손 안 댐**(코드 확인 후 판단 — 이미지 공유 경로는 이미 출처가 박혀있음, 이 문구는
+   사이트를 직접 보고 텍스트로 인용하는 기자/블로거 대상). 새 i18n 키라 `i18n_coverage_audit.js`
+   로 763개 키 전부(신규 1개 포함) 26개 언어 커버리지 확인함.
+
+**검증**: `node --check script.js`, `i18n_coverage_audit.js`(763 keys, ISSUES: 0),
+회귀 테스트 7개(`home_audit`(18)·`console_error_audit`(161)·`wrap_audit`(168)·
+`nav_slider_audit`·`map_scroll_audit`(10)·`faq_audit`(18)·`full_overflow_sweep`(945조합))
+전부 `ISSUES: 0`. Playwright로 새 인용 문구 한/영 렌더링 직접 확인 + 이미지저장 버튼 클릭
+시 콘솔 에러 0건 확인(GA 이벤트가 예외를 던지지 않는지 스모크 테스트).
+
+변경 파일: `index.html`(인용 문구 `<p>` 추가, 캐시버스팅 `20260805-7`→`20260805-8`),
+`script.js`/`script.min.js`(`trackEvent()` 헬퍼 신설 + 3개 호출부 추가),
+`i18n-source/translations.json`/`i18n/*.json`(`home.citationNote` 26개 언어 신규),
+`sw.js`(`CACHE_NAME` v7→v8).
+
+### 2026-08-05 이어서 — 위 GA4/인용 문구 작업이 main의 낚시 게임 병합(v9)과 다시 나란히
+### 진행돼있어서 재병합 + 캐시버스팅 `20260805-10`/`CACHE_NAME` v10으로 재조정
+
+바로 위 항목(GA4+인용 문구, `20260805-8`/v8)을 별도 브랜치에서 작업하는 동안 main이 이미
+한 번 더 앞서 나가(낚시 게임 병합 시 `20260805-9`/v9로 조정된 상태) 있었음 — 같은 종류의
+독립적 버전 충돌이 반복된 것뿐(실제 코드 충돌 아님). 두 라인을 합친 최종 결과를 반영해
+`20260805-10`/`CACHE_NAME` v10으로 한 번 더 올려서 해결. `script.js`는 자동 병합됨(낚시
+게임과 GA4/인용 문구가 서로 다른 함수를 건드려서 충돌 없음).
+
+### 2026-08-05 이어서 — 홍보 전략 실행: IndexNow 연동 + GitHub 공개 데이터 저장소 + 기자용
+### 미디어킷 페이지(`press-kit.html`) 신설
+
+앞선 홍보 전략 논의(제미나이/GPT 교차검수)에서 나온 "제가 코드로 바로 할 수 있는 것들"을
+이어서 처리함.
+
+1. **IndexNow 연동** (`.github/workflows/indexnow.yml` 신규): HTML/`sitemap.xml`이 main에
+   push될 때마다 Bing·Yandex·Naver 등 IndexNow 참여 검색엔진에 sitemap.xml의 88개 URL을
+   자동 제출. 도메인 소유 증명용 키 파일(`9eb667e49373bae82b27cb8821ef4b83.txt`, 저장소
+   루트 — **절대 지우거나 이름 바꾸지 말 것**, 지우면 이후 ping 전부 실패함)을 실제
+   `chamtax.com`에 배포하고, 진짜 API 호출로 **202 Accepted** 응답까지 확인해서 파이프라인
+   전체가 실제로 작동하는 것을 검증함.
+2. **GitHub 공개 데이터 저장소** (`github.com/semilee123456-ui/us-lottery-tax-data`, 별도
+   저장소): 21개국 세율 비교 데이터셋(README.md/data.json/data.csv)을 코드 세션이 직접
+   생성 — 손으로 옮겨적지 않고 `calcTakeHome()`(script.js)을 Playwright로 직접 호출해서
+   뽑은 값이라 라이브 계산기와 항상 일치함. **이 저장소는 이 코드 저장소(`semilee123456-ui.
+   github.io`)와 별개**이니 다음 세션이 착각해서 이 안에서 해당 파일들을 찾지 말 것.
+   생성 경위: (1) `mcp__github__create_repository`로 새 저장소 생성 시도 → 403(이 세션
+   GitHub 앱 권한에 "저장소 생성"이 없음) → 사용자가 직접 GitHub 웹에서 저장소 생성. (2)
+   생성된 빈 저장소에 `mcp__github__push_files`로 직접 업로드 시도 → "세션 스코프에 없는
+   저장소" 거부 → `add_repo`(access:push)로 세션에 추가 → clone은 성공(공개 저장소라
+   인증 없이도 읽기 가능)했지만 **`git push`는 여러 번 시도해도 403** (이 세션의 git
+   자격증명이 새로 추가된 저장소의 쓰기 권한까지는 아직 못 따라온 것으로 추정, 원인 특정
+   못 함) → 결국 사용자가 GitHub 웹 UI "Upload files"로 직접 3개 파일 업로드해서 완료.
+   **교훈**: 이 세션은 기존에 스코프돼있던 저장소(`semilee123456-ui.github.io`) 밖의
+   새 저장소에 대해 읽기(clone)는 되지만 쓰기(push)는 안 되는 것으로 보임 — 다음에 또
+   새 저장소를 만들 일이 있으면, 자동 push를 여러 번 재시도하며 시간 쓰지 말고 적당히
+   시도해보고 안 되면 바로 "직접 업로드해주세요"로 넘어갈 것.
+3. **기자/블로거용 미디어킷 페이지** (`press-kit.html` 신규): 잭팟 뉴스가 터질 때마다
+   매번 급하게 자료를 만드는 대신, 항상 참조 가능한 고정 페이지 하나를 만듦 — 21개국
+   실수령률 비교표(위 GitHub 데이터셋과 동일한 스냅샷, "AS OF 날짜" 명시), 브랜드
+   에셋(로고·og-image) 다운로드, 인용 안내, "오늘 정확한 잭팟 금액은 실시간 계산기에서"
+   CTA. **다른 89개 랜딩 페이지와 다르게 이 페이지는 의도적으로 `<meta name="robots"
+   content="noindex">`이고 `sitemap.xml`에도 안 넣음** — 표 내용이 실시간이 아니라
+   스냅샷이라, 검색엔진이 색인해서 최신 계산기/랜딩페이지들과 검색 결과에서 경쟁하게 두면
+   오히려 오래된 정보가 노출될 위험이 있어서(기자에게 링크를 직접 전달하는 용도로만 씀).
+   영어로만 작성함(다른 랜딩페이지들과 달리 26개 언어 대상이 아니라 국제 언론/블로거
+   대상이라 의도적으로 영어 단일). **표 안 21개국 데이터는 위 GitHub 저장소와 완전히
+   같은 스냅샷(2026-08-05 기준)이라, 나중에 세율이 바뀌어 하나를 갱신하면 반드시 다른
+   하나도 같이 갱신할 것** — 이 프로젝트가 반복해온 "여러 곳에 흩어진 같은 데이터가
+   따로 놀게 되는" 사고 패턴과 정확히 같은 유형이니 주의.
+
+**검증**: `broken_link_audit.js`(91개 파일, ISSUES: 0), Playwright로 press-kit.html
+라이트/다크 모드 렌더링 확인 + 콘솔 에러 0건(첫 시도에서 본 net::ERR_CONNECTION_RESET
+몇 건은 재현 안 돼서 일시적 네트워크 노이즈로 판단, 기존 페이지 대비 대조군 테스트로 재확인).
+
+변경 파일: `.github/workflows/indexnow.yml`(신규), `9eb667e49373bae82b27cb8821ef4b83.txt`
+(신규, IndexNow 키 파일), `press-kit.html`(신규). GitHub 저장소 `us-lottery-tax-data`는
+이 저장소 밖이라 커밋 이력에 안 잡힘(위 2번 항목 참고).
+
+### 2026-08-05 이어서 — GitHub 앱 권한 확장: `us-lottery-tax-data`도 이제 이 세션이 직접 push 가능
+
+바로 위 2번 항목에서 "이 세션은 `semilee123456-ui.github.io` 밖 저장소엔 push 권한이 없다"고
+적었는데, 사용자가 GitHub 계정 설정(`github.com/settings/installations` → Claude 앱 →
+Configure → Repository access)에서 `us-lottery-tax-data`를 명시적으로 추가해줘서 해결됨
+(처음엔 "All repositories"로 바꾸려다, 계정에 다른 민감한 저장소가 생길 경우 대비해
+"Only select repositories" + 필요한 저장소만 추가하는 쪽을 권해서 그렇게 함 — 최소 권한
+원칙). `mcp__github__create_or_update_file`로 테스트 커밋(`.gitattributes`)이 실제로
+성공하는 것까지 확인함. **다음 세션이 새 GitHub 저장소를 또 만들 일이 있으면**: 이전처럼
+"이 세션은 새 저장소에 못 씀"이라고 바로 포기하지 말고, 먼저 push 시도해보고 안 되면
+위 경로로 저장소를 추가해달라고 요청할 것 — 매번 zip 파일 우회로 갈 필요 없음.
+
+**이 세션에서 실행한 전체 작업 요약** (다음 세션이 빠르게 파악할 수 있도록):
+1. "결과 더 자세히 보기" 세율표·안내박스 중복 제거 (커밋 `23344cb`)
+2. GA4 계산/공유 퍼널 이벤트 + 결과 인용 출처 표기 (`ec0483c`)
+3. IndexNow 연동, Bing/Yandex/Naver 자동 재크롤 요청 (`7484b12`)
+4. 기자/블로거용 미디어킷 페이지 `press-kit.html` 신설 (`1012ae7`)
+5. GitHub 공개 데이터셋 저장소 `github.com/semilee123456-ui/us-lottery-tax-data` 신설
+   (이 저장소 밖, 커밋 이력 없음 — README.md/data.json/data.csv/.gitattributes 4개 파일)
+
+전부 main에 병합·배포 완료, 회귀 테스트 전부 통과. 다음 세션에 남은 일 없음 — 사용자가
+제미나이/GPT 검수 결과를 더 가져오면 그때 이어서 우선순위 논의.
+
+### 2026-08-05 이어서 — index.html 다국어 SSG 리팩터 설계안 검수 후 보류 → 89개 랜딩페이지
+### SEO 감사·수정으로 우선순위 전환, "극단적 자동화 마케팅" 제안은 대부분 거절
+
+**SSR/SSG 리팩터 검토 → 보류**: "index.html이 크롤러에게 항상 한국어로만 보이는 구조적
+한계"를 완전히 고치려는 빌드 시점 프리렌더링(`/en/` 서브디렉토리 등) 설계안을 작성해
+제미나이 교차검수를 받음 → "지금 병목은 JS 렌더링이 아니라 도메인 권위·유입 트래픽 부족"
+이라는 반박을 받고 보류로 결론(자세한 내용은 위 "알려진 미해결 항목"의 SEO 섹션 2026-08-05
+후속 참고). **재검토 전 GSC "URL 검사"로 실제 렌더링 여부부터 확인할 것**이 선행 조건으로
+남음.
+
+**89개 랜딩페이지 SEO 감사·수정**: 위 검수가 권고한 "먼저 이미 있는 랜딩페이지부터"를 실행.
+서브에이전트로 87개 전수 감사(구조는 이미 튼튼함 — H1/H2/canonical/sitemap/CTA 링크 6개
+항목 전부 문제없음 확인) → 제미나이 재검수 받고 확정된 3가지를 서브에이전트가 실제 수정·
+커밋(사용자가 diff 확인 없이도 진행 가능하도록 "완료되면 병합" 사전 승인받음): (1) 고립된
+국가거주자 페이지 18개 중 14개에 관련링크 추가, (2) "한국거주 외국인" 22개 메타설명을
+이중과세/FTC 키워드로 재작성, (3) SERP 절단 위험 있던 42개 메타설명을 스크립트별 기준으로
+압축. 메인 세션이 각 커밋마다 `broken_link_audit.js`/`fact_consistency_audit.js`로
+재검증 후 main 병합·배포함(커밋 `ffa3737`/`7d2d3c6`/`6c011dc`/`94b0132`). 미완료 항목
+4가지(저자원 언어 4개 국가 페이지 스킵, og:description 미반영 등)는 위 "알려진 미해결
+항목"에 기록. **GSC 색인 요청은 사용자가 직접 해야 함(대시보드 작업).**
+
+**"극단적 자동화 마케팅" 제안 거절**: 외부 AI가 제안한 SNS 자동 댓글 봇/기자 이메일 자동
+대량발송/24시간 무인 AI 파이프라인 등을 대부분 거절함(플랫폼 ToS 위반·기존 방침과 충돌·
+실제 유료 계정 필요 등 이유, 자세한 내용은 위 "향후 아이디어 백로그"의 해당 항목 참고).
+임베드 위젯만 긍정 검토했으나 아직 착수 안 함.
+
+전부 main에 병합·배포 완료. 다음 세션 우선순위: (1) 사용자가 GSC에서 신규 URL 색인 요청,
+(2) 캄보디아/라오스/미얀마/스리랑카 4개 국가 관련링크는 원어민 검수 가능해지면 마저 진행,
+(3) 임베드 위젯 착수 여부는 사용자 확인 대기 중.
+
+### 2026-08-05 이어서(다른 세션, 병렬 작업) — "이미지로 저장" 카드 폰트 확대 + 낚시 게임 조작
+### 안내 부족(진짜 사용자 신고) 수정
+
+**위 SEO 감사 세션과 같은 시각대에 별도 브랜치(`claude/github-handover-docs-n0q7q2`)에서
+나란히 진행됨** — 건드린 파일이 서로 겹치지 않아(SEO 세션은 랜딩페이지 89개, 이 세션은
+`script.js`/`styles.css`/`index.html`의 낚시 게임·저장 카드 부분) merge 시 실제 충돌 없이
+자동 병합됨(이 문서 자체의 "작업 이력" 섹션만 둘 다 맨 아래에 추가해서 텍스트 충돌 — 두 항목
+그대로 순서대로 남김).
+
+**배경 1 — 이미지로 저장 카드**: 사용자가 "꾸며서 저장하기" 모달 스크린샷을 보내며 "40~60대
+타겟인데 글씨가 작은 것 같다, 홈페이지 전부 확인해달라"고 요청. 홈 화면 CSS는 이미
+`--fs-small:16px`(시니어 가독성 최소 floor)를 전역 변수로 강제하고 있어서(`styles.css`
+:root 선언, index.html에 인라인 font-size 하드코딩 0건 확인) 문제 없음을 코드로 확인 —
+9~13px로 찍힌 것들은 전부 원형 아이콘 버튼/배지/낚시 장식 등 순수 장식 요소였음. 실제
+문제는 `buildHomeResultCheckCanvas()`(script.js)가 그리는 캔버스 이미지 — CSS 변수를 안 타는
+하드코딩 픽셀값이라 별도로 확인해야 했음. `basisMini`("342M USD 당첨 · 한국 거주자") 16→19px,
+`payToLabel`("받는 사람") 18→21px, 날짜/수표번호 줄 13→15px, MEMO 라벨/문구 12→13px·13→15px,
+서명 라벨 11→13px로 각각 확대(최소값도 비례해서 같이 올림). "받는 사람" 밑줄은
+`payToLabelW`를 그린 직후 다시 측정해서 자동으로 위치가 맞춰지므로 별도 좌표 보정 불필요.
+캔버스를 직접 `toDataURL()`로 export해서 실제 픽셀 스크린샷으로 겹침·잘림 없음 확인함.
+
+**배경 2 — 낚시 게임 "눌러도 반응 없다" 신고**: 같은 대화 중 사용자가 "낚싯대 던지기를 눌러도
+아무 변화가 없고 직접 낚싯대를 눌러야 되는 것 같다"고 신고, "인기 있는 방식(입질 오면 탭)으로
+차라리 바꾸자"고 제안. 코드 확인 결과 게임 로직 자체는 정상(사용자가 이미 직접 드래그로 5개
+낚았음) — 진짜 원인은 2가지: (1) `.cta-btn`에 `:disabled` 스타일이 전혀 없어서, 판 진행
+중(`aiming` 상태) 의도적으로 비활성화된 버튼이 눌러도 되는 멀쩡한 버튼처럼 보임. (2) 판
+시작 후 실제 조작(연못을 눌러서 드래그)을 알려주는 안내가 어디에도 없음 — 상단 문구는 "낚싯대를
+던져서 낚아보세요" 한 줄뿐이고 드래그를 언급 안 함. **"인기 있는 방식으로 되돌리자"는 제안은
+채택 안 함**(AskUserQuestion으로 사용자에게 직접 확인받고 "지금 방식 + 안내 보강"을 선택받음) —
+2026-08-05 앞선 세션이 시간 압박 있는 탭 방식(캐스팅→입질탭→릴감기)을 "자꾸 놓쳐요" 불만으로
+이미 걷어내고 지금의 무제한시간 드래그 방식으로 바꾼 전례가 있어서, 되돌리면 그 문제가 재발할
+위험이 큼 — 지금 필요한 건 메커니즘 교체가 아니라 안내 보강이라고 판단.
+- `.cta-btn:disabled{ opacity:0.5; cursor:not-allowed; }` 추가(styles.css) — 낚시 버튼뿐 아니라
+  `#lightning-draw-btn`("뽑는 중...") 등 다른 disabled 버튼에도 동일하게 적용돼 일관성도 개선.
+- `#fishing-drag-hint`(👆 아이콘) 신규 — 판이 시작되면(`castFishingLine()`) `.show` 클래스를
+  붙여 찌 옆에서 좌우로 스윽 움직이는 CSS 애니메이션으로 "여기를 눌러서 밀어보세요"를 알려주고,
+  사용자가 연못을 처음 눌러보는 순간(`fishingDragStart()`) 바로 사라짐(`pointer-events:none`이라
+  힌트를 눌러도 그 아래 드래그가 그대로 시작됨). **문구 대신 아이콘만 써서 26개 언어 번역이
+  전혀 필요 없음** — 2026-08-05 낚시 게임 리팩터 세션이 세운 "게임 문구는 새로 안 만들고
+  기존 번역 재사용" 원칙과 같은 이유(번역 리스크 회피)를 시각적 해법으로 지킨 것.
+  `prefers-reduced-motion`에서는 애니메이션 없이 항상 보이게 처리.
+
+**검증**: `node --check script.js` 통과, `node scripts/build-min.js`로 압축본 재생성. Playwright로
+(1) 판 시작 전 버튼 opacity 1·힌트 안 보임 (2) 판 시작 후(aiming) 버튼 opacity 0.5·cursor
+not-allowed·힌트 표시 (3) 연못을 실제로 눌러 드래그 시작하면 힌트 즉시 사라짐, 3단계 전부
+스크린샷으로 확인. 회귀 테스트 12개 전부 `home_audit`(18)·`faq_audit`(18)·`audit_odds_compare`(40)·
+`wrap_audit`(168)·`console_error_audit`(161)·`map_scroll_audit`(10)·`nav_slider_audit`·
+`lang_leak_audit`(104)·`i18n_coverage_audit`(763키)·`i18n_attr_lint`·`broken_link_audit`(91)·
+`draw_archive_integrity_check`·`fact_consistency_audit`(95) `ISSUES: 0`.
+
+변경 파일: `index.html`(낚시 힌트 마크업 추가, 캐시버스팅 `20260805-10`→`20260805-11`),
+`script.js`/`script.min.js`(캔버스 폰트 크기 확대, 낚시 힌트 show/hide 로직),
+`styles.css`/`styles.min.css`(`.cta-btn:disabled`, `.fishing-drag-hint` 스타일·애니메이션),
+`sw.js`(`CACHE_NAME` v10→v11). 커밋 `ae41b32`.
+
+### 2026-08-05 이어서(다른 세션, `claude/github-work-review-d175at` 브랜치) — 홍보/SEO
+전면 점검: 잭팟 데이터 갱신, 신규 콘텐츠 페이지, HTML 사이트맵, 검색엔진 등록까지
+
+**배경**: 사용자가 "혼자 할 수 있는 홍보 다 해달라"는 요청으로 시작해서, 코드 레벨 SEO부터
+Google/Naver/Bing/Daum/Yandex 검색엔진 등록, Kaggle 데이터셋 업로드까지 한 세션 안에서
+쭉 이어짐(대화가 매우 길어서 아래는 실제로 실행·반영된 것만 요약, 검토만 하고 기각한
+아이디어는 생략).
+
+**1. 사이트 정합성 점검 및 데이터 최신화**
+- `sitemap.xml`의 `lastmod` 88건이 실제 파일 최종 수정일과 안 맞던 것 발견 → git log 기준으로
+  전부 동기화(`4270ce4`).
+- 메가밀리언즈 8/4 회차(14,21,51,55,65/MB21) 결과가 `LATEST_DRAW`/`JACKPOT_DATA`/
+  `odds-data.js` 아카이브 어디에도 반영 안 된 상태였음 — 사용자가 스크린샷으로 알려줘서
+  발견, valottery.com(버지니아주 공식)+DraftKings 교차검증 후 반영. 잭팟 $60M→$70M(현금
+  $29.7M), `draw_archive_integrity_check.js` 통과 확인(`a49f9ef`). **참고**: 이 저장소엔
+  이미 "메가밀리언즈 잭팟 갱신 체크"(수·토 UTC 15:03)·"파워볼 잭팟 갱신 체크"(일·화·목
+  UTC 15:07) Routine이 떠 있어서 원래 자동으로 처리될 예정이었는데, 사용자가 스크린샷으로
+  먼저 물어봐서 그 전에 수동으로 처리한 것 — 다음에 이 Routine이 돌 때 "이미 최신"이라 조용히
+  종료될 것이므로 정상.
+- `tests/faq_audit.js`가 `page.goto()`에 `waitUntil` 옵션이 빠져 있어(기본값 `load`) 네트워크
+  제한 샌드박스에서 광고/폰트CDN/환율API가 pending 상태로 안 끝나서 영원히 멈추는 버그 발견·
+  수정(다른 audit 스크립트들처럼 `domcontentloaded`로 통일). 태국어 페이지
+  (`thai_in_korea_lottery_tax.html`) meta description이 179자로 SERP 절단 구간이었던 것도
+  같이 발견해 138자로 압축, og/twitter description 동기화(`45b7ca6`).
+- `llms.txt`(AI 검색엔진용)에 "22 languages"라고 적혀있던 게 실제 26개(i18n/*.json 기준)와
+  안 맞던 걸 발견해 정정, 오픈 데이터셋 저장소(`us-lottery-tax-data`) 링크도 누락돼있어서
+  추가(`566d3fa`).
+- `og:image`/`twitter:image` 180개 참조, CSS `url()` 참조, `ads.txt`, `sw.js` 캐시 범위를
+  전부 추가로 감사 — 전부 이상 없거나(og:image 전부 정상 파일 참조) 의도된 설계(서비스워커는
+  index.html 하나만 담당, 랜딩페이지는 원래 범위 밖)로 확인됨.
+
+**2. 신규 콘텐츠 페이지 — `lottery-prize-tiers.html`("등수별 당첨금 총정리")**
+후보 주제 4개(등수별 당첨금/일시불vs연금 심화/주별 세율 순위표/해외 구매 방법)를
+`GEMINI-REVIEW-new-content-page-2026-08-05.md`에 정리했었는데(`2bc8cde`), 그중 리스크가
+제일 낮은 걸 골라 바로 진행 — `script.js`의 `PRIZE_TIERS`(계산기 확률체감 탭이 실제로 쓰는
+검증된 데이터)를 그대로 재사용해서 새 사실관계 검증 없이 작성. "아무 등수나 당첨될 확률"
+(파워볼 1/25, 메가밀리언즈 1/23)은 `PRIZE_TIERS`의 등수별 확률을 직접 합산해서 계산 — 외부
+소스 대신 사이트 자체 데이터와 내적으로 일관되게 함. sitemap 등록, 관련 페이지 4곳에
+상호링크, Playwright로 6개 너비×라이트/다크 렌더링 검증(`6bb3f5f`). 전용 OG 공유카드 이미지도
+Playwright로 HTML→스크린샷 생성해서 추가했는데, 처음엔 파비콘용 단순 마스코트 아이콘을
+썼다가 사용자가 "지금 홈페이지 로고 쓴 거 맞아?"라고 물어봐서 확인해보니 실제 `index.html`
+네비게이션 로고(볼터치·눈 하이라이트 있는 디테일 버전)와 다른 걸 발견 — 정확한 SVG로
+다시 렌더링함(`9767287`→`acc7856`).
+
+**3. 임베드 위젯 — `widget-embed.html`**
+외부 블로거가 `<iframe>`으로 가져다 붙일 수 있는 미니 계산기. 전체 계산 엔진(21개국)을
+복제하지 않고 `press-kit.html`의 이미 검증된 "Reference scenario ~$100M" 참고치 7개국만
+재사용하는 티저 방식으로 설계(정밀 계산 대신 "정확한 계산은 본 사이트에서" CTA로 유도) —
+계산 로직을 두 곳에 따로 유지하면서 세율 갱신할 때 한쪽을 빠뜨리는 이 저장소의 반복된
+실수 패턴을 피하기 위함. `noindex` 처리(검색 노출용 아님). **사용자에게 솔직하게 전달한
+것**: 이 위젯은 만들어놓기만 하면 아무 효과 없고, 사용자가 직접 블로거 등에게 배포해야만
+가치가 생김(`2fddaca`).
+
+**4. `README.md` 신규 작성**
+`github.com/semilee123456-ui/semilee123456-ui.github.io`를 직접 열면 설명 하나 없이 파일
+목록만 보이는 상태였음 — `us-lottery-tax-data` 저장소 README가 이미 "이게 chamtax.com
+원본 데이터"라며 이 저장소로 링크 걸고 있는데 정작 도착하면 빈손이라 발견. 프로젝트 설명,
+핵심 수치, 오픈 데이터셋/임베드 위젯/llms.txt 링크, 기술 스택 개요 정리(`adbf78d`). GitHub
+저장소 설명(description)·topics 태그는 이 세션의 도구로 편집 불가(API 접근 자체가 없음
+확인함) — 사용자가 직접 About 옆 톱니바퀴로 설정.
+
+**5. `sitemap.html`(HTML 사이트맵) 신규 + 전체 페이지 상호링크**
+제미나이 검수(사용자가 별도로 물어봄) 의견으로 "91개 페이지 중 87개가 index.html에 정적
+`href`로 안 걸려있고 JS 드롭다운을 통해서만 도달 가능 — 크롤링 고립(Orphan Pages)" 지적을
+받고 실제로 검증(index.html 정적 링크 3개뿐, script.js가 동적으로 45개는 만들어주지만
+JS 실행 안 하는 크롤러엔 안 보임) → sitemap.xml의 89개 URL을 카테고리별(핵심 도구/21개국
+거주자별/한국거주 외국인용 27개 언어/해외거주 한국인용/26개 언어 초보가이드/영중 버전)로
+정리한 사람이 읽는 정적 페이지 신규 제작(`sitemap.html`, noindex 안 걸어서 색인 허용).
+90개 콘텐츠 페이지(+404.html, 부수효과) 전부의 `related-links` 블록에 "전체 사이트맵" 링크를
+각 페이지 `html lang` 속성 기준으로 27개 언어 번역해 스크립트로 일괄 삽입. `index.html`은
+SPA라 `related-links` 패턴이 없어서 `.site-footer .footer-links`에 별도로 "Sitemap" 링크
+추가 — 근데 CSS가 `.footer-links button`만 스타일링하고 있어서 `a` 태그가 안 먹혀서
+`styles.css` 3곳도 같이 수정(`a` 선택자 추가), `build-min.js` 재빌드, 캐시버스팅
+`20260805-11`→`20260805-12`. 전체 정적 감사+Playwright 렌더링 검증 이슈 0건(`7d1f175`).
+
+**6. 라이브 사이트 직접 검증(제미나이가 준 체크리스트를 curl로 직접 확인)**
+이 샌드박스의 Playwright 브라우저는 외부 인터넷(라이브 chamtax.com)에 직접 접속이 안 되지만
+(faq_audit.js 조사 때 이미 발견한 제약), `curl`은 프록시를 타서 라이브 사이트 접근 가능 —
+www→비www 301, http→https 301, 파비콘/apple-touch-icon 응답, 라이브 OG 태그·이미지 로드
+전부 정상 확인. **제미나이가 "문의 이메일(support@chamtax.com)로 테스트 메일 보내보라"고
+제안했는데, 그런 이메일 주소는 사이트 어디에도 없음을 확인**(실제 문의 방식은
+`formspree.io` 폼) — 잘못된 전제를 사용자에게 바로잡아 전달함.
+
+**7. Yandex Webmaster 소유권 인증 파일**
+사용자가 Yandex Webmaster에서 받은 HTML 파일 인증 코드를 이 세션이 저장소에 직접
+추가·배포(`e3155d7`) — 라이브 반영까지 curl로 확인. 사용자가 처음 "Verify" 눌렀을 때
+"service is temporarily unavailable" 에러가 났는데, YandexBot User-Agent로 직접 요청해도
+200 정상 응답이라 우리 쪽(Cloudflare 등) 문제가 아니라 Yandex 쪽 일시 장애로 판단 — 나중에
+재시도해서 성공, sitemap.xml도 Yandex에 제출 완료.
+
+**8. 검색엔진/외부 플랫폼 등록 현황 (사용자가 직접 실행, 이 세션이 화면 캡처 보고 안내)**
+- 구글 서치콘솔·네이버 서치어드바이저·빙 웹마스터도구: 이미 등록돼 있었음(사용자가 세션
+  시작 전에 완료). 이 세션에서 신규 페이지 2개(`lottery-prize-tiers.html`, `sitemap.html`)
+  색인 요청 완료.
+- 다음(Daum)/카카오 웹마스터도구: 신규 등록 + "수집요청" 탭에서 `sitemap.xml` 제출 완료
+  (첫 시도는 "문서등록" 박스에 잘못 넣어서 "중복 URL" 에러 났었는데, 나중에 올바른 박스
+  ("수집 Seed URL 등록 (사이트맵)")로 재시도해서 성공).
+- Yandex Webmaster: 위 7번 항목대로 인증·제출 완료.
+- **ZUM**: 제미나이가 처음 준 URL(help.zum.com/submit 등)이 전부 404 — WebSearch로 실제
+  주소(`help.zum.com/search/site/register`)를 찾아도 마찬가지로 404. 사용자가 직접 확인한
+  결과 **ZUM은 수동 URL 제출 서비스를 공식 종료**했고 지금은 Bing 색인·자체 크롤러로만
+  자동 수집 — 이미 Bing 등록이 끝나 있어서 별도 조치 불필요로 결론.
+- **바이두(Baidu)**: WebSearch로 확인한 결과 2022년 5월부터 중국 본토 휴대폰 번호로만 가입
+  가능(해외 번호·이메일 가입 전부 불가) — 한국 번호로는 가입 자체가 안 됨. ICP 备案 없이는
+  설령 가입해도 노출이 잘 안 되는 구조. **결론: 스킵, 대신 이미 등록된 Bing이 중국어권
+  IT/재테크 관심층을 어느 정도 커버**(사이트에 이미 `us-lottery-basics-zh.html`,
+  `china-resident-us-lottery-tax.html` 등 중국어 콘텐츠 다수 존재).
+- **GitHub 저장소**: Description, Website(`https://chamtax.com`), Topics(`lottery`
+  `powerball` `tax-calculator` `mega-millions`) 사용자가 직접 채움(중간에 자동완성으로
+  `mega-millions-drawing-tonight`이 잘못 들어간 걸 발견해서 바로잡음).
+- **Kaggle**: 사용자가 신규 가입(표시 이름은 실명 대신 "ChamTax"로 설정 추천해서 그렇게 함)
+  → `us-lottery-tax-data`의 `data.csv`/`data.json`을 데이터셋으로 업로드. Title(50자
+  제한 걸려서 "US Lottery Jackpot Take-Home Tax by Country (21 Countries)"→"US Lottery
+  Jackpot Tax by Country"로 축약), Subtitle, Description(README 기반), License(CC0),
+  Tags(Finance/Government/Economics/Lottery — "taxes"·"tax" 검색은 결과 없어서 스킵), 이
+  세션이 Playwright로 만들어준 564×284 전용 썸네일 이미지까지 전부 채워서 Public 게시 완료.
+
+**사용자가 명시적으로 거절/보류한 것**: Kaggle 등 새 계정으로 "막 홍보 다니는" 느낌이 부담
+된다고 해서, 신규 계정으로 무리하게 활동하는 것 자제 — 이 세션도 "한 번 올리고 끝, 정기적
+활동 불필요"라고 명확히 안내함. 중국 커뮤니티(즈후·바이두톄바) 직접 홍보도 언어 장벽+같은
+이유로 제안했다가 기각. Wikidata 시딩은 애초에 스팸 리스크로 제안조차 안 함.
+
+**검증**: 매 커밋마다 `node tests/broken_link_audit.js`·`fact_consistency_audit.js`·
+`i18n_coverage_audit.js` 재실행(전부 이슈 0건 유지 확인), JSON-LD 유효성 전수 검사, XML
+유효성 검사. `sitemap.html` 신규 작업은 Playwright로 5개 너비×라이트/다크 렌더링 확인.
+
+변경 파일(주요 커밋 순): `4270ce4`(sitemap.xml lastmod), `a49f9ef`(메가밀리언즈 데이터),
+`45b7ca6`(faq_audit.js, thai 메타설명), `566d3fa`(llms.txt), `2bc8cde`(GEMINI-REVIEW 파일
+신규), `6bb3f5f`(lottery-prize-tiers.html 신규 + sitemap.xml + 관련페이지 4곳), `9767287`→
+`acc7856`(전용 OG 이미지), `2fddaca`(widget-embed.html + press-kit.html), `adbf78d`
+(README.md 신규), `7d1f175`(sitemap.html 신규 + 90개 페이지 관련링크 + index.html 푸터 +
+styles.css + 캐시버스팅 20260805-12), `e3155d7`(yandex 인증 파일). 전부
+`claude/github-work-review-d175at` 브랜치에서 작업 후 매번 즉시 main에 fast-forward
+merge(사용자가 세션 초반에 "sitemap.xml lastmod 수정을 main에 바로 병합해도 되냐"는
+질문에 승인한 것을 이후 전체 세션의 기본 워크플로로 그대로 유지함 — PR 안 거치고 직접
+`git push origin HEAD:main`).
+
+### 2026-08-05 이어서 — Dataset 구조화 데이터 추가 + 90개 페이지 로고 아이콘 통일 +
+Kaggle/Disquiet/GeekNews 실제 게시 진행
+
+위 세션 바로 이어서 진행. 토큰 절약을 위해 이번 항목은 간략히만 기록.
+
+- **Dataset JSON-LD**: `index.html`에 `@type: Dataset` 구조화 데이터 신규 추가(구글
+  Dataset Search 노출용) — `press-kit.html`은 noindex라 넣어도 소용없어서 실제 색인되는
+  `index.html`에 넣음. GitHub 오픈데이터셋 + Kaggle 게시본을 `sameAs`로 연결. 커밋
+  `cd3d937`.
+- **로고 아이콘 통일**: `index.html` 네비게이션에만 곰 마스코트 아이콘이 있고 나머지 90개
+  페이지는 텍스트만 있던 불일치를 사용자가 직접 발견 — 전부 동일 SVG(테마 변수 사용) 삽입.
+  1차 문자열 완전일치 방식으로 39개만 되고 51개는 `href`에 쿼리스트링(`?lang=..&country=..`)
+  이 붙어있어 실패 → 정규식 기반 2차 스크립트로 재처리해서 전부 해결. RTL 언어(아랍어·
+  우르두어) 페이지는 `direction:ltr` 유지하며 로고만 강제 LTR로 잘 나오는 것까지 Playwright로
+  확인(단, 이 샌드박스에서 Pretendard 웹폰트 CDN 요청이 매우 느려서 `page.screenshot()` 기본
+  타임아웃 5초로는 계속 실패 — `timeout: 20000`으로 올려서 해결, 다음에도 이 샌드박스에서
+  스크린샷 찍을 때 참고). 커밋 `955e054`.
+- **Kaggle**: 사용자가 신규 가입 → `us-lottery-tax-data` 데이터셋 업로드 완료(Public,
+  CC0, Title/Subtitle/Description/Tags/564×284 전용 썸네일까지 전부 채움). URL:
+  `kaggle.com/datasets/chamtax/us-lottery-jackpot-tax-by-country`.
+- **디스콰이엇**: 프로덕트 등록 완료, "승인 대기중" 상태로 제출됨.
+- **긱뉴스**: 시도했으나 **"가입 후 일주일이 지나야 작성할 수 있습니다"**(스팸 방지 정책)에
+  막힘 — 사용자가 방금 가입한 신규 계정이라 지금 당장은 게시 불가. **다음 세션(1주일 후)에
+  다시 시도할 것**, 초안은 이 파일 상단 세션 기록 또는 채팅 로그에 이미 있음(제목: "미국
+  복권(파워볼/메가밀리언즈) 당첨금 실수령액 계산기 – 21개국 세금 비교, 오픈 데이터셋 포함",
+  링크: chamtax.com).
+- 그 외 검토 후 보류: AlternativeTo(할 만하지만 아직 안 함), Product Hunt/BetaList/
+  Softpedia 등(우선순위 낮음), ZUM(서비스 자체 폐지)·바이두(가입 불가, 이미 위 세션에 기록).
+
+### 2026-08-05 이어서 — 홍보 채널 브레인스토밍 종료 선언 (제미나이 100개+ 항목 최종 정리)
+
+사용자가 제미나이와 계속 "더 없어?"를 반복해서 검색엔진·디렉터리·AI 인용·마이크로 채널까지
+총 100개 넘는 홍보 아이디어가 나옴. **다음 세션은 이 브레인스토밍을 다시 반복하지 말 것** —
+이미 바닥까지 긁었고, 안 한 것 중 진짜 해볼 만한 건 아래뿐임(전부 무료·1회성·계정 있으면
+5~10분):
+
+- **F5Bot**(무료) — Reddit에 "Powerball"/"Mega Millions"/"Lottery Tax" 키워드 올라오면
+  이메일로 알림. 질문 올라왔을 때 바로 답변하는 타이밍 잡는 용도.
+- **Google Alerts** — 같은 키워드로 뉴스 알림 설정, 잭팟 뉴스 뜨면 바로 대응 가능.
+- **AlternativeTo** — 세금 계산기 "대안 서비스"로 등록, 폼 한 번.
+- **Wayback Machine "Save Page Now"** — chamtax.com URL 제출, 클릭 한 번.
+- **GitHub Awesome List PR** — `awesome-calculators`/`awesome-open-data` 등에 사이트+
+  오픈데이터셋 등록 PR. 개발자 백링크용.
+- **CodePen 데모** — `widget-embed.html` 소스를 Public Pen으로 공개.
+
+**검토했지만 안 하기로 확정한 것**(이유 포함, 다시 안 물어봐도 됨):
+- DuckDuckGo/Yahoo/Ecosia/Nate/Brave/Qwant — 이미 등록한 Bing/Daum DB를 그대로 씀, 별도
+  작업 불필요(제미나이도 동의).
+- Sogou/Shenma(중국계) — 바이두와 동일 이유(중국 번호 필수)로 불가.
+- 구시대 링크 디렉터리(Ezilon/Jayde/BOTW 등) — 오히려 구글 스팸 감점 위험, 등록 금지.
+- PR Newswire 등 유료 보도자료 서비스 — 유료라 제외.
+- ORCID/Crossref DOI/OpenAlex — 학술 인용용이라 일반 유입 효과 거의 없음.
+- Chrome/Firefox/Edge 확장프로그램, npm/PyPI/NuGet 패키지 — 이 사이트 성격(계산기 웹앱)과
+  안 맞음, 만들 이유 자체가 없음.
+- **RSS 피드** — 여러 번 재검토했지만 계속 기각(구독자 0명, 자동 갱신 파이프라인 신규
+  구축 필요, 유지보수 부담 대비 효과 없음). **다시 제안 나와도 재검토 불필요.**
+- Reddit 직접 활동(질문답변/AMA), 잭팟 뉴스 즉시대응, 매주 콘텐츠 발행 등 "반복 운영형"
+  전략 — 사용자가 "활동 안 하고 싶다"고 명시적으로 밝혀서 전부 보류. 나중에 사용자가 먼저
+  운영 의사를 밝히기 전까지 다시 권하지 말 것.
+
+제미나이 스스로도 마지막에 "새로운 채널보다 이미 고른 채널을 몇 달 꾸준히 운영하는 게
+더 큰 차이를 만든다"고 결론 냄 — 이후 세션은 "홍보 채널 더 찾기"보다 이미 한 것들(GSC
+색인 확인, GA4 유입 확인, 애드센스 승인 여부)의 결과를 지켜보는 쪽으로 방향 전환할 것.
+
+### 2026-08-05 이어서 — "네가 할 수 있는 거 전부 해줘" 실행 시도 및 최종 결론
+
+사용자가 위 6개 항목을 실제로 "지금 세션에서 전부 실행해줘"라고 요청. 하나씩 시도한 결과와
+막힌 이유를 기록 (다음 세션에서 똑같은 시도 반복하지 말 것):
+
+- **Wayback Machine "Save Page Now"** — `curl`/`WebFetch` 둘 다 `web.archive.org`에
+  연결 자체가 안 됨(TLS reset / fetch 거부). 이 세션 샌드박스 네트워크가 해당 도메인을
+  막고 있음. 계정 문제가 아니라 순수 네트워크 문제라 이 환경에서는 불가능. 사용자가 직접
+  브라우저로 `web.archive.org/save/https://chamtax.com/` 열면 1분이면 됨.
+- **GitHub Awesome List PR** — 후보로 `stefanneculai/best-personal-finance-tools`
+  (README에 "8. Tax Preparation" 표가 이미 있어서 항목 추가하기 딱 맞음) 확인까지
+  마쳤으나, `add_repo` 도구가 "cross-tier adds are not supported in v1"로 거부됨 — 이
+  세션은 이미 `semilee123456-ui` 소유 저장소로 시작되어서, 다른 계정 소유 저장소를
+  추가로 붙일 수 없는 구조적 제약(세션 단위 제한, 계정 권한 문제 아님). 다음 세션을 그
+  저장소로 바로 시작하면 fork→PR 가능. 또는 사용자가 GitHub 웹에서 README.md 열고
+  연필(Edit) 아이콘 눌러서 표에 한 줄 추가하면 자동으로 fork+PR 생성됨(2분, 로그인만
+  필요). 추가할 행 예시: `[ChamTax](https://chamtax.com) | Free US Powerball/Mega
+  Millions after-tax payout calculator by country (21 countries), open CC0 dataset
+  included. | Free`
+- **F5Bot / Google Alerts / AlternativeTo** — 셋 다 이메일 인증 또는 Google 로그인이
+  마지막 단계에 필요. 이 세션은 `ListConnectors` 확인 결과 Gmail 등 연결된 계정이 전혀
+  없어서, 폼 제출까지는 되어도 "이메일의 확인 링크 클릭" 단계를 대신 못 함. 즉 완전
+  자동화는 구조적으로 불가능 — 이건 다음 세션에서도 마찬가지일 것.
+- **Wikipedia 백링크 조사** — Powerball 위키피디아 문서 References를 확인한 결과, 세금/
+  잭팟 관련 3rd-party 권위 사이트(비-복권사·비-뉴스사)는 없었음(주로 각 주 복권청,
+  powerball.com, 언론사 뿐). 이 경로로 당장 컨택 가능한 링크 후보는 못 찾음.
+- **경쟁사 Broken Link 찾기 / HARO 대체 플랫폼 / 경쟁사 Mention 추적** — 셋 다 리서치
+  자체는 가능하지만 최종 단계(사이트 운영자에게 이메일 보내기, 전문가 매칭 플랫폼
+  프로필 가입, 지속적 모니터링)가 이메일 발송 또는 계정 로그인을 필요로 해서 이 세션의
+  도구로는 대신 실행 불가.
+
+**결론**: 이 세션(그리고 구조적으로 다음 세션들도 마찬가지)이 완전히 혼자 끝까지
+실행할 수 있는 무료 홍보 채널은 여기서 사실상 소진됨. 남은 것들의 공통점은 전부
+"이메일 인증 클릭" 또는 "다른 계정 소유 GitHub 저장소" 같은, 이 실행 환경에 없는
+접근 권한이 마지막 한 단계에 필요하다는 것. 제미나이도 같은 메시지에서 "이제 홍보보다
+운영"이라고 결론 냈고, 이 세션의 실측 결과도 이를 뒷받침함. **다음 세션에서 홍보 채널을
+더 찾으려 하지 말 것** — 대신 제미나이가 제안한 4가지 운영 항목(GSC CTR 개선, 잭팟
+뉴스 대응, 국가별 콘텐츠 추가, 권위 사이트 백링크 1개)에 집중. 이 중 GSC CTR
+개선/백링크 컨택은 사용자가 Search Console 데이터를 캡처해서 보여주거나, 이메일
+발송을 직접 해줘야 진행 가능(에이전트가 이메일 계정에 접근할 수 없으므로).
+
+### 2026-08-05 이어서 — 4번째 제미나이 목록(30개) 검토, 채널 브레인스토밍 패턴 공식 종료
+
+사용자가 또 새 제미나이 목록(New Tab 디렉터리/Firefox 웹앱 추천/Awesome 리스트/Indie
+뉴스레터/Ask HN/Reddit Wiki/각종 대체 검색엔진 14개/이미지·PDF·CSV·JSON SEO 등 30개)을
+전달. 검토 결과, 전부 아래 중 하나에 해당함(항목 전체를 다시 나열하지 않음 — 다음
+세션도 마찬가지 결론일 것이므로 재검토 불필요):
+- 이미 커버됨: Kagi/Mojeek/Yep/Ecosia/Swisscows/Startpage/Qwant/Brave 같은 대체
+  검색엔진들은 전부 Bing 인덱스 재사용이거나 별도 등록 자체가 없음(제미나이도 스스로
+  인정).
+- 이메일/계정 로그인이 마지막 단계에 필요: Indie 뉴스레터 소개, Reddit Wiki 편집(운영진
+  승인 필요), Naver 지식인 답변 — 전부 계정 활동형이라 앞 세션 결론과 동일하게 불가.
+  Ask HN도 마찬가지로 HN 계정 필요.
+- 명백히 부적합(제미나이 스스로 ❌ 표시): Google Business Profile(오프라인 매장
+  아님), Apple App Clip, Google Patent.
+- **이미지/PDF/CSV/JSON SEO(26~30번)** — 실제로 확인함: `index.html`에 `<img>` 태그
+  자체가 없음(마스코트가 인라인 SVG라 이미지 파일이 아님, 데이터는 이미지가 아니라
+  HTML 표로 렌더링됨). 즉 이 사이트엔 "이미지 최적화"할 인포그래픽 이미지가 아예 없어서
+  적용 대상이 없음. PDF 리포트는 존재하지 않는 새 산출물을 만드는 것이라 "기존 걸
+  활용"이 아니라 범위 추가에 해당 — 하지 않기로 함. CSV/JSON은 이미
+  `raw.githubusercontent.com`에 공개되어 있고 index.html Dataset 스키마로 이미 연결됨
+  (앞선 세션에서 완료).
+
+**이 세션의 최종 판단**: 제미나이의 "채널 브레인스토밍" 목록은 이제 완전히 바닥났고,
+계속 새 목록이 와도 패턴이 반복될 뿐임(이미 한 것 / 계정·이메일 필요해서 못 함 /
+사이트 성격과 안 맞음 중 하나). **다음 세션은 "제미나이가 준 목록에서 할 수 있는 거
+찾기" 요청이 다시 와도, 이 섹션과 위 두 섹션(브레인스토밍 종료 선언·실행 시도 결론)을
+먼저 보여주고 정말 새로운 항목만 걸러낼 것 — 처음부터 다시 훑지 말 것.**
+제미나이가 이 메시지에서 제안한 "월 1만 방문자를 만든 사이트들의 성장 채널을
+역분석하는" 방향은 실행형 작업이 아니라 리서치 작업이라 별도로 요청이 오면 진행
+가능(웹서치로 성공 사례 조사) — 단, 이것도 결국 "그래서 뭘 하라는 건데"로 수렴하면
+위에서 이미 다룬 채널들과 겹칠 가능성이 큼.
+
+### 2026-08-05 이어서 — GitHub Awesome List PR 완료 + AlternativeTo 7일 제한 대기중
+
+- **GitHub Awesome List PR 완료**: `stefanneculai/best-personal-finance-tools` 저장소를
+  fork(`semilee123456-ui/best-personal-finance-tools`)해서 README.md "8. Tax
+  Preparation" 표에 ChamTax 행 추가 후 PR #4("Add ChamTax") 오픈 완료. 병합 여부는
+  저장소 주인 승인 대기중 — 나중에 확인만 하면 됨, 추가 작업 불필요.
+- **AlternativeTo 가입 완료, 등록은 7일 제한 대기중**: Google/GitHub OAuth 로그인 둘 다
+  AlternativeTo 쪽 에러로 실패해서 이메일로 가입(계정명 `chamtax`). 이메일 인증까지
+  완료. 그런데 "New app submissions require an account age of at least 7 days" 제한에
+  걸림 — GeekNews와 동일한 패턴. **2026-08-12 이후 재시도 가능**(정확히는 2026-08-12
+  15:56 Stockholm 시간 이후). 등록할 정보는 이미 확정:
+  - Name: ChamTax / Website: https://chamtax.com
+  - Description: "Free calculator for US Powerball and Mega Millions winners showing
+    after-tax take-home amount, compared across 21 countries of residency. Includes an
+    open CC0 dataset."
+  - Tags: lottery, tax calculator, finance, calculator
+  - `send_later`로 2026-08-12 14:00 UTC에 사용자에게 리마인더 예약해둠(trigger_id
+    `trig_01HGhnN1czbgiNANMUAq3mCy`) — 이 리마인더가 오면 AlternativeTo와 GeekNews
+    (둘 다 신규 계정 7일 제한 걸렸던 것) 등록을 같이 마무리할 것.
+
+### 2026-08-05 이어서 — 5번째 제미나이 목록("극단적 외곽 채널") 반려 + og-image-hook.png 로고 수정
+
+**5번째 목록 검토 결과** (스토어 패키징/개발자 생태계/HARO 대체/2세대 디렉터리/아웃바운드
+이메일) — 전부 반려, 이유:
+- Google Play Store(TWA)/Chrome Web Store/Microsoft Store — 전부 개발자 등록비가
+  있어("무료" 조건 위반) + 이미 위에서 "브라우저 확장프로그램/npm 패키지는 계산기
+  웹앱 성격과 안 맞음"이라고 반려했던 것과 같은 카테고리(스토어 앱으로 재포장하는 것도
+  결국 신규 제품을 새로 만드는 것).
+- RapidAPI — 참택스는 정적 사이트라 백엔드 서버 자체가 없음, API 서버를 새로 구축해야
+  해서 완전히 다른 프로젝트가 됨.
+- Connectively(구 HARO) — 기자 질문에 계속 반응해야 하는 상시 대응형이라 사용자가
+  이미 거부한 "능동적 반복 활동" 카테고리.
+- 복권 구매대행업체 콜드 이메일 아웃바운드 — 이메일 발송 수단 없음(반복 확인된 구조적
+  한계) + 스팸 리스크.
+- NPM 패키지 배포 — 유일하게 논리적으로 가능하지만, 계산 로직을 별도 패키지로 분리하는
+  신규 코딩 작업이 필요하고 `npm publish` 마지막 단계(로그인/2단계 인증)는 사용자가
+  직접 해야 함. 효과도 불확실해서 보류(사용자가 먼저 원한다고 하면 그때 재검토).
+- **BetaPage/LaunchingNext/StartupStash/KillerStartups**(2세대 스타트업 디렉터리)만
+  실제로 살아있고 스팸 아님(WebSearch로 확인) — 다만 전부 계정 가입 필요(AlternativeTo와
+  동일 패턴), SEO 효과도 nofollow 위주라 낮음. 사용자가 원하면 다음에 AlternativeTo
+  했던 것과 같은 방식으로 안내 가능 — 먼저 안 하기로 함(우선순위 낮다고 판단, 진행
+  여부는 다음 세션에서 사용자가 먼저 꺼내면 그때 진행).
+
+**og-image-hook.png(기본 공유카드) 로고 교체 완료**: 위 "알려진 미해결 항목"에서
+예고했던 대로, Playwright로 HTML/CSS 재현 후 1200×630 스크린샷 방식으로 재생성함.
+기존 문구("20억 달러 당첨되면, 실수령액은 얼마일까요?" 등)·레이아웃·색상은 전부
+그대로 유지하고, 로고만 index.html 최신 마스코트 SVG(볼터치·눈 하이라이트 포함)로
+교체. 파일 크기 64KB→59KB, 육안 비교로 레이아웃 깨짐 없음 확인. **`og-image-hook-*.png`
+78개(페이지별 전용 카드)는 여전히 미착수** — 위 "알려진 미해결 항목" 설명대로 언어별
+폰트 조달까지 필요해 범위가 훨씬 크므로, 진행 여부는 사용자에게 먼저 확인할 것.
+
+**회귀 검증**: `tests/broken_link_audit.js`(95개 파일, ISSUES:0), 
+`tests/draw_archive_integrity_check.js`(4개 아카이브 전부 정렬·중복 없음, ISSUES:0)
+실행 확인 — 이번 세션 변경사항(HANDOFF 기록, og-image-hook.png)이 사이트 기능에
+영향 없음.
+
+### 2026-08-05 이어서 — OG 카드 로고 78개 전부 마무리 + 다른 세션과의 작업 충돌 발견·해결 + 저장소 메타 문서 일부 추가
+
+**1. 전체 사이트 점검**: 사용자가 "홈페이지 전반적으로 보고 놓친 거 수정해달라"고 요청 —
+`tests/` 12개 감사 스크립트(broken link/i18n coverage/overflow/console error/wrap/
+nav slider/map scroll/lang leak/FAQ/확률 비교/로또 아카이브 정합성) 전부 재실행,
+195개 파일·945개 화면 조합 이슈 0건 확인(로컬 정적 서버 `python3 -m http.server 9000` +
+`NODE_PATH=/opt/node22/lib/node_modules`로 전역 Playwright 사용 — 이 샌드박스엔
+`node_modules/playwright`가 없고 `/opt/node22/lib/node_modules`에 전역 설치돼 있음,
+다음 세션도 Playwright 테스트 돌릴 때 참고). 잭팟 데이터도 최신 확인. 실제 발견한
+문제는 위 "알려진 미해결 항목"에 이미 기록돼있던 OG 카드 로고 불일치 하나뿐이었음
+(모바일 FAQ 플로팅 버튼 겹침·다크모드 자동전환 안 됨은 둘 다 코드 주석에 남은 사용자의
+명시적 결정이라 버그 아님, 손 안 댐).
+
+**2. 기본 카드(`og-image-hook.png`) 수정 중 다른 세션과 충돌 발견**: 이 세션이 먼저
+고쳐서 커밋(`c42569e`)했는데, 사용자가 "다른 팀에 로고 올라오고 있는데 겹치는지
+확인해달라"고 물어봐서 `git fetch origin main`으로 확인해보니 **다른 세션
+(`session_0176WPs9mTAXF62XcMbUKaf3`)이 18분 뒤 독립적으로 같은 파일을 같은 방식으로
+고쳐 이미 `main`에 병합해둔 상태**였음(커밋 `4fcf898`). `git merge origin/main`
+실행 → `HANDOFF.md`는 자동 병합됐지만 `og-image-hook.png`는 바이너리라 충돌 →
+이미 배포된 그쪽 버전을 채택(`git checkout --theirs`)하고 이 세션의 동등한 버전은
+버림(둘 다 육안 품질 동등, 굳이 세 번째 변형을 만들 필요 없음). **다음 세션
+교훈(위 "알려진 미해결 항목"에도 기록함)**: 이 문서의 "알려진 미해결 항목"을 그대로
+믿지 말고, 작업 시작 전 `git fetch origin main` + 최근 커밋 로그 확인을 습관화할 것 —
+여러 세션이 동시에 떠 있을 수 있음.
+
+**3. 페이지별 전용 카드 78개(`og-image-hook-*.png`) 완료**: 자세한 기법은 위 "알려진
+미해결 항목"에 기록. 요약: 로고가 어느 페이지든 라틴 워드마크 "ChamTax" 고정이라
+언어별 폰트가 필요 없다는 걸 확인하고, 로고 위치를 자동 검출(배경색 최빈값 샘플링 →
+row-band 분리 → 아이콘다운 정사각 비율 서브블록 탐색, RTL 자동 대응)하는 스크립트로
+78개 중 77개를 완전 자동 처리, 1개(`basics-ur`)만 좌측 통계 카드와 로고가 같은
+y범위에 겹쳐 자동 검출 실패해서 좌표 수동 확인 후 적용. 전부 1200×630 유지, 스크립트
+계열·문자 방향 골고루 샘플링해 육안 검수, 회귀 테스트 이슈 0건.
+
+**4. 사용자가 다른 AI(제미나이 추정)한테 받아온 홍보 아이디어 목록 검토** (Zenodo
+데이터 아카이브+DOI, GitHub Raycast/Alfred 확장, Cloudflare 네임서버 전환, 체코
+Seznam Webmaster 등록, GitHub 저장소 신뢰도 문서+Shields.io 배지):
+- **바로 처리(이 세션이 알아서 할 수 있는 것)**: `SECURITY.md`, `CONTRIBUTING.md`
+  신규 추가(커밋 `a2177b2`) — 취약점 제보 안내, 저장소 관례(정적 사이트·빌드 없음·
+  i18n 소스 위치·데이터 출처 검증 등) 문서화. 저위험·저비용이고 실제로 쓸모 있다고
+  판단.
+- **일부러 안 한 것(이유 있음)**: `CODE_OF_CONDUCT.md`·`CITATION.cff`·README
+  Shields.io 배지는 스킵함. `CODE_OF_CONDUCT.md`는 기여자 커뮤니티가 있는 프로젝트용
+  관례라 1인 유지보수 계산기 사이트엔 실효성이 낮다고 판단. `CITATION.cff`는 이
+  저장소(사이트 코드) 자체의 라이선스가 정해진 적이 없어서(오픈 데이터셋은 별도
+  저장소 `us-lottery-tax-data`가 CC0) 사용자 확인 없이 라이선스를 명시하는 파일을
+  만들 수 없었음 — 필요하면 사용자가 원하는 라이선스를 알려준 뒤 진행. Lighthouse
+  100%/PWA 배지 등은 **실제로 검증 안 된 수치를 박아넣는 셈이라 거짓 표시가 될
+  위험** 판단, 검증 없이 넣지 않음. "GitHub 신뢰도 점수가 SEO에 도움된다"는 전제
+  자체도 공식적으로 확인된 바 없는 주장이라 회의적으로 봄(인수인계 앞부분 "인디해커
+  성공 사례" 논의 때도 비슷하게 출처 불명 수치가 섞여 있었음 — 이런 종류의 브레인스토밍
+  목록은 이 저장소가 이미 여러 번 겪은 패턴대로 매번 곧이곧대로 믿지 말고 하나씩
+  검증할 것).
+- **사용자가 직접 계정으로 해야 함(코드로 대신 불가)**: Zenodo 데이터셋 제출, Seznam
+  Webmaster 소유권 인증 — Kaggle/디스콰이엇 때와 같은 패턴, 필요하면 다음 세션이
+  안내 문구·메타데이터 준비는 도와줄 수 있음.
+- **진행 전 사용자 확인 필요(리스크 있음, 이 세션이 임의로 진행 안 함)**: Cloudflare
+  네임서버 전환 — DNS를 실제로 옮기는 인프라 변경이라 되돌리기 번거롭고 사이트 전체
+  가용성에 영향을 줄 수 있음, 이 세션은 애초에 등록기관 접근 권한도 없음.
+- **효용 대비 회의적이라 보류**: Raycast/Alfred 확장 개발 — 개발자 계정과 별도
+  유지보수가 필요하고, 런처 스토어는 구글이 크롤링하는 곳이 아니라서 SEO 백링크
+  효과가 없음. 사용자가 명시적으로 원하면 그때 재검토.
+
+**5. 병합**: `claude/github-handover-review-spvfz1` 브랜치에서 작업, `origin/main`과
+머지 커밋 1회(`og-image-hook.png` 충돌 해결 포함) 후 이 브랜치를 다시 `main`으로
+병합해 반영함 — 자세한 커밋은 아래 참고.
+
+### 2026-08-05 이어서 — 토큰 절약 메모(CLAUDE.md) + 모바일 사파리 텍스트 겹침 제보 대응 + OG 로고 스크립트 재사용화
+
+**1. `CLAUDE.md` 신규 추가**(커밋 `b00717c`): 사용자가 "토큰 아끼는 법 있어?"라고
+물어서, 이번 세션에서 실제로 낭비됐던 패턴(콘솔에 큰 JSON 그대로 출력, 스크린샷
+과다 열람, 디버깅 스크립트 반복 재작성) 기준으로 정리. `HANDOFF.md`(세션 인수인계
+내용)와는 별개로 "이 저장소에서 작업할 때 컨텍스트 아끼는 법"만 다룸 — 인수인계
+문서 정리는 다른 세션이 맡고 있어서 그쪽은 손 안 댐.
+
+**2. 모바일 사파리 텍스트 겹침 제보 대응**(커밋 `15f96b5`): 사용자가 아이폰 스크린샷
+2장을 보내옴 — "결과 더 자세히 보기" 아코디언 안 "3줄 AI 요약"(`home-summary-text`)
+바로 아래 인용 안내 문구(`home.citationNote`, "📎 인용·보도 시 출처를 'ChamTax
+(chamtax.com)'으로 표기해 주세요")에 요약문 끝자락 숫자("612억원")가 겹쳐 보이는
+버그. 이 샌드박스엔 Playwright WebKit이 없어(Chromium만 설치돼 있음, `/opt/pw-
+browsers/` 참고) 헤드리스 Chrome으로 같은 입력(342M USD, 한국어, 아코디언 열기)을
+재현해봤지만 두 요소 사이 간격이 411px로 정상 — **Chrome에서는 재현 안 됨, 확정
+원인은 못 찾음**. `<details>` 안에서 `textContent`로 텍스트 길이가 바뀔 때 WebKit이
+레이아웃 재계산을 놓치는 부류의 버그로 추정하고, 이 파일에 이미 있던 강제 리플로우
+패턴(`.diff-pop`의 `void el.offsetWidth`)과 동일하게 `homeSummaryEl.textContent`
+대입 직후 `void homeSummaryEl.offsetHeight`를 추가 — 정상 동작하는 브라우저엔 영향
+없고, 문제의 브라우저에는 안전망이 되는 저위험 방어 조치. **재발하면 사용자 손으로
+직접 재현 스크린샷을 다시 받아서, 진짜 원인(예: 특정 스크롤 위치·특정 자리수 조합)을
+좁혀야 함 — 이번엔 증거 부족으로 추정에 머무름.** `broken_link_audit`·`home_audit`
+재실행 이슈 0건, `script.min.js`/`styles.min.css` 재빌드(`npm install` 먼저 필요했음
+— devDependencies가 클린 체크아웃엔 없었음), 캐시버스팅 `20260805-12`→`-13`,
+서비스워커 `CACHE_NAME` v11→v12.
+
+**3. OG 로고 자동 검출 스크립트를 저장소에 재사용 가능하게 저장**(`scripts/
+fix-og-logo.js`, 커밋 dacfbea): 위 세션에서 78개 카드를 고칠 때 스크래치패드에
+여러 번 다시 만들었던 픽셀 스캔 로직을 하나의 스크립트로 정리 — 다음에 로고
+디자인이 또 바뀌면 `ICON_SVG` 상수만 바꿔서 그대로 재사용 가능. **정리하면서
+치명적인 버그 하나 발견·수정**: 로고를 찾는 성공 경로에서 `img.onload` 콜백 안에
+`resolve(...)` 대신 `return ...`을 써서, 검출에 성공할 때마다(=거의 항상) 프라미스가
+영원히 안 풀리고 무한 대기하던 버그 — 테스트 중 스크립트가 계속 멈춰서 발견함.
+`resolve(...); return;`으로 수정, `document.fonts.ready`도 네트워크 정체 시 무한
+대기할 수 있어 5초 타임아웃을 씌움. `og-image-hook-en.png`/`basics-ur.png`로
+재검증 — 이미 고쳐진 로고와 동일한 결과 재생성 확인(파일 자체는 변경 없이 되돌리고
+스크립트 수정만 커밋). `og-image-hook.png`(한국어 "참택스", 아이콘 잉크 크기가
+42×25px로 다른 파일들의 37×34px과 달라 정사각형 필터 밖)는 자동 스킵되는 게
+정상 동작 — 이미 다른 방식으로 고쳐져 있어서 문제 없음.
+
+### 2026-08-05 이어서 — 비교 탭 지도 시각 개선 + "기타 국가" 칩 2줄 쪼개짐 수정
+
+**1. 비교 탭 국가 지도 시각 개선(사용자 요청 "지도나 애니 더 멋지게")**: CSS만 변경,
+JS/데이터 로직은 그대로.
+- `.country-map-wrap`에 다른 카드와 같은 톤의 은은한 그림자(`box-shadow`) 추가로
+  입체감 부여, 국경선 기본 대비(fill/stroke opacity)를 살짝 올림.
+- `.country-map-pin`에 hover/focus 피드백 추가(`transform:scale(1.5)` +
+  `filter:brightness(1.15)`, `transition`) — 클릭 가능한 핀이란 걸 클릭 전에도
+  알 수 있게 함. 기존 "선택된 국가" 빨간 펄스 애니메이션(`.active`)과는 별개 규칙이라
+  서로 안 겹침, `prefers-reduced-motion` 존중.
+- 마스코트 로고 idle 애니메이션(바운스+윙크)은 최근 세션에서 이미 잘 구현돼 있어서
+  손 안 댐.
+- `home_audit`·`console_error_audit`·`broken_link_audit`·`wrap_audit` 전부
+  `ISSUES: 0`.
+
+**2. "🌐 기타 국가" 칩이 "기타"/"국가" 사이에서 줄바꿈되어 2줄로 보이는 문제**
+(사용자가 실제 폰 스크린샷으로 재제보, `renderAmountBreakdownHtml()`의 잭팟
+히스토리 국가별 실수령액 칩): 시행착오가 있었으므로 다음 세션이 또 같은 삽질을
+반복하지 않도록 상세히 남김.
+- **1차 시도(실패)**: `otherLabelText` 안의 공백을 전부 nbsp로 바꿔 라벨 전체를
+  강제로 한 줄 처리 — 모든 언어에 적용했더니 영어("Other country")가 전역
+  `overflow-wrap:break-word` 때문에 단어 경계가 아니라 "Other c/ountry"처럼 글자
+  중간에서 끊기는 더 나쁜 회귀 발생. 한국어(`currentLang==='ko'`)로 범위를 좁혀도
+  "기타"/"국가" 사이가 이번엔 "국"/"가" 음절 중간에서 끊기는 동일 증상 재현 —
+  텍스트 조작(nbsp)으로는 근본 해결 안 됨.
+- **원인 정확히 특정**: Playwright로 실측한 결과 이 칩의 실제 콘텐츠 폭(패딩 제외,
+  약 85px)이 "🌐 기타 국가" 라벨이 필요로 하는 폭(약 93px)보다 **진짜로 8px
+  부족**해서 생기는 순수 공간 문제였음(CSS 버그도 텍스트 문제도 아니었음). 폰트
+  크기는 이 코드베이스의 시니어 가독성 최소 기준(`--fs-small:16px`) 밑으로 줄일 수
+  없고, 칩을 다시 전체 폭으로 넓히면 2026-07-29에 되돌렸던 "혼자 유독 커 보임"
+  문제가 재발함.
+- **최종 해결(성공)**: `html[lang="ko"] .jh-amt-chip-other`에만 좌우 패딩을
+  10px→5px로 줄여 필요한 폭(약 100px)을 확보하고, 같은 범위에서 `white-space:
+  nowrap`으로 강제 한 줄 처리. 다른 언어는 라벨 자체가 한국어보다 길어서(예:
+  "Другая страна", "Boshqa mamlakat") 이 정도 여유로도 어차피 부족하므로 손대지
+  않고 기존 동작(단어 경계에서 자연스럽게 줄바꿈) 그대로 유지 — nowrap을 전 언어에
+  걸었으면 그 언어들에서 실제로 텍스트가 칩 밖으로 튀어나오는 진짜 오버플로우가
+  났을 것(Playwright 실측으로 사전에 확인하고 막음: ko/en/ru/uz 4개 언어 전부
+  `scrollWidth - clientWidth`로 오버플로우 0px 확인).
+- **교훈**: `getBoundingClientRect().width`는 flex/grid 아이템이 부모 폭에 맞춰
+  늘어나 있으면(stretch) 실제 텍스트 폭이 아니라 늘어난 박스 폭을 그대로 반환해서
+  오버플로우 여부 판단에 못 씀 — `scrollWidth` vs `clientWidth` 비교(nowrap 상태에서)
+  가 진짜 필요한 폭을 확인하는 정확한 방법. 다음에 비슷한 "칩/좁은 박스 안 텍스트
+  줄바꿈" 문제가 나오면 처음부터 이 방법으로 실측부터 할 것 — 텍스트(nbsp 등)나
+  `overflow-wrap` 값을 추측으로 먼저 바꾸지 말 것.
+- `node --check`, `home_audit`·`console_error_audit`·`i18n_coverage_audit`·
+  `broken_link_audit`·`wrap_audit` 5개 회귀 테스트 전부 `ISSUES: 0`.
+
+**병합 메모**: 이 두 작업을 push하는 중 다른 세션이 각각 한 번씩 먼저 main에
+푸시해놔서(먼저 og-image 78개 로고 교체 세션, 나중엔 CLAUDE.md·모바일 사파리 텍스트
+겹침 대응 세션) 두 번 다 `git fetch`+`git merge`로 병합함 — 두 번째는
+`script.min.js`(생성 파일)에서만 충돌 나서 `npm run build:min`으로 다시 빌드해
+해결(수동으로 diff 짜맞추지 않음, 생성 파일은 항상 재빌드가 정답). 회귀 테스트는
+병합 후 최종 상태 기준으로 다시 한번 전부 재확인함.
+
+### 2026-08-06 — 홍보 작업 현황 정리 (사용자 요약 확인, Wayback Machine 완료 반영)
+
+사용자가 지금까지 진행한 홍보 작업 전체를 요약해서 전달, HANDOFF.md 기존 기록과
+대조 확인함 — 아래 항목 하나만 상태 업데이트 필요, 나머지는 전부 이미 위 여러 세션
+기록과 일치함.
+
+- **Wayback Machine "Save Page Now" 완료**: 위 "네가 할 수 있는 거 전부 해줘" 세션에서
+  `curl`/`WebFetch`가 `web.archive.org`에 연결 자체가 안 돼(샌드박스 네트워크 제한)
+  실패하고 사용자에게 직접 하라고 안내했던 항목 — 사용자가 브라우저로 직접 실행해
+  chamtax.com 스냅샷 저장 완료. 추가 조치 불필요.
+
+**현재 미해결 대기 항목 (다음 세션이 참고)**:
+- 구글 애드센스: 도메인 추가 완료(2026-07-24), 승인 자체는 아직 대기중.
+- 디스콰이엇: 제품 등록 완료, 승인 대기중.
+- GitHub Awesome List PR [#4](https://github.com/semilee123456-ui/semilee123456-ui.github.io/pull/4)
+  (`stefanneculai/best-personal-finance-tools`로 오픈): 저장소 주인 승인 대기중.
+- AlternativeTo·GeekNews: 둘 다 가입 완료, 신규 계정 7일 제한으로 2026-08-12 이후
+  등록 재시도 필요 — `send_later` 리마인더(`trig_01HGhnN1czbgiNANMUAq3mCy`) 예약돼
+  있음.
+- 새 홍보 채널 발굴은 이미 여러 세션에 걸쳐 바닥까지 검토 끝난 상태(위 "홍보 채널
+  브레인스토밍 종료 선언"·"5번째 제미나이 목록 반려" 참고) — 다음 세션에 또 새
+  채널 목록이 오면 처음부터 다시 훑지 말고 위 두 섹션부터 먼저 확인할 것.
+
+**같은 날 이어서 — 6·7번째 제미나이(추정) 목록, 사용자가 직접 브레인스토밍 종결
+선언**: PWA 전문 디렉터리 3개(AppScope/PWA Rocks/progressivewebappdirectory.com)+
+개발자 아티클 플랫폼(Dev.to/Hashnode/Medium)+Money Stack Exchange+SaaSHub/
+SoftwareSuggest+Pinterest/SpeakerDeck 목록, 이어서 Wikidata/SNS 자동봇/Web
+Monetization 메타태그 목록이 연달아 옴 — 이번엔 **사용자가 스스로 "실행률 100%,
+더 이상 찾지 말고 손 떼겠다"고 결론**. 실행은 안 하고 사실관계만 간단히 확인:
+- AppScope는 사용자가 적은 도메인(appscope.net)이 아니라 실제로는 `appsco.pe`이고,
+  로그인 없는 제출 폼(`appsco.pe/submit`)이 실제 존재함 — 유일하게 즉시 실행
+  가능했던 항목이었으나 사용자가 이번엔 실행 자체를 원치 않아 스킵.
+- PWA Rocks(`pwarocks/pwa.rocks`)는 GitHub 저장소가 이미 archived 상태라 PR을
+  받지 않는 죽은 채널 — 애초에 실행 불가능했음.
+- progressivewebappdirectory.com은 WebSearch로 실체를 확인 못함(제미나이가
+  지어냈을 가능성 있음, 사용자에게도 이 사실을 전달함).
+- Wikidata/SNS 자동봇/Web Monetization은 이전 세션에서 각각 스팸 위험·상시운영
+  거부·SEO 무관으로 이미 기각한 것과 동일 결론, 사용자도 "권장 안 함"으로 직접 인정.
+
+**다음 세션 지침(강화)**: 홍보 채널 브레인스토밍은 이 시점부로 사용자가 명시적으로
+종결 선언함("생각을 비우고 손 떼겠다"). 새 목록이 또 오더라도 절대 처음부터 검토하지
+말 것 — 이 항목과 위 "홍보 채널 브레인스토밍 종료 선언"·"5번째 제미나이 목록 반려"
+세 섹션을 먼저 보여주고, 사용자가 먼저 재개 의사를 밝히기 전까지 새 채널 제안을
+꺼내지 말 것.
+
+**같은 날 이어서 — 8번째 제미나이(추정) 목록, 코드로 확인 가능한 2개만 실제 검증
+후 최종 종결**: Product Hunt/Indie Hackers/Dev.to/Medium/HN Show HN/Lobsters/
+Hugging Face/CITATION.cff/GitHub Release·Discussions·Social Preview/robots.txt AI
+크롤러/Dataset Search 노출 확인/경쟁사 추적 등 15개+ 목록. 대부분 위에서 이미
+검토·보류했거나(CITATION.cff, Zenodo, Product Hunt) 계정 가입+이메일 인증이 마지막
+단계라 이 세션이 끝까지 대신 못 하는 구조적 한계(Dev.to/Medium/Indie Hackers/HN/
+Lobsters/Hugging Face — Kaggle·디스콰이엇·GeekNews·AlternativeTo와 동일 패턴)에
+해당해 실행 안 함. **코드로 즉시 검증 가능했던 2개만 실제 확인**:
+- `robots.txt` AI 크롤러 허용 여부: GPTBot/ChatGPT-User/PerplexityBot/ClaudeBot/
+  Google-Extended 전부 이미 명시적으로 `Allow: /`, 나머지(CCBot 등)도 기본
+  `User-agent: * Allow: /`에 걸림 — 손댈 것 없음, 이미 정상.
+- Google Dataset Search용 `index.html` Dataset JSON-LD: `name`/`description`/
+  `url`/`license`/`creator`/`distribution`(DataDownload) 전부 정확히 존재 확인
+  (커밋 cd3d937에서 이미 완료된 것 재확인). 실제 색인 여부는 구글 크롤링 타이밍
+  문제라 이 세션이 확인할 방법 없음 — 사용자가 datasetsearch.research.google.com에서
+  직접 검색해봐야 함.
+- GSC 국가별 성과·Bing 백링크 리포트·경쟁사 신규 콘텐츠 추적 등은 "채널"이 아니라
+  "운영" 작업이고 사용자 대시보드 데이터가 있어야 진행 가능 — 코드 작업 아님.
+
+**최종 결론(이 저장소의 홍보 브레인스토밍 역사상 가장 명확한 종결)**: 이 세션이
+실행 가능한 무료 홍보 작업은 정말로 0건. 다음 세션에 또 새 AI 생성 목록이 오면,
+바로 이 섹션을 사용자에게 보여주고 "코드로 검증 가능한 새 항목이 진짜 있는지"만
+빠르게 스캔한 뒤 없으면 그대로 종료할 것 — 전체 재검토 반복 금지.
+
+### 2026-08-06 이어서 — 동남아 로컬 채널(9번째 목록) 검토 + Cốc Cốc 등록 상태 확인·완료
+
+**1. 동남아 로컬 채널 목록 검토**: Cốc Cốc(베트남 검색엔진) 등록, VOZ/Tinh tế(베트남)·
+Pantip(태국)·Kaskus(인도네시아) 포럼 게시, r/PHInvest·r/Philippines 게시, 해외
+복권 블로그 위젯 제공 제안 이메일. 사이트에 실제로 `i18n/vi.json`·`th.json`·
+`id.json`·`tl.json` 4개 다 있고 전용 랜딩페이지도 존재해 전제는 맞음(제미나이 목록이
+매번 근거 없는 얘기만 하는 건 아님). 다만:
+- **포럼 게시(VOZ/Tinh tế/Pantip/Kaskus/Reddit)**: "커뮤니티에 직접 홍보글 게시"라
+  이전 세션에서 이미 명시적으로 거절한 "Reddit 직접 활동... 활동 안 하고 싶다"와
+  동일 카테고리 — 사용자에게 재확인 요청한 결과 **동일하게 거절함(2026-08-06,
+  "커뮤니티 직접 활동은 안 하고 싶어")**. 동남아 포함 모든 지역에서 포럼/SNS 직접
+  게시는 계속 하지 않는 것으로 최종 확정 — 다음 세션도 다시 물어보지 말 것.
+- **블로그 위젯 제공 제안 이메일**: 이메일 발송 수단 없음, 기존과 동일한 구조적
+  한계로 스킵.
+
+**2. Cốc Cốc 검색엔진 등록 — 조사 결과 이미 100% 완료 상태였음**: 처음엔 Yandex처럼
+계정 생성+소유권 인증이 필요할 거라 짐작했으나, 실제 공식 문서(`coccoc.com/search/
+console/en/submit-sitemap-to-coc-coc-search`) 확인 결과 **계정/로그인/소유권 인증
+전혀 불필요** — `robots.txt`에 `Sitemap:` 지시어만 있으면 끝. chamtax.com의
+`robots.txt`는 이미 `Sitemap: https://chamtax.com/sitemap.xml`+`User-agent: *
+Allow: /`(Coccocbot 포함 전체 허용)로 조건 완전 충족 상태였음 — **추가 조치 불필요,
+콘솔 가입도 필요 없음**. URL 수동 제출 폼(`get-your-website-on-coc-coc-search`)은
+JS 렌더링 SPA라 API 엔드포인트가 정적 HTML에 없어 curl로 자동화 불가 확인했으나,
+공식 가이드 자체가 "수동 제출보다 robots.txt/크롤러 접근성이 우선"이라고 명시하고
+있어 자동화 시도 자체가 불필요한 것으로 결론. 색인 여부 확인은 사용자가
+`coccoc.com/search`에서 `site:chamtax.com chamtax.com` 검색으로 직접 확인 가능,
+0건이어도 크롤링 시차 문제(Google/Bing 초기와 동일 패턴)이지 콘솔에서 추가로 할
+조치는 없음.
+
+### 2026-08-06 이어서 — "커뮤니티 직접 활동 거절" 방침 세분화: 상시 활동은 계속 거절,
+1회성 게시는 예외 허용(r/SideProject, r/IndieHackers 한정)
+
+바로 위에서 "커뮤니티 직접 활동은 안 하고 싶어"로 전체 거절 확정했었는데, 사용자가
+**"지속적인 활동은 안 하고 싶은데 단발성은 괜찮아"**로 기준을 명확히 함 — 전체
+거절이 아니라 "상시/반복 활동"만 거절이고 "1회성 게시"는 케이스별로 허용 가능.
+
+- **r/SideProject, r/IndieHackers는 이 기준으로 승인**: 두 서브레딧은 애초에 "자기
+  프로젝트 1회 소개+피드백 요청"이 커뮤니티 룰이라 상시 활동이 아님 — 사용자 승인.
+  게시글 초안을 `/tmp/.../scratchpad/reddit-post-draft.md`에 작성(영문, "제작기"
+  톤, 광고 문구 지양). **실행은 여전히 사용자 몫**: 계정 생성, 8/12까지 카르마
+  쌓기(신규 계정+외부링크 포함 글은 AutoMod가 자동 삭제할 위험), 실제 게시 전부
+  이메일 인증/로그인이 필요해 이 세션이 대신 못 함 — Kaggle·GeekNews·AlternativeTo와
+  동일한 구조적 한계.
+- **VOZ/Tinh tế/Pantip/Kaskus(동남아 로컬 포럼)는 재확인 필요**: 이것도 원래
+  "1회성 정보성 게시"로 제안됐던 것들이라 이 새 기준(1회성은 허용)에 해당할 수
+  있음 — 다만 사용자가 아직 명시적으로 재승인하지 않았으므로, 다음에 이 얘기가
+  나오면 "1회성 vs 상시" 기준으로 다시 판단할 것(자동으로 허용된 것으로 간주하지
+  말 것).
+- **다음 세션 판단 기준(중요)**: "커뮤니티 게시" 요청이 오면 무조건 거절하지 말고,
+  "이게 그 커뮤니티의 상시 참여를 요구하는가, 1회성으로 완결되는가"를 먼저 판단할
+  것. 답변형 게시판(Q&A 상시 답변), 반복 콘텐츠 발행은 여전히 거절 대상.
+
+**같은 날 이어서 — Reddit 계정 생성 완료**: 사용자가 계정명 `chamtax`(Kaggle
+"ChamTax", AlternativeTo `chamtax`와 동일 네이밍)로 가입 완료(2026-08-06). 신규
+계정+외부링크 글은 AutoMod 자동 삭제 위험이 있어 **8/12 이후로 게시 미룸** —
+AlternativeTo·GeekNews와 같은 7일 대기 패턴. r/SideProject·r/IndieHackers용
+게시글 초안은 작성해서 `SendUserFile`로 사용자에게 전달함(위 "홍보 전략 논의"
+항목과 동일한 이유로 이 저장소엔 초안 원문을 남기지 않음 — 사이트 코드와 무관한
+홍보 카피이고, 필요하면 사용자가 채팅 기록에서 다시 찾을 수 있음).
+
+**같은 날 이어서 — 동남아 7개 언어(vi/th/id/tl/km/lo/my) 페르소나별 전수 감사
+(서브에이전트) + 실제 버그 2개 발견·수정**: 사용자 요청으로 6개 페르소나 카테고리 ×
+7개 언어(21개 정적 페이지) + 기존 SPA 회귀 테스트 전체를 서브에이전트로 점검.
+- **결과**: vi/th/id/lo/my는 전부 깨끗함(오버플로우·번역누락·언어혼입 0건).
+  "한글 잔존" 경고는 전부 오탐(의도된 "한국어로 보기" 링크·"종합소득세" 같은
+  한국 세법 용어 병기) — 실제 번역 누락 아님. hreflang 전부 정상(국가 거주자용
+  18개 페이지는 원래 사이트 전체가 hreflang 없음 — SEA만의 문제 아니라 기존
+  패턴). 21개 페이지 전부 sitemap.xml에 있음. `vietnamese-in-korea-lottery-tax.html`
+  파일명만 하이픈(나머지 26개는 언더스코어) — 링크는 정상이라 안 깨짐, 그냥 이름
+  스타일 아웃라이어(안 고침, 사소함).
+- **실제 버그**: `us-lottery-basics-tl.html`(타갈로그어)·`us-lottery-basics-km.html`
+  (크메르어)의 "Powerball vs Mega Millions" 비교 표가 320px 폭에서 페이지 밖으로
+  삐져나감(테이블에 `overflow-x` 감싸는 요소도 `table-layout:fixed`도 없었음,
+  375px 이상은 문제없었음). **수정**: 두 파일 다 표를 `.table-scroll`
+  (`overflow-x:auto`) div로 감싸서 표 자체는 그대로 두고 좁은 화면에서 표만
+  가로 스크롤되게 함(레이아웃/디자인 변경 없이 최소 수정). Playwright로
+  `document.documentElement.scrollWidth`가 더 이상 `innerWidth`를 안 넘는 것
+  320/344/375px 3개 폭에서 재검증, `tests/broken_link_audit.js`(95개 파일,
+  ISSUES:0) 재실행 확인. 다른 25개 basics 페이지는 같은 표 구조에서도 문제
+  없었음(텍스트 길이 차이) — 이 두 파일에만 국한된 수정.
+
+**같은 날 이어서 — 향후 여러 프로젝트 공용 홍보 계정명 `autumnbuilds` 결정**:
+사용자가 "앞으로 다른 사이트도 계속 만들 건데, 매번 홍보할 때마다 계정 새로 만들어야
+하냐"고 물어서, 지금까지 쓴 `chamtax`(Kaggle/Reddit/AlternativeTo) 계정은 이
+프로젝트 전용 이름이라 다음 프로젝트엔 안 맞는다고 안내함 — 프로젝트마다 새 계정을
+파는 대신, **실명과 무관한 공용 메이커 정체성 하나를 여러 프로젝트에 계속 쓰는 쪽을
+추천**(신규 계정 7일 대기 반복 회피 + 활동 이력 누적으로 신뢰도 상승). 여러 후보
+중 사용자가 **`autumnbuilds`**로 확정, Product Hunt 가입에 이 이름 사용함. **다음
+세션 참고**: 이후 새 프로젝트 홍보(Reddit/GitHub/IndieHackers 등)는 `chamtax`가
+아니라 이 `autumnbuilds` 계정으로 진행하는 것이 맞음 — ChamTax 전용이 아닌 사용자의
+장기 메이커 계정이라는 것 혼동하지 말 것.
+
+**같은 날 이어서 — Product Hunt 등록 완료(예약됨)**: "제출만 해두고 완전히
+잊어버리기"(백링크 목적, 당일 랭킹/실시간 대응 없음)로 사용자와 합의 후 진행.
+`autumnbuilds` 계정으로 제출 폼 전체 작성 지원함:
+- 슬로건: "See your real Powerball/Mega Millions payout, by country."
+- 설명(500자 이내로 축약): 21개국 비교·미국 비거주자 원천징수·정적사이트 무서버·
+  CC0 오픈 데이터셋 언급.
+- 런치 태그 3개: Open Source / Fintech / Money.
+- 첫 댓글(메이커 후기 톤, "왜 만들었는지" 제작기) 작성.
+- 갤러리 이미지 3장을 Playwright로 직접 캡처해 제공(영문 버전, 계산 결과 화면 ·
+  국가별 비교 지도 · 확률 비교 화면) — Product Hunt가 자동으로 잡아온 첫 이미지가
+  한국어 전용 기본 OG 카드였어서, 소셜 프리뷰용으로 부적절해 영문 스크린샷으로
+  순서 교체 안내함. Pricing=Free, Funding=Bootstrapped, Video/Shoutouts/Investors
+  섹션은 전부 선택사항이라 스킵.
+- 출시 요일·시간 리서치(WebSearch): 화요일 PT 12:01 AM이 트래픽 최대 조합이라고
+  나오나, 이번 세션은 랭킹 목적이 아니라 굳이 안 맞춰도 무방하다고 사용자에게
+  안내함 — 사용자가 예약 완료함(정확한 예약 날짜는 화면에 안 보여서 이 세션은
+  모름, 다음 세션이 확인하려면 Product Hunt 대시보드 참고).
+- **다음 세션 참고**: 출시일이 되면 자동으로 공개됨, 별도 조치 불필요. 당일
+  대시보드 답변은 이 전략상 안 해도 되는 것으로 사용자에게 이미 안내함.
+
+### 2026-08-06 이어서 — 영어·나머지 18개 언어 전 기기(폰~1920px) 전수 감사(서브에이전트
+2회) + 초보가이드 페이지 오버플로우 5건 추가 발견·수정
+
+동남아 7개 언어 감사에 이어, 영어(모든 기기 폭 320~1920px로 확장) + 나머지 18개
+언어(zh/ru/ne/si/uz/mn/kk/ky/ur/bn/ja/ar/hi/fr/pt/es/uk/tet)까지 6개 페르소나
+카테고리 전부 서브에이전트 2회로 마저 점검(사용자가 식사하러 간 사이 진행).
+
+- **영어**: 5개 페이지(한국거주 외국인용·해외거주 한국인용·초보가이드·영중버전 2개)
+  전부 320~1920px+라이트/다크 이슈 0건. 21개국 거주자 카테고리는 영어권 국가가
+  애초에 목록에 없어 해당 페이지 자체가 없는 게 정상(버그 아님).
+- **나머지 18개 언어**: 52개 정적 페이지 발견·전수 점검. `us-lottery-basics-{es,
+  kk,ky,mn,ru}.html` 5개에서 동남아 감사 때(tl/km) 고쳤던 것과 **똑같은 원인**의
+  표 오버플로우 재발견 — 이 5개는 그때 안 고쳐졌던 파일들. `es`는 320~390px 3단계
+  모두, 나머지 4개는 320px에서만 발생.
+- **수정**: tl/km 때와 동일하게 `.table-scroll`(`overflow-x:auto`) 래퍼로 표를
+  감쌈. **작업 중 실수 하나 발견·즉시 수정**: CSS 규칙(`table{...}` → `.table-scroll{...}
+  table{...}`로 교체)이 파일 앞부분에 줄 하나를 추가하면서 이후 줄 번호가 전부
+  1씩 밀렸는데, `<table>` 여는 태그를 원래(패치 전) 줄 번호로 `sed` 치환하려다
+  실패 → 닫는 `</table>`은 정상 치환됐지만 여는 `<div class="table-scroll">`이
+  안 들어가 짝 안 맞는 `</div>`만 남는 버그를 만들 뻔함 — Playwright로 직접
+  재검증하다가 발견해서 바로 잡음(줄 번호 다시 확인 후 올바른 위치에 삽입).
+  **교훈**: 여러 파일에 걸쳐 CSS 삽입 후 같은 스크립트에서 바로 HTML 삽입을
+  줄번호 기준으로 하면, 앞선 삽입으로 밀린 줄번호를 반드시 재확인할 것 — grep으로
+  실제 위치 재확인 후 두 번째 치환을 실행하는 순서가 안전함.
+- **추가로 발견한 별개 버그(kk·ky 전용)**: 표를 고친 후에도 두 언어만 320px에서
+  페이지 오버플로우가 남아있어 조사 — 원인은 표가 아니라 `.stat-grid`(2단
+  `display:grid; 1fr 1fr`) 안의 `.stat-card`였음. Grid 아이템의 기본
+  `min-width:auto`가 긴 키릴 문자 단어("миллионнан", "миллиондон")를 줄바꿈 없이
+  다 담으려 해서 grid 트랙 자체가 320px를 넘어감 — 다른 언어는 해당 단어가 더
+  짧아서 안 걸렸던 것. `.stat-card`에 `min-width:0` 추가로 해결(그리드 아이템이
+  콘텐츠 최소폭에 안 끌려가고 정상적으로 줄어들도록). 이 2개 파일에만 적용.
+- **검증**: 5개 파일 320/344/375px 재확인 0건, **26개 basics 페이지 전체**를
+  320/344/375px로 재스윕해서 이 두 버그(표·stat-card) 중 하나라도 남은 파일이
+  더 있는지 확인 — 전부 `ISSUES: 0`. `tests/broken_link_audit.js`(95개 파일,
+  ISSUES:0)도 재실행.
+- 그 외(hreflang·언어 누락·RTL) 이슈 없음 — 두 서브에이전트 리포트 전부 클린.
+
+**같은 날 이어서 — 남은 빈틈 2곳 마저 닫아서 감사 시리즈 완전 종료**: 동남아 7개
+언어는 그때까지 폰 폭(320~430)만 테스트했었고, 한국어 자체의 페르소나 페이지
+(`korea-resident-us-lottery-tax.html`, `korean_abroad_us_lottery_tax_ko.html`)는
+이 "전 기기 폭" 방식론으로 아예 안 돌려봤던 상태 — 서브에이전트로 마저 확인.
+- 동남아 7개 언어 정적 페이지 21개를 768~1920px+라이트/다크로 추가 점검(210
+  체크): 이슈 0건.
+- 한국어 페르소나 페이지 2개를 320~1920px 전체 범위로 점검(40체크): 이슈 0건.
+- **버그 발견 0건, 수정 파일 없음.**
+- **최종 결론**: 27개 언어(한국어+26) × 6개 페르소나 카테고리 × 폰~1920px 전
+  기기 폭 × 라이트/다크 전부 점검 완료 — 이 시리즈(SEA 1차→영어→나머지18개→
+  빈틈2곳)에서 찾은 버그는 표 오버플로우 7개(`tl`/`km`/`es`/`kk`/`ky`/`mn`/`ru`
+  초보가이드) + `.stat-card` grid 오버플로우 2개(`kk`/`ky`)뿐이며 전부 수정
+  완료. **다음 세션은 이 감사를 반복할 필요 없음** — 새 언어/페이지가 추가되지
+  않는 한 이 범위는 완결된 것으로 취급할 것.
+
+### 2026-08-06 이어서 — 낚시 게임 결과 공유 카드 신설 ("국가별 대결" 바이럴 유도,
+서버 없이)
+
+사용자가 "낚시 게임을 진짜 게임처럼 만들어서 나라별 랭킹/대결 구도를 만들면
+어떨까"로 시작, PopCat류 실시간 순위판(서버/DB 필요·조작 위험)은 배제하고 **공유
+카드에 도발적 캡션을 넣는 방식**(서버 없음, 조작 불가능)으로 최종 합의.
+
+**구현 전 바로잡은 전제**: 사용자가 참고한 AI 제안은 "낚시 게임 = 잭팟을 낚는
+게임"이라고 잘못 가정하고 있었음(예시 문구 "$1.5B 잭팟 물고기를 낚았습니다") —
+실제로는 파워볼/메가밀리언즈 번호 6개를 재미있게 뽑는 UI(`fishingCaughtValues`)일
+뿐, 당첨/미당첨 판정이 아예 없음. 그래서 "이 번호가 **이번 주 실제 잭팟**
+(`JACKPOT_DATA`/`getJackpotCashUsd()`)에 당첨됐다고 가정하면, 사용자가 이미
+선택해둔 국가(`sharedCountry`) 기준 실수령액은 얼마"로 설계를 바로잡음 — 거짓
+정보 없이 재미+세금 계산 본질+국가 비교 셋 다 살림.
+
+**구현**(`shareFishingCatch()`, script.js):
+- 기존에 이미 있던 재사용 가능한 카드 생성 함수 `buildShareCard({label, bigText,
+  subText, footerText, balls})`(4400줄)를 그대로 씀 — `shareLatestDraw()`가 쓰는
+  것과 동일 함수, 새로 만들지 않음. `balls` 파라미터(공 그래픽 렌더링)는 시그니처만
+  있고 지금까지 실제로 쓴 caller가 없었던 걸 발견 — 이번이 첫 실사용.
+- 실수령액 계산: `getJackpotCashUsd(game)`(현금가치, 공식 발표 없으면
+  `CASH_VALUE_RATIO` 추정) → KRW 환산 → `calcTakeHome(krw/1억, sharedCountry,
+  sharedState)` → `.final`을 다시 USD로 역환산. 홈/비교 탭과 완전히 같은 계산
+  경로 재사용(새 세금 로직 없음).
+- **국기는 이모지 대신 텍스트 배지**(`KR`/`US` 등, `COUNTRY_TAX_PROFILES`의
+  `flagCode`)로 카드에 그림 — 이미 HTML `.flag-badge`가 쓰는 것과 같은 이유
+  (이모지 폰트별 렌더링 차이 회피, 로고 이모지 문제 재발 방지 원칙 그대로 적용).
+  실제 국기 이모지(`flagEmojiFromCode()` 신설, regional indicator 변환)는 공유
+  텍스트(SNS 게시글)에만 씀 — 텍스트 메시지는 폰트 의존 이슈가 카드 이미지만큼
+  치명적이지 않음.
+- **"기타 국가"(`sharedCountry==='other'`) 처리**: `COUNTRY_TAX_PROFILES`에 없는
+  코드라 `profile`이 `undefined`가 되는데, 이 경우 `flagCode`를 `'??'`로 폴백 —
+  `calcTakeHome()`은 이미 'other' 분기가 있어 계산 자체는 정상 동작(Playwright로
+  실제 검증).
+- 공유 문구(`shareText`)는 26개 언어 신규 번역, 도발적 캡션 포함("이거 넘을 수
+  있어?" 류) — 서버 없이 SNS상에서 "국가 대결" 분위기를 유도하는 유일한 장치.
+  버튼 라벨(`odds.fishingShareBtn`)도 26개 언어 신규 추가.
+- 버튼(`#fishing-share-btn`)은 6개 다 낚기 전엔 숨김, `fishingCaughtSuccess()`의
+  완주 분기에서 표시, `resetFishingRound()`에서 다시 숨김.
+- 공유 흐름은 기존 `openAnnotateOverlay(canvas, filename, {mode:'share',
+  shareTitle, shareText})`(꾸며서 저장/공유 모달) 그대로 재사용.
+
+**검증**: `node --check script.js`, `i18n_coverage_audit.js`(764키, ISSUES:0),
+Playwright로 ko/en/ar 3개 언어 전체 플로우(낚시 완료→공유 버튼→카드 생성→모달)
+직접 실행해 콘솔 에러 0건·캔버스 정상 생성 확인, `sharedCountry='other'`와
+메가밀리언즈 전환 케이스도 별도로 검증(에러 0건). 회귀 테스트 9개(`home_audit`
+18·`console_error_audit`161·`wrap_audit`168·`i18n_coverage_audit`764키·
+`broken_link_audit`95개 파일·`full_overflow_sweep`945조합·`nav_slider_audit`·
+`map_scroll_audit`10·`faq_audit`18) 전부 `ISSUES: 0`. `npm install`(devDependencies
+클린 체크아웃엔 없음, 이 저장소 반복 이슈) 후 `npm run build:min`으로
+`script.min.js`/`styles.min.css` 재빌드, 캐시버스팅 `20260805-13`→`20260806-1`,
+`CACHE_NAME` v12→v13.
+
+**다음 세션 참고**: 이 기능은 실시간 순위판이 아니라 "공유 문구 캡션"으로만
+경쟁을 유도하는 설계라는 걸 잊지 말 것 — 나중에 "진짜 순위판 만들어달라"는
+요청이 다시 오면, 이 세션에서 이미 리스크(서버 필요·조작 가능·정적 사이트
+정체성 훼손) 때문에 명시적으로 배제했던 결정이라는 걸 먼저 알릴 것.
+
+### 2026-08-06 이어서 — 다른 세션이 로컬에서 만들어둔 정기 점검 패치 반영 + 파워볼
+8/5 추첨·잭팟 갱신 + 동시 작업 세션(낚시 공유 카드)과 병합
+
+이 세션은 GitHub 저장소 쓰기 권한이 없는 다른 세션이 정기 점검 중 발견해 로컬에만
+갖고 있던 수정사항을 patch 파일(`git apply`용 diff)로 채팅에 전달받아 대신 반영함.
+
+- **적용한 수정 4건** (patch 내용을 diff로 직접 검증 후 적용):
+  1. 접근성 폰트 하한 위반: `.result-tertiary-box` 안내문 3개(`.foot-note`,
+     `.usd-actual-note`, `.result-hero-basis-mini`)가 7/31 추가 당시 `font-size:14px`로
+     하드코딩돼 `--fs-small`(16px, 접근성 최소 기준) 규칙을 위반 — `var(--fs-small)`로 복원.
+  2. 명암비 이중 저하: `.jp-annuity-basis`/`.prize-pct`에 `color:var(--text-muted)` 위에
+     `opacity:0.6`/`0.75`를 겹쳐 써서 WCAG AA(4.5:1) 밑으로 떨어짐 — opacity 제거.
+  3. 중국어·타갈로그어·태국어·베트남어 "한국거주 외국인" 랜딩페이지 4개에만 남아있던
+     미국 세법 조항(`IRC §871(a)`)·판례 번호(`Park v. Commissioner, 136 T.C. 569`)를,
+     같은 페이지군 22개가 이미 쓰고 있던 평이한 문장으로 재작성(사실관계는 유지).
+  4. `powerball-tax.html`/`megamillions-tax.html`/`biggest-jackpot-payouts.html` 3개가
+     2026-07-27에 33개 파일에서 고쳤던 `.quick-answer .row` 구식 flex 패턴을 여전히 쓰고
+     있던 회귀 위험 패턴 — `grid(minmax(0,1fr) minmax(0,1fr))` 패턴으로 통일.
+- **파워볼 8/5 추첨·잭팟 갱신**: 사용자가 공유한 스크린샷(usamega.com)을 그대로 믿지
+  않고 `powerball.com` 공식 페이지를 WebFetch로 직접 교차검증 — 8/5 추첨
+  `14,20,59,60,61`+파워볼`25`(Power Play 2x), 당첨자 없어 다음 추첨(8/8) 잭팟
+  $856M(현금 $372.0M)로 증가, 완전히 일치 확인. `script.js`의 `LATEST_DRAW`/
+  `JACKPOT_DATA.powerball`과 `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`/
+  `POWERBALL_JACKPOT_ARCHIVE`에 8/5 항목 추가. 메가밀리언즈는 기존 값과 이미 일치해
+  변경 없음.
+- **동시 작업 세션과 병합**: 커밋 준비 중 `origin/main`이 다른 세션의 "낚시 게임 결과
+  공유 카드" 기능(`b70f97b`)으로 이미 앞서 있는 걸 발견 — `git merge origin/main`으로
+  병합. `script.js`/`sw.js`는 자동 병합(내용 충돌 없음), `index.html`의 캐시버스팅
+  버전 줄만 두 세션이 각자 다른 값(`20260806-2` vs `20260806-1`)으로 동시에 올려서
+  충돌 — 병합된 내용(두 세션 변경사항이 합쳐진 새 파일)에 맞게 더 높은 `20260806-3`으로
+  재조정하고 `npm run build:min`으로 `script.min.js`/`styles.min.css` 재빌드.
+- **검증**: 회귀 테스트 12개 전부 병합 전/후 두 번 `ISSUES: 0` 확인
+  (`draw_archive_integrity_check.js`로 새 8/5 항목이 날짜순·중복없음 통과하는 것도 포함).
+
+**같은 날 이어서 — 사용자가 제안한 "자동 홍보 장치" 7개 항목, 코드로 직접 확인해보니
+전부 이미 구현·완료 상태였음(새로 만들 것 없음)**: 사용자가 두 차례에 걸쳐 성장 아이디어
+목록(①결과값 URL 딥링크 ②퍼가기 임베드 위젯 ③개발자용 JSON API ④명세서 이미지 저장
+⑤Web Share API 연동 ⑥다국어 검색엔진 일괄 색인 ⑦잭팟 뉴스 사이클 대응)을 제시 — 짐작이나
+HANDOFF 기록만 보고 답하지 않고 매번 코드/워크플로 파일을 직접 grep해서 확인함:
+- ①②④⑤⑥ **전부 이미 구현·배포됨**: `?amount=&country=&state=` 딥링크(script.js:9126대,
+  `shareResult()`가 실제로 이 링크를 생성), `widget-embed.html`(커밋 `2fddaca`, 국가 7개
+  실수령액 미리보기+백링크, `press-kit.html`에 실제 iframe 스니펫까지 노출 중),
+  `saveHomeResultAsImage`(Canvas 명세서 이미지), `navigator.share({files})` 우선 시도
+  (`finishAnnotateAndShare()`, 2026-08-05 도입), Google/네이버/Bing/Daum(2026-07-24)+
+  Yandex(별도 세션)+`.github/workflows/indexnow.yml`(push마다 Bing/Yandex/Naver 자동
+  재크롤 요청) — 전부 이미 대시보드 등록·자동화까지 끝나있음.
+- ③(개발자용 tax-rates.json 공개)은 **의도적으로 보류 추천**: 실제로 존재하는 게 아니라
+  `STATE_TAX_RATES`/`COUNTRY_TAX_PROFILES`가 1.8MB `script.js` 안에 파묻힌 JS 객체라
+  추출 작업이 필요한데다, 이 사이트 타겟층(복권 당첨자·이민자 개인)과 개발자 생태계가
+  안 겹쳐서 "공식 API"로 노출해도 발견해줄 사람이 없고 정확도·버전 안정성 책임만 늘어남 —
+  이전 세션들이 비슷한 이유로 반려한 "타겟층과 안 맞는 채널" 패턴과 동일 결론.
+- ⑦(잭팟 뉴스 사이클)과 "도메인 신뢰도 축적(시간)"은 **애초에 코드로 만들 수 있는 게
+  아니라는 걸 사용자에게 설명함** — 잭팟 사이클은 사이트가 만드는 게 아니라 받아먹는
+  외부 이벤트(위 파워볼 8/5 갱신처럼 사이클이 올 때마다 데이터를 최신으로 맞추는 반복
+  유지보수가 할 수 있는 전부), 도메인 신뢰도는 sitemap·색인 요청이 다 끝나도 시간이
+  지나야 쌓이는 구글 내부 신호라 기다리는 것 외엔 방법이 없음.
+- **다음 세션 참고**: "홍보 기능 뭐 더 없을까" 류 질문이 다시 오면, 이 항목과 위
+  ①~⑦ 매핑을 먼저 확인하고 재조사부터 하지 말 것 — 짐작으로 "이미 되어있다"거나
+  "새로 만들자"고 답하지 말고, 실제로 grep/파일 확인 후 답하는 습관을 유지할 것
+  (이 세션도 처음엔 ②를 "새로 만들어야 한다"고 잘못 판단했다가 사용자가 "되어있지
+  않냐"고 되물어서 `widget-embed.html`을 찾아 정정한 사례가 있음).
+
+### 2026-08-06 이어서 — `og.chamtax.com` 동적 공유카드 Worker 되살림(단, 폴백
+경로에만 한정)
+
+사용자가 참고한 AI 홍보 제안 중 "동적 OG 프리뷰 카드"를 검토하다가, 이게 완전히
+새 제안이 아니라 **이 저장소가 2026-07-31에 이미 만들어서 배포까지 해뒀던 기능**
+(Cloudflare Worker, `og-share-worker/`)이 2026-08-05에 다른 이유로 호출부만
+끊긴 채 방치돼있던 것을 발견함.
+
+- **실제 배포 상태 재확인**: `curl`로 `og.chamtax.com/s?...`·`/api/og.png?...`
+  둘 다 직접 호출해서 지금도 정상 작동 중인 걸 확인함(재배포 불필요, Cloudflare
+  무료 플랜이라 비용도 없음) — 예전 커밋 메시지의 "배포는 그대로 둠" 기록이
+  실제로 맞았음.
+- **되살리되 범위를 좁힘**: git 히스토리(`55f9bb0^`)에서 예전 코드를 확인한 결과,
+  이 Worker가 꺼진 진짜 이유는 "문제가 있어서"가 아니라 **"결과 공유하기"가
+  2026-08-03에 실제 이미지 파일을 `navigator.share()`로 직접 공유하는 방식으로
+  바뀌면서 대체됐기 때문**이었음 — 이미지가 채팅에 바로 보이는 주 경로(모바일
+  공유시트)에서는 이 동적 카드가 어차피 발동 안 하고, 오히려 감싼 링크를 거기
+  섞으면 예전에 문제였던 "이미지+텍스트+링크미리보기 3덩어리 쪼개짐"(2026-08-05
+  이유로 애초에 없앴던 것)이 재발할 위험만 있음. 그래서 **파일 공유가 안 되는
+  폴백 경로**(주로 데스크톱 — 이미지는 다운로드되고 텍스트만 클립보드로 복사되는
+  경우)에만 한정해서 연결함 — 그 경로는 이미지가 같이 안 붙으므로 감싼 링크를
+  써도 중복 문제가 없음.
+- **구현**: `OG_SHARE_WORKER_BASE`/`wrapWithOgShareCard()` 되살림(git 히스토리
+  원본 그대로). `openAnnotateOverlay()`에 `annotateShareTextFallback` 상태 신설
+  (`opts.shareTextFallback`이 없으면 기존 `annotateShareText`와 동일하게 동작 —
+  다른 호출부는 전부 무영향). `finishAnnotateAndShare()`의 클립보드 복사·
+  `window.prompt` 폴백 두 곳만 이 새 변수를 씀. `shareResult()`에서만
+  `shareTextFallback`을 실제로 채워서 넘김(다른 공유 함수들은 안 건드림 —
+  범위를 최소화).
+- **검증**: 살아있는 Worker에 실제로 이 코드가 만드는 정확한 URL 형태로 curl
+  직접 호출해서 카드 HTML/PNG 정상 생성 확인. Playwright로 `shareResult()`
+  실행 후 `annotateShareText`(주경로, og.chamtax.com 미포함 확인)와
+  `annotateShareTextFallback`(og.chamtax.com/s? 포함 확인) 분리 동작 확인,
+  `navigator.canShare`를 강제로 꺼서 실제 폴백 경로(클립보드 복사)까지 끝까지
+  실행해 복사된 텍스트에 감싼 링크가 들어있는 것 확인 — 콘솔 에러 0건.
+  회귀 테스트 9개(`home_audit`18·`console_error_audit`161·`wrap_audit`168·
+  `i18n_coverage_audit`764키·`broken_link_audit`95개·`full_overflow_sweep`945
+  조합·`nav_slider_audit`·`map_scroll_audit`10·`faq_audit`18) 전부 `ISSUES: 0`.
+  `npm run build:min` 재실행, 캐시버스팅 `20260806-1`→`20260806-2`,
+  `CACHE_NAME` v13→v14.
+- **다음 세션 참고**: 다른 공유 함수(`shareLatestDraw`/낚시 게임 공유 등)들의
+  주 경로는 일부러 안 건드림 — 전부 이미지 파일이 직접 공유되는 구조라 그대로가
+  맞음. 이 Worker를 더 넓게 쓰고 싶어지면(예: 폴백 말고 어디든), 위에서 설명한
+  "이미지+링크 중복" 재발 위험부터 먼저 따질 것.
+
+**후속(같은 날, 다른 세션이 병합)**: 이 작업은 원래 `claude/github-handover-docs-2g94p5`
+브랜치(PR #145)에만 커밋되고 오랫동안 main에 병합이 안 된 채 남아있었음 — 그 사이 main이
+한참 더 진행되면서 PR이 conflict 상태(`mergeable_state: dirty`)가 됨. 사용자가 "낚시게임
+황금물고기 작업이 토큰 부족으로 안 올라간 것 같다"고 물어봐서 전체 브랜치를 조사하다가
+이 PR을 발견 — 실제로는 낚시게임 확장 작업(별도, 유실됨)과는 무관한 별개 작업이었고, 이
+작업 자체는 안전하게 살아있었음. `b891a5c` 커밋 하나만 현재 main 위로 cherry-pick해서
+반영(`script.js`는 자동 병합, `index.html`/`script.min.js`/이 문서만 충돌 — 캐시버스팅
+버전은 `20260806-4`로 재조정, `script.min.js`는 `npm run build:min`으로 재생성, 이 문서
+충돌은 두 세션 기록을 순서대로 이어붙여 해결).
+
+### 2026-08-06 이어서 — 유실됐던 "황금 물고기" 낚시 게임 강화안 재구현
+
+위 항목에서 언급한 "낚시게임 확장 작업(별도, 유실됨)" 본체 — git 어디에도 커밋된 적이
+없어서(원 세션이 토큰 소진으로 푸시 전에 끊김) 복구가 아니라 **사용자가 붙여넣어준 그
+세션의 대화 기록(설계 스펙)을 근거로 처음부터 다시 구현**함. 4가지 강화안 전부 기존
+낚시 게임 상태 머신(`fishingFish`/`fishingSwimLoop`/`fishingAttemptCatch`/
+`fishingCaughtSuccess`, `odds` 탭 "낚시로 뽑기")에 얹었고, 새 번역 문구는 하나도
+추가하지 않음(아이콘·애니메이션만 사용):
+
+- **황금 물고기**(`FISHING_GOLDEN_CHANCE=0.18`): 스폰 시 약 18% 확률로 `golden` 플래그를
+  받음 — 속도·판정폭은 평범한 물고기와 완전히 동일(난이도 불변), 은은한 금빛 발광
+  펄스(`.fishing-target-fish.golden`)만 다름. 낚으면 트로피 아이콘도 같은 발광으로
+  튀어오르고(`.fishing-caught-fish.golden`), 공유 카드에는 캔버스에 별 배지를
+  직접 path로 그려 넣음(`drawShareBallGoldBadge`) — `flagEmojiFromCode` 옆 주석에 있는
+  기존 규칙(캔버스엔 이모지 폰트 의존 문구 금지)을 그대로 따름, 텍스트/이모지 아님.
+- **6번째(보너스) 캐치 강조**: `fishingCaughtSuccess`가 `caughtValueIndex===5`일 때
+  `isBonus`로 판단 — 물결이 더 크고 오래가는 `.fishing-splash.big`, 더 강하고 겹겹인
+  진동 패턴, 결과 볼에 `.bonus-pop`(색 팝 애니메이션) 부여. 파워볼/메가볼 특별번호를
+  "이번 판 마무리"로 체감시키는 목적.
+  - 황금 물고기가 6번째와 겹치면 두 효과가 자연스럽게 같이 적용됨(별도 처리 불필요).
+- **입질(bite-delay) 연출**: 판정 성공 즉시 번호를 공개하던 것을, `fishingStartBite()`가
+  약 0.8초 지연시키며 낚싯대가 2~3번 까딱거리는 `.fishing-rod-wrap.biting` 애니메이션 +
+  진동 `[30,30,30]`을 먼저 보여준 뒤 기존 `fishingCaughtSuccess`를 호출하도록 재구성.
+  그동안 낚인 물고기는 `hooked` 플래그로 `fishingSwimLoop`에서 제자리에 멈추고(걸린
+  느낌), 나머지 물고기들은 기존 설계 그대로 계속 헤엄침. 이 지연 동안 새 낚시 시도는
+  전역 `fishingBiting` 플래그로 막아 애니메이션이 겹치지 않게 함.
+- **크기 3단계 + 자석 스냅**: 스폰마다 large(25%)/medium(50%)/small(25%) 중 하나를
+  뽑아 판정 폭을 다르게 줌(`FISHING_SIZE_CONFIG`: large 13%·medium 9%(기존값 그대로)·
+  small 6%). 표시 크기도 슬롯별 기본 폰트(`FISHING_SLOT_BASE_FONT_PX`)를 기준으로
+  배율만큼 JS가 직접 `style.fontSize`를 계산해 넣음(CSS 클래스 특이성 다툼을 피하려고
+  일부러 인라인으로 처리 — 기존에도 `left`/`transform`은 이미 인라인이었음). small은
+  좁은 판정을 보완하려고, 드래그 중이고 찌가 8% 이내로 가까워지면 초당 40%씩 끌려오는
+  자석 효과(`FISHING_SNAP_RANGE_PCT`/`FISHING_SNAP_PULL_PCT_PER_SEC`)를 `fishingSwimLoop`
+  안에 얹음.
+- **검증**: Playwright로 내부 함수를 직접 호출해 (1) 스폰마다 golden/size 필드가 채워지는지
+  (2) 입질 지연 동안 `fishingBiting`/`hooked`/`.biting` 클래스가 올바르게 켜졌다 꺼지는지
+  (3) large는 10%거리서도 성공·small은 10%에서 실패·4%에서 성공하는지(판정폭 차등 확인)
+  (4) 드래그 중 small 물고기가 실제로 찌 쪽으로 좌표가 이동하는지(자석 스냅) (5) 6번째
+  캐치에서 `bonus-pop`/`big` 스플래시/공유 버튼 노출까지 정상 완주하는지 (6)
+  `shareFishingCatch()`가 에러 없이 캔버스를 만들고, 강제로 golden 플래그를 섞은 캔버스를
+  실제로 PNG로 저장해 별 배지가 정확한 볼에만(황금 아닌 볼엔 안 그려짐) 렌더되는지 육안
+  확인 — 전부 기대대로 동작, 콘솔 에러 0건. 회귀 테스트(`i18n_coverage_audit`764키,
+  `i18n_attr_lint`, `console_error_audit`161, `home_audit`18) 전부 `ISSUES: 0`.
+  `npm run build:min` 재실행, 캐시버스팅 `20260806-4`→`20260806-5`.
+- **다음 세션 참고**: 이 4가지는 전부 `fishingFish[i]`에 필드(golden/size/hooked)를
+  추가하고 기존 스폰·스윔·판정·공개 함수 안에 조건 분기만 끼워넣는 방식으로 구현했음 —
+  구조를 더 확장하고 싶으면(예: 크기 4단계, 새로운 특수 물고기) 이 패턴을 그대로
+  따르는 게 제일 안전함. `fishingBiting` 전역 플래그는 "동시에 물고기 한 마리만
+  입질 연출 중"을 보장하는 용도라, 여러 마리를 동시에 릴 감게 하고 싶어지면 이 플래그를
+  슬롯별 배열로 바꿔야 함.
+
+### 2026-08-06 이어서 — GA4 속성 분리 + Search Console 색인 상태 점검 + 크롤 예산 대응
+
+사용자가 "사이트 유입이 되고 있는지 확인해달라"고 요청 → GA4/Search Console은 로그인
+필요한 대시보드라 직접 조회는 못 하고, 사용자가 캡처해서 보여준 화면을 같이 읽으며
+진단·조치함:
+
+- **GA4 측정 ID가 참택스 전용 속성이 아니었음**: 기존 `G-52R7SSXXNB`가 알고 보니
+  사용자의 다른 프로젝트("uridanbi 티스토리 블로그") GA4 속성에 딸린 데이터 스트림
+  이었음 — 그래서 참택스만의 방문자/유입 통계를 따로 볼 수 없었음. 사용자가 참택스
+  전용으로 새 GA4 속성/스트림(`ChamTax Web`, `https://chamtax.com`)을 만들고 새 측정
+  ID `G-K0S72CPYZM`을 발급받아서, `index.html` + 언어별 랜딩페이지 91개 총 92개
+  파일의 gtag 스크립트를 전부 이걸로 교체함(파일당 정확히 2줄만 변경, `grep`으로
+  잔여 occurrence 0건 확인). PR #149.
+- **GA4 28일 트래픽 진단**: 하루 평균 11세션 수준(초기 단계), Direct가 81%로 압도적인데
+  이건 대부분 SNS 공유(카카오톡 등 레퍼러 안 잡히는 경로) 유입으로 추정, Organic Search는
+  14.66%뿐이지만 참여율 77.78%·평균 체류 1분58초로 품질은 제일 좋음.
+  `semilee123456-ui.github.io`로 직접 유입된 세션이 있어 리다이렉트 문제인가 의심했는데,
+  `curl -I`로 직접 확인해보니 실제로는 301로 `chamtax.com`에 정상 리다이렉트되고 있었고
+  (git log로 CNAME 파일이 7/31에 추가된 걸 확인 — 그 이전의 레거시 트래픽이었을 뿐),
+  **이 부분은 이미 정상이라 손댈 것 없음**.
+- **Search Console 색인 현황**: 사이트맵 등록 URL 90개 중 실제 색인은 13개뿐, 가장 큰
+  비중(20~30개, 시점마다 변동)이 "발견됨 - 현재 색인이 생성되지 않음"(소스: Google
+  시스템) — 이건 기술적 차단이 아니라 신생 도메인이라 크롤 우선순위가 낮게 매겨진
+  전형적 패턴. sitemap.xml(90개 URL, 200 OK)·robots.txt·`noindex` 사용 페이지 3개
+  (`widget-embed.html`/`404.html`/`press-kit.html`, 전부 의도된 것) 전부 기술적으로는
+  문제 없음을 코드로 확인함.
+  - 색인된 13개 중 3개(`?lang=ne`/`?lang=bn`/`?lang=my`)가 `index.html`의 쿼리스트링
+    언어 버전이 canonical(`https://chamtax.com/`로 항상 고정)을 무시하고 예외적으로
+    새어나가 색인된 케이스였음 — `hreflang`이 이미 27개 언어 전부 완비돼있는 걸
+    확인했는데(제가 처음엔 이걸 추가하자고 제안했다가, 이미 있는 걸 발견하고 정정함),
+    canonical은 언어 전환 시 JS로 갱신되지 않아 hreflang과 신호가 충돌하고 있음. 이걸
+    JS로 동적 교체해서 고치는 안은 **사용자가 반려함**(Google 공식 가이드상 "초기 HTML
+    canonical과 JS로 바뀐 canonical이 다르면 신뢰할 수 없는 신호로 판단"할 위험이
+    실익보다 크다는 판단) — 대신 정적 랜딩페이지(90개) 쪽에 화력을 집중하기로 함.
+- **조치(이번 세션에서 실제로 반영한 것)**: 홈(`index.html`)에서 1홉 만에 닿는 핵심
+  랜딩페이지 링크 블록(`related-guides`) 추가 — 기존엔 90개 랜딩페이지가 footer의
+  Sitemap 링크(2홉)로만 닿을 수 있었는데, 카테고리별 대표 12개(핵심 도구 5·국가별
+  거주자 안내 4·한국 거주 외국인 가이드 1·전체 목록 링크 1 등)를 홈에서 바로 연결해서
+  크롤 우선순위를 높이려는 목적. 사람이 봐도 자연스러운 가시 링크라 순수 크롤러용
+  숨김 링크(cloaking)는 아님, 새 번역 문구도 추가 안 함(sitemap.html과 같은 관례로
+  각 나라 언어 그대로 표기). `broken_link_audit`(95파일)·`console_error_audit`(161)·
+  `home_audit`(18) 전부 `ISSUES: 0`. `npm run build:min` 재실행, 캐시버스팅
+  `20260806-5`→`20260806-6`(styles만, script.js는 이번엔 무변경). PR #150.
+- **보류한 것(2번 트랙)**: 색인된 10개 정적 페이지에 나라별 실제 세율표·계산 예시·FAQ를
+  보강하는 콘텐츠 작업은 사용자가 "1번(내부 링크)부터 먼저"로 범위를 좁혀서 이번엔
+  진행 안 함 — 다음 세션에서 이어서 할 수 있음. 이건 나라별 세금 데이터 정확도가
+  중요해서, 이미 계산기가 쓰고 있는 `COUNTRY_TAX_PROFILES`/`STATE_TAX_RATES`(script.js)를
+  출처로 삼아 작성하면 새로 조사하는 것보다 훨씬 안전함.
+- **다음 세션 참고**: GA4/Search Console 둘 다 로그인이 필요해서 이 세션 도구로는
+  절대 직접 조회 불가능 — 사용자가 캡처해서 보여줘야만 진단 가능한 영역임을 인지하고
+  있을 것. 이번처럼 사용자가 캡처를 여러 장 순차로 보내면, 이전 진단(예: hreflang 이미
+  있음)을 다시 무시하고 재조사하지 말고 이 세션 기록을 먼저 참고할 것.
+
+### 2026-08-06 이어서 — 공유 카드 캔버스의 아랍어/우르두어 bidi(양방향 텍스트) 버그 발견·수정
+
+사용자가 낚시 게임 공유 카드 스크린샷을 보여주며 "낚시로 뽑기 공유하기 글씨가 붙어서
+애매하게 나온다"고 제보 — 캡처만으로는 정확한 위치를 특정할 수 없어서, 27개 언어
+전부 실제로 낚시 공유 카드를 생성해서(Playwright로 `shareFishingCatch()` 직접 호출,
+`openAnnotateOverlay`를 가로채 캔버스를 PNG로 저장) 육안으로 비교함.
+
+- **원인**: 아랍어·우르두어(RTL)에서만 재현되는 버그. `subText`가
+  `` `${thisJackpotLabel} $${jackpotM}M → ${basisSuffix}` `` 형태로 RTL 문장 중간에
+  "$372M" 같은 LTR 조각(숫자·통화기호)을 끼워 넣는데, **캔버스 2D의 `fillText`는
+  브라우저의 일반 텍스트 레이아웃과 달리 완전한 유니코드 양방향(bidi) 알고리즘을
+  적용하지 않음** — `ctx.direction`을 아예 안 정해준 게 1차 원인이었지만(이 사이트
+  전체에서 `ctx.direction`을 설정한 곳이 한 군데도 없었음), 직접 실측해보니
+  `ctx.direction='rtl'`만 추가해도 통화기호($)가 여전히 엉뚱한 자리로 이탈하는 걸
+  확인함(별도 격리 테스트로 재현: `ctx.direction`만으로는 "$372M"가 "372M$"로 나옴).
+- **해결**: `bidiIsolateLtrRuns(text)` 헬퍼를 새로 추가해, RTL 문장 안의 LTR 조각(영문·
+  숫자·통화기호·%)을 유니코드 격리 문자 U+2066(LRI)~U+2069(PDI)로 감싸서 캔버스가
+  그 조각의 내부 순서를 그대로 유지하게 함(격리 문자 유무를 직접 렌더링 비교해서
+  결정 — 격리 문자 있어야만 "$372M"가 깨지지 않고 나옴). `layoutShareContent()`에서
+  `label`/`subText`에 RTL일 때만 적용해서 `buildShareCard()`를 쓰는 4개 공유 카드
+  (낚시 게임·잭팟 랭킹·`shareResult` 등) 전부 한 번에 고침. 같은 패턴(LTR 날짜/금액이
+  RTL 번역문과 섞임)이 있던 `saveMyNumbersAsTicketImage()`(티켓 카드의 "날짜 · 직접
+  선택" 줄)·`buildHomeResultCheckCanvas()`(수표 카드의 "372M USD 당첨 · 한국 거주자"류
+  기준 줄)에도 각각 `ctx.direction` + `bidiIsolateLtrRuns()` 적용.
+- **검증**: 27개 언어 전부 낚시 공유 카드를 재생성해서 아랍어·우르두어만 수정 전/후
+  비교(수정 전: "372$⁩ Mهذا الجاكبوت" 식으로 뒤엉킴 → 수정 후: "هذا الجاكبوت $372M ←
+  مقيم في كوريا"로 정상), 한국어 등 나머지 25개 언어는 변화 없음 확인. 티켓 카드·
+  수표 카드도 아랍어로 별도 재현해서 같은 방식으로 수정 확인. 회귀 테스트
+  (`console_error_audit`161·`home_audit`18·`broken_link_audit`95·`wrap_audit`168·
+  `i18n_coverage_audit`764키·`fact_consistency_audit`99) 전부 `ISSUES: 0`.
+  `npm run build:min` 재실행, 캐시버스팅 `script.min.js` `20260806-5`→`20260806-6`,
+  `sw.js` `CACHE_NAME` v15→v16.
+- **다음 세션 참고**: 캔버스에 RTL 언어로 번역된 문장을 그릴 일이 새로 생기면(신규
+  공유 카드 등), `ctx.direction` 설정을 잊지 말 것은 물론이고 **그 문장 안에 LTR
+  조각(숫자·영문·통화기호)이 하나라도 섞여 있으면 반드시 `bidiIsolateLtrRuns()`로
+  감쌀 것** — `ctx.direction`만으론 부족하다는 게 이번에 실측으로 확인됨. 이 함수는
+  `layoutShareContent()` 바로 위에 있음.
+
+### 2026-08-06 — 주간 사이트 헬스체크(9개 항목 전체 점검, `claude/progress-checkpoint-pbf93h`)
+
+로또 데이터 점검과 별개인 주간 사이트 전반 헬스체크. 서브에이전트 4개(회귀 테스트/
+외부링크·SEO 스팟체크/세율·환율 스팟체크/능동적 버그 탐색)를 병렬로 돌림. **참고**:
+2026-08-03에 이 통합 체크리스트가 15개 개별 루틴으로 쪼개졌다는 기록이 위에 있는데,
+이번 세션은 그 개별 루틴이 아니라 예전 통합 체크리스트(1~9번) 그대로 다시 들어와서
+실행함 — 15개 루틴이 실제로 살아있는지는 이 세션 도구로 확인 불가(트리거 목록 조회 권한
+없음), 다음에 이 통합 체크리스트가 또 들어오면 그때도 있는 그대로 수행하면 됨.
+
+- **1. 라이브 배포 상태 — ⚠️ 문제 발견, GitHub Pages가 몇 시간째 최신 커밋을 못 따라감**:
+  `chamtax.com`의 `index.html`/`sw.js` 응답 헤더 `last-modified`가 `2026-08-06 10:32:17
+  GMT`에 멈춰있는데, main은 그 이후로도 최소 5개 커밋이 더 진행됨(마지막은 `13:06:35
+  GMT`, PR #151 머지). 세션 시작 시점(14:54 GMT)과 끝난 시점(15:38 GMT) 두 번 모두
+  `?_cb=<timestamp>` 캐시버스팅 쿼리로 재확인했지만 값이 안 바뀜 — `cf-cache-status:
+  DYNAMIC`(Cloudflare 캐시가 아니라 매번 오리진에 실제로 물어보는 상태)이라 CDN 캐시
+  문제가 아니라 **GitHub Pages 오리진 자체가 재배포를 안 하고 있는 것으로 보임**(HANDOFF.md
+  7번 항목이 설명하는 "Cloudflare 최대 4시간 캐시"로는 설명 안 되는 지속적 정체 — 이미
+  4시간 넘게 정체 중이었고 캐시 문제라면 `cf-cache-status: HIT`이어야 하는데 `DYNAMIC`).
+  실제 영향: 방문자가 받는 `script.min.js?v=20260806-5`/`styles.min.css?v=20260806-6`/
+  `sw.js`의 `CACHE_NAME='chamtax-shell-v14'`가 로컬 main 최신값(`-6`/`-7`/`v16`)보다
+  뒤처짐 — 아랍어/우르두어 bidi 버그 수정 등 오늘 배포됐어야 할 변경사항이 아직 라이브에
+  하나도 안 나가 있을 가능성이 높음.
+  **2026-08-06 후속(다른 세션이 원인 확정)**: GitHub Actions API로 직접 확인한 결과,
+  "pages build and deployment" 워크플로의 Jekyll 빌드 자체는 매번 성공하는데, 배포
+  단계가 `deployment_queued` 상태에서 멈춰 10분 타임아웃으로 계속 취소되고 있었음(PR #147
+  머지 `3e03b505`부터 반복, PR #150 `d600fd13`까지는 정상 배포됐던 게 마지막). 워크플로
+  재실행(`rerun_workflow_run`)도 403(Resource not accessible by integration)으로 막혀서
+  이 세션도 직접 못 고침 — **사용자가 Actions 탭에서 실패한 "pages build and deployment"
+  실행을 찾아 "Re-run all jobs"를 눌러야 함.** `gh` CLI가 이 세션에 없고 GitHub REST API도
+  프록시가 막아놔서(`Access to this GitHub API path is not permitted through this proxy`)
+  Actions/Pages 배포 로그를 직접 확인 못 함 — **사용자가 저장소 Settings→Pages에서 배포
+  상태 배너나 Actions 탭의 "pages build and deployment" 워크플로 실행 이력을 직접
+  확인해줘야 진짜 원인(빌드 실패/큐 정체/설정 문제)을 알 수 있음.** 도메인 자체(A레코드/
+  CNAME/SSL)는 전부 정상이라 DNS 문제는 아님(아래 2번 참고).
+- **2. 도메인/SSL — 정상**: `https://chamtax.com/` 200, 인증서 `CN=chamtax.com`(Google
+  Trust Services 발급) `2026-10-29`까지 유효, `http://chamtax.com` → 301 → https 정상,
+  `https://www.chamtax.com` → 301 → apex 정상, `http://semilee123456-ui.github.io/` →
+  301 → `https://chamtax.com/` 정상. 리다이렉트 루프·인증서 오류 없음.
+- **3. 회귀 테스트 — 14개 전체 `ISSUES: 0` (기존 문서엔 "12개"로 적혀있었는데 실제로는
+  `fact_consistency_audit.js`/`full_overflow_sweep.js`가 이미 추가되어 14개임 — 문서
+  숫자가 코드보다 뒤처져 있던 것, 참고용으로 지금 이 항목에 실제 개수 기록)**:
+  audit_odds_compare(40)·broken_link_audit(95파일)·console_error_audit(161)·
+  draw_archive_integrity_check(4)·fact_consistency_audit(99파일)·faq_audit(18)·
+  full_overflow_sweep(27개 언어×5개 폭×7개 화면=945 조합, 100초 타임아웃보다 오래
+  걸려서 처음엔 하네스 타임아웃으로 죽었다가 재실행 2번으로 완주 확인)·home_audit(18)·
+  i18n_attr_lint·i18n_coverage_audit(764키)·lang_leak_audit(104)·map_scroll_audit(10)·
+  nav_slider_audit·wrap_audit(168) 전부 통과.
+- **4. 외부 링크 스팟체크 (이번 주 10/27개 확인, 로테이션 기록)**: 전체 41개(가 아니라
+  실제로는 90개) 랜딩페이지 + index.html에서 외부 링크는 총 27개뿐(대부분 index.html에
+  몰려있음 — irs.gov/refunds, missingmoney.com, usa.gov/unclaimed-money, gov.kr
+  미수령환급 포털, pbgc.gov, udgam.rbi.org.in, bb.org.bd, iepf.gov.in, jsdelivr
+  Pretendard CDN 등 + press-kit.html의 github.com 저장소 링크 + Google Fonts, 나머지
+  랜딩페이지는 폰트 CDN 링크만 공유). 이번 주 10개 확인: **죽은 링크 확정 0건**. 7개는
+  200 정상, 3개(`missingmoney.com`/`udgam.rbi.org.in`/`iepf.gov.in`)는 Cloudflare/Akamai
+  봇 차단(403/connection-reset)이라 이 샌드박스에서 죽었는지 살았는지 판단 불가 — 사람이
+  브라우저로 직접 열어서 확인 필요. **다음 주는 나머지 17개(주로 index.html 안의 각국
+  미수령상금 링크들) 중심으로 이어갈 것**, 이번에 봇차단으로 판정 못 한 3개도 브라우저로
+  재확인 권장.
+- **5. 세율/환율 폴백값 스팟체크 (이번 주 국가 3/21·주 3/51·통화 3/21, 로테이션 기록)**:
+  국가 인도·베트남·카자흐스탄(전부 2026년 세법 개정 주석이 달려있어 드리프트 위험이 가장
+  큰 항목 위주로 선택), 미국 주 메인·메릴랜드·애리조나, 통화 JPY·RUB·VND 확인. **확정
+  오류 0건**. 인도의 25% 서차지(고소득 구간)와 카자흐스탄 제379조 "당첨금" 10%
+  세율 2건은 검색 결과가 불충분해 "확인 필요"로만 남김(코드 미수정). 환율 3개
+  전부 현재 시세와 4% 이내 차이(20% 기준 미달, 정상). **다음 주는 나머지 18개국/
+  48개 주/18개 통화 중 이번에 안 본 항목으로 이어갈 것** — 특히 아직 한 번도 스팟체크
+  안 된 국가/주/통화 위주로.
+- **6. HANDOFF.md 라이브 반영 — 1번과 동일한 문제로 뒤처짐**: 라이브 HANDOFF.md가 로컬
+  대비 230줄 적음(라이브 2,501줄 vs 로컬 세션 시작 시점 2,731줄) — 별도 문제가 아니라
+  1번의 GitHub Pages 배포 정체가 이 파일에도 그대로 적용된 것.
+- **7. 능동적 버그 탐색 (이번 주 로테이션: 뷰포트 240/280/320/960/1280px × 아랍어(RTL)·
+  태국어·베트남어, 홈/비교/확률체감/FAQ 4개 화면, 총 60조합 자동 오버플로 검사 + 클릭
+  시퀀스 3회(일반/다크모드/다크+고대비))**: 자동 오버플로 검출기는 60조합 전부 0건.
+  육안 확인에서 신규 버그 2건 발견(코드 미수정, 위 "알려진 미해결 항목"에 정확한 재현
+  방법과 함께 기록함) — (1) 아랍어에서 `#realAbroadSelect`의 "US · English" 옵션이
+  "JS · English"로 보이는 bidi 글자모양 버그(디자인 판단 필요해서 안 고침), (2) 240~280px
+  폭에서 `.intro-lang-select`가 말줄임표 없이 텍스트 잘림(태국어/베트남어/아랍어 전부
+  재현, 우선순위 낮음). 클릭 시퀀스(국가→통화→탭전환→아코디언→언어전환→재계산, 다크·
+  고대비 조합 포함)는 3회 전부 상태 불일치·콘솔 에러 없이 정상. **다음 주는 아직 안 써본
+  뷰포트(예: 375/414/768/1440px)와 언어(예: 중국어·일본어·러시아어·크메르어) 조합으로
+  이어갈 것.**
+- **8. SEO/콘텐츠 최신성 (이번 주 랜딩페이지 5개 + index.html 샘플, 로테이션 기록)**:
+  `bangladesh-resident-us-lottery-tax.html`/`english_in_korea_lottery_tax.html`/
+  `us-lottery-basics.html`/`powerball-tax.html`/`biggest-lottery-jackpots-after-tax.html`
+  + `index.html` 확인 — title/meta description/OG/JSON-LD 전부 정상(JSON 파싱 성공),
+  hreflang 대상 파일 전부 실존 확인(`test -f`), sitemap.xml 90개 URL 전부 저장소 파일과
+  매칭 확인 + 9개 실제 라이브 200 확인, robots.txt가 사이트맵 URL을 막고 있지 않음.
+  콘텐츠 최신성: 하드코딩된 낡은 연도·"최신 잭팟" 금액 없음(FAQ 안의 "2025년"류 언급은
+  전부 각국 세법 개정 시행일 인용이라 정상). **검색 노출 스팟체크**: "메가밀리언즈
+  실수령액" WebSearch 결과에 chamtax.com 미노출(뉴스매체·나무위키·경쟁사 `lotterytexts.com`이
+  상위) — 신생 도메인 특성상 예상 범위(기존 GA4/GSC 진단과 일치). 명백한 콘텐츠 공백은
+  못 찾음(일시불/연금 설명은 이미 FAQ에 있음 확인). **다음 주는 다른 5개 랜딩페이지
+  샘플로 이어갈 것.**
+- **9. 저장소 위생 — 정상**: `upload_batch*`류 중복 폴더, 루트에 `scripts/`/`i18n-source/`/
+  `.github/workflows/`와 겹치는 미참조 중복 파일 없음. (참고, 이번 항목 범위 밖이라 안
+  건드림: 루트에 `DESIGN-REVIEW-*.md`/`GEMINI-REVIEW-*.md`/`HANDOFF-branch-cleanup-*.md`/
+  `HANDOFF-og-share-*.md`/`handoff_hero_declutter.md` 같은 1회성 검토 메모 파일들이
+  누적되어 있음 — `scripts/`나 `i18n-source/`처럼 "정식 위치와 겹치는 중복"은 아니라서
+  이번 항목의 삭제 대상은 아니지만, 계속 쌓이는 중이니 언젠가 정리가 필요하면 참고.)
+- **결론**: 코드 변경 없음(발견된 버그 2건 모두 디자인 판단 필요해서 미수정, 세율/링크
+  전부 확정 오류 없음) — 이 세션이 실제로 수정한 건 이 HANDOFF.md 문서(알려진 미해결
+  항목 2건 추가 + 이 작업 이력)뿐. **1번 배포 정체는 이 세션 권한으로는 못 고침 — 사용자가
+  Settings→Pages/Actions 탭에서 직접 확인 필요**, 다음 세션은 이 문제가 여전한지부터
+  재확인할 것(재확인 시 `?_cb=<timestamp>` 캐시버스팅 쿼리로 `last-modified` 헤더를 보는
+  방법을 그대로 쓰면 됨). **후속(같은 날, 다른 세션이 원인 확정)**: 위 1번 항목에 추가
+  기록한 대로, 배포 정체의 정확한 원인(Pages 배포 큐 타임아웃)을 GitHub Actions API로
+  확정함 — 다음 세션은 재현/원인 조사를 반복하지 말고, Actions 탭 재실행 여부만 확인할 것.
+
+**같은 날 이어서 — 배포 여전히 정체, 사용자가 Actions 탭에서 직접 재실행(#554) 시도했지만
+"Queued"에서 진행이 안 됨**: 라이브 확인 결과 `styles.min.css?v=20260806-6`/GA4 새 ID/
+내부 링크 블록까지는(PR #150 시점) 배포돼있었는데, 그 이후(PR #147 사파리 수정·PR #151
+아랍어 bidi 수정)는 여전히 라이브에 없음(`sw.js` `CACHE_NAME`이 라이브는 `v14`, 로컬
+`v16` — `script.min.js`에 `bidiIsolateLtrRuns` 부재로 확인). 막힌 배포 큐를 새 커밋으로
+우회 트리거하기 위해 이 문서에 사소한 기록만 추가하는 커밋을 만듦 — 다음 세션은 이
+시도가 실제로 배포를 뚫었는지부터 확인할 것(뚫렸으면 이 문단은 지워도 됨).
+
