@@ -3962,7 +3962,11 @@ async function shareFishingCatch(){
     pt: 'Este prêmio', es: 'Este acumulado', uk: 'Цей джекпот', tet: "Jackpot ida ne'e",
   });
 
-  const label = `🎣 ${gameLabel} · ${flagCode}`;
+  // 2026-08-07: 여기 있던 "🎣 " 접두사가 캔버스에 raw 이모지로 그려져서 기기별 이모지 폰트에
+  // 따라 텍스트 옆에 깨지거나 겹쳐 보이는 문제가 있었음(🐻 로고에서 이미 겪고 고친 것과 같은
+  // 이모지 폰트 의존 문제 — drawLogoMark()/drawBearMascotIcon() 주석 참고) — 이 라벨은
+  // 다른 카드(label: gameLabel, 위 shareLatestDraw() 참고)처럼 이모지 없이 텍스트만 그림.
+  const label = `${gameLabel} · ${flagCode}`;
   const bigText = `$${finalM}M`;
   const subText = `${thisJackpotLabel} $${jackpotM}M → ${basisSuffix}`;
   const footerText = document.querySelector('[data-i18n="hero.tag"]')?.textContent || 'ChamTax';
@@ -4474,6 +4478,17 @@ function buildFreqTextMore(mainList, specialList, specialWord){
 // 바로 내용이 보임. 파일 공유(navigator.canShare({files}))를 지원 안 하는 환경(주로 PC
 // 브라우저)에서는 아래 각 share 함수의 기존 텍스트+링크 공유로 자동 대체됨.
 // ============================================================================
+
+// 2026-08-07: 위 "PC 브라우저는 파일 공유 미지원"이라는 전제가 깨짐 — Windows Chrome/Edge가
+// navigator.share/canShare(files)를 지원하기 시작하면서, 마우스로 쓰는 PC에서도 모바일과
+// 똑같이 윈도우 OS 공유창(연락처·근처 공유 등)이 뜬다는 제보(사용자 스크린샷 확인). 그
+// 창 자체는 표준 동작이라 오류는 아니지만 PC에서는 어색한 UX라, hover:hover + pointer:fine
+// (마우스/트랙패드 기반 기기) 조합이면 데스크톱으로 간주해 네이티브 공유를 아예 건너뛰고
+// 곧장 기존 폴백 경로(이미지 다운로드+텍스트 클립보드 복사)로 보냄.
+function isDesktopPointerEnv(){
+  return !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+}
+
 const SHARE_CARD_FONT = "'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
 
 function canvasRoundRectPath(ctx, x, y, w, h, r){
@@ -7847,7 +7862,7 @@ async function finishAnnotateAndShare(){
     if (!blob) return;
     const file = new File([blob], annotateDownloadFilename, { type: 'image/png' });
     const canShareFile = navigator.canShare && navigator.canShare({ files: [file] });
-    if (navigator.share && canShareFile) {
+    if (navigator.share && canShareFile && !isDesktopPointerEnv()) {
       try {
         await navigator.share({ files: [file], title: annotateShareTitle, text: annotateShareText });
         finish();
@@ -11375,7 +11390,7 @@ async function shareRefundChecklist(){
   // 지적(스크린샷 확인, shareLatestDraw() 주석도 참고). 이 공유는 원래 이미지 없이 텍스트만
   // 보내는 방식이라 링크를 빼면 카카오톡 등에서 쓰던 동적 카드(wrapWithOgShareCard)도 이제
   // 필요 없어짐 — 순수 텍스트만 공유.
-  if (navigator.share) {
+  if (navigator.share && !isDesktopPointerEnv()) {
     try {
       await navigator.share({ title: shareTitle, text: shareText });
       return;
@@ -11468,7 +11483,7 @@ async function shareUsUnclaimedMoneyChecklist(){
   );
 
   // 2026-08-05: shareRefundChecklist()와 같은 이유로 링크 제거 — 위 주석 참고
-  if (navigator.share) {
+  if (navigator.share && !isDesktopPointerEnv()) {
     try {
       await navigator.share({ title: shareTitle, text: shareText });
       return;
@@ -11559,7 +11574,7 @@ async function shareInUnclaimedMoneyChecklist(){
   );
 
   // 2026-08-05: shareRefundChecklist()와 같은 이유로 링크 제거 — 위 주석 참고
-  if (navigator.share) {
+  if (navigator.share && !isDesktopPointerEnv()) {
     try {
       await navigator.share({ title: shareTitle, text: shareText });
       return;
