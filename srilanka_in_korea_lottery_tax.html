@@ -347,7 +347,8 @@ async function shareThisPage(){
   const shareUrl = location.href;
   const shareText = 'කොරියාවේ ජීවත් වන ශ්‍රී ලාංකිකයන් ඇමරිකානු ලොතරැයියක් දිනුවොත් බදු ගෙවන්න ඕනද? මෙතන බලන්න:';
   const btn = document.getElementById('share-btn');
-  if (navigator.share) {
+  const isDesktopPointerEnv = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (navigator.share && !isDesktopPointerEnv) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;

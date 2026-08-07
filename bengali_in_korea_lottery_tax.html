@@ -347,7 +347,8 @@ async function shareThisPage(){
   const shareUrl = location.href;
   const shareText = 'কোরিয়ায় থাকা বাংলাদেশিরা আমেরিকান লটারি জিতলে কর দিতে হবে? এখানে দেখুন:';
   const btn = document.getElementById('share-btn');
-  if (navigator.share) {
+  const isDesktopPointerEnv = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (navigator.share && !isDesktopPointerEnv) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;

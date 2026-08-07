@@ -347,7 +347,8 @@ async function shareThisPage(){
   const shareUrl = location.href;
   const shareText = 'कोरिया में रहने वाले भारतीय अमेरिकी लॉटरी जीतें तो टैक्स देना होगा? यहां देखें:';
   const btn = document.getElementById('share-btn');
-  if (navigator.share) {
+  const isDesktopPointerEnv = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (navigator.share && !isDesktopPointerEnv) {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
       return;
