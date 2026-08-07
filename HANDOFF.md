@@ -2910,15 +2910,24 @@ PC(Windows)에서 "공유하기"를 누르면 윈도우 OS 공유창이 뜨는 �
   결과·꿈 해몽 결과 등 카드 공유 4종 전부 이 함수 하나를 공유해서 거쳐감, `openAnnotateOverlay`
   모달의 공유 버튼이 항상 이 함수를 호출), 텍스트 전용 공유는 `shareRefundChecklist()`/
   `shareUsUnclaimedMoneyChecklist()`/`shareInUnclaimedMoneyChecklist()` 3곳 개별 수정 — 총
-  "공유하기 7군데" 요청 전부 반영. **범위 밖으로 남겨둔 것**: "이미지로 저장" 버튼
-  (`finishAnnotateAndDownload()`, 3곳)도 아이폰 사파리 대응 때문에 같은 `navigator.share`
-  우선 시도 패턴이 있어서 PC에서 저장 버튼을 눌러도 같은 공유창이 뜰 수 있음 — "공유하기"가
-  아니라 "저장" 버튼이라 이번 요청 범위엔 안 넣었음, 다음에 물어보면 같은 패턴으로 고치면 됨.
+  "공유하기 7군데" 요청 전부 반영.
+  **같은 날 후속 — "이미지로 저장" 버튼도 사용자가 이어서 요청해 마저 고침**:
+  `finishAnnotateAndDownload()`(수표 카드·복권 티켓·낚시 결과 등 "이미지로 저장" 3곳이 공유하는
+  함수)도 아이폰 사파리 사진첩 저장 워크어라운드 때문에 같은 `navigator.share(files)` 우선
+  시도 패턴이 있어서 PC에서 저장 버튼을 눌러도 같은 공유창이 뜨는 문제가 동일하게 있었음 —
+  같은 `isDesktopPointerEnv()`로 마우스 기반 기기는 건너뛰고 곧장 blob 다운로드로 가게 수정
+  (모바일 경로의 사진첩 저장 워크어라운드는 그대로 유지). 이제 공유/저장 버튼 전부(7+3=10곳)
+  PC에서 네이티브 공유창을 안 띄움.
   **PC에서 실제 클릭 테스트는 못 함**(이 샌드박스엔 Windows/마우스 환경 없음) — 로직 자체는
   표준 `matchMedia` 미디어쿼리라 신뢰할 만하지만, 다음에 PC 피드백이 다시 오면 이 조치가
   실제로 폴백을 타는지부터 확인할 것.
-- 회귀 테스트 `console_error_audit`(161) · `home_audit`(18) 둘 다 `ISSUES:0`. `npm install`로
-  devDependencies(terser/clean-css, `.gitignore`에 `node_modules/` 이미 있어 커밋 안 됨)
-  설치 후 `build:min` 재실행, `script.min.js` 캐시버스팅 `20260806-6`→`20260807-1`,
-  `sw.js` `CACHE_NAME` `v16`→`v17`. `styles.css`는 안 건드려서 `styles.min.css`는 재빌드만
-  하고 버전은 그대로 둠.
+- 회귀 테스트 `console_error_audit`(161) · `home_audit`(18) 둘 다 `ISSUES:0`(저장 버튼 수정
+  후 재실행 포함). `npm install`로 devDependencies(terser/clean-css, `.gitignore`에
+  `node_modules/` 이미 있어 커밋 안 됨) 설치 후 `build:min`을 두 커밋에 걸쳐 재실행,
+  `script.min.js` 캐시버스팅 `20260806-6`→`20260807-1`→`20260807-2`, `sw.js` `CACHE_NAME`
+  `v16`→`v17`→`v18`. `styles.css`는 안 건드려서 `styles.min.css`는 재빌드만 하고 버전은
+  그대로 둠.
+- **PR #154**로 `main`에 올림(`claude/handover-file-review-ua989e` → `main`) — 이 세션은
+  이 저장소 워크플로상 `main`에 직접 push 권한/허가가 없어서 PR로 남김, 다음 세션은 이 PR이
+  머지·배포됐는지부터 확인할 것(머지됐는데도 라이브에 안 뜨면 위 "배포 정체" 이슈가 여전한지
+  같이 확인).
