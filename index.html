@@ -121,7 +121,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260806-7">
+<link rel="stylesheet" href="styles.min.css?v=20260807-3">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
@@ -486,9 +486,9 @@
         </button>
         <div class="menu">
           <div class="menu-links">
-            <button id="nav-compare" onclick="go('compare')"><span class="nav-link-icon" aria-hidden="true">🌍</span><span data-i18n="nav.compare">비교</span></button>
-            <button id="nav-odds" onclick="go('odds')"><span class="nav-link-icon" aria-hidden="true">🎲</span><span data-i18n="nav.odds">확률</span></button>
-            <button id="nav-faq" onclick="go('faq')"><span class="nav-link-icon" aria-hidden="true">❓</span><span data-i18n="nav.faq">도움말</span></button>
+            <button id="nav-compare" onclick="go('compare')"><span data-i18n="nav.compare">비교</span></button>
+            <button id="nav-odds" onclick="go('odds')"><span data-i18n="nav.odds">확률</span></button>
+            <button id="nav-faq" onclick="go('faq')"><span data-i18n="nav.faq">도움말</span></button>
           </div>
           <div class="menu-controls">
             <details class="settings-menu" id="settingsMenu">
