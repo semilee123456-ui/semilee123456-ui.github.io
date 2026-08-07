@@ -7817,6 +7817,9 @@ function mergeAnnotateCanvases(){
 // "이미지 저장"을 누르면 사진첩으로 들어감. title/text 없이 파일만 넘겨서(공유하기 버튼과
 // 달리 이건 "누군가에게 보내기"가 아니라 "저장" 의도이므로) 메시지 앱으로 갔을 때 불필요한
 // 문구가 안 딸려가게 함. 지원 안 하는 환경(대부분의 데스크톱)은 기존 blob 다운로드로 폴백.
+// 2026-08-07: "지원 안 하는 환경"이 더 이상 대부분의 데스크톱이 아님(Windows Chrome/Edge도
+// 이제 파일 공유를 지원) — isDesktopPointerEnv()로 마우스 기반 기기는 강제로 폴백을 타게 함,
+// finishAnnotateAndShare() 위 동일 수정 참고.
 function finishAnnotateAndDownload(){
   removeAnnotateTextInput();
   const out = mergeAnnotateCanvases();
@@ -7825,7 +7828,7 @@ function finishAnnotateAndDownload(){
     if (!blob) return;
     const file = new File([blob], annotateDownloadFilename, { type: 'image/png' });
     const canShareFile = navigator.canShare && navigator.canShare({ files: [file] });
-    if (navigator.share && canShareFile) {
+    if (navigator.share && canShareFile && !isDesktopPointerEnv()) {
       try {
         await navigator.share({ files: [file] });
         closeAnnotateOverlay();
