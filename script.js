@@ -2164,7 +2164,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260806';
+    script.src = 'odds-data.js?v=20260807';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -4268,7 +4268,7 @@ function buildDrawScheduleMore(days){
 // 세션/사용자가 "Pending"이 실제 금액으로 바뀐 뒤 갱신할 것.
 const JACKPOT_DATA = {
   powerball:    { amountUsd: 856000000, cashUsd: 372000000 },
-  megamillions: { amountUsd: 70000000, cashUsd: 29700000 },
+  megamillions: { amountUsd: 80000000, cashUsd: 34400000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
@@ -4304,9 +4304,15 @@ const GAME_NAME_MORE = {
 // 페이지 WebFetch로 교차검증 — 14,20,59,60,61 / 파워볼 25로 일치. 당첨자 없어 다음 추첨(8/8)
 // 잭팟이 $856M(현금가치 $372.0M)로 증가, 위 JACKPOT_DATA.powerball도 같이 갱신함. 메가밀리언즈는
 // 그대로 최신(다음 추첨 8/7 아직 결과 없음).
+// 2026-08-07 이어서: 사용자가 공유한 스크린샷(usamega.com 요약, 파워볼/메가밀리언즈 둘 다 표시)
+// — 파워볼 8/5 회차는 이미 위 값과 정확히 일치(변경 없음, cashUsd $372.0M도 스크린샷 $370.7M와
+// 근소한 차이라 흔한 오차 범위로 판단해 유지). 메가밀리언즈 8/7 회차(17,20,32,54,57 / 메가볼 23)는
+// 처음 반영 — odds-data.js의 MEGAMILLIONS_DRAW_ARCHIVE에도 같이 추가함(draw_archive_
+// integrity_check.js 통과 확인, odds-data.js?v 캐시버스팅도 같이 올림). 당첨자 없어 다음
+// 추첨(8/11) 잭팟이 $80M(현금가치 $34.4M)로 증가, 위 JACKPOT_DATA.megamillions도 같이 갱신함.
 const LATEST_DRAW = {
   powerball:    { date: '2026-08-05', numbers: [14, 20, 59, 60, 61], special: 25 },
-  megamillions: { date: '2026-08-04', numbers: [14, 21, 51, 55, 65], special: 21 },
+  megamillions: { date: '2026-08-07', numbers: [17, 20, 32, 54, 57], special: 23 },
 };
 
 
