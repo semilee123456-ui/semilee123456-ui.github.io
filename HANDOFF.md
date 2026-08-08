@@ -1594,3 +1594,30 @@ class="odds-accordion">`가 정확히 11개(당첨 사례·삶의 변화·번호
   i18n 키라 텍스트를 함부로 못 줄임). 헛다리 짚지 않으려고 사용자에게 정확히
   어느 두 줄이 겹쳐 보이는지 다시 물어본 상태 — 아직 답 없음, 다음 세션은 이
   질문에 대한 답이 왔는지 확인할 것.
+
+### 2026-08-07 이어서 — 메가밀리언즈 8/7 회차 반영 (PR #182, 머지·배포 확인 완료)
+
+사용자가 usamega.com 스크린샷(파워볼·메가밀리언즈 최신 결과 요약 화면) 공유.
+파워볼 8/5 회차(14,20,59,60,61+25)는 archive/`LATEST_DRAW`/`JACKPOT_DATA`
+전부 이미 일치해서 변경 없음. 메가밀리언즈 8/7 회차(17,20,32,54,57+메가볼23)만
+누락돼있어서 3곳(odds-data.js의 `MEGAMILLIONS_DRAW_ARCHIVE`+
+`MEGAMILLIONS_JACKPOT_ARCHIVE`, script.js의 `LATEST_DRAW.megamillions`+
+`JACKPOT_DATA.megamillions`) 전부 반영.
+
+- **`draw_archive_integrity_check.js`가 실제로 실수를 잡아냄**: DRAW_ARCHIVE만
+  추가하고 처음 검증 돌렸더니 "JACKPOT_ARCHIVE에 없음 — 두 배열이 어긋남"이라고
+  바로 잡아줌 — 이 저장소에 반복돼온 "3개 데이터 소스 중 하나만 빠뜨리는" 패턴을
+  이번엔 자동 검증 스크립트가 사람이 놓치기 전에 미리 잡은 사례. JACKPOT_ARCHIVE
+  쪽 잭팟 금액(70, 백만 달러 단위)은 앞선 세션(8/5)이 이미 "다음 추첨(8/7) 잭팟은
+  $70M"라고 로그에 남겨둔 값을 그대로 사용 — 새로 추측 안 함.
+  당첨자 없어 다음 추첨(8/11) 잭팟이 $80M(현금가치 $34.4M, 사용자 스크린샷)로
+  증가한 것도 `JACKPOT_DATA.megamillions`에 반영.
+- **검증**: `draw_archive_integrity_check.js`(4개 아카이브) ISSUES:0,
+  `console_error_audit`(161)·`audit_odds_compare`(40)·`home_audit`(18) 전부
+  ISSUES:0. Playwright로 `LATEST_DRAW`/`JACKPOT_DATA`/두 아카이브 tail 값 실제
+  로드 확인. `odds-data.js?v` 캐시버스팅(`20260806`→`20260807`), `script.min.js`
+  재빌드+캐시버스팅(`20260807-3`→`-4`), `sw.js` `CACHE_NAME` `v23`→`v24`.
+- **머지·배포 확인 완료**: PR #182 머지 후 `curl`로 라이브
+  `chamtax.com/odds-data.js`에서 `MEGAMILLIONS_DRAW_ARCHIVE` 끝에
+  `2026-08-07` 회차 반영 확인(배포 직후엔 잠깐 이전 버전이 잡혔다가, ~20초 뒤
+  재확인 시 반영됨 — GitHub Pages 배포 전파 지연으로 보임, 재확인 필요).
