@@ -510,8 +510,8 @@ function fitCountryToggleButtons(){
 // 국가 토글 버튼은 "세금 계산 기준 자세히 설정" / "다른 나라 기준 더보기" 두 <details> 안에
 // 접혀서 시작하므로, 언어 전환·리사이즈 시점엔 아직 안 보여서 폭 측정이 무의미할 때가 많음.
 // 방문자가 실제로 그 details를 펼치는 순간에도 다시 재계산해야 함 — 'toggle' 이벤트는 버블링을
-// 안 해서 document에 capture:true로 걸어야 어떤 details를 열든 다 잡을 수 있음(위
-// updateFaqFloatBtnVisibility의 document.addEventListener('toggle', ..., true)와 동일한 이유)
+// 안 해서 document에 capture:true로 걸어야 어떤 details를 열든 다 잡을 수 있음(아래
+// updateStickyResultBadgeCollision의 document.addEventListener('toggle', ..., true)와 동일한 이유)
 document.addEventListener('toggle', (e) => {
   if (e.target && e.target.open && (e.target.classList.contains('input-advanced-toggle') || e.target.classList.contains('country-toggle-more'))) {
     fitCountryToggleButtons();
@@ -2109,14 +2109,6 @@ function go(view){
   document.getElementById('nav-faq').classList.toggle('active', view === 'faq');
   applyCurrentViewTitle(view);
   applyCurrentViewDescription(view);
-
-  // 도움말(FAQ) 검색 플로팅 버튼은 이미 도착해있는 도움말 화면에서까지 떠 있을 필요가 없어서
-  // 그 화면에서만 숨김 (다른 모든 화면에서는 계속 떠 있음)
-  const faqFloatWrap = document.getElementById('faqFloatWrap');
-  if (faqFloatWrap) faqFloatWrap.classList.toggle('is-hidden', view === 'faq');
-  // 탭을 바꾸면 스크롤 위치는 그대로인데 그 아래 콘텐츠는 통째로 바뀌므로(스크롤 이벤트가
-  // 안 남) 겹침 여부를 여기서도 다시 확인해야 함
-  requestAnimationFrame(updateFaqFloatBtnVisibility);
 
   // 홈 ↔ 국가비교 이동 시, 어느 쪽에서 왔든 상관없이 항상 공용 상태(sharedAmountUsd/sharedCountry/EXCHANGE_RATE)를
   // 기준으로 화면을 다시 그려서 입력값·환율이 끊기지 않게 함
@@ -8565,7 +8557,7 @@ function setupStickyResultBadge(){
     badge.classList.toggle('is-visible', shouldShow);
     // is-colliding은 badge가 실제로 보이는 동안에만 의미가 있음 — 안 보이는 상태로 넘어갈 때
     // 같이 지워두지 않으면, 다음에 다시 보일 때 이전 스크롤 위치의 충돌 판정이 잠깐 그대로
-    // 남아있는 상태로 시작함(faq-float-wrap의 같은 처리, updateShowHideOnly 참고)
+    // 남아있는 상태로 시작함
     if (!shouldShow) badge.classList.remove('is-colliding');
   };
 
@@ -8597,12 +8589,6 @@ function scrollToMainResult(){
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-// "궁금해요" 플로팅 버튼(#faqFloatBtn)이 스크롤 없이 화면을 막 열었을 때부터 실제 콘텐츠 위에
-// 그대로 겹쳐 보이는 문제(2026-07-25 시각 감사 지적) — 로드 직후엔 숨겨두고, 어느 정도
-// 스크롤을 내려야 나타나게 함(styles.css .faq-float-btn.is-visible). go('faq')로 도움말
-// 화면 자체에 있을 때 숨기는 기존 .is-hidden 로직과는 별개로 항상 같이 동작함(display:none이
-// opacity/pointer-events보다 우선하므로 두 로직이 서로 안 부딪힘)
-const FAQ_FLOAT_SCROLL_THRESHOLD = 150;
 // 2026-07-25: 로드 직후 안 보이게만 해서는 부족했음 — 사용자가 스크린샷으로 재확인, 스크롤
 // 후 자연스럽게 멈춘 위치에서도 이 버튼이 확률체감 탭의 "일시불 대신 연금으로 받으면?" 문구나
 // 잭팟 단계별 금액 위에 그대로 얹히는 경우가 있었음. 스크롤 임계값만으로는 "화면에 보일지"는
@@ -8616,7 +8602,7 @@ const FAQ_FLOAT_SCROLL_THRESHOLD = 150;
 // 오즈 화면 아코디언에서 실제로 재현됨, UX 점검 서브에이전트가 발견). "흐리게 보일지"와
 // "탭을 통과시킬지"는 서로 다른 질문이라 분리함 — 컨트롤과 겹칠 땐 흐리게 하진 않되(2026-07-29
 // 피드백대로 그대로 유지) 탭은 통과시켜서 밑에 있는 진짜 버튼이 눌리게 함
-function faqFloatBtnCollisionState(btn){
+function getFixedElementCollisionState(btn){
   const rect = btn.getBoundingClientRect();
   if (!rect.width || !rect.height) return { overText: false, overControl: false };
   const points = [
@@ -8638,7 +8624,7 @@ function faqFloatBtnCollisionState(btn){
       // (<summary>)처럼 그 자체가 누르는 대상인 컨트롤과 겹치는 것까지 같은 취급을 받고
       // 있었음. 이런 요소는 계속 읽어야 하는 콘텐츠가 아니라 한눈에 훑고 누르는 대상이라
       // 겹쳐도 "글이 가려져서 못 읽음" 문제가 아니므로 흐림 판정에서는 계속 제외하되,
-      // overControl로 표시해서 최소한 탭은 통과시킴(바로 아래 updateFaqFloatBtnVisibility 참고)
+      // overControl로 표시해서 최소한 탭은 통과시킴(호출하는 쪽에서 원하면 활용 가능)
       if (el.closest('button, a, summary, [role="button"]')) { overControl = true; continue; }
       // 버튼 자신에 도달하기 전에 카드 배경(:before/배경 전용 요소)만 있으면 계속 더 아래(뒤)
       // 요소를 확인 — 실제로 눈에 보이는 글자가 있는 leaf 요소를 만나면 그때 충돌로 판단
@@ -8654,72 +8640,36 @@ function faqFloatBtnCollisionState(btn){
   return { overText, overControl };
 }
 
-// 2026-08-03: sticky-result-badge(하단 중앙 "실수령 ○○원" 배지)는 faq-float-wrap과 달리
-// 텍스트 충돌 감지가 아예 없어서, 세부 아코디언(연금/세금 상세)을 펼쳤을 때 그 안의 마지막
-// 문단(예: "종합소득세 누진세율과 FTC를 반영한 참고용 계산이에요" 안내 문구)이 이 배지 밑에
-// 그대로 깔려 글자가 가려지는 문제가 있었음(사용자가 스크린샷으로 지적) — faqFloatBtnCollisionState는
-// 이미 범용(어떤 fixed 요소든 받음)이라 그대로 재사용, is-colliding일 때 흐리게 하는 것도
-// faq-float-wrap과 같은 패턴(styles.css)을 그대로 씀
+// 2026-08-03: sticky-result-badge(하단 중앙 "실수령 ○○원" 배지)는 텍스트 충돌 감지가 아예
+// 없어서, 세부 아코디언(연금/세금 상세)을 펼쳤을 때 그 안의 마지막 문단(예: "종합소득세
+// 누진세율과 FTC를 반영한 참고용 계산이에요" 안내 문구)이 이 배지 밑에 그대로 깔려 글자가
+// 가려지는 문제가 있었음(사용자가 스크린샷으로 지적) — getFixedElementCollisionState는 이미
+// 범용(어떤 fixed 요소든 받음)이라 그대로 재사용.
+// 2026-08-07: 이 충돌 감지를 원래 같이 썼던 "궁금해요" 플로팅 버튼은 삭제됐지만(헤더가
+// sticky로 항상 떠 있어서 중복 판단, 사용자 요청), 이 배지의 충돌 재검사 배선(스크롤 멈춤·
+// 아코디언 toggle마다 재확인)은 여전히 필요해서 setupStickyResultBadgeCollisionWatch()로
+// 이름만 바꿔 남겨둠.
 function updateStickyResultBadgeCollision(){
   const badge = document.getElementById('sticky-result-badge');
   if (!badge || !badge.classList.contains('is-visible')) return;
-  const { overText } = faqFloatBtnCollisionState(badge);
+  const { overText } = getFixedElementCollisionState(badge);
   badge.classList.toggle('is-colliding', overText);
 }
 
-function updateFaqFloatBtnVisibility(){
-  const wrap = document.getElementById('faqFloatWrap');
-  if (!wrap) return;
-  const scrolledEnough = window.scrollY > FAQ_FLOAT_SCROLL_THRESHOLD;
-  wrap.classList.toggle('is-visible', scrolledEnough);
-  if (!scrolledEnough) { wrap.classList.remove('is-colliding', 'is-over-control'); return; }
-  const { overText, overControl } = faqFloatBtnCollisionState(wrap);
-  wrap.classList.toggle('is-colliding', overText);
-  // is-colliding이 이미 pointer-events:none을 주므로, 텍스트와도 겹친 경우엔 굳이 별도
-  // 클래스가 필요 없음 — 흐려지진 않지만 탭은 통과시켜야 하는 "컨트롤과만 겹친" 경우에만 부여
-  wrap.classList.toggle('is-over-control', overControl && !overText);
-}
-
-function setupFaqFloatBtnScrollVisibility(){
-  const btn = document.getElementById('faqFloatWrap');
-  if (!btn || btn.dataset.scrollBound) return;
-  btn.dataset.scrollBound = '1';
+function setupStickyResultBadgeCollisionWatch(){
+  if (document.body.dataset.stickyBadgeCollisionBound) return;
+  document.body.dataset.stickyBadgeCollisionBound = '1';
   let ticking = false;
   let settleTimer = null;
-  // 2026-07-30: 제미나이 검수(12번 항목)가 추천한 "스크롤 중 자동 숨김" 패턴 추가 — 아래로
-  // 스크롤할 땐 이 버튼을 잠깐 숨겨서 다른 컨트롤과 겹칠 일 자체를 줄이고(위 is-over-control
-  // 방어 코드와 별개로 애초에 안 겹치게), 위로 스크롤하거나 스크롤이 멈추면(기존 settleTimer
-  // 재사용) 다시 보이게 함. 아주 작은 스크롤 흔들림(모멘텀 스크롤 끝자락 등)에 매번
-  // 반응하면 버튼이 깜빡여서, 최소 이동량(SCROLL_HIDE_DELTA)을 넘을 때만 방향을 갱신함
-  let lastScrollY = window.scrollY;
-  const SCROLL_HIDE_DELTA = 4;
-  // 스크롤 중엔 보이기/숨기기(임계값 기준)만 매 프레임 즉시 반영하고, "지금 밑에 글자가
-  // 있는지" 충돌 검사(faqFloatBtnCollidesWithText, 무거운 elementsFromPoint 호출)는 스크롤이
-  // 실제로 멈춘 뒤에만 한 번 함 — 원래는 이것도 매 프레임 같이 돌렸는데, 스크롤 중에 버튼
-  // 밑을 스쳐가는 글자마다 옅어졌다 진해졌다 하며 깜빡이는 문제(2026-07-25 지적)로 분리함
-  const updateShowHideOnly = () => {
-    const currentY = window.scrollY;
-    const delta = currentY - lastScrollY;
-    if (Math.abs(delta) > SCROLL_HIDE_DELTA) {
-      btn.classList.toggle('is-scroll-hidden', delta > 0); // 아래로 스크롤 중이면 숨김
-      lastScrollY = currentY;
-    }
-    const scrolledEnough = currentY > FAQ_FLOAT_SCROLL_THRESHOLD;
-    btn.classList.toggle('is-visible', scrolledEnough);
-    if (!scrolledEnough) btn.classList.remove('is-colliding');
-  };
   const onScroll = () => {
     if (!ticking) {
       ticking = true;
-      requestAnimationFrame(() => { ticking = false; updateShowHideOnly(); });
+      requestAnimationFrame(() => { ticking = false; });
     }
     clearTimeout(settleTimer);
-    settleTimer = setTimeout(() => {
-      // 스크롤이 멈추면 마지막 방향과 무관하게 항상 다시 보이게 함(기존 충돌 재검사와 같은 타이밍)
-      btn.classList.remove('is-scroll-hidden');
-      updateFaqFloatBtnVisibility();
-      updateStickyResultBadgeCollision();
-    }, 150);
+    // 스크롤 중엔 매번 재검사하지 않고 멈춘 뒤 한 번만 함 — elementsFromPoint 호출이 무거워서
+    // 매 프레임 돌리면 스크롤 중 끊김/깜빡임이 생김(예전 FAQ 플로팅 버튼 시절부터의 관례)
+    settleTimer = setTimeout(updateStickyResultBadgeCollision, 150);
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   // 잭팟 계산 드로어(details/summary)나 "일시불 대신 연금으로" 같은 아코디언을 열고 닫으면
@@ -8727,16 +8677,15 @@ function setupFaqFloatBtnScrollVisibility(){
   // 연속으로 일어나는 이벤트가 아니라서 매번 전체 검사(충돌 포함)를 그대로 해도 깜빡임 문제가 없음.
   // 'toggle' 이벤트는 버블링을 안 해서 document에 capture:true로 걸어야 모든 <details>를
   // 한 번에 잡을 수 있음(요소마다 따로 리스너를 안 달아도 됨)
-  document.addEventListener('toggle', updateFaqFloatBtnVisibility, true);
   document.addEventListener('toggle', updateStickyResultBadgeCollision, true);
-  updateFaqFloatBtnVisibility();
 }
 
 // 확률체감 탭의 실수령액 랭킹/물가보정 랭킹 위젯은 sharedCountry(세금 기준)를 따라 문구가
 // 바뀌는데, 정작 이 탭 안에는 기준을 바꿀 방법이 없어서 홈 화면까지 되돌아가야 했음(2026-07-24
 // 사용자 지적으로 발견). 처음엔 go('home')으로 탭 자체를 전환하는 goToHomeCountryToggle()을
 // 썼었는데, 그러면 보고 있던 랭킹 목록·스크롤 위치를 잃고 되돌아오기 불편하다는 피드백이 또
-// 있어서(openFaqSearchFloat()과 같은 문제 클래스) 탭 전환 없는 팝오버로 교체함 — 아래 참고
+// 있어서(예전 "궁금해요" 플로팅 버튼의 faq-overlay-mode도 같은 문제를 이렇게 풀었었음 —
+// 2026-08-07 그 버튼 자체는 삭제됨) 탭 전환 없는 팝오버로 교체함 — 아래 참고
 const TAX_BASIS_OVERLAY_TITLE_MORE = {
   ar: '🔧 تغيير أساس الضريبة', bn: '🔧 কর ভিত্তি পরিবর্তন করুন', fr: '🔧 Changer la base fiscale',
   hi: '🔧 टैक्स आधार बदलें', id: '🔧 Ubah dasar pajak', ja: '🔧 税金の基準を変更',
@@ -8855,7 +8804,7 @@ function openSelectSheet(selectId){
   filterSelectSheet();
   overlay.classList.add('show');
   // 시트가 슬라이드업하는 도중 바로 포커스를 주면 스크롤 점프가 겹쳐 보일 수 있어 애니메이션
-  // 시간(0.22s)만큼 살짝 늦춤 — faqSearch 포커스와 같은 타이밍 관례(openFaqSearchFloat 참고)
+  // 시간(0.22s)만큼 살짝 늦춤 — FAQ 검색창 자동 포커스와 같은 타이밍 관례
   setTimeout(() => searchEl.focus(), 50);
 }
 
@@ -8892,23 +8841,12 @@ function pickSelectSheetItem(value){
   closeSelectSheet();
 }
 
-// 어느 화면에서든 뜨는 #faqFloatBtn용 — go('faq')로 실제 탭을 전환하면 사용자가 보던 화면
-// (입력값·스크롤 위치)에서 완전히 벗어나고, 닫은 뒤 다시 보기 힘들다는 피드백이 있었음. 그래서
-// 탭 전환 없이 #view-faq를 현재 화면 위에 덮어씌우는 오버레이로만 띄움 — 닫으면 클래스만
-// 제거되고 원래 화면은 그대로 밑에 남아있음
-function openFaqSearchFloat(){
-  const faqView = document.getElementById('view-faq');
-  if (!faqView) return;
-  filterFaq(); // 오버레이로 뜨기 전에 현재 세금 기준 기준으로 한 번 새로 걸러줌
-  faqView.classList.add('faq-overlay-mode');
-  setTimeout(() => {
-    const searchInput = document.getElementById('faqSearch');
-    if (!searchInput) return;
-    searchInput.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    searchInput.focus();
-  }, 50);
-}
-
+// 2026-08-07: 이 오버레이를 열던 "궁금해요" 플로팅 버튼(openFaqSearchFloat)은 삭제됐지만
+// (헤더가 sticky로 항상 떠 있어서 중복 판단, 사용자 요청), closeFaqOverlay() 자체는
+// tryCrossTabSearchJump()가 다른 탭으로 이동하기 전 정리용으로 여전히 호출하므로 남겨둠
+// (실제로는 이제 이 클래스가 거의 항상 이미 꺼져있는 상태라 대부분 아무 효과 없는 안전망).
+// faq-overlay-mode CSS(바텀시트 스타일)는 지금은 트리거하는 곳이 없어 사실상 죽은 스타일로
+// 남지만, 위 이유로 완전히 걷어내진 않음 — 나중에 코드 정리 세션에서 같이 지워도 됨.
 function closeFaqOverlay(){
   const faqView = document.getElementById('view-faq');
   if (faqView) faqView.classList.remove('faq-overlay-mode');
@@ -8917,27 +8855,6 @@ function closeFaqOverlay(){
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeFaqOverlay(); closeTaxBasisOverlay(); closeSelectSheet(); }
 });
-
-// "궁금해요" 플로팅 버튼 자체가 거슬리는 사람을 위한 영구 닫기(2026-07-27) — 세션이 아니라
-// localStorage에 저장해서 다음 방문에도 계속 숨겨짐(홈 FAQ 미리보기 닫기와 같은 패턴)
-const FAQ_FLOAT_BTN_DISMISS_KEY = 'chamtaxFaqFloatBtnDismissed';
-
-function initFaqFloatBtnDismiss(){
-  const wrap = document.getElementById('faqFloatWrap');
-  if (!wrap) return;
-  let dismissed = false;
-  try { dismissed = localStorage.getItem(FAQ_FLOAT_BTN_DISMISS_KEY) === '1'; } catch (e) {}
-  if (dismissed) wrap.style.display = 'none';
-}
-
-function dismissFaqFloatBtn(event){
-  if (event) event.stopPropagation();
-  const wrap = document.getElementById('faqFloatWrap');
-  if (wrap) wrap.style.display = 'none';
-  try { localStorage.setItem(FAQ_FLOAT_BTN_DISMISS_KEY, '1'); } catch (e) {}
-}
-
-document.addEventListener('DOMContentLoaded', initFaqFloatBtnDismiss);
 
 // ===== "궁금해요" 검색을 홈/비교/확률체감 탭까지 확장 =====
 // 예전엔 filterFaq()가 FAQ 화면 안의 항목만 걸러서, 정작 답이 홈(계산기)이나 확률체감 탭에
@@ -9388,7 +9305,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 반드시 같은 값을 명시적으로 넘겨서 어느 쪽이 나중에 불려도 항상 같은 기본값으로 맞춰지게 함
   const defaultStartUsd = getJackpotCashUsd('powerball');
   updateHomeCalc(defaultStartUsd); updateCalc(defaultStartUsd);
-  initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); renderFilingDday(); setupFaqFloatBtnScrollVisibility(); adjustNavIconVisibility();
+  initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); renderFilingDday(); setupStickyResultBadgeCollisionWatch(); adjustNavIconVisibility();
 });
 
 // 다른 페이지(korea-resident-us-lottery-tax.html 등)에서 "index.html#faq"처럼 해시가 붙은 링크로
