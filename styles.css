@@ -472,6 +472,12 @@
   details.odds-accordion[open]{ border-color:var(--teal); }
   details.odds-accordion[open] > .panel-title-toggle::after{ transform:translateY(-50%) rotate(180deg); }
 
+  /* 2026-08-07: 확률 탭 아코디언 11개가 그룹 구분 없이 쭉 나열돼 복잡해 보인다는 피드백 —
+     콘텐츠는 그대로 두고 소제목만 추가해 시각적으로 몇 개 덩어리로 나눔(더 알아보기 footer
+     링크 그룹핑과 같은 방식) */
+  .odds-group-label{ font-size:var(--fs-note); font-weight:700; color:var(--teal); margin:26px 2px 10px; }
+  .odds-group-label:first-of-type{ margin-top:10px; }
+
   /* The persona-picker banner ("나는 어떤 경우일까요?") was inheriting plain .panel
      styling, so it looked like just another neutral info box and got skipped by
      first-time visitors even though it's the main routing entry point for non-KR-resident

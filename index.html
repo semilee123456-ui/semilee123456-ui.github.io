@@ -121,12 +121,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260807-5">
+<link rel="stylesheet" href="styles.min.css?v=20260807-6">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260807-2" defer></script>
+<script src="script.min.js?v=20260807-3" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1506,6 +1506,8 @@
           <div class="callout" data-i18n-html="odds.callout">💡 파워볼 1등 확률은 <b>평생 번개에 맞을 확률보다 약 19,000배 더 희박</b>해요. 그래도 매년 여러 명은 당첨되고 있어요 🍀</div>
         </details>
 
+        <p class="odds-group-label" data-i18n="odds.groupRealityTitle">🎲 확률, 얼마나 현실적일까요?</p>
+
         <details class="panel odds-accordion">
           <summary class="panel-title-toggle" data-i18n="odds.winnersTitle">🏆 실제로 이만큼 당첨된 사람들도 있어요</summary>
           <p class="panel-desc" data-i18n="odds.winnersDesc">그래도 정말 당첨되긴 해요 — 실제 있었던 역대급 사례들이에요</p>
@@ -1570,6 +1572,8 @@
 
         <!-- 2026-07-30: 아래 소제목들도 위와 같은 이유로 진짜 <details>로 분리함 (카톡 인앱
              브라우저에서 "펼치고 안 접힌다" 제보 원인) -->
+        <p class="odds-group-label" data-i18n="odds.groupHistoryTitle">📊 역대 잭팟 기록</p>
+
         <details class="panel odds-accordion">
           <summary class="panel-title-toggle" data-i18n="odds.historyTitle">📜 역대 잭팟 확인 기록</summary>
           <p class="panel-desc" id="jackpot-history-desc">체크한 날짜의 잭팟 금액과 국가별 실수령액을 기록했어요 (역대 최고 5건 포함)</p>
