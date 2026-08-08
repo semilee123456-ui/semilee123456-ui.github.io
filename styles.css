@@ -2865,6 +2865,15 @@
     .amount-currency-row-2col{ display:block; }
     .amount-currency-row-2col .amount-currency-pair{ margin-bottom:6px; }
     .amount-currency-row-2col .amount-currency-pair:last-child{ margin-bottom:0; }
+
+    /* 2026-08-07: "🌐 사는 나라를 골라서 바로 보기" select(.intro-lang-select)가 옆의 72px
+       "이동" 버튼과 폭을 나눠 쓰다 보니 이 폭에서 "US · English"가 말줄임표 없이 "US · En"으로
+       그냥 잘림(사용자 스크린샷으로 확인, home_audit.js는 잘림 자체를 못 잡아냄 — select
+       안 옵션 텍스트라 overflow 밖으로 안 삐져나가서). select/버튼을 세로로 쌓아서 select가
+       이 폭에서 쓸 수 있는 최대 너비를 확보 — 새 번역 문구 없이 레이아웃만 바꾸는 가장 낮은
+       위험도의 방법을 택함(라벨 축약이나 커스텀 드롭다운 대신) */
+    .intro-lang-select-row{ flex-direction:column; }
+    .intro-lang-go-btn{ width:100%; }
   }
 
   /* 아랍어·우르두어(RTL)에서 "79.7 billion ₩"처럼 숫자+영단어 조합이 브라우저의 기본 양방향(bidi)
