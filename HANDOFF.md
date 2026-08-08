@@ -1621,3 +1621,60 @@ class="odds-accordion">`가 정확히 11개(당첨 사례·삶의 변화·번호
   `chamtax.com/odds-data.js`에서 `MEGAMILLIONS_DRAW_ARCHIVE` 끝에
   `2026-08-07` 회차 반영 확인(배포 직후엔 잠깐 이전 버전이 잡혔다가, ~20초 뒤
   재확인 시 반영됨 — GitHub Pages 배포 전파 지연으로 보임, 재확인 필요).
+
+### 2026-08-08 — 다른 세션이 남긴 git bundle/zip 백업 파일 검토 및 실제 유효했던 수정 1건 반영
+
+**배경**: 사용자가 "다른 루틴에서 한 건데 필요하면 위에 덮어써줘"라며 파일 2개를 전달함 —
+`chamtaxseocheck20260805.bundle`(git 번들)과 `megamillionsfix.zip`. 둘 다 어떤 세션이
+직접 `git push`를 못 해서(또는 다른 이유로) 대신 파일로 남긴 것으로 추정(2026-07-31 이전
+zip 워크플로와 유사한 패턴이 완전 정상화된 이후에도 가끔 재발하는 듯).
+
+**git bundle (2026-08-05 SEO 점검 세션)**: `git bundle verify`/`git fetch <bundle>`로
+내용 확인 — sitemap.xml 4개 페이지 lastmod 드리프트 수정(`2026-07-25`→`2026-08-03`)과
+18개국 고아 페이지 발견 기록(코드 미수정) 2개 커밖에 없었음. **둘 다 이미 결과적으로
+불필요/완료됨**: sitemap lastmod는 이후 다른 세션이 이미 `2026-08-04`로 더 최신값을
+반영해둔 상태(번들의 `08-03`보다 최신이라 번들 적용 시 오히려 퇴보), 고아 페이지 문제는
+이 문서 위쪽에 이미 기록된 대로 2026-08-05에 18개국 전부 관련링크 추가로 완전히 해결됨.
+**아무 조치 없이 폐기.**
+
+**megamillionsfix.zip (아마 2026-08-07 "복권 게임 규칙 변경 감시" 루틴 산출물)**: 전체
+트리 스냅샷(`script.js`/`index.html`/`i18n-source/translations.json`/`i18n/*.json`/
+`HANDOFF.md`/`HANDOFF-ARCHIVE.md`/`lottery-prize-tiers.html` 등)이 담겨있었는데, **그대로
+덮어쓰면 안 되는 상태**였음 — 이 zip이 만들어진 시점 이후 다른 세션들이 독립적으로
+더 진행시킨 부분(예: 확률체감 탭 그룹 제목 `odds.groupRealityTitle`/`odds.groupHistoryTitle`
+신규, 상금 등급 데이터 값 정정)이 있어서 전체 덮어쓰기는 그 진행분을 되돌릴 위험이 있었음.
+`diff`로 현재 `origin/main`과 zip 내용을 파일별로 대조해서 **진짜 유효한 차이 딱 하나만
+식별**: `script.js`의 `ODDS_GAME_NOTE_MEGA`(확률체감 탭 안내문)와
+`i18n-source/translations.json`의 `faq.multiplierOption`(게임 정보 표) 26개 언어 전부가
+"메가밀리언즈 배수(Megaplier)는 추가로 구매하는 선택 옵션"이라는 **낡은 규칙**을 설명하고
+있었음 — WebSearch로 확인한 결과 **2025년 4월 Mega Millions 규칙 개편**(티켓 가격
+$2→$5 인상과 함께)으로 이 배수가 유료 옵션에서 **모든 플레이에 자동 포함**되는 방식으로
+이미 바뀌어 있었음(공식 출처: megamillions.com "New Mega Millions arrives in April").
+같은 사이트 안에서도 신규 페이지(`lottery-prize-tiers.html`)는 이미 이 사실을 정확히
+반영하고 있어서, 이 두 곳(구 안내문 텍스트)만 뒤처져 있던 명백한 사실 오류였음. zip에서
+검증된 새 문구(26개 언어 그대로)만 정확히 추출해서 반영, 나머지(zip에 남아있던 구버전
+상금 금액 등)는 손대지 않음.
+
+**작업 중 발견한 사고 — 로컬 브랜치가 진짜 `origin/main`보다 뒤처진 채로 편집할 뻔함**:
+이 fix를 처음 적용할 때 로컬 체크아웃(`claude/wizardly-feynman-ev3wjb`)이 이미 며칠 전
+커밋(`30b4d40`)에 멈춰있었는데(그 사이 다른 세션들이 `main`에 159개 커밋을 더 쌓음),
+그 상태로 `index.html`을 고쳤다가 뒤늦게 발견해서 **전부 되돌리고 `git merge origin/main`
+으로 최신화한 뒤 처음부터 다시 적용함**(줄 번호가 밀려서 파일 내용 스냅샷을 비교해가며
+정확한 위치 재확인). **`script.js`는 처음부터 `git show origin/main:script.js`로 직접
+받아온 걸 썼어서 문제없었지만, `index.html`은 로컬 파일을 직접 고쳐서 위험했음** — 다음
+세션도 오래 이어지는 세션 중간에 외부 파일(zip/bundle)을 반영할 땐, 로컬 브랜치가
+`origin/main`과 얼마나 벌어져 있는지 먼저 `git log -1 origin/main` vs `git log -1 HEAD`로
+확인하고 벌어져 있으면 먼저 `git merge origin/main`부터 할 것 — 특히 이 저장소처럼 여러
+세션이 동시에 `main`에 커밋하는 경우 며칠 지나면 격차가 수백 커밋까지 벌어질 수 있음.
+
+**검증**: `node --check script.js` 통과, `translations.json` JSON 파싱 정상, `node
+scripts/build-i18n.js`(783 keys)·`build-min.js` 재생성, 회귀 테스트 7개(`home_audit`
+18·`console_error_audit`161·`audit_odds_compare`40·`i18n_coverage_audit`766·
+`i18n_attr_lint`0·`broken_link_audit`95·`fact_consistency_audit`99) 전부 `ISSUES: 0`.
+Playwright로 메가밀리언즈 게임 안내문(한/영)과 FAQ 게임 정보 표 문구가 실제로 새 텍스트로
+뜨는 것 직접 확인.
+
+변경 파일: `script.js`/`script.min.js`(`ODDS_GAME_NOTE_MEGA` 26개 언어 재작성),
+`i18n-source/translations.json`/`i18n/*.json`(`faq.multiplierOption` 26개 언어
+재작성), `index.html`(한국어 인라인 텍스트 + 캐시버스팅 `20260807-4`→`20260808-2`),
+`sw.js`(`CACHE_NAME` v24→v25). 커밋 `19b250f`.
