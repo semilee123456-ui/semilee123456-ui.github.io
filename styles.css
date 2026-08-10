@@ -2499,7 +2499,37 @@
     border-radius:12px; padding:12px 16px; min-height:44px; font-family:inherit; font-size:var(--fs-small); font-weight:700; color:var(--text-dark);
     cursor:pointer; margin-bottom:14px;
   }
-  
+
+  /* 2026-08-10: 확률체감 탭에서만 노출되는 PWA "홈 화면에 추가" 유도 배너 — 재방문 동기가
+     있는 방문자(다음 추첨 결과를 다시 확인하러 올 사람)한테만 좁혀서 시도. 전체 방문자
+     대상으로는 대부분 "당첨금 한 번 계산해보는" 일회성 방문이 많아 소음만 늘릴 위험이
+     있다고 판단해 뺌. 기본은 숨김(display:none)이고, beforeinstallprompt를 지원하는
+     브라우저에서 이 탭이 열려있을 때만 script.js가 .is-visible을 붙임(iOS Safari는
+     이 이벤트 자체를 지원 안 해서 항상 숨김 상태로 남음 — 의도된 동작, 별도 안내 없음).*/
+  .pwa-install-banner{
+    display:none; align-items:center; gap:12px; background:var(--card);
+    border:1.5px solid rgba(var(--teal-rgb),0.3); border-radius:14px; padding:14px 16px;
+    margin:0 0 16px; box-shadow:var(--shadow-card);
+  }
+  .pwa-install-banner.is-visible{ display:flex; }
+  .pwa-install-banner-icon{ font-size:24px; line-height:1; flex-shrink:0; }
+  .pwa-install-banner-text{
+    flex:1 1 auto; font-size:var(--fs-small); font-weight:700; color:var(--text-dark); line-height:1.4;
+  }
+  .pwa-install-banner-actions{ display:flex; gap:8px; flex-shrink:0; }
+  .pwa-install-banner-add, .pwa-install-banner-later{
+    border-radius:10px; padding:10px 14px; min-height:44px; font-family:inherit; font-size:var(--fs-small);
+    font-weight:700; cursor:pointer; white-space:nowrap;
+  }
+  .pwa-install-banner-add{ background:var(--teal); color:var(--on-accent); border:none; }
+  .pwa-install-banner-later{ background:transparent; color:var(--text-muted); border:1px solid var(--border); }
+  @media (max-width:480px){
+    .pwa-install-banner{ flex-wrap:wrap; }
+    .pwa-install-banner-text{ flex-basis:100%; }
+    .pwa-install-banner-actions{ width:100%; }
+    .pwa-install-banner-add, .pwa-install-banner-later{ flex:1; }
+  }
+
 
   .game-compare{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .game-card{ border-radius:12px; padding:16px; border:2px solid var(--border); }
