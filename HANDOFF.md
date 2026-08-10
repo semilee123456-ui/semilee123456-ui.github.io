@@ -1767,3 +1767,27 @@ GitHub Pages 빌드는 정상 완료(`pages build and deployment` 워크플로 s
 `i18n/{lang}.json?v` `20260807-1`→`20260810-1`), `script.min.js`/
 `styles.min.css`(재빌드), `i18n-source/translations.json`+`i18n/*.json`
 26개(신규 키 3개), `sw.js`(`CACHE_NAME` v27→v28).
+
+### 2026-08-10 이어서 — 낚시게임 공유카드 상단 라벨 살짝 잘려 보이는 문제 수정
+
+사용자가 실제 공유 이미지 스크린샷("파워볼 · KR" / "$209.7M")을 보내며 "위에가
+약간 짤린 느낌"이라고 제보. `buildShareCard()`(낚시게임 결과·잭팟 인덱스 등
+4곳이 공유하는 카드 렌더러)의 `contentTop`(헤더 밴드 바로 아래 콘텐츠 시작
+위치) 계산이 원인 — 2026-07-31 세션이 이 여백을 44→22px로 좁혔는데, `label`
+폰트(`700 30px`)의 실측 ascent(`ctx.measureText().actualBoundingBoxAscent`)가
+24px라 22px보다 커서, 콘텐츠 블록(공 6개+서브텍스트)이 세로 중앙 정렬 여유
+없이 꽉 차는 흔한 경우엔 글자 상단이 밴드 쪽으로 몇 px 파고드는 구조적 문제였음
+(Playwright로 실측 확인: `ascent=24`, 기존 gap=22 → 약 2px 겹침).
+
+**수정**: `contentTop` 여백을 22→40px로 올려 ascent 대비 16px 여유 확보(44px로
+완전히 되돌리지 않고 07-31의 "타이트하게" 의도는 유지). Playwright로 실제
+`buildShareCard()`를 호출해 수정 전/후 카드를 렌더링·크롭 비교해서 겹침이
+사라진 것 확인. 4곳(낚시게임/잭팟 인덱스 등) 전부가 이 함수를 공유하므로 한
+군데만 고쳐도 전체에 적용됨.
+
+**검증**: `console_error_audit`(161)·`home_audit`(18) 전부 `ISSUES: 0`.
+`node --check` script.js 통과.
+
+변경 파일: `script.js`(`buildShareCard()`의 `contentTop` 22→40, 재빌드),
+`script.min.js`(재빌드), `index.html`(`script.min.js?v`
+`20260810-3`→`20260810-4`), `sw.js`(`CACHE_NAME` v28→v29).

@@ -4751,12 +4751,19 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
 
   // ---- 콘텐츠 영역: 밴드 아래 ~ 푸터 위 사이 공간에서 실제 내용 블록을 세로 중앙 정렬 ----
   // 2026-07-31 디자인팀 반영 가이드: 헤더 밴드 바로 아래 여백을 44→22px로 좁혀서 더 타이트하게
+  // 2026-08-10: 위 22px는 아래 layoutShareContent()가 textBaseline='alphabetic'로 label을
+  // 그릴 때의 "베이스라인" 위치인데, label 폰트가 700 30px이라 글자 상단(ascent)이 베이스라인보다
+  // 약 24~27px 위에서 시작함 — 공(6개)·서브텍스트까지 합친 블록 높이(blockH)가 콘텐츠 영역보다
+  // 큰 경우가 흔해서(특히 서브텍스트가 2~3줄로 접히는 언어) 세로 중앙 정렬 여유가 0이 되고, 그러면
+  // label 첫 줄이 정확히 contentTop에서 시작해 글자 상단이 22px 여백을 뚫고 밴드 쪽으로 몇 px
+  // 삐져나감(실사용자 스크린샷으로 "글씨 위가 살짝 잘린 느낌" 제보 — 낚시게임 공유카드에서 확인).
+  // 44→22 타이트화 자체는 유지하되, 폰트 ascent를 여유 있게 흡수하도록 40으로 소폭 늘림.
   const padX = 56;
   const contentX = cardX + padX;
   const contentW = cardW - padX * 2;
   const anchorX = isRTL ? (cardX + cardW - padX) : contentX;
   const footerH = 172;
-  const contentTop = cardY + bandH + 22;
+  const contentTop = cardY + bandH + 40;
   const contentBottom = cardY + cardH - footerH;
   const contentAreaH = contentBottom - contentTop;
 
