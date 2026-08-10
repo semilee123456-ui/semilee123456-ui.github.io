@@ -1678,3 +1678,25 @@ Playwright로 메가밀리언즈 게임 안내문(한/영)과 FAQ 게임 정보 
 `i18n-source/translations.json`/`i18n/*.json`(`faq.multiplierOption` 26개 언어
 재작성), `index.html`(한국어 인라인 텍스트 + 캐시버스팅 `20260807-4`→`20260808-2`),
 `sw.js`(`CACHE_NAME` v24→v25). 커밋 `19b250f`.
+
+### 2026-08-10 — 파워볼 8/8 회차 반영
+
+사용자가 usamega.com 스크린샷(파워볼·메가밀리언즈 요약 카드) 공유. 메가밀리언즈
+8/7 회차(17,20,32,54,57+23)·다음 잭팟 $80M는 8/8 세션(PR #182)에서 이미 반영돼
+스크린샷과 정확히 일치 — 변경 없음. 파워볼은 아카이브 최신값이 8/5 회차에서
+멈춰있었는데 스크린샷엔 새 8/8 회차(5,9,35,54,63+7, Power Play 3x)가 나와있어서
+3곳(`odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`+`POWERBALL_JACKPOT_ARCHIVE`,
+`script.js`의 `LATEST_DRAW.powerball`+`JACKPOT_DATA.powerball`) 반영. 당첨자
+없어 다음 추첨(8/10) 잭팟 $905M(현금가치 $391.9M)로 증가 — 스크린샷 값 그대로
+사용. `JACKPOT_ARCHIVE`에 넣은 8/8 회차 잭팟 금액($856M)은 8/6 세션이 이미
+예고값으로 남겨둔 값을 그대로 사용(새로 추측 안 함). Power Play/Double Play는
+기존 관례대로 이 저장소 아카이브 스코프 밖이라 기록 안 함.
+
+**검증**: `draw_archive_integrity_check`(4개 아카이브)·`console_error_audit`161·
+`audit_odds_compare`40·`home_audit`18 전부 `ISSUES: 0`. `node --check` script.js/
+odds-data.js 통과.
+
+변경 파일: `odds-data.js`(두 파워볼 아카이브에 8/8 회차 추가), `script.js`
+(`LATEST_DRAW.powerball`/`JACKPOT_DATA.powerball` 갱신, `odds-data.js?v`
+캐시버스팅), `script.min.js`(재빌드), `index.html`(`script.min.js?v`
+`20260808-3`→`20260810-1`), `sw.js`(`CACHE_NAME` v25→v26). 커밋 `e1d2591`.
