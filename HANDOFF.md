@@ -972,8 +972,9 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   `chamtax.com` 전환(완료). 구글서치콘솔·네이버서치어드바이저·빙 웹마스터 등록(완료).
   17개 언어 title/og:title SERP 잘림 축약(완료).
 - **2026-07-24 — 검색엔진 마무리 + 첫 외부AI 제안**: Daum(카카오) 등록(완료). `llms.txt`
-  생성 + robots.txt AI 크롤러 허용(완료). 구글 애드센스 신청(**승인 대기**, 2026-08-06
-  기준 아직 대기). IndexNow 자동핑·사이트맵/RSS 자동생성(당시 반려 — IndexNow는
+  생성 + robots.txt AI 크롤러 허용(완료). 구글 애드센스 신청(**2026-08-10 주소 확인
+  PIN 우편 수신, 사용자가 대시보드에 등록 완료** — 자세한 경위는 "작업 이력"의
+  2026-08-10 해당 항목 참고). IndexNow 자동핑·사이트맵/RSS 자동생성(당시 반려 — IndexNow는
   2026-08-05에 재검토해 결국 구현). 공유 딥링크(`?amount=&country=`), Breadcrumb/
   SoftwareApplication JSON-LD(완료). AlternativeTo/Product Hunt/LaunchingNext 초안
   검토(보류 — 백링크 가치 낮다고 판단).
@@ -1012,8 +1013,10 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   GSC "실시간 URL 테스트"로 `?lang=en`이 실제로 영어로 정상 렌더링되는 걸 스크린샷으로
   확인 — 추측이 아닌 실측으로 **불필요 재확정**.
 
-**현재 남아있는 승인/시점 대기 항목**: 구글 애드센스 승인, Disquiet 승인, GitHub Awesome
-List PR 승인, AlternativeTo·GeekNews·Reddit 게시(2026-08-12 이후 가능). **Show HN은
+**현재 남아있는 승인/시점 대기 항목**: 구글 애드센스(2026-08-10 주소 확인 PIN 등록
+완료 — 다음 세션은 대시보드에서 실제 광고 게재/수익화 활성 여부부터 확인할 것, 이
+문서엔 아직 최종 승인 확인 기록 없음), Disquiet 승인, GitHub Awesome List PR 승인,
+AlternativeTo·GeekNews·Reddit 게시(2026-08-12 이후 가능). **Show HN은
 날짜 고정 대기가 아님** — HN이 Show HN 카테고리 자체를 임시 전면 제한 중이라, 실제로
 커뮤니티(다른 글에 댓글 등) 활동을 좀 한 뒤 재시도해야 함(자세한 경위는 아래 2026-08-06
 항목 참고).
@@ -1700,3 +1703,32 @@ odds-data.js 통과.
 (`LATEST_DRAW.powerball`/`JACKPOT_DATA.powerball` 갱신, `odds-data.js?v`
 캐시버스팅), `script.min.js`(재빌드), `index.html`(`script.min.js?v`
 `20260808-3`→`20260810-1`), `sw.js`(`CACHE_NAME` v25→v26). 커밋 `e1d2591`.
+
+**같은 날 이어서 — 머지 직후 배포 확인하다가 Cloudflare 캐시버스팅 URL 자체가
+선점(poisoning)당하는 새 사고 발견**: PR #185 머지 직후(GitHub Pages 빌드가 아직
+안 끝났을 시점) `curl`로 `chamtax.com/odds-data.js?v=20260810`를 먼저 요청해버려서,
+그 시점 origin이 아직 옛 내용을 주고 있었는데 Cloudflare가 **바로 그 새 쿼리스트링
+URL 자체를 옛 내용으로 캐싱**(`cache-control: max-age=14400`=4시간)해버림. 이후
+GitHub Pages 빌드는 정상 완료(`pages build and deployment` 워크플로 success 확인)됐는데도
+같은 URL을 재요청하면 계속 `cf-cache-status: HIT`로 옛 내용만 나옴 — 캐시버스팅 쿼리를
+"한 번 더" 올리지 않는 한 최대 4시간 동안 안 풀리는 상태. **교훈: 머지 직후 곧바로
+새 캐시버스팅 URL로 배포 확인 `curl`을 날리지 말 것 — Pages 빌드·CDN 전파가 끝났다는
+확실한 신호(워크플로 run이 `completed`/`success`) 없이 조회하면, 그 조회 자체가 아직
+안 끝난 옛 응답을 새 URL에 캐싱해버려 역효과가 남.** 대응: `odds-data.js?v=20260810`
+→`20260810-2`로 재차 올리고, 이 쿼리를 내부에서 참조하는 `script.js`도 재빌드했으니
+`script.min.js?v`도 `20260810-1`→`20260810-2`로 같이 올림(`index.html`), 앱 셸 파일
+내용이 바뀌었으니 `sw.js`의 `CACHE_NAME`도 v26→v27로 올림.
+
+### 2026-08-10 이어서 — 구글 애드센스 주소 확인 PIN 등록
+
+사용자가 채팅으로 직접 알려줌: 애드센스 계정 주소 확인용 PIN이 우편으로 도착해서
+대시보드에 입력·등록 완료. 2026-07-24에 신청한 뒤 계속 "승인 대기"로만 남아있던
+항목(위 "홍보·마케팅 작업 전체 이력" 섹션 참고)의 첫 진전 — PIN 우편 확인은 보통
+계정이 이미 수익 발생 임계값(약 $10)에 도달해 지급 절차를 진행할 때 요청되는
+단계라, 애드센스 광고 자체는 이미 어느 시점부터 게재되고 있었을 가능성이 있음.
+**다만 이 세션은 사용자 채팅 진술만 반영한 것 — 애드센스 대시보드에 직접 접근할
+권한/도구가 없어 "실제 광고 게재 중"/"최종 계정 승인 상태"는 이 세션에서 확인 못함.**
+코드 변경 없음(사이트 파일 수정 대상 아님, 순수 기록). 다음 세션이 이 주제를
+다시 다룰 일이 있으면 위 "현재 남아있는 승인/시점 대기 항목" 문구부터 갱신하고,
+사용자에게 대시보드 화면(수익화 상태·게재 여부)을 직접 물어볼 것 — 추측으로
+"승인 완료"라고 단정하지 말 것.
