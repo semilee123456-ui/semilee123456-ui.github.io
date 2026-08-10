@@ -1732,3 +1732,38 @@ GitHub Pages 빌드는 정상 완료(`pages build and deployment` 워크플로 s
 다시 다룰 일이 있으면 위 "현재 남아있는 승인/시점 대기 항목" 문구부터 갱신하고,
 사용자에게 대시보드 화면(수익화 상태·게재 여부)을 직접 물어볼 것 — 추측으로
 "승인 완료"라고 단정하지 말 것.
+
+### 2026-08-10 이어서 — 확률체감 탭 전용 PWA "홈 화면에 추가" 배너 신설
+
+사용자가 다른 사이트(펫스캔 AI)의 "앱처럼 홈 화면에 추가하고 응급 시 바로
+사용하세요" 커스텀 배너 스크린샷을 보여주며 참택스도 만들지 물어봄 — 참택스는
+"당첨금 한 번 계산해보는" 일회성 방문이 대부분이라 전체 방문자 대상으로 하면
+소음만 늘릴 위험이 있다고 판단해, **재방문 동기가 있는 확률체감(`#view-odds`)
+탭 방문자한테만 좁혀서** 시도하자고 제안 → 사용자 동의로 구현.
+
+- **동작 조건**: `beforeinstallprompt` 이벤트를 지원하는 브라우저(Chrome/Edge
+  계열)에서, 이미 PWA로 설치된 상태가 아니고(`display-mode: standalone` 아님),
+  확률체감 탭이 열려있고, 최근 14일 내 "나중에"를 누른 적이 없을 때만 노출.
+  iOS Safari는 이 이벤트 자체를 안 쏴서 항상 숨김 상태(의도된 동작, 별도
+  안내 UI는 스코프 밖 — 필요해지면 별도로 다시 논의).
+- **"추가하기"**: 저장해둔 `beforeinstallprompt` 이벤트의 `.prompt()` 호출(브라우저
+  네이티브 설치 다이얼로그). **"나중에"**: `localStorage`(`chamtax_pwa_install_
+  dismissed_at`)에 타임스탬프 기록, 14일간 재노출 안 함. `go(view)` 호출마다
+  `maybeShowPwaInstallBanner()`로 노출 여부 재판단(탭 진입/이탈 둘 다 처리).
+- **번역**: `installBanner.title`/`.add`/`.later` 3개 키 신설, 26개 언어 전부
+  채움(`i18n_coverage_audit` 767개 키 ISSUES:0로 확인).
+- **검증**: Playwright로 실제 `beforeinstallprompt` 이벤트를 디스패치해서(헤드리스
+  환경은 이 이벤트를 자체 발생 안 시키므로 수동 트리거 필요) 배너가 실제로 뜨는지
+  확인 — 한국어·영어·아랍어(RTL, 버튼 배치 자동 반전 확인) 스크린샷, 320px
+  폭·다크모드 스크린샷, "나중에" 클릭 시 배너가 숨겨지고 `localStorage`에 실제로
+  기록되는지까지 확인. `i18n_coverage_audit`(767)·`i18n_attr_lint`(0)·
+  `console_error_audit`(161)·`home_audit`(18) 전부 `ISSUES: 0`.
+
+변경 파일: `index.html`(배너 마크업 신설, `script.min.js?v`
+`20260810-2`→`20260810-3`, `styles.min.css?v` `20260807-8`→`20260810-1`),
+`styles.css`(`.pwa-install-banner*` 신규 스타일, 다크모드는 기존 CSS 변수만
+써서 별도 오버라이드 없이 자동 대응), `script.js`(`beforeinstallprompt`/
+`appinstalled` 리스너, `maybeShowPwaInstallBanner()`, `go()`에서 호출 추가,
+`i18n/{lang}.json?v` `20260807-1`→`20260810-1`), `script.min.js`/
+`styles.min.css`(재빌드), `i18n-source/translations.json`+`i18n/*.json`
+26개(신규 키 3개), `sw.js`(`CACHE_NAME` v27→v28).

@@ -70,7 +70,7 @@ let I18N_LOAD_PROMISE = null;
 
 function loadI18nLanguage(lang){
   if (lang === "ko" || I18N_CACHE[lang]) return Promise.resolve();
-  return fetch(`i18n/${lang}.json?v=20260807-1`)
+  return fetch(`i18n/${lang}.json?v=20260810-1`)
     .then(res => { if (!res.ok) throw new Error("i18n fetch failed: " + res.status); return res.json(); })
     .then(data => { I18N_CACHE[lang] = data; })
     .catch(err => { console.error("[i18n] failed to load", lang, err); });
@@ -2141,6 +2141,7 @@ function go(view){
     // setupDateLookup()은 yearSel.dataset.wired로 한 번만 실제 초기화되므로 여러 번 호출해도 안전
     updateDateLookupUi();
   }
+  maybeShowPwaInstallBanner(); // 확률체감 탭 진입/이탈 여부에 따라 PWA 설치 배너 표시 재판단
 
   document.querySelector('.page').scrollIntoView({behavior:'smooth', block:'start'});
 }
@@ -9519,6 +9520,64 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
+
+// 2026-08-10: PWA "홈 화면에 추가" 배너 — 확률체감 탭에서만 노출(HTML/CSS는 index.html/
+// styles.css 참고). 전체 방문자 대상으로 하면 대부분 "당첨금 한 번 계산해보는" 일회성
+// 방문이라 소음만 늘릴 위험이 있어서, 재방문 동기가 있는 확률체감/최근 당첨번호 탭
+// 방문자한테만 좁혀서 시도함. beforeinstallprompt는 Chrome/Edge 계열만 지원하고 iOS
+// Safari는 아예 이 이벤트를 안 쏴서 자동으로 배너가 안 뜸(별도 iOS 안내 UI는 스코프 밖).
+let _deferredInstallPrompt = null;
+const PWA_INSTALL_DISMISS_KEY = 'chamtax_pwa_install_dismissed_at';
+const PWA_INSTALL_DISMISS_DAYS = 14; // "나중에"를 누르면 이 기간 동안 다시 안 뜸(매 방문마다 재노출되는 것 방지)
+
+window.addEventListener('beforeinstallprompt', event => {
+  event.preventDefault(); // 브라우저 기본 미니인포바 대신 배너 버튼으로 우리가 직접 트리거
+  _deferredInstallPrompt = event;
+  maybeShowPwaInstallBanner();
+});
+
+window.addEventListener('appinstalled', () => {
+  _deferredInstallPrompt = null;
+  const banner = document.getElementById('pwaInstallBanner');
+  if (banner) banner.classList.remove('is-visible');
+});
+
+function isPwaInstallDismissedRecently(){
+  let dismissedAt = null;
+  try { dismissedAt = localStorage.getItem(PWA_INSTALL_DISMISS_KEY); } catch (e) {}
+  if (!dismissedAt) return false;
+  const daysSince = (Date.now() - Number(dismissedAt)) / (1000 * 60 * 60 * 24);
+  return daysSince < PWA_INSTALL_DISMISS_DAYS;
+}
+
+// go(view)가 odds 탭으로 들어오거나 나갈 때마다 호출 — 조건은 여기서 매번 다시 판단하므로
+// 호출 시점의 탭 상태만 맞으면 됨(별도 인자 불필요)
+function maybeShowPwaInstallBanner(){
+  const banner = document.getElementById('pwaInstallBanner');
+  if (!banner) return;
+  const oddsView = document.getElementById('view-odds');
+  const isOddsViewOpen = oddsView && oddsView.classList.contains('on');
+  const isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+  const shouldShow = !!_deferredInstallPrompt && isOddsViewOpen && !isStandalone && !isPwaInstallDismissedRecently();
+  banner.classList.toggle('is-visible', shouldShow);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const addBtn = document.getElementById('pwaInstallAddBtn');
+  const laterBtn = document.getElementById('pwaInstallLaterBtn');
+  const banner = document.getElementById('pwaInstallBanner');
+  if (addBtn) addBtn.addEventListener('click', () => {
+    if (banner) banner.classList.remove('is-visible');
+    if (!_deferredInstallPrompt) return;
+    const prompt = _deferredInstallPrompt;
+    _deferredInstallPrompt = null;
+    prompt.prompt();
+  });
+  if (laterBtn) laterBtn.addEventListener('click', () => {
+    try { localStorage.setItem(PWA_INSTALL_DISMISS_KEY, String(Date.now())); } catch (e) {}
+    if (banner) banner.classList.remove('is-visible');
+  });
+});
 
 let _resizeDebounceTimer = null;
 window.addEventListener('resize', () => {

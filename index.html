@@ -121,12 +121,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260807-8">
+<link rel="stylesheet" href="styles.min.css?v=20260810-1">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260810-2" defer></script>
+<script src="script.min.js?v=20260810-3" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1473,6 +1473,15 @@
       <!-- ODDS VIEW -->
       <div class="view" id="view-odds">
         <button class="back-btn" onclick="go('home')" data-i18n="common.backHome">← 홈으로</button>
+
+        <div class="pwa-install-banner" id="pwaInstallBanner">
+          <span class="pwa-install-banner-icon" aria-hidden="true">📲</span>
+          <span class="pwa-install-banner-text" data-i18n="installBanner.title">홈 화면에 추가하고 다음 추첨 결과를 바로 확인하세요</span>
+          <span class="pwa-install-banner-actions">
+            <button type="button" class="pwa-install-banner-add" id="pwaInstallAddBtn" data-i18n="installBanner.add">추가하기</button>
+            <button type="button" class="pwa-install-banner-later" id="pwaInstallLaterBtn" data-i18n="installBanner.later">나중에</button>
+          </span>
+        </div>
 
         <details class="panel odds-accordion" open>
           <summary class="panel-title-toggle" data-i18n="odds.panelTitle">이 확률, 솔직히 감이 안 오시죠?</summary>
