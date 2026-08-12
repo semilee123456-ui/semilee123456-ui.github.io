@@ -398,20 +398,29 @@
     background:none; border-radius:20px; padding:0; margin:0 0 8px;
   }
   .tax-impact-compact{
-    display:flex; flex-direction:row; flex-wrap:wrap; align-items:baseline; justify-content:center; gap:6px;
-    margin-top:10px; font-size:16px; color:var(--text-muted);
+    display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px;
+    margin-top:12px; font-size:16px; color:var(--text-muted);
   }
   .tax-impact-strike{ text-decoration:line-through; }
-  .tax-impact-before-line{ display:inline-flex; gap:4px; }
+  /* 2026-08-12: 예전엔 그냥 나열된 텍스트 줄이었는데, 세전/세금액을 둥근 배지(칩)로 감싸서
+     핀테크 앱의 "before → after" 태그 패턴으로 바꿈 — 값·id·로직은 그대로, 감싸는 배경만 추가 */
+  .tax-impact-before-line{
+    display:inline-flex; gap:4px; padding:4px 10px; border-radius:20px;
+    background:rgba(var(--ink-rgb),0.05);
+  }
   .tax-impact-arrow{ color:var(--text-muted); }
-  .tax-impact-diff-big{ font-weight:800; color:var(--status-red); font-size:18px; display:inline-block; }
+  .tax-impact-diff-big{
+    font-weight:800; color:var(--status-red); font-size:16px; display:inline-block;
+    padding:4px 12px; border-radius:20px; background:rgba(192,57,43,0.09);
+  }
   .tax-impact-diff-big.diff-pop{ animation:pop 0.35s cubic-bezier(0.34,1.56,0.64,1); }
   .result-visual-bar{
-    width:100%; height:10px; border-radius:6px; margin:14px 0 8px; overflow:hidden;
-    background:var(--status-red); opacity:0.85;
+    width:100%; height:14px; border-radius:10px; margin:16px 0 10px; overflow:hidden;
+    background:var(--status-red); opacity:0.85; box-shadow:inset 0 1px 2px rgba(0,0,0,0.06);
   }
   .result-visual-bar-take{
-    height:100%; background:var(--teal); border-radius:6px 0 0 6px;
+    height:100%; border-radius:10px 0 0 10px;
+    background:linear-gradient(90deg, var(--teal) 0%, rgba(var(--teal-rgb),0.78) 100%);
     transition:width 0.5s ease;
   }
   .result-visual-bar-caption{
@@ -1160,8 +1169,12 @@
   .result-hero{
     position:relative; overflow:hidden;
     background:linear-gradient(135deg, #EAF3EE 0%, #FBFAF4 55%, #FFFFFF 100%);
-    border:1px solid rgba(var(--teal-rgb),0.16); border-radius:14px;
-    padding:26px 20px 24px; text-align:center;
+    border:1px solid rgba(var(--teal-rgb),0.12); border-radius:24px;
+    padding:30px 22px 26px; text-align:center;
+    /* 2026-08-12: "교과서 같다"는 피드백(제미나이 리디자인 검토) 대응 — 얇은 테두리만 있던
+       평평한 카드를 라운딩+그림자로 띄워서 핀테크 앱 카드 느낌으로. 다른 .panel류(14px)와
+       의도적으로 다른 반경을 써서 메인 결과 카드가 눈에 띄게 함(사이트 전체 톤은 안 건드림) */
+    box-shadow:0 10px 30px rgba(var(--teal-rgb),0.10), 0 2px 8px rgba(var(--navyblue-rgb),0.05);
   }
   .result-hero::before{
     content:''; position:absolute; top:-70px; right:-60px; width:220px; height:220px; border-radius:50%;
@@ -2590,11 +2603,18 @@
   /* "결과 공유하기"(텍스트/링크)와 "이미지로 저장"(PNG)이 서로 다른 두 가지 방법이라 나란히
      둠 — .mn-btn-row(내 번호 티켓 이미지 버튼 줄)와 같은 flex 2등분 패턴 재사용 */
   .home-result-btn-row{ display:flex; gap:8px; margin-top:12px; }
-  .home-result-btn-row .share-btn{ flex:1; min-width:0; margin-top:0; }
+  .home-result-btn-row .share-btn{ flex:1; min-width:0; margin-top:0; border-radius:999px; }
+  /* 2026-08-12: 두 버튼이 시각적으로 동급(연한 민트 배경 + 테두리 없음)이라 뭘 먼저 눌러야
+     할지 구분이 안 됐음 — "공유하기"는 채운(primary) 색으로 강조하고 "이미지로 저장"은 아웃라인
+     (secondary)으로 낮춰서 핀테크 앱 CTA 위계를 줌. .copied 상태(복사 완료 시 진한 배경으로
+     바뀌는 기존 로직)는 두 버튼 다 그대로 유지되므로 별도 처리 안 함. */
+  #home-share-btn{ background:var(--teal); color:var(--on-accent); box-shadow:var(--shadow-btn); }
+  #home-share-btn:hover{ background:var(--teal); opacity:0.92; }
+  #home-save-image-btn{ background:transparent; border-color:rgba(var(--teal-rgb),0.4); }
   /* 2026-07-31: 읽어주기 버튼을 텍스트 없이 아이콘만 있는 작은 정사각형으로 — 공유하기/저장하기와
      같은 폭으로 3등분하면 "이 결과 공유하기"가 줄바꿈으로 깨지는 문제가 실제로 확인돼서, 이
      버튼만 flex:1 대신 고정 폭을 줌(다른 두 버튼은 그대로 폭을 나눠 가짐) */
-  .home-result-btn-row .tts-btn-icon{ flex:0 0 44px; width:44px; padding:11px 0; font-size:17px; }
+  .home-result-btn-row .tts-btn-icon{ flex:0 0 44px; width:44px; height:44px; align-self:center; padding:0; font-size:17px; border-radius:12px; }
   /* "이미지로 저장" 캔버스에 그려질 날짜를 사용자가 직접 정하는 입력칸(2026-07-28) —
      .amount-currency-row와 같은 "라벨 오른쪽 + 입력요소" 정렬 패턴을 재사용함 */
   .check-date-row{ display:flex; align-items:center; justify-content:flex-end; gap:6px; margin:10px 0 0; }
