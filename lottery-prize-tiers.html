@@ -146,7 +146,7 @@
   *{box-sizing:border-box;}
   body{
     margin:0; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;
-    background:var(--bg); color:var(--text-dark); line-height:1.6;
+    background:var(--bg); color:var(--text-dark); line-height:1.6; word-break:keep-all;
   }
   .wrap{ max-width:640px; margin:0 auto; padding:20px 20px 60px; }
   .nav{ display:flex; justify-content:space-between; align-items:center; padding:16px 0; }
@@ -171,14 +171,38 @@
   .section-note{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 14px; }
   p{ font-size:var(--fs-body); margin:0 0 14px; }
 
-  .table-wrap{ overflow-x:auto; border:1px solid var(--border); border-radius:12px; margin:0 0 10px; }
-  table{ width:100%; border-collapse:collapse; font-size:var(--fs-note); min-width:520px; }
-  thead th{ text-align:left; background:rgba(var(--teal-rgb),0.08); color:var(--teal); font-weight:700; padding:10px 12px; white-space:nowrap; }
-  tbody td{ padding:10px 12px; border-top:1px solid var(--border); }
-  tbody tr:hover{ background:rgba(var(--teal-rgb),0.04); }
-  td.amt{ font-weight:800; white-space:nowrap; }
-  td.odds{ color:var(--text-muted); white-space:nowrap; }
-  tr.jackpot-row td{ background:rgba(var(--teal-rgb),0.06); font-weight:700; }
+  /* 2026-08-12: 좁은 화면(375px 등)에서 4열 표가 min-width:520px 때문에 옆으로 스크롤해야만
+     보였던 문제("교과서 같다"는 피드백, 제미나이 리디자인 검토 중 지적) — <table>/<tr>/<td>
+     마크업은 그대로 두고(원화 환산·확률 데이터 손실 없음), CSS만으로 각 행을 등급 카드로
+     재배치함. 등수 배지는 새 엘리먼트를 추가하지 않고 tbody에 counter-reset을 걸어
+     tr::before의 counter(tier)로 자동 생성 — 데이터 중복 없이 항상 실제 행 순서와 일치함. */
+  .table-wrap{ overflow:visible; border:none; margin:0 0 14px; }
+  table{ display:block; width:100%; border-collapse:separate; min-width:0; font-size:var(--fs-note); }
+  thead{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  tbody{ display:flex; flex-direction:column; gap:10px; counter-reset:tier; }
+  tr{
+    position:relative; display:grid; grid-template-columns:34px 1fr auto;
+    grid-template-areas:"badge title amt" "badge odds krw";
+    align-items:center; column-gap:12px; row-gap:3px;
+    background:var(--card); border:1.5px solid var(--border); border-radius:16px;
+    padding:12px 16px; counter-increment:tier;
+  }
+  tr::before{
+    grid-area:badge; content:counter(tier);
+    width:30px; height:30px; border-radius:50%; flex-shrink:0;
+    background:var(--bg); color:var(--text-muted); font-weight:800; font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  tr.jackpot-row{ border-color:var(--status-amber); background:rgba(148,103,22,0.07); }
+  tr.jackpot-row::before{ content:'👑'; background:rgba(148,103,22,0.16); font-size:15px; }
+  tr:nth-child(2), tr:nth-child(3){ border-color:var(--teal); background:rgba(var(--teal-rgb),0.05); }
+  tr:nth-child(2)::before, tr:nth-child(3)::before{ background:rgba(var(--teal-rgb),0.16); color:var(--teal); }
+  td{ padding:0; border:none; font-size:var(--fs-note); min-width:0; }
+  td:nth-child(1){ grid-area:title; font-weight:700; color:var(--text-dark); }
+  td:nth-child(3){ grid-area:krw; text-align:right; color:var(--text-muted); font-size:var(--fs-small); white-space:nowrap; }
+  td.amt{ grid-area:amt; font-weight:800; text-align:right; white-space:nowrap; }
+  td.odds{ grid-area:odds; color:var(--text-muted); font-size:var(--fs-small); white-space:nowrap; }
+  tr.jackpot-row td.amt{ color:var(--status-amber); }
 
   .cta-box{
     background:var(--teal); border-radius:16px; padding:28px 24px; text-align:center; margin:32px 0;
