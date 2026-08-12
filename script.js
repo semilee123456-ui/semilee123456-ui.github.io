@@ -2157,7 +2157,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260810-2';
+    script.src = 'odds-data.js?v=20260812-1';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -4259,9 +4259,15 @@ function buildDrawScheduleMore(days){
 // 파워볼은 이 $748M/$325.1M이 8/3(월) 추첨용이었던 옛 값인데, 같은 스크린샷에 다음 추첨(8/5 수)
 // 잭팟이 아직 "Pending"으로 떠 있어서(공식 미발표) 추측으로 안 덮어쓰고 그대로 둠 — 다음
 // 세션/사용자가 "Pending"이 실제 금액으로 바뀐 뒤 갱신할 것.
+// 2026-08-12 이어서: 사용자가 공유한 스크린샷(usamega.com 요약)을 powerball.com 공식 페이지
+// WebFetch + megamillions.com 계열(DraftKings 기사, valottery.com 공식 주정부 페이지)
+// 교차검증 — 파워볼 8/10 회차(6,37,54,55,64+10, Power Play 3x)는 당첨자 없어 다음 추첨(8/12,
+// 오늘) 잭팟이 $1 Billion(현금가치 $433.1M)으로 증가. 메가밀리언즈 8/11 회차(1,20,30,46,68+17)도
+// 당첨자 없어 다음 추첨(8/14) 잭팟이 $90M(현금가치 valottery $38M · 스크린샷 $38.7M, 근소한
+// 차이는 판매량에 따른 흔한 오차로 판단해 더 정밀한 스크린샷 값 채택)으로 증가.
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 905000000, cashUsd: 391900000 },
-  megamillions: { amountUsd: 80000000, cashUsd: 34400000 },
+  powerball:    { amountUsd: 1000000000, cashUsd: 433100000 },
+  megamillions: { amountUsd: 90000000, cashUsd: 38700000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
@@ -4309,9 +4315,14 @@ const GAME_NAME_MORE = {
 // 예고값으로 기록해둔 값 그대로 사용). 당첨자 없어 다음 추첨(8/10) 잭팟이 $905M(현금가치
 // $391.9M)로 증가, 위 JACKPOT_DATA.powerball도 같이 갱신함. 메가밀리언즈는 스크린샷에 같은 8/7
 // 회차·$80M 잭팟이 그대로 표시돼 있어 이미 일치, 변경 없음.
+// 2026-08-12 이어서: powerball.com 공식 페이지 WebFetch로 8/10 회차 확인, 메가밀리언즈는
+// DraftKings 기사로 8/11 회차 확인 — 위 JACKPOT_DATA 갱신과 같은 근거. odds-data.js의
+// POWERBALL_DRAW_ARCHIVE·POWERBALL_JACKPOT_ARCHIVE / MEGAMILLIONS_DRAW_ARCHIVE·
+// MEGAMILLIONS_JACKPOT_ARCHIVE에도 같이 추가함(draw_archive_integrity_check.js 통과 확인,
+// odds-data.js?v 캐시버스팅도 같이 올림).
 const LATEST_DRAW = {
-  powerball:    { date: '2026-08-08', numbers: [5, 9, 35, 54, 63], special: 7 },
-  megamillions: { date: '2026-08-07', numbers: [17, 20, 32, 54, 57], special: 23 },
+  powerball:    { date: '2026-08-10', numbers: [6, 37, 54, 55, 64], special: 10 },
+  megamillions: { date: '2026-08-11', numbers: [1, 20, 30, 46, 68], special: 17 },
 };
 
 
