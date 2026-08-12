@@ -7897,19 +7897,15 @@ async function finishAnnotateAndShare(){
         // 사용자가 OS 공유 시트에서 취소한 경우 — 모달은 열어둔 채로 그대로 둠(다시 시도하거나
         // 직접 닫기를 누를 수 있게)
         if (e && e.name === 'AbortError') return;
-        // 그 외 공유 실패(권한 없음 등) — 아래 폴백(다운로드+텍스트 복사)으로 계속 진행
+        // 그 외 공유 실패(권한 없음 등) — 아래 폴백(텍스트 복사)으로 계속 진행
       }
     }
-    // 파일 공유를 지원 안 하는 브라우저(대부분의 데스크톱)용 폴백 — 이미지는 다운로드해두고
-    // 문구+링크는 클립보드로 복사, 기존 공유 버튼들의 폴백 패턴과 동일하게 버튼 텍스트를
-    // 잠깐 "복사 완료"로 바꿔줌. 모달은 그 피드백이 보이도록 자동으로 닫지 않음(사용자가
-    // "닫기"를 직접 누름) — 이미지로 저장(finishAnnotateAndDownload)과 달리 여기선 결과
-    // 확인 없이 바로 닫으면 "복사됐다"는 안내를 못 보게 됨.
-    const link = document.createElement('a');
-    link.download = annotateDownloadFilename;
-    link.href = URL.createObjectURL(blob);
-    link.click();
-    URL.revokeObjectURL(link.href);
+    // 2026-08-12: 파일 공유를 지원 안 하는 브라우저(대부분의 데스크톱)용 폴백 — 예전엔 이미지를
+    // 자동 다운로드까지 같이 시켰는데, 사용자가 "공유만 누르면 원치 않는 다운로드가 같이 뜬다"고
+    // 지적해서 제거함. "공유하기" 버튼은 다운로드 버튼(이미지로 저장 = finishAnnotateAndDownload,
+    // 바로 위 함수)이 따로 있으니 이 경로는 문구+링크만 클립보드로 복사. 기존 공유 버튼들의
+    // 폴백 패턴과 동일하게 버튼 텍스트를 잠깐 "복사 완료"로 바꿔줌. 모달은 그 피드백이 보이도록
+    // 자동으로 닫지 않음(사용자가 "닫기"를 직접 누름).
     try {
       await navigator.clipboard.writeText(annotateShareTextFallback);
       if (shareBtn) {
