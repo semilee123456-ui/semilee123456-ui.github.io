@@ -532,11 +532,19 @@
   }
   .dollar-input:focus{ outline:none; border-color:var(--teal); }
   .jackpot-quickfill-row{ display:flex; gap:8px; margin:0 0 10px; flex-wrap:wrap; }
+  /* 2026-08-12: 세로로 3줄(라벨/금액/원화) 쌓인 박스형이 목업의 "한 줄 칩" 느낌과 차이난다는
+     지적 — 라벨·금액을 같은 줄(좌우)로, 원화 환산만 그 아래 작은 보조줄로 내려서 2줄로
+     줄임. 세 span의 DOM 순서·id·클래스는 그대로 두고 grid-area로만 재배치(마크업 무변경). */
   .jackpot-quickfill-btn{
-    flex:1; min-width:140px; min-height:44px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
-    gap:4px; font-family:inherit; cursor:pointer; text-align:left;
-    border-radius:14px; padding:10px 12px;
+    flex:1; min-width:140px; min-height:44px;
+    display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"label amt" "usd usd";
+    align-items:center; column-gap:8px; row-gap:1px;
+    font-family:inherit; cursor:pointer; text-align:left;
+    border-radius:18px; padding:11px 14px;
   }
+  .jackpot-quickfill-label{ grid-area:label; min-width:0; overflow-wrap:break-word; }
+  .jackpot-quickfill-amt{ grid-area:amt; white-space:nowrap; }
+  .jackpot-quickfill-usd{ grid-area:usd; min-width:0; overflow-wrap:break-word; }
   /* 디자인 3차 개선: 두 버튼을 같은 청록색 톤으로 뭉뚱그리지 않고, 게임별 색(빨강=파워볼/
      호박색=메가밀리언즈)을 입혀서 어느 버튼이 어느 게임인지 한눈에 구분되게 함 */
   .jackpot-quickfill-btn-pb{ background:var(--game-pb-bg); border:1.5px solid var(--game-pb-border); }
