@@ -1791,3 +1791,32 @@ GitHub Pages 빌드는 정상 완료(`pages build and deployment` 워크플로 s
 변경 파일: `script.js`(`buildShareCard()`의 `contentTop` 22→40, 재빌드),
 `script.min.js`(재빌드), `index.html`(`script.min.js?v`
 `20260810-3`→`20260810-4`), `sw.js`(`CACHE_NAME` v28→v29).
+
+### 2026-08-12 — 파워볼 8/10 회차 + 메가밀리언즈 8/11 회차 반영 (PR #189, 머지·배포 확인 완료)
+
+사용자가 usamega.com 스타일 요약 스크린샷(파워볼 8/10 회차·메가밀리언즈 8/11 회차,
+양쪽 다음 잭팟 표시)을 공유. powerball.com 공식 페이지 WebFetch + DraftKings 기사 +
+valottery.com(버지니아 주정부 공식 페이지) 3곳 교차검증 후 반영 — 파워볼 8/10 회차
+(6,37,54,55,64+10, Power Play 3x) 당첨자 없어 다음 추첨(8/12, 세션 당일) 잭팟이
+$1 Billion(현금가치 $433.1M)으로 증가. 메가밀리언즈 8/11 회차(1,20,30,46,68+17)도
+당첨자 없어 다음 추첨(8/14) 잭팟이 $90M로 증가(현금가치는 valottery $38M·사용자
+스크린샷 $38.7M 중 더 정밀한 스크린샷 값 채택 — 판매량에 따라 하루에도 여러 번
+갱신되는 값이라 흔한 오차로 판단).
+
+4곳(`odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`+`POWERBALL_JACKPOT_ARCHIVE`,
+`MEGAMILLIONS_DRAW_ARCHIVE`+`MEGAMILLIONS_JACKPOT_ARCHIVE`) 전부 새 회차 추가,
+`script.js`의 `LATEST_DRAW`/`JACKPOT_DATA` 갱신.
+
+**검증**: `draw_archive_integrity_check`(4개 아카이브, 이슈 0건). `node --check`
+script.js/script.min.js/odds-data.js 통과. `git diff --stat`로 의도한 5개 파일만
+변경됐는지 확인.
+
+변경 파일: `odds-data.js`(4개 아카이브에 새 회차 추가), `script.js`(`LATEST_DRAW`/
+`JACKPOT_DATA` 갱신, `odds-data.js?v` `20260810-2`→`20260812-1`), `script.min.js`
+(재빌드), `index.html`(`script.min.js?v` `20260810-4`→`20260812-1`), `sw.js`
+(`CACHE_NAME` v29→v30). PR #189, 커밋 `1aaeba2`→머지 `66d0405`.
+
+**같은 날 다른 세션이 이어서**: PR #190("공유 버튼 데스크톱 폴백에서 이미지
+자동 다운로드 제거", 커밋 `988f705`)이 이 세션과 별개로 머지됨 — 이 세션은
+관여 안 함, 다음 세션이 이 주제를 다시 다룰 일이 있으면 그 커밋 메시지부터
+확인할 것.
