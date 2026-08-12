@@ -961,6 +961,37 @@
   @media (hover: hover) {
     .intro-persona-row.is-clickable:hover{ border-color:var(--teal); background:rgba(var(--teal-rgb),0.06); box-shadow:0 4px 12px rgba(var(--ink-rgb),0.08); }
   }
+  /* 2026-08-12: 라운딩+그림자만으로는 참고 목업(큰 원형 아이콘이 카드 위쪽에 있는 스타일)과
+     체감 차이가 크다는 지적 — 목업은 옵션이 정확히 3개(고정 카드)지만 우리는 22개국/22개
+     언어를 select로 담아야 해서 카드 4개 중 2개(1·4번째)는 완전히 똑같은 모양으로 못 맞춤.
+     대신 모든 카드에 원형 아이콘 배지를 추가해 목업의 "큰 아이콘" 느낌을 최대한 가져옴 —
+     2·3번째는 아이콘을 텍스트 위로 쌓고(가운데 정렬 카드), 1·4번째는 select 등 기존 내용의
+     줄바꿈을 안 건드리기 위해 왼쪽 상단에 절대위치 배지로 얹음. 실제 번역 텍스트(data-i18n)는
+     전혀 안 건드림 — 3·4번째 행처럼 아이콘 이모지가 이미 번역 문자열 안에 박혀있는 경우
+     (언어별로 다르게 번역될 수 있어 span으로 못 뺌)는 ::before로 큰 배지를 "추가"만 하고
+     원래 텍스트 속 작은 이모지는 그대로 둠(약간의 중복은 있지만 데이터 안전이 우선). */
+  .intro-persona-row:nth-child(2) .intro-persona-label,
+  .intro-persona-row:nth-child(3) .intro-persona-label{
+    display:flex; flex-direction:column; align-items:center; gap:6px; margin-bottom:2px;
+  }
+  .intro-persona-row:nth-child(2) .flag-badge{
+    width:48px; height:48px; border-radius:50%; font-size:17px;
+    display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .intro-persona-row:nth-child(3) .intro-persona-label::before{
+    content:'✈️'; width:48px; height:48px; border-radius:50%;
+    background:rgba(var(--teal-rgb),0.1); display:flex; align-items:center; justify-content:center; font-size:20px;
+  }
+  .intro-persona-row:nth-child(1), .intro-persona-row:nth-child(4){
+    position:relative; padding-left:60px; min-height:60px;
+  }
+  .intro-persona-row:nth-child(1)::before, .intro-persona-row:nth-child(4)::before{
+    position:absolute; left:14px; top:14px;
+    width:36px; height:36px; border-radius:50%;
+    background:rgba(var(--teal-rgb),0.12); display:flex; align-items:center; justify-content:center; font-size:16px;
+  }
+  .intro-persona-row:nth-child(1)::before{ content:'🌐'; }
+  .intro-persona-row:nth-child(4)::before{ content:'🌏'; }
   .intro-persona-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0 0 4px; }
   .flag-badge{
     display:inline-block; background:var(--teal); color:var(--on-accent); font-size:var(--fs-small); font-weight:800;
