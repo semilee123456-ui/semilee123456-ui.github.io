@@ -121,7 +121,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260813-2">
+<link rel="stylesheet" href="styles.min.css?v=20260813-4">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
@@ -671,12 +671,12 @@
             <p class="krw-hint" style="margin-bottom:10px;" data-i18n-html="input.krwHintFull">일시불 실제 <span style="white-space:nowrap">수령액(발표액의 약 45~60%)을</span> 입력하세요</p>
             <div class="jackpot-quickfill-row" style="margin-bottom:16px;">
               <button type="button" class="jackpot-quickfill-btn jackpot-quickfill-btn-pb" onclick="fillHomeAmountFromJackpot('powerball', this)">
-                <span class="jackpot-quickfill-label">🔴 <span data-i18n="home.quickfillPowerball">파워볼 최근 잭팟 (일시불)</span></span>
+                <span class="jackpot-quickfill-label"><span class="quickfill-ball" aria-hidden="true"></span> <span data-i18n="home.quickfillPowerball">파워볼 최근 잭팟 (일시불)</span></span>
                 <span class="jackpot-quickfill-amt" id="quickfill-pb-amt">-</span>
                 <span class="jackpot-quickfill-usd" id="quickfill-pb-usd"></span>
               </button>
               <button type="button" class="jackpot-quickfill-btn jackpot-quickfill-btn-mm" onclick="fillHomeAmountFromJackpot('megamillions', this)">
-                <span class="jackpot-quickfill-label">🟡 <span data-i18n="home.quickfillMega">메가밀리언즈 최근 잭팟 (일시불)</span></span>
+                <span class="jackpot-quickfill-label"><span class="quickfill-ball" aria-hidden="true"></span> <span data-i18n="home.quickfillMega">메가밀리언즈 최근 잭팟 (일시불)</span></span>
                 <span class="jackpot-quickfill-amt" id="quickfill-mm-amt">-</span>
                 <span class="jackpot-quickfill-usd" id="quickfill-mm-usd"></span>
               </button>

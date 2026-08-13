@@ -566,6 +566,18 @@
   .jackpot-quickfill-label{ grid-area:label; min-width:0; overflow-wrap:break-word; }
   .jackpot-quickfill-amt{ grid-area:amt; white-space:nowrap; }
   .jackpot-quickfill-usd{ grid-area:usd; min-width:0; overflow-wrap:break-word; }
+  /* 2026-08-13: "정산 티켓" 작업 중 이 버튼을 다시 들여다보다가 발견 — 위 2026-08-12
+     "같은 줄(좌우)" 배치가 좁은 화면(약 460px 이하) + 영어 긴 라벨("Powerball recent
+     jackpot (lump-sum)") 조합에서 minmax(0,1fr) 라벨 열이 auto 금액 열에 폭을 다
+     내주고 거의 0까지 눌려서 글자가 한 글자씩 세로로 쪼개지는 버그였음(오늘 세션이 만든
+     버그 아님 — f4cf0e4 시점에서도 재현 확인). home_audit은 "카드 경계 밖으로 튀어나감"만
+     검사해서 이 "안 튀어나가지만 읽을 수 없게 눌리는" 케이스는 못 잡음(글자 단위 줄바꿈이라
+     escape가 아님) — 스크린샷으로 직접 봐야만 보임. 좁은 화면에서만 라벨/금액을 다시
+     세로로 쌓아서(2026-08-12 이전 형태로 잠깐 되돌아감) 안전하게 피함. */
+  @media (max-width: 480px) {
+    .jackpot-quickfill-btn{ grid-template-columns:1fr; grid-template-areas:"label" "amt" "usd"; row-gap:2px; }
+    .jackpot-quickfill-amt{ justify-self:start; }
+  }
   /* 디자인 3차 개선: 두 버튼을 같은 청록색 톤으로 뭉뚱그리지 않고, 게임별 색(빨강=파워볼/
      호박색=메가밀리언즈)을 입혀서 어느 버튼이 어느 게임인지 한눈에 구분되게 함 */
   .jackpot-quickfill-btn-pb{ background:var(--game-pb-bg); border:1.5px solid var(--game-pb-border); }
@@ -588,6 +600,25 @@
   .jackpot-quickfill-label{ font-size:var(--fs-small); font-weight:800; letter-spacing:0.02em; }
   .jackpot-quickfill-btn-pb .jackpot-quickfill-label{ color:var(--status-red); }
   .jackpot-quickfill-btn-mm .jackpot-quickfill-label{ color:var(--status-amber); }
+  /* 2026-08-13: "정산 티켓" 컨셉 — 이 버튼이 파워볼/메가밀리언즈 "추첨공"을 뽑는 느낌을
+     내도록, OS마다 다르게 그려지던 🔴/🟡 이모지를 CSS로 직접 그린 광택 있는 공 모양으로
+     교체(index.html의 .quickfill-ball, 순수 장식용 span, aria-hidden). 이 버튼 2개에만
+     적용 — script.js가 여러 곳(랭킹 목록 등)에서 같은 이모지를 동적으로 더 쓰는데, 그건
+     이번 범위 밖(다음 단계 후보로 HANDOFF에 남김) */
+  .quickfill-ball{
+    display:inline-block; width:15px; height:15px; border-radius:50%; vertical-align:-2px;
+    flex-shrink:0;
+    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 45%), var(--status-red);
+  }
+  .jackpot-quickfill-btn-mm .quickfill-ball{
+    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 45%), var(--status-amber);
+  }
+  /* 2026-08-13: 고정폭 서체를 여기 적용했다가 좁은 화면(460px 이하, 특히 영어 "$433.1
+     million"처럼 긴 문자열)에서 이 grid의 auto 폭 열(금액)이 지금보다 훨씬 넓어져서 옆
+     minmax(0,1fr) 열(라벨)이 0까지 눌리며 글자가 한 글자씩 세로로 쪼개지는 실제 렌더링
+     버그가 났음(Playwright 스크린샷으로 발견) — 이 grid는 2026-08-12에도 같은 종류의
+     오버플로를 minmax(0,1fr)로 겨우 잡은 전례가 있어 다시 흔들지 않고 되돌림. 고정폭은
+     결과 카드처럼 grid 폭 제약이 없는 곳에만 씀 */
   .jackpot-quickfill-amt{ font-size:var(--fs-small); font-weight:800; color:var(--text-dark); }
   .jackpot-quickfill-usd{ font-size:var(--fs-small); font-weight:600; color:var(--text-muted); }
   .million-input-wrap{
@@ -611,6 +642,11 @@
   .million-input-wrap-secondary .dollar-input{
     border:none; padding:8px 0; height:auto; flex:1; min-width:0; width:auto;
     font-size:32px; font-size:clamp(26px, 10vw, 38px); font-weight:800; color:var(--teal);
+  }
+  /* 2026-08-13: "정산 티켓" 컨셉 — 당첨금을 직접 타이핑하는 칸이라 "티켓 단말기에 숫자
+     찍는" 느낌으로 고정폭 서체. 한글이 안 섞이는 순수 숫자 입력칸이라 별도 폴백 고려 불필요 */
+  .million-input-wrap .dollar-input, .million-input-wrap-secondary .dollar-input{
+    font-family:'SFMono-Regular','Menlo','Consolas','Liberation Mono',monospace;
   }
   @keyframes field-autofill-flash{ 0%{ box-shadow:0 0 0 4px rgba(var(--teal-rgb),0.28); } 100%{ box-shadow:0 0 0 0 rgba(var(--teal-rgb),0); } }
   .field-autofill-flash{ animation:field-autofill-flash 700ms ease-out; }
@@ -1897,7 +1933,10 @@
     /* 2026-08-12: 크림/베이지 배경(--input-card-bg)이 목업들이 강조한 "pure white/light-grey"
        톤과 달라서, 모서리·그림자를 다 맞춰도 "종이" 느낌이 남는다는 지적 — 결과 카드와 같은
        흰 배경으로 통일 */
-    position:relative; background:var(--card); border:2.5px solid var(--teal); border-radius:20px;
+    /* 2026-08-13: "정산 티켓" 컨셉 — 아래 결과 카드(.result-hero)와 반경을 16px로 통일해서
+       두 카드가 같은 "티켓 세트"처럼 보이게 함(기존 20px는 다른 어떤 카드와도 안 맞는
+       고립된 값이었음) */
+    position:relative; background:var(--card); border:2.5px solid var(--teal); border-radius:16px;
     padding:14px 16px 16px; margin-top:22px; box-shadow:0 8px 24px rgba(var(--teal-rgb),0.08);
   }
 
