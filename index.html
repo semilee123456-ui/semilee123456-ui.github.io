@@ -125,7 +125,7 @@
      요청과 한 URL로 합쳐서 추가 요청 없이 확장 -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260813-5">
+<link rel="stylesheet" href="styles.min.css?v=20260813-6">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
@@ -975,7 +975,11 @@
         <div class="ticket-perf-line" aria-hidden="true"></div>
 
         <div class="result-hero">
-            <div class="result-seal-row"><span class="result-seal" aria-hidden="true">참</span></div>
+            <!-- 2026-08-13: "정산 티켓" 컨셉 — 결과가 "잭팟"임을 강조하는 대각선 리본(순수 장식,
+                 aria-hidden) + 기존 "참" 인장을 float 대신 절대위치 배지로 전환(아래 CSS 참고).
+                 값·id·JS 바인딩 없음. -->
+            <div class="ticket-jackpot-ribbon-clip" aria-hidden="true"><div class="ticket-jackpot-ribbon" data-i18n="result.jackpotRibbon">잭팟</div></div>
+            <span class="result-seal" aria-hidden="true">참</span>
             <p class="announced-convert-note" id="home-announced-convert-note" style="display:none;"></p>
             <h2 class="result-hero-label" data-i18n="result.label">일시불 예상 실수령액</h2>
             <p class="result-hero-amt" id="home-final-amt" role="status" aria-live="polite">805억원</p>

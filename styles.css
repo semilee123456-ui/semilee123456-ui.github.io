@@ -442,15 +442,18 @@
      "세전"/"→" 같은 한글·기호는 그대로 기본 서체 유지(별도 span이라 폰트 분리 안전함) */
   .tax-impact-before-line{ display:inline-flex; gap:4px; }
   #tax-impact-before, .tax-impact-diff-big{
-    font-family:'SFMono-Regular','Menlo','Consolas','Liberation Mono',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    font-family:var(--font-mono-ticket);
   }
   .tax-impact-arrow{ color:var(--text-muted); }
   .tax-impact-diff-big{ font-weight:800; color:var(--status-red); font-size:16px; }
   .tax-impact-diff-big.diff-pop{ animation:pop 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+  /* 2026-08-13: "정산 티켓" 컨셉 — 게이지를 더 두껍게(14→22px)+알약형(radius:999)+하드
+     테두리(2px, --navy)로 바꿔서 다른 티켓 요소들과 같은 시각 문법을 씀. 막대 안에 퍼센트
+     숫자를 얹지 않고 기존처럼 바로 아래 캡션에 남겨둠(22px 두께에 11-12px 텍스트를 우겨넣는
+     핸드오프 문서 방식은 --fs-small 16px 하한과 충돌해서 안 가져옴) */
   .result-visual-bar{
-    width:100%; height:14px; border-radius:6px; margin:16px 0 10px; overflow:hidden;
-    background:var(--status-red); opacity:0.85; box-shadow:inset 0 1px 2px rgba(0,0,0,0.06);
-    border:1px solid var(--border);
+    width:100%; height:22px; border-radius:999px; margin:16px 0 10px; overflow:hidden;
+    background:var(--status-red); opacity:1; border:2px solid var(--navy);
   }
   .result-visual-bar-take{
     height:100%;
@@ -462,7 +465,7 @@
     font-size:var(--fs-small); color:var(--text-muted); margin:0;
   }
   .result-visual-bar-caption span[id$="-pct"]{
-    font-family:'SFMono-Regular','Menlo','Consolas','Liberation Mono',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    font-family:var(--font-mono-ticket);
     font-weight:700;
   }
   .rvb-dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:-2px; }
@@ -1401,15 +1404,44 @@
       var(--text-dark) 17px 19px, transparent 19px 24px);
   }
   /* 시그니처 요소 — "참"(眞, 진짜·검증됨)의 뜻을 담은 도장 마크.
-     한국 전통 인감도장처럼, 이 결과가 근거 있게 계산된 값이라는 걸 시각적으로 표현함 */
-  .result-seal-row{ float:right; margin:0 0 6px 10px; }
+     한국 전통 인감도장처럼, 이 결과가 근거 있게 계산된 값이라는 걸 시각적으로 표현함.
+     2026-08-13: float 배치를 절대위치 배지로 바꿔서(핸드오프 문서의 stampBadge) 텍스트
+     흐름과 완전히 분리 — 라벨이 몇 줄이 되든 겹치지 않음. 살짝 흔들리는 wiggle 애니메이션
+     추가(순수 CSS, prefers-reduced-motion에서 자동 정지) */
   .result-seal{
-    width:44px; height:44px; border-radius:50%;
-    border:1.5px solid var(--gold); display:flex; align-items:center; justify-content:center;
-    font-size:16px; font-weight:800; color:var(--gold); letter-spacing:-0.02em;
-    transform:rotate(-8deg); opacity:0.9; pointer-events:none; font-family:inherit;
-    background:rgba(156,111,30,0.05); flex-shrink:0;
+    position:absolute; top:14px; right:18px; z-index:1;
+    width:40px; height:40px; border-radius:50%;
+    border:2px solid var(--gold); display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:800; color:var(--gold); letter-spacing:-0.02em;
+    opacity:0.95; pointer-events:none; font-family:var(--font-display);
+    background:var(--card); flex-shrink:0;
+    animation:ticket-seal-wiggle 2.6s ease-in-out infinite;
   }
+  @keyframes ticket-seal-wiggle{
+    0%, 100%{ transform:rotate(-9deg); }
+    50%{ transform:rotate(7deg); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .result-seal{ animation:none; transform:rotate(-8deg); }
+  }
+  /* 대각선 "JACKPOT" 리본 — 결과 카드 왼쪽 상단 모서리를 감싸는 순수 장식 배지.
+     핸드오프 문서(index.dc.html)는 10px 텍스트 기준 84×84 클리핑 박스를 쓰는데, 이 사이트는
+     텍스트를 16px 미만으로 안 내려서(접근성 최소 폰트 --fs-small 규칙) 그 비율 그대로 축소하면
+     "JACKPOT" 앞글자가 클리핑 경계에 잘려 안 읽히는 문제가 있었음(2026-08-13 Playwright
+     스크린샷으로 발견) — 텍스트는 16px 유지하고 대신 리본 띠 폭·클립 박스를 넉넉히 키워서
+     글자가 잘리지 않게 맞춤 */
+  .ticket-jackpot-ribbon-clip{
+    position:absolute; top:0; left:0; width:84px; height:84px; overflow:hidden; pointer-events:none; z-index:1;
+  }
+  .ticket-jackpot-ribbon{
+    position:absolute; top:16px; left:-34px; width:150px; text-align:center;
+    background:var(--gold); color:var(--on-accent); font-size:16px; font-weight:800;
+    letter-spacing:0.03em; padding:4px 0; transform:rotate(-45deg);
+    box-shadow:0 2px 4px rgba(var(--ink-rgb),0.3); font-family:var(--font-display);
+  }
+  /* 리본(왼쪽 상단)·인장(오른쪽 상단) 배지가 라벨 텍스트와 겹치지 않도록, 라벨이 시작되는
+     콘텐츠 영역 자체를 두 배지 높이 아래로 내림(수평 위치와 무관하게 항상 안전) */
+  .result-hero{ padding-top:58px; }
   .result-hero-label{ position:relative; font-size:var(--fs-h3); color:var(--text-muted); font-weight:600; margin:0 0 8px; overflow-wrap:normal; }
   .announced-convert-note{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 6px; font-variant-numeric:tabular-nums; }
   /* 영어는 단어 단위로 줄바꿈되면서 한국어보다 여러 줄이 되는 경우가 많아서, 버튼·제목·설명문류에
@@ -1431,14 +1463,16 @@
   html[lang="en"] .feature-sub{ line-height:1.7; }
   .result-hero-amt{
     position:relative; font-size:40px; font-size:clamp(30px, 11.5vw, 58px); font-weight:800; margin:0;
-    font-variant-numeric:tabular-nums; white-space:nowrap; clear:both;
+    font-variant-numeric:tabular-nums; white-space:nowrap;
     color:var(--teal); text-shadow:none; line-height:1.25;
     /* 2026-08-13: "정산 티켓" 컨셉 채택 — 영수증 프린터 느낌을 내려고 숫자만 고정폭 서체로.
        formatWon() 결과 문자열엔 "억원"/"Billion" 같은 한글·영문 단위도 같은 텍스트 노드에
        섞여 있는데, 이 폰트 스택은 그 글자들에 대한 글리프가 없어서 브라우저가 문자 단위로
        자동으로 다음 폰트(사이트 기본 산세리프)로 넘어감 — 숫자만 고정폭이 되고 "억원" 등
-       단위는 원래 폰트로 정상 표시됨(별도 span 분리나 JS 변경 불필요). */
-    font-family:'SFMono-Regular','Menlo','Consolas','Liberation Mono',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+       단위는 원래 폰트로 정상 표시됨(별도 span 분리나 JS 변경 불필요). IBM Plex Mono가
+       숫자 0-9/쉼표/마침표 글리프를 지원해서 var(--font-mono-ticket) 맨 앞에 씀(2026-08-13
+       리디자인) — 없으면 기존 시스템 고정폭 스택으로 폴백. */
+    font-family:var(--font-mono-ticket);
   }
   .result-meta-group{ margin-top:16px; padding-top:10px; border-top:1px dashed rgba(var(--ink-rgb),0.12); display:flex; flex-direction:column; align-items:center; gap:7px; }
   .result-hero-basis-mini{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; }
