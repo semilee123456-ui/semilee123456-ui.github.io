@@ -119,9 +119,13 @@
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260813-4">
+<!-- 2026-08-13: "정산 티켓" 컨셉 — 영문 헤딩·이표(eyebrow)용 Space Grotesk, 숫자·바코드코드용
+     IBM Plex Mono 추가. 둘 다 한글 글리프가 없어서 CSS font-family 폴백 규칙에 따라 한글 문자만
+     자동으로 다음 폰트(Pretendard)로 넘어감 — 한국어 UI에는 영향 없음. 기존 Naskh/Nastaliq
+     요청과 한 URL로 합쳐서 추가 요청 없이 확장 -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap" onload="this.onload=null; this.rel='stylesheet';">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.min.css?v=20260813-5">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
@@ -569,6 +573,12 @@
              한국 기준 표현 대신 국적 중립적으로 바꿈. 한국 관련 3개 선택지(한국 거주/해외 거주
              한국 국적자/한국 거주 외국인)는 여전히 유효한 세부 케이스라 순서만 뒤로 밀고 삭제는
              안 함. -->
+        <!-- 2026-08-13: "정산 티켓" 컨셉 전면 리디자인 — 페르소나 픽커·입력 카드·결과 카드를
+             각자 따로 뜬 카드 3개 대신, perforation(점선+원형 노치)으로 이어진 하나의 연속된
+             티켓처럼 묶음(디자인팀 핸드오프 index.dc.html의 ticketShell 구조 재구현). 셸
+             내부 3개 섹션은 각자 개별 테두리/그림자/반경을 버리고 셸 하나의 하드 테두리+
+             오프셋 그림자를 공유 — 계산 로직·id·data-i18n 키는 전혀 안 건드림(표현만 변경). -->
+        <div class="ticket-shell">
         <details class="panel odds-accordion" id="introPersonaAccordion" style="margin:14px 0;" open>
           <summary class="panel-title-toggle" data-i18n="intro.panelTitle">👋 나는 어떤 경우일까요?</summary>
           <div class="intro-persona-list">
@@ -665,8 +675,10 @@
           } catch (e) {}
         </script>
 
-        <div style="margin:16px 0; margin-top:0;">
-          <div class="input-card">
+        <div class="ticket-perf-row" aria-hidden="true"></div>
+        <div class="ticket-perf-line" aria-hidden="true"></div>
+
+        <div class="input-card">
             <p class="input-card-headline" data-i18n="home.inputHint">당첨금을 직접 입력해보세요</p>
             <p class="krw-hint" style="margin-bottom:10px;" data-i18n-html="input.krwHintFull">일시불 실제 <span style="white-space:nowrap">수령액(발표액의 약 45~60%)을</span> 입력하세요</p>
             <div class="jackpot-quickfill-row" style="margin-bottom:16px;">
@@ -959,7 +971,10 @@
             <p class="krw-hint" id="home-krw-rate-line" style="margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);"><span id="home-krw-amt-wrap">≈ <span id="home-krw-amt">1,503억원</span></span><span id="home-krw-sep1"> · </span><span id="home-rate-editor-wrap"><span data-i18n="common.exchangeRate" id="home-rate-label">환율</span> <input type="text" class="rate-input" id="home-rate-input" value="1,503.4" inputmode="decimal" oninput="onHomeRateChanged()" aria-labelledby="home-rate-label"><span data-i18n="common.won">원</span></span><span id="home-input-preview"></span></p>
           </div>
 
-          <div class="result-hero">
+        <div class="ticket-perf-row" aria-hidden="true"></div>
+        <div class="ticket-perf-line" aria-hidden="true"></div>
+
+        <div class="result-hero">
             <div class="result-seal-row"><span class="result-seal" aria-hidden="true">참</span></div>
             <p class="announced-convert-note" id="home-announced-convert-note" style="display:none;"></p>
             <h2 class="result-hero-label" data-i18n="result.label">일시불 예상 실수령액</h2>
@@ -1022,6 +1037,9 @@
               <button type="button" class="share-btn" id="home-save-image-btn" onclick="saveHomeResultAsImage()" data-i18n="home.saveImageBtn">이미지로 저장</button>
             </div>
           </div>
+
+          <div class="ticket-torn-bottom" aria-hidden="true"></div>
+        </div><!-- /.ticket-shell -->
 
           <details class="calc-detail-toggle" id="home-detail-toggle">
             <summary class="calc-detail-summary" data-i18n="home.detailSummary">결과 더 자세히 보기</summary>
@@ -1126,7 +1144,6 @@
                  아래에 이어붙임(새 박스 안 만듦, 밀도 문제 없음). -->
             <p class="sim-note" data-i18n="home.citationNote">📎 인용·보도 시 출처를 'ChamTax(chamtax.com)'으로 표기해 주세요.</p>
           </details>
-        </div>
 
         <div class="explore-section">
           <p class="explore-title" data-i18n="explore.title">🧭 이것도 궁금하지 않으세요?</p>

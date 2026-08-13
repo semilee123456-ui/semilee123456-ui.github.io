@@ -88,6 +88,23 @@
        --gold 계열로 바꿔서 두 필터가 서로 다른 그룹이라는 걸 색으로도 구분되게 함 */
     --gold-chip-bg: rgba(156,111,30,0.07);
     --gold-chip-border: rgba(156,111,30,0.4);
+
+    /* 2026-08-13: "정산 티켓" 컨셉 전면 리디자인(디자인팀 핸드오프 index.dc.html 기준) —
+       홈 화면 페르소나 픽커·입력 카드·결과 카드를 하나의 티켓 셸로 묶으면서 반복 쓰는 값들을
+       변수화. --navy가 핸드오프 문서의 "ink"(#262420/#EDE8DA)와, --text-muted가 "inkSoft"와
+       각각 정확히 같은 값이라 별도 색상 추가 없이 기존 팔레트 그대로 재사용함(핸드오프 문서
+       자체가 "prior concept review에서 재사용"이라고 명시). Space Grotesk/IBM Plex Mono는
+       한글 글리프가 없어서 한국어 텍스트엔 자동으로 Pretendard로 폴백됨(별도 분기 불필요) —
+       숫자·영문 라벨에만 실제로 적용됨. 폰트 크기는 이 변수들과 별개로 항상 --fs-small(16px)
+       이상만 씀 — 핸드오프 문서 자체 수치(11~13px)는 이 사이트의 "40-60대 접근성" 최소
+       폰트 기준과 충돌해서 그대로 안 가져오고 16px로 올림(2026-08-13 PR #197 세션의 "명암비
+       깎는 요소는 거르고 나머지만 채용" 판단과 같은 원칙). */
+    --font-display:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    --font-mono-ticket:'IBM Plex Mono','SFMono-Regular','Menlo','Consolas','Liberation Mono',monospace;
+    --ticket-shadow-hard: 4px 4px 0 var(--navy);
+    --ticket-shadow-hard-sm: 3px 3px 0 var(--navy);
+    --ticket-shadow-hard-xs: 2px 2px 0 var(--navy);
+    --ticket-shadow-hard-press: 1px 1px 0 var(--navy);
   }
   /* 다크모드는 더 이상 기기의 prefers-color-scheme을 자동으로 따라가지 않고, 우상단 토글
      버튼(toggleTheme(), script.js)으로만 켜짐 — 켠 상태는 localStorage에 저장되어 다음
@@ -1291,6 +1308,53 @@
   /* --text-muted는 이미 WCAG AA 기준으로 명암비 맞춰 튜닝된 값이라, 그 위에 opacity:0.85까지
      또 얹으면 대비가 불필요하게 더 줄어듦(디자인 검수로 발견, 2026-07-25) — opacity 제거 */
   .foot-note{ font-size:16px; color:var(--text-muted); margin:0; line-height:1.4; }
+
+  /* 2026-08-13: "정산 티켓" 컨셉 전면 리디자인 — 페르소나 픽커(#introPersonaAccordion)·
+     입력 카드(.input-card)·결과 카드(.result-hero)를 각자 뜬 카드 3개 대신 하나의 연속된
+     티켓 셸로 묶음(디자인팀 핸드오프 index.dc.html의 ticketShell 재구현, 색상 토큰은 이미
+     이 파일과 정확히 같은 값이라 그대로 재사용). 셸 자체가 하드 테두리+오프셋 그림자를 지니고,
+     내부 3개 섹션은 개별 테두리·그림자·반경·배경을 버리고 셸의 --card 배경 하나를 공유 —
+     섹션 사이는 기존 .ticket-perf-row/.ticket-perf-line(아래, 원래 .result-hero 내부 바코드
+     구간에서만 쓰던 절취선 기법을 셸 이음매로 확장)로 구분. 계산 로직·id·data-i18n 키는
+     전혀 안 건드림(순수 표현 레이어). */
+  .ticket-shell{
+    position:relative; overflow:hidden;
+    background:var(--card);
+    border:2.5px solid var(--navy);
+    border-radius:22px 22px 0 0;
+    box-shadow:var(--ticket-shadow-hard);
+    margin:16px 0 0;
+    animation:ticket-shell-pop 0.45s cubic-bezier(0.25,0.8,0.35,1.2) both;
+  }
+  @keyframes ticket-shell-pop{
+    from{ opacity:0; transform:scale(0.96) translateY(8px); }
+    to{ opacity:1; transform:none; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .ticket-shell{ animation:none; }
+  }
+  /* 페르소나 픽커는 공용 .panel/.odds-accordion 스타일(테두리·반경·margin, 다른 13곳에서
+     재사용됨)을 그대로 쓰던 걸, 셸 안에서만 id 스코프로 지움 — 다른 아코디언엔 영향 없음.
+     인라인 style="margin:14px 0;"(index.html)을 이겨야 해서 margin만 !important 사용 */
+  #introPersonaAccordion{
+    background:none; border:none; border-radius:0; margin:0 !important; padding:20px 22px;
+  }
+  .ticket-shell .input-card{
+    position:relative; background:none; border:none; box-shadow:none; border-radius:0;
+    padding:18px 22px 20px; margin-top:0;
+  }
+  .ticket-shell .result-hero{
+    border:none; box-shadow:none; border-radius:0;
+  }
+  /* 찢어진 종이 가장자리 — 셸 맨 아래(둥근 위쪽 모서리와 대비되는 평평한 아래쪽)에 스캘럽
+     마스크로 반원 여러 개를 파낸 띠를 둬서 "영수증 롤을 뜯어낸" 느낌을 냄. 순수 장식(aria-hidden) */
+  .ticket-torn-bottom{
+    height:14px; background:var(--bg);
+    -webkit-mask-image:radial-gradient(circle at 10px 0, transparent 9px, black 10px);
+    -webkit-mask-size:20px 14px; -webkit-mask-repeat:repeat-x;
+    mask-image:radial-gradient(circle at 10px 0, transparent 9px, black 10px);
+    mask-size:20px 14px; mask-repeat:repeat-x;
+  }
 
   .result-hero{
     position:relative; overflow:hidden;
@@ -2967,6 +3031,10 @@
     .jc-step{ gap:8px; }
     .playslip-mock{ padding:8px; }
     .panel{ padding:14px; }
+    /* id 선택자(#introPersonaAccordion)가 .panel보다 항상 이겨서, 아래 .panel의 좁은 화면
+       패딩 축소가 이 섹션엔 안 먹던 문제(2026-08-13 발견) — 같은 값으로 별도 지정 */
+    #introPersonaAccordion{ padding:14px; }
+    .ticket-shell .input-card{ padding:14px 14px 16px; }
     .footer-links{ gap:8px 12px; }
   }
   /* nav(로고+메뉴)는 훨씬 넓은 범위(480px 이하)에서 미리 축소 — 390px·393px·412px 같은
@@ -3024,6 +3092,11 @@
     .footer-links{ gap:6px 10px; }
     .footer-links button, .footer-links a{ font-size:16px; }
     .panel{ padding:10px; }
+    /* .ticket-shell 자체 테두리(2.5px solid, 예전 .panel의 1px보다 3px 더 두꺼움)가 안쪽
+       가용 폭을 그만큼 더 먹어서, .panel과 같은 패딩값을 줘도 240px 근방에서 2~3px 넘치는
+       회귀가 있었음(home_audit.js로 발견, 2026-08-13) — 셸 내부 두 섹션만 그만큼 더 줄임 */
+    #introPersonaAccordion{ padding:7px; }
+    .ticket-shell .input-card{ padding:7px 7px 9px; }
     .refund-link-buttons{ grid-template-columns:1fr; }
     .result-seal{ width:36px; height:36px; font-size:11px; }
     .calc-detail-toggle, .fun-toggle{ padding-left:10px; padding-right:10px; }
