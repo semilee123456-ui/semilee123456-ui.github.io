@@ -1542,3 +1542,86 @@ auto 열(금액)이 공간을 더 가져가 옆 라벨 열이 거의 0까지 눌
 비교 포함). `index.html` 캐시버스팅 버전 `20260813-2`→`20260813-4`.
 
 PR #198(`claude/handover-github-latest-guu7gj`)에 계속 커밋 쌓는 중 — 머지 전.
+
+### 2026-08-13 이어서 — "정산 티켓" 컨셉 전면 리디자인 (PR #198 계속, 5개 커밋)
+
+사용자가 디자인팀 핸드오프 zip 2개(컨셉 정리 문서 `design_handoff_ticket_home/
+README.md`+`index.dc.html` 고fidelity 참고 프로토타입, 그리고 이 PR #198이 지금까지
+반영한 것 정리한 `rebuild/package/`)를 첨부하며 "이대로 똑같이 만들어달라"·"사이트를
+획기적으로 바꾸고 싶다" 요청. 위 세 커밋(설정 버튼/결과 카드/입력 카드 톤 맞추기)이
+이미 반영한 부분 위에서, "헤더/nav 전체"·"90개 랜딩페이지 확산" 등 남은 항목 중
+**이번 세션은 홈 화면(`index.html`) 범위**로 다음을 진행함(90개 랜딩페이지·저장
+이미지 캔버스는 아래 "지켜야 할 제약" 참고, 이번엔 일부러 안 건드림).
+
+**적용한 변경(5개 커밋, 시간순)**:
+1. 페르소나 픽커(`#introPersonaAccordion`)·입력 카드(`.input-card`)·결과 카드
+   (`.result-hero`)를 각자 뜬 카드 3개 대신 **하나의 `.ticket-shell`**로 통합 —
+   하드 테두리(2.5px solid var(--navy))+오프셋 그림자(`4px 4px 0`)로 셸 전체를
+   감싸고, 섹션 사이는 기존에 `.result-hero` 내부(바코드 위)에서만 쓰던
+   `.ticket-perf-row`(원형 노치)+`.ticket-perf-line`(점선) 기법을 셸 이음매로
+   확장. 셸 맨 아래엔 `mask-image` 스캘럽으로 찢어진 종이 가장자리 추가. Space
+   Grotesk/IBM Plex Mono 웹폰트 로드 추가(한글 글리프 없어서 자동 폴백, 영향 없음).
+2. 결과 카드에 대각선 골드 "JACKPOT" 리본(왼쪽 상단 코너, 신규 i18n 키
+   `result.jackpotRibbon` 26개 언어)과, 기존 "참" 인장을 float 대신 절대위치
+   배지+wiggle 애니메이션(prefers-reduced-motion 가드)으로 전환. teal/red
+   게이지를 14→22px 두께+알약형+하드 테두리로. 금액·세금비교 숫자에 IBM Plex
+   Mono 적용.
+3. 결과 카드 "공유하기"/"이미지로 저장" 버튼에 컨페티 폭죽 인터랙션(기존
+   `fireConfettiBurst()`에 `targetEl` 인자를 추가해 재사용, 드림 카드 전용
+   호출부는 하위호환 유지).
+4. 입력 카드 요소들(당첨금 입력칸·잭팟 퀵필 버튼·공유/저장 버튼)에 하드보더+
+   눌리는 그림자 인터랙션 — 잭팟 퀵필 버튼은 좁은 화면 줄바꿈 버그 이력이 있어
+   폭/grid/폰트는 전혀 안 건드리고 transform/box-shadow만 추가.
+
+**지켜야 할 제약과 실제로 지킨 것**:
+- **접근성 최소 폰트(--fs-small:16px) 사수** — 핸드오프 문서(`index.dc.html`)는
+  11~15.5px 텍스트가 많은데, 그대로 축소 적용하지 않고 전부 16px 이상으로 올림.
+  JACKPOT 리본도 마찬가지로 텍스트를 16px로 유지한 채 리본 띠·클리핑 박스
+  크기를 늘려서 맞춤(처음엔 원본 비율대로 축소했다가 "J"가 잘려 안 읽히는 걸
+  Playwright 스크린샷으로 발견·수정).
+- **헤더 아이콘 통합 유지** — 핸드오프 문서는 🌙/☀️ 아이콘을 설정 버튼과 별도로
+  노출하는데, PR #195가 "다크모드/글자크게/고대비/언어 4개를 개별 아이콘으로
+  늘어놨다가 좁은 화면에서 줄바꿈 버그"로 하나로 통합했던 전례가 있어서
+  **일부러 그대로 유지**(별도 아이콘 안 만듦).
+- **저장 이미지 캔버스는 이번엔 그대로 둠** — `saveHomeResultAsImage()`가 만드는
+  "대형 기념 수표" 스타일은 2026-07-28에 티켓 느낌에서 일부러 바꾼 것(실제
+  당첨자 사진 프롭 의도 + 가짜 금융서류처럼 안 보이게 하는 안전장치). 화면은
+  다시 티켓이 됐으니 화면/저장 이미지 톤이 갈라진 상태가 남아있음 — 다음
+  세션이 다룰 후보(사용자에게 먼저 물어볼 것, 독단적으로 바꾸지 말 것).
+
+**부수 발견 — 이번 세션이 만든 버그 아님**: `.ticket-shell`의 테두리가 예전
+`.panel`의 1px보다 두꺼워서(2.5px) 240px 근방에서 페르소나 카드가 2.7px 넘치는
+새 버그를 `home_audit.js`로 발견·수정(id 스코프 좁은화면 패딩 축소 추가).
+반면 `tests/full_overflow_sweep.js`(27개 언어×5폭×7뷰, 이번에 처음 실행해봄)가
+잡아낸 우크라이나어 `.intro-persona-row` 320px 오버플로(5개 config)는, 이 세션
+직전 커밋(4a8eccf)을 별도 워크트리로 체크아웃해서 같은 스윕을 돌려본 결과
+**베이스라인에도 동일하게 있던 기존 버그**로 확인됨(over 10px→11px, 셸 테두리
+때문에 1px만 더 늘어난 정도) — 이번 세션 범위 밖이라 손 안 댐, 다음 세션이
+`.intro-persona-row` 반응형을 다룰 일이 있으면 참고.
+
+**검증**: 각 커밋마다 `home_audit`(18)·`console_error_audit`(161) `ISSUES:0`
+확인, 마지막에 `wrap_audit`(168)·`i18n_coverage_audit`(769)·
+`full_overflow_sweep`(945, 위 기존 버그 5건 제외 전부 통과)까지 전부 추가로
+돌림. `node --check` script.js/script.min.js 통과. Playwright로 라이트/다크·
+240~1000px·한국어/영어 스크린샷 다수 확인 + `prefers-reduced-motion:reduce`
+환경에서 신규 애니메이션 3종(`ticket-shell-pop`/seal wiggle/`result-hero-reveal`)
+전부 `animation-name:none` 확인. 실제 클릭(다크모드 토글·언어전환·퀵필·탭·슬라이더·
+아코디언·공유버튼 컨페티)까지 Playwright로 기능 스모크 테스트, 콘솔 에러 없음
+(샌드박스 외부 리소스 차단 노이즈 제외).
+
+변경 파일: `index.html`(셸 마크업, 폰트 링크, 리본/인장 마크업, 캐시버스팅),
+`styles.css`(신규 티켓 디자인 토큰·셸/리본/인장/게이지/입력요소 CSS, 재빌드),
+`script.js`(`fireConfettiBurst()` targetEl 인자, 공유/저장 버튼 호출 추가, i18n
+fetch 캐시버스팅), `script.min.js`/`styles.min.css`(재빌드), `sw.js`
+(`CACHE_NAME` v32→v33), `i18n-source/translations.json`+`i18n/*.json` 26개
+(신규 키 `result.jackpotRibbon`). `index.html` 캐시버스팅:
+`styles.min.css?v` `20260813-4`→`20260813-7`, `script.min.js?v`
+`20260812-3`→`20260813-1`.
+
+**PR #198에 계속 커밋 쌓는 중 — 아직 머지 전.** 남은 항목(다음 세션 후보):
+헤더 로고·탭 자체의 톤 맞춤(설정 버튼만 반영됨), 저장 이미지 캔버스 톤 일치
+여부 사용자와 논의, 90개 랜딩페이지로 확산(큰 작업이라 여러 세션 분할 필요),
+결과 숫자를 슬롯머신 스타일 개별 타일로 쪼개는 건(핸드오프 문서의 digitTile)
+이번엔 손 안 댐 — `home-final-amt`가 `animateValueChange()`/여러 호출부에서
+직접 textContent를 갱신해서, 타일화하려면 MutationObserver 등 안전한 재구현
+방법을 먼저 설계해야 함.
