@@ -1660,3 +1660,65 @@ Compare/Odds/FAQ 탭 라벨에 Space Grotesk 적용(한글 자동 폴백). 곰�
 
 이 항목까지 반영한 뒤 **PR #198을 머지**할 예정 — 머지·배포 확인은 다음 세션이
 아니라 이 세션이 이어서 처리(아래 참고).
+
+**PR #198 머지·배포 완료** — `main`에 반영 후 GitHub Pages 빌드 워크플로 success
+확인, `curl`로 라이브 `chamtax.com`의 `styles.min.css?v=20260813-9`에
+`.ticket-jackpot-ribbon`/`.ticket-torn-bottom` 등 실제 반영 확인.
+
+### 2026-08-13 이어서 — 이중 배경 잔재 추가 수정 (PR #199, 별도로 빠르게 처리)
+
+머지 직후 다음 작업(비교/확률/FAQ 탭 확산)을 준비하며 재검토하다가 셸 관련 버그
+2건을 추가로 발견 — 이미 라이브에 떠있는 회귀라 다음 세션까지 안 미루고 즉시
+별도 브랜치(`fix-shell-seam-dark-mode`)로 분리해 PR #199 만들어 바로 머지함:
+`#introPersonaAccordion`을 셸에 편입할 때 background/border/radius만 지우고
+예전 "입구 카드" 시절 box-shadow·glow 애니메이션은 안 지워서 셸 안에 은은한
+이중 그림자가 새던 문제, 그리고 다크모드 전용 규칙이 `.result-hero`/
+`#introPersonaAccordion` 배경을 `--grad-soft`로 강제해서 셸(`--card` 단색)과
+색이 갈라지던 문제. Playwright computed-style로 둘 다 수정 확인.
+
+### 2026-08-13 이어서 — "정산 티켓" 스타일을 비교/확률/FAQ 탭까지 확산 (신규 브랜치)
+
+사용자가 "사이트 전체 여행이랑 로또 당첨 티켓 같은 이미지로 바꿔달라"고 요청 →
+"여행 티켓(보딩패스) 모티프를 새로 섞을까, 지금 컨셉을 그대로 확산할까" 확인
+질문에 "네 생각은?"이라고 되물어서, 비교 탭에만 보딩패스 느낌(국기=목적지)을
+살짝 얹는 절충안을 제안했으나 최종적으로는 "지금 티켓 스타일로 전부"로 확정
+(범위는 "index.html 안의 다른 탭" — 90개 랜딩페이지는 이번에도 범위 밖).
+
+먼저 서브에이전트(Explore)로 `#view-compare`/`#view-odds`/`#view-faq`의 카드류
+클래스·CSS 위치·좁은화면 버그 이력·홈과 공유하는 클래스를 전부 조사시킴(직접
+1500줄 넘는 HTML을 읽는 대신 조사만 위임, 요약만 받음). 핵심 발견: `.panel`과
+`.calc-detail-toggle`은 홈의 `.trust-panel` 등이 그대로 쓰고 있어서 베이스
+규칙을 고치면 홈이 회귀함 — `#view-compare .panel` 식으로 뷰 id 스코프를 줘서
+안전하게 우회. `.side-card`(국가별 카드, 8~20개)·`.jh-content`(잭팟 히스토리)·
+`.prize-card`(등급표 9~18줄)처럼 반복 많은 리스트류는 무거워 보이지 않게
+얇은 하드 그림자(`--ticket-shadow-hard-xs`, 2px)만, `.game-card`/`.gate-box`
+같은 색상에 의미가 있는 카드는 테두리색은 안 건드리고 그림자만 얹음.
+
+**적용 범위**: `#view-compare .panel`/`.country-map-wrap`/`.side-card`,
+`#view-odds .panel`(아코디언 10개)/`.prize-card.jackpot`/`.jh-content`/
+`.input-card`(베이스 규칙 그림자 소프트→하드, `.mn-card`가 혜택받음),
+`#view-faq .panel`/`.panel-accordion`/`.game-card`/`.gate-box`/
+`.refund-step-card`/`.refund-step-card`. `.panel-title`/`.panel-title-toggle`/
+`.panel-accordion-title`엔 Space Grotesk(공용 규칙, 홈 페르소나 픽커 제목에도
+자연스럽게 같이 적용됨). FAQ의 108개 `.faq-item`(플랫 구분선 목록)과 칩
+(`.faq-chip`/`.faq-audience-chip`, 알약형+줄바꿈 버그 이력)은 일부러 안 건드림
+— 서브에이전트 조사에서 "구조가 다르고 손대면 가독성/오래된 버그와 충돌"로
+나온 권고 그대로 따름.
+
+`/code-review`로 diff 재점검해 버그 2건 발견·수정: `.faq-overlay-mode`(현재
+비활성 코드경로, 나중에 재활성화될 수 있음) 안의 `.panel` 오버라이드가 새
+box-shadow는 못 지우고 border만 지워서 미래 지뢰가 될 뻔한 것 미리 방지,
+그리고 아코디언이 열렸을 때 테두리는 teal로 바뀌는데 그림자는 그대로 navy로
+남아 두 색이 섞여 보이던 것 — 그림자도 같이 teal로.
+
+**검증**: `home_audit`(18)·`console_error_audit`(161)·`wrap_audit`(168)·
+`faq_audit`(18)·`audit_odds_compare`(40)·`i18n_coverage_audit`(769) 전부
+`ISSUES:0`. `full_overflow_sweep`(945)는 이전 세션에 베이스라인으로 확인한
+우크라이나어/키르기스어 홈 페르소나 카드 5건과 정확히 같은 건수만 남음(이번
+변경으로 인한 새 회귀 없음 재확인). Playwright로 비교/확률/FAQ 3개 탭 전부
+라이트·다크 스크린샷 확인, 열린 아코디언 border/box-shadow 색 일치 확인.
+
+변경 파일: `styles.css`(위 전체, 재빌드), `styles.min.css`/`script.min.js`
+(재빌드), `sw.js`(`CACHE_NAME` v35→v36), `index.html`(캐시버스팅
+`styles.min.css?v` `20260813-10`→`20260813-11`). 계산 로직·id·data-i18n 키는
+전혀 안 건드림.
