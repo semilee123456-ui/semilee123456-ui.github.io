@@ -1532,6 +1532,40 @@
        리디자인) — 없으면 기존 시스템 고정폭 스택으로 폴백. */
     font-family:var(--font-mono-ticket);
   }
+  /* 2026-08-13: "정산 티켓" 컨셉 갭 1 — 슬롯머신 스타일 숫자 타일(핸드오프 문서 index.dc.html
+     168·365-367줄, digitTile/digitComma). #home-final-amt(위, .sr-only로 시각적으로만 숨김)는
+     그대로 두고 이 행이 실제로 보이는 표시용 사본 — script.js의 renderHomeFinalAmtTiles()가
+     #home-final-amt 텍스트가 바뀔 때마다(MutationObserver) 이 안을 다시 채움.
+     핸드오프 문서는 숫자만 있는 문자열을 가정해서 "."/","만 plain 처리했지만, 이 코드베이스의
+     formatWon()류는 "1조 1,218억원"처럼 숫자 사이에 단위 문자가 섞여 나올 수 있어서 그 규칙을
+     일반화함 — 0-9만 타일(.home-final-amt-tile)이 되고, 그 외 모든 문자(쉼표·마침표·공백·
+     "억원"/"million" 등 단위 전부)는 digitComma와 같은 취급(.home-final-amt-plain)으로 얇게
+     흘려보냄. flex-wrap은 핸드오프 문서의 digitsRow(flexWrap:'wrap', gap:5px)를 그대로 재사용
+     — 240~320px 좁은 화면에서 타일이 넘치는 대신 자연스럽게 다음 줄로 감싸지도록 함(narrow
+     sweep으로 실측 확인, HANDOFF.md 참고). */
+  .home-final-amt-tiles{
+    display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:center; gap:5px;
+    margin:4px 0 6px;
+  }
+  .home-final-amt-tile{
+    min-width:26px; padding:4px 6px; text-align:center;
+    border:2.5px solid var(--navy); border-radius:8px; background:var(--card);
+    box-shadow:var(--ticket-shadow-hard-xs);
+    font-size:26px; font-size:clamp(22px, 7.2vw, 28px); font-weight:800; line-height:1.15;
+    font-family:var(--font-mono-ticket); color:var(--teal);
+    animation:ticket-digit-pop 0.3s ease;
+  }
+  .home-final-amt-plain{
+    font-size:26px; font-size:clamp(20px, 6.6vw, 28px); font-weight:800; color:var(--text-muted);
+    font-family:var(--font-mono-ticket); align-self:flex-end; padding-bottom:6px; white-space:pre;
+  }
+  @keyframes ticket-digit-pop{
+    0%{ transform:scale(1.15) translateY(-3px); }
+    100%{ transform:scale(1) translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .home-final-amt-tile{ animation:none; }
+  }
   .result-meta-group{ margin-top:16px; padding-top:10px; border-top:1px dashed rgba(var(--ink-rgb),0.12); display:flex; flex-direction:column; align-items:center; gap:7px; }
   .result-hero-basis-mini{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; }
   /* 실수령액 헤드라인과 대비를 주기 위한 "보조 정보 묶음" 박스(2026-07-30) — 환율/계산 기준/

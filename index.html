@@ -982,7 +982,16 @@
             <span class="result-seal" aria-hidden="true">참</span>
             <p class="announced-convert-note" id="home-announced-convert-note" style="display:none;"></p>
             <h2 class="result-hero-label" data-i18n="result.label">일시불 예상 실수령액</h2>
-            <p class="result-hero-amt" id="home-final-amt" role="status" aria-live="polite">805억원</p>
+            <!-- 2026-08-13: "정산 티켓" 컨셉 갭 1 — 슬롯머신 스타일 숫자 타일. #home-final-amt
+                 자체는 animateValueChange()/fitAmountFontSize() 등 script.js의 10여 곳이 직접
+                 textContent·dataset.eokVal을 읽고 쓰므로 구조·기존 갱신 로직을 전혀 안 건드리고
+                 그대로 둠(.sr-only로 시각적으로만 숨김 — display:none이 아니라 스크린리더
+                 role=status/aria-live는 계속 동작, fitAmountFontSize()의 scrollWidth 측정도
+                 요소가 실제 레이아웃 박스를 가져야 해서 유지됨). 바로 옆 #home-final-amt-tiles가
+                 순수 표시용 타일이고, 값은 MutationObserver로 #home-final-amt를 미러링해서
+                 채움(setupHomeFinalAmtTiles(), script.js) — 8551번 줄 스티키 배지와 같은 패턴. -->
+            <p class="result-hero-amt sr-only" id="home-final-amt" role="status" aria-live="polite">805억원</p>
+            <div class="home-final-amt-tiles" id="home-final-amt-tiles" aria-hidden="true"></div>
             <div class="tax-impact-compact">
               <span class="tax-impact-before-line"><span class="tax-impact-strike" data-i18n="home.taxBefore">세전</span> <span class="tax-impact-strike" id="tax-impact-before">-</span></span>
               <span class="tax-impact-arrow">→</span>
