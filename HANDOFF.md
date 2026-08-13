@@ -1855,3 +1855,28 @@ script.js/script.min.js/odds-data.js 통과. `git diff --stat`로 의도한 5개
 자동 다운로드 제거", 커밋 `988f705`)이 이 세션과 별개로 머지됨 — 이 세션은
 관여 안 함, 다음 세션이 이 주제를 다시 다룰 일이 있으면 그 커밋 메시지부터
 확인할 것.
+
+### 2026-08-12 이어서 — 홈 하단 "더 알아보기" 제목 번역 누락 수정 (PR #193, 머지·배포 확인 완료)
+
+사용자가 다른 언어로 전환한 스크린샷을 보여주며 "더 알아보기" 제목만 한국어로
+고정돼 나오는 게 의도한 거냐고 질문. 확인해보니 **부분적으로만 의도된 것**이었음:
+개별 링크들(파워볼 세금 계산·中国税收居民指南·Hướng dẫn cho người Việt Nam 등)이
+각자 언어 그대로 나오는 건 sitemap.html과 같은 관례로 의도된 게 맞음(링크가
+연결되는 페이지 자체가 그 언어 전용이라서). 하지만 **섹션 제목 자체는 다름** —
+sitemap.html의 h2Core/h2Abroad 제목은 실제로 26개 언어 번역이 붙어있는데, 이
+섹션(`related-guides-title`)은 `data-i18n` 연결이 아예 없이 한국어가
+하드코딩돼있었음(2026-08-06 최초 구현 시 "링크 라벨은 번역 안 함"이라는 주석
+방침이 제목까지 실수로 덮은 것으로 보임).
+
+- **수정**: `index.html`에 `data-i18n="home.relatedGuidesTitle"` 추가,
+  `i18n-source/translations.json`에 새 키 26개 언어 번역("Learn more"류 짧은
+  문구) 추가 → `node scripts/build-i18n.js` 재생성. `script.js`의 i18n fetch
+  캐시버스팅(`20260810-1`→`20260812-1`)도 같이 올려서 캐시된 옛 JSON에 새 키가
+  가려지지 않게 함.
+- **검증**: `i18n_coverage_audit`(768개 키)·`i18n_attr_lint`·
+  `console_error_audit`(161)·`home_audit`(18) 전부 ISSUES:0. Playwright로
+  한국어/영어/일본어/아랍어 4개 언어 실제 렌더링 확인("더 알아보기"→"Learn
+  more"→"もっと詳しく"→"معرفة المزيد").
+- **머지·배포 확인 완료**: PR #193 머지 후 `curl`로 라이브
+  `chamtax.com/i18n/en.json?v=20260812-1`에서 `home.relatedGuidesTitle`:
+  "Learn more" 실제 반영 확인.
