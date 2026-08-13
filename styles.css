@@ -413,34 +413,40 @@
     background:none; border-radius:20px; padding:0; margin:0 0 8px;
   }
   .tax-impact-compact{
-    display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px;
-    margin-top:12px; font-size:16px; color:var(--text-muted);
+    display:flex; flex-direction:row; flex-wrap:wrap; align-items:baseline; justify-content:center; gap:6px;
+    margin-top:12px; padding-bottom:10px; font-size:16px; color:var(--text-muted);
+    border-bottom:1px dotted var(--border);
   }
   .tax-impact-strike{ text-decoration:line-through; }
   /* 2026-08-12: 예전엔 그냥 나열된 텍스트 줄이었는데, 세전/세금액을 둥근 배지(칩)로 감싸서
      핀테크 앱의 "before → after" 태그 패턴으로 바꿈 — 값·id·로직은 그대로, 감싸는 배경만 추가 */
-  .tax-impact-before-line{
-    display:inline-flex; gap:4px; padding:4px 10px; border-radius:20px;
-    background:rgba(var(--ink-rgb),0.05);
+  /* 2026-08-13: "정산 티켓" 컨셉 — 위 칩 배경을 걷어내고 영수증 한 줄(점선 밑줄 위 텍스트)
+     느낌으로. 금액 두 곳(#tax-impact-before/#tax-impact-diff)만 고정폭 서체 지정 —
+     "세전"/"→" 같은 한글·기호는 그대로 기본 서체 유지(별도 span이라 폰트 분리 안전함) */
+  .tax-impact-before-line{ display:inline-flex; gap:4px; }
+  #tax-impact-before, .tax-impact-diff-big{
+    font-family:'SFMono-Regular','Menlo','Consolas','Liberation Mono',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
   }
   .tax-impact-arrow{ color:var(--text-muted); }
-  .tax-impact-diff-big{
-    font-weight:800; color:var(--status-red); font-size:16px; display:inline-block;
-    padding:4px 12px; border-radius:20px; background:rgba(192,57,43,0.09);
-  }
+  .tax-impact-diff-big{ font-weight:800; color:var(--status-red); font-size:16px; }
   .tax-impact-diff-big.diff-pop{ animation:pop 0.35s cubic-bezier(0.34,1.56,0.64,1); }
   .result-visual-bar{
-    width:100%; height:14px; border-radius:10px; margin:16px 0 10px; overflow:hidden;
+    width:100%; height:14px; border-radius:6px; margin:16px 0 10px; overflow:hidden;
     background:var(--status-red); opacity:0.85; box-shadow:inset 0 1px 2px rgba(0,0,0,0.06);
+    border:1px solid var(--border);
   }
   .result-visual-bar-take{
-    height:100%; border-radius:10px 0 0 10px;
+    height:100%;
     background:linear-gradient(90deg, var(--teal) 0%, rgba(var(--teal-rgb),0.78) 100%);
     transition:width 0.5s ease;
   }
   .result-visual-bar-caption{
     display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap;
     font-size:var(--fs-small); color:var(--text-muted); margin:0;
+  }
+  .result-visual-bar-caption span[id$="-pct"]{
+    font-family:'SFMono-Regular','Menlo','Consolas','Liberation Mono',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    font-weight:700;
   }
   .rvb-dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:-2px; }
   .rvb-dot-take{ background:var(--teal); }
@@ -1252,18 +1258,19 @@
 
   .result-hero{
     position:relative; overflow:hidden;
-    background:linear-gradient(135deg, #EAF3EE 0%, #FBFAF4 55%, #FFFFFF 100%);
-    border:1px solid rgba(var(--teal-rgb),0.12); border-radius:24px;
+    background:var(--card);
+    border:1px solid rgba(var(--teal-rgb),0.12); border-radius:16px;
     padding:30px 22px 26px; text-align:center;
     /* 2026-08-12: "교과서 같다"는 피드백(제미나이 리디자인 검토) 대응 — 얇은 테두리만 있던
        평평한 카드를 라운딩+그림자로 띄워서 핀테크 앱 카드 느낌으로. 다른 .panel류(14px)와
        의도적으로 다른 반경을 써서 메인 결과 카드가 눈에 띄게 함(사이트 전체 톤은 안 건드림) */
     box-shadow:0 14px 36px rgba(var(--teal-rgb),0.13), 0 3px 10px rgba(var(--navyblue-rgb),0.06);
-    /* 2026-08-12: 네온/다크 목업을 참고해달라는 요청 — 명암비를 깎는 글로우 테두리·어두운 배경은
-       40-60대 접근성 기준과 충돌해서 그대로는 못 씀. 대신 라이트 테마·큰 글씨는 유지하면서
-       처음 나타날 때만 살짝 떠오르는 연출로 "역동적인" 느낌만 가져옴. 매번 재계산될 때마다
-       재생되면 안 되므로(값 변경은 JS가 textContent만 바꿈, 이 엘리먼트 자체는 안 다시 그려짐)
-       페이지 로드 시 1회만 재생됨 — 크게 강조 안 되게 짧고 은은하게. */
+    /* 2026-08-13: "그래도 교과서 같다"는 재지적 → 제미나이 목업 3개(증서/티켓/스코어보드) 중
+       "정산 티켓" 방향이 채택됨(이 계산기가 다루는 게 원래 복권 "티켓"의 당첨금이라는 소재
+       적합성 때문). 위 8/12의 소프트 그라디언트+블러 블롭(예전 ::before/::after)은 "앱 카드"
+       느낌이라 "영수증/티켓 스텁" 느낌과 안 맞아서 걷어내고 아래 절취선·바코드(신규 마크업,
+       index.html의 .ticket-perf-row/.ticket-barcode, 순수 장식용 aria-hidden)로 교체.
+       배경도 은은한 그라디언트 대신 순백(--card)로 — 인쇄된 종이 느낌에 더 가깝게. */
     animation:result-hero-reveal 0.5s cubic-bezier(0.16,1,0.3,1) both;
   }
   @keyframes result-hero-reveal{
@@ -1273,15 +1280,25 @@
   @media (prefers-reduced-motion: reduce){
     .result-hero{ animation:none; }
   }
-  .result-hero::before{
-    content:''; position:absolute; top:-70px; right:-60px; width:220px; height:220px; border-radius:50%;
-    background:radial-gradient(circle, rgba(var(--teal-rgb),0.08) 0%, rgba(var(--teal-rgb),0) 70%);
-    pointer-events:none;
+  /* 절취선(펀칭 구멍) — 왼쪽·오른쪽 가장자리에서 배경색(--bg)으로 반원을 "물어뜯어" 실제
+     티켓처럼 보이게 함. .result-hero의 overflow:hidden이 카드 밖으로 나가는 절반을 그대로
+     잘라주므로 별도 클리핑 로직 없이 반원이 자연스럽게 남음(위 .result-hero 소재 배경은
+     투명 부모를 거쳐 항상 var(--bg)와 만나는 걸 실측으로 확인). */
+  .ticket-perf-row{ position:relative; height:0; margin:20px 0; }
+  .ticket-perf-row::before, .ticket-perf-row::after{
+    content:''; position:absolute; top:50%; transform:translateY(-50%);
+    width:22px; height:22px; border-radius:50%; background:var(--bg);
   }
-  .result-hero::after{
-    content:''; position:absolute; bottom:-90px; left:-60px; width:200px; height:200px; border-radius:50%;
-    background:radial-gradient(circle, rgba(var(--teal-rgb),0.05) 0%, rgba(var(--teal-rgb),0) 70%);
-    pointer-events:none;
+  .ticket-perf-row::before{ left:-11px; }
+  .ticket-perf-row::after{ right:-11px; }
+  .ticket-perf-line{ border-top:2px dashed var(--border); }
+  .ticket-barcode{
+    height:28px; margin:16px 0 4px; opacity:0.8;
+    background-image: repeating-linear-gradient(90deg,
+      var(--text-dark) 0 2px, transparent 2px 5px,
+      var(--text-dark) 5px 6px, transparent 6px 11px,
+      var(--text-dark) 11px 14px, transparent 14px 17px,
+      var(--text-dark) 17px 19px, transparent 19px 24px);
   }
   /* 시그니처 요소 — "참"(眞, 진짜·검증됨)의 뜻을 담은 도장 마크.
      한국 전통 인감도장처럼, 이 결과가 근거 있게 계산된 값이라는 걸 시각적으로 표현함 */
@@ -1316,15 +1333,12 @@
     position:relative; font-size:40px; font-size:clamp(30px, 11.5vw, 58px); font-weight:800; margin:0;
     font-variant-numeric:tabular-nums; white-space:nowrap; clear:both;
     color:var(--teal); text-shadow:none; line-height:1.25;
-    /* 2026-08-12: isolation:isolate로 새 스태킹 컨텍스트를 만들어서, 아래 ::before(z-index:-1)
-       글로우가 부모 .result-hero의 배경 뒤로 숨지 않고 이 숫자 뒤에서만 보이게 함 */
-    isolation:isolate;
-  }
-  .result-hero-amt::before{
-    content:''; position:absolute; z-index:-1; pointer-events:none;
-    top:50%; left:50%; transform:translate(-50%,-50%);
-    width:130%; height:220%;
-    background:radial-gradient(ellipse at center, rgba(var(--teal-rgb),0.16) 0%, rgba(var(--teal-rgb),0) 70%);
+    /* 2026-08-13: "정산 티켓" 컨셉 채택 — 영수증 프린터 느낌을 내려고 숫자만 고정폭 서체로.
+       formatWon() 결과 문자열엔 "억원"/"Billion" 같은 한글·영문 단위도 같은 텍스트 노드에
+       섞여 있는데, 이 폰트 스택은 그 글자들에 대한 글리프가 없어서 브라우저가 문자 단위로
+       자동으로 다음 폰트(사이트 기본 산세리프)로 넘어감 — 숫자만 고정폭이 되고 "억원" 등
+       단위는 원래 폰트로 정상 표시됨(별도 span 분리나 JS 변경 불필요). */
+    font-family:'SFMono-Regular','Menlo','Consolas','Liberation Mono',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
   }
   .result-meta-group{ margin-top:16px; padding-top:10px; border-top:1px dashed rgba(var(--ink-rgb),0.12); display:flex; flex-direction:column; align-items:center; gap:7px; }
   .result-hero-basis-mini{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; }
@@ -2715,7 +2729,9 @@
   /* "결과 공유하기"(텍스트/링크)와 "이미지로 저장"(PNG)이 서로 다른 두 가지 방법이라 나란히
      둠 — .mn-btn-row(내 번호 티켓 이미지 버튼 줄)와 같은 flex 2등분 패턴 재사용 */
   .home-result-btn-row{ display:flex; gap:8px; margin-top:12px; }
-  .home-result-btn-row .share-btn{ flex:1; min-width:0; margin-top:0; border-radius:999px; }
+  /* 2026-08-13: "정산 티켓" 컨셉 — 카드 반경(16px) 계열에 맞춰 알약형(999px) 대신 티켓
+     탭처럼 둥근 사각형으로 통일 */
+  .home-result-btn-row .share-btn{ flex:1; min-width:0; margin-top:0; border-radius:11px; }
   /* 2026-08-12: 두 버튼이 시각적으로 동급(연한 민트 배경 + 테두리 없음)이라 뭘 먼저 눌러야
      할지 구분이 안 됐음 — "공유하기"는 채운(primary) 색으로 강조하고 "이미지로 저장"은 아웃라인
      (secondary)으로 낮춰서 핀테크 앱 CTA 위계를 줌. .copied 상태(복사 완료 시 진한 배경으로
