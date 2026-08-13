@@ -527,9 +527,30 @@
     content:'▾'; color:var(--teal); font-weight:400; position:absolute; right:0; top:calc(var(--fs-h2) * 0.825);
     transform:translateY(-50%); transition:transform 0.2s ease;
   }
-  details.odds-accordion{ transition:border-color 0.15s ease; }
+  details.odds-accordion{ transition:border-color 0.15s ease, box-shadow 0.15s ease; }
   details.odds-accordion[open]{ border-color:var(--teal); }
   details.odds-accordion[open] > .panel-title-toggle::after{ transform:translateY(-50%) rotate(180deg); }
+  /* 2026-08-13: 홈 화면에 적용한 "정산 티켓" 하드보더 언어를 비교/확률/FAQ 탭까지 확장 —
+     제목 서체(Space Grotesk)는 .panel-title*를 공용으로 바꿔도 안전(한글은 자동 폴백,
+     홈의 페르소나 픽커 제목에도 자연스럽게 같이 적용됨). 반면 테두리/그림자는 .panel
+     자체를 고치면 홈의 .trust-panel까지 바뀌어버려서, 세 탭에만 view id로 스코프한
+     별도 규칙으로 얹음(다른 12곳의 .panel/.odds-accordion엔 영향 없음). 하드 그림자는
+     셸(4px)보다 얇게(2px)해서 이 탭들에 반복되는 패널 여러 개가 무거워 보이지 않게 함 */
+  .panel-title, .panel-title-toggle{ font-family:var(--font-display); }
+  #view-compare .panel,
+  #view-odds .panel,
+  #view-faq .panel{
+    border:2px solid var(--navy);
+    box-shadow:var(--ticket-shadow-hard-xs);
+  }
+  /* 코드 리뷰로 발견 — border-color만 teal로 바꾸고 box-shadow는 그대로 두면, 열린
+     아코디언이 teal 테두리+navy 그림자로 두 색이 섞여 보임. 그림자도 같이 teal로 */
+  #view-compare details.odds-accordion[open],
+  #view-odds details.odds-accordion[open],
+  #view-faq details.odds-accordion[open]{
+    border-color:var(--teal);
+    box-shadow:2px 2px 0 var(--teal);
+  }
 
   /* 2026-08-07: 확률 탭 아코디언 11개가 그룹 구분 없이 쭉 나열돼 복잡해 보인다는 피드백 —
      콘텐츠는 그대로 두고 소제목만 추가해 시각적으로 몇 개 덩어리로 나눔(더 알아보기 footer
@@ -891,7 +912,7 @@
   /* 지도가 평면적이고 심심해 보인다는 피드백 — 카드 자체에 은은한 입체감(다른 카드와 같은
      그림자 톤 재사용)을 주고, 핀에 hover/focus 피드백을 추가해 "눌러볼 수 있다"는 게
      클릭 전에도 느껴지게 함 */
-  .country-map-wrap{ position:relative; margin-top:14px; border:1px solid var(--border); border-radius:14px; box-shadow:0 1px 3px rgba(var(--ink-rgb),0.08), 0 8px 24px rgba(var(--ink-rgb),0.06); }
+  .country-map-wrap{ position:relative; margin-top:14px; border:2px solid var(--navy); border-radius:14px; box-shadow:var(--ticket-shadow-hard-xs); }
   .country-map-svg{ display:block; width:100%; height:auto; border-radius:14px; overflow:hidden; }
   .country-map-sea{ fill:var(--card); }
   .country-map-land{ fill:rgba(var(--ink-rgb),0.12); stroke:rgba(var(--ink-rgb),0.22); stroke-width:1.5; transition:fill 0.3s ease, stroke 0.3s ease; }
@@ -954,7 +975,7 @@
   }
   .compare-map-other-note:hover{ background:rgba(var(--teal-rgb),0.12); }
   .side-by-side-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(105px, 1fr)); gap:10px; margin-top:14px; }
-  .side-card{ background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:16px; min-width:0; }
+  .side-card{ background:var(--bg); border:1.5px solid var(--navy); border-radius:14px; padding:16px; min-width:0; box-shadow:var(--ticket-shadow-hard-xs); }
   .side-card-span-full{ grid-column:1 / -1; }
   .side-card-flag{ font-size:var(--fs-small); color:var(--text-muted); font-weight:700; margin:0 0 8px; }
   .side-card-amt{ font-size:19px; font-size:clamp(17px, 6vw, 22px); font-weight:800; color:var(--text-dark); margin:0 0 6px; font-variant-numeric:tabular-nums; overflow-wrap:break-word; }
@@ -1232,6 +1253,8 @@
   .gate-box{
     background:var(--alert-red-bg); border:2px solid var(--status-red); border-radius:12px;
     padding:16px 18px; margin-bottom:16px; text-align:center;
+    /* 경고색(빨강) 테두리는 의미가 있어서 안 건드리고, 하드 그림자만 얹어 톤을 맞춤 */
+    box-shadow:3px 3px 0 var(--status-red);
   }
   .gate-label{ font-size:var(--fs-small); font-weight:800; color:var(--status-red); letter-spacing:0.05em; margin:0 0 6px; }
   .gate-text{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); margin:0; line-height:1.5; }
@@ -1625,7 +1648,7 @@
     box-shadow:0 -12px 32px rgba(0,0,0,0.28);
     animation:faqSheetSlideUp 0.22s cubic-bezier(0.16,1,0.3,1);
   }
-  .view#view-faq.faq-overlay-mode .faq-sheet-content > .panel{ background:none; border:none; padding:0; margin:0; }
+  .view#view-faq.faq-overlay-mode .faq-sheet-content > .panel{ background:none; border:none; box-shadow:none; padding:0; margin:0; }
   @media (prefers-reduced-motion: reduce){
     .view#view-faq.faq-overlay-mode{ animation:none; }
     .view#view-faq.faq-overlay-mode .faq-sheet-content{ animation:none; }
@@ -1995,10 +2018,12 @@
 
   .prize-card{
     display:flex; justify-content:space-between; align-items:center; gap:8px;
-    background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px 16px; margin-bottom:8px;
+    background:var(--bg); border:1px solid var(--navy); border-radius:12px; padding:10px 16px; margin-bottom:8px;
   }
   .prize-card:last-child{ margin-bottom:0; }
-  .prize-card.jackpot{ background:rgba(var(--ink-rgb),0.1); border:1.5px solid rgba(var(--ink-rgb),0.35); padding:14px 16px; }
+  /* 9단계 등급표가 한 줄씩 쌓이는 목록이라(최대 18개) 전부에 하드 그림자를 주면 무거워
+     보여서, 목록 안에서 눈에 띄어야 하는 잭팟 등급 한 줄에만 하드 테두리+그림자를 줌 */
+  .prize-card.jackpot{ background:rgba(var(--ink-rgb),0.1); border:2px solid var(--navy); padding:14px 16px; box-shadow:var(--ticket-shadow-hard-xs); }
   .prize-tag{ font-size:var(--fs-small); font-weight:800; color:var(--text-dark); margin:0 0 2px; }
   .prize-match{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0; }
   .prize-left, .prize-right{ min-width:0; }
@@ -2070,7 +2095,10 @@
        두 카드가 같은 "티켓 세트"처럼 보이게 함(기존 20px는 다른 어떤 카드와도 안 맞는
        고립된 값이었음) */
     position:relative; background:var(--card); border:2.5px solid var(--teal); border-radius:16px;
-    padding:14px 16px 16px; margin-top:22px; box-shadow:0 8px 24px rgba(var(--teal-rgb),0.08);
+    padding:14px 16px 16px; margin-top:22px; box-shadow:3px 3px 0 var(--teal);
+    /* 2026-08-13: 소프트 그림자 대신 하드 오프셋 그림자로 — 홈 화면 셸(.ticket-shell .input-card)은
+       이 그림자를 border:none과 함께 지워서 안 보이므로 영향 없고, 이 규칙을 그대로 물려받는
+       확률 탭의 "내 번호 비교" 위젯(.input-card.mn-card, 셸 밖이라 안 지워짐)만 티켓 톤을 얻음 */
   }
 
   /* 🎯 내 번호 vs 역대급 당첨번호 비교 위젯 — 너비 240px처럼 아주 좁은 화면에서도 안 깨지게
@@ -2198,11 +2226,12 @@
   .more-details-toggle[open] > .section-divider-toggle::after{ transform:rotate(180deg); }
   .more-details-toggle > .panel:first-of-type{ margin-top:14px; }
   .panel-accordion{
-    background:var(--card); border-radius:16px; padding:20px; margin-top:14px; box-shadow:0 1px 3px rgba(var(--navyblue-rgb),0.06);
+    background:var(--card); border:2px solid var(--navy); border-radius:16px; padding:20px; margin-top:14px;
+    box-shadow:var(--ticket-shadow-hard-xs);
   }
   .panel-accordion-title{
     font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); cursor:pointer; list-style:none;
-    display:block; position:relative; padding-right:26px;
+    display:block; position:relative; padding-right:26px; font-family:var(--font-display);
   }
   .panel-accordion-title::-webkit-details-marker{ display:none; }
   .panel-accordion-title::after{
@@ -2313,7 +2342,8 @@
   .jh-timeline-line{ flex:1; width:1.5px; background:var(--border); margin-top:4px; min-height:16px; }
   .jackpot-history-row:last-child .jh-timeline-line{ display:none; }
   .jh-content{
-    flex:1; min-width:0; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px 14px;
+    flex:1; min-width:0; background:var(--card); border:1.5px solid var(--navy); border-radius:14px; padding:12px 14px;
+    box-shadow:var(--ticket-shadow-hard-xs);
   }
   .jackpot-history-row{ margin-bottom:12px; }
   .jackpot-history-row:last-child{ margin-bottom:0; }
@@ -2843,7 +2873,7 @@
 
 
   .game-compare{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .game-card{ border-radius:12px; padding:16px; border:2px solid var(--border); }
+  .game-card{ border-radius:12px; padding:16px; border:2px solid var(--border); box-shadow:var(--ticket-shadow-hard-xs); }
   .game-card.powerball{ background:var(--game-pb-bg); border-color:var(--game-pb-border); }
   .game-card.megamillions{ background:var(--game-mm-bg); border-color:var(--game-mm-border); }
   .game-name{ font-size:var(--fs-note); font-weight:800; color:var(--text-dark); margin:0 0 12px; text-align:center; }
@@ -2977,7 +3007,7 @@
     border-radius:6px; padding:0; margin-left:8px; vertical-align:middle;
   }
 
-  .refund-step-card{ background:var(--refund-step-bg); border:1px solid var(--border); border-radius:14px; padding:14px 16px; margin:8px 0; }
+  .refund-step-card{ background:var(--refund-step-bg); border:1.5px solid var(--navy); border-radius:14px; padding:14px 16px; margin:8px 0; box-shadow:var(--ticket-shadow-hard-xs); }
   .refund-step-tag{
     display:inline-block; font-size:16px; font-weight:800; letter-spacing:0.04em; color:var(--text-dark);
     background:rgba(var(--ink-rgb),0.1); border-radius:6px; padding:2px 8px; margin:0 0 8px;
