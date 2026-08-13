@@ -70,7 +70,7 @@ let I18N_LOAD_PROMISE = null;
 
 function loadI18nLanguage(lang){
   if (lang === "ko" || I18N_CACHE[lang]) return Promise.resolve();
-  return fetch(`i18n/${lang}.json?v=20260807-1`)
+  return fetch(`i18n/${lang}.json?v=20260810-1`)
     .then(res => { if (!res.ok) throw new Error("i18n fetch failed: " + res.status); return res.json(); })
     .then(data => { I18N_CACHE[lang] = data; })
     .catch(err => { console.error("[i18n] failed to load", lang, err); });
@@ -2141,6 +2141,7 @@ function go(view){
     // setupDateLookup()은 yearSel.dataset.wired로 한 번만 실제 초기화되므로 여러 번 호출해도 안전
     updateDateLookupUi();
   }
+  maybeShowPwaInstallBanner(); // 확률체감 탭 진입/이탈 여부에 따라 PWA 설치 배너 표시 재판단
 
   document.querySelector('.page').scrollIntoView({behavior:'smooth', block:'start'});
 }
@@ -2156,7 +2157,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260807';
+    script.src = 'odds-data.js?v=20260812-1';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -4258,9 +4259,15 @@ function buildDrawScheduleMore(days){
 // 파워볼은 이 $748M/$325.1M이 8/3(월) 추첨용이었던 옛 값인데, 같은 스크린샷에 다음 추첨(8/5 수)
 // 잭팟이 아직 "Pending"으로 떠 있어서(공식 미발표) 추측으로 안 덮어쓰고 그대로 둠 — 다음
 // 세션/사용자가 "Pending"이 실제 금액으로 바뀐 뒤 갱신할 것.
+// 2026-08-12 이어서: 사용자가 공유한 스크린샷(usamega.com 요약)을 powerball.com 공식 페이지
+// WebFetch + megamillions.com 계열(DraftKings 기사, valottery.com 공식 주정부 페이지)
+// 교차검증 — 파워볼 8/10 회차(6,37,54,55,64+10, Power Play 3x)는 당첨자 없어 다음 추첨(8/12,
+// 오늘) 잭팟이 $1 Billion(현금가치 $433.1M)으로 증가. 메가밀리언즈 8/11 회차(1,20,30,46,68+17)도
+// 당첨자 없어 다음 추첨(8/14) 잭팟이 $90M(현금가치 valottery $38M · 스크린샷 $38.7M, 근소한
+// 차이는 판매량에 따른 흔한 오차로 판단해 더 정밀한 스크린샷 값 채택)으로 증가.
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 856000000, cashUsd: 372000000 },
-  megamillions: { amountUsd: 80000000, cashUsd: 34400000 },
+  powerball:    { amountUsd: 1000000000, cashUsd: 433100000 },
+  megamillions: { amountUsd: 90000000, cashUsd: 38700000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
@@ -4302,9 +4309,20 @@ const GAME_NAME_MORE = {
 // 처음 반영 — odds-data.js의 MEGAMILLIONS_DRAW_ARCHIVE에도 같이 추가함(draw_archive_
 // integrity_check.js 통과 확인, odds-data.js?v 캐시버스팅도 같이 올림). 당첨자 없어 다음
 // 추첨(8/11) 잭팟이 $80M(현금가치 $34.4M)로 증가, 위 JACKPOT_DATA.megamillions도 같이 갱신함.
+// 2026-08-10 이어서: 사용자가 공유한 스크린샷(usamega.com 요약)으로 파워볼 8/8 회차(5,9,35,54,63 /
+// 파워볼 7) 확인 — 직전 회차(8/5)까지 반영된 아카이브에 이어 새로 추가(odds-data.js의
+// POWERBALL_DRAW_ARCHIVE·POWERBALL_JACKPOT_ARCHIVE에도 같이 추가, 잭팟 $856M은 8/6 세션이 이미
+// 예고값으로 기록해둔 값 그대로 사용). 당첨자 없어 다음 추첨(8/10) 잭팟이 $905M(현금가치
+// $391.9M)로 증가, 위 JACKPOT_DATA.powerball도 같이 갱신함. 메가밀리언즈는 스크린샷에 같은 8/7
+// 회차·$80M 잭팟이 그대로 표시돼 있어 이미 일치, 변경 없음.
+// 2026-08-12 이어서: powerball.com 공식 페이지 WebFetch로 8/10 회차 확인, 메가밀리언즈는
+// DraftKings 기사로 8/11 회차 확인 — 위 JACKPOT_DATA 갱신과 같은 근거. odds-data.js의
+// POWERBALL_DRAW_ARCHIVE·POWERBALL_JACKPOT_ARCHIVE / MEGAMILLIONS_DRAW_ARCHIVE·
+// MEGAMILLIONS_JACKPOT_ARCHIVE에도 같이 추가함(draw_archive_integrity_check.js 통과 확인,
+// odds-data.js?v 캐시버스팅도 같이 올림).
 const LATEST_DRAW = {
-  powerball:    { date: '2026-08-05', numbers: [14, 20, 59, 60, 61], special: 25 },
-  megamillions: { date: '2026-08-07', numbers: [17, 20, 32, 54, 57], special: 23 },
+  powerball:    { date: '2026-08-10', numbers: [6, 37, 54, 55, 64], special: 10 },
+  megamillions: { date: '2026-08-11', numbers: [1, 20, 30, 46, 68], special: 17 },
 };
 
 
@@ -4744,12 +4762,19 @@ function buildShareCard({ label, bigText, subText, footerText, balls }){
 
   // ---- 콘텐츠 영역: 밴드 아래 ~ 푸터 위 사이 공간에서 실제 내용 블록을 세로 중앙 정렬 ----
   // 2026-07-31 디자인팀 반영 가이드: 헤더 밴드 바로 아래 여백을 44→22px로 좁혀서 더 타이트하게
+  // 2026-08-10: 위 22px는 아래 layoutShareContent()가 textBaseline='alphabetic'로 label을
+  // 그릴 때의 "베이스라인" 위치인데, label 폰트가 700 30px이라 글자 상단(ascent)이 베이스라인보다
+  // 약 24~27px 위에서 시작함 — 공(6개)·서브텍스트까지 합친 블록 높이(blockH)가 콘텐츠 영역보다
+  // 큰 경우가 흔해서(특히 서브텍스트가 2~3줄로 접히는 언어) 세로 중앙 정렬 여유가 0이 되고, 그러면
+  // label 첫 줄이 정확히 contentTop에서 시작해 글자 상단이 22px 여백을 뚫고 밴드 쪽으로 몇 px
+  // 삐져나감(실사용자 스크린샷으로 "글씨 위가 살짝 잘린 느낌" 제보 — 낚시게임 공유카드에서 확인).
+  // 44→22 타이트화 자체는 유지하되, 폰트 ascent를 여유 있게 흡수하도록 40으로 소폭 늘림.
   const padX = 56;
   const contentX = cardX + padX;
   const contentW = cardW - padX * 2;
   const anchorX = isRTL ? (cardX + cardW - padX) : contentX;
   const footerH = 172;
-  const contentTop = cardY + bandH + 22;
+  const contentTop = cardY + bandH + 40;
   const contentBottom = cardY + cardH - footerH;
   const contentAreaH = contentBottom - contentTop;
 
@@ -7872,19 +7897,15 @@ async function finishAnnotateAndShare(){
         // 사용자가 OS 공유 시트에서 취소한 경우 — 모달은 열어둔 채로 그대로 둠(다시 시도하거나
         // 직접 닫기를 누를 수 있게)
         if (e && e.name === 'AbortError') return;
-        // 그 외 공유 실패(권한 없음 등) — 아래 폴백(다운로드+텍스트 복사)으로 계속 진행
+        // 그 외 공유 실패(권한 없음 등) — 아래 폴백(텍스트 복사)으로 계속 진행
       }
     }
-    // 파일 공유를 지원 안 하는 브라우저(대부분의 데스크톱)용 폴백 — 이미지는 다운로드해두고
-    // 문구+링크는 클립보드로 복사, 기존 공유 버튼들의 폴백 패턴과 동일하게 버튼 텍스트를
-    // 잠깐 "복사 완료"로 바꿔줌. 모달은 그 피드백이 보이도록 자동으로 닫지 않음(사용자가
-    // "닫기"를 직접 누름) — 이미지로 저장(finishAnnotateAndDownload)과 달리 여기선 결과
-    // 확인 없이 바로 닫으면 "복사됐다"는 안내를 못 보게 됨.
-    const link = document.createElement('a');
-    link.download = annotateDownloadFilename;
-    link.href = URL.createObjectURL(blob);
-    link.click();
-    URL.revokeObjectURL(link.href);
+    // 2026-08-12: 파일 공유를 지원 안 하는 브라우저(대부분의 데스크톱)용 폴백 — 예전엔 이미지를
+    // 자동 다운로드까지 같이 시켰는데, 사용자가 "공유만 누르면 원치 않는 다운로드가 같이 뜬다"고
+    // 지적해서 제거함. "공유하기" 버튼은 다운로드 버튼(이미지로 저장 = finishAnnotateAndDownload,
+    // 바로 위 함수)이 따로 있으니 이 경로는 문구+링크만 클립보드로 복사. 기존 공유 버튼들의
+    // 폴백 패턴과 동일하게 버튼 텍스트를 잠깐 "복사 완료"로 바꿔줌. 모달은 그 피드백이 보이도록
+    // 자동으로 닫지 않음(사용자가 "닫기"를 직접 누름).
     try {
       await navigator.clipboard.writeText(annotateShareTextFallback);
       if (shareBtn) {
@@ -9513,6 +9534,64 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
+
+// 2026-08-10: PWA "홈 화면에 추가" 배너 — 확률체감 탭에서만 노출(HTML/CSS는 index.html/
+// styles.css 참고). 전체 방문자 대상으로 하면 대부분 "당첨금 한 번 계산해보는" 일회성
+// 방문이라 소음만 늘릴 위험이 있어서, 재방문 동기가 있는 확률체감/최근 당첨번호 탭
+// 방문자한테만 좁혀서 시도함. beforeinstallprompt는 Chrome/Edge 계열만 지원하고 iOS
+// Safari는 아예 이 이벤트를 안 쏴서 자동으로 배너가 안 뜸(별도 iOS 안내 UI는 스코프 밖).
+let _deferredInstallPrompt = null;
+const PWA_INSTALL_DISMISS_KEY = 'chamtax_pwa_install_dismissed_at';
+const PWA_INSTALL_DISMISS_DAYS = 14; // "나중에"를 누르면 이 기간 동안 다시 안 뜸(매 방문마다 재노출되는 것 방지)
+
+window.addEventListener('beforeinstallprompt', event => {
+  event.preventDefault(); // 브라우저 기본 미니인포바 대신 배너 버튼으로 우리가 직접 트리거
+  _deferredInstallPrompt = event;
+  maybeShowPwaInstallBanner();
+});
+
+window.addEventListener('appinstalled', () => {
+  _deferredInstallPrompt = null;
+  const banner = document.getElementById('pwaInstallBanner');
+  if (banner) banner.classList.remove('is-visible');
+});
+
+function isPwaInstallDismissedRecently(){
+  let dismissedAt = null;
+  try { dismissedAt = localStorage.getItem(PWA_INSTALL_DISMISS_KEY); } catch (e) {}
+  if (!dismissedAt) return false;
+  const daysSince = (Date.now() - Number(dismissedAt)) / (1000 * 60 * 60 * 24);
+  return daysSince < PWA_INSTALL_DISMISS_DAYS;
+}
+
+// go(view)가 odds 탭으로 들어오거나 나갈 때마다 호출 — 조건은 여기서 매번 다시 판단하므로
+// 호출 시점의 탭 상태만 맞으면 됨(별도 인자 불필요)
+function maybeShowPwaInstallBanner(){
+  const banner = document.getElementById('pwaInstallBanner');
+  if (!banner) return;
+  const oddsView = document.getElementById('view-odds');
+  const isOddsViewOpen = oddsView && oddsView.classList.contains('on');
+  const isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+  const shouldShow = !!_deferredInstallPrompt && isOddsViewOpen && !isStandalone && !isPwaInstallDismissedRecently();
+  banner.classList.toggle('is-visible', shouldShow);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const addBtn = document.getElementById('pwaInstallAddBtn');
+  const laterBtn = document.getElementById('pwaInstallLaterBtn');
+  const banner = document.getElementById('pwaInstallBanner');
+  if (addBtn) addBtn.addEventListener('click', () => {
+    if (banner) banner.classList.remove('is-visible');
+    if (!_deferredInstallPrompt) return;
+    const prompt = _deferredInstallPrompt;
+    _deferredInstallPrompt = null;
+    prompt.prompt();
+  });
+  if (laterBtn) laterBtn.addEventListener('click', () => {
+    try { localStorage.setItem(PWA_INSTALL_DISMISS_KEY, String(Date.now())); } catch (e) {}
+    if (banner) banner.classList.remove('is-visible');
+  });
+});
 
 let _resizeDebounceTimer = null;
 window.addEventListener('resize', () => {
