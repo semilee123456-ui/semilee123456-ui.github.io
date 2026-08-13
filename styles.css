@@ -337,16 +337,26 @@
   /* 2026-08-12: 이 버튼(🌐)이 언어 변경 메뉴라는 걸 못 알아본다는 사용자 피드백 — 배경이
      거의 안 보이는 옅은 tint(0.08 alpha)라 클릭 가능한 버튼처럼 안 보였던 게 원인으로 보임.
      원형 채워진 teal 배경 + 그림자로 눈에 띄는 "누를 수 있는 칩"처럼 보이게 함 */
+  /* 2026-08-13: 위 수정 이후에도 "안 예쁘다/잘 인식이 안 된다"는 재지적 — 배경이 --teal
+     (#155445)로 너무 짙어 칩 자체가 어두워 보이고, OS/브라우저마다 색이 다르게 그려지는
+     기본 이모지 지구본이 흐릿하게 뭉개져 보였던 게 원인. 배경을 한 단계 밝은 --mint로
+     바꾸고(라이트모드 대비 6.10:1로 오히려 --teal 대비 8.79:1보다 살짝 낮지만 WCAG AA는
+     여유 있게 통과), 이모지 대신 흰색 단색 SVG 지구본을 직접 그려 넣어 어떤 환경에서도
+     또렷하고 색이 튀어 보이게 함. 다크모드는 --mint(#4CC2A0)가 --teal(#3AA98A)보다 오히려
+     더 밝아서 흰 아이콘 대비가 더 떨어지므로(2.20:1 < 2.91:1) 다크모드 배경은 --teal 그대로
+     유지 — 아래 다크모드 override 참고 */
   .settings-toggle{
     width:42px; height:42px; min-height:42px; flex:0 0 auto; border-radius:50%;
-    border:none; background:var(--teal); box-shadow:0 3px 10px rgba(var(--teal-rgb),0.4);
-    font-size:18px; line-height:1; cursor:pointer; font-family:inherit;
+    border:none;
+    background:var(--mint) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cline x1='3' y1='12' x2='21' y2='12'/%3E%3Cpath d='M12 3c2.6 2.7 4.1 6 4.1 9s-1.5 6.3-4.1 9c-2.6-2.7-4.1-6-4.1-9s1.5-6.3 4.1-9z'/%3E%3C/svg%3E") no-repeat center/22px;
+    box-shadow:0 3px 10px rgba(var(--teal-rgb),0.4);
+    line-height:1; cursor:pointer; font-family:inherit;
     display:flex; align-items:center; justify-content:center; padding:0; list-style:none;
     transition:transform 0.15s ease, box-shadow 0.15s ease;
   }
   .settings-toggle::-webkit-details-marker{ display:none; }
   .settings-toggle:active{ transform:scale(0.94); }
-  :root[data-theme="dark"] .settings-toggle{ box-shadow:0 3px 10px rgba(0,0,0,0.4); }
+  :root[data-theme="dark"] .settings-toggle{ background-color:var(--teal); box-shadow:0 3px 10px rgba(0,0,0,0.4); }
   .settings-panel{
     position:absolute; top:calc(100% + 8px); right:0; z-index:30; display:flex; flex-direction:column; gap:8px;
     background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px;
