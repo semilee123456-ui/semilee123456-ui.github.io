@@ -70,7 +70,7 @@ let I18N_LOAD_PROMISE = null;
 
 function loadI18nLanguage(lang){
   if (lang === "ko" || I18N_CACHE[lang]) return Promise.resolve();
-  return fetch(`i18n/${lang}.json?v=20260812-1`)
+  return fetch(`i18n/${lang}.json?v=20260813-1`)
     .then(res => { if (!res.ok) throw new Error("i18n fetch failed: " + res.status); return res.json(); })
     .then(data => { I18N_CACHE[lang] = data; })
     .catch(err => { console.error("[i18n] failed to load", lang, err); });
@@ -7266,6 +7266,9 @@ function buildHomeResultCheckCanvas(){
 
 function saveHomeResultAsImage(){
   trackEvent('save_result_image');
+  // 2026-08-13: "정산 티켓" 컨셉 — 버튼을 누르는 순간 결과 카드 위로 색종이 폭죽 연출
+  // (기존 fireConfettiBurst() 재사용, dream-result 전용 호출부는 그대로 안 건드림)
+  fireConfettiBurst('🎉', document.querySelector('.result-hero'));
   const { canvas, hotspots } = buildHomeResultCheckCanvas();
   openAnnotateOverlay(canvas, 'chamtax-result.png', { dateEditable: true, textHotspots: hotspots });
 }
@@ -11129,8 +11132,10 @@ function pickDream(key, btnEl){
 // 고른 드림 카드의 이모지(🕊️/🏠/✈️/💼)가 dream-result 위에서 짧게 떨어지는 연출(2026-07-29 —
 // 원래는 브랜드 컬러 사각 조각이었는데, 어떤 카드를 골랐는지 이모지로 바로 드러나게 바꿈).
 // prefers-reduced-motion 환경에서는 CSS 쪽에서 애니메이션 자체를 꺼버리므로 여기서는 그냥 만들기만 해도 안전함
-function fireConfettiBurst(emoji){
-  const target = document.getElementById('dream-result');
+// 2026-08-13: targetEl 인자 추가 — "정산 티켓" 결과 카드의 공유/저장 버튼에서도 같은 함수를
+// 재사용하려고(기존 dream-result 전용 호출부는 인자 생략 시 그대로 동작, 하위호환 유지)
+function fireConfettiBurst(emoji, targetEl){
+  const target = targetEl || document.getElementById('dream-result');
   if (!target) return;
   const rect = target.getBoundingClientRect();
   for (let i = 0; i < 14; i++) {
@@ -11232,6 +11237,8 @@ function formatUsdMillionsNatural(amountMillions, lang){
 
 async function shareResult(){
   trackEvent('share_result');
+  // 2026-08-13: "정산 티켓" 컨셉 — 위 saveHomeResultAsImage()와 같은 패턴
+  fireConfettiBurst('🎉', document.querySelector('.result-hero'));
   // 2026-08-03: 예전엔 !isAmountManuallyEdited(사용자가 금액을 직접 건드린 적 없음)면
   // shareGenericPromo()(금액 없는 사이트 소개 카드)로 빠졌는데, 사용자가 "금액 카드가 항상
   // 뜨게 해달라"고 요청함(기본값이라도 카드에 금액이 있는 게 아무 정보 없는 소개 카드보다

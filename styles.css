@@ -88,6 +88,23 @@
        --gold 계열로 바꿔서 두 필터가 서로 다른 그룹이라는 걸 색으로도 구분되게 함 */
     --gold-chip-bg: rgba(156,111,30,0.07);
     --gold-chip-border: rgba(156,111,30,0.4);
+
+    /* 2026-08-13: "정산 티켓" 컨셉 전면 리디자인(디자인팀 핸드오프 index.dc.html 기준) —
+       홈 화면 페르소나 픽커·입력 카드·결과 카드를 하나의 티켓 셸로 묶으면서 반복 쓰는 값들을
+       변수화. --navy가 핸드오프 문서의 "ink"(#262420/#EDE8DA)와, --text-muted가 "inkSoft"와
+       각각 정확히 같은 값이라 별도 색상 추가 없이 기존 팔레트 그대로 재사용함(핸드오프 문서
+       자체가 "prior concept review에서 재사용"이라고 명시). Space Grotesk/IBM Plex Mono는
+       한글 글리프가 없어서 한국어 텍스트엔 자동으로 Pretendard로 폴백됨(별도 분기 불필요) —
+       숫자·영문 라벨에만 실제로 적용됨. 폰트 크기는 이 변수들과 별개로 항상 --fs-small(16px)
+       이상만 씀 — 핸드오프 문서 자체 수치(11~13px)는 이 사이트의 "40-60대 접근성" 최소
+       폰트 기준과 충돌해서 그대로 안 가져오고 16px로 올림(2026-08-13 PR #197 세션의 "명암비
+       깎는 요소는 거르고 나머지만 채용" 판단과 같은 원칙). */
+    --font-display:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    --font-mono-ticket:'IBM Plex Mono','SFMono-Regular','Menlo','Consolas','Liberation Mono',monospace;
+    --ticket-shadow-hard: 4px 4px 0 var(--navy);
+    --ticket-shadow-hard-sm: 3px 3px 0 var(--navy);
+    --ticket-shadow-hard-xs: 2px 2px 0 var(--navy);
+    --ticket-shadow-hard-press: 1px 1px 0 var(--navy);
   }
   /* 다크모드는 더 이상 기기의 prefers-color-scheme을 자동으로 따라가지 않고, 우상단 토글
      버튼(toggleTheme(), script.js)으로만 켜짐 — 켠 상태는 localStorage에 저장되어 다음
@@ -265,11 +282,17 @@
      .nav를 .page 밖으로 빼서(index.html 마크업 변경) body의 직계 자식으로 만들고, 자체
      배경·그림자를 줘서 독립된 바처럼 보이게 함. .page와 같은 max-width를 써서 좌우 폭은
      맞춤(에지-투-에지 전체 폭까지는 안 감 — body 좌우 패딩 안에서 별도 카드로 뜨는 형태). */
+  /* 2026-08-13: "정산 티켓" 컨셉을 헤더까지 확장 — 지금까지는 설정 버튼만 손봤고 헤더 전체는
+     예전 소프트 그림자 카드 그대로였음(사용자가 남은 항목으로 명시적으로 지목). 소프트 그림자
+     대신 셸과 같은 하드 테두리+오프셋 그림자로 바꿔서 헤더도 같은 "티켓 세트"로 읽히게 함 —
+     곰돌이 마스코트 로고와 통합 설정 버튼(좁은 화면 줄바꿈 버그로 예전에 하나로 합쳤던 전례,
+     PR #195)은 이번에도 그대로 유지(구조 안 건드림, 표현만 맞춤). */
   .nav{
     display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; row-gap:8px; column-gap:10px;
     position:sticky; top:0; z-index:20; width:100%; max-width:clamp(900px, 78vw, 1200px); margin:0 auto;
     background:var(--card); border-radius:14px; padding:12px 20px;
-    box-shadow:0 1px 3px rgba(var(--ink-rgb),0.08), 0 8px 24px rgba(var(--ink-rgb),0.06);
+    border:2.5px solid var(--navy);
+    box-shadow:var(--ticket-shadow-hard-sm);
   }
   .logo{
     font-size:17px; font-weight:700; color:var(--navy); letter-spacing:-0.02em; cursor:pointer;
@@ -277,7 +300,9 @@
     display:inline-flex; align-items:center; gap:6px;
   }
   .mascot-mark{ flex-shrink:0; }
-  .logo-text{ white-space:nowrap; }
+  /* 브랜드 워드마크만 디스플레이 서체로 — 한글 "참택스"는 Space Grotesk에 한글 글리프가
+     없어서 자동으로 다음 폰트(Pretendard)로 폴백되므로 실질적으로는 영문 UI에서만 체감됨 */
+  .logo-text{ white-space:nowrap; font-family:var(--font-display); }
   .logo span{ color:var(--teal); }
   .menu{ display:flex; gap:10px; align-items:center; margin-left:auto; }
   /* lang-toggle와 theme-toggle을 하나의 묶음으로 감싸서, 좁은 화면에서 .menu가 줄바꿈될 때
@@ -295,7 +320,7 @@
     border-bottom:1px solid var(--border); padding-bottom:0;
   }
   .menu-links button{
-    font-size:16px; color:var(--text-muted); font-weight:600; font-family:inherit; cursor:pointer;
+    font-size:16px; color:var(--text-muted); font-weight:600; font-family:var(--font-display); cursor:pointer;
     border:none; border-bottom:2.5px solid transparent; background:none;
     padding:6px 2px 8px; margin-bottom:-1px; min-height:38px; display:inline-flex; align-items:center; gap:4px;
     position:relative; transition:color 0.15s ease, border-color 0.15s ease;
@@ -337,16 +362,26 @@
   /* 2026-08-12: 이 버튼(🌐)이 언어 변경 메뉴라는 걸 못 알아본다는 사용자 피드백 — 배경이
      거의 안 보이는 옅은 tint(0.08 alpha)라 클릭 가능한 버튼처럼 안 보였던 게 원인으로 보임.
      원형 채워진 teal 배경 + 그림자로 눈에 띄는 "누를 수 있는 칩"처럼 보이게 함 */
+  /* 2026-08-13: 위 수정 이후에도 "안 예쁘다/잘 인식이 안 된다"는 재지적 — 배경이 --teal
+     (#155445)로 너무 짙어 칩 자체가 어두워 보이고, OS/브라우저마다 색이 다르게 그려지는
+     기본 이모지 지구본이 흐릿하게 뭉개져 보였던 게 원인. 배경을 한 단계 밝은 --mint로
+     바꾸고(라이트모드 대비 6.10:1로 오히려 --teal 대비 8.79:1보다 살짝 낮지만 WCAG AA는
+     여유 있게 통과), 이모지 대신 흰색 단색 SVG 지구본을 직접 그려 넣어 어떤 환경에서도
+     또렷하고 색이 튀어 보이게 함. 다크모드는 --mint(#4CC2A0)가 --teal(#3AA98A)보다 오히려
+     더 밝아서 흰 아이콘 대비가 더 떨어지므로(2.20:1 < 2.91:1) 다크모드 배경은 --teal 그대로
+     유지 — 아래 다크모드 override 참고 */
   .settings-toggle{
     width:42px; height:42px; min-height:42px; flex:0 0 auto; border-radius:50%;
-    border:none; background:var(--teal); box-shadow:0 3px 10px rgba(var(--teal-rgb),0.4);
-    font-size:18px; line-height:1; cursor:pointer; font-family:inherit;
+    border:none;
+    background:var(--mint) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cline x1='3' y1='12' x2='21' y2='12'/%3E%3Cpath d='M12 3c2.6 2.7 4.1 6 4.1 9s-1.5 6.3-4.1 9c-2.6-2.7-4.1-6-4.1-9s1.5-6.3 4.1-9z'/%3E%3C/svg%3E") no-repeat center/22px;
+    box-shadow:0 3px 10px rgba(var(--teal-rgb),0.4);
+    line-height:1; cursor:pointer; font-family:inherit;
     display:flex; align-items:center; justify-content:center; padding:0; list-style:none;
     transition:transform 0.15s ease, box-shadow 0.15s ease;
   }
   .settings-toggle::-webkit-details-marker{ display:none; }
   .settings-toggle:active{ transform:scale(0.94); }
-  :root[data-theme="dark"] .settings-toggle{ box-shadow:0 3px 10px rgba(0,0,0,0.4); }
+  :root[data-theme="dark"] .settings-toggle{ background-color:var(--teal); box-shadow:0 3px 10px rgba(0,0,0,0.4); }
   .settings-panel{
     position:absolute; top:calc(100% + 8px); right:0; z-index:30; display:flex; flex-direction:column; gap:8px;
     background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px;
@@ -403,34 +438,43 @@
     background:none; border-radius:20px; padding:0; margin:0 0 8px;
   }
   .tax-impact-compact{
-    display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px;
-    margin-top:12px; font-size:16px; color:var(--text-muted);
+    display:flex; flex-direction:row; flex-wrap:wrap; align-items:baseline; justify-content:center; gap:6px;
+    margin-top:12px; padding-bottom:10px; font-size:16px; color:var(--text-muted);
+    border-bottom:1px dotted var(--border);
   }
   .tax-impact-strike{ text-decoration:line-through; }
   /* 2026-08-12: 예전엔 그냥 나열된 텍스트 줄이었는데, 세전/세금액을 둥근 배지(칩)로 감싸서
      핀테크 앱의 "before → after" 태그 패턴으로 바꿈 — 값·id·로직은 그대로, 감싸는 배경만 추가 */
-  .tax-impact-before-line{
-    display:inline-flex; gap:4px; padding:4px 10px; border-radius:20px;
-    background:rgba(var(--ink-rgb),0.05);
+  /* 2026-08-13: "정산 티켓" 컨셉 — 위 칩 배경을 걷어내고 영수증 한 줄(점선 밑줄 위 텍스트)
+     느낌으로. 금액 두 곳(#tax-impact-before/#tax-impact-diff)만 고정폭 서체 지정 —
+     "세전"/"→" 같은 한글·기호는 그대로 기본 서체 유지(별도 span이라 폰트 분리 안전함) */
+  .tax-impact-before-line{ display:inline-flex; gap:4px; }
+  #tax-impact-before, .tax-impact-diff-big{
+    font-family:var(--font-mono-ticket);
   }
   .tax-impact-arrow{ color:var(--text-muted); }
-  .tax-impact-diff-big{
-    font-weight:800; color:var(--status-red); font-size:16px; display:inline-block;
-    padding:4px 12px; border-radius:20px; background:rgba(192,57,43,0.09);
-  }
+  .tax-impact-diff-big{ font-weight:800; color:var(--status-red); font-size:16px; }
   .tax-impact-diff-big.diff-pop{ animation:pop 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+  /* 2026-08-13: "정산 티켓" 컨셉 — 게이지를 더 두껍게(14→22px)+알약형(radius:999)+하드
+     테두리(2px, --navy)로 바꿔서 다른 티켓 요소들과 같은 시각 문법을 씀. 막대 안에 퍼센트
+     숫자를 얹지 않고 기존처럼 바로 아래 캡션에 남겨둠(22px 두께에 11-12px 텍스트를 우겨넣는
+     핸드오프 문서 방식은 --fs-small 16px 하한과 충돌해서 안 가져옴) */
   .result-visual-bar{
-    width:100%; height:14px; border-radius:10px; margin:16px 0 10px; overflow:hidden;
-    background:var(--status-red); opacity:0.85; box-shadow:inset 0 1px 2px rgba(0,0,0,0.06);
+    width:100%; height:22px; border-radius:999px; margin:16px 0 10px; overflow:hidden;
+    background:var(--status-red); opacity:1; border:2px solid var(--navy);
   }
   .result-visual-bar-take{
-    height:100%; border-radius:10px 0 0 10px;
+    height:100%;
     background:linear-gradient(90deg, var(--teal) 0%, rgba(var(--teal-rgb),0.78) 100%);
     transition:width 0.5s ease;
   }
   .result-visual-bar-caption{
     display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap;
     font-size:var(--fs-small); color:var(--text-muted); margin:0;
+  }
+  .result-visual-bar-caption span[id$="-pct"]{
+    font-family:var(--font-mono-ticket);
+    font-weight:700;
   }
   .rvb-dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:-2px; }
   .rvb-dot-take{ background:var(--teal); }
@@ -550,11 +594,30 @@
   .jackpot-quickfill-label{ grid-area:label; min-width:0; overflow-wrap:break-word; }
   .jackpot-quickfill-amt{ grid-area:amt; white-space:nowrap; }
   .jackpot-quickfill-usd{ grid-area:usd; min-width:0; overflow-wrap:break-word; }
+  /* 2026-08-13: "정산 티켓" 작업 중 이 버튼을 다시 들여다보다가 발견 — 위 2026-08-12
+     "같은 줄(좌우)" 배치가 좁은 화면(약 460px 이하) + 영어 긴 라벨("Powerball recent
+     jackpot (lump-sum)") 조합에서 minmax(0,1fr) 라벨 열이 auto 금액 열에 폭을 다
+     내주고 거의 0까지 눌려서 글자가 한 글자씩 세로로 쪼개지는 버그였음(오늘 세션이 만든
+     버그 아님 — f4cf0e4 시점에서도 재현 확인). home_audit은 "카드 경계 밖으로 튀어나감"만
+     검사해서 이 "안 튀어나가지만 읽을 수 없게 눌리는" 케이스는 못 잡음(글자 단위 줄바꿈이라
+     escape가 아님) — 스크린샷으로 직접 봐야만 보임. 좁은 화면에서만 라벨/금액을 다시
+     세로로 쌓아서(2026-08-12 이전 형태로 잠깐 되돌아감) 안전하게 피함. */
+  @media (max-width: 480px) {
+    .jackpot-quickfill-btn{ grid-template-columns:1fr; grid-template-areas:"label" "amt" "usd"; row-gap:2px; }
+    .jackpot-quickfill-amt{ justify-self:start; }
+  }
   /* 디자인 3차 개선: 두 버튼을 같은 청록색 톤으로 뭉뚱그리지 않고, 게임별 색(빨강=파워볼/
      호박색=메가밀리언즈)을 입혀서 어느 버튼이 어느 게임인지 한눈에 구분되게 함 */
   .jackpot-quickfill-btn-pb{ background:var(--game-pb-bg); border:1.5px solid var(--game-pb-border); }
   .jackpot-quickfill-btn-mm{ background:var(--game-mm-bg); border:1.5px solid var(--game-mm-border); }
-  .jackpot-quickfill-btn:active{ filter:brightness(0.97); }
+  /* 2026-08-13: "정산 티켓" 컨셉 — 누르면 살짝 들렸다(hover) 눌리는(active) 하드 섀도우
+     인터랙션 추가. 이 버튼의 폭·grid·폰트는 좁은 화면 버그 이력이 있어(위 주석 참고)
+     절대 안 건드리고, transform/box-shadow만 추가해서 위험 없이 "눌리는 느낌"만 더함 */
+  .jackpot-quickfill-btn{ transition:transform 0.12s ease, box-shadow 0.12s ease; }
+  @media (hover:hover){
+    .jackpot-quickfill-btn:hover{ transform:translate(-1px,-1px); box-shadow:var(--ticket-shadow-hard-sm); }
+  }
+  .jackpot-quickfill-btn:active{ filter:brightness(0.97); transform:translate(1px,1px); box-shadow:none; }
   /* 퀵필 버튼(=이 잭팟에 당첨되면?)을 누른 순간의 작은 반짝임 — celebrateQuickFill()이
      JS로 만들어 body에 붙였다가 애니메이션 끝나면 스스로 제거함 */
   .quickfill-spark{
@@ -572,14 +635,35 @@
   .jackpot-quickfill-label{ font-size:var(--fs-small); font-weight:800; letter-spacing:0.02em; }
   .jackpot-quickfill-btn-pb .jackpot-quickfill-label{ color:var(--status-red); }
   .jackpot-quickfill-btn-mm .jackpot-quickfill-label{ color:var(--status-amber); }
+  /* 2026-08-13: "정산 티켓" 컨셉 — 이 버튼이 파워볼/메가밀리언즈 "추첨공"을 뽑는 느낌을
+     내도록, OS마다 다르게 그려지던 🔴/🟡 이모지를 CSS로 직접 그린 광택 있는 공 모양으로
+     교체(index.html의 .quickfill-ball, 순수 장식용 span, aria-hidden). 이 버튼 2개에만
+     적용 — script.js가 여러 곳(랭킹 목록 등)에서 같은 이모지를 동적으로 더 쓰는데, 그건
+     이번 범위 밖(다음 단계 후보로 HANDOFF에 남김) */
+  .quickfill-ball{
+    display:inline-block; width:15px; height:15px; border-radius:50%; vertical-align:-2px;
+    flex-shrink:0;
+    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 45%), var(--status-red);
+  }
+  .jackpot-quickfill-btn-mm .quickfill-ball{
+    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 45%), var(--status-amber);
+  }
+  /* 2026-08-13: 고정폭 서체를 여기 적용했다가 좁은 화면(460px 이하, 특히 영어 "$433.1
+     million"처럼 긴 문자열)에서 이 grid의 auto 폭 열(금액)이 지금보다 훨씬 넓어져서 옆
+     minmax(0,1fr) 열(라벨)이 0까지 눌리며 글자가 한 글자씩 세로로 쪼개지는 실제 렌더링
+     버그가 났음(Playwright 스크린샷으로 발견) — 이 grid는 2026-08-12에도 같은 종류의
+     오버플로를 minmax(0,1fr)로 겨우 잡은 전례가 있어 다시 흔들지 않고 되돌림. 고정폭은
+     결과 카드처럼 grid 폭 제약이 없는 곳에만 씀 */
   .jackpot-quickfill-amt{ font-size:var(--fs-small); font-weight:800; color:var(--text-dark); }
   .jackpot-quickfill-usd{ font-size:var(--fs-small); font-weight:600; color:var(--text-muted); }
   .million-input-wrap{
-    position:relative; display:flex; align-items:center; gap:10px; flex:1.5; border:2px solid var(--teal);
+    position:relative; display:flex; align-items:center; gap:10px; flex:1.5; border:2.5px solid var(--teal);
     border-radius:18px; padding:8px 10px 8px 18px; height:auto; background:var(--card);
     min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden; transition:box-shadow 0.15s ease;
   }
-  .million-input-wrap:focus-within{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.14); }
+  /* 2026-08-13: "정산 티켓" 컨셉 — 포커스 시 옅은 글로우 링 대신 하드 오프셋 그림자로,
+     다른 티켓 요소(셸·게이지·버튼)와 같은 문법을 씀 */
+  .million-input-wrap:focus-within{ border-color:var(--teal); box-shadow:3px 3px 0 var(--teal); }
   .million-input-wrap .dollar-input{
     border:none; padding:8px 0; height:auto; flex:1; min-width:0; width:auto;
     font-size:32px; font-size:clamp(26px, 10vw, 38px); font-weight:800; color:var(--teal);
@@ -587,14 +671,19 @@
   /* 탭 3개(일시불/연금발표액/목표실수령액)를 오갈 때 입력칸 크기가 서로 달라 카드가 들쭉날쭉해
      보인다는 지적 — 연금발표액 칸을 일시불 칸과 동일한 테두리·크기·글자 크기로 통일함 */
   .million-input-wrap-secondary{
-    position:relative; display:flex; align-items:center; gap:10px; flex:1.5; border:2px solid var(--teal);
+    position:relative; display:flex; align-items:center; gap:10px; flex:1.5; border:2.5px solid var(--teal);
     border-radius:18px; padding:8px 10px 8px 18px; height:auto; background:var(--card);
     min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden; transition:box-shadow 0.15s ease;
   }
-  .million-input-wrap-secondary:focus-within{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(var(--teal-rgb),0.14); }
+  .million-input-wrap-secondary:focus-within{ border-color:var(--teal); box-shadow:3px 3px 0 var(--teal); }
   .million-input-wrap-secondary .dollar-input{
     border:none; padding:8px 0; height:auto; flex:1; min-width:0; width:auto;
     font-size:32px; font-size:clamp(26px, 10vw, 38px); font-weight:800; color:var(--teal);
+  }
+  /* 2026-08-13: "정산 티켓" 컨셉 — 당첨금을 직접 타이핑하는 칸이라 "티켓 단말기에 숫자
+     찍는" 느낌으로 고정폭 서체. 한글이 안 섞이는 순수 숫자 입력칸이라 별도 폴백 고려 불필요 */
+  .million-input-wrap .dollar-input, .million-input-wrap-secondary .dollar-input{
+    font-family:var(--font-mono-ticket);
   }
   @keyframes field-autofill-flash{ 0%{ box-shadow:0 0 0 4px rgba(var(--teal-rgb),0.28); } 100%{ box-shadow:0 0 0 0 rgba(var(--teal-rgb),0); } }
   .field-autofill-flash{ animation:field-autofill-flash 700ms ease-out; }
@@ -1108,15 +1197,20 @@
     100%{ transform:translateY(120px) rotate(360deg); opacity:0; }
   }
   .confetti-piece{
-    position:absolute; width:8px; height:8px; border-radius:2px; pointer-events:none; z-index:999;
+    position:absolute; width:8px; height:8px; border-radius:2px; pointer-events:none; z-index:2300;
     animation:confetti-fall 0.9s ease-out forwards;
   }
   /* 2026-07-29: 색종이 사각 조각 대신, 고른 카드의 이모지(🕊️/🏠/✈️/💼)가 떨어지는 버전
      (사용자 요청 — "재미로 보기" 섹션을 더 재밌게). 같은 낙하 키프레임 재사용 */
   .confetti-emoji{
-    position:absolute; font-size:22px; line-height:1; pointer-events:none; z-index:999;
+    position:absolute; font-size:22px; line-height:1; pointer-events:none; z-index:2300;
     animation:confetti-fall 0.9s ease-out forwards;
   }
+  /* 2026-08-13: z-index 999→2300 — 결과 카드 공유/저장 버튼(fireConfettiBurst 재사용)을
+     누르면 바로 다음 줄에서 .annotate-overlay(z-index:2200) 모달이 동기적으로 열려서,
+     999로는 컨페티가 모달 뒤에 완전히 가려져 하나도 안 보이는 버그가 있었음(코드 리뷰로
+     발견) — 모달보다 위에 그려지게 올림. 다른 호출부(dream-result, 모달 없음)엔 그냥
+     "항상 맨 위"라 영향 없음 */
   @media (prefers-reduced-motion: reduce){
     .confetti-piece, .confetti-emoji{ display:none; }
   }
@@ -1240,20 +1334,74 @@
      또 얹으면 대비가 불필요하게 더 줄어듦(디자인 검수로 발견, 2026-07-25) — opacity 제거 */
   .foot-note{ font-size:16px; color:var(--text-muted); margin:0; line-height:1.4; }
 
+  /* 2026-08-13: "정산 티켓" 컨셉 전면 리디자인 — 페르소나 픽커(#introPersonaAccordion)·
+     입력 카드(.input-card)·결과 카드(.result-hero)를 각자 뜬 카드 3개 대신 하나의 연속된
+     티켓 셸로 묶음(디자인팀 핸드오프 index.dc.html의 ticketShell 재구현, 색상 토큰은 이미
+     이 파일과 정확히 같은 값이라 그대로 재사용). 셸 자체가 하드 테두리+오프셋 그림자를 지니고,
+     내부 3개 섹션은 개별 테두리·그림자·반경·배경을 버리고 셸의 --card 배경 하나를 공유 —
+     섹션 사이는 기존 .ticket-perf-row/.ticket-perf-line(아래, 원래 .result-hero 내부 바코드
+     구간에서만 쓰던 절취선 기법을 셸 이음매로 확장)로 구분. 계산 로직·id·data-i18n 키는
+     전혀 안 건드림(순수 표현 레이어). */
+  .ticket-shell{
+    position:relative; overflow:hidden;
+    background:var(--card);
+    border:2.5px solid var(--navy);
+    /* 2026-08-13: 코드 리뷰로 발견 — border shorthand가 아래쪽에도 그대로 적용돼서, 바로
+       아래 .ticket-torn-bottom(스캘럽 마스크로 찢어진 가장자리를 표현)이 그 위에 얹혀도
+       바로 밑에 곧은 남색 테두리 선이 그대로 남아 "찢어진 느낌"을 깨고 있었음 — 아래쪽만
+       테두리를 없애서 스캘럽 자체가 실제 가장자리가 되게 함(양옆 테두리는 그대로 내려와
+       찢어진 부분에서만 뚝 끊기는 게 더 실물 영수증에 가까움) */
+    border-bottom:none;
+    border-radius:22px 22px 0 0;
+    box-shadow:var(--ticket-shadow-hard);
+    margin:16px 0 0;
+    animation:ticket-shell-pop 0.45s cubic-bezier(0.25,0.8,0.35,1.2) both;
+  }
+  @keyframes ticket-shell-pop{
+    from{ opacity:0; transform:scale(0.96) translateY(8px); }
+    to{ opacity:1; transform:none; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .ticket-shell{ animation:none; }
+  }
+  /* 페르소나 픽커는 공용 .panel/.odds-accordion 스타일(테두리·반경·margin, 다른 13곳에서
+     재사용됨)을 그대로 쓰던 걸, 셸 안에서만 id 스코프로 지움 — 다른 아코디언엔 영향 없음.
+     인라인 style="margin:14px 0;"(index.html)을 이겨야 해서 margin만 !important 사용 */
+  #introPersonaAccordion{
+    background:none; border:none; border-radius:0; margin:0 !important; padding:20px 22px;
+  }
+  .ticket-shell .input-card{
+    position:relative; background:none; border:none; box-shadow:none; border-radius:0;
+    padding:18px 22px 20px; margin-top:0;
+  }
+  .ticket-shell .result-hero{
+    border:none; box-shadow:none; border-radius:0;
+  }
+  /* 찢어진 종이 가장자리 — 셸 맨 아래(둥근 위쪽 모서리와 대비되는 평평한 아래쪽)에 스캘럽
+     마스크로 반원 여러 개를 파낸 띠를 둬서 "영수증 롤을 뜯어낸" 느낌을 냄. 순수 장식(aria-hidden) */
+  .ticket-torn-bottom{
+    height:14px; background:var(--bg);
+    -webkit-mask-image:radial-gradient(circle at 10px 0, transparent 9px, black 10px);
+    -webkit-mask-size:20px 14px; -webkit-mask-repeat:repeat-x;
+    mask-image:radial-gradient(circle at 10px 0, transparent 9px, black 10px);
+    mask-size:20px 14px; mask-repeat:repeat-x;
+  }
+
   .result-hero{
     position:relative; overflow:hidden;
-    background:linear-gradient(135deg, #EAF3EE 0%, #FBFAF4 55%, #FFFFFF 100%);
-    border:1px solid rgba(var(--teal-rgb),0.12); border-radius:24px;
+    background:var(--card);
+    border:1px solid rgba(var(--teal-rgb),0.12); border-radius:16px;
     padding:30px 22px 26px; text-align:center;
     /* 2026-08-12: "교과서 같다"는 피드백(제미나이 리디자인 검토) 대응 — 얇은 테두리만 있던
        평평한 카드를 라운딩+그림자로 띄워서 핀테크 앱 카드 느낌으로. 다른 .panel류(14px)와
        의도적으로 다른 반경을 써서 메인 결과 카드가 눈에 띄게 함(사이트 전체 톤은 안 건드림) */
     box-shadow:0 14px 36px rgba(var(--teal-rgb),0.13), 0 3px 10px rgba(var(--navyblue-rgb),0.06);
-    /* 2026-08-12: 네온/다크 목업을 참고해달라는 요청 — 명암비를 깎는 글로우 테두리·어두운 배경은
-       40-60대 접근성 기준과 충돌해서 그대로는 못 씀. 대신 라이트 테마·큰 글씨는 유지하면서
-       처음 나타날 때만 살짝 떠오르는 연출로 "역동적인" 느낌만 가져옴. 매번 재계산될 때마다
-       재생되면 안 되므로(값 변경은 JS가 textContent만 바꿈, 이 엘리먼트 자체는 안 다시 그려짐)
-       페이지 로드 시 1회만 재생됨 — 크게 강조 안 되게 짧고 은은하게. */
+    /* 2026-08-13: "그래도 교과서 같다"는 재지적 → 제미나이 목업 3개(증서/티켓/스코어보드) 중
+       "정산 티켓" 방향이 채택됨(이 계산기가 다루는 게 원래 복권 "티켓"의 당첨금이라는 소재
+       적합성 때문). 위 8/12의 소프트 그라디언트+블러 블롭(예전 ::before/::after)은 "앱 카드"
+       느낌이라 "영수증/티켓 스텁" 느낌과 안 맞아서 걷어내고 아래 절취선·바코드(신규 마크업,
+       index.html의 .ticket-perf-row/.ticket-barcode, 순수 장식용 aria-hidden)로 교체.
+       배경도 은은한 그라디언트 대신 순백(--card)로 — 인쇄된 종이 느낌에 더 가깝게. */
     animation:result-hero-reveal 0.5s cubic-bezier(0.16,1,0.3,1) both;
   }
   @keyframes result-hero-reveal{
@@ -1263,26 +1411,67 @@
   @media (prefers-reduced-motion: reduce){
     .result-hero{ animation:none; }
   }
-  .result-hero::before{
-    content:''; position:absolute; top:-70px; right:-60px; width:220px; height:220px; border-radius:50%;
-    background:radial-gradient(circle, rgba(var(--teal-rgb),0.08) 0%, rgba(var(--teal-rgb),0) 70%);
-    pointer-events:none;
+  /* 절취선(펀칭 구멍) — 왼쪽·오른쪽 가장자리에서 배경색(--bg)으로 반원을 "물어뜯어" 실제
+     티켓처럼 보이게 함. .result-hero의 overflow:hidden이 카드 밖으로 나가는 절반을 그대로
+     잘라주므로 별도 클리핑 로직 없이 반원이 자연스럽게 남음(위 .result-hero 소재 배경은
+     투명 부모를 거쳐 항상 var(--bg)와 만나는 걸 실측으로 확인). */
+  .ticket-perf-row{ position:relative; height:0; margin:20px 0; }
+  .ticket-perf-row::before, .ticket-perf-row::after{
+    content:''; position:absolute; top:50%; transform:translateY(-50%);
+    width:22px; height:22px; border-radius:50%; background:var(--bg);
   }
-  .result-hero::after{
-    content:''; position:absolute; bottom:-90px; left:-60px; width:200px; height:200px; border-radius:50%;
-    background:radial-gradient(circle, rgba(var(--teal-rgb),0.05) 0%, rgba(var(--teal-rgb),0) 70%);
-    pointer-events:none;
+  .ticket-perf-row::before{ left:-11px; }
+  .ticket-perf-row::after{ right:-11px; }
+  .ticket-perf-line{ border-top:2px dashed var(--border); }
+  .ticket-barcode{
+    height:28px; margin:16px 0 4px; opacity:0.8;
+    background-image: repeating-linear-gradient(90deg,
+      var(--text-dark) 0 2px, transparent 2px 5px,
+      var(--text-dark) 5px 6px, transparent 6px 11px,
+      var(--text-dark) 11px 14px, transparent 14px 17px,
+      var(--text-dark) 17px 19px, transparent 19px 24px);
   }
   /* 시그니처 요소 — "참"(眞, 진짜·검증됨)의 뜻을 담은 도장 마크.
-     한국 전통 인감도장처럼, 이 결과가 근거 있게 계산된 값이라는 걸 시각적으로 표현함 */
-  .result-seal-row{ float:right; margin:0 0 6px 10px; }
+     한국 전통 인감도장처럼, 이 결과가 근거 있게 계산된 값이라는 걸 시각적으로 표현함.
+     2026-08-13: float 배치를 절대위치 배지로 바꿔서(핸드오프 문서의 stampBadge) 텍스트
+     흐름과 완전히 분리 — 라벨이 몇 줄이 되든 겹치지 않음. 살짝 흔들리는 wiggle 애니메이션
+     추가(순수 CSS, prefers-reduced-motion에서 자동 정지) */
   .result-seal{
-    width:44px; height:44px; border-radius:50%;
-    border:1.5px solid var(--gold); display:flex; align-items:center; justify-content:center;
+    position:absolute; top:14px; right:18px; z-index:1;
+    width:42px; height:42px; border-radius:50%;
+    border:2px solid var(--gold); display:flex; align-items:center; justify-content:center;
+    /* 2026-08-13: 15px였던 걸 16px(접근성 최소 폰트 --fs-small 하한)로 수정 — 코드 리뷰로
+       발견, 이 세션의 다른 모든 텍스트는 16px 이상으로 올려놓고 이 배지만 실수로 밑돎 */
     font-size:16px; font-weight:800; color:var(--gold); letter-spacing:-0.02em;
-    transform:rotate(-8deg); opacity:0.9; pointer-events:none; font-family:inherit;
-    background:rgba(156,111,30,0.05); flex-shrink:0;
+    opacity:0.95; pointer-events:none; font-family:var(--font-display);
+    background:var(--card); flex-shrink:0;
+    animation:ticket-seal-wiggle 2.6s ease-in-out infinite;
   }
+  @keyframes ticket-seal-wiggle{
+    0%, 100%{ transform:rotate(-9deg); }
+    50%{ transform:rotate(7deg); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .result-seal{ animation:none; transform:rotate(-8deg); }
+  }
+  /* 대각선 "JACKPOT" 리본 — 결과 카드 왼쪽 상단 모서리를 감싸는 순수 장식 배지.
+     핸드오프 문서(index.dc.html)는 10px 텍스트 기준 84×84 클리핑 박스를 쓰는데, 이 사이트는
+     텍스트를 16px 미만으로 안 내려서(접근성 최소 폰트 --fs-small 규칙) 그 비율 그대로 축소하면
+     "JACKPOT" 앞글자가 클리핑 경계에 잘려 안 읽히는 문제가 있었음(2026-08-13 Playwright
+     스크린샷으로 발견) — 텍스트는 16px 유지하고 대신 리본 띠 폭·클립 박스를 넉넉히 키워서
+     글자가 잘리지 않게 맞춤 */
+  .ticket-jackpot-ribbon-clip{
+    position:absolute; top:0; left:0; width:84px; height:84px; overflow:hidden; pointer-events:none; z-index:1;
+  }
+  .ticket-jackpot-ribbon{
+    position:absolute; top:16px; left:-34px; width:150px; text-align:center;
+    background:var(--gold); color:var(--on-accent); font-size:16px; font-weight:800;
+    letter-spacing:0.03em; padding:4px 0; transform:rotate(-45deg);
+    box-shadow:0 2px 4px rgba(var(--ink-rgb),0.3); font-family:var(--font-display);
+  }
+  /* 리본(왼쪽 상단)·인장(오른쪽 상단) 배지가 라벨 텍스트와 겹치지 않도록, 라벨이 시작되는
+     콘텐츠 영역 자체를 두 배지 높이 아래로 내림(수평 위치와 무관하게 항상 안전) */
+  .result-hero{ padding-top:58px; }
   .result-hero-label{ position:relative; font-size:var(--fs-h3); color:var(--text-muted); font-weight:600; margin:0 0 8px; overflow-wrap:normal; }
   .announced-convert-note{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 6px; font-variant-numeric:tabular-nums; }
   /* 영어는 단어 단위로 줄바꿈되면서 한국어보다 여러 줄이 되는 경우가 많아서, 버튼·제목·설명문류에
@@ -1304,17 +1493,16 @@
   html[lang="en"] .feature-sub{ line-height:1.7; }
   .result-hero-amt{
     position:relative; font-size:40px; font-size:clamp(30px, 11.5vw, 58px); font-weight:800; margin:0;
-    font-variant-numeric:tabular-nums; white-space:nowrap; clear:both;
+    font-variant-numeric:tabular-nums; white-space:nowrap;
     color:var(--teal); text-shadow:none; line-height:1.25;
-    /* 2026-08-12: isolation:isolate로 새 스태킹 컨텍스트를 만들어서, 아래 ::before(z-index:-1)
-       글로우가 부모 .result-hero의 배경 뒤로 숨지 않고 이 숫자 뒤에서만 보이게 함 */
-    isolation:isolate;
-  }
-  .result-hero-amt::before{
-    content:''; position:absolute; z-index:-1; pointer-events:none;
-    top:50%; left:50%; transform:translate(-50%,-50%);
-    width:130%; height:220%;
-    background:radial-gradient(ellipse at center, rgba(var(--teal-rgb),0.16) 0%, rgba(var(--teal-rgb),0) 70%);
+    /* 2026-08-13: "정산 티켓" 컨셉 채택 — 영수증 프린터 느낌을 내려고 숫자만 고정폭 서체로.
+       formatWon() 결과 문자열엔 "억원"/"Billion" 같은 한글·영문 단위도 같은 텍스트 노드에
+       섞여 있는데, 이 폰트 스택은 그 글자들에 대한 글리프가 없어서 브라우저가 문자 단위로
+       자동으로 다음 폰트(사이트 기본 산세리프)로 넘어감 — 숫자만 고정폭이 되고 "억원" 등
+       단위는 원래 폰트로 정상 표시됨(별도 span 분리나 JS 변경 불필요). IBM Plex Mono가
+       숫자 0-9/쉼표/마침표 글리프를 지원해서 var(--font-mono-ticket) 맨 앞에 씀(2026-08-13
+       리디자인) — 없으면 기존 시스템 고정폭 스택으로 폴백. */
+    font-family:var(--font-mono-ticket);
   }
   .result-meta-group{ margin-top:16px; padding-top:10px; border-top:1px dashed rgba(var(--ink-rgb),0.12); display:flex; flex-direction:column; align-items:center; gap:7px; }
   .result-hero-basis-mini{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; }
@@ -1873,7 +2061,10 @@
     /* 2026-08-12: 크림/베이지 배경(--input-card-bg)이 목업들이 강조한 "pure white/light-grey"
        톤과 달라서, 모서리·그림자를 다 맞춰도 "종이" 느낌이 남는다는 지적 — 결과 카드와 같은
        흰 배경으로 통일 */
-    position:relative; background:var(--card); border:2.5px solid var(--teal); border-radius:20px;
+    /* 2026-08-13: "정산 티켓" 컨셉 — 아래 결과 카드(.result-hero)와 반경을 16px로 통일해서
+       두 카드가 같은 "티켓 세트"처럼 보이게 함(기존 20px는 다른 어떤 카드와도 안 맞는
+       고립된 값이었음) */
+    position:relative; background:var(--card); border:2.5px solid var(--teal); border-radius:16px;
     padding:14px 16px 16px; margin-top:22px; box-shadow:0 8px 24px rgba(var(--teal-rgb),0.08);
   }
 
@@ -2705,14 +2896,30 @@
   /* "결과 공유하기"(텍스트/링크)와 "이미지로 저장"(PNG)이 서로 다른 두 가지 방법이라 나란히
      둠 — .mn-btn-row(내 번호 티켓 이미지 버튼 줄)와 같은 flex 2등분 패턴 재사용 */
   .home-result-btn-row{ display:flex; gap:8px; margin-top:12px; }
-  .home-result-btn-row .share-btn{ flex:1; min-width:0; margin-top:0; border-radius:999px; }
+  /* 2026-08-13: "정산 티켓" 컨셉 — 카드 반경(16px) 계열에 맞춰 알약형(999px) 대신 티켓
+     탭처럼 둥근 사각형으로 통일 */
+  .home-result-btn-row .share-btn{ flex:1; min-width:0; margin-top:0; border-radius:11px; }
   /* 2026-08-12: 두 버튼이 시각적으로 동급(연한 민트 배경 + 테두리 없음)이라 뭘 먼저 눌러야
      할지 구분이 안 됐음 — "공유하기"는 채운(primary) 색으로 강조하고 "이미지로 저장"은 아웃라인
      (secondary)으로 낮춰서 핀테크 앱 CTA 위계를 줌. .copied 상태(복사 완료 시 진한 배경으로
      바뀌는 기존 로직)는 두 버튼 다 그대로 유지되므로 별도 처리 안 함. */
-  #home-share-btn{ background:var(--teal); color:var(--on-accent); box-shadow:var(--shadow-btn); }
+  /* 2026-08-13: "정산 티켓" 컨셉 — 두 버튼 다 하드 테두리+눌리는 그림자 인터랙션(핸드오프
+     문서의 ctaPrimary/ctaGhost). id 스코프라 다른 화면의 .share-btn(공용 클래스, 여러
+     곳에서 재사용)엔 영향 없음 */
+  #home-share-btn{
+    background:var(--teal); color:var(--on-accent); border:2.5px solid var(--navy);
+    box-shadow:var(--ticket-shadow-hard-sm); transition:transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
+  }
   #home-share-btn:hover{ background:var(--teal); opacity:0.92; }
-  #home-save-image-btn{ background:transparent; border-color:rgba(var(--teal-rgb),0.4); }
+  #home-share-btn:active{ transform:translate(2px,2px); box-shadow:none; }
+  #home-save-image-btn{
+    background:transparent; border:2.5px solid var(--navy); color:var(--text-dark);
+    transition:transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  @media (hover:hover){
+    #home-save-image-btn:hover{ transform:translate(-1px,-1px); box-shadow:var(--ticket-shadow-hard-xs); }
+  }
+  #home-save-image-btn:active{ transform:translate(1px,1px); box-shadow:none; }
   /* 2026-07-31: 읽어주기 버튼을 텍스트 없이 아이콘만 있는 작은 정사각형으로 — 공유하기/저장하기와
      같은 폭으로 3등분하면 "이 결과 공유하기"가 줄바꿈으로 깨지는 문제가 실제로 확인돼서, 이
      버튼만 flex:1 대신 고정 폭을 줌(다른 두 버튼은 그대로 폭을 나눠 가짐) */
@@ -2902,6 +3109,10 @@
     .jc-step{ gap:8px; }
     .playslip-mock{ padding:8px; }
     .panel{ padding:14px; }
+    /* id 선택자(#introPersonaAccordion)가 .panel보다 항상 이겨서, 아래 .panel의 좁은 화면
+       패딩 축소가 이 섹션엔 안 먹던 문제(2026-08-13 발견) — 같은 값으로 별도 지정 */
+    #introPersonaAccordion{ padding:14px; }
+    .ticket-shell .input-card{ padding:14px 14px 16px; }
     .footer-links{ gap:8px 12px; }
   }
   /* nav(로고+메뉴)는 훨씬 넓은 범위(480px 이하)에서 미리 축소 — 390px·393px·412px 같은
@@ -2959,8 +3170,16 @@
     .footer-links{ gap:6px 10px; }
     .footer-links button, .footer-links a{ font-size:16px; }
     .panel{ padding:10px; }
+    /* .ticket-shell 자체 테두리(2.5px solid, 예전 .panel의 1px보다 3px 더 두꺼움)가 안쪽
+       가용 폭을 그만큼 더 먹어서, .panel과 같은 패딩값을 줘도 240px 근방에서 2~3px 넘치는
+       회귀가 있었음(home_audit.js로 발견, 2026-08-13) — 셸 내부 두 섹션만 그만큼 더 줄임 */
+    #introPersonaAccordion{ padding:7px; }
+    .ticket-shell .input-card{ padding:7px 7px 9px; }
     .refund-link-buttons{ grid-template-columns:1fr; }
-    .result-seal{ width:36px; height:36px; font-size:11px; }
+    /* 2026-08-06부터 있던 값(11px)이 이 세션이 잡은 접근성 최소 폰트(16px) 하한을 밑돌고
+       있던 걸 위 기본 규칙 수정 중 코드 리뷰로 같이 발견 — 300px 이하 전용이라 잘 안 보였음.
+       16px에 맞춰 원 크기도 같이 올림 */
+    .result-seal{ width:38px; height:38px; font-size:16px; }
     .calc-detail-toggle, .fun-toggle{ padding-left:10px; padding-right:10px; }
     .calc-detail-summary{ margin:0 -10px; padding:12px 10px; }
     /* 2026-07-30: 국가+통화 2단 그리드(.amount-currency-row-2col)는 390px 폰에서 나란히
