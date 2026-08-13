@@ -8629,16 +8629,32 @@ function renderHomeFinalAmtTiles(){
   if (!source || !tilesEl) return;
   const text = source.textContent || '';
   const frag = document.createDocumentFragment();
-  for (const ch of text) {
+  // 2026-08-13 후속: 문자 하나하나를 각각 별도 flex 아이템으로 만들면 "million"/"억원" 같은
+  // 단위 텍스트도 글자 사이마다 flex gap(5px)이 끼고, 좁은 화면에서 단어 중간("mil"/"lion")
+  // 에서 줄바꿈되는 실제 렌더링 버그가 있었음(Playwright로 재현 확인) — 숫자가 아닌 문자는
+  // 연속된 구간을 하나의 span으로 묶어서 한 단어가 항상 통째로 붙어있게(줄바꿈은 구간 경계
+  // 에서만 일어나게) 함.
+  let plainBuf = '';
+  const flushPlain = () => {
+    if (!plainBuf) return;
     const span = document.createElement('span');
-    if (ch >= '0' && ch <= '9') {
-      span.className = 'home-final-amt-tile';
-    } else {
-      span.className = 'home-final-amt-plain';
-    }
-    span.textContent = ch;
+    span.className = 'home-final-amt-plain';
+    span.textContent = plainBuf;
     frag.appendChild(span);
+    plainBuf = '';
+  };
+  for (const ch of text) {
+    if (ch >= '0' && ch <= '9') {
+      flushPlain();
+      const span = document.createElement('span');
+      span.className = 'home-final-amt-tile';
+      span.textContent = ch;
+      frag.appendChild(span);
+    } else {
+      plainBuf += ch;
+    }
   }
+  flushPlain();
   tilesEl.replaceChildren(frag);
 }
 let _homeFinalAmtTilesObserver = null;
