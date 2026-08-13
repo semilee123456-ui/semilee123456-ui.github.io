@@ -1369,6 +1369,11 @@
      인라인 style="margin:14px 0;"(index.html)을 이겨야 해서 margin만 !important 사용 */
   #introPersonaAccordion{
     background:none; border:none; border-radius:0; margin:0 !important; padding:20px 22px;
+    /* 2026-08-13(추가 발견): 위 background/border/radius만 지웠지 box-shadow·최초
+       진입 시 glow 펄스 애니메이션(아래 오래된 #introPersonaAccordion 규칙, 지금은
+       "입구 카드"가 아니라 셸 안 섹션이라 필요 없어짐)은 안 지워서, 셸 안에 은은한
+       이중 카드 그림자가 새어 보이던 버그 — 코드 리뷰 2차 점검으로 발견·수정 */
+    box-shadow:none; animation:none;
   }
   .ticket-shell .input-card{
     position:relative; background:none; border:none; box-shadow:none; border-radius:0;
@@ -3227,13 +3232,12 @@
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23EDE8DA' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
 
-  /* .result-hero와 #introPersonaAccordion은 --grad-soft 변수 대신 자기만의 밝은 그라데이션을
-     하드코딩해뒀어서, 다크모드에서도 밝은 크림색 배경이 그대로 남아 튀는 문제 — 다크모드에서만
-     이미 다크 대응이 되어 있는 --grad-soft로 덮어씀 (라이트모드 디자인은 그대로 유지) */
-  :root[data-theme="dark"] .result-hero,
-  :root[data-theme="dark"] #introPersonaAccordion{
-    background:var(--grad-soft);
-  }
+  /* 2026-08-13: 위 규칙(.result-hero/#introPersonaAccordion에 --grad-soft 강제)은 두
+     섹션이 각자 밝은 그라데이션을 하드코딩해두던 예전 디자인 전용 다크모드 보정이었음 —
+     "정산 티켓" 셸 통합(같은 세션 앞부분)으로 두 섹션 다 배경을 셸의 --card 하나로
+     맡기게 바뀌면서 이 보정이 오히려 역효과를 냄(셸은 --card인데 이 두 섹션만 다른
+     그라데이션이 남아 다크모드에서 뚜렷한 이중 배경 이음매가 보였음, 코드 리뷰 2차
+     점검으로 발견) — 완전히 제거, 셸의 --card 배경을 그대로 씀 */
 
   /* ===== 통일된 "여긴 펼쳐집니다" 신호 (2026-07 접근성 감사) =====
      실사용자 테스트(고령층, 카카오톡 인앱 브라우저)에서 이 사이트 곳곳의 <details> 아코디언이
