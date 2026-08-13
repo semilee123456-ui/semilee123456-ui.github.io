@@ -70,7 +70,7 @@ let I18N_LOAD_PROMISE = null;
 
 function loadI18nLanguage(lang){
   if (lang === "ko" || I18N_CACHE[lang]) return Promise.resolve();
-  return fetch(`i18n/${lang}.json?v=20260810-1`)
+  return fetch(`i18n/${lang}.json?v=20260812-1`)
     .then(res => { if (!res.ok) throw new Error("i18n fetch failed: " + res.status); return res.json(); })
     .then(data => { I18N_CACHE[lang] = data; })
     .catch(err => { console.error("[i18n] failed to load", lang, err); });

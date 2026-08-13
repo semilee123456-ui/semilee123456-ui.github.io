@@ -334,14 +334,19 @@
      문제가 반복돼서(사용자가 스크린샷으로 직접 지적), 톱니바퀴 버튼 하나로 묶고 눌렀을 때만
      펼쳐지는 패널 안에 전부 모음 — details/summary라 별도 열림닫힘 JS 없이 동작함 */
   .settings-menu{ position:relative; }
+  /* 2026-08-12: 이 버튼(🌐)이 언어 변경 메뉴라는 걸 못 알아본다는 사용자 피드백 — 배경이
+     거의 안 보이는 옅은 tint(0.08 alpha)라 클릭 가능한 버튼처럼 안 보였던 게 원인으로 보임.
+     원형 채워진 teal 배경 + 그림자로 눈에 띄는 "누를 수 있는 칩"처럼 보이게 함 */
   .settings-toggle{
-    width:40px; height:40px; min-height:40px; flex:0 0 auto; border-radius:50%;
-    border:1px solid rgba(var(--teal-rgb),0.25); background:rgba(var(--teal-rgb),0.08);
-    font-size:17px; line-height:1; cursor:pointer; font-family:inherit;
+    width:42px; height:42px; min-height:42px; flex:0 0 auto; border-radius:50%;
+    border:none; background:var(--teal); box-shadow:0 3px 10px rgba(var(--teal-rgb),0.4);
+    font-size:18px; line-height:1; cursor:pointer; font-family:inherit;
     display:flex; align-items:center; justify-content:center; padding:0; list-style:none;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
   }
   .settings-toggle::-webkit-details-marker{ display:none; }
-  :root[data-theme="dark"] .settings-toggle{ border-color:var(--border); background:var(--chip-bg); }
+  .settings-toggle:active{ transform:scale(0.94); }
+  :root[data-theme="dark"] .settings-toggle{ box-shadow:0 3px 10px rgba(0,0,0,0.4); }
   .settings-panel{
     position:absolute; top:calc(100% + 8px); right:0; z-index:30; display:flex; flex-direction:column; gap:8px;
     background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px;
