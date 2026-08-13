@@ -121,12 +121,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260812-1">
+<link rel="stylesheet" href="styles.min.css?v=20260812-7">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260812-2" defer></script>
+<script src="script.min.js?v=20260812-3" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -573,7 +573,7 @@
           <summary class="panel-title-toggle" data-i18n="intro.panelTitle">👋 나는 어떤 경우일까요?</summary>
           <div class="intro-persona-list">
             <div class="intro-persona-row" id="realAbroadPersonaRow">
-              <p class="intro-persona-label" data-i18n="intro.realAbroadLabel">🌐 사는 나라를 골라서 바로 보기</p>
+              <p class="intro-persona-label" data-i18n="intro.realAbroadLabel">사는 나라를 골라서 바로 보기</p>
               <p class="intro-persona-action" data-i18n="intro.realAbroadHint">내 나라 기준으로 바로 보기</p>
               <div class="intro-lang-select-row">
                 <select class="intro-lang-select" id="realAbroadSelect" aria-label="국가 선택" data-i18n-aria-label="a11y.selectCountry">
@@ -607,11 +607,11 @@
               <p class="intro-persona-action is-link" data-i18n="intro.krAction">계산하러 가기 →</p>
             </a>
             <a class="intro-persona-row is-clickable" href="korean_abroad_us_lottery_tax_ko.html" id="introAbroadLink">
-              <p class="intro-persona-label" data-i18n="intro.abroadLabel">✈️ 해외에 살지만 한국 국적이에요</p>
+              <p class="intro-persona-label" data-i18n="intro.abroadLabel">해외에 살지만 한국 국적이에요</p>
               <p class="intro-persona-action is-link" data-i18n="intro.abroadAction">한국 세금 의무 알아보기 →</p>
             </a>
             <div class="intro-persona-row">
-              <p class="intro-persona-label" data-i18n="intro.foreignerLabel">🌏 한국에 사는 외국인이에요</p>
+              <p class="intro-persona-label" data-i18n="intro.foreignerLabel">한국에 사는 외국인이에요</p>
               <p class="intro-persona-action" data-i18n="intro.foreignerHint">이 언어로 바로 보기</p>
               <div class="intro-lang-select-row">
                 <select class="intro-lang-select" id="foreignerLangSelect" aria-label="언어 선택" data-i18n-aria-label="a11y.selectLanguage">
