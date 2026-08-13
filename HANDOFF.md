@@ -1678,3 +1678,38 @@ Playwright로 메가밀리언즈 게임 안내문(한/영)과 FAQ 게임 정보 
 `i18n-source/translations.json`/`i18n/*.json`(`faq.multiplierOption` 26개 언어
 재작성), `index.html`(한국어 인라인 텍스트 + 캐시버스팅 `20260807-4`→`20260808-2`),
 `sw.js`(`CACHE_NAME` v24→v25). 커밋 `19b250f`.
+
+### 2026-08-07/08 이어서 — "궁금해요" 플로팅 FAQ 버튼 완전 삭제 (PR #184, 머지 충돌 해결·배포 확인 완료)
+
+사용자가 스크린샷으로 이 플로팅 버튼을 보여주며 "헤더가 sticky로 같이 다니니까
+없어도 될 거 같은데 네 생각은 어때?" 질문. 확인해보니 헤더 "도움말"(탭 전체
+전환)과 이 버튼(`openFaqSearchFloat`, 현재 화면 유지한 채 오버레이+검색창 자동
+포커스)이 기능이 달라서 순수 시각적 중복은 아니라고 설명하고 유지를 권했으나,
+사용자가 "그래도 완전히 없애고 싶어"로 최종 결정 — 기능 차이를 감수하고 단순함을
+택함.
+
+- **구현 시 가장 조심한 부분**: 이 버튼의 텍스트 충돌 감지 헬퍼
+  `faqFloatBtnCollisionState`를 홈 탭 하단 `sticky-result-badge`("실수령 ○○원"
+  배지)도 재사용하고 있어서, 통째로 지우면 그 배지의 충돌 감지까지 같이 죽을
+  뻔했음 — `getFixedElementCollisionState`로 이름만 일반화해서 유지하고, 스크롤/
+  토글마다 재검사하던 배선도 FAQ 버튼 전용 로직(스크롤 방향 감지·show/hide)과
+  뒤섞여 있던 걸 sticky-result-badge에 필요한 부분만 뽑아
+  `setupStickyResultBadgeCollisionWatch()`로 재구성. `closeFaqOverlay()`/
+  `faq-overlay-mode`도 남김 — FAQ 검색창에서 다른 탭 키워드를 입력하면 자동
+  이동하는 기존 기능(`tryCrossTabSearchJump`)이 여전히 씀. `.view.on`의
+  `padding-bottom`(이 버튼 때문에 모든 탭에 140px 여백을 뒀던 것)은 90px로 축소.
+- **PR 머지 시 충돌 발생·해결**: 이 PR을 머지하려는 순간 다른 세션이 이미 main에
+  직접 병합해둔 메가밀리언즈 배수 문구 정정(19b250f, 바로 위 항목)과
+  `index.html`/`script.min.js`가 겹쳐서 GitHub가 자동 머지를 거부함 — `git merge
+  origin/main`으로 직접 병합, `index.html`의 `script.min.js` 캐시버스팅 충돌은
+  양쪽보다 높은 값으로 통일, `script.min.js`는 병합된 `script.js` 기준으로
+  재빌드(수동 병합 대신). Playwright로 두 세션의 변경사항(FAQ 버튼 삭제 + 배수
+  문구 정정)이 머지 후에도 전부 살아있는 것 확인.
+- **검증**: script.js 문법 검사·styles.css 중괄호 짝 검사·index.html HTML 파싱
+  전부 통과. Playwright로 (1) 버튼 요소 완전히 사라짐 (2) 결과 카드를 지나쳐
+  스크롤하면 sticky-result-badge가 정상 표시 (3) 텍스트와 겹치는 위치까지
+  스크롤하면 `is-colliding`이 정상적으로 붙어 흐려짐(충돌 감지 배선이 안
+  끊겼음을 확인) 전부 확인. 회귀 테스트 `console_error_audit`(161)·
+  `home_audit`(18)·`wrap_audit`(168)·`audit_odds_compare`(40) 전부 ISSUES:0.
+- **머지·배포 확인 완료**: PR #184 머지 후 `curl`로 라이브 `chamtax.com/index.html`에서
+  `faqFloatWrap` 문자열이 완전히 사라진 것 확인.
