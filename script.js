@@ -2119,6 +2119,7 @@ function go(view){
     applyJackpotData();
     updateDrawCountdown();
     setupStickyResultBadge();
+    setupHomeFinalAmtTiles();
   } else {
     // 홈이 아닌 다른 탭으로 이동하면, IntersectionObserver 콜백이 아직 안 돌았어도
     // 즉시 숨겨서 다른 화면에 실수령액 배지가 잠깐이라도 겹쳐 보이지 않게 함
@@ -8613,6 +8614,60 @@ function scrollToMainResult(){
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
+// 2026-08-13: "정산 티켓" 컨셉 갭 1 — 슬롯머신 스타일 숫자 타일(핸드오프 문서의 digitTile).
+// #home-final-amt는 animateValueChange()의 requestAnimationFrame 카운트업을 포함해 여러
+// 호출부가 직접 textContent/dataset.eokVal을 쓰므로, 그 쓰기 로직은 절대 안 건드리고
+// MutationObserver로 값이 바뀔 때마다 순수 표시용 타일 행(#home-final-amt-tiles)만 다시
+// 그림 — 바로 위 setupStickyResultBadge()의 미러링과 같은 패턴(8608줄) 재사용.
+// 숫자(0-9)만 개별 박스(.home-final-amt-tile)에 담고, 그 외 모든 문자(쉼표·마침표·공백·
+// "억원"/"million" 같은 단위 텍스트)는 핸드오프 문서의 digitComma 취급을 일반화해서
+// .home-final-amt-plain(얇은 텍스트)로 흘려보냄 — 핸드오프 문서는 숫자만 있는 문자열을
+// 가정했지만 formatWon()류는 숫자+단위가 한 텍스트 노드에 섞여 있어서 그대로 옮기면 안 됨.
+function renderHomeFinalAmtTiles(){
+  const source = document.getElementById('home-final-amt');
+  const tilesEl = document.getElementById('home-final-amt-tiles');
+  if (!source || !tilesEl) return;
+  const text = source.textContent || '';
+  const frag = document.createDocumentFragment();
+  // 2026-08-13 후속: 문자 하나하나를 각각 별도 flex 아이템으로 만들면 "million"/"억원" 같은
+  // 단위 텍스트도 글자 사이마다 flex gap(5px)이 끼고, 좁은 화면에서 단어 중간("mil"/"lion")
+  // 에서 줄바꿈되는 실제 렌더링 버그가 있었음(Playwright로 재현 확인) — 숫자가 아닌 문자는
+  // 연속된 구간을 하나의 span으로 묶어서 한 단어가 항상 통째로 붙어있게(줄바꿈은 구간 경계
+  // 에서만 일어나게) 함.
+  let plainBuf = '';
+  const flushPlain = () => {
+    if (!plainBuf) return;
+    const span = document.createElement('span');
+    span.className = 'home-final-amt-plain';
+    span.textContent = plainBuf;
+    frag.appendChild(span);
+    plainBuf = '';
+  };
+  for (const ch of text) {
+    if (ch >= '0' && ch <= '9') {
+      flushPlain();
+      const span = document.createElement('span');
+      span.className = 'home-final-amt-tile';
+      span.textContent = ch;
+      frag.appendChild(span);
+    } else {
+      plainBuf += ch;
+    }
+  }
+  flushPlain();
+  tilesEl.replaceChildren(frag);
+}
+let _homeFinalAmtTilesObserver = null;
+function setupHomeFinalAmtTiles(){
+  const source = document.getElementById('home-final-amt');
+  const tilesEl = document.getElementById('home-final-amt-tiles');
+  if (!source || !tilesEl || tilesEl.dataset.bound) return;
+  tilesEl.dataset.bound = '1';
+  renderHomeFinalAmtTiles();
+  _homeFinalAmtTilesObserver = new MutationObserver(renderHomeFinalAmtTiles);
+  _homeFinalAmtTilesObserver.observe(source, { childList: true, characterData: true, subtree: true });
+}
+
 // 2026-07-25: 로드 직후 안 보이게만 해서는 부족했음 — 사용자가 스크린샷으로 재확인, 스크롤
 // 후 자연스럽게 멈춘 위치에서도 이 버튼이 확률체감 탭의 "일시불 대신 연금으로 받으면?" 문구나
 // 잭팟 단계별 금액 위에 그대로 얹히는 경우가 있었음. 스크롤 임계값만으로는 "화면에 보일지"는
@@ -9329,7 +9384,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 반드시 같은 값을 명시적으로 넘겨서 어느 쪽이 나중에 불려도 항상 같은 기본값으로 맞춰지게 함
   const defaultStartUsd = getJackpotCashUsd('powerball');
   updateHomeCalc(defaultStartUsd); updateCalc(defaultStartUsd);
-  initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); renderFilingDday(); setupStickyResultBadgeCollisionWatch(); adjustNavIconVisibility();
+  initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); setupHomeFinalAmtTiles(); renderFilingDday(); setupStickyResultBadgeCollisionWatch(); adjustNavIconVisibility();
 });
 
 // 다른 페이지(korea-resident-us-lottery-tax.html 등)에서 "index.html#faq"처럼 해시가 붙은 링크로
@@ -12527,6 +12582,18 @@ function updateHomeCalc(usdOverride){
     homeResultFirstRender = false;
   } else {
     animateValueChange(finalEl, prevVal, final, '억원', 1, 250, () => fitAmountFontSize(finalEl));
+  }
+  // 2026-08-13: "정산 티켓" 컨셉 갭 2 — 바코드 캡션(순수 장식, aria-hidden). 새 상태 없이
+  // 이 함수가 이미 계산해둔 usd(원본 당첨금, 달러)·final(실수령액, 억원)·EXCHANGE_RATE를
+  // 그대로 재사용함. 핸드오프 문서(index.dc.html 432줄)의 amount/takeHome이 "M USD" 단위라,
+  // 억원인 final을 위 12390번째 줄 "억 = usd*EXCHANGE_RATE/1e8" 계산의 역산으로 다시
+  // USD 백만 단위로 환산. barcodeNum은 실제 바코드 번호가 아니라 순수 플레이버 텍스트.
+  const barcodeCaptionEl = document.getElementById('home-barcode-caption');
+  if (barcodeCaptionEl) {
+    const amountUsdM = usd / 1000000;
+    const takeHomeUsdM = final * 100 / EXCHANGE_RATE;
+    const barcodeNum = `${Math.round(amountUsdM * 10)} 0000 ${Math.round(takeHomeUsdM * 10)}`;
+    barcodeCaptionEl.textContent = `US ${EXCHANGE_RATE.toFixed(1)} · ${barcodeNum}`;
   }
   const miniEl = document.getElementById('live-result-mini-amt');
   if (miniEl) miniEl.textContent = formatEokKrwInDisplayCurrency(final, sharedInputCurrency); // 희망액 탭도 공용 통화 선택기를 따름

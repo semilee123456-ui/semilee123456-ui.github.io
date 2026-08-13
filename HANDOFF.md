@@ -1749,3 +1749,117 @@ FAQ 탭까지 확산함 — `index.html` 전체가 이제 하나의 일관된 �
    `home-final-amt`가 `animateValueChange()`/여러 호출부에서 직접 textContent를
    갱신하므로, 타일화하려면 MutationObserver 기반 안전한 재구현 방법을 먼저
    설계해야 함.
+
+### 2026-08-13 이어서 — 디자인팀 원본 핸드오프 대비 결과 카드 남은 갭 3건 마무리 (PR #198/199/200 이후, 신규 브랜치)
+
+이전 세션이 PR #198/199/200으로 "정산 티켓" 리디자인을 홈 화면 전체(헤더·비교·확률·FAQ
+탭 포함)에 반영·머지·배포까지 끝냈지만, 원본 디자인팀 레퍼런스(`index.dc.html`)와 라이브
+결과 카드(`.result-hero`)를 다시 대조해보니 구현 안 된 갭 3건이 남아있었음(위 "다음 세션
+후보" 3번이 그중 하나) — 이번 세션이 그 3건을 전부 마무리함. 범위는 이전과 동일하게
+`index.html`만(90개 랜딩페이지·저장 이미지 캔버스·계산 로직·id·data-i18n 키는 전혀 안
+건드림).
+
+**갭 1 — 결과 숫자 슬롯머신 타일화(가장 위험한 항목)**: `#home-final-amt`는
+`animateValueChange()`의 `requestAnimationFrame` 카운트업, `fitAmountFontSize()`의
+`scrollWidth` 측정, `dataset.eokVal`을 읽는 호출부(희망액 탭 미리보기 등) 등 10여 곳이
+직접 이 요소의 textContent/dataset을 읽고 쓰고 있어서, 구조를 바꾸면 그 호출부들이 조용히
+깨질 위험이 컸음. 그래서 `#home-final-amt` 자체는 완전히 그대로 두고(`.sr-only`로
+시각적으로만 숨김 — `display:none`이 아니라서 `fitAmountFontSize()`의 `scrollWidth`
+측정도, `role="status" aria-live="polite"`도 그대로 동작함, 실측으로 `display:block`
+유지되는 것 확인), 옆에 순수 표시용 `#home-final-amt-tiles`를 새로 두고
+`MutationObserver`(`childList`/`characterData`/`subtree`)로 `#home-final-amt` 텍스트가
+바뀔 때마다 다시 그리는 방식으로 구현(이전 세션이 남긴 "MutationObserver 기반 안전한
+재구현" 권고 그대로 따름, `setupStickyResultBadge()`의 기존 미러링 패턴 재사용).
+
+숫자(0-9)만 개별 박스(`.home-final-amt-tile`, 하드 테두리+오프셋 그림자, 값 바뀔 때
+`digitPop` 0.3s 팝 애니메이션)에 담고, 그 외 모든 문자(쉼표·마침표·공백·"억원"/"million"
+같은 단위 텍스트)는 얇은 텍스트(`.home-final-amt-plain`)로 흘려보냄 — 핸드오프 문서는
+`.`/`,`만 plain 취급했는데(숫자만 있는 문자열을 가정), 이 코드베이스의 `formatWon()`류는
+"1조 1,218억원"처럼 숫자 사이에 단위 문자가 섞여 나올 수 있어서 그 규칙을 일반화한 것 —
+Playwright로 억/조 단위 큰 금액을 직접 타이핑해 "2조 6,751억원"처럼 단위가 중간에 낀
+케이스까지 실제로 확인함.
+
+**갭 2 — 바코드 캡션**: 바코드(`.ticket-barcode`, 기존 구현) 밑에 "US {환율} · {시리얼}"
+캡션 추가(`index.dc.html` 191·383줄 형식). 새 상태 없이 `updateHomeCalc()`이 이미 계산해둔
+`usd`(원본 당첨금, 달러)·`final`(실수령액, 억원)·`EXCHANGE_RATE`를 그대로 재사용해서 채움 —
+"시리얼 번호"는 실제 바코드 값이 아니라 순수 플레이버 텍스트. 디자인 문서의 11px는 이 세션
+계열이 계속 지켜온 접근성 최소 폰트(16px) 하한에 맞춰 올림(리본 텍스트 등 기존 처리와
+동일한 판단 기준).
+
+**갭 3 — 공유/저장 버튼 아이콘 + primary/ghost 순서**: 라이브는 "공유하기"가 채움(primary)/
+"저장"이 아웃라인(ghost)이었는데, 핸드오프 문서(`index.dc.html` 194-195줄)를 다시 보니
+반대(공유=ghost, 저장=primary)였음 — id·onclick·data-i18n 키는 그대로 두고 CSS 선언만
+맞바꿈. 이모지(📡/🎉)는 다른 곳(`.lightning-game-btn`의 🔴/🟡)과 같은 관례로 번역 문자열엔
+안 섞고 별도 `<span class="btn-emoji" aria-hidden="true">`로 추가.
+
+이 갭 3을 고치다가 **새 회귀를 하나 만들었다가 그 자리에서 잡음**: 이모지가 차지하는
+폭(+flex gap)만큼 라벨(span)이 쓸 수 있는 폭이 줄면서, 한국어 전역 `word-break:keep-all`
+때문에 "이미지로" 같은 4음절 단어가 360px 이하 좁은 화면에서 버튼 밖으로 삐져나가는 걸
+Playwright 실측(240~390px 스윕, baseline과 diff)으로 발견함. `overflow-wrap:break-word`로
+강제로 끊는 방법을 먼저 시도했으나 "이"/"미"/"지"/"로" 한 글자씩 줄바꿈되는 결과라(과거
+잭팟 퀵필 버튼에서 겪은 것과 같은 "안 넘치지만 못생긴 줄바꿈" 부류, 스크린샷으로 확인 후
+기각) — 대신 그 폭에서만 장식용 이모지를 숨겨서(`.btn-emoji`, `aria-hidden`이라 스크린리더
+영향 없음) 라벨이 이모지 추가 전 폭을 그대로 되찾아 기존 keep-all 줄바꿈(단어 단위 2줄)이
+유지되게 함. 240/260px에서 남는 미세한 내부 오버플로(약 5~10px)는 이모지 추가 전
+베이스라인에도 정확히 같은 수치로 이미 있던 것으로 확인됨(같은 테스트로 재현) — 이번
+세션이 새로 만든 문제가 아니라 손 안 댐.
+
+**검증**: `node --check` script.js/script.min.js, `home_audit`(18)·
+`console_error_audit`(161)·`i18n_coverage_audit`(769)·`wrap_audit`(168) 전부 `ISSUES:0`,
+`full_overflow_sweep`(945)는 기존에 알려진 우크라이나어/키르기스어 페르소나 카드 5건과
+정확히 같은 건수만 남음(신규 회귀 없음, 이전 세션이 확인한 베이스라인과 동일). Playwright로
+라이트/다크·한국어/영어·240~430px 스크린샷 다수 확인, `prefers-reduced-motion:reduce`
+환경에서 신규 `ticket-digit-pop` 애니메이션이 `animation-name:none`으로 비활성화되는 것도
+확인(일반 환경에선 `animation-name:ticket-digit-pop` 정상 적용). 기능 스모크 테스트로
+타이핑·슬라이더 드래그·잭팟 퀵필 클릭·언어 전환·통화 전환 각각에서 타일이
+`#home-final-amt`와 항상 일치함을 확인, `#home-final-amt`의 기존 텍스트 리더 두 곳
+(`share-text` 생성부, `#tax-impact-before`)도 회귀 없음을 스팟체크로 확인.
+
+**커밋 2개로 나눠 진행**(갭 1 / 갭 2+3, 각각 최소 코드 리뷰 가능한 단위로 분리):
+1. `정산 티켓 결과 카드 — 슬롯머신 숫자 타일 추가 (핸드오프 갭 1)`
+2. `정산 티켓 결과 카드 — 바코드 캡션 + 공유/저장 버튼 아이콘·순서 수정 (핸드오프 갭 2·3)`
+
+변경 파일: `index.html`(타일/바코드 캡션 마크업, 버튼 이모지+주석, 캐시버스팅),
+`styles.css`(`.home-final-amt-tiles`/`.home-final-amt-tile`/`.home-final-amt-plain`/
+`ticket-digit-pop` 키프레임, `.ticket-barcode-caption`, `.btn-emoji` 좁은화면 규칙,
+`#home-share-btn`/`#home-save-image-btn` 선언 맞바꿈, 재빌드), `script.js`
+(`renderHomeFinalAmtTiles()`/`setupHomeFinalAmtTiles()` 신규, `go(view)`와
+`DOMContentLoaded` 두 곳에서 호출, `updateHomeCalc()`에 바코드 캡션 갱신 블록 추가),
+`script.min.js`/`styles.min.css`(재빌드), `sw.js`(`CACHE_NAME` v36→v37), `index.html`
+캐시버스팅(`styles.min.css?v` `20260813-11`→`20260813-12`, `script.min.js?v`
+`20260813-1`→`20260813-2`).
+
+**아직 머지 전 — `claude/handover-github-latest-guu7gj` 브랜치에 푸시만 완료.** PR 생성은
+별도로 처리될 예정. 다음 세션 후보는 위 "다음 세션 후보" 1·2번(저장 이미지 캔버스 톤 일치
+여부 사용자와 논의, 90개 랜딩페이지 확산)이 그대로 남아있음 — 이번 세션이 다룬 3번(슬롯머신
+타일화)은 완료로 갱신.
+
+### 2026-08-13 이어서 — 슬롯머신 숫자 타일 단어 중간 줄바꿈 버그 수정 (같은 브랜치, 머지 직전 발견)
+
+위 커밋들을 머지하기 전 직접 재검증하다가 발견: `renderHomeFinalAmtTiles()`가
+`for (const ch of text)`로 **문자 하나하나**를 각각 별도 `<span>`(flex 아이템)으로
+만들어서, "million"/"억원"처럼 숫자가 아닌 문자가 여러 개 연속될 때도 글자마다
+독립된 flex 아이템이 됐음 — `.home-final-amt-tiles`의 `gap:5px`가 글자 사이마다
+끼어들어 보기 이상했던 것은 물론, `flex-wrap:wrap`이 그 글자 경계 어디서든 줄을
+바꿀 수 있어서 영어 420/320/240px 폭에서 "million"이 "mil"+"lion"처럼 **단어 중간에서
+줄바꿈**되는 실제 버그가 있었음(Playwright로 재현, 서브에이전트가 직접 남긴 스크린샷
+`light_en_420.png` 등에도 이미 찍혀있었는데 검증 과정에서 놓친 것으로 보임). 이 세션
+초반에 잭팟 퀵필 버튼에서 났던 것과 같은 종류의 버그(안 튀어나가지만 읽기 힘들게
+쪼개지는 줄바꿈 — overflow 계열 자동 감사로는 못 잡음).
+
+수정: 숫자가 아닌 문자를 만나면 즉시 span으로 안 만들고 버퍼에 모았다가, 숫자를
+만나거나 문자열이 끝날 때 그 버퍼 전체를 **하나의** `.home-final-amt-plain` span으로
+flush하도록 변경(`flushPlain()` 헬퍼 추가) — "million" 전체가 항상 하나의 flex
+아이템으로 붙어있어서 단어 중간에서 줄바꿈될 수 없음. 숫자 타일 쪽 로직은 그대로.
+
+**검증**: 영어 420/320/240px 재스크린샷으로 "million"이 더 이상 안 쪼개짐을 직접
+확인(240px에서는 타일 다음 줄로 통째로 넘어가는 정상적인 단어 단위 줄바꿈만 발생).
+`home_audit`(18)/`console_error_audit`(161)/`i18n_coverage_audit`(769) 전부
+`ISSUES:0` 재확인. `node --check script.js` 통과.
+
+변경 파일: `script.js`(`renderHomeFinalAmtTiles()` 버퍼링 로직), `script.min.js`
+(재빌드), `sw.js`(`CACHE_NAME` v37→v38), `index.html`(캐시버스팅 `script.min.js?v`
+`20260813-2`→`20260813-3`). `styles.css`는 이번엔 변경 없음.
+
+**이 시점에 PR 생성 + 머지 + 배포 확인까지 진행** — 사용자가 "디자인팀에서 받은 거
+전부 다 수정해서 머지해서 올려줘"라고 명시적으로 요청함.

@@ -125,12 +125,12 @@
      요청과 한 URL로 합쳐서 추가 요청 없이 확장 -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260813-11">
+<link rel="stylesheet" href="styles.min.css?v=20260813-12">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260813-1" defer></script>
+<script src="script.min.js?v=20260813-3" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -982,7 +982,16 @@
             <span class="result-seal" aria-hidden="true">참</span>
             <p class="announced-convert-note" id="home-announced-convert-note" style="display:none;"></p>
             <h2 class="result-hero-label" data-i18n="result.label">일시불 예상 실수령액</h2>
-            <p class="result-hero-amt" id="home-final-amt" role="status" aria-live="polite">805억원</p>
+            <!-- 2026-08-13: "정산 티켓" 컨셉 갭 1 — 슬롯머신 스타일 숫자 타일. #home-final-amt
+                 자체는 animateValueChange()/fitAmountFontSize() 등 script.js의 10여 곳이 직접
+                 textContent·dataset.eokVal을 읽고 쓰므로 구조·기존 갱신 로직을 전혀 안 건드리고
+                 그대로 둠(.sr-only로 시각적으로만 숨김 — display:none이 아니라 스크린리더
+                 role=status/aria-live는 계속 동작, fitAmountFontSize()의 scrollWidth 측정도
+                 요소가 실제 레이아웃 박스를 가져야 해서 유지됨). 바로 옆 #home-final-amt-tiles가
+                 순수 표시용 타일이고, 값은 MutationObserver로 #home-final-amt를 미러링해서
+                 채움(setupHomeFinalAmtTiles(), script.js) — 8551번 줄 스티키 배지와 같은 패턴. -->
+            <p class="result-hero-amt sr-only" id="home-final-amt" role="status" aria-live="polite">805억원</p>
+            <div class="home-final-amt-tiles" id="home-final-amt-tiles" aria-hidden="true"></div>
             <div class="tax-impact-compact">
               <span class="tax-impact-before-line"><span class="tax-impact-strike" data-i18n="home.taxBefore">세전</span> <span class="tax-impact-strike" id="tax-impact-before">-</span></span>
               <span class="tax-impact-arrow">→</span>
@@ -1035,10 +1044,25 @@
             <div class="ticket-perf-row" aria-hidden="true"></div>
             <div class="ticket-perf-line" aria-hidden="true"></div>
             <div class="ticket-barcode" aria-hidden="true"></div>
+            <!-- 2026-08-13: "정산 티켓" 컨셉 갭 2 — 바코드 캡션. 순수 장식 텍스트(실제 바코드
+                 번호 아님, 환율+금액에서 만든 "시리얼" 느낌), 새 상태 없이 updateHomeCalc()의
+                 기존 usd/final/EXCHANGE_RATE를 그대로 재사용해서 채움(script.js 참고).
+                 디자인 문서는 11px인데 이 사이트 접근성 최소 폰트(16px) 하한에 맞춰 올림. -->
+            <p class="ticket-barcode-caption" id="home-barcode-caption" aria-hidden="true"></p>
             <div class="home-result-btn-row">
               <button type="button" class="share-btn tts-btn tts-btn-icon" id="homeResultTtsBtn" onclick="readHomeResultAloud(this)" style="display:none;" aria-label="읽어주기" data-i18n-aria-label="a11y.readAloudBtn">🔊</button>
-              <button type="button" class="share-btn" id="home-share-btn" onclick="shareResult()" data-i18n="home.shareDreamBtn">이 결과 공유하기</button>
-              <button type="button" class="share-btn" id="home-save-image-btn" onclick="saveHomeResultAsImage()" data-i18n="home.saveImageBtn">이미지로 저장</button>
+              <!-- 2026-08-13: "정산 티켓" 컨셉 갭 3 — 이모지는 다른 곳(예: .lightning-game-btn의
+                   🔴/🟡)과 같은 관례대로 번역 문자열엔 안 섞고 data-i18n은 라벨에만 둠(26개
+                   언어 문자열에 이모지를 직접 박지 않음). 여기선 .btn-emoji span으로 한 번 더
+                   감쌌는데(다른 곳처럼 맨 텍스트로 안 둠), 360px 이하 좁은 화면에서 이 이모지가
+                   차지하는 폭 때문에 "이미지로 저장" 라벨이 버튼 밖으로 삐져나가는 회귀가
+                   실측으로 확인돼서 그 폭에서만 숨길 수 있는 CSS 타깃이 필요했음(styles.css의
+                   .btn-emoji 규칙 참고, aria-hidden이라 스크린리더엔 원래도 안 읽힘).
+                   ghost/primary는 아래 styles.css에서 #home-share-btn/#home-save-image-btn
+                   규칙을 맞바꿔서 반영(공유=ghost, 저장=primary) — id·onclick·data-i18n 키는
+                   그대로. -->
+              <button type="button" class="share-btn" id="home-share-btn" onclick="shareResult()"><span class="btn-emoji" aria-hidden="true">📡</span> <span data-i18n="home.shareDreamBtn">이 결과 공유하기</span></button>
+              <button type="button" class="share-btn" id="home-save-image-btn" onclick="saveHomeResultAsImage()"><span class="btn-emoji" aria-hidden="true">🎉</span> <span data-i18n="home.saveImageBtn">이미지로 저장</span></button>
             </div>
           </div>
 

@@ -1459,6 +1459,14 @@
       var(--text-dark) 11px 14px, transparent 14px 17px,
       var(--text-dark) 17px 19px, transparent 19px 24px);
   }
+  /* 2026-08-13: "정산 티켓" 컨셉 갭 2 — 바코드 밑 캡션. 핸드오프 문서(index.dc.html 191·
+     383줄)는 "US {rate} · {barcodeNum}" 형식의 11px 캡션인데, 접근성 최소 폰트(16px) 하한에
+     맞춰 올림 — 대신 letter-spacing/모노스페이스로 "작은 인쇄물" 느낌을 유지. 값은
+     updateHomeCalc()이 채움(script.js, 순수 장식용 텍스트라 실제 바코드 번호 아님) */
+  .ticket-barcode-caption{
+    text-align:center; font-size:16px; color:var(--text-muted); letter-spacing:0.08em;
+    font-family:var(--font-mono-ticket); margin:0 0 18px; font-variant-numeric:tabular-nums;
+  }
   /* 시그니처 요소 — "참"(眞, 진짜·검증됨)의 뜻을 담은 도장 마크.
      한국 전통 인감도장처럼, 이 결과가 근거 있게 계산된 값이라는 걸 시각적으로 표현함.
      2026-08-13: float 배치를 절대위치 배지로 바꿔서(핸드오프 문서의 stampBadge) 텍스트
@@ -1531,6 +1539,40 @@
        숫자 0-9/쉼표/마침표 글리프를 지원해서 var(--font-mono-ticket) 맨 앞에 씀(2026-08-13
        리디자인) — 없으면 기존 시스템 고정폭 스택으로 폴백. */
     font-family:var(--font-mono-ticket);
+  }
+  /* 2026-08-13: "정산 티켓" 컨셉 갭 1 — 슬롯머신 스타일 숫자 타일(핸드오프 문서 index.dc.html
+     168·365-367줄, digitTile/digitComma). #home-final-amt(위, .sr-only로 시각적으로만 숨김)는
+     그대로 두고 이 행이 실제로 보이는 표시용 사본 — script.js의 renderHomeFinalAmtTiles()가
+     #home-final-amt 텍스트가 바뀔 때마다(MutationObserver) 이 안을 다시 채움.
+     핸드오프 문서는 숫자만 있는 문자열을 가정해서 "."/","만 plain 처리했지만, 이 코드베이스의
+     formatWon()류는 "1조 1,218억원"처럼 숫자 사이에 단위 문자가 섞여 나올 수 있어서 그 규칙을
+     일반화함 — 0-9만 타일(.home-final-amt-tile)이 되고, 그 외 모든 문자(쉼표·마침표·공백·
+     "억원"/"million" 등 단위 전부)는 digitComma와 같은 취급(.home-final-amt-plain)으로 얇게
+     흘려보냄. flex-wrap은 핸드오프 문서의 digitsRow(flexWrap:'wrap', gap:5px)를 그대로 재사용
+     — 240~320px 좁은 화면에서 타일이 넘치는 대신 자연스럽게 다음 줄로 감싸지도록 함(narrow
+     sweep으로 실측 확인, HANDOFF.md 참고). */
+  .home-final-amt-tiles{
+    display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:center; gap:5px;
+    margin:4px 0 6px;
+  }
+  .home-final-amt-tile{
+    min-width:26px; padding:4px 6px; text-align:center;
+    border:2.5px solid var(--navy); border-radius:8px; background:var(--card);
+    box-shadow:var(--ticket-shadow-hard-xs);
+    font-size:26px; font-size:clamp(22px, 7.2vw, 28px); font-weight:800; line-height:1.15;
+    font-family:var(--font-mono-ticket); color:var(--teal);
+    animation:ticket-digit-pop 0.3s ease;
+  }
+  .home-final-amt-plain{
+    font-size:26px; font-size:clamp(20px, 6.6vw, 28px); font-weight:800; color:var(--text-muted);
+    font-family:var(--font-mono-ticket); align-self:flex-end; padding-bottom:6px; white-space:pre;
+  }
+  @keyframes ticket-digit-pop{
+    0%{ transform:scale(1.15) translateY(-3px); }
+    100%{ transform:scale(1) translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .home-final-amt-tile{ animation:none; }
   }
   .result-meta-group{ margin-top:16px; padding-top:10px; border-top:1px dashed rgba(var(--ink-rgb),0.12); display:flex; flex-direction:column; align-items:center; gap:7px; }
   .result-hero-basis-mini{ font-size:16px; color:var(--text-muted); opacity:0.85; margin:0; }
@@ -2934,27 +2976,43 @@
   /* 2026-08-13: "정산 티켓" 컨셉 — 카드 반경(16px) 계열에 맞춰 알약형(999px) 대신 티켓
      탭처럼 둥근 사각형으로 통일 */
   .home-result-btn-row .share-btn{ flex:1; min-width:0; margin-top:0; border-radius:11px; }
+  /* 2026-08-13: "정산 티켓" 컨셉 갭 3 — 이모지 접두사(📡/🎉)를 추가하면서 라벨(span)이 가져갈
+     수 있는 폭이 이모지 글리프+gap만큼 줄어듦. 한국어는 html[lang="ko"] body의 전역
+     word-break:keep-all 때문에 "이미지로" 같은 4음절 단어가 중간에서 안 끊기는데, 이 좁은
+     3버튼 줄(TTS 아이콘 44px 고정+텍스트 버튼 2개)이 360px 이하에서 라벨이 버튼 밖으로
+     삐져나가는 회귀가 실측(Playwright, 240~355px 스윕)으로 확인됨. overflow-wrap:break-word로 강제로 끊는
+     방법도 시도했으나 "이","미","지","로"처럼 한 글자씩 줄바꿈되는 더 나쁜 결과(전에 잭팟
+     퀵필 버튼에서 겪은 것과 같은 "안 넘치지만 못생긴 줄바꿈" 부류)라 기각 — 대신 이 폭에서만
+     장식용 이모지를 숨겨서 라벨이 원래(이모지 추가 전) 폭을 그대로 되찾아 기존 keep-all
+     줄바꿈(단어 단위 2줄)이 그대로 유지되게 함. 스크린리더는 원래 이모지가 aria-hidden이라
+     영향 없음. */
+  @media (max-width:360px){
+    .home-result-btn-row .share-btn .btn-emoji{ display:none; }
+  }
   /* 2026-08-12: 두 버튼이 시각적으로 동급(연한 민트 배경 + 테두리 없음)이라 뭘 먼저 눌러야
-     할지 구분이 안 됐음 — "공유하기"는 채운(primary) 색으로 강조하고 "이미지로 저장"은 아웃라인
-     (secondary)으로 낮춰서 핀테크 앱 CTA 위계를 줌. .copied 상태(복사 완료 시 진한 배경으로
-     바뀌는 기존 로직)는 두 버튼 다 그대로 유지되므로 별도 처리 안 함. */
+     할지 구분이 안 됐음 — 채운(primary) 색 하나와 아웃라인(secondary/ghost) 하나로 나눠서
+     핀테크 앱 CTA 위계를 줌. .copied 상태(복사 완료 시 진한 배경으로 바뀌는 기존 로직)는
+     두 버튼 다 그대로 유지되므로 별도 처리 안 함. */
   /* 2026-08-13: "정산 티켓" 컨셉 — 두 버튼 다 하드 테두리+눌리는 그림자 인터랙션(핸드오프
      문서의 ctaPrimary/ctaGhost). id 스코프라 다른 화면의 .share-btn(공용 클래스, 여러
      곳에서 재사용)엔 영향 없음 */
+  /* 2026-08-13 이어서: 핸드오프 문서(index.dc.html 194-195줄)를 다시 보니 "공유하기"가
+     ctaGhost(아웃라인), "이미지로 저장"이 ctaPrimary(채움)로 이번 세션 전까지의 배치와
+     반대였음 — id는 그대로 두고 아래 두 규칙의 선언만 맞바꿈(공유=ghost, 저장=primary) */
   #home-share-btn{
-    background:var(--teal); color:var(--on-accent); border:2.5px solid var(--navy);
-    box-shadow:var(--ticket-shadow-hard-sm); transition:transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
-  }
-  #home-share-btn:hover{ background:var(--teal); opacity:0.92; }
-  #home-share-btn:active{ transform:translate(2px,2px); box-shadow:none; }
-  #home-save-image-btn{
     background:transparent; border:2.5px solid var(--navy); color:var(--text-dark);
     transition:transform 0.12s ease, box-shadow 0.12s ease;
   }
   @media (hover:hover){
-    #home-save-image-btn:hover{ transform:translate(-1px,-1px); box-shadow:var(--ticket-shadow-hard-xs); }
+    #home-share-btn:hover{ transform:translate(-1px,-1px); box-shadow:var(--ticket-shadow-hard-xs); }
   }
-  #home-save-image-btn:active{ transform:translate(1px,1px); box-shadow:none; }
+  #home-share-btn:active{ transform:translate(1px,1px); box-shadow:none; }
+  #home-save-image-btn{
+    background:var(--teal); color:var(--on-accent); border:2.5px solid var(--navy);
+    box-shadow:var(--ticket-shadow-hard-sm); transition:transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
+  }
+  #home-save-image-btn:hover{ background:var(--teal); opacity:0.92; }
+  #home-save-image-btn:active{ transform:translate(2px,2px); box-shadow:none; }
   /* 2026-07-31: 읽어주기 버튼을 텍스트 없이 아이콘만 있는 작은 정사각형으로 — 공유하기/저장하기와
      같은 폭으로 3등분하면 "이 결과 공유하기"가 줄바꿈으로 깨지는 문제가 실제로 확인돼서, 이
      버튼만 flex:1 대신 고정 폭을 줌(다른 두 버튼은 그대로 폭을 나눠 가짐) */
