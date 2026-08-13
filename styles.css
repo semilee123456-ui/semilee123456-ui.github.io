@@ -1189,15 +1189,20 @@
     100%{ transform:translateY(120px) rotate(360deg); opacity:0; }
   }
   .confetti-piece{
-    position:absolute; width:8px; height:8px; border-radius:2px; pointer-events:none; z-index:999;
+    position:absolute; width:8px; height:8px; border-radius:2px; pointer-events:none; z-index:2300;
     animation:confetti-fall 0.9s ease-out forwards;
   }
   /* 2026-07-29: 색종이 사각 조각 대신, 고른 카드의 이모지(🕊️/🏠/✈️/💼)가 떨어지는 버전
      (사용자 요청 — "재미로 보기" 섹션을 더 재밌게). 같은 낙하 키프레임 재사용 */
   .confetti-emoji{
-    position:absolute; font-size:22px; line-height:1; pointer-events:none; z-index:999;
+    position:absolute; font-size:22px; line-height:1; pointer-events:none; z-index:2300;
     animation:confetti-fall 0.9s ease-out forwards;
   }
+  /* 2026-08-13: z-index 999→2300 — 결과 카드 공유/저장 버튼(fireConfettiBurst 재사용)을
+     누르면 바로 다음 줄에서 .annotate-overlay(z-index:2200) 모달이 동기적으로 열려서,
+     999로는 컨페티가 모달 뒤에 완전히 가려져 하나도 안 보이는 버그가 있었음(코드 리뷰로
+     발견) — 모달보다 위에 그려지게 올림. 다른 호출부(dream-result, 모달 없음)엔 그냥
+     "항상 맨 위"라 영향 없음 */
   @media (prefers-reduced-motion: reduce){
     .confetti-piece, .confetti-emoji{ display:none; }
   }
@@ -1333,6 +1338,12 @@
     position:relative; overflow:hidden;
     background:var(--card);
     border:2.5px solid var(--navy);
+    /* 2026-08-13: 코드 리뷰로 발견 — border shorthand가 아래쪽에도 그대로 적용돼서, 바로
+       아래 .ticket-torn-bottom(스캘럽 마스크로 찢어진 가장자리를 표현)이 그 위에 얹혀도
+       바로 밑에 곧은 남색 테두리 선이 그대로 남아 "찢어진 느낌"을 깨고 있었음 — 아래쪽만
+       테두리를 없애서 스캘럽 자체가 실제 가장자리가 되게 함(양옆 테두리는 그대로 내려와
+       찢어진 부분에서만 뚝 끊기는 게 더 실물 영수증에 가까움) */
+    border-bottom:none;
     border-radius:22px 22px 0 0;
     box-shadow:var(--ticket-shadow-hard);
     margin:16px 0 0;
@@ -1419,9 +1430,11 @@
      추가(순수 CSS, prefers-reduced-motion에서 자동 정지) */
   .result-seal{
     position:absolute; top:14px; right:18px; z-index:1;
-    width:40px; height:40px; border-radius:50%;
+    width:42px; height:42px; border-radius:50%;
     border:2px solid var(--gold); display:flex; align-items:center; justify-content:center;
-    font-size:15px; font-weight:800; color:var(--gold); letter-spacing:-0.02em;
+    /* 2026-08-13: 15px였던 걸 16px(접근성 최소 폰트 --fs-small 하한)로 수정 — 코드 리뷰로
+       발견, 이 세션의 다른 모든 텍스트는 16px 이상으로 올려놓고 이 배지만 실수로 밑돎 */
+    font-size:16px; font-weight:800; color:var(--gold); letter-spacing:-0.02em;
     opacity:0.95; pointer-events:none; font-family:var(--font-display);
     background:var(--card); flex-shrink:0;
     animation:ticket-seal-wiggle 2.6s ease-in-out infinite;
@@ -3155,7 +3168,10 @@
     #introPersonaAccordion{ padding:7px; }
     .ticket-shell .input-card{ padding:7px 7px 9px; }
     .refund-link-buttons{ grid-template-columns:1fr; }
-    .result-seal{ width:36px; height:36px; font-size:11px; }
+    /* 2026-08-06부터 있던 값(11px)이 이 세션이 잡은 접근성 최소 폰트(16px) 하한을 밑돌고
+       있던 걸 위 기본 규칙 수정 중 코드 리뷰로 같이 발견 — 300px 이하 전용이라 잘 안 보였음.
+       16px에 맞춰 원 크기도 같이 올림 */
+    .result-seal{ width:38px; height:38px; font-size:16px; }
     .calc-detail-toggle, .fun-toggle{ padding-left:10px; padding-right:10px; }
     .calc-detail-summary{ margin:0 -10px; padding:12px 10px; }
     /* 2026-07-30: 국가+통화 2단 그리드(.amount-currency-row-2col)는 390px 폰에서 나란히
