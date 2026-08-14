@@ -3,6 +3,7 @@ Allow: /
 Disallow: /tests/
 Disallow: /scripts/
 Disallow: /i18n-source/
+Crawl-delay: 10
 
 User-agent: GPTBot
 Allow: /
