@@ -70,7 +70,7 @@ let I18N_LOAD_PROMISE = null;
 
 function loadI18nLanguage(lang){
   if (lang === "ko" || I18N_CACHE[lang]) return Promise.resolve();
-  return fetch(`i18n/${lang}.json?v=20260813-1`)
+  return fetch(`i18n/${lang}.json?v=20260814-2`)
     .then(res => { if (!res.ok) throw new Error("i18n fetch failed: " + res.status); return res.json(); })
     .then(data => { I18N_CACHE[lang] = data; })
     .catch(err => { console.error("[i18n] failed to load", lang, err); });
@@ -2158,7 +2158,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260812-1';
+    script.src = 'odds-data.js?v=20260814-1';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -4267,7 +4267,7 @@ function buildDrawScheduleMore(days){
 // 당첨자 없어 다음 추첨(8/14) 잭팟이 $90M(현금가치 valottery $38M · 스크린샷 $38.7M, 근소한
 // 차이는 판매량에 따른 흔한 오차로 판단해 더 정밀한 스크린샷 값 채택)으로 증가.
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 1000000000, cashUsd: 433100000 },
+  powerball:    { amountUsd: 20000000, cashUsd: 8700000 },
   megamillions: { amountUsd: 90000000, cashUsd: 38700000 },
 };
 
@@ -4321,8 +4321,20 @@ const GAME_NAME_MORE = {
 // POWERBALL_DRAW_ARCHIVE·POWERBALL_JACKPOT_ARCHIVE / MEGAMILLIONS_DRAW_ARCHIVE·
 // MEGAMILLIONS_JACKPOT_ARCHIVE에도 같이 추가함(draw_archive_integrity_check.js 통과 확인,
 // odds-data.js?v 캐시버스팅도 같이 올림).
+// 2026-08-14 이어서: 사용자가 공유한 스크린샷(파워볼 8/12 회차)을 powerball.com
+// draw-result 공식 페이지 + powerball.com 홈페이지 + lotteryusa.com 3곳 WebFetch로
+// 교차검증 — 4,26,66,67,69 + 파워볼 9, Power Play 2x로 3곳 전부 일치. 이 회차에서
+// 일리노이주 당첨자가 나와 잭팟 적중(당첨 전 예고액은 $1.04B) — 다음 추첨(8/15) 잭팟이
+// 표준 시작액 $20M(현금가치 $8.7M)로 리셋됨, powerball.com·lotteryusa.com 둘 다 일치.
+// 위 JACKPOT_DATA.powerball을 $20M/$8.7M로 갱신(잭팟이 줄어든 것은 당첨자 발생에 따른
+// 정상적인 리셋이지 오류 아님). odds-data.js의 POWERBALL_DRAW_ARCHIVE·
+// POWERBALL_JACKPOT_ARCHIVE에 8/12 회차 추가(JACKPOT_ARCHIVE 금액은 이 회차 추첨 전
+// 예고액이었던 $1000M — 이 배열의 기존 관례대로 회차 시점에 script.js가 추적하던 값을
+// 그대로 기록). 메가밀리언즈는 스크린샷의 8/11 회차·$90M/$38.7M 잭팟이 이미 위 값과
+// 정확히 일치해서 변경 없음(더블플레이 3,4,19,21,58+8은 odds-data.js 87행 주석대로
+// 이 아카이브 스코프 밖이라 반영 안 함).
 const LATEST_DRAW = {
-  powerball:    { date: '2026-08-10', numbers: [6, 37, 54, 55, 64], special: 10 },
+  powerball:    { date: '2026-08-12', numbers: [4, 26, 66, 67, 69], special: 9 },
   megamillions: { date: '2026-08-11', numbers: [1, 20, 30, 46, 68], special: 17 },
 };
 
