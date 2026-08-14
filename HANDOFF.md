@@ -2172,3 +2172,30 @@ reveal 애니메이션(`IntersectionObserver` + `.reveal-up`→`.is-in` opacity 
 3. 90개 국가별/언어별 랜딩페이지에 "정산 티켓" 스타일 확산 — 아직 미착수.
 4. `robots.txt`의 `Crawl-delay: 10`이 라이브에 실제로 반영됐는지 재확인(머지 직후 Cloudflare
    캐시 때문에 확인 안 됐었음, 수 시간 지연은 정상).
+
+### 2026-08-14 이어서 — 같은 UX 리디자인 핸드오프 zip 재검증(N+1차) → 이번에도 갭 없음, 코드 변경 없음
+
+바로 위 세션(PR #197~#207)이 이미 이 핸드오프(Home/Compare/Odds/FAQ 4탭 "정산 티켓")를
+전부 라이브에 반영해놓은 상태에서, 같은 zip(`README.md`/`SPEC.md`/`screenshots/`)이 다시
+전달됨. CLAUDE.md·과거 항목들의 교훈대로 코드부터 새로 짜지 않고 먼저 대조부터 진행:
+
+- **컬러 토큰**: SPEC.md 1절의 ink/teal/indigo/gold/red/bg/card/border 라이트·다크 값이
+  `styles.css`의 `--teal:#155445` 등 CSS 변수와 그대로 일치.
+- **Odds 탭 당첨금표**: `script.js`의 `PRIZE_TIERS`(3273줄)에 파워볼/메가밀리언즈 8단계가
+  SPEC 5절 수치와 거의 동일(일부 확률은 공식 배당표 기준 더 정밀한 값으로 이미 대체돼있음,
+  예: 4+PB 오즈 913,129 vs 라이브 910,000 — 반올림 차이일 뿐 갭 아님).
+  Mega Millions 쪽엔 SPEC에 없는 "잭팟 제외 전 등수 2~10배 무작위 배수" 설명까지 26개
+  언어로 이미 추가돼 있어 스펙보다 범위가 넓음.
+  - **재미로 보기 환산**(SPEC 4-Home: 아파트/커피/신차 고정 원화 기준)도 라이브는 국가별
+    통화(KRW/USD/CNY 등)로 아파트·커피 기준가를 따로 두고 26개 언어로 라벨을 다국어화한
+    버전이 이미 있어 스펙 범위를 넘어섬.
+- **마일스톤/바코드 캡션**: `home-milestone`, `home-barcode-caption` 요소와 관련 로직이
+  이미 존재(11686~12617줄), SPEC 41번 줄 바코드 포맷(`US {환율/1000} · ... 0000 ...`)과
+  코드의 `US ${EXCHANGE_RATE.toFixed(1)} · ${barcodeNum}` 형식이 일치.
+- **시각 확인**: 로컬 정적 서버(9000) + Playwright로 Home/Compare 탭 스크린샷 2장을 찍어
+  zip의 `01-home-light.png`/`03-compare-light.png`와 비교 — 페르소나 분기 카드, 하드보더+
+  오프셋 섀도우, 절취선 톤, Compare 탭 통화/금액/미국 주 선택 위젯 레이아웃이 목업과 일치.
+
+**결론 — 갭 없음, 코드 변경 없음.** 직전 세션(PR #202~#207)이 이미 이 핸드오프를 완전히
+반영했고, 이번 재검증에서도 새로 고칠 부분을 찾지 못함. 이 브랜치(`claude/handover-github-
+review-8anpv3`)에는 문서성 커밋만 추가.
