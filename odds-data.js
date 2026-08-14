@@ -77,7 +77,11 @@ const JACKPOT_HISTORY = [
   // POWERBALL_JACKPOT_ARCHIVE에만 반올림된 1000(→1040으로 같이 보정)으로만 존재해 당첨자
   // 스토리 없이 일반 회차처럼만 보였음). noteMore(21개 추가 언어)는 생략 — 이 6개 언어 밖에서는
   // pickLang()이 기존 관례대로 영어로 자동 폴백됨(버그 아님).
-  { date: '2026-08-12', game: 'powerball', amountUsd: 1040000000, cashUsd: 450500000, stateCode: 'IL', numbers: [4, 26, 66, 67, 69], special: 9, noteKo: '역대 8위 (일리노이, 1인)', noteEn: '8th all-time (Illinois, single winner)', noteZh: '历史第8位（伊利诺伊，1人独得）', noteVi: 'Xếp thứ 8 mọi thời đại (Illinois, 1 người trúng)', noteTh: 'อันดับ 8 ตลอดกาล (อิลลินอยส์ ผู้ถูกรางวัลคนเดียว)', noteRu: '8-е место за всё время (Иллинойс, один победитель)' },
+  // 2026-08-14: powerball.com 공식 발표 + CBS/Fox Business/NBC/CNN 교차 확인 — 당첨 복권 판매점
+  // (Quincy, IL의 Hy-Vee "Gas Fresh & Fast", 310 N. 36th St.) 확정. "미청구(아직 안 나타남)"는
+  // 청구기한 1년짜리 시간제한 정보라 언젠가 사실이 바뀜 — 2026-09-04 리마인더(index.html 임시
+  // SEO 문구 재검토용, 같은 트리거)에서 이 문구도 같이 재확인/제거할 것.
+  { date: '2026-08-12', game: 'powerball', amountUsd: 1040000000, cashUsd: 450500000, stateCode: 'IL', numbers: [4, 26, 66, 67, 69], special: 9, noteKo: '역대 8위 (일리노이 퀸시, 8/13 기준 미청구)', noteEn: '8th all-time (Quincy, IL — unclaimed as of Aug 13)', noteZh: '历史第8位（伊利诺伊州昆西，8月13日尚未领取）', noteVi: 'Xếp thứ 8 mọi thời đại (Quincy, Illinois — chưa có người nhận tính đến 13/8)', noteTh: 'อันดับ 8 ตลอดกาล (ควินซี รัฐอิลลินอยส์ — ยังไม่มีผู้มารับรางวัล ณ วันที่ 13 ส.ค.)', noteRu: '8-е место за всё время (Куинси, Иллинойс — приз не востребован по состоянию на 13 августа)' },
 ];
 
 // 🗃️ 실제 과거 당첨번호 아카이브 — powerball.com/megamillions.com 공식 CSV 내보내기를 그대로 받아
