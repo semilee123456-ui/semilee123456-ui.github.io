@@ -2217,3 +2217,49 @@ scripts/build-min.js` 없이는 브라우저에서 반영 안 보임 — 흔한 
 **PR·머지는 하지 않음**(지시에 따름, 별도 통합 세션이 처리). 브랜치
 `claude/ux-compare-2026-v2` 푸시 완료, 커밋 1개. `node scripts/build-min.js`/캐시버스팅/
 `sw.js` `CACHE_NAME`은 건드리지 않음(통합 시 처리).
+### 2026-08-14 이어서 — Home 탭 UX 리디자인 핸드오프 재시도 → 검증 결과 "이미 전부 구현돼 있음" 확인, 코드 변경 없음
+
+바로 위 항목("홈페이지 전체 UX 리디자인 핸드오프 시도")에서 세션 한도로 조기 종료된 Home 탭
+담당을 이어받아, 우선순위 1~6번(세금 계산 기준 상세설정 아코디언+미국 주(State) 선택, 원천징수·
+누진세·FTC 용어설명 토글, "이것도 궁금하지 않으세요?" 바로가기 카드, "최근 당첨 확인"+재미로
+보기 환산, "왜 믿을 수 있나요?" 신뢰 안내, 음성 입력 🎤)를 하나씩 구현하려고 `index.html`
+`#view-home`(540~1307줄)과 `script.js`를 먼저 정독함.
+
+**결과: 6개 항목 전부 이미 라이브 코드에 존재하고 정상 동작함을 확인** — 새로 만들 게 없어서
+코드 변경 0줄로 세션 종료:
+- 항목1 (세금 기준 아코디언+주 선택): `.input-advanced-toggle`(`input.advancedSettingsToggle`)
+  안에 `#homeCountryToggle`(21개국 토글+더보기) + `#homeStateSelect`(미국 50개 주+DC 전체,
+  핸드오프 SPEC.md의 데모용 10개 주보다 많음 — 실제 세율 반영이라 유지)가 이미 있음.
+- 항목2 (용어설명 토글): `toggleInlineTermBox('tax-term-box')` 버튼(`home.taxTermToggle`)이
+  원천징수/누진세/FTC 3개 설명을 담은 `#tax-term-box`를 토글함. 단, 위치가 핸드오프 mockup처럼
+  티켓 카드 안이 아니라 티켓 바로 아래 "결과 더 자세히 보기"(`#home-detail-toggle`) 아코디언
+  안 — 기능은 동일하고 이동 리스크만 있어 그대로 둠.
+- 항목3 (탐색 카드): `.explore-section`(`explore.title` "🧭 이것도 궁금하지 않으세요?")에
+  Compare/Odds/FAQ 3장 카드 이미 있음.
+- 항목4 (최근 당첨+재미환산): `home.jackpotToggle`("🎟️ 최근 잭팟 확인하기") 파워볼/메가밀리언즈
+  카드 + `.fun-toggle`(아파트/스포츠카/커피 환산, `home.groundingNote`) 둘 다 있음.
+- 항목5 (신뢰 안내): `home.trustToggle`("✓ 왜 믿을 수 있나요?") `.trust-panel`에 IRS·정확도·
+  개인정보·구매중개NO 4개 그리드 + 출처 링크(IRS/Powerball/MegaMillions/국세청) 있음.
+- 항목6 (음성 입력): `initAmountVoiceButtons()`/`startAmountVoiceInput()`이 `SpeechRecognition`
+  feature-detect로 `#homeAmountVoiceBtn` 등 🎤 버튼을 조건부 노출(Playwright Chromium
+  headless에서 `display:flex` 확인).
+- 항목7 (시각적 재정리): 이미 "정산 티켓" 셸(`.ticket-shell`, PR #198~201)로 페르소나/입력/
+  결과가 하나의 카드로 통합돼 있어 손 안 댐.
+
+**검증 방법**: `node --check script.js` 통과. `python3 -m http.server 9101` + Playwright로
+`#view-home` 전체 스크린샷·개별 섹션 스크린샷 확인 — 처음엔 "탐색 카드"·"신뢰 안내" 등이 빈
+공백처럼 보여 렌더링 버그로 의심했으나, 원인은 버그가 아니라 `setupRevealAnimation()`의 스크롤
+reveal 애니메이션(`IntersectionObserver` + `.reveal-up`→`.is-in` opacity 트랜지션, 8519줄)이
+스크린샷 시점에 아직 안 끝난 것뿐이었음 — `scrollIntoView` 후 `waitForTimeout(800)`을 추가하니
+정상적으로 다 보임(오탐 판정, 참고용으로 기록).
+
+**추정 원인**: 이 항목들은 핸드오프가 새로 요청한 게 아니라 2026-07-24~08-07 사이 여러 세션에
+걸쳐 이미 유기적으로 추가돼 있던 기존 기능들(코드 내 날짜 주석으로 확인)이었고, 핸드오프 자료
+자체가 "정산 티켓" 디자인 토큰을 그대로 재사용해 만들어진 것이라 결과적으로 요구사항과 라이브
+상태가 이미 일치했던 것으로 보임. 바로 위 항목에서 "지난 세션이 항목1(아코디언)이 라이브에 없다"고
+적은 건, 그 세션이 실제 확인 전에 세션 한도로 죽었기 때문에 생긴 부정확한 추정이었던 것으로 보임
+(정정).
+
+**다음에 이 핸드오프를 다시 받으면**: 코드 구현부터 바로 들어가지 말고, 이번처럼 먼저 라이브
+코드를 항목별로 대조 확인하는 단계부터 시작할 것 — Compare/Odds/FAQ 3탭(아직 미확인)도 같은
+방식으로 먼저 "이미 있는지" 확인 후 진짜 갭만 구현하는 게 효율적일 가능성이 높음.
