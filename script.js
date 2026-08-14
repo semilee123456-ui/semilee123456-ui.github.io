@@ -14022,13 +14022,19 @@ function updateSideBySide(eok, stateCode){
   // 접힌 상태로 리셋 — eok/국가가 바뀌면 순위도 달라지므로 이전 펼침 상태를 유지할 이유가 없음
   const allCards = Array.from(grid.children);
   const showMoreBtn = document.getElementById('sideShowMoreBtn');
+  // 2026-08-14: 사용자가 홈에서 고른 나라(sharedCountry, "✅ 내 기준" 배지 카드)가 상위 6개
+  // 밖으로 밀려나면(예: 21개국 중 12위) "더보기"를 눌러야만 내 기준 카드를 볼 수 있었음 —
+  // SPEC 요구사항("상위 N개 + 사용자가 선택한 국가 노출")대로, 접힌 상태에서도 내 기준 카드는
+  // 순위와 무관하게 항상 보이게 함
+  const forceVisible = card => card.classList.contains('side-card-mine');
   // 카드 수가 아니라 그 안에 묶인 나라 수 합계로 세어줌 — 카드 하나가 여러 나라를
-  // 대표할 수 있어서, 카드 개수로 세면 "더보기"가 실제 남은 나라 수보다 적게 나옴
-  const remaining = allCards.slice(SIDE_VISIBLE_COUNT).reduce((sum, c) => sum + (parseInt(c.dataset.countryCount, 10) || 1), 0);
+  // 대표할 수 있어서, 카드 개수로 세면 "더보기"가 실제 남은 나라 수보다 적게 나옴.
+  // 내 기준 카드는 이미 강제로 보이는 상태라 "더보기" 잔여 수에서는 제외
+  const remaining = allCards.slice(SIDE_VISIBLE_COUNT).filter(c => !forceVisible(c)).reduce((sum, c) => sum + (parseInt(c.dataset.countryCount, 10) || 1), 0);
   // 남은 나라가 1개뿐이면 버튼을 눌러야 겨우 1개 더 보는 셈이라 번거로우니 그냥 다 펼쳐서
   // 보여줌 — 나중에 나라가 늘어 남는 수가 2개 이상이 되면 다시 자동으로 "더보기"가 나타남
   const shouldCollapse = remaining > 1;
-  allCards.forEach((card, i) => { card.classList.toggle('side-card-hidden-extra', shouldCollapse && i >= SIDE_VISIBLE_COUNT); });
+  allCards.forEach((card, i) => { card.classList.toggle('side-card-hidden-extra', shouldCollapse && i >= SIDE_VISIBLE_COUNT && !forceVisible(card)); });
   if (showMoreBtn) {
     if (shouldCollapse) {
       showMoreBtn.style.display = 'block';
@@ -14120,7 +14126,8 @@ function toggleSideShowMore(){
   const allCards = Array.from(grid.children);
   const isExpanded = btn.dataset.expanded === 'true';
   if (isExpanded) {
-    allCards.forEach((card, i) => { card.classList.toggle('side-card-hidden-extra', i >= SIDE_VISIBLE_COUNT); });
+    // updateSideBySide()의 강제 노출 로직(내 기준 카드는 순위 밖이어도 접지 않음)과 동일하게 유지
+    allCards.forEach((card, i) => { card.classList.toggle('side-card-hidden-extra', i >= SIDE_VISIBLE_COUNT && !card.classList.contains('side-card-mine')); });
     btn.dataset.expanded = 'false';
     const remaining = btn.dataset.remaining || '';
     btn.textContent = pickLang(`${remaining}개국 더 보기 ▾`, `Show ${remaining} more ▾`, `再显示${remaining}个国家 ▾`, `Xem thêm ${remaining} nước ▾`, `ดูเพิ่มอีก ${remaining} ประเทศ ▾`, `Показать ещё ${remaining} стран ▾`, buildShowMoreCountriesMore(remaining));
