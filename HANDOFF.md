@@ -1864,6 +1864,190 @@ flush하도록 변경(`flushPlain()` 헬퍼 추가) — "million" 전체가 항�
 **이 시점에 PR 생성 + 머지 + 배포 확인까지 진행** — 사용자가 "디자인팀에서 받은 거
 전부 다 수정해서 머지해서 올려줘"라고 명시적으로 요청함.
 
+### 2026-08-14 — "정산 티켓" 타이포그래피·정렬 시각 QA 패스 (PR #201 머지 이후, 같은 브랜치)
+
+PR #198~#200(머지 완료)이 적용한 "정산 티켓" 컨셉 전체(헤더·홈 화면·비교/확률/FAQ 탭)를
+대상으로, 코드만 보지 않고 실제 Playwright 스크린샷을 찍어 폰트·정렬을 직접 눈으로 확인하는
+QA 패스. 폭 240/320/390/420/700px × 라이트/다크 × 한국어/영어 조합으로 홈 화면을,
+비교/확률/FAQ는 320/390/700px로 스팟체크. `getComputedStyle`로 Space Grotesk/IBM Plex
+Mono 실제 적용 여부, 16px 접근성 최소 폰트 하한 위반, 요소 바운딩박스 기반 겹침/클리핑을
+스크립트로 스윕한 뒤, 의심 케이스는 크롭 스크린샷으로 육안 재확인.
+
+**버그 발견 + 수정 1건 — 이표(eyebrow) 배지 3곳에 Space Grotesk 미적용**: `index.html` 122줄
+자체 주석("영문 헤딩·이표(eyebrow)용 Space Grotesk")이 명시한 의도인데, 실제로는
+`.odds-toggle-eyebrow`(확률 탭 "게임 종류" 라벨)·`.faq-audience-eyebrow`·
+`.faq-category-eyebrow`(FAQ "누가/무엇" 필터 안내 문구) 세 클래스 다 `font-family` 선언
+자체가 빠져있어서 body 서체(Pretendard)로만 렌더링되고 있었음 — `getComputedStyle`로
+실측 확인 후 발견(코드만 봤으면 "폰트가 링크돼있으니 됐겠지"로 넘어갔을 종류의 버그).
+세 클래스에 `font-family:var(--font-display)` 한 줄씩 추가하는 최소 수정, 재빌드 후
+`getComputedStyle`로 `"Space Grotesk", ...` 스택이 실제로 잡히는 것과 스크린샷으로 글자
+모양이 바뀐 것까지 재확인.
+
+**QA로 "버그처럼 보였지만 실제로는 정상"으로 확인한 것들** (바운딩박스 기반 자동 스윕이
+낸 오탐 — 스크린샷 재확인으로 걸러냄, 기록해두는 이유는 다음 세션이 같은 걸로 또 헷갈리지
+않게 하기 위함):
+- JACKPOT 리본이 `.ticket-jackpot-ribbon-clip`(84×84, `overflow:hidden`) 밖으로 나온 것처럼
+  바운딩박스가 찍혔는데, 이건 회전된(`rotate(-45deg)`) 리본 요소 자체의 트랜스폼 전 박스라서
+  당연히 큼 — 실제 렌더링(스크린샷)은 클리핑 박스 안에 깔끔하게 잘려 있음, 5개 폭 전부 확인.
+- "참" 인장 배지가 결과 라벨과 겹친다고 나왔는데, 라벨이 2줄로 꺾이면서 바운딩박스가 두
+  줄을 합친 사각형이 되고 그 사각형이 인장과 겹치는 것뿐 — 실제 글자(2번째 줄)는 인장과
+  수평으로 안 겹침. 스크린샷 재확인.
+- 슬롯머신 숫자 타일 줄의 `$`/숫자 타일/`,`/`.` 모두 같은 줄에서 `bottom` 좌표가 완전히
+  일치(베이스라인 어긋남 없음), 단위 텍스트(" million")만 폭 부족으로 다음 줄로 통째로
+  넘어감(정상적인 단어 단위 줄바꿈, 중간에서 안 끊김).
+- 게이지 바 퍼센트 라벨: 극단적 비율(4%/96%로 강제 오버라이드해서 테스트)에서도 캡션이
+  안 찌그러지고 중앙 정렬 유지 —애초에 막대 안이 아니라 막대 **아래** 캡션에 있는 구조라
+  (이전 세션이 핸드오프 문서의 11px 막대-내부 라벨을 16px 하한과 충돌해서 일부러 안
+  가져온 설계, 위 8/13 항목 참고) 좁은 세그먼트에 텍스트가 눌리는 문제 자체가 구조적으로
+  발생 안 함.
+- 확률 탭 `.bar-icon`(🎟️⚡✈️🦈) 15px, `.mn-result-ball`/`.ps-b.qp` 등 12px/9px는
+  `aria-hidden` 장식용이거나 이번 리디자인이 손댄 적 없는 기존 UI(당첨번호 볼·퀵픽 배지)라
+  16px 하한 대상 아님 — 새로 만든 게 아니라 원래부터 있던 별개 패턴.
+
+**판단 보류(수정 안 함, 사용자 판단 필요) — 영어 전용, 좁은~중간 폭에서 실제로 어색함**:
+1. **입력 카드 금액 탭 3개("Lump sum"/"Announced (annuity)"/"Desired take-home") 중간
+   단어 줄바꿈**: 240~420px 영어에서 "Announced"→"Anno-unced", "annuity"→"annu-ity",
+   "Desired"→"Desir-ed"로 단어 중간에서 끊김(`.amount-tab-btn`의
+   `overflow-wrap:break-word` 때문 — `word-break:keep-all`만으로는 한국어만 보호되고
+   영어 긴 단어는 안 보호됨). 이번 세션이 만든 회귀가 아니라 원래부터 있던 사전 존재
+   버그로 보이지만(이 요소엔 티켓 하드보더/서체 적용 자체가 없음), 이 세션이 사냥하기로
+   한 "단어 중간 줄바꿈" 버그 클래스와 정확히 일치해서 기록함. `overflow-wrap:break-word`를
+   빼보면 이번엔 안 끊기는 대신 옆 탭 라벨과 텍스트가 겹쳐버림(플렉스 아이템 폭보다 텍스트가
+   넓어서 박스 밖으로 흘러넘침) — 두 CSS 전용 대안 다 시도해봤지만 더 나쁜 결과라 기각.
+   `hyphens:auto`도 시도했으나 이 샌드박스의 헤드리스 Chromium엔 영어 하이픈 사전이 없는지
+   전혀 효과 없었음(실제 사용자 브라우저에서도 보장 안 됨). 근본 수정은 영어 번역 문구를
+   줄이거나(`i18n/en.json`의 `input.tabAnnounced`/`input.tabReverse`) 탭 3개 레이아웃
+   자체를 바꿔야 하는데 둘 다 콘텐츠/레이아웃 판단이 필요해서 손 안 댐.
+2. **결과 카드 공유/저장 버튼 높이가 TTS 아이콘 버튼과 크게 다름(영어)**: 240~420px
+   영어에서 "Share this result"/"Save as image"가 한 단어씩 3줄로 꺾여서 버튼 높이가
+   117~119px까지 늘어남 — 옆의 44px 정사각 TTS 아이콘 버튼과 높이 차이가 큼(같은 폭에서
+   한국어는 72~74px로, 이전 세션이 이미 확인·수용한 정도의 차이였는데 영어는 그보다 훨씬
+   심함). `.btn-emoji`를 이 폭에서 숨기는 기존 규칙(`max-width:360px`)은 이미 적용
+   중이었고 실측해보니 이모지 유무와 무관하게(이모지 없어도 "this result"/"as image" 두
+   단어가 나란히 안 들어감) 발생하는 문제라 기존 규칙 확장으로는 해결 안 됨. 영어 버튼
+   문구 축약(`i18n/en.json`의 `home.shareDreamBtn`/`home.saveImageBtn`) 또는 버튼 줄
+   레이아웃 재구성이 필요해서 손 안 댐.
+3. **(참고, 낮은 확신도)** 태스크 브리핑엔 "bold button text"도 Space Grotesk 대상으로
+   적혀있었는데, 실제로 `#home-share-btn`/`#home-save-image-btn`(`.share-btn` 상속)과
+   `.cta-btn` 전부 `font-family` 지정이 없어 Pretendard로 렌더링됨. 위 이표(eyebrow)
+   케이스와 달리 이 부분은 소스에 "버튼도 Space Grotesk로"라는 명시적 주석이 없고,
+   `.cta-btn`/`.share-btn`은 사이트 전역에서 재사용되는 공용 클래스라(문의 폼 제출 버튼
+   등) 여기 `font-family`를 걸면 이번 리디자인 범위 밖의 화면까지 전부 바뀜 — 손대지 않고
+   사용자 판단으로 남김.
+4. **(참고, 저확신)** 비교 탭 `.side-card-other`(261px)가 다른 `.side-card`들(295px)보다
+   좁고 안쪽으로 들여져 있음 — script.js가 다른 컨테이너(중첩된 "기타 국가" 펼침 목록)
+   안에 동적으로 그려서 그런 것으로 보이나 깊이 확인은 안 함, 시간 배분상 스킵.
+
+**검증**: `node scripts/build-min.js` 재빌드, `index.html` 캐시버스팅
+(`styles.min.css?v` `20260813-12`→`20260814-1`), `sw.js`(`CACHE_NAME` v38→v39).
+`node --check script.js` 통과(이번 세션은 `script.js` 자체는 안 건드림, `styles.css`만
+수정). `home_audit`(18)·`console_error_audit`(161)·`i18n_coverage_audit`(769)·
+`wrap_audit`(168) 전부 재확인 `ISSUES:0`. 수정한 이표 폰트는 재빌드 후 `getComputedStyle`
++ 스크린샷 둘 다로 재확인.
+
+변경 파일: `styles.css`(이표 3클래스 `font-family` 추가), `styles.min.css`(재빌드),
+`sw.js`(`CACHE_NAME`), `index.html`(캐시버스팅만, 마크업 변경 없음). `script.js`/
+`script.min.js`는 이번 세션 변경 없음.
+
+**아직 PR 생성 전 — `claude/handover-github-latest-guu7gj` 브랜치에 푸시만 완료.** 위
+"판단 보류" 4건은 다음 세션 후보로 남김(1·2번이 우선순위 높음 — 실사용자가 영어로 볼
+가능성이 있는 화면에서 실제로 어색하게 보이는 부분).
+
+### 2026-08-14 이어서 — PR #201 + PR #203 머지·배포 확인 (사용자 요청: "다 하면 머지하고 인수인계 파일 만들어줘")
+
+**PR #201** (슬롯머신 타일/바코드 캡션/버튼 아이콘 3건 + 단어 중간 줄바꿈 수정,
+커밋 `ba15dae`~`ac4d1f4`) 머지 확인 후, 이어서 이번 폰트/정렬 QA 세션(이표 3클래스
+Space Grotesk 누락 수정, 커밋 `efe1a70`)을 **PR #203**으로 열어 머지함(#202는 이
+저장소에서 안 쓰임 — GitHub 번호 카운터가 이슈/PR 공용이라 건너뛴 것으로 보이고
+실제 영향 없음).
+
+머지 전 직접 diff를 재검토하고(`getComputedStyle`로 `.faq-audience-eyebrow`의
+`font-family`가 실제로 `"Space Grotesk", ...`로 해석되는지 재확인), `home_audit`·
+`console_error_audit`을 로컬에서 한 번 더 돌려 `ISSUES:0` 재확인한 뒤 머지 진행.
+
+**배포 확인**: `curl`로 라이브 `chamtax.com`의 `styles.min.css?v=20260814-1` 반영과
+`.faq-audience-eyebrow{...font-family:var(--font-display)}` 실제 포함을 직접 확인.
+
+**세션 전체 요약(2026-08-13~14, PR #198~#201·#203, 전부 머지·배포 완료)**: 디자인팀
+핸드오프(컨셉 문서 → 상세 SPEC.md+스크린샷 2차 전달)를 받아 홈 화면을 "정산 티켓"
+컨셉으로 전면 리디자인 → 헤더·비교/확률/FAQ 탭까지 같은 톤으로 확산 → 핸드오프 대비
+남은 갭 3건(슬롯머신 숫자 타일/바코드 캡션/버튼 아이콘) 마무리 → 전체 폰트·정렬 QA
+패스까지 완료. `index.html` 전체가 하나의 일관된 "정산 티켓" 비주얼로 통일된 상태.
+
+**다음 세션 후보(우선순위순, 전부 그대로 유지)**:
+1. 영어 전용 좁은~중간 폭 줄바꿈 2건(입력 카드 탭 라벨 단어 중간 끊김, 공유/저장
+   버튼 3줄 줄바꿈로 인한 버튼 높이 불균형) — 영문 카피 축약 또는 레이아웃 변경
+   필요, 콘텐츠/디자인 판단이라 사용자 결정 필요.
+2. 저장 이미지("이미지로 저장") 캔버스 톤 일치 여부 — 화면은 티켓인데 저장 이미지는
+   여전히 "대형 기념 수표" 스타일(2026-07-28에 의도적으로 그렇게 바꾼 이력 있음).
+3. 90개 국가별/언어별 랜딩페이지 확산 — `index.html` 밖은 아직 이 스타일이 전혀
+   안 닿음, 여러 세션에 나눠 진행할 것.
+4. (참고, 저확신) `.side-card-other`(비교 탭) 폭 불일치, `.cta-btn`/`.share-btn`
+   전역 공용 클래스의 Space Grotesk 적용 여부 — 둘 다 깊이 확인 안 됨.
+
+### 2026-08-14 이어서 — 파워볼 8/12 회차 반영 + 영어 전용 줄바꿈 버그 2건 수정 (같은 브랜치, 아직 PR 생성 전)
+
+서로 무관한 두 작업을 별도 커밋으로 진행.
+
+**1) 파워볼 8/12 회차 + 잭팟 리셋($20M/$8.7M)** — 사용자가 공유한 스크린샷(4,26,66,67,69
++ 파워볼 9, Power Play 2x)을 `powerball.com` draw-result 공식 페이지 + `powerball.com`
+홈페이지 + `lotteryusa.com` 3곳 WebFetch로 교차검증, 전부 정확히 일치. 이 회차에서
+일리노이주 당첨자가 나와 잭팟 적중(당첨 전 예고액 $1.04B) — 다음 추첨(8/15) 잭팟이
+표준 시작액 $20M(현금가치 $8.7M)로 리셋됨(powerball.com·lotteryusa.com 둘 다 확인,
+잭팟이 줄어든 것은 당첨자 발생에 따른 정상 동작이지 오류 아님). `script.js`의
+`LATEST_DRAW.powerball`/`JACKPOT_DATA.powerball` 갱신 + 갱신 이력 주석 추가,
+`odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`·`POWERBALL_JACKPOT_ARCHIVE`에 8/12 회차
+추가(JACKPOT_ARCHIVE 금액은 이 배열의 기존 관례대로 회차 시점에 script.js가 추적하던
+예고액 $1000M 그대로 기록). 메가밀리언즈는 스크린샷의 8/11 회차·$90M/$38.7M 잭팟이
+이미 기존 값과 정확히 일치해서 변경 없음(사용자 브리핑에 첨부된 태스크 지시대로
+확인만 하고 손 안 댐). Double Play(3,4,19,21,58+8)는 `odds-data.js` 87행 주석대로
+이 아카이브 스코프 밖이라 반영 안 함.
+
+- **검증**: `draw_archive_integrity_check`(4개 아카이브, 이슈 0건), `node --check`
+  script.js/script.min.js/odds-data.js 통과, `git diff --stat`로 의도한 5개 파일만
+  변경됐는지 확인.
+- **변경 파일**: `script.js`(`LATEST_DRAW`/`JACKPOT_DATA` 갱신, `odds-data.js?v`
+  `20260812-1`→`20260814-1`), `odds-data.js`(2개 아카이브에 8/12 회차 추가),
+  `script.min.js`(재빌드), `index.html`(`script.min.js?v` `20260813-3`→`20260814-1`),
+  `sw.js`(`CACHE_NAME` v39→v40).
+
+**2) 영어 전용 좁은~중간 폭 줄바꿈 버그 2건 수정** — 위 "다음 세션 후보" 1번 항목(2026-08-14
+QA 세션이 "판단 보류"로 남긴 것) 중 사용자가 카피를 확정해 온 것을 그대로 적용:
+
+- 입력 카드 금액 탭(`input.tabAnnounced`/`input.tabReverse`): "Announced (annuity)" →
+  **"Annuity"**, "Desired take-home" → **"Target take-home"**. 320~420px에서는 이제
+  단어 중간 줄바꿈이 완전히 사라짐(공백/하이픈 등 정상 위치에서만 줄바꿈). **240px는
+  칸 자체가 59px로 극도로 좁아서** "Annuity"→"Annui"/"ty", "Target"→"Targe"/"t" 처럼
+  짧아진 단일 단어도 여전히 부분적으로 끊김 — 이전의 "Announced (annuity)" 전체가
+  깨지던 것보다는 훨씬 개선됐지만 240px에서 완전히 해소된 건 아님(다음 세션이 필요하면
+  탭 레이아웃 자체를 재검토할 것 — HANDOFF에 이미 기록된 대로 CSS 전용 대안은 시도해봤자
+  더 나쁜 결과였음).
+- 결과 카드 공유/저장 버튼(`home.shareDreamBtn`/`home.saveImageBtn`, `#home-share-btn`/
+  `#home-save-image-btn`): "Share this result" → **"Share result"**, "Save as image" →
+  **"Save image"**. 240~420px에서 3줄(117~119px)로 꺾이던 게 2줄(87~89px)로 줄어
+  한국어 버전과 정확히 같은 높이가 됨(옆 44px TTS 아이콘 버튼과의 격차도 그만큼 축소).
+  단, 이 두 키는 `#home-share-btn`/`#home-save-image-btn` 외에 결과 요약(dream) 공유
+  버튼·잭팟 지수 3개 저장 버튼·주석 모달 저장/공유 버튼에도 재사용되고 있어서, 이번
+  축약이 그 버튼들에도 동일하게 반영됨(별도 키로 분리돼 있지 않음 — 문제라기보다는
+  참고 사항).
+- `i18n-source/translations.json`의 4개 키 `en` 값만 수정 → `node scripts/build-i18n.js`
+  로 `i18n/en.json` 재생성(다른 25개 언어 파일 diff 없음 확인). `script.js`의 i18n fetch
+  캐시버스팅 `20260813-1`→`20260814-2`, `script.min.js` 재빌드, `index.html`의
+  `script.min.js?v` `20260814-1`→`20260814-2` 동기화, `sw.js` `CACHE_NAME` v40→v41.
+- **검증**: Playwright로 240/320/390/420px 영어 스크린샷 확인(위 결과 그대로).
+  `i18n_coverage_audit`(769키)·`home_audit`(18)·`console_error_audit`(161) 전부
+  `ISSUES:0`, `node --check` script.js/script.min.js 통과.
+- **변경 파일**: `i18n-source/translations.json`, `i18n/en.json`, `script.js`,
+  `script.min.js`, `index.html`, `sw.js`.
+
+**아직 PR 생성 전 — `claude/handover-github-latest-guu7gj` 브랜치에 두 커밋으로 푸시만
+완료.** 사용자가 직접 diff 검토 후 PR/머지/배포 확인/최종 인수인계를 진행할 예정.
+
+**참고**: 이 파일 상단 "새 세션 시작 시 지켜야 할 것" 규칙대로면 "작업 이력" 섹션의
+날짜별 항목이 3~4개를 넘으면 오래된 항목부터 `HANDOFF-ARCHIVE.md`로 옮겨야 하는데,
+현재 08-10/08-12/08-13/08-14 총 4개 날짜(항목 수로는 훨씬 많음)가 쌓여있음 — 이번
+세션은 사용자가 요청한 두 작업(파워볼 갱신 + 줄바꿈 수정)에만 집중하느라 정리를 안
+했으니, 다음 세션이 이 정리를 먼저 검토할 것.
 ### 2026-08-13 이어서 — 같은 핸드오프 zip 재검증(서브에이전트, 처음부터 섹션별 픽셀 대조)
 
 PR #198/199/200 + 위 두 세션(슬롯머신/바코드/버튼 갭 3건, 줄바꿈 버그)까지 전부 머지·배포된

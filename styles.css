@@ -1760,7 +1760,10 @@
     100%{ box-shadow:0 0 0 0 rgba(var(--teal-rgb),0); }
   }
   @media (prefers-reduced-motion: reduce){ .search-jump-highlight{ animation:none; } }
-  .faq-audience-eyebrow{ font-size:var(--fs-small); font-weight:700; color:var(--text-muted); margin:10px 0 6px; }
+  /* 2026-08-14 QA: 파일 상단 122줄 주석("영문 헤딩·이표(eyebrow)용 Space Grotesk")이 명시한
+     의도인데 이 세 이표(eyebrow) 클래스엔 font-family 선언이 아예 빠져있어서 body 서체
+     (Pretendard)로 그대로 렌더링되고 있었음 — getComputedStyle로 실측 확인 후 추가 */
+  .faq-audience-eyebrow{ font-size:var(--fs-small); font-weight:700; color:var(--text-muted); margin:10px 0 6px; font-family:var(--font-display); }
   .faq-audience-row{ display:flex; flex-wrap:wrap; gap:6px; padding:2px 0 10px; }
   .faq-audience-chip{
     max-width:100%; font-family:inherit; font-size:var(--fs-small); font-weight:700; white-space:normal;
@@ -1772,7 +1775,7 @@
      똑같은 걸 두 번 보여주는 고장난 UI처럼 보였음(서로 다른 두 필터라는 걸 몰랐음) */
   .faq-category-eyebrow{
     font-size:var(--fs-small); font-weight:700; color:var(--text-muted); margin:14px 0 6px;
-    padding-top:14px; border-top:1px dashed var(--border);
+    padding-top:14px; border-top:1px dashed var(--border); font-family:var(--font-display);
   }
   .faq-chip-row{ display:flex; flex-wrap:wrap; gap:6px; padding:2px 0 10px; }
   .faq-chip{
@@ -1818,7 +1821,7 @@
   .lightning-game-btn.active{ color:var(--teal); border-color:var(--teal); background:rgba(var(--teal-rgb),0.06); }
   /* 확률체감 페이지엔 파워볼/메가밀리언즈 토글이 두 곳(등수표용·번개 번호용)에 있어서, 서로
      다른 기능임을 구분할 수 있게 등수표 쪽만 세그먼트 필 스타일로 다르게 표시함(디자인 3차 개선) */
-  .odds-toggle-eyebrow{ font-size:var(--fs-small); font-weight:700; color:var(--text-muted); text-align:center; margin:0 0 6px; }
+  .odds-toggle-eyebrow{ font-size:var(--fs-small); font-weight:700; color:var(--text-muted); text-align:center; margin:0 0 6px; font-family:var(--font-display); }
   .lightning-game-toggle.is-context{
     display:flex; gap:4px; justify-content:stretch; background:var(--chip-bg); border-radius:12px; padding:4px; margin:0 0 2px;
   }
