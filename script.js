@@ -3279,7 +3279,7 @@ const PRIZE_TIERS = {
     { match: ['숫자 3개 + 메가볼 맞춤','Match 3 + Mega Ball','中3个号码+超级百万球','Trúng 3 số + Mega Ball','ถูก 3 ตัวเลข + เมกะบอล','Совпадение 3 чисел + Mega Ball', buildMatchMore(3, 'Mega Ball', 'plus')], explain: false, usd: 200, krw: '약 30만원', oddsNum: 13965, pct: '0.0072%' },
     { match: ['숫자 3개 맞춤','Match 3 (no Mega Ball)','中3个号码（未中超级百万球）','Trúng 3 số (trật Mega Ball)','ถูก 3 ตัวเลข (เมกะบอลไม่ถูก)','Совпадение 3 чисел (без Mega Ball)', buildMatchMore(3, 'Mega Ball', 'no')], explain: true, usd: 10, krw: '약 1만 5,000원', oddsNum: 607, pct: '0.16%' },
     { match: ['숫자 2개 + 메가볼 맞춤','Match 2 + Mega Ball','中2个号码+超级百万球','Trúng 2 số + Mega Ball','ถูก 2 ตัวเลข + เมกะบอล','Совпадение 2 чисел + Mega Ball', buildMatchMore(2, 'Mega Ball', 'plus')], explain: false, usd: 10, krw: '약 1만 5,000원', oddsNum: 665, pct: '0.15%' },
-    { match: ['숫자 1개 + 메가볼 맞춤','Match 1 + Mega Ball','中1个号码+超级百万球','Trúng 1 số + Mega Ball','ถูก 1 ตัวเลข + เมกะบอล','Совпадение 1 числа + Mega Ball', buildMatchMore(1, 'Mega Ball', 'plus')], explain: false, usd: 10, krw: '약 1만 5,000원', oddsNum: 86, pct: '1.17%' },
+    { match: ['숫자 1개 + 메가볼 맞춤','Match 1 + Mega Ball','中1个号码+超级百万球','Trúng 1 số + Mega Ball','ถูก 1 ตัวเลข + เมกะบอล','Совпадение 1 числа + Mega Ball', buildMatchMore(1, 'Mega Ball', 'plus')], explain: false, usd: 7, krw: '약 1만 400원', oddsNum: 86, pct: '1.17%' },
     { match: ['메가볼 번호만 맞춤','Mega Ball number only','仅中超级百万球号码','Chỉ trúng số Mega Ball','ถูกเฉพาะเลขเมกะบอล','Совпал только Mega Ball', buildMatchMore(0, 'Mega Ball', 'only')], explain: false, usd: 5, krw: '약 7,400원', oddsNum: 35, pct: '2.84%' },
   ]
 };
