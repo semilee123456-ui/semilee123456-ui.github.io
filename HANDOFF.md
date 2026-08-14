@@ -2260,7 +2260,15 @@ review-8anpv3`)에는 문서성 커밋만 추가.
 
 **검증**: `home_audit`·`console_error_audit`·`i18n_coverage_audit`·`wrap_audit`·
 `nav_slider_audit` 전부 `ISSUES:0`(769개 i18n 키 전부 커버리지 유지 = 콘텐츠 유실 없음
-확인). `full_overflow_sweep`은 백그라운드로 돌려서 별도 확인.
+확인). `full_overflow_sweep`(27개 언어×5개 폭×7개 화면, 945개 조합)은 백그라운드로 돌렸는데
+**5개 언어에서 이번 수정과 무관한 기존 오버플로우 5건을 발견함** — `ru`/`uz`/`kk`/`ky`/`uk`,
+전부 `width:320`(가장 좁은 지원 폭)의 Home 화면 `.intro-persona-row`/`.intro-persona-label`/
+`.intro-lang-select-row` 등(페르소나 분기 카드 영역, 이번 세션이 건드린
+`.hero-category-tag`와는 `styles.css`에서 600줄 이상 떨어진 완전히 다른 블록)에서 텍스트가
+길어 4~27px씩 화면 밖으로 나감. `git diff 7cfd51b~1..HEAD -- styles.css`로 이번 세션 전체
+diff가 `.hero-category-tag` 9줄뿐임을 재확인했고 `intro-persona-row`는 diff에 전혀 없음 —
+**이번 수정과 무관한 기존 버그**, 되돌리지 않고 그대로 다음 세션 후보로 기록만 함(로그 전문은
+`node tests/full_overflow_sweep.js` 재실행하면 재현 가능).
 
 변경 파일: `styles.css`(`.hero-category-tag` 배지 복원), `styles.min.css`(재빌드),
 `index.html`(`styles.min.css?v` `20260814-2`→`20260814-3`), `sw.js`(`CACHE_NAME`
@@ -2268,5 +2276,9 @@ v43→v44), `scripts/screenshot-dc-mockup.js`+`scripts/screenshot-local-build.js
 목업/로컬 빌드 렌더링 스크린샷 헬퍼 — 재사용할 것).
 
 커밋: `9ee8c8e`(스크린샷 헬퍼 1개 추가) → `a7825a4`(배지 복원 + 헬퍼 2개 + 인프라 개선,
-같은 브랜치에 커밋 즉시 push됨). **PR은 만들지 않음** — 사용자가 메인 세션에 직접 병합을
-요청해서 병합은 이 서브세션 범위 밖.
+같은 브랜치에 커밋 즉시 push됨) → `09035eb`(이 인수인계 항목). **PR은 만들지 않음** —
+사용자가 메인 세션에 직접 병합을 요청해서 병합은 이 서브세션 범위 밖.
+
+**다음 세션 후보**: 위 `full_overflow_sweep` 발견 건 — `ru`/`uz`/`kk`/`ky`/`uk` 5개 언어,
+320px 폭, `.intro-persona-row` 계열 텍스트가 4~27px 화면 밖으로 나감(이번 세션 범위 밖이라
+손 안 댐).
