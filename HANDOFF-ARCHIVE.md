@@ -11752,3 +11752,190 @@ Playwright로 메가밀리언즈 게임 안내문(한/영)과 FAQ 게임 정보 
 - **머지·배포 확인 완료**: PR #184 머지 후 `curl`로 라이브 `chamtax.com/index.html`에서
   `faqFloatWrap` 문자열이 완전히 사라진 것 확인.
 
+### 2026-08-10 — 파워볼 8/8 회차 반영
+
+사용자가 usamega.com 스크린샷(파워볼·메가밀리언즈 요약 카드) 공유. 메가밀리언즈
+8/7 회차(17,20,32,54,57+23)·다음 잭팟 $80M는 8/8 세션(PR #182)에서 이미 반영돼
+스크린샷과 정확히 일치 — 변경 없음. 파워볼은 아카이브 최신값이 8/5 회차에서
+멈춰있었는데 스크린샷엔 새 8/8 회차(5,9,35,54,63+7, Power Play 3x)가 나와있어서
+3곳(`odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`+`POWERBALL_JACKPOT_ARCHIVE`,
+`script.js`의 `LATEST_DRAW.powerball`+`JACKPOT_DATA.powerball`) 반영. 당첨자
+없어 다음 추첨(8/10) 잭팟 $905M(현금가치 $391.9M)로 증가 — 스크린샷 값 그대로
+사용. `JACKPOT_ARCHIVE`에 넣은 8/8 회차 잭팟 금액($856M)은 8/6 세션이 이미
+예고값으로 남겨둔 값을 그대로 사용(새로 추측 안 함). Power Play/Double Play는
+기존 관례대로 이 저장소 아카이브 스코프 밖이라 기록 안 함.
+
+**검증**: `draw_archive_integrity_check`(4개 아카이브)·`console_error_audit`161·
+`audit_odds_compare`40·`home_audit`18 전부 `ISSUES: 0`. `node --check` script.js/
+odds-data.js 통과.
+
+변경 파일: `odds-data.js`(두 파워볼 아카이브에 8/8 회차 추가), `script.js`
+(`LATEST_DRAW.powerball`/`JACKPOT_DATA.powerball` 갱신, `odds-data.js?v`
+캐시버스팅), `script.min.js`(재빌드), `index.html`(`script.min.js?v`
+`20260808-3`→`20260810-1`), `sw.js`(`CACHE_NAME` v25→v26). 커밋 `e1d2591`.
+
+**같은 날 이어서 — 머지 직후 배포 확인하다가 Cloudflare 캐시버스팅 URL 자체가
+선점(poisoning)당하는 새 사고 발견**: PR #185 머지 직후(GitHub Pages 빌드가 아직
+안 끝났을 시점) `curl`로 `chamtax.com/odds-data.js?v=20260810`를 먼저 요청해버려서,
+그 시점 origin이 아직 옛 내용을 주고 있었는데 Cloudflare가 **바로 그 새 쿼리스트링
+URL 자체를 옛 내용으로 캐싱**(`cache-control: max-age=14400`=4시간)해버림. 이후
+GitHub Pages 빌드는 정상 완료(`pages build and deployment` 워크플로 success 확인)됐는데도
+같은 URL을 재요청하면 계속 `cf-cache-status: HIT`로 옛 내용만 나옴 — 캐시버스팅 쿼리를
+"한 번 더" 올리지 않는 한 최대 4시간 동안 안 풀리는 상태. **교훈: 머지 직후 곧바로
+새 캐시버스팅 URL로 배포 확인 `curl`을 날리지 말 것 — Pages 빌드·CDN 전파가 끝났다는
+확실한 신호(워크플로 run이 `completed`/`success`) 없이 조회하면, 그 조회 자체가 아직
+안 끝난 옛 응답을 새 URL에 캐싱해버려 역효과가 남.** 대응: `odds-data.js?v=20260810`
+→`20260810-2`로 재차 올리고, 이 쿼리를 내부에서 참조하는 `script.js`도 재빌드했으니
+`script.min.js?v`도 `20260810-1`→`20260810-2`로 같이 올림(`index.html`), 앱 셸 파일
+내용이 바뀌었으니 `sw.js`의 `CACHE_NAME`도 v26→v27로 올림.
+
+### 2026-08-10 이어서 — 구글 애드센스 주소 확인 PIN 등록
+
+사용자가 채팅으로 직접 알려줌: 애드센스 계정 주소 확인용 PIN이 우편으로 도착해서
+대시보드에 입력·등록 완료. 2026-07-24에 신청한 뒤 계속 "승인 대기"로만 남아있던
+항목(위 "홍보·마케팅 작업 전체 이력" 섹션 참고)의 첫 진전 — PIN 우편 확인은 보통
+계정이 이미 수익 발생 임계값(약 $10)에 도달해 지급 절차를 진행할 때 요청되는
+단계라, 애드센스 광고 자체는 이미 어느 시점부터 게재되고 있었을 가능성이 있음.
+**다만 이 세션은 사용자 채팅 진술만 반영한 것 — 애드센스 대시보드에 직접 접근할
+권한/도구가 없어 "실제 광고 게재 중"/"최종 계정 승인 상태"는 이 세션에서 확인 못함.**
+코드 변경 없음(사이트 파일 수정 대상 아님, 순수 기록). 다음 세션이 이 주제를
+다시 다룰 일이 있으면 위 "현재 남아있는 승인/시점 대기 항목" 문구부터 갱신하고,
+사용자에게 대시보드 화면(수익화 상태·게재 여부)을 직접 물어볼 것 — 추측으로
+"승인 완료"라고 단정하지 말 것.
+
+### 2026-08-10 이어서 — 확률체감 탭 전용 PWA "홈 화면에 추가" 배너 신설
+
+사용자가 다른 사이트(펫스캔 AI)의 "앱처럼 홈 화면에 추가하고 응급 시 바로
+사용하세요" 커스텀 배너 스크린샷을 보여주며 참택스도 만들지 물어봄 — 참택스는
+"당첨금 한 번 계산해보는" 일회성 방문이 대부분이라 전체 방문자 대상으로 하면
+소음만 늘릴 위험이 있다고 판단해, **재방문 동기가 있는 확률체감(`#view-odds`)
+탭 방문자한테만 좁혀서** 시도하자고 제안 → 사용자 동의로 구현.
+
+- **동작 조건**: `beforeinstallprompt` 이벤트를 지원하는 브라우저(Chrome/Edge
+  계열)에서, 이미 PWA로 설치된 상태가 아니고(`display-mode: standalone` 아님),
+  확률체감 탭이 열려있고, 최근 14일 내 "나중에"를 누른 적이 없을 때만 노출.
+  iOS Safari는 이 이벤트 자체를 안 쏴서 항상 숨김 상태(의도된 동작, 별도
+  안내 UI는 스코프 밖 — 필요해지면 별도로 다시 논의).
+- **"추가하기"**: 저장해둔 `beforeinstallprompt` 이벤트의 `.prompt()` 호출(브라우저
+  네이티브 설치 다이얼로그). **"나중에"**: `localStorage`(`chamtax_pwa_install_
+  dismissed_at`)에 타임스탬프 기록, 14일간 재노출 안 함. `go(view)` 호출마다
+  `maybeShowPwaInstallBanner()`로 노출 여부 재판단(탭 진입/이탈 둘 다 처리).
+- **번역**: `installBanner.title`/`.add`/`.later` 3개 키 신설, 26개 언어 전부
+  채움(`i18n_coverage_audit` 767개 키 ISSUES:0로 확인).
+- **검증**: Playwright로 실제 `beforeinstallprompt` 이벤트를 디스패치해서(헤드리스
+  환경은 이 이벤트를 자체 발생 안 시키므로 수동 트리거 필요) 배너가 실제로 뜨는지
+  확인 — 한국어·영어·아랍어(RTL, 버튼 배치 자동 반전 확인) 스크린샷, 320px
+  폭·다크모드 스크린샷, "나중에" 클릭 시 배너가 숨겨지고 `localStorage`에 실제로
+  기록되는지까지 확인. `i18n_coverage_audit`(767)·`i18n_attr_lint`(0)·
+  `console_error_audit`(161)·`home_audit`(18) 전부 `ISSUES: 0`.
+
+변경 파일: `index.html`(배너 마크업 신설, `script.min.js?v`
+`20260810-2`→`20260810-3`, `styles.min.css?v` `20260807-8`→`20260810-1`),
+`styles.css`(`.pwa-install-banner*` 신규 스타일, 다크모드는 기존 CSS 변수만
+써서 별도 오버라이드 없이 자동 대응), `script.js`(`beforeinstallprompt`/
+`appinstalled` 리스너, `maybeShowPwaInstallBanner()`, `go()`에서 호출 추가,
+`i18n/{lang}.json?v` `20260807-1`→`20260810-1`), `script.min.js`/
+`styles.min.css`(재빌드), `i18n-source/translations.json`+`i18n/*.json`
+26개(신규 키 3개), `sw.js`(`CACHE_NAME` v27→v28).
+
+### 2026-08-10 이어서 — 낚시게임 공유카드 상단 라벨 살짝 잘려 보이는 문제 수정
+
+사용자가 실제 공유 이미지 스크린샷("파워볼 · KR" / "$209.7M")을 보내며 "위에가
+약간 짤린 느낌"이라고 제보. `buildShareCard()`(낚시게임 결과·잭팟 인덱스 등
+4곳이 공유하는 카드 렌더러)의 `contentTop`(헤더 밴드 바로 아래 콘텐츠 시작
+위치) 계산이 원인 — 2026-07-31 세션이 이 여백을 44→22px로 좁혔는데, `label`
+폰트(`700 30px`)의 실측 ascent(`ctx.measureText().actualBoundingBoxAscent`)가
+24px라 22px보다 커서, 콘텐츠 블록(공 6개+서브텍스트)이 세로 중앙 정렬 여유
+없이 꽉 차는 흔한 경우엔 글자 상단이 밴드 쪽으로 몇 px 파고드는 구조적 문제였음
+(Playwright로 실측 확인: `ascent=24`, 기존 gap=22 → 약 2px 겹침).
+
+**수정**: `contentTop` 여백을 22→40px로 올려 ascent 대비 16px 여유 확보(44px로
+완전히 되돌리지 않고 07-31의 "타이트하게" 의도는 유지). Playwright로 실제
+`buildShareCard()`를 호출해 수정 전/후 카드를 렌더링·크롭 비교해서 겹침이
+사라진 것 확인. 4곳(낚시게임/잭팟 인덱스 등) 전부가 이 함수를 공유하므로 한
+군데만 고쳐도 전체에 적용됨.
+
+**검증**: `console_error_audit`(161)·`home_audit`(18) 전부 `ISSUES: 0`.
+`node --check` script.js 통과.
+
+변경 파일: `script.js`(`buildShareCard()`의 `contentTop` 22→40, 재빌드),
+`script.min.js`(재빌드), `index.html`(`script.min.js?v`
+`20260810-3`→`20260810-4`), `sw.js`(`CACHE_NAME` v28→v29).
+
+### 2026-08-12 — 파워볼 8/10 회차 + 메가밀리언즈 8/11 회차 반영 (PR #189, 머지·배포 확인 완료)
+
+사용자가 usamega.com 스타일 요약 스크린샷(파워볼 8/10 회차·메가밀리언즈 8/11 회차,
+양쪽 다음 잭팟 표시)을 공유. powerball.com 공식 페이지 WebFetch + DraftKings 기사 +
+valottery.com(버지니아 주정부 공식 페이지) 3곳 교차검증 후 반영 — 파워볼 8/10 회차
+(6,37,54,55,64+10, Power Play 3x) 당첨자 없어 다음 추첨(8/12, 세션 당일) 잭팟이
+$1 Billion(현금가치 $433.1M)으로 증가. 메가밀리언즈 8/11 회차(1,20,30,46,68+17)도
+당첨자 없어 다음 추첨(8/14) 잭팟이 $90M로 증가(현금가치는 valottery $38M·사용자
+스크린샷 $38.7M 중 더 정밀한 스크린샷 값 채택 — 판매량에 따라 하루에도 여러 번
+갱신되는 값이라 흔한 오차로 판단).
+
+4곳(`odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`+`POWERBALL_JACKPOT_ARCHIVE`,
+`MEGAMILLIONS_DRAW_ARCHIVE`+`MEGAMILLIONS_JACKPOT_ARCHIVE`) 전부 새 회차 추가,
+`script.js`의 `LATEST_DRAW`/`JACKPOT_DATA` 갱신.
+
+**검증**: `draw_archive_integrity_check`(4개 아카이브, 이슈 0건). `node --check`
+script.js/script.min.js/odds-data.js 통과. `git diff --stat`로 의도한 5개 파일만
+변경됐는지 확인.
+
+변경 파일: `odds-data.js`(4개 아카이브에 새 회차 추가), `script.js`(`LATEST_DRAW`/
+`JACKPOT_DATA` 갱신, `odds-data.js?v` `20260810-2`→`20260812-1`), `script.min.js`
+(재빌드), `index.html`(`script.min.js?v` `20260810-4`→`20260812-1`), `sw.js`
+(`CACHE_NAME` v29→v30). PR #189, 커밋 `1aaeba2`→머지 `66d0405`.
+
+**같은 날 다른 세션이 이어서**: PR #190("공유 버튼 데스크톱 폴백에서 이미지
+자동 다운로드 제거", 커밋 `988f705`)이 이 세션과 별개로 머지됨 — 이 세션은
+관여 안 함, 다음 세션이 이 주제를 다시 다룰 일이 있으면 그 커밋 메시지부터
+확인할 것.
+
+### 2026-08-12 이어서 — 홈 하단 "더 알아보기" 제목 번역 누락 수정 (PR #193, 머지·배포 확인 완료)
+
+사용자가 다른 언어로 전환한 스크린샷을 보여주며 "더 알아보기" 제목만 한국어로
+고정돼 나오는 게 의도한 거냐고 질문. 확인해보니 **부분적으로만 의도된 것**이었음:
+개별 링크들(파워볼 세금 계산·中国税收居民指南·Hướng dẫn cho người Việt Nam 등)이
+각자 언어 그대로 나오는 건 sitemap.html과 같은 관례로 의도된 게 맞음(링크가
+연결되는 페이지 자체가 그 언어 전용이라서). 하지만 **섹션 제목 자체는 다름** —
+sitemap.html의 h2Core/h2Abroad 제목은 실제로 26개 언어 번역이 붙어있는데, 이
+섹션(`related-guides-title`)은 `data-i18n` 연결이 아예 없이 한국어가
+하드코딩돼있었음(2026-08-06 최초 구현 시 "링크 라벨은 번역 안 함"이라는 주석
+방침이 제목까지 실수로 덮은 것으로 보임).
+
+- **수정**: `index.html`에 `data-i18n="home.relatedGuidesTitle"` 추가,
+  `i18n-source/translations.json`에 새 키 26개 언어 번역("Learn more"류 짧은
+  문구) 추가 → `node scripts/build-i18n.js` 재생성. `script.js`의 i18n fetch
+  캐시버스팅(`20260810-1`→`20260812-1`)도 같이 올려서 캐시된 옛 JSON에 새 키가
+  가려지지 않게 함.
+- **검증**: `i18n_coverage_audit`(768개 키)·`i18n_attr_lint`·
+  `console_error_audit`(161)·`home_audit`(18) 전부 ISSUES:0. Playwright로
+  한국어/영어/일본어/아랍어 4개 언어 실제 렌더링 확인("더 알아보기"→"Learn
+  more"→"もっと詳しく"→"معرفة المزيد").
+- **머지·배포 확인 완료**: PR #193 머지 후 `curl`로 라이브
+  `chamtax.com/i18n/en.json?v=20260812-1`에서 `home.relatedGuidesTitle`:
+  "Learn more" 실제 반영 확인.
+
+### 2026-08-12 이어서 — 헤더 언어/설정 버튼(🌐) 시각적으로 눈에 띄게 개선 (PR #195, 머지·배포 확인 완료)
+
+사용자가 헤더의 🌐 버튼 스크린샷을 보여주며 "이게 언어 변경인지 모르겠다는데
+조금 더 눈에 띄게 만들 수 있을까? 색상을 다르게 해도 되고" 요청.
+
+- **원인**: `.settings-toggle`(언어·다크모드·글자크게·고대비를 한데 묶은
+  설정 패널의 트리거 버튼)이 `background:rgba(teal,0.08)` + 얇은 테두리로
+  거의 안 보이는 옅은 tint였음 — 클릭 가능한 버튼처럼 안 보여서 존재 자체를
+  못 알아챈 것으로 보임.
+- **수정**: 원형을 teal 단색으로 채우고(`background:var(--teal)`) 그림자를
+  줘서(`box-shadow:0 3px 10px rgba(teal,0.4)`) 눈에 띄는 "누를 수 있는
+  칩"처럼 보이게 함, 탭 시 살짝 눌리는 피드백(`:active{ transform:scale(0.94) }`)도
+  추가. 다크모드는 그림자만 어두운 톤으로 조정. 텍스트 라벨은 안 붙임(예전에
+  다크모드/글자크게/고대비/언어 4개를 개별 아이콘으로 늘어놨다가 좁은 화면에서
+  줄바꿈·잘림 문제로 하나로 통합했던 이력이 있어서, 다시 라벨을 붙이면 그 문제가
+  재발할 수 있음 — 색상/그림자만으로 해결). 패널 열림/닫힘 동작
+  (`<details>/<summary>`)은 전혀 안 건드림.
+- **검증**: `console_error_audit`(161)·`home_audit`(18)·`wrap_audit`(168) 전부
+  ISSUES:0. Playwright로 라이트/다크 모드 스크린샷 확인 + 클릭 시 설정 패널이
+  정상적으로 열리는 것(`#settingsMenu.open`) 확인.
+- **머지·배포 확인 완료**: PR #195 머지 후 `curl`로 라이브
+  `chamtax.com/index.html`에서 `styles.min.css?v=20260812-1` 반영 확인.
+

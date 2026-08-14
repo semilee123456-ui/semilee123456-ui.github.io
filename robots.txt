@@ -20,6 +20,20 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
+# 2026-08-14: 실제 검색엔진 크롤러(Bing/네이버/다음)는 위 User-agent:* 의
+# Crawl-delay:10을 그대로 지키는 봇들이라, 이름을 명시해 별도 그룹으로 빼서
+# 지연 없이 풀어줌 — 위 GPTBot 등과 같은 패턴. User-agent:* 의 Crawl-delay는
+# 이름 없는 봇 트래픽 대응용(HANDOFF.md "Ashburn 봇 트래픽" 조사 참고)으로
+# 그대로 유지, Googlebot은 애초에 crawl-delay를 안 따르는 봇이라 영향 없음.
+User-agent: Bingbot
+Allow: /
+
+User-agent: Yeti
+Allow: /
+
+User-agent: Daumoa
+Allow: /
+
 Sitemap: https://chamtax.com/sitemap.xml
 
 #DaumWebMasterTool:8a7d5e77be8f3621324a35798a0db7d63a169688da84db764327037cab6adcfe:JbtVqj5ycYCrCKnoguOyqw==

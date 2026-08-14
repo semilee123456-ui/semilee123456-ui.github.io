@@ -433,9 +433,16 @@
     flex-shrink:0; background:none; border:none; cursor:pointer; font-size:var(--fs-note);
     color:var(--text-muted); padding:2px 4px; font-family:inherit;
   }
+  /* 2026-08-14: 목업(핸드오프 SPEC.md 5절)엔 이 자리가 인디고 솔리드 알약 배지("US LOTTERY TAX
+     CALCULATOR")인데, border-radius:20px는 남아있고 background/padding만 0으로 빠져 있어서
+     실제로는 그냥 회색 텍스트 한 줄로 보이던 상태 — 배지로 복원. 텍스트색은 --indigo 자체가
+     라이트=짙은남색/다크=옅은남색으로 뒤집히는 토큰이라, 반대로 --bg(라이트=거의 흰색/
+     다크=거의 검정)를 글자색으로 쓰면 두 테마 모두 배경 대비가 그대로 유지됨(목업 다크
+     스크린샷의 "옅은 배지 위 짙은 글자"와 실제로 일치) — 별도 다크모드 오버라이드 불필요. */
   .hero-category-tag{
-    display:inline-block; font-size:var(--fs-small); font-weight:600; color:var(--text-muted);
-    background:none; border-radius:20px; padding:0; margin:0 0 8px;
+    display:inline-block; font-size:var(--fs-small); font-weight:700; color:var(--bg);
+    background:var(--indigo); border-radius:20px; padding:4px 14px; margin:0 0 8px;
+    letter-spacing:0.02em;
   }
   .tax-impact-compact{
     display:flex; flex-direction:row; flex-wrap:wrap; align-items:baseline; justify-content:center; gap:6px;
