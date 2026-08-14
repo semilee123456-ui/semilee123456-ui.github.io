@@ -2185,3 +2185,35 @@ Google-Extended를 의도적으로 `Allow: /`로 초대해뒀고 이런 AI 크�
 항목이 3~4개 넘으면 오래된 것부터 `HANDOFF-ARCHIVE.md`로 옮겨야 하는데, 지금 08-10~08-14
 5개 날짜(항목 수로는 10개 이상)가 쌓여 2,150줄+ 상태 — 이번 세션도 토큰 예산 때문에 정리를
 못 함. 다음 세션이 여유 있을 때 먼저 처리할 것.
+
+### 2026-08-14 이어서 — Compare 탭 UX 리디자인 2차 재시도: SPEC 6개 항목 중 5개는 이미 구현돼있었고, 실제로 필요했던 건 1개뿐 (브랜치만 생성, PR 없음)
+
+위 "홈페이지 전체 UX 리디자인" 시도의 후속 — Home 탭은 이미 별도 세션에서 재시도해 완료된 걸
+확인만 했던 전례(SPEC 6개 항목이 전부 이미 라이브에 구현돼있었음)가 있어서, 이번엔 Compare 탭
+(`#view-compare`)도 **프로토타입 보고 새로 짜지 말고 먼저 라이브 코드에 뭐가 있는지부터
+확인**하라는 지시로 진행. `wt-ux-compare2` 워크트리(브랜치 `claude/ux-compare-2026-v2`)에서
+작업, `index.html`의 `#view-compare` 전체와 `script.js`의 `updateSideBySide()`/
+`toggleSideShowMore()`/`toggleReadAloud()` 등을 SPEC.md 5번 "Compare" 절 항목별로 대조:
+
+| SPEC 항목 | 상태 | 비고 |
+|---|---|---|
+| 랭킹 정렬 = 실수령액(net) 내림차순 | ✅ 이미 있음 | `implementedRows.sort((a,b)=>b.result.final-a.result.final)` — 그룹 크기 정렬 버그 재발 없음 |
+| 1위 카드 읽어주기 버튼 | ✅ 이미 있음 | `toggleReadAloud()` + `SpeechSynthesisUtterance`, `lang`은 `FAQ_VOICE_LANG_MAP[currentLang]\|\|'ko-KR'`(SPEC의 고정 `ko-KR`보다 다국어 지원이 더 넓음) |
+| "N개국 더 보기" 토글 | ✅ 이미 있음(다만 버그 1건) | `toggleSideShowMore()` + `SIDE_VISIBLE_COUNT=6`(SPEC엔 "상위 4개"라 적혀있지만 6도 의도적 개선으로 보고 유지) |
+| 국가 현지어 표기 링크 | ✅ 이미 있음 | SPEC이 말하는 `NATIVE_MAP`류가 아니라 `COUNTRY_TAX_PROFILES[].detailPage/detailLabel`로 구현(국가별 실제 세금 안내 랜딩페이지, "Tiếng Việt →" 등 현지어 라벨) — 더 발전된 형태라 손대지 않음 |
+| "목록에 없는 나라이신가요" 안내 | ✅ 이미 있음 | `scrollToOtherCountryCard()`, `#sideOtherCountryCard` |
+| "한국에 사는 다른 나라 분이라면" → Home 외국인 섹션 링크 | ⚠️ 판단 보류(코드 변경 안 함) | 같은 제목의 패널(`#otherLanguagesPanel`)이 이미 있지만, SPEC/프로토타입이 원한 "Home 외국인 언어선택 카드로 이동"이 아니라 **국가별 세금 의무 설명 글(`detailPage`)로 이동**하는, 목적이 다른 기능임. 코드 주석(2026-07-29/07-30)에 이미 "이 둘이 비슷해 보여 헷갈린다"는 실제 사용자 피드백을 검토해 "버그 아님, 의도된 구조"로 결론 내린 이력이 있어서, 이번 세션이 그 판단을 뒤집고 Home 링크로 바꾸는 건 과거 UX 결정과 충돌할 위험이 있다고 보고 **손대지 않음**. 다음 세션이 이 항목을 다시 볼 때는 이 이력부터 먼저 읽을 것. |
+| USA/Asia 지도 placeholder(우선순위 낮음) | ✅ 이미 있음(요구보다 상회) | SPEC은 "placeholder"만 요구했는데, 실제로는 Natural Earth 기반 실제 국경선 SVG 지도 + 카드 탭 시 핀 하이라이트까지 완성돼있음 |
+
+**유일하게 발견·수정한 실제 버그**: `updateSideBySide()`가 상위 6개만 보여주고 나머지는
+"N개국 더 보기"로 접는데, 사용자가 선택한 국가(`sharedCountry`, "✅ 내 기준" 배지 카드)가
+7위 밖으로 밀리면 그 카드도 예외 없이 같이 접혀서 "더보기"를 눌러야만 보였음(SPEC 요구:
+"상위 N개 + 사용자가 선택한 국가는 항상 노출"). `.side-card-mine` 카드는 순위와 무관하게 항상
+보이게 하고, "더보기" 잔여 개수 집계에서는 제외하도록 `script.js`만 수정(커밋 `798a8f9`).
+Playwright로 `kr`/`ru`/`pk`(6위 밖으로 밀리는 나라들) 기준 회귀 확인 완료 — 단, 이 테스트는
+`script.js`를 직접 로드해야 함(`index.html`은 `script.min.js`를 참조하므로 `node
+scripts/build-min.js` 없이는 브라우저에서 반영 안 보임 — 흔한 함정이니 다음 세션도 유의).
+
+**PR·머지는 하지 않음**(지시에 따름, 별도 통합 세션이 처리). 브랜치
+`claude/ux-compare-2026-v2` 푸시 완료, 커밋 1개. `node scripts/build-min.js`/캐시버스팅/
+`sw.js` `CACHE_NAME`은 건드리지 않음(통합 시 처리).
