@@ -1494,13 +1494,21 @@
      핸드오프 문서(index.dc.html)는 10px 텍스트 기준 84×84 클리핑 박스를 쓰는데, 이 사이트는
      텍스트를 16px 미만으로 안 내려서(접근성 최소 폰트 --fs-small 규칙) 그 비율 그대로 축소하면
      "JACKPOT" 앞글자가 클리핑 경계에 잘려 안 읽히는 문제가 있었음(2026-08-13 Playwright
-     스크린샷으로 발견) — 텍스트는 16px 유지하고 대신 리본 띠 폭·클립 박스를 넉넉히 키워서
-     글자가 잘리지 않게 맞춤 */
+     스크린샷으로 발견) — 리본 띠 폭만 120→150px로 넓혔었는데, 정작 텍스트를 실제로 가두는
+     클립 박스(overflow:hidden)는 핸드오프 수치 그대로 84×84에 머물러 있어서 고침이 불완전했음.
+     한국어 기본값("잭팟", 2글자)만으로 눈으로 검수해서 그 상태로 안 잘리는 걸 보고 통과시켰는데,
+     번역 25개 언어 전부가 이 라벨을 영어 원문 "JACKPOT"(7글자, 바코드 캡션과 같은 관례로
+     번역 안 함, i18n-source/translations.json의 result.jackpotRibbon 참고) 그대로 쓰고 있어서,
+     영어를 포함한 25개 언어 모두에서 실제로는 "JACKPO"까지만 보이고 끝 T가 잘리고 있었음
+     (2026-08-13 재검증 세션이 Playwright locale:'en-US'로 스크린샷 재현해서 발견) — 클립
+     박스도 116×116으로 실제로 키우고 리본 위치·폭을 그에 맞춰 재조정해서 "JACKPOT" 전체가
+     보이는 걸 240~500px 폭 스윕으로 확인. 박스가 커져도 라벨(아래 padding-top:58px로 이미
+     충분히 내려가 있음)·인장 배지(오른쪽)와는 겹치지 않는 것도 같이 확인함. */
   .ticket-jackpot-ribbon-clip{
-    position:absolute; top:0; left:0; width:84px; height:84px; overflow:hidden; pointer-events:none; z-index:1;
+    position:absolute; top:0; left:0; width:116px; height:116px; overflow:hidden; pointer-events:none; z-index:1;
   }
   .ticket-jackpot-ribbon{
-    position:absolute; top:16px; left:-34px; width:150px; text-align:center;
+    position:absolute; top:26px; left:-40px; width:155px; text-align:center;
     background:var(--gold); color:var(--on-accent); font-size:16px; font-weight:800;
     letter-spacing:0.03em; padding:4px 0; transform:rotate(-45deg);
     box-shadow:0 2px 4px rgba(var(--ink-rgb),0.3); font-family:var(--font-display);

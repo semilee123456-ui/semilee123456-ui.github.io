@@ -11683,7 +11683,7 @@ async function shareInUnclaimedMoneyChecklist(){
   }
 }
 
-let lastMilestoneTier = 0; // 0=없음, 1=1000억, 2=1조 — 마일스톤을 "새로" 넘었을 때만 효과를 터뜨리기 위한 추적
+let lastMilestoneTier = 0; // 0=없음, 1=100억, 2=1000억, 3=1조 — 마일스톤을 "새로" 넘었을 때만 효과를 터뜨리기 위한 추적
 let homeResultFirstRender = true; // 페이지에 처음 들어왔을 때는 0에서부터 세는 카운트업 효과가 오히려
 // "어? 0원인가?" 하는 순간적인 혼동을 줄 수 있어서, 최초 1회만 애니메이션 없이 바로 최종 숫자를 보여주고,
 // 그 이후 유저가 직접 금액을 바꿀 때만 카운트업 효과를 사용함
@@ -12559,7 +12559,7 @@ function updateHomeCalc(usdOverride){
   }
 
   const milestoneEl = document.getElementById('home-milestone');
-  const newMilestoneTier = final >= 10000 ? 2 : (final >= 1000 ? 1 : 0);
+  const newMilestoneTier = final >= 10000 ? 3 : (final >= 1000 ? 2 : (final >= 100 ? 1 : 0));
   // 2026-08-03: 마일스톤 문구가 "1조원"/"₩1 trillion"처럼 원화(KRW) 문구를 하드코딩하고 있어서,
   // 표시 통화를 다른 걸로 바꾸면(예: 국가=미국+통화=USD) 바로 위 헤드라인은 "$582.8 billion"인데
   // 그 밑 마일스톤 배지만 "실수령액이 1조원을 넘었어요"처럼 뜬금없이 원화를 얘기하는 불일치가
@@ -12568,13 +12568,22 @@ function updateHomeCalc(usdOverride){
   // 넣어서 항상 화면에 보이는 통화와 일치하게 함. 격조사가 붙는 언어(카자흐어·키르기스어·
   // 몽골어·우즈베크어)는 통화명에 직접 격어미를 붙일 수 없어서 "수준/양"을 뜻하는 완충 단어를
   // 넣어 자연스럽게 우회함.
-  if (newMilestoneTier === 2) {
+  // 2026-08-14: 홈 UX 리디자인 핸드오프(SPEC.md 5번 "실수령액 마일스톤: 100억/1,000억/1조
+  // 돌파 시 텍스트 노출")가 100억 단계를 추가로 요구해서, 기존 1000억/1조 2단계 위에 100억
+  // 1단계를 새로 끼워넣음(tier 값 전부 1씩 밀림: 이전 1=1000억→2, 2=1조→3). 아이콘은 기존
+  // 💎(1000억)·🎉(1조)와 겹치지 않게 ✨ 사용, 다른 두 tier와 완전히 같은 pickLang 언어
+  // 커버리지(한국어/영어/중국어/베트남어/태국어/러시아어 + 나머지 20개 언어)를 그대로 맞춤.
+  if (newMilestoneTier === 3) {
     const amt = formatEokKrwInDisplayCurrency(10000, sharedInputCurrency);
     milestoneEl.textContent = pickLang(`🎉 실수령액만 ${amt}을 넘었어요!`, `🎉 Your take-home tops ${amt}!`, `🎉 实得金额突破${amt}！`, `🎉 Số tiền thực nhận vượt quá ${amt}!`, `🎉 เงินที่ได้รับจริงเกิน ${amt}!`, `🎉 Сумма на руки превысила ${amt}!`, { ar:`🎉 صافي دخلك تجاوز ${amt}!`, bn:`🎉 আপনার প্রকৃত আয় ${amt} ছাড়িয়ে গেছে!`, fr:`🎉 Votre revenu net dépasse ${amt} !`, hi:`🎉 आपके हाथ में आने वाली राशि ${amt} को पार कर गई!`, id:`🎉 Take-home-mu tembus ${amt}!`, ja:`🎉 手取り額が${amt}を突破！`, kk:`🎉 Қолыңызға тиетін сома ${amt} деңгейінен асты!`, km:`🎉 ចំណូលសុទ្ធរបស់អ្នកលើសពី ${amt}ហើយ!`, ky:`🎉 Кол алдырма акчаңыз ${amt} деңгээлинен ашты!`, lo:`🎉 ເງິນທີ່ໄດ້ຮັບຈິງຂອງທ່ານເກີນ ${amt}ແລ້ວ!`, mn:`🎉 Таны гарт орох дүн ${amt} хэмжээнээс давлаа!`, my:`🎉 သင့်လက်ခံရရှိမှုသည် ${amt} ကျော်လွန်သွားပါပြီ!`, ne:`🎉 तपाईंको हातमा पर्ने रकम ${amt} नाघ्यो!`, si:`🎉 ඔබේ අත් ලාභය ${amt} ඉක්මවා ඇත!`, tl:`🎉 Lumampas na sa ${amt} ang take-home mo!`, ur:`🎉 آپ کے ہاتھ میں آنے والی رقم ${amt} سے تجاوز کر گئی!`, uz:`🎉 Qo'lingizga tegadigan summa ${amt} miqdoridan oshdi!`, pt: `🎉 Seu valor líquido ultrapassa ${amt}!`, es: `🎉 ¡Tu monto neto supera ${amt}!`, uk: `🎉 Ваша сума на руки перевищує ${amt}!`, tet: `🎉 Ó-nia lori ba uma liuseik ${amt}!`});
     milestoneEl.style.display = 'block';
-  } else if (newMilestoneTier === 1) {
+  } else if (newMilestoneTier === 2) {
     const amt = formatEokKrwInDisplayCurrency(1000, sharedInputCurrency);
     milestoneEl.textContent = pickLang(`💎 실수령액이 ${amt}을 넘었어요`, `💎 Your take-home tops ${amt}`, `💎 实得金额突破${amt}`, `💎 Số tiền thực nhận vượt quá ${amt}`, `💎 เงินที่ได้รับจริงเกิน ${amt}`, `💎 Сумма на руки превысила ${amt}`, { ar:`💎 صافي دخلك تجاوز ${amt}`, bn:`💎 আপনার প্রকৃত আয় ${amt} ছাড়িয়ে গেছে`, fr:`💎 Votre revenu net dépasse ${amt}`, hi:`💎 आपके हाथ में आने वाली राशि ${amt} को पार कर गई`, id:`💎 Take-home-mu tembus ${amt}`, ja:`💎 手取り額が${amt}を突破`, kk:`💎 Қолыңызға тиетін сома ${amt} деңгейінен асты`, km:`💎 ចំណូលសុទ្ធរបស់អ្នកលើសពី ${amt}`, ky:`💎 Кол алдырма акчаңыз ${amt} деңгээлинен ашты`, lo:`💎 ເງິນທີ່ໄດ້ຮັບຈິງຂອງທ່ານເກີນ ${amt}`, mn:`💎 Таны гарт орох дүн ${amt} хэмжээнээс давлаа`, my:`💎 သင့်လက်ခံရရှိမှုသည် ${amt} ကျော်လွန်သွားပါပြီ`, ne:`💎 तपाईंको हातमा पर्ने रकम ${amt} नाघ्यो`, si:`💎 ඔබේ අත් ලාභය ${amt} ඉක්මවා ඇත`, tl:`💎 Lumampas na sa ${amt} ang take-home mo`, ur:`💎 آپ کے ہاتھ میں آنے والی رقم ${amt} سے تجاوز کر گئی`, uz:`💎 Qo'lingizga tegadigan summa ${amt} miqdoridan oshdi`, pt: `💎 Seu valor líquido ultrapassa ${amt}`, es: `💎 Tu monto neto supera ${amt}`, uk: `💎 Ваша сума на руки перевищує ${amt}`, tet: `💎 Ó-nia lori ba uma liuseik ${amt}`});
+    milestoneEl.style.display = 'block';
+  } else if (newMilestoneTier === 1) {
+    const amt = formatEokKrwInDisplayCurrency(100, sharedInputCurrency);
+    milestoneEl.textContent = pickLang(`✨ 실수령액이 ${amt}을 넘었어요`, `✨ Your take-home tops ${amt}`, `✨ 实得金额突破${amt}`, `✨ Số tiền thực nhận vượt quá ${amt}`, `✨ เงินที่ได้รับจริงเกิน ${amt}`, `✨ Сумма на руки превысила ${amt}`, { ar:`✨ صافي دخلك تجاوز ${amt}`, bn:`✨ আপনার প্রকৃত আয় ${amt} ছাড়িয়ে গেছে`, fr:`✨ Votre revenu net dépasse ${amt}`, hi:`✨ आपके हाथ में आने वाली राशि ${amt} को पार कर गई`, id:`✨ Take-home-mu tembus ${amt}`, ja:`✨ 手取り額が${amt}を突破`, kk:`✨ Қолыңызға тиетін сома ${amt} деңгейінен асты`, km:`✨ ចំណូលសុទ្ធរបស់អ្នកលើសពី ${amt}`, ky:`✨ Кол алдырма акчаңыз ${amt} деңгээлинен ашты`, lo:`✨ ເງິນທີ່ໄດ້ຮັບຈິງຂອງທ່ານເກີນ ${amt}`, mn:`✨ Таны гарт орох дүн ${amt} хэмжээнээс давлаа`, my:`✨ သင့်လက်ခံရရှိမှုသည် ${amt} ကျော်လွန်သွားပါပြီ`, ne:`✨ तपाईंको हातमा पर्ने रकम ${amt} नाघ्यो`, si:`✨ ඔබේ අත් ලාභය ${amt} ඉක්මවා ඇත`, tl:`✨ Lumampas na sa ${amt} ang take-home mo`, ur:`✨ آپ کے ہاتھ میں آنے والی رقم ${amt} سے تجاوز کر گئی`, uz:`✨ Qo'lingizga tegadigan summa ${amt} miqdoridan oshdi`, pt: `✨ Seu valor líquido ultrapassa ${amt}`, es: `✨ Tu monto neto supera ${amt}`, uk: `✨ Ваша сума на руки перевищує ${amt}`, tet: `✨ Ó-nia lori ba uma liuseik ${amt}`});
     milestoneEl.style.display = 'block';
   } else {
     milestoneEl.style.display = 'none';
