@@ -227,8 +227,14 @@
     --indigo:#35507A; --gold:#9C6F1E;
     --bg:#F4F5F7; --card:#FFFFFF; --text-dark:#262420; --text-muted:#544E42; --border:#828C97;
     --status-red:#C0392B; --status-amber:#946716;
-    --fs-hero:32px; --fs-h1:clamp(22px,7vw,27px); --fs-h2:clamp(19px,5.5vw,22px); --fs-h3:19px;
-    --fs-body:17px; --fs-note:16px; --fs-small:16px;
+    /* 2026-08-14 UI 통일 패스: 이전 버전은 이 주석 바로 아래 원래 있던 "index.html의 styles.css
+       :root 값을 그대로 가져옴"이라는 설명과 달리 실제 폰트 크기 값이 계산기보다 1px씩 작게
+       들어가 있었음(--fs-body 18→17, --fs-note 17→16, --fs-h3 20→19, --fs-h1 28→클램프 상한 27)
+       — 실제 렌더링 스크린샷 비교로 발견, 계산기 값과 정확히 맞춤. 반응형 clamp() 자체(좁은
+       화면 안전장치)는 계산기에 없는 랜딩페이지 전용 보강이라 그대로 유지하고 상한값만 계산기와
+       동일하게 맞춤 */
+    --fs-hero:32px; --fs-h1:clamp(22px,7vw,28px); --fs-h2:clamp(19px,5.5vw,22px); --fs-h3:20px;
+    --fs-body:18px; --fs-note:17px; --fs-small:16px;
     --font-display:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
     --font-mono:'IBM Plex Mono','SFMono-Regular','Menlo','Consolas','Liberation Mono',monospace;
     --shadow-hard:4px 4px 0 var(--text-dark);
