@@ -323,10 +323,22 @@
     width:100%; border-collapse:collapse; margin:18px 0; font-size:var(--fs-note);
     font-family:var(--font-mono); border:2px solid var(--text-dark); border-radius:10px;
   }
-  th, td{ text-align:left; padding:10px; border-bottom:1px dashed var(--border); vertical-align:top; white-space:normal; overflow-wrap:anywhere; }
+  /* th/td는 overflow-wrap:anywhere를 일부러 안 씀 — CJK/한글은 브라우저가
+     글자 단위로 알아서 줄바꿈해주는데, anywhere를 주면 "Powerball"·"Mega
+     Millions"처럼 줄바꿈 지점이 없는 영단어까지 표가 좁을 때 중간에서 잘려
+     보기 흉해짐(2026-08 240px 검증에서 실제로 발견) — 기본 줄바꿈(단어
+     경계에서만)으로 두고, 정말 안 들어가면 위 table의 overflow-x:auto가
+     가로 스크롤로 받아줌(중간에 끊긴 단어보다 스크롤이 낫다는 판단) */
+  th, td{ text-align:left; padding:10px; border-bottom:1px dashed var(--border); vertical-align:top; }
   html[dir="rtl"] th, html[dir="rtl"] td{ text-align:right; }
   th{ font-family:var(--font-display); color:var(--text-muted); font-weight:700; background:var(--bg); }
   tr:last-child td{ border-bottom:none; }
+  /* 첫 번째 열(행 라벨, 보통 "추첨 요일"/"1등 확률" 같은 짧은 이름표)이 CJK 등
+     글자 단위로 줄바꿈 가능한 스크립트에서 240px 근방일 때 한 글자씩 세로로
+     쌓여 보기 흉해지던 문제(2026-08 검증 스크린샷으로 발견) — 첫 열만
+     줄바꿈을 막아서 필요하면 표 전체가 (위 overflow-x:auto로) 가로 스크롤
+     되게 하고, 라벨 자체는 항상 한 줄로 유지되게 함 */
+  tr th:first-child, tr td:first-child{ white-space:nowrap; }
 
   /* ---- 확률 비교 막대 ---- */
   .compare-bar-row{ margin:12px 0; }
