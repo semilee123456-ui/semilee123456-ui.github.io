@@ -14140,7 +14140,7 @@
     "tet": "<span class=\"dream-emoji\">💼</span> De'it verifika saldo banku ho hakmatek"
   },
   "home.shareDreamBtn": {
-    "en": "Share this result",
+    "en": "Share result",
     "zh": "分享这个结果",
     "vi": "Chia sẻ kết quả này",
     "th": "แชร์ผลลัพธ์นี้",
@@ -14168,7 +14168,7 @@
     "tet": "Fahe rezultadu ne'e"
   },
   "home.saveImageBtn": {
-    "en": "Save as image",
+    "en": "Save image",
     "zh": "保存为图片",
     "vi": "Lưu thành ảnh",
     "th": "บันทึกเป็นรูปภาพ",
@@ -15372,7 +15372,7 @@
     "tet": "Pagamentu úniku"
   },
   "input.tabAnnounced": {
-    "en": "Announced (annuity)",
+    "en": "Annuity",
     "zh": "年金公布额",
     "vi": "Công bố (trả góp)",
     "th": "ประกาศ (รายปี)",
@@ -15400,7 +15400,7 @@
     "tet": "Anunsia (anuidade)"
   },
   "input.tabReverse": {
-    "en": "Desired take-home",
+    "en": "Target take-home",
     "zh": "想要的实得金额",
     "vi": "Số tiền muốn nhận",
     "th": "จำนวนที่อยากได้",
