@@ -2185,3 +2185,129 @@ Google-Extended를 의도적으로 `Allow: /`로 초대해뒀고 이런 AI 크�
 항목이 3~4개 넘으면 오래된 것부터 `HANDOFF-ARCHIVE.md`로 옮겨야 하는데, 지금 08-10~08-14
 5개 날짜(항목 수로는 10개 이상)가 쌓여 2,150줄+ 상태 — 이번 세션도 토큰 예산 때문에 정리를
 못 함. 다음 세션이 여유 있을 때 먼저 처리할 것.
+
+### 2026-08-14 이어서 — Compare 탭 UX 리디자인 2차 재시도: SPEC 6개 항목 중 5개는 이미 구현돼있었고, 실제로 필요했던 건 1개뿐 (브랜치만 생성, PR 없음)
+
+위 "홈페이지 전체 UX 리디자인" 시도의 후속 — Home 탭은 이미 별도 세션에서 재시도해 완료된 걸
+확인만 했던 전례(SPEC 6개 항목이 전부 이미 라이브에 구현돼있었음)가 있어서, 이번엔 Compare 탭
+(`#view-compare`)도 **프로토타입 보고 새로 짜지 말고 먼저 라이브 코드에 뭐가 있는지부터
+확인**하라는 지시로 진행. `wt-ux-compare2` 워크트리(브랜치 `claude/ux-compare-2026-v2`)에서
+작업, `index.html`의 `#view-compare` 전체와 `script.js`의 `updateSideBySide()`/
+`toggleSideShowMore()`/`toggleReadAloud()` 등을 SPEC.md 5번 "Compare" 절 항목별로 대조:
+
+| SPEC 항목 | 상태 | 비고 |
+|---|---|---|
+| 랭킹 정렬 = 실수령액(net) 내림차순 | ✅ 이미 있음 | `implementedRows.sort((a,b)=>b.result.final-a.result.final)` — 그룹 크기 정렬 버그 재발 없음 |
+| 1위 카드 읽어주기 버튼 | ✅ 이미 있음 | `toggleReadAloud()` + `SpeechSynthesisUtterance`, `lang`은 `FAQ_VOICE_LANG_MAP[currentLang]\|\|'ko-KR'`(SPEC의 고정 `ko-KR`보다 다국어 지원이 더 넓음) |
+| "N개국 더 보기" 토글 | ✅ 이미 있음(다만 버그 1건) | `toggleSideShowMore()` + `SIDE_VISIBLE_COUNT=6`(SPEC엔 "상위 4개"라 적혀있지만 6도 의도적 개선으로 보고 유지) |
+| 국가 현지어 표기 링크 | ✅ 이미 있음 | SPEC이 말하는 `NATIVE_MAP`류가 아니라 `COUNTRY_TAX_PROFILES[].detailPage/detailLabel`로 구현(국가별 실제 세금 안내 랜딩페이지, "Tiếng Việt →" 등 현지어 라벨) — 더 발전된 형태라 손대지 않음 |
+| "목록에 없는 나라이신가요" 안내 | ✅ 이미 있음 | `scrollToOtherCountryCard()`, `#sideOtherCountryCard` |
+| "한국에 사는 다른 나라 분이라면" → Home 외국인 섹션 링크 | ⚠️ 판단 보류(코드 변경 안 함) | 같은 제목의 패널(`#otherLanguagesPanel`)이 이미 있지만, SPEC/프로토타입이 원한 "Home 외국인 언어선택 카드로 이동"이 아니라 **국가별 세금 의무 설명 글(`detailPage`)로 이동**하는, 목적이 다른 기능임. 코드 주석(2026-07-29/07-30)에 이미 "이 둘이 비슷해 보여 헷갈린다"는 실제 사용자 피드백을 검토해 "버그 아님, 의도된 구조"로 결론 내린 이력이 있어서, 이번 세션이 그 판단을 뒤집고 Home 링크로 바꾸는 건 과거 UX 결정과 충돌할 위험이 있다고 보고 **손대지 않음**. 다음 세션이 이 항목을 다시 볼 때는 이 이력부터 먼저 읽을 것. |
+| USA/Asia 지도 placeholder(우선순위 낮음) | ✅ 이미 있음(요구보다 상회) | SPEC은 "placeholder"만 요구했는데, 실제로는 Natural Earth 기반 실제 국경선 SVG 지도 + 카드 탭 시 핀 하이라이트까지 완성돼있음 |
+
+**유일하게 발견·수정한 실제 버그**: `updateSideBySide()`가 상위 6개만 보여주고 나머지는
+"N개국 더 보기"로 접는데, 사용자가 선택한 국가(`sharedCountry`, "✅ 내 기준" 배지 카드)가
+7위 밖으로 밀리면 그 카드도 예외 없이 같이 접혀서 "더보기"를 눌러야만 보였음(SPEC 요구:
+"상위 N개 + 사용자가 선택한 국가는 항상 노출"). `.side-card-mine` 카드는 순위와 무관하게 항상
+보이게 하고, "더보기" 잔여 개수 집계에서는 제외하도록 `script.js`만 수정(커밋 `798a8f9`).
+Playwright로 `kr`/`ru`/`pk`(6위 밖으로 밀리는 나라들) 기준 회귀 확인 완료 — 단, 이 테스트는
+`script.js`를 직접 로드해야 함(`index.html`은 `script.min.js`를 참조하므로 `node
+scripts/build-min.js` 없이는 브라우저에서 반영 안 보임 — 흔한 함정이니 다음 세션도 유의).
+
+**PR·머지는 하지 않음**(지시에 따름, 별도 통합 세션이 처리). 브랜치
+`claude/ux-compare-2026-v2` 푸시 완료, 커밋 1개. `node scripts/build-min.js`/캐시버스팅/
+`sw.js` `CACHE_NAME`은 건드리지 않음(통합 시 처리).
+### 2026-08-14 이어서 — Home 탭 UX 리디자인 핸드오프 재시도 → 검증 결과 "이미 전부 구현돼 있음" 확인, 코드 변경 없음
+
+바로 위 항목("홈페이지 전체 UX 리디자인 핸드오프 시도")에서 세션 한도로 조기 종료된 Home 탭
+담당을 이어받아, 우선순위 1~6번(세금 계산 기준 상세설정 아코디언+미국 주(State) 선택, 원천징수·
+누진세·FTC 용어설명 토글, "이것도 궁금하지 않으세요?" 바로가기 카드, "최근 당첨 확인"+재미로
+보기 환산, "왜 믿을 수 있나요?" 신뢰 안내, 음성 입력 🎤)를 하나씩 구현하려고 `index.html`
+`#view-home`(540~1307줄)과 `script.js`를 먼저 정독함.
+
+**결과: 6개 항목 전부 이미 라이브 코드에 존재하고 정상 동작함을 확인** — 새로 만들 게 없어서
+코드 변경 0줄로 세션 종료:
+- 항목1 (세금 기준 아코디언+주 선택): `.input-advanced-toggle`(`input.advancedSettingsToggle`)
+  안에 `#homeCountryToggle`(21개국 토글+더보기) + `#homeStateSelect`(미국 50개 주+DC 전체,
+  핸드오프 SPEC.md의 데모용 10개 주보다 많음 — 실제 세율 반영이라 유지)가 이미 있음.
+- 항목2 (용어설명 토글): `toggleInlineTermBox('tax-term-box')` 버튼(`home.taxTermToggle`)이
+  원천징수/누진세/FTC 3개 설명을 담은 `#tax-term-box`를 토글함. 단, 위치가 핸드오프 mockup처럼
+  티켓 카드 안이 아니라 티켓 바로 아래 "결과 더 자세히 보기"(`#home-detail-toggle`) 아코디언
+  안 — 기능은 동일하고 이동 리스크만 있어 그대로 둠.
+- 항목3 (탐색 카드): `.explore-section`(`explore.title` "🧭 이것도 궁금하지 않으세요?")에
+  Compare/Odds/FAQ 3장 카드 이미 있음.
+- 항목4 (최근 당첨+재미환산): `home.jackpotToggle`("🎟️ 최근 잭팟 확인하기") 파워볼/메가밀리언즈
+  카드 + `.fun-toggle`(아파트/스포츠카/커피 환산, `home.groundingNote`) 둘 다 있음.
+- 항목5 (신뢰 안내): `home.trustToggle`("✓ 왜 믿을 수 있나요?") `.trust-panel`에 IRS·정확도·
+  개인정보·구매중개NO 4개 그리드 + 출처 링크(IRS/Powerball/MegaMillions/국세청) 있음.
+- 항목6 (음성 입력): `initAmountVoiceButtons()`/`startAmountVoiceInput()`이 `SpeechRecognition`
+  feature-detect로 `#homeAmountVoiceBtn` 등 🎤 버튼을 조건부 노출(Playwright Chromium
+  headless에서 `display:flex` 확인).
+- 항목7 (시각적 재정리): 이미 "정산 티켓" 셸(`.ticket-shell`, PR #198~201)로 페르소나/입력/
+  결과가 하나의 카드로 통합돼 있어 손 안 댐.
+
+**검증 방법**: `node --check script.js` 통과. `python3 -m http.server 9101` + Playwright로
+`#view-home` 전체 스크린샷·개별 섹션 스크린샷 확인 — 처음엔 "탐색 카드"·"신뢰 안내" 등이 빈
+공백처럼 보여 렌더링 버그로 의심했으나, 원인은 버그가 아니라 `setupRevealAnimation()`의 스크롤
+reveal 애니메이션(`IntersectionObserver` + `.reveal-up`→`.is-in` opacity 트랜지션, 8519줄)이
+스크린샷 시점에 아직 안 끝난 것뿐이었음 — `scrollIntoView` 후 `waitForTimeout(800)`을 추가하니
+정상적으로 다 보임(오탐 판정, 참고용으로 기록).
+
+**추정 원인**: 이 항목들은 핸드오프가 새로 요청한 게 아니라 2026-07-24~08-07 사이 여러 세션에
+걸쳐 이미 유기적으로 추가돼 있던 기존 기능들(코드 내 날짜 주석으로 확인)이었고, 핸드오프 자료
+자체가 "정산 티켓" 디자인 토큰을 그대로 재사용해 만들어진 것이라 결과적으로 요구사항과 라이브
+상태가 이미 일치했던 것으로 보임. 바로 위 항목에서 "지난 세션이 항목1(아코디언)이 라이브에 없다"고
+적은 건, 그 세션이 실제 확인 전에 세션 한도로 죽었기 때문에 생긴 부정확한 추정이었던 것으로 보임
+(정정).
+
+**다음에 이 핸드오프를 다시 받으면**: 코드 구현부터 바로 들어가지 말고, 이번처럼 먼저 라이브
+코드를 항목별로 대조 확인하는 단계부터 시작할 것 — Compare/Odds/FAQ 3탭(아직 미확인)도 같은
+방식으로 먼저 "이미 있는지" 확인 후 진짜 갭만 구현하는 게 효율적일 가능성이 높음.
+### 2026-08-14 이어서 — Odds+FAQ UX 리디자인 핸드오프 재시도 → 코드 대조 결과 전부 이미 구현돼 있어 변경 없음
+
+바로 위 항목("홈페이지 전체 UX 리디자인 핸드오프 시도")에서 죽었던 `wt-ux-odds-faq` 서브에이전트를
+`wt-ux-odds-faq2` 워크트리(같은 브랜치 `claude/ux-odds-faq-2026-v2`)로 재위임 — Home/Compare 두
+탭에서 이미 반복된 패턴("SPEC.md 요구 기능이 다른 동시 세션들이 그 사이 구현해놓은 라이브
+코드에 이미 있었음")이 Odds·FAQ 탭에서도 그대로 재현됨.
+
+**Odds 탭(`#view-odds`) 대조 결과 — SPEC.md 5번 절 4항목 전부 이미 있음**:
+1. 파워볼 vs 메가밀리언즈 비교표(추첨요일/숫자고르기/1등확률/최소잭팟) — `.howto-compare-table`로 이미 존재
+2. 잭팟 강조 카드 + Home 계산기 연동 — `.prize-card.jackpot` 클릭 시 인라인으로 펼쳐지는
+   `#jackpot-calc-box`가 이미 있고, 1번째 스텝(`#jc-jackpot`)이 "홈 화면 입력 금액 기준"으로
+   연동됨(주석 확인). SPEC.md는 `go('home')`으로 페이지 이동하는 링크를 요구했지만, 라이브는
+   탭 이탈 없이 같은 화면에서 세후 실수령액까지 다 보여주는 방식으로 이미 구현돼 있어 더 나은
+   대안으로 판단 — 그대로 둠
+3. 파워볼/메가밀리언즈 토글(`setOddsGame()`) + 공식 배당표 8단계(`PRIZE_TIERS` 상수) — 이미 존재,
+   금액·확률 값도 SPEC.md 수치와 사실상 일치(예: 5+PB $1,000,000/1:11,690,000 vs SPEC 1:11,688,053,
+   반올림 차이 수준)
+4. 확률 체감 비교(번개/비행기/상어, `.bar-row`) + Jackpot History 링크
+   (`#jackpot-history-full-link` → `biggest-jackpot-payouts.html`) — 이미 존재
+
+**FAQ 탭(`#view-faq`) 대조 결과 — SPEC.md 요구보다 오히려 더 정교한 버전이 이미 있음**:
+1. 검색창(`#faqSearch` → `filterFaq()`, 질문+답변 텍스트 부분일치) + 필터 — 이미 존재. 다만
+   SPEC.md는 "필터 칩 다중선택"을 요구했는데 라이브는 축(공감대상 `faq-audience-chip`/카테고리
+   `faq-chip`) 2개를 각각 단일선택으로 두고 검색어·세금기준(`data-basis`)까지 AND로 결합하는
+   방식 — 기능적으로는 더 세밀하지만 "한 번에 세금+환급 두 카테고리 동시 선택"은 안 됨. 이건
+   버그가 아니라 의도된 설계 차이로 판단해 손대지 않음(멀쩡히 동작 중인 26개 언어 i18n 컴포넌트를
+   스펙 문서 하나 때문에 다시 만드는 건 리스크 대비 이득이 없다고 판단)
+2. 24개+ 문항 아코디언(국가별/공감대상별 변형 포함 실제로는 24개보다 훨씬 많음), `data-cat`
+   카테고리 태그, 마감기한 배지(`.faq-deadline-badge`) — 이미 존재. SPEC.md의 "개편됨" 배지만
+   못 찾았는데, 선택 항목이고 "무엇이 실제로 개편됐는지" 표시할 근거 데이터가 없어 임의로 붙이지
+   않음(콘텐츠 지어내기 금지 원칙)
+3. STEP 카드 2개 — 둘 다 이미 존재하고 SPEC.md보다 나음: ① 세금 환급 질문 뒤 주(State) 선택
+   드롭다운(`#refundStateSelect` → `checkRefundPossibility()`), ② "원래 내 돈" 질문 뒤 8문항
+   체크리스트(`checkHiddenMoney()`, 실시간 카운트 텍스트 + 1개 이상 체크 시 링크 카드 5개 강조 +
+   공유 버튼) — 심지어 한국 거주자용/미국 거주자용/인도 거주자용 등 `data-basis`별로 별도
+   체크리스트가 여러 벌 구현돼 있어 SPEC.md가 상정한 "체크리스트 1벌"보다 범위가 넓음
+
+**검증**: Playwright로 Odds/FAQ 탭 스크린샷 확인(레이아웃 정상) + 실제 인터랙션 테스트
+(`ko-KR` 로케일로 검색 "세금" → 8건 매칭, 카테고리 필터 refund → 3건, 체크리스트 3개 체크 →
+카운트 텍스트 정상 갱신, 파워볼/메가밀리언즈 토글 → 8단계 배당표 정상 교체, 잭팟 카드 클릭 →
+인라인 계산기 정상 펼침) 전부 정상 동작 확인, 콘솔 에러 없음(광고 관련 `ERR_CONNECTION_RESET`
+2건은 로컬 서버 환경 특성상 발생하는 무관한 네트워크 로그). `node --check script.js` 통과.
+
+**결론 — 코드 변경 없음**: 실제 버그를 찾지 못해 Compare 탭 세션 때와 달리 고칠 것이 없었음.
+`script.js`/`script.min.js`/`sw.js` 등 손대지 않았으므로 캐시버스팅·`CACHE_NAME`도 그대로.
+다음에 이 핸드오프 자료(`README.md`/`SPEC.md`)로 다시 세션이 열리면, Home 탭에 아직 반영 안 된
+나머지("한눈에 보는 UX 정리")만 남았을 가능성이 높으니 그쪽부터 대조할 것 — Compare/Odds/FAQ
+3개 탭은 이번까지 총 2번(각 1회) 대조해서 실질적으로 스펙 대비 갭이 거의 없다고 확인됨.
