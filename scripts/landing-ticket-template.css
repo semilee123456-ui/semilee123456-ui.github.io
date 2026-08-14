@@ -103,10 +103,15 @@
   li{ font-size:var(--fs-body); margin-bottom:8px; overflow-wrap:anywhere; }
   b, strong{ color:var(--text-dark); }
 
-  /* ---- "정산 티켓" 하드 보더 + 오프셋 그림자 박스 계열 ---- */
+  /* ---- 콘텐츠 박스 계열 — index.html의 실제 보조 콘텐츠 박스(.calc-detail-toggle/
+     .callout/.explore-card 등)는 얇은 var(--border) 테두리+그림자 없음이 기본이고,
+     하드 4px 그림자는 메인 티켓 카드(.ticket-shell) 단 하나에만 씀 — 처음 버전은
+     이 박스들 전부에 하드 섀도우를 줘서 계산기 실제 화면(스크린샷 비교, 2026-08)보다
+     훨씬 무거워 보였음. 아래는 그 비교 결과를 반영해 계산기의 실제 비중 위계를
+     맞춘 값(가장 중요한 quick-answer만 xs 그림자, 나머지 콜아웃류는 그림자 없음) */
   .quick-answer{
-    background:var(--card); border:2px solid var(--text-dark); border-radius:14px;
-    box-shadow:var(--shadow-hard); padding:20px; margin:0 0 26px;
+    background:var(--card); border:1.5px solid var(--border); border-radius:14px;
+    box-shadow:var(--shadow-hard-xs); padding:20px; margin:0 0 26px;
   }
   .quick-answer p.label{
     font-family:var(--font-display); font-size:var(--fs-small); font-weight:700; color:var(--teal);
@@ -125,10 +130,10 @@
   html[dir="rtl"] .quick-answer .row b{ text-align:left; unicode-bidi:plaintext; }
 
   .example-box{
-    background:var(--card); border:2px solid var(--text-dark); border-left:6px solid var(--teal);
-    border-radius:14px; box-shadow:var(--shadow-hard-sm); padding:20px; margin:0 0 24px;
+    background:var(--card); border:1.5px solid var(--border); border-left:5px solid var(--teal);
+    border-radius:14px; padding:20px; margin:0 0 24px;
   }
-  html[dir="rtl"] .example-box{ border-left:2px solid var(--text-dark); border-right:6px solid var(--teal); }
+  html[dir="rtl"] .example-box{ border-left:1.5px solid var(--border); border-right:5px solid var(--teal); }
   .example-box p.label{
     font-family:var(--font-display); font-size:var(--fs-small); font-weight:700; color:var(--teal);
     margin:0 0 10px; text-transform:uppercase; letter-spacing:0.04em;
@@ -144,21 +149,21 @@
   .gray-zone-box p.label{ font-family:var(--font-display); font-size:var(--fs-small); font-weight:800; color:var(--status-amber); margin:0 0 8px; }
 
   .note-box{
-    background:var(--card); border:2px solid var(--text-dark); border-left:5px solid var(--teal);
+    background:var(--card); border:1.5px solid var(--border); border-left:4px solid var(--teal);
     border-radius:10px; padding:14px 16px; margin:18px 0; font-size:var(--fs-note);
   }
-  html[dir="rtl"] .note-box{ border-left:2px solid var(--text-dark); border-right:5px solid var(--teal); }
+  html[dir="rtl"] .note-box{ border-left:1.5px solid var(--border); border-right:4px solid var(--teal); }
   .warn-box{
-    background:var(--card); border:2px solid var(--text-dark); border-left:5px solid var(--status-red);
+    background:var(--card); border:1.5px solid var(--border); border-left:4px solid var(--status-red);
     border-radius:10px; padding:14px 16px; margin:18px 0; font-size:var(--fs-note);
   }
-  html[dir="rtl"] .warn-box{ border-left:2px solid var(--text-dark); border-right:5px solid var(--status-red); }
+  html[dir="rtl"] .warn-box{ border-left:1.5px solid var(--border); border-right:4px solid var(--status-red); }
 
   /* ---- 표 (파워볼 vs 메가밀리언즈, 일시불 vs 연금 등) ---- */
   table{
     display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
     width:100%; border-collapse:collapse; margin:18px 0; font-size:var(--fs-note);
-    font-family:var(--font-mono); border:2px solid var(--text-dark); border-radius:10px;
+    font-family:var(--font-mono); border:1.5px solid var(--border); border-radius:10px;
   }
   /* th/td는 overflow-wrap:anywhere를 일부러 안 씀 — CJK/한글은 브라우저가
      글자 단위로 알아서 줄바꿈해주는데, anywhere를 주면 "Powerball"·"Mega
@@ -181,7 +186,7 @@
   .compare-bar-row{ margin:12px 0; }
   .compare-bar-label{ display:flex; justify-content:space-between; gap:10px; font-size:var(--fs-small); color:var(--text-muted); margin-bottom:5px; }
   .compare-bar-label span:last-child{ font-family:var(--font-mono); font-weight:700; color:var(--text-dark); }
-  .compare-bar-track{ height:12px; border-radius:6px; background:var(--bg); border:1.5px solid var(--text-dark); overflow:hidden; }
+  .compare-bar-track{ height:12px; border-radius:6px; background:var(--bg); border:1.5px solid var(--border); overflow:hidden; }
   .compare-bar-fill{ height:100%; border-radius:4px 0 0 4px; background:var(--teal); }
 
   /* ---- 실수령액 단계별(us-lottery-take-home.html) ---- */
@@ -196,24 +201,26 @@
   .step-body p.t{ font-size:var(--fs-note); color:var(--text-muted); margin:0 0 3px; }
   .step-body p.v{ font-family:var(--font-mono); font-size:var(--fs-h3); font-weight:800; color:var(--text-dark); margin:0; overflow-wrap:anywhere; }
 
-  /* ---- 계산기로 유도하는 CTA ---- */
+  /* ---- 계산기로 유도하는 CTA — 페이지에서 유일하게 강조할 요소라 하드 섀도우를
+     남겨두되(계산기의 .ticket-shell처럼 "페이지당 하나만 강조"하는 위계 유지),
+     가장 큰 --shadow-hard(4px) 대신 sm(3px)로 낮춤 ---- */
   .cta-box{
     background:var(--teal); border:2px solid var(--text-dark); border-radius:16px;
-    box-shadow:var(--shadow-hard); padding:26px 22px; text-align:center; margin:34px 0;
+    box-shadow:var(--shadow-hard-sm); padding:26px 22px; text-align:center; margin:34px 0;
   }
   .cta-box p{ color:var(--card); font-family:var(--font-display); font-size:var(--fs-h3); font-weight:700; margin:0 0 16px; }
   .cta-box a{
     display:inline-block; background:var(--card); color:var(--teal); font-weight:800; font-size:var(--fs-body);
     padding:13px 28px; border-radius:10px; text-decoration:none; border:2px solid var(--text-dark);
-    box-shadow:var(--shadow-hard-sm); transition:transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow:var(--shadow-hard-xs); transition:transform 0.15s ease, box-shadow 0.15s ease;
   }
   .cta-box a:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--text-dark); }
   .cta-box .cta-note{ color:var(--card); opacity:0.85; font-size:var(--fs-small); font-weight:400; margin:12px 0 0; }
 
   .share-btn{
-    display:block; width:100%; background:var(--card); border:2px solid var(--text-dark); color:var(--teal);
+    display:block; width:100%; background:var(--card); border:1.5px solid var(--border); color:var(--teal);
     font-weight:800; font-size:var(--fs-body); padding:14px; border-radius:12px; cursor:pointer;
-    margin:0 0 24px; font-family:inherit; box-shadow:var(--shadow-hard-sm);
+    margin:0 0 24px; font-family:inherit; box-shadow:var(--shadow-hard-xs);
     transition:transform 0.15s ease, box-shadow 0.15s ease;
   }
   .share-btn:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--text-dark); }
@@ -241,14 +248,15 @@
   }
   .related-links a:hover{ border-bottom-color:var(--teal); }
 
+  /* index.html의 배지/칩(.side-card-best-badge 등)은 얇은 1px 색상 테두리 + 그림자 없음이
+     기본값이라(2026-08 계산기 vs 랜딩 스크린샷 비교로 확인) 같은 문법으로 맞춤 */
   .lang-links{ display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 32px; padding:0; list-style:none; }
   .lang-links a{
     font-size:var(--fs-small); font-weight:700; color:var(--text-dark); text-decoration:none;
-    border:2px solid var(--text-dark); border-radius:999px; padding:7px 15px; background:var(--card);
-    box-shadow:var(--shadow-hard-xs); display:inline-block; transition:transform 0.15s ease, box-shadow 0.15s ease;
+    border:1px solid var(--teal); border-radius:999px; padding:7px 15px; background:var(--card);
+    display:inline-block; transition:background-color 0.15s ease;
   }
-  .lang-links a:hover{ transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--text-dark); }
-  .lang-links a:active{ transform:translate(1px,1px); box-shadow:0 0 0 var(--text-dark); }
+  .lang-links a:hover{ background:rgba(var(--teal-rgb),0.08); }
 
   .disclaimer{
     font-size:var(--fs-small); color:var(--text-muted); margin-top:36px; padding-top:18px;
