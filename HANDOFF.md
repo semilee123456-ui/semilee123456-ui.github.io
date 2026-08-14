@@ -2199,3 +2199,74 @@ reveal 애니메이션(`IntersectionObserver` + `.reveal-up`→`.is-in` opacity 
 **결론 — 갭 없음, 코드 변경 없음.** 직전 세션(PR #202~#207)이 이미 이 핸드오프를 완전히
 반영했고, 이번 재검증에서도 새로 고칠 부분을 찾지 못함. 이 브랜치(`claude/handover-github-
 review-8anpv3`)에는 문서성 커밋만 추가.
+
+### 2026-08-14 이어서 — 바로 위 "갭 없음" 결론이 사용자 스크린샷으로 뒤집힘 → 실제 렌더링
+비교로 재재검증, 진짜 갭 1건 발견·수정
+
+바로 위 항목이 "코드 토큰(색상 변수·`script.js` 상수) grep 대조 + 스크린샷 2장"만으로 "갭
+없음"이라 결론 냈는데, **사용자가 라이브 사이트 스크린샷 2장을 보여주며 "아직도 너무
+다르다"고 반박** — 근거가 부실했음(실제 렌더링 화면을 목업과 나란히 비교한 게 아니라
+색상 토큰 일치 여부 위주였음). 이번엔 목업(`.dc.html`)을 실제로 브라우저에 띄워 스크린샷을
+찍고, 로컬 빌드도 같은 폭·같은 탭 순서로 찍어서 **픽셀/레이아웃 단위로 대조**.
+
+**목업 렌더링 관련 인프라 이슈(다음에 재사용할 것)**:
+- 이 샌드박스의 아웃바운드 HTTPS는 CA를 재발급하는 프록시를 거치는데, Playwright가 띄우는
+  Chromium(Chrome Root Store 사용, OS/NSS 트러스트스토어 무시)은 그 CA를 신뢰하지 않아서
+  `https://` 목적지(목업이 필요로 하는 unpkg React/Babel, Google Fonts, jsDelivr Pretendard)
+  전부 `ERR_CONNECTION_RESET`으로 실패함 — `--proxy-server` 플래그를 붙여도 마찬가지(curl은
+  되는데 Chromium은 안 됨). **해결**: Chromium은 프록시 없이 그대로 띄우고, `page.route(/^https:\//)`
+  로 모든 https 요청을 가로채서 Node의 `fetch()`(전역 `NODE_EXTRA_CA_CERTS` 적용됨)로 대신
+  받아와 `route.fulfill()`로 채워줌. 재사용 가능한 헬퍼로 `scripts/screenshot-dc-mockup.js`
+  (목업용)·`scripts/screenshot-local-build.js`(로컬 빌드용, `nav-compare`/`nav-odds`/
+  `nav-faq` id 클릭 + `#settingsMenu`>`#theme-toggle` 다크모드 토글) 둘 다 저장해둠.
+- 로컬 빌드 스크린샷 시 Playwright 기본 로케일(en-US)로 두면 `script.js`의
+  `navigator.language` 자동 언어감지가 발동해 전체 UI가 영어로 바뀌어버려 목업(한글 고정)과
+  비교가 안 됨 — `newPage({ locale: 'ko-KR' })`로 강제.
+- 로컬 빌드는 `.reveal-up`(IntersectionObserver 스크롤 등장 애니메이션, `opacity:0`→`1`)을
+  많이 쓰는데, Playwright의 `fullPage` 스크린샷은 실제 스크롤이 아니라 뷰포트 리사이즈로
+  캡처해서 옵저버가 안 터짐 — Compare 탭 국가별 랭킹 카드 전체가 스크린샷에서 통째로
+  안 보이는 "가짜 갭"이 발생했음(DOM엔 정상적으로 다 들어있었음, `opacity:0`인 부모
+  `.panel.reveal-up` 때문). **찍기 전에 페이지를 400px 단위로 끝까지 스크롤했다가 다시
+  맨 위로 돌아오는 처리**를 넣어서 해결.
+
+**실제 대조 결과**:
+1. **헤더(로고/네비/다크토글 위치/하드보더)** — 목업은 로고가 텍스트뿐인 원형 배지("참"),
+   네비 옆에 무드/지구본 아이콘 2개(다크토글이 헤더에 독립 버튼), 헤더 자체엔 카드 테두리가
+   없음. 로컬 빌드는 곰돌이 마스코트 SVG 로고, 지구본 아이콘 1개(설정 패널 안에 다크토글이
+   있음), 헤더 전체가 하드보더+오프셋 섀도우 카드. **육안으로는 확실히 다르지만, 이건 갭이
+   아니라 이미 확정된 의도적 이탈** — 2026-08-13 세션 항목("헤더까지 확장")에 "곰돌이
+   마스코트·통합 설정 버튼·밑줄 탭은 과거 버그 이력 때문에 그대로 유지(사용자 확인 질문으로
+   범위 합의)"라고 명시돼 있음. **되돌리지 않음.**
+2. **Compare 탭 국가 랭킹 카드가 모바일에서 전부 1열(목업 SPEC은 "3위 이하 2열 그리드")** —
+   이것도 갭 아님, `styles.css` 1156~1168줄 주석에 2026-07-29/07-30에 사용자가 스크린샷으로
+   직접 지적해서 "휴대폰 폭(~900px 이하)에서 항상 1열"로 의도적으로 바꾼 이력이 그대로 적혀
+   있음. **되돌리지 않음.**
+3. **Odds/FAQ 탭 실제 콘텐츠 분량** — 목업은 각 tab이 상대적으로 단순(Odds: 배당표+체감비교
+   막대 정도, FAQ: 24문항)한데 라이브는 역대 잭팟 기록/실제 당첨 사례/번호 통계/번개 번호
+   뽑기(Odds), STEP 카드 2개+체크리스트+환급 링크 카드 5개(FAQ) 등 목업에 없는 기능이 훨씬
+   많음 — **갭 아니라 목업보다 넓은 기존 범위**(CLAUDE.md 지시대로 보존, 축소 안 함), 스타일도
+   하드보더 티켓 카드 문법과 일관되게 잘 입혀져 있어 손댈 곳 없음.
+4. **[진짜 갭] `.hero-category-tag`("미국 복권 세금 계산기" 등 탭 이표)가 스타일이 빠진 회귀** —
+   목업 SPEC.md 5절/스크린샷엔 이 자리가 인디고 솔리드 알약 배지(`COMPARE`/`ODDS`/`FAQ`도
+   같은 스타일)인데, `styles.css`를 보면 `.hero-category-tag`에 `border-radius:20px`는
+   남아있고 `background:none; padding:0`으로 값만 빠져 있어서 실제로는 그냥 회색 텍스트
+   한 줄로만 보이고 있었음(HANDOFF.md/ARCHIVE 어디에도 "의도적으로 배지를 없앴다"는 기록이
+   없음 — 다른 두 항목과 달리 합의된 이탈이 아니라 진짜 미완성/회귀로 판단). **수정**: 배경
+   `var(--indigo)`, 글자색 `var(--bg)`(라이트=거의흰색/다크=거의검정이라 `--indigo`가
+   테마별로 뒤집혀도 별도 다크모드 오버라이드 없이 대비 유지, 목업 다크 스크린샷의 "옅은
+   배지+짙은 글자" 조합과 실제로 일치), padding 4px 14px 복원. Home 탭에만 있는 요소라
+   Compare/Odds/FAQ에 새로 배지를 추가하는 건(마크업·i18n 키 신설 필요) 이번엔 손 안 댐 —
+   기존 요소 스타일만 원복하는 최소 범위로 한정.
+
+**검증**: `home_audit`·`console_error_audit`·`i18n_coverage_audit`·`wrap_audit`·
+`nav_slider_audit` 전부 `ISSUES:0`(769개 i18n 키 전부 커버리지 유지 = 콘텐츠 유실 없음
+확인). `full_overflow_sweep`은 백그라운드로 돌려서 별도 확인.
+
+변경 파일: `styles.css`(`.hero-category-tag` 배지 복원), `styles.min.css`(재빌드),
+`index.html`(`styles.min.css?v` `20260814-2`→`20260814-3`), `sw.js`(`CACHE_NAME`
+v43→v44), `scripts/screenshot-dc-mockup.js`+`scripts/screenshot-local-build.js`(신규,
+목업/로컬 빌드 렌더링 스크린샷 헬퍼 — 재사용할 것).
+
+커밋: `9ee8c8e`(스크린샷 헬퍼 1개 추가) → `a7825a4`(배지 복원 + 헬퍼 2개 + 인프라 개선,
+같은 브랜치에 커밋 즉시 push됨). **PR은 만들지 않음** — 사용자가 메인 세션에 직접 병합을
+요청해서 병합은 이 서브세션 범위 밖.
