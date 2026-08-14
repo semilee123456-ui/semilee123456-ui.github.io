@@ -11861,3 +11861,81 @@ GitHub Pages 빌드는 정상 완료(`pages build and deployment` 워크플로 s
 변경 파일: `script.js`(`buildShareCard()`의 `contentTop` 22→40, 재빌드),
 `script.min.js`(재빌드), `index.html`(`script.min.js?v`
 `20260810-3`→`20260810-4`), `sw.js`(`CACHE_NAME` v28→v29).
+
+### 2026-08-12 — 파워볼 8/10 회차 + 메가밀리언즈 8/11 회차 반영 (PR #189, 머지·배포 확인 완료)
+
+사용자가 usamega.com 스타일 요약 스크린샷(파워볼 8/10 회차·메가밀리언즈 8/11 회차,
+양쪽 다음 잭팟 표시)을 공유. powerball.com 공식 페이지 WebFetch + DraftKings 기사 +
+valottery.com(버지니아 주정부 공식 페이지) 3곳 교차검증 후 반영 — 파워볼 8/10 회차
+(6,37,54,55,64+10, Power Play 3x) 당첨자 없어 다음 추첨(8/12, 세션 당일) 잭팟이
+$1 Billion(현금가치 $433.1M)으로 증가. 메가밀리언즈 8/11 회차(1,20,30,46,68+17)도
+당첨자 없어 다음 추첨(8/14) 잭팟이 $90M로 증가(현금가치는 valottery $38M·사용자
+스크린샷 $38.7M 중 더 정밀한 스크린샷 값 채택 — 판매량에 따라 하루에도 여러 번
+갱신되는 값이라 흔한 오차로 판단).
+
+4곳(`odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`+`POWERBALL_JACKPOT_ARCHIVE`,
+`MEGAMILLIONS_DRAW_ARCHIVE`+`MEGAMILLIONS_JACKPOT_ARCHIVE`) 전부 새 회차 추가,
+`script.js`의 `LATEST_DRAW`/`JACKPOT_DATA` 갱신.
+
+**검증**: `draw_archive_integrity_check`(4개 아카이브, 이슈 0건). `node --check`
+script.js/script.min.js/odds-data.js 통과. `git diff --stat`로 의도한 5개 파일만
+변경됐는지 확인.
+
+변경 파일: `odds-data.js`(4개 아카이브에 새 회차 추가), `script.js`(`LATEST_DRAW`/
+`JACKPOT_DATA` 갱신, `odds-data.js?v` `20260810-2`→`20260812-1`), `script.min.js`
+(재빌드), `index.html`(`script.min.js?v` `20260810-4`→`20260812-1`), `sw.js`
+(`CACHE_NAME` v29→v30). PR #189, 커밋 `1aaeba2`→머지 `66d0405`.
+
+**같은 날 다른 세션이 이어서**: PR #190("공유 버튼 데스크톱 폴백에서 이미지
+자동 다운로드 제거", 커밋 `988f705`)이 이 세션과 별개로 머지됨 — 이 세션은
+관여 안 함, 다음 세션이 이 주제를 다시 다룰 일이 있으면 그 커밋 메시지부터
+확인할 것.
+
+### 2026-08-12 이어서 — 홈 하단 "더 알아보기" 제목 번역 누락 수정 (PR #193, 머지·배포 확인 완료)
+
+사용자가 다른 언어로 전환한 스크린샷을 보여주며 "더 알아보기" 제목만 한국어로
+고정돼 나오는 게 의도한 거냐고 질문. 확인해보니 **부분적으로만 의도된 것**이었음:
+개별 링크들(파워볼 세금 계산·中国税收居民指南·Hướng dẫn cho người Việt Nam 등)이
+각자 언어 그대로 나오는 건 sitemap.html과 같은 관례로 의도된 게 맞음(링크가
+연결되는 페이지 자체가 그 언어 전용이라서). 하지만 **섹션 제목 자체는 다름** —
+sitemap.html의 h2Core/h2Abroad 제목은 실제로 26개 언어 번역이 붙어있는데, 이
+섹션(`related-guides-title`)은 `data-i18n` 연결이 아예 없이 한국어가
+하드코딩돼있었음(2026-08-06 최초 구현 시 "링크 라벨은 번역 안 함"이라는 주석
+방침이 제목까지 실수로 덮은 것으로 보임).
+
+- **수정**: `index.html`에 `data-i18n="home.relatedGuidesTitle"` 추가,
+  `i18n-source/translations.json`에 새 키 26개 언어 번역("Learn more"류 짧은
+  문구) 추가 → `node scripts/build-i18n.js` 재생성. `script.js`의 i18n fetch
+  캐시버스팅(`20260810-1`→`20260812-1`)도 같이 올려서 캐시된 옛 JSON에 새 키가
+  가려지지 않게 함.
+- **검증**: `i18n_coverage_audit`(768개 키)·`i18n_attr_lint`·
+  `console_error_audit`(161)·`home_audit`(18) 전부 ISSUES:0. Playwright로
+  한국어/영어/일본어/아랍어 4개 언어 실제 렌더링 확인("더 알아보기"→"Learn
+  more"→"もっと詳しく"→"معرفة المزيد").
+- **머지·배포 확인 완료**: PR #193 머지 후 `curl`로 라이브
+  `chamtax.com/i18n/en.json?v=20260812-1`에서 `home.relatedGuidesTitle`:
+  "Learn more" 실제 반영 확인.
+
+### 2026-08-12 이어서 — 헤더 언어/설정 버튼(🌐) 시각적으로 눈에 띄게 개선 (PR #195, 머지·배포 확인 완료)
+
+사용자가 헤더의 🌐 버튼 스크린샷을 보여주며 "이게 언어 변경인지 모르겠다는데
+조금 더 눈에 띄게 만들 수 있을까? 색상을 다르게 해도 되고" 요청.
+
+- **원인**: `.settings-toggle`(언어·다크모드·글자크게·고대비를 한데 묶은
+  설정 패널의 트리거 버튼)이 `background:rgba(teal,0.08)` + 얇은 테두리로
+  거의 안 보이는 옅은 tint였음 — 클릭 가능한 버튼처럼 안 보여서 존재 자체를
+  못 알아챈 것으로 보임.
+- **수정**: 원형을 teal 단색으로 채우고(`background:var(--teal)`) 그림자를
+  줘서(`box-shadow:0 3px 10px rgba(teal,0.4)`) 눈에 띄는 "누를 수 있는
+  칩"처럼 보이게 함, 탭 시 살짝 눌리는 피드백(`:active{ transform:scale(0.94) }`)도
+  추가. 다크모드는 그림자만 어두운 톤으로 조정. 텍스트 라벨은 안 붙임(예전에
+  다크모드/글자크게/고대비/언어 4개를 개별 아이콘으로 늘어놨다가 좁은 화면에서
+  줄바꿈·잘림 문제로 하나로 통합했던 이력이 있어서, 다시 라벨을 붙이면 그 문제가
+  재발할 수 있음 — 색상/그림자만으로 해결). 패널 열림/닫힘 동작
+  (`<details>/<summary>`)은 전혀 안 건드림.
+- **검증**: `console_error_audit`(161)·`home_audit`(18)·`wrap_audit`(168) 전부
+  ISSUES:0. Playwright로 라이트/다크 모드 스크린샷 확인 + 클릭 시 설정 패널이
+  정상적으로 열리는 것(`#settingsMenu.open`) 확인.
+- **머지·배포 확인 완료**: PR #195 머지 후 `curl`로 라이브
+  `chamtax.com/index.html`에서 `styles.min.css?v=20260812-1` 반영 확인.
+
