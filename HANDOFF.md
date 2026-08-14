@@ -1984,3 +1984,67 @@ Space Grotesk 누락 수정, 커밋 `efe1a70`)을 **PR #203**으로 열어 머�
    안 닿음, 여러 세션에 나눠 진행할 것.
 4. (참고, 저확신) `.side-card-other`(비교 탭) 폭 불일치, `.cta-btn`/`.share-btn`
    전역 공용 클래스의 Space Grotesk 적용 여부 — 둘 다 깊이 확인 안 됨.
+
+### 2026-08-14 이어서 — 파워볼 8/12 회차 반영 + 영어 전용 줄바꿈 버그 2건 수정 (같은 브랜치, 아직 PR 생성 전)
+
+서로 무관한 두 작업을 별도 커밋으로 진행.
+
+**1) 파워볼 8/12 회차 + 잭팟 리셋($20M/$8.7M)** — 사용자가 공유한 스크린샷(4,26,66,67,69
++ 파워볼 9, Power Play 2x)을 `powerball.com` draw-result 공식 페이지 + `powerball.com`
+홈페이지 + `lotteryusa.com` 3곳 WebFetch로 교차검증, 전부 정확히 일치. 이 회차에서
+일리노이주 당첨자가 나와 잭팟 적중(당첨 전 예고액 $1.04B) — 다음 추첨(8/15) 잭팟이
+표준 시작액 $20M(현금가치 $8.7M)로 리셋됨(powerball.com·lotteryusa.com 둘 다 확인,
+잭팟이 줄어든 것은 당첨자 발생에 따른 정상 동작이지 오류 아님). `script.js`의
+`LATEST_DRAW.powerball`/`JACKPOT_DATA.powerball` 갱신 + 갱신 이력 주석 추가,
+`odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`·`POWERBALL_JACKPOT_ARCHIVE`에 8/12 회차
+추가(JACKPOT_ARCHIVE 금액은 이 배열의 기존 관례대로 회차 시점에 script.js가 추적하던
+예고액 $1000M 그대로 기록). 메가밀리언즈는 스크린샷의 8/11 회차·$90M/$38.7M 잭팟이
+이미 기존 값과 정확히 일치해서 변경 없음(사용자 브리핑에 첨부된 태스크 지시대로
+확인만 하고 손 안 댐). Double Play(3,4,19,21,58+8)는 `odds-data.js` 87행 주석대로
+이 아카이브 스코프 밖이라 반영 안 함.
+
+- **검증**: `draw_archive_integrity_check`(4개 아카이브, 이슈 0건), `node --check`
+  script.js/script.min.js/odds-data.js 통과, `git diff --stat`로 의도한 5개 파일만
+  변경됐는지 확인.
+- **변경 파일**: `script.js`(`LATEST_DRAW`/`JACKPOT_DATA` 갱신, `odds-data.js?v`
+  `20260812-1`→`20260814-1`), `odds-data.js`(2개 아카이브에 8/12 회차 추가),
+  `script.min.js`(재빌드), `index.html`(`script.min.js?v` `20260813-3`→`20260814-1`),
+  `sw.js`(`CACHE_NAME` v39→v40).
+
+**2) 영어 전용 좁은~중간 폭 줄바꿈 버그 2건 수정** — 위 "다음 세션 후보" 1번 항목(2026-08-14
+QA 세션이 "판단 보류"로 남긴 것) 중 사용자가 카피를 확정해 온 것을 그대로 적용:
+
+- 입력 카드 금액 탭(`input.tabAnnounced`/`input.tabReverse`): "Announced (annuity)" →
+  **"Annuity"**, "Desired take-home" → **"Target take-home"**. 320~420px에서는 이제
+  단어 중간 줄바꿈이 완전히 사라짐(공백/하이픈 등 정상 위치에서만 줄바꿈). **240px는
+  칸 자체가 59px로 극도로 좁아서** "Annuity"→"Annui"/"ty", "Target"→"Targe"/"t" 처럼
+  짧아진 단일 단어도 여전히 부분적으로 끊김 — 이전의 "Announced (annuity)" 전체가
+  깨지던 것보다는 훨씬 개선됐지만 240px에서 완전히 해소된 건 아님(다음 세션이 필요하면
+  탭 레이아웃 자체를 재검토할 것 — HANDOFF에 이미 기록된 대로 CSS 전용 대안은 시도해봤자
+  더 나쁜 결과였음).
+- 결과 카드 공유/저장 버튼(`home.shareDreamBtn`/`home.saveImageBtn`, `#home-share-btn`/
+  `#home-save-image-btn`): "Share this result" → **"Share result"**, "Save as image" →
+  **"Save image"**. 240~420px에서 3줄(117~119px)로 꺾이던 게 2줄(87~89px)로 줄어
+  한국어 버전과 정확히 같은 높이가 됨(옆 44px TTS 아이콘 버튼과의 격차도 그만큼 축소).
+  단, 이 두 키는 `#home-share-btn`/`#home-save-image-btn` 외에 결과 요약(dream) 공유
+  버튼·잭팟 지수 3개 저장 버튼·주석 모달 저장/공유 버튼에도 재사용되고 있어서, 이번
+  축약이 그 버튼들에도 동일하게 반영됨(별도 키로 분리돼 있지 않음 — 문제라기보다는
+  참고 사항).
+- `i18n-source/translations.json`의 4개 키 `en` 값만 수정 → `node scripts/build-i18n.js`
+  로 `i18n/en.json` 재생성(다른 25개 언어 파일 diff 없음 확인). `script.js`의 i18n fetch
+  캐시버스팅 `20260813-1`→`20260814-2`, `script.min.js` 재빌드, `index.html`의
+  `script.min.js?v` `20260814-1`→`20260814-2` 동기화, `sw.js` `CACHE_NAME` v40→v41.
+- **검증**: Playwright로 240/320/390/420px 영어 스크린샷 확인(위 결과 그대로).
+  `i18n_coverage_audit`(769키)·`home_audit`(18)·`console_error_audit`(161) 전부
+  `ISSUES:0`, `node --check` script.js/script.min.js 통과.
+- **변경 파일**: `i18n-source/translations.json`, `i18n/en.json`, `script.js`,
+  `script.min.js`, `index.html`, `sw.js`.
+
+**아직 PR 생성 전 — `claude/handover-github-latest-guu7gj` 브랜치에 두 커밋으로 푸시만
+완료.** 사용자가 직접 diff 검토 후 PR/머지/배포 확인/최종 인수인계를 진행할 예정.
+
+**참고**: 이 파일 상단 "새 세션 시작 시 지켜야 할 것" 규칙대로면 "작업 이력" 섹션의
+날짜별 항목이 3~4개를 넘으면 오래된 항목부터 `HANDOFF-ARCHIVE.md`로 옮겨야 하는데,
+현재 08-10/08-12/08-13/08-14 총 4개 날짜(항목 수로는 훨씬 많음)가 쌓여있음 — 이번
+세션은 사용자가 요청한 두 작업(파워볼 갱신 + 줄바꿈 수정)에만 집중하느라 정리를 안
+했으니, 다음 세션이 이 정리를 먼저 검토할 것.
