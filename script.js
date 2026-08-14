@@ -2176,21 +2176,12 @@ function renderOddsTabDataWhenReady(){
   }).catch(err => console.error('[odds-data]', err));
 }
 
-// "나는 어떤 경우일까요?" 패널은 첫 방문자에게만 기본 펼침으로 보여줌(2026-07-25 결정,
-// 재외국민/외국인 방문자가 자기 경우를 못 찾고 이탈하는 것 방지) — 다만 매번 다시 펼쳐서
-// 보여주면 재방문자에게는 첫 화면이 불필요하게 길어 보인다는 피드백(2026-07-30, 모바일
-// 정보 밀도 점검)을 받아, 한 번이라도 이 패널을 본 적 있는 사람에게는 다음 방문부터 기본
-// 접힘으로 시작하게 함. localStorage 접근 실패(사파일 프라이빗 모드 등)는 조용히 무시 —
-// 실패해도 "매번 펼쳐 보이는" 기존 동작으로만 되돌아갈 뿐 기능이 깨지진 않음
-function collapseIntroPersonaForReturningVisitors(){
-  const accordion = document.getElementById('introPersonaAccordion');
-  if (!accordion) return;
-  try {
-    if (localStorage.getItem('introPersonaSeen')) accordion.open = false;
-    else localStorage.setItem('introPersonaSeen', '1');
-  } catch(e) {}
-}
-document.addEventListener('DOMContentLoaded', collapseIntroPersonaForReturningVisitors);
+// 2026-08-14: "나는 어떤 경우일까요?" 재방문자 접힘 로직은 2026-08-01부터 index.html의
+// 인라인 스크립트(chamtax_intro_seen 키, #introPersonaAccordion 바로 뒤 — FOUC 없이 파싱
+// 시점에 즉시 접어줌)로 대체됨. 이 함수(introPersonaSeen 키)는 그 이전의 구버전으로,
+// DOMContentLoaded 시점엔 이미 인라인 스크립트가 처리를 끝낸 뒤라 실질적 효과가 없는 죽은
+// 코드였음 — 서로 다른 localStorage 키 2개가 같은 개념을 따로 추적하는 혼란만 유발해서
+// 제거함(index.html의 인라인 스크립트가 유일한 구현으로 남음).
 
 // "나는 어떤 경우일까요?" 안내 배너에서 "한국에 살아요" 카드를 누르면, 배너를 접고
 // 바로 아래 입력창으로 스크롤해줌 — 이미 홈 화면에 있으니 페이지 이동은 필요 없음
