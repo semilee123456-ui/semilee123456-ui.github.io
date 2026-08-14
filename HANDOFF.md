@@ -2169,7 +2169,9 @@ reveal 애니메이션(`IntersectionObserver` + `.reveal-up`→`.is-in` opacity 
    세션은 여유 있을 때 오래된 날짜별 항목부터 `HANDOFF-ARCHIVE.md`로 옮길 것(파일 상단
    "새 세션 시작 시 지켜야 할 것" 규칙 참고).
 2. 저장 이미지("이미지로 저장") 캔버스 톤 일치 여부 — 여전히 사용자 논의 필요.
-3. 90개 국가별/언어별 랜딩페이지에 "정산 티켓" 스타일 확산 — 아직 미착수.
+3. ~~90개 국가별/언어별 랜딩페이지에 "정산 티켓" 스타일 확산~~ — 2026-08-14 세션(아래
+   해당 항목 참고)에서 브랜치 `claude/landing-ticket-style-2026-08`로 작업 완료, main
+   머지 대기 중.
 4. `robots.txt`의 `Crawl-delay: 10`이 라이브에 실제로 반영됐는지 재확인(머지 직후 Cloudflare
    캐시 때문에 확인 안 됐었음, 수 시간 지연은 정상).
 
@@ -2324,3 +2326,82 @@ v43→v44), `scripts/screenshot-dc-mockup.js`+`scripts/screenshot-local-build.js
 **다음 세션 후보**: (1) `full_overflow_sweep`이 찾은 러시아어권 5개 언어 320px 폭 오버플로우
 (위 항목 참고, 이번 세션 범위 밖). (2) 90개 국가별/언어별 랜딩페이지에 "정산 티켓" 스타일
 확산 — 여전히 미착수.
+### 2026-08-14 이어서 — 랜딩페이지 90여 개 "정산 티켓" 스타일 확산 완료 (브랜치 `claude/landing-ticket-style-2026-08`, main 머지 대기)
+
+**배경**: `index.html` 계산기는 "정산 티켓" 리디자인이 이미 실서비스에 배포돼 있었지만,
+계산기 밖의 국가별/언어별 콘텐츠 랜딩페이지(약 90개)는 각자 독립된 인라인 `<style>`을 가진
+채 옛날 평면 화이트 카드 스타일 그대로 남아있었음(디자인팀 2차 핸드오프 요청 사항). 이
+세션에서 그 갭을 메움.
+
+**대상 3개 패밀리, 총 77개 파일**:
+1. `*-resident-us-lottery-tax.html` — 20개(허브 `korea-resident-us-lottery-tax.html`
+   포함, 구조는 나머지 19개와 동일하게 처리됨)
+2. `*_in_korea_lottery_tax.html` 26개 + 하이픈 표기인 `vietnamese-in-korea-lottery-tax.html`
+   1개 = 27개
+3. `us-lottery-basics*.html` 27개 + `us-lottery-take-home.html` +
+   `powerball-tax.html` + `megamillions-tax.html` = 30개
+
+**접근 방식 — 패밀리별 템플릿 대신 공용 슈퍼셋 템플릿 1벌**: 세 패밀리의 클래스 구조를
+전수 조사해보니(`quick-answer`/`example-box`/`gray-zone-box`/`cta-box`/`faq-item`/
+`related-links`는 3패밀리 공통, `table`/`compare-bar-*`/`note-box`/`warn-box`/`h3`는
+basics 계열 전용, `steps`/`step-row`는 `us-lottery-take-home.html` 전용, `share-btn`은
+in_korea 계열 전용) 거의 다 겹쳐서, 지시받은 "패밀리마다 템플릿 1벌"을 문자 그대로 3개
+따로 만드는 대신 **모든 클래스를 포괄하는 슈퍼셋 템플릿 하나**(`scripts/
+landing-ticket-template.css`)로 통합함 — 안 쓰는 선택자는 그냥 매치 안 될 뿐 해롭지
+않고, 3개를 따로 유지보수하는 것보다 버그 표면이 줄어듦. 색상/폰트/보더·섀도우 토큰은
+새로 만들지 않고 `styles.css`의 "정산 티켓" `:root` 값(2026-08-13 리디자인 + 그 후 QA로
+다크모드 대비 조정까지 끝난 값)을 그대로 재사용. RTL(아랍어/우르두어)은 각 파일에 이미
+있는 `<html dir="rtl">`을 기준으로 `html[dir="rtl"]` 선택자 하나로 처리 — 파일마다 다른
+버전을 만들 필요가 없었음.
+
+**본문 텍스트는 한 글자도 안 건드림** — `<style>...</style>` 블록 전체 교체와, 헤딩/숫자용
+Space Grotesk·IBM Plex Mono 웹폰트 `<link>` 삽입(index.html과 동일한 Google Fonts URL)
+말고는 아무것도 안 고침. HTML 구조(섹션 순서, 클래스명, id, 스크립트)는 완전히 그대로 —
+절취선 장식용 `<div>` 추가도 고려했으나, 원형 노치를 좁은 화면에서 안전하게 위치시키는
+로직이 90개 파일에 걸쳐 회귀 위험이 커서 포기하고 대신 순수 CSS(점선 `border-bottom`/
+`border-top`)만으로 절취선 느낌을 냄 — 구조 변경 리스크를 아예 없앤 선택.
+
+**재사용 스크립트**: `scripts/apply-landing-ticket-style.js` — 템플릿 CSS를 대상 HTML
+파일들의 `<style>` 블록과 통째로 바꿔치기하고 폰트 `<link>`를 삽입(이미 있으면 재실행해도
+중복 삽입 안 함, idempotent). 다음에 이 템플릿을 또 고칠 일이 있으면(색상 미세조정,
+새 랜딩페이지 추가 등) `scripts/landing-ticket-template.css`만 고치고 이 스크립트를
+전체 파일 목록에 다시 돌리면 됨.
+
+**작업 중 발견·수정한 버그 2건(전부 검증 스크린샷으로 발견)**:
+1. CSS 주석 안에 리터럴 `</style>` 문자열을 그대로 써놨더니 HTML 파서가 주석인지 모르고
+   그 바이트열만 보고 실제 `<style>` 태그를 조기 종료시켜서 첫 적용 시도(korea-resident/
+   japan-resident) 페이지가 완전히 깨짐 — CSS 파일 주석에서 그 문자열 자체를 빼서 수정.
+2. `us-lottery-basics.html`류의 표(파워볼 vs 메가밀리언즈 등)가 240px에서 (a) 첫 번째
+   열(행 이름표)이 글자 단위로 세로로 쪼개져 보이고 (b) "Powerball"/"Mega Millions"
+   같은 줄바꿈 지점 없는 영단어가 CLAUDE.md가 경고한 대로 중간에서 끊기던 문제 — 첫 열에
+   `white-space:nowrap`, 나머지 셀은 `overflow-wrap:anywhere` 제거하고 표 자체가
+   `overflow-x:auto`로 가로 스크롤되게 함(단어 안 끊기는 쪽을 우선). 이 수정은 템플릿
+   공용 파일 하나만 고치면 되니, 이미 커밋했던 resident/in_korea 파일들도 재실행해서
+   템플릿 텍스트를 동기화함(그 두 계열엔 `<table>`이 없어서 시각적 변화는 없음).
+
+**검증(Playwright, `NODE_PATH=/opt/node22/lib/node_modules`, 로컬 `python3 -m http.server
+9000`)**: 패밀리마다 240px/390px 뷰포트로 대표 파일 렌더링 확인 —
+- RTL: `arabic_in_korea_lottery_tax.html`(390px·240px), `us-lottery-basics-ar.html`
+  (390px, 표 우측 정렬까지 확인)
+- CJK/세로로 긴 글자: `japan-resident-us-lottery-tax.html`(390px, 간지·가나 혼합),
+  `myanmar_in_korea_lottery_tax.html`(240px, 결합 문자 쌓임 확인),
+  `us-lottery-basics-zh.html`·`us-lottery-basics-km.html`(크메르어, 240px/390px)
+- 긴 단어/키릴: `russia-resident-us-lottery-tax.html`(240px)
+- 다크모드: `korea-resident-us-lottery-tax.html`에서 실제로 토글 버튼 클릭해 색 반전
+  확인(JS는 전혀 안 건드렸으므로 `data-theme` 속성·`localStorage` 로직 그대로 동작)
+- 77개 파일 전부 `grep -c "</style>"`로 정확히 1개씩만 있는지(위 파서 버그 재발 방지)
+  일괄 확인
+
+**커밋 3개, 전부 `claude/landing-ticket-style-2026-08` 브랜치에 push 완료**(PR은 만들지
+않음 — 메인 세션이 검토 후 만들기로 함):
+- `3f0afbf` — resident 계열 20개 + 템플릿/스크립트 최초 커밋
+- `bd8037a` — in_korea 계열 27개
+- `ce000a8` — basics 계열 30개 + 위 표 버그 2건 수정(전체 77개 파일 템플릿 재동기화)
+
+**남은 것 / 다음 세션이 볼 것**:
+- 이 브랜치의 PR 생성·리뷰·머지는 아직 안 함.
+- 절취선을 원형 노치까지 완전히 재현하지는 않음(점선 테두리로 단순화) — 디자인팀이 원형
+  펀치 느낌을 꼭 원하면 좁은 화면 안전성을 다시 검증하며 추가할 것.
+- 90개 전부를 스크린샷으로 일일이 확인하지는 않음(CLAUDE.md 지침대로 대표 샘플만) —
+  나머지는 전부 같은 템플릿을 기계적으로 적용받았으므로 구조적으로 다를 이유가 없지만,
+  다음 세션이 여유 있으면 몇 개 더 무작위로 확인해도 좋음.

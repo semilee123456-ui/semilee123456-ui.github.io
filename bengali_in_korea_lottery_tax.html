@@ -185,62 +185,293 @@
 </script>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" onload="this.onload=null; this.rel='stylesheet';">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap"></noscript>
 <style>
+/* ============================================================================
+   참택스 랜딩페이지 "정산 티켓" 스타일 템플릿 (공용)
+   ----------------------------------------------------------------------------
+   대상: *-resident-us-lottery-tax.html(20+1), *_in_korea_lottery_tax.html +
+         vietnamese-in-korea-lottery-tax.html(27), us-lottery-basics*.html(27),
+         us-lottery-take-home.html, powerball-tax.html, megamillions-tax.html.
+   이 90여 개 파일은 전부 자기만의 인라인 <style>을 갖고 있고 index.html의 공용
+   styles.css를 안 씀(구조 자체는 유지) — 그래서 클래스 이름 집합을 조사해보니
+   세 패밀리가 거의 100% 겹침(quick-answer/example-box/gray-zone-box/cta-box/
+   faq-item/related-links는 공통, basics 계열만 table/compare-bar/note-box/
+   warn-box/h3가 추가, take-home만 steps/step-row가 추가) — 그래서 패밀리별로
+   따로 만들지 않고 이 파일 하나(슈퍼셋)를 모든 대상 파일에 그대로 주입함.
+   안 쓰는 선택자는 그냥 매치 안 될 뿐 해롭지 않음.
+
+   색상/폰트/보더·섀도우 토큰은 새로 만들지 않고 index.html의 styles.css :root
+   에 이미 정의된 값(2026-08-13 "정산 티켓" 리디자인, QA로 다크모드 대비 조정까지
+   끝난 값)을 그대로 가져옴 — 단, 이 랜딩페이지들의 body 인라인 SVG 로고가
+   var(--card)/var(--teal)/var(--text-dark) 3개를 직접 참조하므로 그 변수명은
+   절대 바꾸면 안 됨(안 바꿈, 그대로 재사용).
+
+   RTL(아랍어/우르두어)은 각 파일의 <html lang=".." dir="rtl">이 이미 있어서
+   html[dir="rtl"] 선택자 하나로 라이트/논리 방향을 다 처리함 — 파일마다 다른
+   버전을 만들 필요 없음.
+
+   재사용 방법: scripts/apply-landing-ticket-style.js가 이 파일 내용을 그대로
+   대상 HTML의 style 태그 블록과 통째로 교체함(주의: 이 주석 안에 리터럴
+   "< /style>" 문자열을 절대 쓰지 말 것 — HTML 파서가 주석 내용과 무관하게
+   그 바이트열만 보고 style 태그를 조기 종료시켜버림, 2026-08 세션에서 실제로
+   겪은 버그). 이 CSS 자체를 고치면 다시 그 스크립트를 돌려서 전체 파일에
+   재전파할 것.
+   ============================================================================ */
+  *{box-sizing:border-box;}
   :root{
-    --teal:#155445; --bg:#F4F5F7; --card:#FFFFFF; --text-dark:#262420; --text-muted:#544E42; --border:#E3E6EA;
+    --teal:#155445; --teal-rgb:21,84,69;
+    --indigo:#35507A; --gold:#9C6F1E;
+    --bg:#F4F5F7; --card:#FFFFFF; --text-dark:#262420; --text-muted:#544E42; --border:#828C97;
     --status-red:#C0392B; --status-amber:#946716;
-    --fs-hero:36px; --fs-h1:28px; --fs-h2:22px; --fs-h3:20px; --fs-body:18px; --fs-note:17px; --fs-small:16px;
+    --fs-hero:32px; --fs-h1:clamp(22px,7vw,27px); --fs-h2:clamp(19px,5.5vw,22px); --fs-h3:19px;
+    --fs-body:17px; --fs-note:16px; --fs-small:16px;
+    --font-display:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    --font-mono:'IBM Plex Mono','SFMono-Regular','Menlo','Consolas','Liberation Mono',monospace;
+    --shadow-hard:4px 4px 0 var(--text-dark);
+    --shadow-hard-sm:3px 3px 0 var(--text-dark);
+    --shadow-hard-xs:2px 2px 0 var(--text-dark);
   }
   :root[data-theme="dark"]{
-    --teal:#3AA98A; --bg:#1E1A16; --card:#39332B; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#3D3A34;
+    --teal:#3AA98A; --teal-rgb:58,169,138;
+    --indigo:#7C9BD1; --gold:#D6AC55;
+    --bg:#1E1A16; --card:#453E34; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#6E6558;
     --status-red:#E2776C; --status-amber:#D6AC55;
   }
   .theme-toggle{
-    width:36px; height:36px; min-height:36px; flex:0 0 auto; border-radius:50%;
-    border:1px solid rgba(21,84,69,0.25); background:rgba(21,84,69,0.08);
+    width:38px; height:38px; min-height:38px; flex:0 0 auto; border-radius:50%;
+    border:2px solid var(--text-dark); background:var(--card); box-shadow:var(--shadow-hard-xs);
     font-size:16px; line-height:1; cursor:pointer; font-family:inherit;
     display:inline-flex; align-items:center; justify-content:center; padding:0; margin-left:10px;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
   }
-  :root[data-theme="dark"] .theme-toggle{ border-color:var(--border); background:var(--card); }
-  *{box-sizing:border-box;}
-  body{ margin:0; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Noto Sans Bengali',sans-serif; background:var(--bg); color:var(--text-dark); line-height:1.8; }
-  .wrap{ max-width:640px; margin:0 auto; padding:20px 20px 60px; }
-  .nav{ display:flex; justify-content:space-between; align-items:center; padding:16px 0; }
-  .logo{ font-size:20px; font-weight:800; color:var(--text-dark); text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+  .theme-toggle:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--text-dark); }
+  html[dir="rtl"] .theme-toggle{ margin-left:0; margin-right:10px; }
+
+  body{ margin:0; font-family:'Pretendard','Noto Naskh Arabic','Noto Nastaliq Urdu',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg); color:var(--text-dark); line-height:1.7; overflow-x:hidden; }
+  html[dir="rtl"] body{ line-height:1.9; }
+
+  .wrap{ max-width:640px; margin:0 auto; padding:0 18px 56px; }
+
+  /* ---- 헤더: 절취선 대신(내비게이션이 극좁은 화면에서 원 노치 때문에 잘리는 걸
+     피하려고 원형 펀치 대신) 두꺼운 점선 구분선으로 "티켓 스텁"을 표현 ---- */
+  .nav{
+    display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:18px 0 14px; margin:0 0 6px; border-bottom:2px dashed var(--border);
+  }
+  .logo{
+    font-size:21px; font-weight:800; color:var(--text-dark); text-decoration:none;
+    display:inline-flex; align-items:center; gap:7px; font-family:var(--font-display);
+  }
+  html[dir="rtl"] .logo{ direction:ltr; }
   .logo span{ color:var(--teal); }
-  .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; }
-  h1{ font-size:var(--fs-h1); line-height:1.6; margin:20px 0 8px; }
-  .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 20px; }
-  .updated-date{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 16px; }
-  .quick-answer{ background:rgba(2,128,144,0.08); border:1px solid rgba(2,128,144,0.2); border-radius:14px; padding:20px; margin-bottom:24px; }
-  .quick-answer p.label{ font-size:var(--fs-small); font-weight:700; color:var(--teal); margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em; }
-  .quick-answer .row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:6px 0; border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px; }
+  .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; font-weight:600; }
+  .nav a.back:hover{ color:var(--teal); text-decoration:underline; }
+
+  h1{
+    font-family:var(--font-display); font-size:var(--fs-h1); font-weight:700; line-height:1.35;
+    margin:22px 0 10px; overflow-wrap:anywhere;
+  }
+  html[dir="rtl"] h1{ line-height:1.6; }
+  .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 18px; overflow-wrap:anywhere; }
+  .updated-date{
+    display:inline-block; font-family:var(--font-mono); font-size:var(--fs-small); font-weight:600;
+    color:var(--text-muted); background:var(--bg); border:1.5px dashed var(--border); border-radius:999px;
+    padding:4px 12px; margin:0 0 20px;
+  }
+
+  h2{
+    font-family:var(--font-display); font-size:var(--fs-h2); font-weight:700; line-height:1.35;
+    margin:38px 0 14px; padding-bottom:10px; border-bottom:2px dashed var(--border);
+    overflow-wrap:anywhere;
+  }
+  h3{ font-family:var(--font-display); font-size:var(--fs-h3); font-weight:700; margin:20px 0 8px; overflow-wrap:anywhere; }
+  p{ font-size:var(--fs-body); margin:0 0 16px; overflow-wrap:anywhere; }
+  ul{ padding-left:22px; padding-right:0; margin:0 0 14px; }
+  html[dir="rtl"] ul{ padding-left:0; padding-right:22px; }
+  li{ font-size:var(--fs-body); margin-bottom:8px; overflow-wrap:anywhere; }
+  b, strong{ color:var(--text-dark); }
+
+  /* ---- 콘텐츠 박스 계열 — index.html의 실제 보조 콘텐츠 박스(.calc-detail-toggle/
+     .callout/.explore-card 등)는 얇은 var(--border) 테두리+그림자 없음이 기본이고,
+     하드 4px 그림자는 메인 티켓 카드(.ticket-shell) 단 하나에만 씀 — 처음 버전은
+     이 박스들 전부에 하드 섀도우를 줘서 계산기 실제 화면(스크린샷 비교, 2026-08)보다
+     훨씬 무거워 보였음. 아래는 그 비교 결과를 반영해 계산기의 실제 비중 위계를
+     맞춘 값(가장 중요한 quick-answer만 xs 그림자, 나머지 콜아웃류는 그림자 없음) */
+  .quick-answer{
+    background:var(--card); border:1.5px solid var(--border); border-radius:14px;
+    box-shadow:var(--shadow-hard-xs); padding:20px; margin:0 0 26px;
+  }
+  .quick-answer p.label{
+    font-family:var(--font-display); font-size:var(--fs-small); font-weight:700; color:var(--teal);
+    margin:0 0 10px; text-transform:uppercase; letter-spacing:0.04em;
+  }
+  .quick-answer .row{
+    display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:8px 0;
+    border-bottom:1px dashed var(--border); font-size:var(--fs-note); gap:12px;
+  }
   .quick-answer .row:last-child{ border-bottom:none; }
   .quick-answer .row span{ overflow-wrap:anywhere; word-break:break-word; }
-  .quick-answer .row b{ color:var(--text-dark); text-align:right; overflow-wrap:anywhere; word-break:break-word; }
-  .example-box{ background:var(--card); border:1px solid var(--border); border-left:4px solid var(--teal); border-radius:14px; padding:20px; margin:0 0 24px; }
-  .example-box p.label{ font-size:var(--fs-small); font-weight:700; color:var(--teal); margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em; }
+  .quick-answer .row b{
+    font-family:var(--font-mono); color:var(--text-dark); text-align:right;
+    overflow-wrap:anywhere; word-break:break-word;
+  }
+  html[dir="rtl"] .quick-answer .row b{ text-align:left; unicode-bidi:plaintext; }
+
+  .example-box{
+    background:var(--card); border:1.5px solid var(--border); border-left:5px solid var(--teal);
+    border-radius:14px; padding:20px; margin:0 0 24px;
+  }
+  html[dir="rtl"] .example-box{ border-left:1.5px solid var(--border); border-right:5px solid var(--teal); }
+  .example-box p.label{
+    font-family:var(--font-display); font-size:var(--fs-small); font-weight:700; color:var(--teal);
+    margin:0 0 10px; text-transform:uppercase; letter-spacing:0.04em;
+  }
   .example-box p{ margin:0 0 12px; }
   .example-box p:last-child{ margin-bottom:0; }
   .example-box b{ color:var(--teal); }
-  h2{ font-size:var(--fs-h2); margin:32px 0 12px; line-height:1.6; }
-  p{ font-size:var(--fs-body); margin:0 0 16px; }
-  ul{ padding-left:20px; margin:0 0 14px; }
-  li{ font-size:var(--fs-body); margin-bottom:6px; }
-  .gray-zone-box{ background:rgba(217,164,65,0.1); border:1px solid rgba(217,164,65,0.35); border-radius:14px; padding:18px 20px; margin:20px 0; }
-  .gray-zone-box p.label{ font-size:var(--fs-small); font-weight:800; color:var(--status-amber); margin:0 0 8px; }
-  .cta-box{ background:var(--teal); border-radius:16px; padding:28px 24px; text-align:center; margin:32px 0; }
-  .cta-box p{ color:var(--card); font-size:var(--fs-h3); font-weight:700; margin:0 0 14px; }
-  .cta-box a{ display:inline-block; background:var(--card); color:var(--teal); font-weight:800; font-size:var(--fs-body); padding:13px 28px; border-radius:10px; text-decoration:none; }
-  .cta-box .cta-note{ color:var(--card); opacity:0.75; font-size:var(--fs-small); font-weight:400; margin:10px 0 0; }
-  .faq-item{ border-bottom:1px solid var(--border); padding:16px 0; }
-  .faq-item summary{ font-size:var(--fs-h3); font-weight:700; cursor:pointer; }
-  .faq-item p{ margin-top:8px; color:var(--text-muted); }
-  .disclaimer{ font-size:var(--fs-small); color:var(--text-muted); margin-top:32px; padding-top:16px; border-top:1px solid var(--border); }
-  .related-links{ display:flex; flex-direction:column; gap:8px; margin:16px 0 32px; }
-  .related-links a{ font-size:var(--fs-note); color:var(--teal); text-decoration:none; font-weight:600; }
-  .share-btn{ display:block; width:100%; background:var(--card); border:2px solid var(--teal); color:var(--teal); font-weight:800; font-size:var(--fs-body); padding:14px; border-radius:12px; cursor:pointer; margin:0 0 24px; font-family:inherit; }
+
+  .gray-zone-box{
+    background:var(--card); border:2px dashed var(--status-amber); border-radius:14px;
+    padding:18px 20px; margin:22px 0;
+  }
+  .gray-zone-box p.label{ font-family:var(--font-display); font-size:var(--fs-small); font-weight:800; color:var(--status-amber); margin:0 0 8px; }
+
+  .note-box{
+    background:var(--card); border:1.5px solid var(--border); border-left:4px solid var(--teal);
+    border-radius:10px; padding:14px 16px; margin:18px 0; font-size:var(--fs-note);
+  }
+  html[dir="rtl"] .note-box{ border-left:1.5px solid var(--border); border-right:4px solid var(--teal); }
+  .warn-box{
+    background:var(--card); border:1.5px solid var(--border); border-left:4px solid var(--status-red);
+    border-radius:10px; padding:14px 16px; margin:18px 0; font-size:var(--fs-note);
+  }
+  html[dir="rtl"] .warn-box{ border-left:1.5px solid var(--border); border-right:4px solid var(--status-red); }
+
+  /* ---- 표 (파워볼 vs 메가밀리언즈, 일시불 vs 연금 등) ---- */
+  table{
+    display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    width:100%; border-collapse:collapse; margin:18px 0; font-size:var(--fs-note);
+    font-family:var(--font-mono); border:1.5px solid var(--border); border-radius:10px;
+  }
+  /* th/td는 overflow-wrap:anywhere를 일부러 안 씀 — CJK/한글은 브라우저가
+     글자 단위로 알아서 줄바꿈해주는데, anywhere를 주면 "Powerball"·"Mega
+     Millions"처럼 줄바꿈 지점이 없는 영단어까지 표가 좁을 때 중간에서 잘려
+     보기 흉해짐(2026-08 240px 검증에서 실제로 발견) — 기본 줄바꿈(단어
+     경계에서만)으로 두고, 정말 안 들어가면 위 table의 overflow-x:auto가
+     가로 스크롤로 받아줌(중간에 끊긴 단어보다 스크롤이 낫다는 판단) */
+  th, td{ text-align:left; padding:10px; border-bottom:1px dashed var(--border); vertical-align:top; }
+  html[dir="rtl"] th, html[dir="rtl"] td{ text-align:right; }
+  th{ font-family:var(--font-display); color:var(--text-muted); font-weight:700; background:var(--bg); }
+  tr:last-child td{ border-bottom:none; }
+  /* 첫 번째 열(행 라벨, 보통 "추첨 요일"/"1등 확률" 같은 짧은 이름표)이 CJK 등
+     글자 단위로 줄바꿈 가능한 스크립트에서 240px 근방일 때 한 글자씩 세로로
+     쌓여 보기 흉해지던 문제(2026-08 검증 스크린샷으로 발견) — 첫 열만
+     줄바꿈을 막아서 필요하면 표 전체가 (위 overflow-x:auto로) 가로 스크롤
+     되게 하고, 라벨 자체는 항상 한 줄로 유지되게 함 */
+  tr th:first-child, tr td:first-child{ white-space:nowrap; }
+
+  /* ---- 확률 비교 막대 ---- */
+  .compare-bar-row{ margin:12px 0; }
+  .compare-bar-label{ display:flex; justify-content:space-between; gap:10px; font-size:var(--fs-small); color:var(--text-muted); margin-bottom:5px; }
+  .compare-bar-label span:last-child{ font-family:var(--font-mono); font-weight:700; color:var(--text-dark); }
+  .compare-bar-track{ height:12px; border-radius:6px; background:var(--bg); border:1.5px solid var(--border); overflow:hidden; }
+  .compare-bar-fill{ height:100%; border-radius:4px 0 0 4px; background:var(--teal); }
+
+  /* ---- 실수령액 단계별(us-lottery-take-home.html) ---- */
+  .steps{ margin:22px 0; }
+  .step-row{ display:flex; gap:14px; padding-bottom:20px; position:relative; }
+  html[dir="rtl"] .step-row{ flex-direction:row-reverse; }
+  .step-num{
+    flex-shrink:0; width:30px; height:30px; border-radius:50%; background:var(--teal); color:var(--card);
+    border:2px solid var(--text-dark); font-family:var(--font-mono); font-size:var(--fs-small); font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .step-body p.t{ font-size:var(--fs-note); color:var(--text-muted); margin:0 0 3px; }
+  .step-body p.v{ font-family:var(--font-mono); font-size:var(--fs-h3); font-weight:800; color:var(--text-dark); margin:0; overflow-wrap:anywhere; }
+
+  /* ---- 계산기로 유도하는 CTA — 페이지에서 유일하게 강조할 요소라 하드 섀도우를
+     남겨두되(계산기의 .ticket-shell처럼 "페이지당 하나만 강조"하는 위계 유지),
+     가장 큰 --shadow-hard(4px) 대신 sm(3px)로 낮춤 ---- */
+  .cta-box{
+    background:var(--teal); border:2px solid var(--text-dark); border-radius:16px;
+    box-shadow:var(--shadow-hard-sm); padding:26px 22px; text-align:center; margin:34px 0;
+  }
+  .cta-box p{ color:var(--card); font-family:var(--font-display); font-size:var(--fs-h3); font-weight:700; margin:0 0 16px; }
+  .cta-box a{
+    display:inline-block; background:var(--card); color:var(--teal); font-weight:800; font-size:var(--fs-body);
+    padding:13px 28px; border-radius:10px; text-decoration:none; border:2px solid var(--text-dark);
+    box-shadow:var(--shadow-hard-xs); transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .cta-box a:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--text-dark); }
+  .cta-box .cta-note{ color:var(--card); opacity:0.85; font-size:var(--fs-small); font-weight:400; margin:12px 0 0; }
+
+  .share-btn{
+    display:block; width:100%; background:var(--card); border:1.5px solid var(--border); color:var(--teal);
+    font-weight:800; font-size:var(--fs-body); padding:14px; border-radius:12px; cursor:pointer;
+    margin:0 0 24px; font-family:inherit; box-shadow:var(--shadow-hard-xs);
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .share-btn:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--text-dark); }
   .share-btn.copied{ background:var(--teal); color:var(--card); }
+
+  /* ---- FAQ 아코디언 ---- */
+  .faq-item{ border-bottom:1.5px dashed var(--border); padding:18px 0; }
+  .faq-item:last-of-type{ border-bottom:none; }
+  .faq-item summary{
+    font-family:var(--font-display); font-size:var(--fs-h3); font-weight:700; cursor:pointer;
+    list-style:none; overflow-wrap:anywhere;
+  }
+  .faq-item summary::-webkit-details-marker{ display:none; }
+  .faq-item summary::before{ content:'▸'; display:inline-block; color:var(--teal); margin-right:8px; font-family:sans-serif; }
+  html[dir="rtl"] .faq-item summary::before{ content:'◂'; margin-right:0; margin-left:8px; }
+  .faq-item[open] summary::before{ content:'▾'; }
+  html[dir="rtl"] .faq-item[open] summary::before{ content:'▾'; }
+  .faq-item p{ margin-top:10px; color:var(--text-muted); }
+
+  /* ---- 하단 링크 목록 / 다국어 셀렉터 ---- */
+  .related-links{ display:flex; flex-direction:column; gap:10px; margin:18px 0 32px; }
+  .related-links a{
+    font-size:var(--fs-note); color:var(--teal); text-decoration:none; font-weight:600;
+    padding:2px 0; border-bottom:1px dashed transparent;
+  }
+  .related-links a:hover{ border-bottom-color:var(--teal); }
+
+  /* index.html의 배지/칩(.side-card-best-badge 등)은 얇은 1px 색상 테두리 + 그림자 없음이
+     기본값이라(2026-08 계산기 vs 랜딩 스크린샷 비교로 확인) 같은 문법으로 맞춤 */
+  .lang-links{ display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 32px; padding:0; list-style:none; }
+  .lang-links a{
+    font-size:var(--fs-small); font-weight:700; color:var(--text-dark); text-decoration:none;
+    border:1px solid var(--teal); border-radius:999px; padding:7px 15px; background:var(--card);
+    display:inline-block; transition:background-color 0.15s ease;
+  }
+  .lang-links a:hover{ background:rgba(var(--teal-rgb),0.08); }
+
+  .disclaimer{
+    font-size:var(--fs-small); color:var(--text-muted); margin-top:36px; padding-top:18px;
+    border-top:2px dashed var(--border);
+  }
+
+  /* ---- 아주 좁은 화면(240~380px) 보호 — 계산기 리디자인 때 겪은 카드/버튼 잘림 재발 방지 ---- */
+  @media (max-width:380px){
+    .wrap{ padding:0 12px 44px; }
+    .nav{ padding:14px 0 12px; }
+    h1{ margin:18px 0 8px; }
+    h2{ margin:30px 0 12px; }
+    .quick-answer, .example-box{ padding:16px; }
+    .cta-box{ padding:20px 16px; }
+    .quick-answer .row{ grid-template-columns:1fr; }
+    .quick-answer .row b{ text-align:left; }
+    html[dir="rtl"] .quick-answer .row b{ text-align:right; }
+  }
+  @media (max-width:300px){
+    .wrap{ padding:0 8px 36px; }
+    .logo{ font-size:18px; }
+    .cta-box a, .share-btn{ padding:12px; }
+  }
 </style>
 </head>
 <body>
@@ -257,7 +488,7 @@
       <circle cx="17.5" cy="14.4" r="1.7" fill="var(--text-dark)"/><circle cx="18.05" cy="13.85" r="0.5" fill="#fff"/>
       <ellipse cx="14" cy="17.75" rx="1.85" ry="1.3" fill="var(--teal)"/>
       <path d="M14 19.1v0.55M8.9 19.9c1.7 3.3 8.6 3.3 10.2 0" fill="none" stroke="var(--teal)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>Cham<span>Tax</span></a>
+    </svg><span>ChamTax</span></a>
     <span style="display:flex; align-items:center;">
       <a class="back" href="index.html?lang=bn">← ক্যালকুলেটর খুলুন</a>
       <button type="button" id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" aria-label="ডার্ক মোড টগল করুন">🌙</button>
