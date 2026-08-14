@@ -2484,3 +2484,68 @@ DOM 기준이라 이전 실패 패턴과는 다름).
 **다음 세션이 볼 것**: 위 4번(헤더 하드보더+그림자 카드 여부)은 이번엔 "근거 있는 차이"로
 보류했지만, 디자인팀이 랜딩페이지에도 헤더를 카드로 통일하길 원하면 sticky 포지셔닝·좁은
 화면 줄바꿈을 다시 검증하며 별도로 진행할 것.
+
+### 2026-08-14 이어서 — 계산기 밖 나머지 콘텐츠 페이지 11개도 "정산 티켓" 스타일로 (브랜치
+`claude/remaining-pages-ticket-style-2026-08-14`, main 머지 대기)
+
+**배경**: 위 두 항목(77개 랜딩페이지)이 커버하지 않는 나머지 콘텐츠 페이지 11개
+(`biggest-jackpot-payouts.html`류 3개, `korean-abroad-us-lottery-tax.html`류 3개,
+`lottery-jackpot-amount.html`류 3개, `lottery-prize-tiers.html`, `us-lottery-tax-rate.html`)
+가 옛날 스타일 그대로 남아있던 걸 사용자가 실기기 스크린샷으로 발견 → 같은 파이프라인
+(`scripts/apply-landing-ticket-style.js` + `scripts/landing-ticket-template.css`)으로 마저
+통일함.
+
+**클래스 조사 결과**: 11개 파일의 클래스 36개 중 대부분(quick-answer/example-box/
+gray-zone-box/cta-box/faq-item/note-box/related-links/share-btn/theme-toggle 등)은 이미
+템플릿에 있었고, 이 11개 전용으로 새로 나온 게 5종류 — `.official-links`(공식 사이트
+바로가기 칩 2개, lottery-jackpot-amount류), `.section-note`(h2 아래 보조설명,
+lottery-prize-tiers), `td.zero`(세율 0% 강조, us-lottery-tax-rate), `.rank-card` 등
+11개 클래스(역대 잭팟 순위 카드, biggest-jackpot-payouts류), `.table-wrap` 스코프의
+카드형 등수표 그리드(lottery-prize-tiers — 2026-08-12에 이미 "좁은 화면에서 표가 옆으로
+스크롤돼야 하는 문제"를 해결하려고 `<table>`은 그대로 두고 CSS만으로 카드처럼 재배치해둔
+버전이 있었는데, 그 로직을 그대로 가져오되 다른 84개 파일이 쓰는 공용 `table` 가로스크롤
+규칙과 충돌하지 않게 `.table-wrap` 스코프로 좁힘). 전부 `scripts/landing-ticket-template.css`
+에 추가(하드 4px류 그림자는 안 씀 — `.rank-card`는 반복되는 목록 카드라 다른 콜아웃류처럼
+그림자 없음, `.share-btn`은 기존에 이미 있던 xs 그림자 규칙 그대로 재사용).
+
+**로고 flex-gap 버그도 같이 수정**: 이 11개는 2026-08-14 앞선 두 세션(77개 대상)의 범위
+밖이라 안 고쳐져 있었음 — `참<span>택스</span>`/`Cham<span>Tax</span>`를 `<span>참택스</span>`/
+`<span>ChamTax</span>`로 sed 일괄 치환(11개 전부 해당, `.logo{ display:inline-flex; gap:7px }`
+가 텍스트 노드와 span을 별개 flex 아이템으로 취급해 글자 사이 공백이 생기던 버그).
+
+**공유 버튼**: 이미 `navigator.share`/클립보드 복사로 잘 동작 중이던 기능(3개 파일 —
+`biggest-jackpot-payouts.html`/`biggest-lottery-jackpots-after-tax.html`(zh 포함)/
+`lottery-prize-tiers.html`)은 JS 그대로 두고 `.share-btn` 클래스만 템플릿 스타일로
+교체(얇은 `var(--border)` 테두리 + xs 하드 그림자로 확인, `getComputedStyle` 직접 대조).
+
+**본문 텍스트 0글자 변경** — `<style>` 블록 교체 + 폰트 `<link>` 삽입 + 로고 span 위치
+이동뿐, `git diff`로 직접 확인.
+
+**검증 중 발견한 함정**: 이 세션 도중 `python3 -m http.server 9000`으로 Playwright를 돌렸더니
+스크린샷에 방금 고친 로고 버그가 그대로 남아있어서 처음엔 회귀로 오인함 — 알고 보니 다른
+세션이 이미 9000번 포트를 점유 중이었고(서로 다른 워크트리), 내 bind는 조용히 실패했는데
+그 포트로 curl은 여전히 200을 반환해서(다른 세션의 서버가 응답) 눈치채기 어려웠음. **포트
+충돌이 의심되면(특히 이 저장소처럼 여러 세션이 동시에 돌 수 있는 환경) `--directory`로 서빙
+디렉터리를 명시하고 다른 포트를 새로 띄워서 확인할 것** — 위 "테스트 짤 때 흔한 함정"
+섹션에 추가할 만한 새로운 항목.
+
+**검증**: Playwright(`NODE_PATH=/opt/node22/lib/node_modules`, 로컬
+`python3 -m http.server <포트> --directory <이 워크트리 경로>`)로 11개 파일 전부 240px/390px
+`scrollWidth-clientWidth`가 0인지, 로고 텍스트가 "참택스"/"ChamTax"로 한 덩어리인지 확인 —
+전부 통과. 대표 스크린샷(`biggest-jackpot-payouts.html`, `biggest_lottery_jackpots_after_tax_zh.html`,
+`lottery-jackpot-amount.html`, `us-lottery-tax-rate.html`, `lottery-prize-tiers.html`)
+육안 확인. 11개 파일 전부 `</style>` 정확히 1개씩 확인(과거 파서 버그 재발 방지). 새로 추가한
+템플릿 규칙이 기존 77개 파일에 영향 없는지 3개 샘플(`us-lottery-basics-en.html`/
+`korea-resident-us-lottery-tax.html`/`arabic_in_korea_lottery_tax.html`)로 hScroll 0 재확인.
+`node --check script.js` 통과(이번 세션엔 안 건드림).
+
+**알려진 사전 존재 이슈(이번 세션이 만든 게 아님, 손 안 댐)**: `lottery-prize-tiers.html`을
+240px에서 보면 표 첫 열(등수 이름표)의 CJK 텍스트가 글자 단위로 세로로 쌓이는 현상이 있음 —
+`git show`로 이번 세션 변경 전 원본을 렌더링해 대조한 결과 이 세션이 스타일을 이식하기 전부터
+동일하게 있던 문제로 확인(2026-08-12에 만든 카드형 그리드 자체의 기존 한계). 문구를 바꾸지
+않는 스타일 통일 작업 범위 밖이라 이번엔 안 고침 — 다음에 이 페이지를 다시 만질 일이 있으면
+같이 봐도 좋음.
+
+**변경 파일**: `scripts/landing-ticket-template.css`(신규 클래스 5종 추가), 11개 대상
+파일 전부. 커밋은 `claude/remaining-pages-ticket-style-2026-08-14` 브랜치에 push 완료
+(**PR은 만들지 않음** — 사용자 요청).
