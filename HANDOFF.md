@@ -3076,6 +3076,49 @@ Lantern 시뮬레이션 왜곡이라는 결론을 강하게 뒷받침함. 이걸
 `i18n_coverage_audit`(769 키, 새 데이터-i18n 키 안 늘려서 그대로) 전부 `ISSUES:0`.
 `script.min.js?v` → `20260815-6`, `sw.js` `CACHE_NAME` → `v53`.
 
+### 2026-08-15 이어서 — FAQ 탭 요약 카드 데이터 지연 로드 분리 (odds-data.js와 같은 패턴)
+
+PSI 모바일 55점/FCP 19.8초/LCP 25.9초가 다시 보고돼서 HANDOFF의 기존 "PSI 22~25초 조사
+종결" 항목부터 확인 — 같은 이슈(실사용자 문제 아님, 랩 환경 왜곡)임을 재확인해서 그 숫자
+자체는 재조사 안 함. 다만 "PSI 숫자와 무관하게 페이지 무게 자체를 줄이는 건 일반적으로
+좋은 일"이라는 판단하에, `script.js`(1.9MB) 안에서 안전하게 분리 가능한 대용량 데이터를
+찾음 — FAQ 탭 상단 요약 카드 2개(`FAQ_TG2`: "다른 나라에서도 또 내요?" 3칸 카드,
+`FAQ_PANEL_DESC`: "검색해서 오신 분들이 자주 묻는 질문" 안내문)가 26개 언어×21개국 텍스트로
+약 255KB를 차지하는데, 소비 함수(`updateFaqTg2Card`/`updateFaqPanelDesc`)가 딱 이 두 곳
+(`filterFaq()`, `applyTranslations()`)에서만 쓰여서 안전하게 분리 가능함을 확인.
+
+`faq-panel-data.js`(신규 파일, 255KB)로 옮기고 `odds-data.js` 지연 로드 패턴(`ensureOddsDataLoaded()`)을
+그대로 복제해 `ensureFaqPanelDataLoaded()` 작성 — FAQ 탭을 처음 열 때만 `<script>` 태그를
+동적으로 붙여 로드함. `updateFaqTg2Card()`/`updateFaqPanelDesc()`에 `typeof FAQ_TG2 ===
+'undefined'` 가드를 추가해서, 로드 전에는 조용히 스킵(에러 안 남)하고 FAQ 탭을 열면
+로드 완료 후 다시 호출해 채움 — FAQ 개별 질문 목록(`.faq-item`)은 정적 HTML이라 이 지연
+로드와 무관하게 항상 즉시 보임, 지연되는 건 상단 요약 카드 2개뿐.
+
+**결과**: `script.js` 1940KB→1682KB, `script.min.js` 1388.5KB→1107.4KB(홈/비교/확률체감
+탭만 쓰는 방문자는 이만큼 안 받음). `sw.js`는 `odds-data.js`와 똑같은 이유로
+`faq-panel-data.js`도 앱 셸 캐싱 대상에서 제외(자체 쿼리스트링 캐시버스팅 씀, 서비스
+워커 allowlist에 안 넣음).
+
+**검증**: Playwright로 (1) 홈 탭 진입 시 `faq-panel-data.js` 요청 안 감, FAQ 탭 진입 시에만
+요청 감 확인 (2) ko/ar/vi 3개 언어에서 FAQ 탭 요약 카드 정상 렌더링 확인 (3) 콘솔 에러
+4건은 전부 이 세션 샌드박스의 아웃바운드 프록시 제약으로 막힌 외부 리소스(환율 API·구글
+폰트·GTM·애드센스)뿐, `faq-panel-data.js` 자체는 정상 로드됨을 확인 (4) 기존 회귀 테스트
+4종(`faq_audit` 18개·`home_audit` 18개·`console_error_audit` 161개·`i18n_coverage_audit`
+769키) 전부 이전과 동일한 개수로 `ISSUES:0`. `script.min.js?v` → `20260815-7`, `sw.js`
+`CACHE_NAME` → `v54`.
+
+**후속 조사 결론(같은 날) — `COUNTRY_TAX_DISCLAIMERS`(68KB)/`COUNTRY_TAX_AUTHORITY`(28KB)는
+지연 로드 대상 아님, 재조사 금지**: 같은 패턴으로 더 뺄 수 있는 후보로 보여서 실제로 더
+파봤는데, `updateHomeCalc()`가 `applyTranslations()`에서 **시작 탭이 무엇이든 상관없이
+페이지 로드 시 무조건 호출됨**(다른 탭에 있다가 언어를 바꿔도 홈 화면이 같이 갱신되게 하려는
+의도적 설계 — 위쪽 "홈 화면이 켜져 있을 때만 갱신하면..." 주석 참고)을 확인함. 즉 이
+두 데이터는 FAQ_TG2와 달리 "그 탭을 안 보는 방문자는 안 받는다"는 대상 자체가 없음(사실상
+전체 방문자가 초기 로드 시 필요) — 지연 로드하면 (1) 로드 전까지 홈 탭 신뢰 배지가 비어
+있다가 채워지는 깜빡임이 **전체 방문자**에게 생기거나(순손해), (2) 병렬 로드만 하고 동작은
+그대로 두면 파일만 나뉠 뿐 다운로드량 절감은 0(실익 없음) — 두 선택지 다 할 이유가 없어서
+**코드 변경 안 함**. 이 항목은 이미 검토 끝난 상태이므로, 페이지 무게 줄이기 아이디어가
+다시 나오면 이 두 변수는 후보에서 제외하고 시작할 것.
+
 ### 2026-08-16 — "이 금액으로 계산해보기" 링크가 계산 결과 대신 다른 탭으로 튕기는 버그 수정
 
 사용자가 실기기 스크린샷(`biggest-jackpot-payouts.html` 역대 1위 카드)으로 "여기 누르면
@@ -3132,6 +3175,45 @@ Lantern 시뮬레이션 왜곡이라는 결론을 강하게 뒷받침함. 이걸
 **신규 회귀 테스트**: `tests/link_navigation_audit.js` 신설(`broken_link_audit.js`의 사각지대를
 메움) — `TOTAL: 8 ISSUES: 0`. 코드 변경은 이 테스트 파일 추가뿐(사이트 동작 변경 없음).
 
+**병합 참고**: 위 두 블록(FAQ 지연 로드 세션·링크 버그 수정 세션)이 서로 다른 브랜치에서
+동시에 진행되다 병합되면서 `script.min.js?v`/`sw.js CACHE_NAME`을 각자 다르게 올렸음
+(`20260815-7`/`v54` vs `20260816-1`/`v54`) — 병합 시 최종적으로 `script.min.js?v` →
+`20260816-2`, `sw.js CACHE_NAME` → `v56`으로 두 변경분을 모두 포함해 한 번 더 올림.
+위 각 블록 안에 적힌 버전 번호는 그 세션 당시 기준이라 최신이 아니니 참고만 할 것.
+
+### 2026-08-15 이어서 — 인수인계: 이번 세션 전체 요약 (PR #233 머지·배포 확인)
+
+**이번 세션에서 한 것**:
+1. GitHub 작업 이력 확인 요청 → open PR 0개, main 최신 확인.
+2. "오가닉 플라이휠" 홍보 전략 4가지 제안(GEO/AI 인용, GitHub·Kaggle 오픈 데이터셋, 임베드
+   위젯, 잭팟 시즌 롱테일 키워드) 검토 → **전부 이미 구현돼 있음 확인, 코드 변경 없음**
+   (HANDOFF "홍보·마케팅 작업 전체 이력" 섹션과 대조).
+3. PSI 모바일 55점 재보고 → 기존 조사 결론(실사용자 문제 아님) 재확인 후, 별개로 페이지
+   무게 자체를 줄이는 게 이득이라 판단해 `faq-panel-data.js` 분리(위 항목 참고,
+   `script.min.js` 1388.5KB→1107.4KB).
+4. `COUNTRY_TAX_DISCLAIMERS`/`COUNTRY_TAX_AUTHORITY`(96KB) 추가 분리 검토 → 홈 탭 초기
+   로드 경로에 물려있어 지연 로드 대상 아님을 확인, **코드 변경 없음**(재조사 금지 기록함).
+5. PWA 아이콘 3종(`icon-192`/`icon-512`/`apple-touch-icon`) `pngquant`로 재압축 —
+   25KB→10.8KB(57% 감소), 육안 차이 없음.
+6. 사용자가 크롬에 PWA로 설치했더니 별도 창(standalone)으로 열려서 불편하다는 문의 →
+   이건 PWA 설치의 표준 동작이고 이 사이트 주 타겟(모바일 국제 방문자)엔 오히려 적합하다고
+   판단, **코드 변경 없음**(개인 설치 제거 방법만 안내).
+7. PR #233 생성 확인 → 구독(`subscribe_pr_activity`), CI 없음·리뷰 코멘트 없음 확인.
+8. **"머지랑 인수인계 해줘" 요청** → PR #233이 그 사이 머지된 동시 세션 PR #234/#235
+   (잭팟 순위 카드 링크 버그 수정 + `link_navigation_audit.js` 신설)와 충돌 →
+   `origin/main` 머지해서 충돌 4개 파일(`HANDOFF.md`/`index.html`/`script.min.js`/`sw.js`)
+   직접 해결(캐시버스팅 버전 통합: `script.min.js?v` → `20260816-2`, `CACHE_NAME` → `v56`),
+   회귀 테스트 5종(`link_navigation_audit` 8·`faq_audit` 18·`audit_odds_compare` 40·
+   `home_audit` 18·`console_error_audit` 161) 전부 `ISSUES:0` 재확인 후 병합 커밋 →
+   **PR #233 머지 완료**(`303f9b6`).
+9. 라이브 배포 확인: `chamtax.com`에서 `script.min.js?v=20260816-2`, `sw.js CACHE_NAME
+   'chamtax-shell-v56'`, `faq-panel-data.js` 200 응답, `icon-512.png` 6162바이트(압축본)
+   전부 실제 반영된 것 curl로 직접 확인함.
+
+**남은 것**: 전부 처리 완료, 다음 세션이 바로 확인할 미해결 항목 없음. 구글 애드센스
+수익화 활성 확인·Reddit/Show HN/AlternativeTo/GeekNews 게시는 여전히 계정 소유자(사용자)
+직접 해야 하는 대기 항목(위 "홍보·마케팅 작업 전체 이력" 섹션 참고).
+
 ### 2026-08-16 이어서 — sticky 실수령액 배지가 광고 늦게 뜬 뒤엔 안 흐려지는 버그 수정
 
 사용자가 실기기 스크린샷 제보: 홈 화면 하단에 떠 있는 "💰 실수령 ○○원" 배지(스크롤 중
@@ -3155,6 +3237,10 @@ Lantern 시뮬레이션 왜곡이라는 결론을 강하게 뒷받침함. 이걸
 
 **검증**: `console_error_audit`(161)·`home_audit`(18) 전부 `ISSUES:0`. `node --check` 통과.
 
+**병합 참고**: 이 작업이 진행되는 동안 동시 세션(PR #233, FAQ 지연 로드+링크 버그 병합)이
+먼저 머지되어 `script.min.js?v`/`sw.js CACHE_NAME`이 `20260816-2`/`v56`까지 이미 올라가
+있었음 — 이 작업 병합 시 그 위에 한 번 더 올려 최종 `20260816-3`/`v57`로 반영.
+
 변경 파일: `script.js`(`setupStickyResultBadgeCollisionWatch()`에 `ResizeObserver` 추가),
-`script.min.js`(재빌드), `index.html`(`script.min.js?v` `20260816-1`→`20260816-2`),
-`sw.js`(`CACHE_NAME` v54→v55).
+`script.min.js`(재빌드), `index.html`(`script.min.js?v` → `20260816-3`),
+`sw.js`(`CACHE_NAME` → `v57`).
