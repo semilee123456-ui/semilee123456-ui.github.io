@@ -2737,3 +2737,91 @@ $7). 바로 위 "2개+메가볼" 등수 값과 우연히 같은 $10이라 복붙
 **결과 — 이제 95개 페이지 중 92개(계산기 1 + 콘텐츠 91) 전부 "정산 티켓" 통일,
 제외한 3개(구글/얀덱스 인증 파일, 위젯 임베드)는 전부 의도적/타당한 이유 있음.
 사이트 전체 디자인 통일 작업은 이걸로 사실상 마무리.**
+
+### 2026-08-15 — 디자인팀 원본 핸드오프 3차 정밀 재대조 (브랜치
+`claude/design-audit-3rd-pass-2026-08-15`) — 진짜 갭 2건 발견·수정(그 중 1건은 감사
+과정에서 우연히 찾아낸 별개의 sticky nav 스크롤 회귀), 색상 토큰은 hex 단위까지 재검증
+
+**요청**: "다시 서브에이전트 돌리고 스샷하면서 하나하나 다 점검해서 수정해줘. 디자인팀이
+준 파일이랑 다시 비교해줘" — 스크래치패드 `ux-handoff-new/`(SPEC.md, 디자인 토큰 원본
+README, 목업 스크린샷 5장)를 처음부터 다시 정독해서 표로 정리한 뒤, 코드 값 grep이 아니라
+실제 렌더링(Playwright, 포트 9100 — 9000은 다른 세션이 점유 중이라 회피)으로 계산기
+4탭×라이트/다크 8장 + 랜딩 대표 4개(일본어 CJK/아랍어 RTL/영어 basics/prize-tiers)를
+스크린샷하고, `getComputedStyle()`로 색상 토큰 9종(ink/ink-soft/teal/indigo/gold/red/
+bg/card/border)을 계산기·랜딩·SPEC.md 3자 hex 대조.
+
+**색상 — ink/ink-soft/teal/indigo/gold/bg/card/border 8개 전부 hex 단위로 SPEC.md와
+정확히 일치**(라이트·다크 둘 다, 계산기·랜딩페이지 공용 소스라 자동으로 같음) — 과거
+세션(2026-08-14)의 확인을 재확인. **[불일치, 안 고침] `red` 토큰만 SPEC(`#A6433D`
+라이트 / `#D9827B` 다크, "세금 비중·파워볼 강조")과 라이브 `--status-red`(`#C0392B` /
+`#E2776C`)가 다름** — 용도(세금 비중 표시·파워볼 강조)는 정확히 일치하지만 hex 값이
+다름. 이유 조사: `--status-red`는 "정산 티켓" 리디자인(2026-08-13) 이전부터 있던
+사이트 전역 상태색(에러 메시지·경고 배지·파워볼 볼 등 30곳 이상, WCAG 명암비까지
+따로 계산해 튜닝된 값, `:root[data-contrast="high"]` 고대비 모드에도 별도 값 있음)이라,
+디자인팀 handoff의 `red` 토큰을 문자 그대로 새로 들여온 게 아니라 기존 값을 계속 쓴
+것으로 추정 — HANDOFF/ARCHIVE 어디에도 "왜 다른 값을 쓰는지" 근거는 없음(navy→ink,
+text-muted→ink-soft는 2026-08-13 주석에 명시적으로 "기존 팔레트 재사용" 근거가 있는데
+red는 그 목록에 없었음). 다만 30곳 이상에 퍼진 사이트 전역 색상이라 바꾸면 티켓
+리디자인 범위를 크게 벗어나는 회귀 위험이 있어 **이번엔 안 고치고 발견만 기록** —
+디자인팀이 정확한 hex를 원하면 별도 세션으로 전역 치환+명암비 재검증이 필요.
+
+**[진짜 갭 1, 수정] Compare/Odds/FAQ 탭에 목업 SPEC 5절/스크린샷(03~05)에 있는
+탭 이름 알약 배지(`.hero-category-tag`와 동급, Home엔 이미 있음)가 없었음** —
+2026-08-14 세션이 "마크업·i18n 키 신설 필요"라는 이유로 범위를 Home 배지 복원에만
+한정하고 이 3개 탭은 명시적으로 "손 안 댐"이라고 기록해뒀던 항목(의도적 이탈이 아니라
+스코프상 보류였음). 새 i18n 키를 만들지 않고 네비게이션에 이미 있던
+`nav.compare`/`nav.odds`/`nav.faq`(26개 언어 기번역 완료)를 그대로 재사용해서
+`<p class="hero-category-tag" data-i18n="nav.*">`를 각 탭 상단에 추가.
+
+**[진짜 갭 2, 배지 작업 중 발견] 탭 전환 스크롤이 sticky nav 뒤로 콘텐츠를 가리는 회귀** —
+배지를 넣고 스크린샷으로 확인하다가 Compare/Odds/FAQ 탭 전환 직후 "← 홈으로" 버튼이
+아예 안 보이는 걸 발견. 원인: `go()`의 `document.querySelector('.page').scrollIntoView
+({behavior:'smooth', block:'start'})`가 `.nav`(`position:sticky; top:0`)의 실제 높이를
+전혀 고려하지 않아서, 탭을 바꿀 때마다 새 화면 맨 위(뒤로가기 버튼, 이번에 새로 넣은
+배지 포함)가 정확히 sticky nav 뒤로 스크롤돼 들어가 가려짐 — `git stash`로 이번 세션
+변경 전 코드에서도 동일 좌표가 나오는 걸 확인해 **이번 세션이 만든 회귀가 아니라
+기존에 있던(아마 2026-08-13 정산 티켓 헤더를 sticky로 바꾼 이후 계속 있었을) 미발견
+버그**로 판단. 나쁜 css `scroll-margin-top` 고정값 대신, nav를 매번 실측해서 보정하는
+`scrollIntoViewBelowNav()` 헬퍼(`script.js`)로 교체 — 글자 크게 보기 토글이나 nav
+줄바꿈(좁은 화면)으로 nav 높이가 달라져도 안전함. 같은 문제가 있던
+`goToCalculatorInput()`(홈 화면 "한국에 살아요" 클릭 시 입력 카드로 스크롤)도 같이 수정.
+240/320/400/430px 4개 폭 × Compare/Odds/FAQ 3개 탭, 전부 겹침 재발 없음 확인(Playwright
+실측 `getBoundingClientRect()`).
+
+**배지 삽입 중 발견한 부수 CSS 버그(같이 수정)**: `.back-btn`(`display:inline-flex`)
+바로 뒤에 새 배지(`display:inline-block`)를 넣었더니 두 인라인 레벨 요소가 같은 줄에
+나란히 붙어버림(뒤로가기 버튼 옆에 배지가 붙어 보임, 알약이 줄바꿈 안 됨) —
+`.back-btn + .hero-category-tag{ display:block; width:fit-content; }`로 이 조합에서만
+블록 전환(다른 곳의 `.hero-category-tag`인 Home은 원래도 `.hero` 블록 안에 혼자 있어서
+영향 없음).
+
+**나머지 재확인 항목(전부 일치, 안 고침)**: 라운딩(카드 14px/티켓 셸 22px 상단만/버튼
+10~12px, 배지는 `border-radius:20px`인데 패딩 대비 시각적으로는 완전한 알약으로
+렌더링돼 999px과 차이 없음), 섹션 패딩 20~22px, 결과 숫자 타일 폰트
+`clamp(22px,7.2vw,28px)`(SPEC "28px"과 상한 일치), 폰트 크기 4개 변수(2026-08-14에
+이미 고쳐진 상태 재확인). **버튼 hover/active 물리(정보성, 안 고침)**: SPEC은 "active
+시 그림자 1px로 축소"라고 적었는데 실제론 `box-shadow:none`(그림자를 아예 없애 완전히
+눌린 느낌 — 시각적으로 더 설득력 있는 흔한 변형이고, 사이트 전역 하드섀도우 버튼
+전부(`jackpot-quickfill-btn`/`home-share-btn`/`home-save-image-btn`)가 일관되게 이
+패턴이라 굳이 따로 안 고침). 랜딩페이지 4개 샘플(일본어 CJK/아랍어 RTL/영어
+basics/prize-tiers) 스크린샷 육안 확인 — 오버플로우·레이아웃 깨짐 없음, 다크토글 아이콘
+계산기와 동일 문법.
+
+**검증**: `console_error_audit`(161)·`home_audit`(18)·`i18n_coverage_audit`(769키)·
+`wrap_audit`(168) 전부 `ISSUES:0`(포트 9100). `node --check script.js` 통과.
+`node scripts/build-min.js` 재빌드, `index.html` 캐시버스팅
+`styles.min.css?v`/`script.min.js?v` `20260814-4/-6`→`20260815-1`, `sw.js`
+`CACHE_NAME` v46→v47. 아랍어(`?lang=ar`) RTL로 새 배지 렌더링·`dir="rtl"` 정상 확인.
+
+**변경 파일**: `index.html`(Compare/Odds/FAQ 배지 마크업 3곳), `styles.css`(배지
+줄바꿈 CSS 1개 규칙), `script.js`(`scrollIntoViewBelowNav()` 헬퍼 신규 + 2곳 교체),
+`script.min.js`/`styles.min.css`(재빌드), `sw.js`(CACHE_NAME).
+
+커밋: `214a208`(배지 복원 + 스크롤 회귀 수정, 브랜치에 push 완료). **PR은 만들지
+않음**(사용자 요청). 스크린샷은 스크래치패드
+`ux-handoff-new/../audit3-screenshots/`(계산기 4탭×라이트/다크 before/after)에 저장.
+
+**다음 세션 후보**: (1) `--status-red` hex 불일치(`#C0392B`→SPEC `#A6433D`) — 30곳
+이상 전역 치환 필요, 고대비 모드 명암비 재계산까지 포함해서 별도 세션으로. (2) 기존에
+알려진 `full_overflow_sweep`의 러시아어권 5개 언어 320px 오버플로우(2026-08-14 항목,
+여전히 미착수).
