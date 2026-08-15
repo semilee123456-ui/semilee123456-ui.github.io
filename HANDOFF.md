@@ -3075,3 +3075,41 @@ Lantern 시뮬레이션 왜곡이라는 결론을 강하게 뒷받침함. 이걸
 오버플로우 0건. `console_error_audit`(161)·`home_audit`(18)·`wrap_audit`(168)·
 `i18n_coverage_audit`(769 키, 새 데이터-i18n 키 안 늘려서 그대로) 전부 `ISSUES:0`.
 `script.min.js?v` → `20260815-6`, `sw.js` `CACHE_NAME` → `v53`.
+
+### 2026-08-15 이어서 — FAQ 탭 요약 카드 데이터 지연 로드 분리 (odds-data.js와 같은 패턴)
+
+PSI 모바일 55점/FCP 19.8초/LCP 25.9초가 다시 보고돼서 HANDOFF의 기존 "PSI 22~25초 조사
+종결" 항목부터 확인 — 같은 이슈(실사용자 문제 아님, 랩 환경 왜곡)임을 재확인해서 그 숫자
+자체는 재조사 안 함. 다만 "PSI 숫자와 무관하게 페이지 무게 자체를 줄이는 건 일반적으로
+좋은 일"이라는 판단하에, `script.js`(1.9MB) 안에서 안전하게 분리 가능한 대용량 데이터를
+찾음 — FAQ 탭 상단 요약 카드 2개(`FAQ_TG2`: "다른 나라에서도 또 내요?" 3칸 카드,
+`FAQ_PANEL_DESC`: "검색해서 오신 분들이 자주 묻는 질문" 안내문)가 26개 언어×21개국 텍스트로
+약 255KB를 차지하는데, 소비 함수(`updateFaqTg2Card`/`updateFaqPanelDesc`)가 딱 이 두 곳
+(`filterFaq()`, `applyTranslations()`)에서만 쓰여서 안전하게 분리 가능함을 확인.
+
+`faq-panel-data.js`(신규 파일, 255KB)로 옮기고 `odds-data.js` 지연 로드 패턴(`ensureOddsDataLoaded()`)을
+그대로 복제해 `ensureFaqPanelDataLoaded()` 작성 — FAQ 탭을 처음 열 때만 `<script>` 태그를
+동적으로 붙여 로드함. `updateFaqTg2Card()`/`updateFaqPanelDesc()`에 `typeof FAQ_TG2 ===
+'undefined'` 가드를 추가해서, 로드 전에는 조용히 스킵(에러 안 남)하고 FAQ 탭을 열면
+로드 완료 후 다시 호출해 채움 — FAQ 개별 질문 목록(`.faq-item`)은 정적 HTML이라 이 지연
+로드와 무관하게 항상 즉시 보임, 지연되는 건 상단 요약 카드 2개뿐.
+
+**결과**: `script.js` 1940KB→1682KB, `script.min.js` 1388.5KB→1107.4KB(홈/비교/확률체감
+탭만 쓰는 방문자는 이만큼 안 받음). `sw.js`는 `odds-data.js`와 똑같은 이유로
+`faq-panel-data.js`도 앱 셸 캐싱 대상에서 제외(자체 쿼리스트링 캐시버스팅 씀, 서비스
+워커 allowlist에 안 넣음).
+
+**검증**: Playwright로 (1) 홈 탭 진입 시 `faq-panel-data.js` 요청 안 감, FAQ 탭 진입 시에만
+요청 감 확인 (2) ko/ar/vi 3개 언어에서 FAQ 탭 요약 카드 정상 렌더링 확인 (3) 콘솔 에러
+4건은 전부 이 세션 샌드박스의 아웃바운드 프록시 제약으로 막힌 외부 리소스(환율 API·구글
+폰트·GTM·애드센스)뿐, `faq-panel-data.js` 자체는 정상 로드됨을 확인 (4) 기존 회귀 테스트
+4종(`faq_audit` 18개·`home_audit` 18개·`console_error_audit` 161개·`i18n_coverage_audit`
+769키) 전부 이전과 동일한 개수로 `ISSUES:0`. `script.min.js?v` → `20260815-7`, `sw.js`
+`CACHE_NAME` → `v54`.
+
+**다음 세션 참고**: 같은 패턴으로 더 뺄 수 있는 후보(`COUNTRY_TAX_DISCLAIMERS` 68KB +
+`COUNTRY_TAX_AUTHORITY` 28KB)를 조사하다 말았음 — `COUNTRY_TAX_AUTHORITY`는 홈 탭
+`#home-trust-line`(신뢰 배지) 렌더링에 쓰여서 초기 로드 경로에 물려있어 그대로 분리하면
+안 됨, `COUNTRY_TAX_DISCLAIMERS`도 같은 함수 안에서 같이 쓰이므로 홈 탭과 무관하게 지연
+로드하려면 이 신뢰 배지 렌더링 자체를 재구조화해야 해서 이번엔 손 안 댐. 필요하면 이 항목
+참고해서 검토할 것.
