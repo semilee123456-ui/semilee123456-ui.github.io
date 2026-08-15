@@ -3180,3 +3180,36 @@ PSI 모바일 55점/FCP 19.8초/LCP 25.9초가 다시 보고돼서 HANDOFF의 �
 (`20260815-7`/`v54` vs `20260816-1`/`v54`) — 병합 시 최종적으로 `script.min.js?v` →
 `20260816-2`, `sw.js CACHE_NAME` → `v56`으로 두 변경분을 모두 포함해 한 번 더 올림.
 위 각 블록 안에 적힌 버전 번호는 그 세션 당시 기준이라 최신이 아니니 참고만 할 것.
+
+### 2026-08-15 이어서 — 인수인계: 이번 세션 전체 요약 (PR #233 머지·배포 확인)
+
+**이번 세션에서 한 것**:
+1. GitHub 작업 이력 확인 요청 → open PR 0개, main 최신 확인.
+2. "오가닉 플라이휠" 홍보 전략 4가지 제안(GEO/AI 인용, GitHub·Kaggle 오픈 데이터셋, 임베드
+   위젯, 잭팟 시즌 롱테일 키워드) 검토 → **전부 이미 구현돼 있음 확인, 코드 변경 없음**
+   (HANDOFF "홍보·마케팅 작업 전체 이력" 섹션과 대조).
+3. PSI 모바일 55점 재보고 → 기존 조사 결론(실사용자 문제 아님) 재확인 후, 별개로 페이지
+   무게 자체를 줄이는 게 이득이라 판단해 `faq-panel-data.js` 분리(위 항목 참고,
+   `script.min.js` 1388.5KB→1107.4KB).
+4. `COUNTRY_TAX_DISCLAIMERS`/`COUNTRY_TAX_AUTHORITY`(96KB) 추가 분리 검토 → 홈 탭 초기
+   로드 경로에 물려있어 지연 로드 대상 아님을 확인, **코드 변경 없음**(재조사 금지 기록함).
+5. PWA 아이콘 3종(`icon-192`/`icon-512`/`apple-touch-icon`) `pngquant`로 재압축 —
+   25KB→10.8KB(57% 감소), 육안 차이 없음.
+6. 사용자가 크롬에 PWA로 설치했더니 별도 창(standalone)으로 열려서 불편하다는 문의 →
+   이건 PWA 설치의 표준 동작이고 이 사이트 주 타겟(모바일 국제 방문자)엔 오히려 적합하다고
+   판단, **코드 변경 없음**(개인 설치 제거 방법만 안내).
+7. PR #233 생성 확인 → 구독(`subscribe_pr_activity`), CI 없음·리뷰 코멘트 없음 확인.
+8. **"머지랑 인수인계 해줘" 요청** → PR #233이 그 사이 머지된 동시 세션 PR #234/#235
+   (잭팟 순위 카드 링크 버그 수정 + `link_navigation_audit.js` 신설)와 충돌 →
+   `origin/main` 머지해서 충돌 4개 파일(`HANDOFF.md`/`index.html`/`script.min.js`/`sw.js`)
+   직접 해결(캐시버스팅 버전 통합: `script.min.js?v` → `20260816-2`, `CACHE_NAME` → `v56`),
+   회귀 테스트 5종(`link_navigation_audit` 8·`faq_audit` 18·`audit_odds_compare` 40·
+   `home_audit` 18·`console_error_audit` 161) 전부 `ISSUES:0` 재확인 후 병합 커밋 →
+   **PR #233 머지 완료**(`303f9b6`).
+9. 라이브 배포 확인: `chamtax.com`에서 `script.min.js?v=20260816-2`, `sw.js CACHE_NAME
+   'chamtax-shell-v56'`, `faq-panel-data.js` 200 응답, `icon-512.png` 6162바이트(압축본)
+   전부 실제 반영된 것 curl로 직접 확인함.
+
+**남은 것**: 전부 처리 완료, 다음 세션이 바로 확인할 미해결 항목 없음. 구글 애드센스
+수익화 활성 확인·Reddit/Show HN/AlternativeTo/GeekNews 게시는 여전히 계정 소유자(사용자)
+직접 해야 하는 대기 항목(위 "홍보·마케팅 작업 전체 이력" 섹션 참고).
