@@ -448,6 +448,13 @@
     background:var(--indigo); border-radius:20px; padding:4px 14px; margin:0 0 8px;
     letter-spacing:0.02em;
   }
+  /* 2026-08-15: Compare/Odds/FAQ 탭은 이 배지가 .hero 블록 안(Home처럼 앞에 아무 인라인
+     요소도 없는 자리)이 아니라 .back-btn(← 홈으로, display:inline-flex) 바로 뒤에 옴 —
+     두 인라인 레벨 요소가 같은 줄에 나란히 붙어버리는 걸 막기 위해 이 조합에서만 블록으로
+     전환(width는 fit-content로 유지해서 알약 모양이 풀너비로 안 늘어나게 함) */
+  .back-btn + .hero-category-tag{
+    display:block; width:fit-content; margin-top:2px;
+  }
   .tax-impact-compact{
     display:flex; flex-direction:row; flex-wrap:wrap; align-items:baseline; justify-content:center; gap:6px;
     margin-top:12px; padding-bottom:10px; font-size:16px; color:var(--text-muted);

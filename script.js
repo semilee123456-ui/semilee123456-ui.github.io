@@ -2100,6 +2100,20 @@ function applyCurrentViewDescription(view){
   if (entry) metaEl.setAttribute('content', entry.ko);
 }
 
+// 2026-08-15: `.nav`가 position:sticky로 항상 화면 상단에 떠 있는데, 아래 두 곳
+// (탭 전환 시 .page 스크롤, "한국에 살아요" 클릭 시 입력 카드로 스크롤)이 그냥
+// `scrollIntoView({block:'start'})`만 써서 대상 요소의 맨 윗줄(뒤로가기 버튼·카드 라벨 등)이
+// sticky nav 뒤로 가려지는 회귀가 있었음(디자인 감사 중 발견 — nav 높이가 폭·글자 크게
+// 보기 설정에 따라 달라져서 CSS `scroll-margin-top` 고정값보다, 매번 실제 렌더된 nav 높이를
+// 재는 이 방식이 더 안전함) */
+function scrollIntoViewBelowNav(el){
+  if (!el) return;
+  const nav = document.querySelector('.nav');
+  const navH = nav ? nav.getBoundingClientRect().height : 0;
+  const top = el.getBoundingClientRect().top + window.pageYOffset - navH - 8;
+  window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+}
+
 function go(view){
   document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
   document.getElementById('view-' + view).classList.add('on');
@@ -2144,7 +2158,7 @@ function go(view){
   }
   maybeShowPwaInstallBanner(); // 확률체감 탭 진입/이탈 여부에 따라 PWA 설치 배너 표시 재판단
 
-  document.querySelector('.page').scrollIntoView({behavior:'smooth', block:'start'});
+  scrollIntoViewBelowNav(document.querySelector('.page'));
 }
 
 // 확률체감 탭 전용 대용량 데이터(파워볼/메가밀리언즈 역대 당첨번호·잭팟 아카이브, odds-data.js)는
@@ -2189,7 +2203,7 @@ function goToCalculatorInput(){
   const accordion = document.getElementById('introPersonaAccordion');
   if (accordion) accordion.open = false;
   const inputCard = document.querySelector('.input-card');
-  if (inputCard) inputCard.scrollIntoView({behavior:'smooth', block:'start'});
+  scrollIntoViewBelowNav(inputCard);
 }
 
 // "한국에 살아요" 카드 전용 — 언어는 그대로 두고(외국어로 읽고 싶을 수 있음) 국가/통화만
