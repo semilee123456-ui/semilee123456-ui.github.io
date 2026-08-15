@@ -129,12 +129,12 @@
      요청과 한 URL로 합쳐서 추가 요청 없이 확장 -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260814-4">
+<link rel="stylesheet" href="styles.min.css?v=20260815-2">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260814-6" defer></script>
+<script src="script.min.js?v=20260815-2" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1311,6 +1311,12 @@
       <!-- COMPARE VIEW -->
       <div class="view" id="view-compare">
         <button class="back-btn" onclick="go('home')" data-i18n="common.backHome">← 홈으로</button>
+        <!-- 2026-08-15: 핸드오프 목업 SPEC.md 5절엔 Compare/Odds/FAQ 탭에도 Home의
+             .hero-category-tag(인디고 알약 배지)와 같은 자리에 탭 이름 배지가 있는데,
+             2026-08-14 세션이 "마크업·i18n 키 신설 필요"라는 이유로 범위를 Home 배지 복원에만
+             한정하고 이 3개 탭은 손 안 댐(HANDOFF.md 참고) — 새 키를 만들지 않고 네비게이션에
+             이미 있는 nav.compare/nav.odds/nav.faq(26개 언어 기번역 완료) 값을 재사용해서 채움 -->
+        <p class="hero-category-tag" data-i18n="nav.compare">비교</p>
 
         <div class="panel">
           <h2 class="panel-title" data-i18n="compare.panelTitle">내 손에 들어오는 진짜 돈, 계산해볼까요?</h2>
@@ -1536,6 +1542,8 @@
             <button type="button" class="pwa-install-banner-later" id="pwaInstallLaterBtn" data-i18n="installBanner.later">나중에</button>
           </span>
         </div>
+
+        <p class="hero-category-tag" data-i18n="nav.odds">확률</p>
 
         <details class="panel odds-accordion" open>
           <summary class="panel-title-toggle" data-i18n="odds.panelTitle">이 확률, 솔직히 감이 안 오시죠?</summary>
@@ -1978,6 +1986,7 @@
       <!-- FAQ VIEW -->
       <div class="view" id="view-faq" onclick="if(event.target===this) closeFaqOverlay();">
         <button class="back-btn" onclick="go('home')" data-i18n="common.backHome">← 홈으로</button>
+        <p class="hero-category-tag" data-i18n="nav.faq">도움말</p>
 
         <div class="faq-sheet-content">
         <div class="panel">
