@@ -2966,3 +2966,40 @@ API였음(환율은 `DOMContentLoaded` 이후 `fetchLiveExchangeRate()`가, Form
 있음("긴 기본 스레드 작업 12개 발견" 진단과 일치할 가능성). (3) Lighthouse 리포트의
 "트레이스 보기"/네트워크 워터폴을 펼쳐서 정확히 어느 요청이 22초 시점까지 안 끝나는지
 직접 봐야 확실해짐 — 다음 세션에서 그 화면 스크린샷을 받아 이어서 볼 것.
+
+### 2026-08-15 이어서 — Lighthouse Treemap으로 실제 버그 발견: 홈에서도 odds-data.js(143KB) 강제 로드
+
+사용자가 Lighthouse Treemap 스크린샷 공유 — `chamtax.com/`(홈) 로드인데
+`odds-data.js?v=20260815-1` 143.3KB(13%)가 전송 목록에 있는 게 이상해서 조사. odds-data.js는
+2026-07-22/07-26에 두 차례 "odds 탭을 실제로 열 때만 로드"하도록 고쳐놨던 파일이라 회귀로
+의심 — Playwright로 `Element.prototype.appendChild`를 가로채 스택트레이스를 찍어서 실제
+호출 경로를 확인(코드 값 대조가 아니라 실제 실행 경로 추적, 이 저장소가 반복해서 배운
+"라이브 렌더링/실행 확인" 원칙을 네트워크 레벨로 적용한 사례).
+
+**원인**: `applyTranslations()`(페이지 로드 시 무조건 실행) → `updateDateLookupUi()` →
+`setupDateLookup()`까지는 이미 tab-visible 가드가 있는 줄 알았는데, 2026-08-01에 추가된
+"아카이브에 있는 가장 최근 날짜로 자동 이동" 기능(`jumpToLatestArchivedDate`, 날짜조회
+위젯이 기본값 "오늘"만 보여주면 매번 "기록 없음"만 나오는 문제 해결용)이 `JACKPOT_HISTORY`
+미로드 시 `ensureOddsDataLoaded()`를 **탭이 보이는지 확인 없이 무조건** 호출하고 있었음 —
+`renderDateLookupResult()`엔 이미 있는 `#view-odds.on` 가드가 이 새 코드엔 빠져있던,
+2026-07-26에 고쳤던 것과 똑같은 종류의 회귀. 이 함수는 `setupDateLookup()`의 "최초 1회만"
+블록 안에 있어서 홈 화면만 보는 방문자도 페이지 로드 시 한 번은 반드시 이 경로를 탐.
+
+**수정**: `jumpToLatestArchivedDate`를 `setupDateLookup()` 지역 클로저에서
+`jumpToLatestArchivedDateIfNeeded()`(최상위 함수, DOM에서 직접 select 엘리먼트 조회)로
+분리. `setupDateLookup()`의 최초 호출 블록은 `#view-odds.on`일 때만 즉시
+`ensureOddsDataLoaded()`를 태우고, 아니면 아무것도 안 함 — 대신 `renderOddsTabDataWhenReady()`
+(odds 탭을 열 때마다 매번 실행, `go()`가 호출)의 데이터 로드 완료 콜백 끝에
+`jumpToLatestArchivedDateIfNeeded()`를 추가해서, 탭을 나중에 열어도 "최신 날짜로 자동
+이동" 기능이 그대로 동작하게 함(기능 손실 없음).
+
+**검증**: Playwright로 (1) 홈 로드 시 `odds-data.js` 요청 0건(기존엔 1건), (2) Odds 탭을
+열면 정상적으로 1건 로드, (3) 자동으로 2026-08-14(최신 메가밀리언즈 아카이브 날짜)로
+이동해서 결과까지 정상 렌더링되는 것 전부 확인. `console_error_audit`(161)·`home_audit`(18)·
+`wrap_audit`(168)·`draw_archive_integrity_check`(4개 아카이브) 전부 `ISSUES:0`.
+`script.min.js?v` → `20260815-5`, `sw.js` `CACHE_NAME` → `v52`.
+
+이걸로 22.5초 FCP 문제가 완전히 해결됐다고 단정할 수는 없지만(홈 화면 전송 용량에서
+143KB, 약 13%가 빠지는 거라 확실히 도움은 됨), 여전히 script.min.js(401KB 전송)·
+AdSense/GA4 스크립트(합쳐서 400KB+)가 남아있어 다음 세션에서 위 "다음 세션 후보" 항목과
+함께 계속 볼 것.

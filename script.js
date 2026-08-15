@@ -2187,6 +2187,11 @@ function renderOddsTabDataWhenReady(){
     renderJackpotIndexRollover();
     renderJackpotIndexCpiRanking();
     renderNumberFrequencyStats();
+    // 2026-08-15: 홈 화면 등에서 odds 탭이 안 보이는 상태로 처음 setupDateLookup()이 불렸을 땐
+    // "최신 아카이브 날짜로 자동 이동"을 건너뛰었으므로(위 setupDateLookup() 주석 참고), 데이터가
+    // 실제로 다 로드된 이 시점에 한 번 더 시도 — 이미 최신 날짜거나 사용자가 직접 골랐으면
+    // 함수 내부에서 조용히 스킵됨
+    jumpToLatestArchivedDateIfNeeded();
   }).catch(err => console.error('[odds-data]', err));
 }
 
@@ -5945,25 +5950,46 @@ function setupDateLookup(){
   // 없음"만 보여서 매번 허탕치는 인상을 줌. 실제로 아카이브에 있는 가장 최근 날짜로 자동
   // 이동시켜서 첫 화면부터 진짜 결과가 보이게 함 — 사용자가 이미 직접 날짜를 골랐다면
   // (dataset.userPicked) 건드리지 않음. 데이터가 아직 로딩 중이면 로드 완료 후 한 번만 시도
-  const jumpToLatestArchivedDate = () => {
-    if (daySel.dataset.userPicked) return;
-    const latest = getMostRecentArchivedDrawDate();
-    if (!latest || getDlSelectedDate() === latest) return;
-    const [ly, lm, ld] = latest.split('-').map(Number);
-    yearSel.value = String(ly);
-    monthSel.value = String(lm);
-    populateDlDaySelect(daySel, ly, lm, ld);
-    renderDateLookupResult(getDlSelectedDate());
-  };
+  // (함수 본체는 jumpToLatestArchivedDateIfNeeded로 분리 — 아래 2026-08-15 주석 참고)
   if (typeof JACKPOT_HISTORY !== 'undefined') {
-    jumpToLatestArchivedDate();
+    jumpToLatestArchivedDateIfNeeded();
   } else {
-    ensureOddsDataLoaded().then(jumpToLatestArchivedDate).catch(() => {});
+    // 2026-08-15: 이 setupDateLookup()은 odds 탭을 연 적 없는 방문자도 applyTranslations()
+    // (페이지 로드 시 무조건 실행)를 거쳐 항상 한 번은 호출됨 — 여기서 무조건
+    // ensureOddsDataLoaded()를 태우면 홈 화면만 보는 방문자 전원이 odds-data.js(143KB)를
+    // 강제로 받아가게 됨(2026-07-26에 renderDateLookupResult()에 이미 고쳐둔 것과 같은
+    // 종류의 회귀 — Lighthouse 모바일 성능 감사로 발견, FCP/LCP 지연의 한 원인). odds 탭이
+    // 실제로 보이는 상태일 때만 즉시 로드하고, 그렇지 않으면 여기서는 아무것도 안 함 —
+    // 나중에 사용자가 실제로 odds 탭을 열면 renderOddsTabDataWhenReady()가
+    // ensureOddsDataLoaded() 완료 후 jumpToLatestArchivedDateIfNeeded()를 다시 호출해줌
+    const oddsViewEl = document.getElementById('view-odds');
+    if (oddsViewEl && oddsViewEl.classList.contains('on')) {
+      ensureOddsDataLoaded().then(jumpToLatestArchivedDateIfNeeded).catch(() => {});
+    }
   }
 }
 
-// 위 jumpToLatestArchivedDate가 쓰는 헬퍼 — 당첨번호 아카이브 2개(파워볼/메가밀리언즈)가 잭팟
-// 아카이브보다 반영이 더 빠르므로(금액 확정엔 추가 시간이 걸림) 4개 아카이브 전부의 마지막
+// 2026-08-15: setupDateLookup() 안 지역함수였던 jumpToLatestArchivedDate를 최상위로 뺌 —
+// odds-data.js 로드를 odds 탭이 실제로 열렸을 때로 미루면서(위 setupDateLookup() 주석 참고),
+// 탭이 나중에 열려 데이터가 뒤늦게 로드되는 경우에도 renderOddsTabDataWhenReady()에서 이
+// 함수를 다시 부를 수 있어야 해서 지역 클로저 대신 DOM에서 직접 select 엘리먼트를 찾도록 변경
+function jumpToLatestArchivedDateIfNeeded(){
+  const yearSel = document.getElementById('dl-date-year');
+  const monthSel = document.getElementById('dl-date-month');
+  const daySel = document.getElementById('dl-date-day');
+  if (!yearSel || !monthSel || !daySel) return;
+  if (daySel.dataset.userPicked) return;
+  const latest = getMostRecentArchivedDrawDate();
+  if (!latest || getDlSelectedDate() === latest) return;
+  const [ly, lm, ld] = latest.split('-').map(Number);
+  yearSel.value = String(ly);
+  monthSel.value = String(lm);
+  populateDlDaySelect(daySel, ly, lm, ld);
+  renderDateLookupResult(getDlSelectedDate());
+}
+
+// 위 jumpToLatestArchivedDateIfNeeded가 쓰는 헬퍼 — 당첨번호 아카이브 2개(파워볼/메가밀리언즈)가
+// 잭팟 아카이브보다 반영이 더 빠르므로(금액 확정엔 추가 시간이 걸림) 4개 아카이브 전부의 마지막
 // 항목 중 가장 늦은 날짜를 씀. 각 배열은 auto-backfill 봇이 항상 뒤에 이어붙이는 구조라
 // 마지막 원소가 곧 최신 날짜임(전수 스캔 불필요)
 function getMostRecentArchivedDrawDate(){
