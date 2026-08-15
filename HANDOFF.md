@@ -2846,3 +2846,23 @@ basics/prize-tiers) 스크린샷 육안 확인 — 오버플로우·레이아웃
 실행 → 원상복구하는 방식 사용, 저장소엔 흔적 안 남음). 전부 `ISSUES:0`. 코드 리뷰용
 스크립트 안 사소한 죽은 `*/`(블록주석 닫는 기호가 라인주석 안에 잘못 남아있던 것)도
 같이 정리.
+
+### 2026-08-15 이어서 — 메가밀리언즈 8/14 회차 데이터 반영 (새 브랜치)
+
+사용자가 usamega.com 스크린샷(메가밀리언즈 8/14(금) 3,23,27,46,60+11, 다음 추첨 8/18
+잭팟 $100M/현금 $42.8M · 파워볼 8/12 회차+다음 추첨 8/15 잭팟 $20M/현금 $8.7M)을 공유.
+파워볼 쪽은 이미 3차 감사(PR #224)에 정확히 반영되어 있어 변경 없음. 메가밀리언즈 8/14
+회차만 누락되어 있었음 — WebSearch(DraftKings 기사) + WebFetch로 번호·무당첨·$90M(8/14
+당첨 시점 잭팟, 다음 회차 롤오버로 $100M) 교차검증 후 4곳 갱신:
+`odds-data.js`의 `MEGAMILLIONS_DRAW_ARCHIVE`·`MEGAMILLIONS_JACKPOT_ARCHIVE`에 8/14
+항목 추가, `script.js`의 `LATEST_DRAW.megamillions`(홈 화면 위젯용)와
+`JACKPOT_DATA.megamillions`(다음 추첨 예상 잭팟 표시용)를 8/14 이후 값으로 갱신.
+
+작업은 로컬에 `main`보다 뒤처진 브랜치에서 시작했다가(다른 세션들의 PR #221~224가 먼저
+머지됨을 뒤늦게 확인) `git stash` → `origin/main` 기준 새 브랜치 생성 → `stash pop`으로
+옮겨서 충돌 없이 재적용함. 재빌드 후 `draw_archive_integrity_check`(4개 아카이브,
+`ISSUES:0`)·`console_error_audit`(161, `ISSUES:0`)·`home_audit`(18, `ISSUES:0`) 확인
+— 포트 9000이 이번에도 다른 세션 점유 중이라 9200 임시 서버 + sed 포트치환 방식 재사용.
+`script.min.js?v` → `20260815-3`, `odds-data.js?v`(script.js 내 지연로드 경로) →
+`20260815-1`, `sw.js` `CACHE_NAME` → `v49`. `styles.css`는 안 건드려서 `styles.min.css`
+버전(`20260815-2`)은 유지.
