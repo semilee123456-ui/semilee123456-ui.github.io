@@ -2105,7 +2105,7 @@ function applyCurrentViewDescription(view){
 // `scrollIntoView({block:'start'})`만 써서 대상 요소의 맨 윗줄(뒤로가기 버튼·카드 라벨 등)이
 // sticky nav 뒤로 가려지는 회귀가 있었음(디자인 감사 중 발견 — nav 높이가 폭·글자 크게
 // 보기 설정에 따라 달라져서 CSS `scroll-margin-top` 고정값보다, 매번 실제 렌더된 nav 높이를
-// 재는 이 방식이 더 안전함) */
+// 재는 이 방식이 더 안전함)
 function scrollIntoViewBelowNav(el){
   if (!el) return;
   const nav = document.querySelector('.nav');

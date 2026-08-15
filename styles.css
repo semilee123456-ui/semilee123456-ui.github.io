@@ -449,10 +449,14 @@
     letter-spacing:0.02em;
   }
   /* 2026-08-15: Compare/Odds/FAQ 탭은 이 배지가 .hero 블록 안(Home처럼 앞에 아무 인라인
-     요소도 없는 자리)이 아니라 .back-btn(← 홈으로, display:inline-flex) 바로 뒤에 옴 —
+     요소도 없는 자리)이 아니라 .back-btn(← 홈으로, display:inline-flex) 뒤에 옴 —
      두 인라인 레벨 요소가 같은 줄에 나란히 붙어버리는 걸 막기 위해 이 조합에서만 블록으로
-     전환(width는 fit-content로 유지해서 알약 모양이 풀너비로 안 늘어나게 함) */
-  .back-btn + .hero-category-tag{
+     전환(width는 fit-content로 유지해서 알약 모양이 풀너비로 안 늘어나게 함). 처음엔
+     인접 형제 선택자(+)를 썼는데, Odds 탭은 .back-btn과 .hero-category-tag 사이에
+     #pwaInstallBanner(보통 display:none)가 끼어있어서 인접 형제 매칭이 깨져 Odds
+     탭만 배지가 옆으로 나란히 붙는 불일치가 있었음(스크린샷 3탭 대조로 발견) — 일반
+     형제 선택자(~)로 바꿔서 사이에 뭐가 있든(숨겨진 배너 포함) 항상 적용되게 함 */
+  .back-btn ~ .hero-category-tag{
     display:block; width:fit-content; margin-top:2px;
   }
   .tax-impact-compact{
