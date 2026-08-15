@@ -3075,3 +3075,37 @@ Lantern 시뮬레이션 왜곡이라는 결론을 강하게 뒷받침함. 이걸
 오버플로우 0건. `console_error_audit`(161)·`home_audit`(18)·`wrap_audit`(168)·
 `i18n_coverage_audit`(769 키, 새 데이터-i18n 키 안 늘려서 그대로) 전부 `ISSUES:0`.
 `script.min.js?v` → `20260815-6`, `sw.js` `CACHE_NAME` → `v53`.
+
+### 2026-08-16 — "이 금액으로 계산해보기" 링크가 계산 결과 대신 다른 탭으로 튕기는 버그 수정
+
+사용자가 실기기 스크린샷(`biggest-jackpot-payouts.html` 역대 1위 카드)으로 "여기 누르면
+계산기로 가야 되는데 다른 데로 간다"고 제보. `index.html?amount=&jgame=&jdate=` 링크를
+처리하는 로직이 두 단계로 나뉘어 있었는데(`script.js` 9590번대), 1단계(`?amount=`)가 홈
+화면에 금액을 채우고 계산까지 끝내놓자마자, 곧바로 2단계(`?jgame=&jdate=`,
+`jumpToJackpotHistoryRecord()`)가 `go('odds')`를 호출해서 확률체감 탭으로 강제 이동시켜
+버림 — 방금 채워진 계산 결과(링크가 약속한 것)를 사용자가 보지도 못한 채 다른 화면으로
+넘어가는 구조였음(2026-08-04에 "역대 몇 위였는지 맥락이 안 보인다"는 요청으로 추가된
+기능인데, 그 부작용으로 원래 있던 "계산 결과 보기" 목적이 가려짐).
+
+**수정**: `jumpToJackpotHistoryRecord()`에서 `go('odds')`+스크롤/하이라이트 폴링 로직을
+제거하고 `jackpotSpotlightRecord` 전역 변수 설정만 남김 — 사용자는 홈 화면에서 계산
+결과를 바로 보고, 나중에 직접 확률체감 탭을 열면(`renderJackpotHistory()`가 매번 이
+변수를 확인해서 자동 반영) 그 회차가 여전히 스포트라이트로 표시됨. 강제 이동만 빠지고
+스포트라이트 기능 자체는 그대로 유지.
+
+**영향 범위**: 이 링크 패턴(`rank-calc-link`)을 쓰는 13개 파일(`404.html`,
+`biggest-jackpot-payouts.html`, `biggest-lottery-jackpots-after-tax.html`,
+`biggest_lottery_jackpots_after_tax_zh.html`, `korean-abroad-us-lottery-tax.html`,
+`korean_abroad_us_lottery_tax_ko/zh.html`, `lottery-jackpot-amount*.html`(3개),
+`lottery-prize-tiers.html`, `press-kit.html`, `sitemap.html`, `us-lottery-tax-rate.html`)
+전부 같은 `script.js` 로직을 공유해서 한 곳만 고쳐 전체 반영됨.
+
+**검증**: Playwright로 `biggest-jackpot-payouts.html`의 순위 카드 5개 링크 전부 클릭
+시뮬레이션 — 수정 전엔 전부 `view-odds`로 튕겨나갔던 게, 수정 후 전부 `view-home`에
+머물며 정확한 금액·계산 결과가 표시됨을 확인. 이후 수동으로 확률체감 탭을 열면 스포트라이트
+행이 여전히 나타나는 것도 별도 확인. `console_error_audit`(161)·`home_audit`(18)·
+`audit_odds_compare`(40) 전부 `ISSUES:0`. `node --check` 통과.
+
+변경 파일: `script.js`(`jumpToJackpotHistoryRecord()` 단순화, 관련 주석 갱신),
+`script.min.js`(재빌드), `index.html`(`script.min.js?v` `20260815-6`→`20260816-1`),
+`sw.js`(`CACHE_NAME` v53→v54).
