@@ -115,10 +115,12 @@
 <!-- 해외(느린 회선·일부 CDN 접속 제한 지역 등)에서도 화면이 멈추지 않도록,
      폰트 스타일시트를 렌더링 차단(render-blocking) 없이 비동기로 불러옴.
      로드 실패/지연 시에도 body의 -apple-system,BlinkMacSystemFont,sans-serif 폴백 폰트로 즉시 정상 표시됨 -->
+<!-- 2026-08-15: 환율 API(frankfurter/er-api)·Formspree preconnect는 제거함 — 초기 렌더링
+     경로엔 안 쓰이고(환율은 DOMContentLoaded 이후 fetchLiveExchangeRate()가, Formspree는
+     문의폼 제출 시에만 호출), Lighthouse 모바일 감사에서 FCP/LCP가 비정상적으로 느리게 나온
+     원인 조사 중 첫 단계로 초기 연결 예산을 정말 필요한 것(폰트 CDN)에만 쓰도록 정리함.
+     JS가 실제로 그 API를 호출하는 시점에 브라우저가 알아서 연결하므로 기능 손실 없음 -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="preconnect" href="https://api.frankfurter.app" crossorigin>
-<link rel="preconnect" href="https://open.er-api.com" crossorigin>
-<link rel="preconnect" href="https://formspree.io" crossorigin>
 <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
 <link rel="preconnect" href="https://fonts.googleapis.com">
