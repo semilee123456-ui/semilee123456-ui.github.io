@@ -8340,6 +8340,42 @@ function updateHomeSplitCalc(){
   finalEl.textContent = formatEokKrwInDisplayCurrency(r.final, sharedInputCurrency);
 }
 
+// "이 돈을 투자하면?" 아코디언(#home-invest-detail) — 2026-08-15 신설. 세후 실수령액(일시불
+// 기준)을 원금 삼아 매년 일정 수익률로 복리 성장한다고 가정했을 때 10/20/30년 뒤 얼마가
+//되는지 보여줌 — 실제 투자수익률 예측이 아니라 "복리 효과가 이 정도 규모다"를 체감시키는
+// 참고용 시뮬레이션. 수익률은 S&P500 지수의 장기(약 100년) 명목 평균 수익률로 흔히
+// 인용되는 7%(배당 재투자 포함, 인플레이션 미반영) 하나만 고정 가정으로 씀 — 여러 수익률
+// 선택지를 주면 "어느 게 맞는 예측이냐"는 오해를 키울 수 있어서, 이 사이트의 다른 면책
+// 문구들(세무사 상담 권장 등)과 같은 톤으로 "그냥 참고용 예시"라는 걸 명확히 함.
+// updateHomeCalc()가 이미 계산해둔 세후 실수령액(final, 억 단위)을 그대로 받아써서 중복
+// 계산 안 함 — calcTakeHome()을 여기서 다시 부르지 않는 이유.
+const HOME_INVEST_ANNUAL_RATE = 0.07;
+const HOME_INVEST_YEARS = [10, 20, 30];
+function updateHomeInvestSim(finalEok){
+  const listEl = document.getElementById('home-invest-list');
+  if (!listEl) return;
+  const summaryEl = document.getElementById('home-invest-summary');
+  if (summaryEl) summaryEl.textContent = pickLang(
+    '💰 이 돈을 투자하면 얼마가 될까요?', '💰 What if you invested this?', '💰 如果把这笔钱拿去投资会怎样？',
+    '💰 Nếu đầu tư số tiền này thì sao?', '💰 ถ้าเอาเงินนี้ไปลงทุนล่ะ?', '💰 А что если это инвестировать?'
+  );
+  const noteEl = document.getElementById('home-invest-note');
+  if (noteEl) noteEl.textContent = pickLang(
+    '※ 연 7% 복리(S&P500 지수의 장기 평균 명목 수익률로 흔히 인용되는 값, 배당 재투자·인플레이션 미반영)로 단순 가정한 참고용 시뮬레이션이에요. 실제 투자수익률을 예측하거나 보장하지 않고, 원금 손실 위험도 있어요.',
+    '※ Just a reference simulation assuming 7% annual compound growth (a commonly cited long-run nominal average for the S&P 500, dividends reinvested, not inflation-adjusted). Not a prediction or guarantee of actual returns — investing carries risk of loss.',
+    '※ 仅供参考的模拟，假设年化7%的复利增长（标普500指数常被引用的长期名义平均收益率，含股息再投资，未计入通胀）。并非对实际投资回报的预测或保证，投资有本金损失风险。',
+    '※ Đây chỉ là mô phỏng tham khảo giả định tăng trưởng kép 7%/năm (mức trung bình danh nghĩa dài hạn thường được trích dẫn của chỉ số S&P 500, đã tái đầu tư cổ tức, chưa điều chỉnh lạm phát). Không phải dự đoán hay đảm bảo lợi nhuận thực tế — đầu tư luôn có rủi ro mất vốn.',
+    '※ นี่เป็นเพียงการจำลองอ้างอิงโดยสมมติการเติบโตทบต้นปีละ 7% (ค่าเฉลี่ยผลตอบแทนที่ระบุบ่อยของดัชนี S&P 500 ในระยะยาว รวมการลงทุนซ้ำเงินปันผล ไม่ได้ปรับตามเงินเฟ้อ) ไม่ใช่การคาดการณ์หรือรับประกันผลตอบแทนจริง การลงทุนมีความเสี่ยงที่จะขาดทุนเงินต้น',
+    '※ Это лишь справочная симуляция с допущением о среднегодовом сложном росте 7% (часто цитируемая долгосрочная номинальная средняя доходность индекса S&P 500 с реинвестированием дивидендов, без поправки на инфляцию). Не является прогнозом или гарантией реальной доходности — инвестиции сопряжены с риском потери капитала.'
+  );
+  if (!Number.isFinite(finalEok) || finalEok <= 0) { listEl.innerHTML = ''; return; }
+  listEl.innerHTML = HOME_INVEST_YEARS.map(years => {
+    const grown = finalEok * Math.pow(1 + HOME_INVEST_ANNUAL_RATE, years);
+    const yearLabel = pickLang(`${years}년 후`, `In ${years} years`, `${years}年后`, `Sau ${years} năm`, `ใน ${years} ปี`, `Через ${years} лет`);
+    return `<div class="jc-row"><span>${yearLabel}</span><span class="jc-val">${formatEokKrwInDisplayCurrency(grown, sharedInputCurrency)}</span></div>`;
+  }).join('');
+}
+
 function refreshJackpotDrawerIfOpen(){
   const box = document.getElementById('jackpot-calc-box');
   if (box && box.classList.contains('show')) {
@@ -12794,6 +12830,8 @@ function updateHomeCalc(usdOverride){
   renderAnnuityFromCash(usd * EXCHANGE_RATE, usdMillions, 'home-annuity', 'home-annuity-schedule-list');
   // 당첨자가 여러 명이면? — 국가/금액이 바뀔 때마다 같이 갱신(updateHomeSplitCalc 정의 참고)
   updateHomeSplitCalc();
+  // 이 돈을 투자하면? — 위에서 이미 계산해둔 세후 실수령액(final)을 그대로 재사용
+  updateHomeInvestSim(final);
 
   const usdNote = document.getElementById('home-usd-note');
   const cnyNote = document.getElementById('home-cny-note');

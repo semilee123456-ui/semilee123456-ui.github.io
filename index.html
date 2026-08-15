@@ -136,7 +136,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260815-5" defer></script>
+<script src="script.min.js?v=20260815-6" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1135,6 +1135,19 @@
                 <div class="jc-row"><span data-i18n="home.splitCountLabel" id="home-split-count-label">당첨자 수 (본인 포함)</span><input type="number" class="rate-input" id="home-split-count" min="1" max="50" step="1" value="1" inputmode="numeric" style="width:50px;" oninput="updateHomeSplitCalc()" aria-labelledby="home-split-count-label"></div>
                 <div class="jc-row jc-final"><span data-i18n="home.splitFinalLabel">1인당 세후 실수령액</span><span class="jc-val" id="home-split-final">-</span></div>
                 <p class="jc-note" data-i18n="home.splitNote">※ 세금은 총액이 아니라 1인당 나눠 받은 금액 기준으로 다시 계산돼요 — 누진세를 쓰는 나라는 총액 기준보다 유리할 수 있어요. 실제 공동 당첨 시엔 지분을 명확히 정해두는 게 안전해요.</p>
+              </div>
+            </details>
+            <!-- 2026-08-15 신설: "이 돈을 투자하면?" 아코디언. 위 두 아코디언(연금/공동당첨)과
+                 같은 jh-more+jc-annuity-box 패턴 재사용. 텍스트는 data-i18n(JSON 26개 언어 번역)이
+                 아니라 script.js의 pickLang()으로 JS가 렌더링 때마다 채움 — 새 콘텐츠라 26개 언어
+                 전부 번역할 근거자료가 없어서, 이 저장소가 이미 문서화해둔 대로(pickLang의 6개
+                 주요 언어 밖은 자동 영어 폴백, 버그 아님) 처리함. 한국어는 관례대로 아래 원본
+                 텍스트가 그대로 소스(updateHomeInvestSim이 매번 다시 씀 — 초기 표시용일 뿐). -->
+            <details class="jh-more" id="home-invest-detail" style="margin-top:10px;">
+              <summary class="jh-more-summary" id="home-invest-summary">💰 이 돈을 투자하면 얼마가 될까요?</summary>
+              <div class="jc-annuity-box">
+                <div class="annuity-schedule-list" id="home-invest-list"></div>
+                <p class="jc-note" id="home-invest-note">※ 연 7% 복리(S&P500 지수의 장기 평균 명목 수익률로 흔히 인용되는 값, 배당 재투자·인플레이션 미반영)로 단순 가정한 참고용 시뮬레이션이에요. 실제 투자수익률을 예측하거나 보장하지 않고, 원금 손실 위험도 있어요.</p>
               </div>
             </details>
             <!-- 2026-08-05: 여기 있던 "ℹ️ 미국 로또는 두 가지 방식으로 받아요" 안내박스(연금/일시불
