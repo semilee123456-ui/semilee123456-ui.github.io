@@ -2693,3 +2693,47 @@ $7). 바로 위 "2개+메가볼" 등수 값과 우연히 같은 $10이라 복붙
 선상이라 이번에도 안 함 — 대신 홍보 콘텐츠 초안 3종(릴스 대본/네이버 카페 글/
 레딧 영문 글)만 작성해서 사용자에게 파일로 전달(코드 변경 아님, 저장소에 커밋
 안 됨). 실제 게시는 사용자 본인 계정으로 해야 함.
+
+### 2026-08-14 이어서 — 마지막 남은 3개 페이지(404/press-kit/sitemap)도 "정산 티켓" 스타일로, 위젯은 의도적으로 제외
+
+**요청**: "사이트 전체 통일감있게" — 지금까지 스타일 확산한 89개(계산기 1+랜딩
+77+콘텐츠 11) 대비 전체 95개 중 뭐가 남았는지 재계산해보니 6개
+(`404.html`/`google...html`/`press-kit.html`/`sitemap.html`/`widget-embed.html`/
+`yandex...html`)만 남아있었음.
+
+**스킵한 것**: 구글/얀덱스 인증 파일 2개(사람이 보는 페이지 아님) — 대상 아님.
+**`widget-embed.html`도 의도적으로 제외**: 다른 사이트에 `<iframe>`으로 심는
+임베드 전용 위젯이라 처음부터 일부러 작고 가볍게(최대폭 480px, 얇은 1px 테두리,
+다크모드 없음) 만들어져 있음 — 호스트 사이트에 자연스럽게 섞여야 하는 임베드에
+하드보더+오프셋 그림자의 무거운 "정산 티켓" 문법을 적용하면 오히려 어색해짐,
+이건 갭이 아니라 의도된 설계로 판단해 손 안 댐.
+
+**나머지 3개(404.html/press-kit.html/sitemap.html) 적용**: 기존 파이프라인
+(`scripts/apply-landing-ticket-style.js` + `scripts/landing-ticket-template.css`)
+재사용. 새로 나온 클래스 8종 추가(`.kicker`/`.fact-grid`+`.fact-card`/
+`.asset-grid`+`.asset-card`/`.citation-box`/`.badge`류 3색/`.mascot`(404 전용)/
+`.lang-tag`+`ul.lang-grid`(sitemap 전용)) — 전부 기존 위계(보조 콘텐츠는 얇은
+`var(--border)` 테두리+그림자 없음, 배지는 `1px solid currentColor` 색상 테두리만)
+그대로 따름. `--status-green` 토큰이 템플릿에 없어서 새로 추가(press-kit.html의
+"검증됨" 배지용, 라이트 `#1F7A4D`/다크 `#5FC993` — 원본 파일 값 그대로 가져옴).
+`404.html`/`press-kit.html`에 있던 로고 flex-gap 공백 버그(`참<span>택스</span>`/
+`Cham<span>Tax</span>`)도 같은 패턴으로 수정 — `sitemap.html`은 이미
+`<span class="logo-text">참택스</span>` 구조라 버그 없었음.
+
+**검증 중 겪은 함정(반복 주의)**: 회귀 테스트를 포트 10000(스크린샷용으로 띄운
+서버)에 대고 돌려서 전부 `ERR_CONNECTION_REFUSED`로 실패 — `tests/`의 모든
+스크립트가 9000번 포트를 하드코딩해서 기대함. 9000번으로 다시 띄우고 재실행해서
+정상 통과 확인(HANDOFF 위쪽 "테스트 짤 때 흔한 함정" 섹션에 이미 있는 내용과 같은
+종류의 실수 — 다음 세션도 스크린샷용 임시 포트와 테스트용 9000번 포트를 헷갈리지
+말 것).
+
+**검증**: 3개 파일 전부 `</style>` 정확히 1개씩. Playwright로 240px/390px 폭에서
+`scrollWidth-clientWidth` 0 확인, 라이트 모드 스크린샷 육안 확인(로고 붙음,
+다크토글 계산기와 동일, fact-card/citation-box 등 신규 요소 정상 렌더링).
+`console_error_audit`(161)·`home_audit`(18)·`i18n_coverage_audit`(769키)·
+`wrap_audit`(168) 전부 `ISSUES:0`(9000번 포트로 재확인 후). `node --check script.js`
+통과(이번 세션 안 건드림, 참고용 재확인).
+
+**결과 — 이제 95개 페이지 중 92개(계산기 1 + 콘텐츠 91) 전부 "정산 티켓" 통일,
+제외한 3개(구글/얀덱스 인증 파일, 위젯 임베드)는 전부 의도적/타당한 이유 있음.
+사이트 전체 디자인 통일 작업은 이걸로 사실상 마무리.**

@@ -34,7 +34,7 @@
     --teal:#155445; --teal-rgb:21,84,69;
     --indigo:#35507A; --gold:#9C6F1E;
     --bg:#F4F5F7; --card:#FFFFFF; --text-dark:#262420; --text-muted:#544E42; --border:#828C97;
-    --status-red:#C0392B; --status-amber:#946716;
+    --status-red:#C0392B; --status-amber:#946716; --status-green:#1F7A4D;
     /* 2026-08-14 UI 통일 패스: 이전 버전은 이 주석 바로 아래 원래 있던 "index.html의 styles.css
        :root 값을 그대로 가져옴"이라는 설명과 달리 실제 폰트 크기 값이 계산기보다 1px씩 작게
        들어가 있었음(--fs-body 18→17, --fs-note 17→16, --fs-h3 20→19, --fs-h1 28→클램프 상한 27)
@@ -53,7 +53,7 @@
     --teal:#3AA98A; --teal-rgb:58,169,138;
     --indigo:#7C9BD1; --gold:#D6AC55;
     --bg:#1E1A16; --card:#453E34; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#6E6558;
-    --status-red:#E2776C; --status-amber:#D6AC55;
+    --status-red:#E2776C; --status-amber:#D6AC55; --status-green:#5FC993;
   }
   /* 2026-08-14 UI 통일 패스: 원래 여기 이 아이콘 원형 버튼도 다른 카드류와 같은 "하드 4px류"
      테두리+오프셋 그림자를 썼는데, 실제 계산기 헤더에서 유일하게 항상 보이는 원형 아이콘
@@ -353,6 +353,52 @@
     border-top:2px dashed var(--border);
   }
 
+  /* ---- 2026-08-14 마지막 3개 페이지(404.html/press-kit.html/sitemap.html) 전용 —
+     보조 콘텐츠 카드류(.fact-card/.asset-card)는 기존 note-box/callout류와 같은 위계로
+     얇은 테두리+그림자 없음, 배지(.badge)는 side-card-best-badge류와 같은 1px 색상
+     테두리+그림자 없음 문법 재사용 ---- */
+  .kicker{
+    font-family:var(--font-display); font-size:var(--fs-small); font-weight:700; color:var(--teal);
+    text-transform:uppercase; letter-spacing:0.04em; margin:20px 0 4px;
+  }
+  .fact-grid, .asset-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:0 0 28px; }
+  .fact-card{ background:var(--card); border:1.5px solid var(--border); border-radius:14px; padding:14px 16px; }
+  .fact-card .num{ font-family:var(--font-mono); font-size:22px; font-weight:800; color:var(--teal); }
+  .fact-card .label, .legend{ font-size:var(--fs-small); color:var(--text-muted); }
+  .legend{ margin:10px 0 28px; }
+  .asset-card{
+    background:var(--card); border:1.5px solid var(--border); border-radius:14px; padding:16px;
+    text-align:center;
+  }
+  .asset-card img{ max-width:100%; height:auto; border-radius:8px; margin-bottom:10px; }
+  .asset-card a{ display:inline-block; font-size:var(--fs-small); font-weight:700; color:var(--teal); text-decoration:none; }
+  .citation-box{
+    background:var(--card); border:1.5px dashed var(--border); border-radius:14px;
+    padding:16px 18px; font-size:var(--fs-note); margin:0 0 28px;
+  }
+  .citation-box code{
+    background:rgba(var(--teal-rgb),0.08); padding:2px 6px; border-radius:5px; font-size:0.95em;
+    font-family:var(--font-mono);
+  }
+  td.pct, td.num{ font-family:var(--font-mono); font-weight:800; }
+  .badge{
+    display:inline-block; font-size:var(--fs-small); font-weight:700; padding:2px 9px;
+    border-radius:999px; white-space:nowrap; border:1px solid currentColor;
+  }
+  .badge-verified{ color:var(--status-green); }
+  .badge-approx{ color:var(--status-amber); }
+  .badge-estimate{ color:var(--status-red); }
+
+  /* 404.html 마스코트 아이콘 래퍼 */
+  .mascot{ text-align:center; margin:40px 0 8px; }
+  .mascot svg{ width:96px; height:96px; }
+
+  /* sitemap.html 언어 목록 — 기존 .lang-links 배지 문법 재사용, 가로 배열만 추가 */
+  .lang-tag{ color:var(--text-muted); font-weight:400; font-size:0.85em; }
+  ul.lang-grid{ flex-direction:row; flex-wrap:wrap; }
+  ul.lang-grid li{ flex:0 0 auto; list-style:none; }
+  ul.lang-grid li a{ padding:7px 14px; font-size:var(--fs-small); }
+
   /* ---- 아주 좁은 화면(240~380px) 보호 — 계산기 리디자인 때 겪은 카드/버튼 잘림 재발 방지 ---- */
   @media (max-width:380px){
     .wrap{ padding:0 12px 44px; }
@@ -368,6 +414,7 @@
     .rank-amounts{ gap:16px; }
     .official-links{ flex-direction:column; }
     .official-links a{ flex:1 1 auto; }
+    .fact-grid, .asset-grid{ grid-template-columns:1fr; }
   }
   @media (max-width:300px){
     .wrap{ padding:0 8px 36px; }
