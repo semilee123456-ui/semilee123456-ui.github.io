@@ -8807,15 +8807,18 @@ function setupStickyResultBadgeCollisionWatch(){
   document.body.dataset.stickyBadgeCollisionBound = '1';
   let ticking = false;
   let settleTimer = null;
+  const scheduleRecheck = () => {
+    clearTimeout(settleTimer);
+    // 스크롤 중엔 매번 재검사하지 않고 멈춘 뒤 한 번만 함 — elementsFromPoint 호출이 무거워서
+    // 매 프레임 돌리면 스크롤 중 끊김/깜빡임이 생김(예전 FAQ 플로팅 버튼 시절부터의 관례)
+    settleTimer = setTimeout(updateStickyResultBadgeCollision, 150);
+  };
   const onScroll = () => {
     if (!ticking) {
       ticking = true;
       requestAnimationFrame(() => { ticking = false; });
     }
-    clearTimeout(settleTimer);
-    // 스크롤 중엔 매번 재검사하지 않고 멈춘 뒤 한 번만 함 — elementsFromPoint 호출이 무거워서
-    // 매 프레임 돌리면 스크롤 중 끊김/깜빡임이 생김(예전 FAQ 플로팅 버튼 시절부터의 관례)
-    settleTimer = setTimeout(updateStickyResultBadgeCollision, 150);
+    scheduleRecheck();
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   // 잭팟 계산 드로어(details/summary)나 "일시불 대신 연금으로" 같은 아코디언을 열고 닫으면
@@ -8824,6 +8827,15 @@ function setupStickyResultBadgeCollisionWatch(){
   // 'toggle' 이벤트는 버블링을 안 해서 document에 capture:true로 걸어야 모든 <details>를
   // 한 번에 잡을 수 있음(요소마다 따로 리스너를 안 달아도 됨)
   document.addEventListener('toggle', updateStickyResultBadgeCollision, true);
+  // 2026-08-16: 구글 "자동 광고"(Auto ads, .ad-slot 자리표시자와 무관하게 페이지 아무 데나
+  // 뒤늦게 비동기로 삽입됨)가 스크롤이 멈춘 뒤에 로드돼서 그 아래 콘텐츠를 밀어내리면, 위 스크롤/
+  // toggle 리스너 둘 다 안 걸려서 겹침 재검사가 다시 안 돌고 배지가 진하게 뜬 채로 남는 문제가
+  // 실사용자 스크린샷으로 발견됨("최근 잭팟 확인하기"/"이 돈으로 뭘 살 수 있을까" 문구 위에
+  // 배지가 안 흐려짐). body 전체 크기 변화를 감시하면 광고 삽입이든 이미지/폰트 로드로 인한
+  // 리플로우든 원인 불문하고 다 잡히므로, 같은 디바운스 타이머를 공유해 재검사를 다시 스케줄함.
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(scheduleRecheck).observe(document.body);
+  }
 }
 
 // 확률체감 탭의 실수령액 랭킹/물가보정 랭킹 위젯은 sharedCountry(세금 기준)를 따라 문구가
