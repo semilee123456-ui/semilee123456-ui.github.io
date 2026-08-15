@@ -5174,37 +5174,18 @@ function buildJackpotHistoryRowHtml(entry, extraClass){
 }
 
 // 2026-08-04: 외부 랜딩 페이지("역대 최고 잭팟" 순위표, biggest-jackpot-payouts.html 등)의
-// "이 금액으로 계산해보기" 링크가 넘겨준 ?jgame=&jdate=로 특정 회차를 지목하면, 확률체감 탭으로
-// 이동해 그 회차를 목록 맨 위에 스포트라이트로 꽂아서 보여줌.
-// jackpotSpotlightRecord(모듈 전역)만 세팅해두면 renderJackpotHistory()가 알아서 매번 그
-// 회차를 얹어주므로(통화 전환·환율 갱신·언어 전환 등 무엇이 다시 그려도 유지됨 — 위
-// jackpotSpotlightRecord 선언부 참고), 여기서는 go('odds')만 부르면 됨. 다만 go('odds')의
-// 실제 렌더는 odds-data.js 지연 로드가 끝난 뒤 비동기로 일어나므로, 행이 실제 DOM에 나타날
-// 때까지 짧게 폴링한 뒤에만 스크롤+아코디언 펼치기+하이라이트를 함(폴링 대신 프라미스 체인에
-// 직접 걸면 go() 내부 체인과의 실행 순서를 보장할 수 없어서 더 위험함 — 실제로 이전 버전에서
-// 그 순서 문제로 스포트라이트가 렌더 직후 지워지는 버그가 있었음).
+// "이 금액으로 계산해보기" 링크가 넘겨준 ?jgame=&jdate=로 특정 회차를 지목하면, 나중에
+// 사용자가 직접 확률체감 탭을 열었을 때 그 회차가 목록 맨 위에 스포트라이트로 보이도록
+// 표시만 해둠. jackpotSpotlightRecord(모듈 전역)만 세팅해두면 renderJackpotHistory()가
+// 매번 그 회차를 알아서 얹어주므로(통화 전환·환율 갱신·언어 전환 등 무엇이 다시 그려도
+// 유지됨 — 위 jackpotSpotlightRecord 선언부 참고) 여기서 할 일은 이게 전부.
+// 2026-08-16: 예전엔 여기서 go('odds')로 바로 확률체감 탭까지 이동시켰는데, 그러면
+// "이 금액으로 계산해보기" 링크를 눌러도 정작 그 금액의 세금 계산 결과(홈 화면)는 못 보고
+// 다른 탭으로 튕겨나가 버려서 "계산기로 가야 하는데 다른 데로 간다"는 실사용자 제보를 받음 —
+// 홈 화면 금액 채우기(바로 위 ?amount= 처리 블록)만으로 링크의 약속(그 금액 계산 결과 보기)이
+// 이미 충족되므로, 강제 탭 이동은 빼고 나중에 참고할 수 있게 표시만 남김.
 function jumpToJackpotHistoryRecord(jgame, jdate){
   jackpotSpotlightRecord = { game: jgame, date: jdate };
-  go('odds');
-  let attempts = 0;
-  const poll = () => {
-    const row = document.getElementById('jh-spotlight-row');
-    if (row) {
-      const detailsEl = row.closest('details');
-      if (detailsEl && !detailsEl.open) detailsEl.open = true;
-      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      row.classList.remove('field-autofill-flash');
-      void row.offsetWidth;
-      row.classList.add('field-autofill-flash');
-      return;
-    }
-    // 회차를 못 찾아 렌더가 아예 안 될 수도 있으므로(잘못된 날짜 등) 무한 폴링하지 않고
-    // 2초(40 × 50ms) 안에 안 나타나면 조용히 포기 — 홈 화면엔 이미 ?amount= 처리로 금액이
-    // 채워져 있어서 최소한의 결과는 항상 보장됨
-    if (++attempts > 40) return;
-    setTimeout(poll, 50);
-  };
-  poll();
 }
 
 function buildJhMoreBtnMore(remaining){
@@ -9606,16 +9587,12 @@ document.addEventListener('DOMContentLoaded', () => {
     history.replaceState(null, '', location.pathname + (newSearch3 ? '?' + newSearch3 : '') + location.hash);
   }
 
-  // 2026-08-04: "역대 최고 잭팟" 류 랜딩 페이지(biggest-jackpot-payouts.html 등 3개 언어판)의
-  // 5개 순위 카드마다 있는 "이 금액으로 계산해보기" 링크가 "?amount="만 넘겨서, 위 블록이
-  // 홈 화면 금액은 정확히 채워주지만 "이게 2022-11-07 파워볼 역대 1위였다"는 맥락이나 한국·
-  // 미국 말고 다른 나라 기준 금액은 아무 데도 안 보인다는 사용자 지적으로 "?jgame=&jdate="
-  // 추가함. 확률체감 탭의 "역대 잭팟 확인 기록"(jackpot-history-list)이 바로 그 회차를
-  // COUNTRY_TAX_PROFILES 전체(랜딩 페이지가 보여주는 4개국보다 훨씬 많음) 기준으로 이미
-  // 보여주고 있어서, 새 UI를 만드는 대신 그 목록의 해당 행으로 바로 스크롤+하이라이트함.
-  // odds-data.js가 아직 없으면(지연 로드) 비동기로 기다렸다가 처리하고, 혹시 회차를 못 찾으면
-  // (데이터 변경 등) 위에서 이미 채워둔 홈 화면 금액을 그대로 둔 채 조용히 포기함 — 링크가
-  // 최소한 "금액은 맞게 채워짐"까지는 항상 보장되게.
+  // 2026-08-04: "역대 최고 잭팟" 류 랜딩 페이지(biggest-jackpot-payouts.html 등)의 순위
+  // 카드마다 있는 "이 금액으로 계산해보기" 링크가 "?amount="만 넘겨서, 위 블록이 홈 화면
+  // 금액은 정확히 채워주지만 "이게 2022-11-07 파워볼 역대 1위였다"는 맥락은 아무 데도 안
+  // 보인다는 사용자 지적으로 "?jgame=&jdate="를 추가해 확률체감 탭 목록에 해당 회차를
+  // 스포트라이트 표시하도록 함(jumpToJackpotHistoryRecord() 참고, 표시만 하고 이동은 안 함
+  // — 2026-08-16 히스토리 참고).
   const urlJgame = params.get('jgame');
   const urlJdate = params.get('jdate');
   if ((urlJgame === 'powerball' || urlJgame === 'megamillions') && /^\d{4}-\d{2}-\d{2}$/.test(urlJdate || '')) {
