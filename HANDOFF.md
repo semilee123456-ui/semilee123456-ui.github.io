@@ -2911,3 +2911,25 @@ canonical 지정 — 진짜 콘텐츠가 아니라 shim이라 sitemap.xml엔 안
 **다음 세션 확인 사항**: 이 수정을 반영한 이후(배포 시점 이후) 데이터부터 `calculate_amount`
 수치가 다시 쌓이니, 최소 며칠 지난 뒤 GA4에서 재확인해서 실제 계산기 이용률이 얼마나
 더 정확해졌는지 볼 것. 그래도 낮게 나오면 그때는 진짜 UX 이탈 문제로 봐도 됨.
+
+### 2026-08-15 이어서 — 러시아어권 5개 언어 320px 오버플로우 수정 (2026-08-14부터 미뤄둔 항목)
+
+`full_overflow_sweep`이 예전에 찾아둔 채 미뤄져 있던 버그 — `ru`/`uz`/`kk`/`ky`/`uk` 5개
+언어, 320px 폭 Home 화면에서 `.intro-persona-row`(국가 선택/한국 거주 등 4개 카드) 중
+전체폭 카드(`nth-child(1)`/`(4)`, 아이콘 배지용 `padding-left:60px` 있음)가 화면 밖으로
+4~27px씩 튀어나가는 문제. Playwright로 실제 좌표를 찍어보니 카드 내부 콘텐츠는 정상
+크기(scrollWidth≈width, 자체 오버플로우 없음)인데 카드 자체의 렌더링 너비(uz 기준 307px)가
+그리드 트랙에서 쓸 수 있는 실제 폭(약 280px)보다 큰 상태로 고정돼있었음 — `.intro-persona-list`가
+`display:grid`인데 그 안의 `.intro-persona-row`(그리드 아이템)에 `min-width` 지정이 없어서
+기본값 `min-width:auto`가 적용된 게 원인. 그리드/플렉스 아이템은 기본적으로 "자기 콘텐츠의
+min-content 너비보다 작아지지 않으려는" 성질이 있어서, 언어별로 긴 단어(우즈베크어 등
+튀르크어 계열 교착어 특성)나 내부 `<select>`가 있으면 트랙 지정 폭을 무시하고 부모를
+벗어나 버림.
+
+`.intro-persona-row`에 `min-width:0`(그리드 아이템이 트랙 폭까지 눌러 줄어들 수 있게 허용하는
+표준 해법) 추가 + `.intro-persona-label`/`.intro-persona-action`에 `overflow-wrap:break-word`
+(남은 긴 단어도 안전하게 줄바꿈되도록 보험용)를 같이 추가. 5개 언어 전부 재측정해서
+오버플로우 0건 확인, `console_error_audit`(161)·`home_audit`(18)·`wrap_audit`(168)
+`ISSUES:0`, `full_overflow_sweep`(945개 조합) 전체 재실행으로 다른 곳에 부작용 없는지도
+확인(결과는 이 항목 아래 추가 기록 예정). `styles.min.css?v` → `20260815-3`, `sw.js`
+`CACHE_NAME` → `v51`.

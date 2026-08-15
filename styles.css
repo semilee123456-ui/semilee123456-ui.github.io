@@ -1095,6 +1095,11 @@
     display:block; background:var(--bg); border:1px solid var(--border); border-radius:16px; padding:12px 14px;
     text-decoration:none; transition:border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
     box-shadow:0 1px 3px rgba(var(--ink-rgb),0.04);
+    /* 2026-08-15: 그리드 아이템은 기본 min-width:auto라 자식의 min-content 너비(러시아어권 등
+       긴 단어/select가 있는 언어)가 그리드 트랙보다 넓으면 이 박스 자체가 320px 화면 밖으로
+       튀어나감(full_overflow_sweep이 ru/uz/kk/ky/uk 5개 언어에서 발견) — min-width:0으로
+       그리드가 실제 가용 폭까지 눌러 줄이게 함 */
+    min-width:0;
   }
   .intro-persona-row:nth-child(1), .intro-persona-row:nth-child(4){ grid-column:1 / -1; }
   .intro-persona-row:nth-child(2), .intro-persona-row:nth-child(3){
@@ -1153,12 +1158,12 @@
   }
   .intro-persona-row:nth-child(1)::before{ content:'🌐'; background:rgba(var(--teal-rgb),0.14); }
   .intro-persona-row:nth-child(4)::before{ content:'🌏'; background:var(--gold-chip-bg); }
-  .intro-persona-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0 0 4px; }
+  .intro-persona-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); margin:0 0 4px; overflow-wrap:break-word; }
   .flag-badge{
     display:inline-block; background:var(--teal); color:var(--on-accent); font-size:var(--fs-small); font-weight:800;
     letter-spacing:0.02em; padding:2px 6px; border-radius:5px; vertical-align:middle; line-height:1.4;
   }
-  .intro-persona-action{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; margin:0; }
+  .intro-persona-action{ font-size:var(--fs-small); color:var(--text-muted); font-weight:600; margin:0; overflow-wrap:break-word; }
   .intro-persona-action.is-link{ color:var(--teal); font-weight:800; text-decoration:none; display:inline-block; }
   .intro-lang-select-row{ display:flex; gap:8px; margin-top:8px; }
   .intro-lang-select{
