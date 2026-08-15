@@ -2888,3 +2888,26 @@ canonical 지정 — 진짜 콘텐츠가 아니라 shim이라 sitemap.xml엔 안
 올리면 바로 동작함. `/about`·`/imprint`는 대응하는 실제 콘텐츠가 사이트에 없어서(억지로
 만들면 얇은 콘텐츠가 될 뿐이라 판단, 지난 growth 진단의 "콘텐츠보다 백링크가 병목" 결론과도
 일치) 손대지 않음.
+
+### 2026-08-15 이어서 — GA4 "이벤트" 보고서로 진짜 이탈 지점 확인, `calculate_amount` 계측 공백 발견·수정
+
+사용자가 이번엔 "어디서 이탈하는지" 자체를 보고 싶어해서, GA4 탐색(Explore) 퍼널 기능
+찾기가 어려워 대신 참여도 > 이벤트 보고서로 우회 — 28일간 86명 중 `session_start` 86명
+(100%) 대비 `calculate_amount`(계산 실행) 단 3명(3.49%)만 찍힌 걸 확인. 처음엔 "핵심 기능
+사용률 96% 이탈"로 보였지만, 코드(`onHomeAmountTyped()`) 확인 결과 이 이벤트는 **금액 입력칸에
+직접 타이핑할 때만** 찍히는 반면 실제 계산 갱신 함수 `updateHomeCalc()`는 슬라이더 드래그·
+퀵필·국가/통화 변경·페이지 로드 기본값 등 15곳 넘는 경로에서 호출됨 — 그중 슬라이더
+드래그(`onHomeSliderMoved()`, `index.html`의 `oninput="onHomeSliderMoved()"`)엔 이 이벤트가
+아예 안 붙어있어서 실제 계산기 이용률이 GA4에 심하게 과소집계되고 있었음(계측 공백이지
+실제 이탈이 아니었을 가능성 높음).
+
+`onHomeAmountTyped()`와 같은 디바운스 타이머(`_calcTrackDebounceTimer`)를 공유해서
+`onHomeSliderMoved()`에도 `trackEvent('calculate_amount')`를 동일하게 추가(1.2초 디바운스,
+타이핑과 슬라이더를 오가도 중복 집계 안 됨). Playwright로 슬라이더 조작 시 이벤트가 정확히
+1회 찍히는 것까지 직접 확인. 재빌드 후 `console_error_audit`(161)·`home_audit`(18)·
+`wrap_audit`(168) 전부 `ISSUES:0` — 이번엔 포트 9000이 비어있어서 임시 서버 우회 없이 바로
+돌림. `script.min.js?v` → `20260815-4`, `sw.js` `CACHE_NAME` → `v50`.
+
+**다음 세션 확인 사항**: 이 수정을 반영한 이후(배포 시점 이후) 데이터부터 `calculate_amount`
+수치가 다시 쌓이니, 최소 며칠 지난 뒤 GA4에서 재확인해서 실제 계산기 이용률이 얼마나
+더 정확해졌는지 볼 것. 그래도 낮게 나오면 그때는 진짜 UX 이탈 문제로 봐도 됨.
