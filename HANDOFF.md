@@ -2866,3 +2866,25 @@ basics/prize-tiers) 스크린샷 육안 확인 — 오버플로우·레이아웃
 `script.min.js?v` → `20260815-3`, `odds-data.js?v`(script.js 내 지연로드 경로) →
 `20260815-1`, `sw.js` `CACHE_NAME` → `v49`. `styles.css`는 안 건드려서 `styles.min.css`
 버전(`20260815-2`)은 유지.
+
+### 2026-08-15 이어서 — GA4 이탈 지점 조사: `/contact` `/about` `/imprint` 404 원인 규명
+
+사용자가 GA4 "페이지 및 화면" 보고서에서 28일간 404 페이지 12회 조회를 보고 "왜 이탈하는지"
+문의. 사이트 내부 `<a href>`(확장자 없는 경로 포함)·`sitemap.xml`·hreflang 태그를 전수
+검색했지만 `/contact`·`/about`·`/imprint`로 가는 링크가 코드 어디에도 없었고, GSC "페이지"
+보고서에도 크롤러가 발견한 404가 0건이었음 — 즉 사이트 버그가 아니라 외부에서 직접 그
+경로로 들어온 요청. `/contact`·`/about`·`/imprint`는 임의 도메인에 흔히 있는 표준 경로라
+봇/스캐너가 기계적으로 찔러보는 전형적 패턴으로 판단(2026-08-14 세션에서 확인한
+Ashburn/AWS·Firefox 자동화 트래픽 신호와 같은 계열), 28일 616개 이벤트 중 11개라 규모도
+작아 우선순위 낮음으로 결론.
+
+다만 `/contact`는 실제로 사이트에 대응 콘텐츠가 있는데(개인정보처리방침의 `go('contact')`
+문의 뷰, `index.html#contact` 해시 라우팅은 이미 `script.js`에 구현돼 있음 — `press-kit.html`도
+이 해시 링크를 씀) 정작 그 URL로 직접 들어오면 404였던 게 실제 사용자 의도와 어긋나는
+지점이라 판단해서, `contact.html`(즉시 `index.html#contact`로 리다이렉트, `noindex` +
+canonical 지정 — 진짜 콘텐츠가 아니라 shim이라 sitemap.xml엔 안 넣음)만 새로 추가함.
+`chamtax.com/press-kit`(확장자 없이도 200)로 GitHub Pages가 확장자 없는 요청에 `.html`을
+자동으로 붙여준다는 걸 라이브에서 직접 curl로 확인한 뒤 진행 — 별도 라우팅 설정 없이 파일만
+올리면 바로 동작함. `/about`·`/imprint`는 대응하는 실제 콘텐츠가 사이트에 없어서(억지로
+만들면 얇은 콘텐츠가 될 뿐이라 판단, 지난 growth 진단의 "콘텐츠보다 백링크가 병목" 결론과도
+일치) 손대지 않음.
