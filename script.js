@@ -10498,6 +10498,12 @@ function onHomeSliderMoved(){
   const usdMillions = getSliderMillions(slider);
   document.getElementById('homeAmountInput').value = roundAmountForInput(usdMillionsToInputUnits(usdMillions, sharedInputCurrency));
   updateHomeCalc(usdMillions * 1000000);
+  // 2026-08-15: onHomeAmountTyped()와 같은 이유로 calculate_amount를 여기서도 집계함 — 슬라이더
+  // 드래그도 타이핑과 동등하게 "실제로 금액을 정해서 계산했다"는 행동인데 이 이벤트가 없어서
+  // GA4에서 계산기 이용률이 실제보다 훨씬 낮게 잡히는 계측 공백이 있었음(같은 디바운스 타이머
+  // 공유 — 슬라이더를 드래그하다가 텍스트칸도 만지는 경우 등 중복 집계 방지)
+  clearTimeout(_calcTrackDebounceTimer);
+  _calcTrackDebounceTimer = setTimeout(() => trackEvent('calculate_amount'), 1200);
 
   // 5억 달러 문턱을 넘나들 때 짧게 진동 (안드로이드 Chrome 등만 지원, 미지원 브라우저는 조용히 무시됨)
   if (_prevSliderUsdM !== null && navigator.vibrate) {
