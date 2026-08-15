@@ -2172,7 +2172,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260814-1';
+    script.src = 'odds-data.js?v=20260815-1';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -4271,9 +4271,13 @@ function buildDrawScheduleMore(days){
 // 오늘) 잭팟이 $1 Billion(현금가치 $433.1M)으로 증가. 메가밀리언즈 8/11 회차(1,20,30,46,68+17)도
 // 당첨자 없어 다음 추첨(8/14) 잭팟이 $90M(현금가치 valottery $38M · 스크린샷 $38.7M, 근소한
 // 차이는 판매량에 따른 흔한 오차로 판단해 더 정밀한 스크린샷 값 채택)으로 증가.
+// 2026-08-15 이어서: 사용자가 공유한 스크린샷(usamega.com)으로 메가밀리언즈 8/14 회차
+// (3,23,27,46,60+11) 확인 — WebSearch(DraftKings 기사) 교차검증, 당첨자 없어 다음 추첨(8/18)
+// 잭팟이 $100M(현금가치 $42.8M)으로 증가. 파워볼은 8/12 회차 이후 다음 추첨(8/15) 잭팟 $20M
+// (현금가치 $8.7M)으로 이미 정확히 반영돼 있어 변경 없음.
 const JACKPOT_DATA = {
   powerball:    { amountUsd: 20000000, cashUsd: 8700000 },
-  megamillions: { amountUsd: 90000000, cashUsd: 38700000 },
+  megamillions: { amountUsd: 100000000, cashUsd: 42800000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
@@ -4340,7 +4344,7 @@ const GAME_NAME_MORE = {
 // 이 아카이브 스코프 밖이라 반영 안 함).
 const LATEST_DRAW = {
   powerball:    { date: '2026-08-12', numbers: [4, 26, 66, 67, 69], special: 9 },
-  megamillions: { date: '2026-08-11', numbers: [1, 20, 30, 46, 68], special: 17 },
+  megamillions: { date: '2026-08-14', numbers: [3, 23, 27, 46, 60], special: 11 },
 };
 
 
