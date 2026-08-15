@@ -3118,3 +3118,65 @@ PSI 모바일 55점/FCP 19.8초/LCP 25.9초가 다시 보고돼서 HANDOFF의 �
 그대로 두면 파일만 나뉠 뿐 다운로드량 절감은 0(실익 없음) — 두 선택지 다 할 이유가 없어서
 **코드 변경 안 함**. 이 항목은 이미 검토 끝난 상태이므로, 페이지 무게 줄이기 아이디어가
 다시 나오면 이 두 변수는 후보에서 제외하고 시작할 것.
+
+### 2026-08-16 — "이 금액으로 계산해보기" 링크가 계산 결과 대신 다른 탭으로 튕기는 버그 수정
+
+사용자가 실기기 스크린샷(`biggest-jackpot-payouts.html` 역대 1위 카드)으로 "여기 누르면
+계산기로 가야 되는데 다른 데로 간다"고 제보. `index.html?amount=&jgame=&jdate=` 링크를
+처리하는 로직이 두 단계로 나뉘어 있었는데(`script.js` 9590번대), 1단계(`?amount=`)가 홈
+화면에 금액을 채우고 계산까지 끝내놓자마자, 곧바로 2단계(`?jgame=&jdate=`,
+`jumpToJackpotHistoryRecord()`)가 `go('odds')`를 호출해서 확률체감 탭으로 강제 이동시켜
+버림 — 방금 채워진 계산 결과(링크가 약속한 것)를 사용자가 보지도 못한 채 다른 화면으로
+넘어가는 구조였음(2026-08-04에 "역대 몇 위였는지 맥락이 안 보인다"는 요청으로 추가된
+기능인데, 그 부작용으로 원래 있던 "계산 결과 보기" 목적이 가려짐).
+
+**수정**: `jumpToJackpotHistoryRecord()`에서 `go('odds')`+스크롤/하이라이트 폴링 로직을
+제거하고 `jackpotSpotlightRecord` 전역 변수 설정만 남김 — 사용자는 홈 화면에서 계산
+결과를 바로 보고, 나중에 직접 확률체감 탭을 열면(`renderJackpotHistory()`가 매번 이
+변수를 확인해서 자동 반영) 그 회차가 여전히 스포트라이트로 표시됨. 강제 이동만 빠지고
+스포트라이트 기능 자체는 그대로 유지.
+
+**영향 범위**: 이 링크 패턴(`rank-calc-link`)을 쓰는 13개 파일(`404.html`,
+`biggest-jackpot-payouts.html`, `biggest-lottery-jackpots-after-tax.html`,
+`biggest_lottery_jackpots_after_tax_zh.html`, `korean-abroad-us-lottery-tax.html`,
+`korean_abroad_us_lottery_tax_ko/zh.html`, `lottery-jackpot-amount*.html`(3개),
+`lottery-prize-tiers.html`, `press-kit.html`, `sitemap.html`, `us-lottery-tax-rate.html`)
+전부 같은 `script.js` 로직을 공유해서 한 곳만 고쳐 전체 반영됨.
+
+**검증**: Playwright로 `biggest-jackpot-payouts.html`의 순위 카드 5개 링크 전부 클릭
+시뮬레이션 — 수정 전엔 전부 `view-odds`로 튕겨나갔던 게, 수정 후 전부 `view-home`에
+머물며 정확한 금액·계산 결과가 표시됨을 확인. 이후 수동으로 확률체감 탭을 열면 스포트라이트
+행이 여전히 나타나는 것도 별도 확인. `console_error_audit`(161)·`home_audit`(18)·
+`audit_odds_compare`(40) 전부 `ISSUES:0`. `node --check` 통과.
+
+변경 파일: `script.js`(`jumpToJackpotHistoryRecord()` 단순화, 관련 주석 갱신),
+`script.min.js`(재빌드), `index.html`(`script.min.js?v` `20260815-6`→`20260816-1`),
+`sw.js`(`CACHE_NAME` v53→v54).
+
+### 2026-08-16 이어서 — 같은 버그 클래스 사이트 전체 재조사 (서브에이전트, 추가 문제 없음 확인)
+
+사용자가 "다른 곳도 하나하나 클릭해서 확인해달라"고 요청 — 위 버그가 `broken_link_audit.js`
+(href/src가 실제 파일을 가리키는지만 정적 확인, 런타임 동작은 안 봄)로는 못 잡히는 종류였던
+걸 계기로, 서브에이전트에게 "링크는 유효한데 클릭한 사람 기대와 다른 화면/상태로 떨어지는"
+버그 클래스 전체를 사이트 전역에서 재조사시킴.
+
+**조사 범위**: 저장소 전체 `*.html`에 실제로 쓰이는 `index.html?...` 쿼리 패턴 5가지 모양
+(`amount+jgame+jdate`, `lang`, `lang+country`, `lang+amount+jgame+jdate`, `lang#faq`)
+전부 Playwright로 실제 로드해 콘솔 에러·도착 화면·쿼리값 DOM 반영 여부 확인(총 8개 케이스,
+`?country=`/`?state=` 조합 등 아직 실제 링크는 없지만 코드상 가능한 조합도 방어적으로 포함).
+`script.js`의 `go()` 자동 호출 지점(클릭이 아닌 `DOMContentLoaded`/URL 파싱발) 전수 검토,
+정적 페이지 90개 쪽 `onclick="go(...)"`·동일 페이지 해시 앵커도 함께 확인.
+
+**결과**: 기존에 고친 것 외 추가 문제 없음. 전부 통과. 다만 `#faq` 해시 리스너가
+`amount/jgame` 등 쿼리 리스너보다 먼저 등록돼 있어서, 나중에 두 패턴을 한 링크에 같이 쓰면
+순서 문제가 생길 수 있는 잠재적 위험(현재는 그런 링크가 실제로 없어 버그 아님)을 발견 —
+회귀 방지용으로 조합 케이스를 테스트에 포함시켜둠.
+
+**신규 회귀 테스트**: `tests/link_navigation_audit.js` 신설(`broken_link_audit.js`의 사각지대를
+메움) — `TOTAL: 8 ISSUES: 0`. 코드 변경은 이 테스트 파일 추가뿐(사이트 동작 변경 없음).
+
+**병합 참고**: 위 두 블록(FAQ 지연 로드 세션·링크 버그 수정 세션)이 서로 다른 브랜치에서
+동시에 진행되다 병합되면서 `script.min.js?v`/`sw.js CACHE_NAME`을 각자 다르게 올렸음
+(`20260815-7`/`v54` vs `20260816-1`/`v54`) — 병합 시 최종적으로 `script.min.js?v` →
+`20260816-2`, `sw.js CACHE_NAME` → `v56`으로 두 변경분을 모두 포함해 한 번 더 올림.
+위 각 블록 안에 적힌 버전 번호는 그 세션 당시 기준이라 최신이 아니니 참고만 할 것.
