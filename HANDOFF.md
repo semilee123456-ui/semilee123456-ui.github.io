@@ -2933,3 +2933,36 @@ min-content 너비보다 작아지지 않으려는" 성질이 있어서, 언어�
 `ISSUES:0`, `full_overflow_sweep`(945개 조합) 전체 재실행으로 다른 곳에 부작용 없는지도
 확인(결과는 이 항목 아래 추가 기록 예정). `styles.min.css?v` → `20260815-3`, `sw.js`
 `CACHE_NAME` → `v51`.
+
+`full_overflow_sweep`(945개 조합) 완료 — `ISSUES:0`. 기존 5건 사라졌고 새로 생긴 문제 없음.
+PR #228 머지 완료.
+
+### 2026-08-15 이어서 — Lighthouse 모바일 성능 감사 착수: FCP/LCP 22~26초 확인, 원인 조사 1단계
+
+사용자가 PageSpeed Insights(모바일, Moto G Power+느린 4G 에뮬레이션) 스크린샷 공유 —
+성능 55점, **FCP 22.5초·LCP 25.8초·Speed Index 22.5초**로 비정상적으로 느림(TBT는 0ms,
+CLS는 0.001로 정상이라 "그리기 자체가 극도로 늦게 시작"하는 패턴). 이 세션에서 처음
+다룬 항목(그동안 디자인/데이터/버그만 봤고 속도는 미착수 상태였음).
+
+1단계 조사: `index.html` `<head>` 확인 결과 `styles.css`(`@import` 없음, 확인함)는
+126KB로 그 자체가 22초를 설명할 크기는 아니었고, Lighthouse 자체 진단도 "렌더링 차단
+요청" 예상 절감 시간이 150ms뿐이라고 나와서 render-blocking이 주원인이 아님을 시사.
+대신 확실한 낭비 하나 발견·제거: `<head>`의 `preconnect` 4개 중 3개
+(`api.frankfurter.app`·`open.er-api.com`·`formspree.io`)가 초기 렌더링 경로와 무관한
+API였음(환율은 `DOMContentLoaded` 이후 `fetchLiveExchangeRate()`가, Formspree는 문의폼
+제출 시에만 호출 — `script.js` 9408행 확인) — 셋 다 제거, 실제 필요한 폰트 CDN
+(`cdn.jsdelivr.net`) preconnect만 남김. Playwright로 환율 위젯이 여전히 정상 작동하고
+(1,487.7 KRW 정상 fetch) 실패한 요청도 없음을 확인, `console_error_audit`(161)·
+`home_audit`(18) `ISSUES:0`.
+
+**중요**: 이 preconnect 정리가 22.5초 문제의 완전한 해결은 아님 — 안전하고 확실한 첫 낭비
+요소만 우선 제거한 것. 진짜 원인은 아직 미확인 상태. 다음 세션 후보로 남길 가설:
+(1) Cloudflare 같은 프록시/보안 계층이 Lighthouse의 자동화 봇(HeadlessChromium)을
+사람이 아닌 크롤러로 인식해 챌린지/지연을 거는 경우 이런 증상(실사용자 체감과 무관하게
+자동화 도구에서만 극단적으로 느림)이 흔히 나타남 — 이 저장소엔 Cloudflare 설정이 없어
+직접 확인 불가, 사용자가 Cloudflare 대시보드에서 확인 필요. (2) `script.min.js`가
+1.38MB(전체 로또 역대 아카이브 등은 `odds-data.js`로 분리돼있어 별개)로 상당히 큼 —
+`defer`라 파싱은 안 막지만 저사양 기기 4배 CPU 스로틀링에서 실행 자체가 오래 걸릴 수
+있음("긴 기본 스레드 작업 12개 발견" 진단과 일치할 가능성). (3) Lighthouse 리포트의
+"트레이스 보기"/네트워크 워터폴을 펼쳐서 정확히 어느 요청이 22초 시점까지 안 끝나는지
+직접 봐야 확실해짐 — 다음 세션에서 그 화면 스크린샷을 받아 이어서 볼 것.
