@@ -3131,3 +3131,30 @@ Lantern 시뮬레이션 왜곡이라는 결론을 강하게 뒷받침함. 이걸
 
 **신규 회귀 테스트**: `tests/link_navigation_audit.js` 신설(`broken_link_audit.js`의 사각지대를
 메움) — `TOTAL: 8 ISSUES: 0`. 코드 변경은 이 테스트 파일 추가뿐(사이트 동작 변경 없음).
+
+### 2026-08-16 이어서 — sticky 실수령액 배지가 광고 늦게 뜬 뒤엔 안 흐려지는 버그 수정
+
+사용자가 실기기 스크린샷 제보: 홈 화면 하단에 떠 있는 "💰 실수령 ○○원" 배지(스크롤 중
+결과를 계속 보여주는 sticky 배지)가 "최근 잭팟 확인하기"/"이 돈으로 뭘 살 수 있을까"
+문구 위에 그대로 진하게 겹쳐 있음 — 원래 이 배지엔 텍스트 충돌 감지가 있어서(2026-08-03)
+겹치면 `is-colliding` 클래스로 투명도 0.16까지 흐려지게 돼있는데, 이번엔 그 로직이 아예
+안 걸렸음.
+
+**원인**: 이 사이트 광고는 정적 `.ad-slot` 자리표시자가 아니라 구글 "자동 광고"(Auto ads,
+`adsbygoogle.js`만 로드하고 실제 삽입 위치는 구글이 페이지 아무 데나 비동기로 정함) 방식.
+충돌 재검사(`setupStickyResultBadgeCollisionWatch()`)는 `scroll`(디바운스 150ms)과
+`toggle`(아코디언) 이벤트에만 걸려있었는데, 광고가 스크롤이 이미 멈춘 뒤에 늦게 로드되면서
+그 아래 콘텐츠를 밀어내리는 건 이 두 이벤트 중 어느 것도 안 걸림 — 그래서 실제로는 겹쳤는데
+재검사가 다시 안 돌아 `is-colliding`이 계속 꺼진 채로 남았던 것.
+
+**수정**: `document.body`에 `ResizeObserver`를 추가해서(스크롤/toggle과 같은 디바운스
+타이머 공유) 원인이 광고 삽입이든 이미지·폰트 로드로 인한 리플로우든 body 크기가 바뀌면
+전부 걸리게 함. Playwright로 재현: 스크롤을 멈춰서 배지가 뜨고 안 겹친 상태를 만든 뒤,
+스크롤/toggle 이벤트 없이 400px짜리 블록만 DOM에 주입(늦게 로드되는 광고 시뮬레이션) —
+수정 전엔 `is-colliding`이 계속 `false`, 수정 후엔 자동으로 `true`로 바뀌는 것 확인.
+
+**검증**: `console_error_audit`(161)·`home_audit`(18) 전부 `ISSUES:0`. `node --check` 통과.
+
+변경 파일: `script.js`(`setupStickyResultBadgeCollisionWatch()`에 `ResizeObserver` 추가),
+`script.min.js`(재빌드), `index.html`(`script.min.js?v` `20260816-1`→`20260816-2`),
+`sw.js`(`CACHE_NAME` v54→v55).
