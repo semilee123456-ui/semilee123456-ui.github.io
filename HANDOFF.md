@@ -3244,3 +3244,562 @@ PSI 모바일 55점/FCP 19.8초/LCP 25.9초가 다시 보고돼서 HANDOFF의 �
 변경 파일: `script.js`(`setupStickyResultBadgeCollisionWatch()`에 `ResizeObserver` 추가),
 `script.min.js`(재빌드), `index.html`(`script.min.js?v` → `20260816-3`),
 `sw.js`(`CACHE_NAME` → `v57`).
+
+### 2026-08-16 이어서 — 미국 주(州)별 SEO 랜딩페이지 10개 신설 (홍보·마케팅 5단계 제안 중 남은 항목)
+
+배경: "홍보·마케팅 작업 전체 이력"에 정리된 5단계 성장 제안 중 나머지는 이미 다 처리됐고,
+"미국인은 '캘리포니아 복권 세금'처럼 주 이름으로 검색한다"는 항목만 미착수 상태였음. 2026-08-14
+세션 요약(위 참고, "비거주자 FAQ + 주별 세율 표 검토" 항목)은 계산기 안 `renderUsStateCompareTable()`
+비교표가 "주별 세율 TOP5 표"라는 성장 리스트 항목 자체는 이미 충족한다고 결론냈지만, 그건 계산기
+탭 안에 있는 JS 렌더링 콘텐츠일 뿐 자체 URL·title·H1이 있는 색인 가능한 페이지가 아니라서 "주
+이름 검색"에 대한 SEO 랜딩페이지 필요는 별개로 남아있었음(국가별 거주자 랜딩페이지 18개는 이미
+있는데 주별은 없었음). 인구 상위 10개 주를 골라 국가별
+랜딩페이지(`korea-resident-us-lottery-tax.html` 등 18개)와 같은 패턴으로 신설:
+`california-lottery-tax.html`(CA), `texas-lottery-tax.html`(TX), `florida-lottery-tax.html`(FL),
+`new-york-lottery-tax.html`(NY), `pennsylvania-lottery-tax.html`(PA), `illinois-lottery-tax.html`(IL),
+`ohio-lottery-tax.html`(OH), `georgia-lottery-tax.html`(GA), `north-carolina-lottery-tax.html`(NC),
+`michigan-lottery-tax.html`(MI).
+
+`biggest-lottery-jackpots-after-tax.html`을 원본으로 복사해 "정산 티켓" 인라인 style 블록·
+nav·푸터 스크립트(공유 버튼/테마 토글)를 바이트 단위로 그대로 유지하고 콘텐츠만 교체(스크립트로
+생성 — 마커 기반 추출이라 style/nav/theme-toggle 스크립트가 원본과 정확히 일치하는지 diff로
+확인함). 영어 전용이라 hreflang은 안 넣음(`press-kit.html`/`powerball-tax.html`처럼 hreflang
+없는 단일 목적 페이지 패턴 확인 후 결정), canonical만 자기 자신을 가리킴. og:image는 페이지별
+전용 이미지가 없어서(og-share-worker는 정적 사전생성 방식이고 이 10개는 없음) 범용
+`og-image.png`로 폴백.
+
+세율 출처: `script.js`의 `STATE_TAX_RATES`(유일한 소스) 그대로 사용 — CA/TX/FL 0%(각각 "복권
+당첨금 자체 면제"/"주 소득세 자체가 없음", 사유 다름을 본문에서 구분), NY 10.9%(최고), PA
+3.07%, IL 4.95%, OH 2.75%, GA 5.39%, NC 3.99%, MI 4.25%. 시(city) 단위 부가세는
+`STATE_TAX_RATES`가 모델링 안 하므로 NYC/Yonkers 구체 세율 숫자는 안 쓰고 "이 계산기가 반영하지
+않는 지방세가 별도로 있을 수 있다"는 중립적 문구만 NY 페이지에 추가. 연방세는 전 페이지 공통으로
+"원천징수 24% vs 잭팟급 실제 최고세율 37%" 프레이밍(`TAX_MODEL.us_resident.federal`과 일치),
+$1,000,000 예시 실수령액은 `calcTakeHome()`의 `amount*(1-0.37-stateRate)` 공식을 그대로 손계산해
+반영(CA/TX/FL $630,000, NY $521,000, PA $599,300, IL $580,500, OH $602,500, GA $576,100,
+NC $590,100, MI $587,500). 비거주 외국인 세율 30%는 `TAX_MODEL.nonresident.us_withholding`과
+`korea-resident-us-lottery-tax.html`의 기존 문구로 교차 검증.
+
+CTA는 `index.html?lang=en&country=us&state=XX`(country+state 동시 전달, script.js
+9552~9630행 `SUPPORTED_TAX_COUNTRIES`/`effectiveCountryForState`/`urlState` 로직 확인 후 사용) —
+Playwright로 10개 페이지 전부 실제 클릭해서 `homeStateSelect`가 정확히 그 주로 세팅되는 것까지
+검증함(아래 참고).
+
+사이트 연결: `sitemap.xml`·`sitemap.html`(새 "US State Lottery Tax Calculators" 섹션)에 10개
+전부 등재, 서로 2~3개씩 교차링크(전부 다른 새 페이지에서 최소 2번 이상 인바운드 링크 받게
+배치해 고아 페이지 없음), `biggest-lottery-jackpots-after-tax.html`의 related-links에도
+California/New York 링크 추가.
+
+검증: `tests/broken_link_audit.js` 0 issues(106개 파일). 로컬 서버(`python3 -m http.server 9000`)
+띄우고 Playwright(`NODE_PATH=/opt/node22/lib/node_modules`)로 10개 페이지 전부 콘솔/페이지 에러
+0건, CTA 클릭 후 계산기 `homeStateSelect` 값이 기대한 주 코드와 정확히 일치하는지 확인 — 전부
+통과. `script.js`/`styles.css`는 안 건드려서 `build-min.js` 재빌드·`index.html`/`sw.js` 캐시
+버전은 그대로 둠.
+
+### 2026-08-16 이어서 — 캐나다를 22번째 지원 국가로 추가 (핵심 로직만, 사용자 요청: "core only")
+
+배경: 사용자가 이번 세션에서 세금 사실관계를 미리 조사해옴(WebSearch로 검증) — 미국-캐나다
+조세조약(제XXII조 3항)의 도박손실 공제 조항이 존재하지만, 복권(lottery)은 대상이 아니고
+블랙잭·바카라·크랩스·룰렛·빅식스 휠 등 특정 카지노 게임에만 적용됨(TaxTips.ca·RMS 환급
+가이드·greenbacktaxservices.com 교차 확인). 그래서 캐나다 거주자의 미국 복권 당첨금은 30%
+원천징수가 환급 경로 없이 사실상 최종세로 확정됨. 반대로 CRA(캐나다 국세청)는 복권·도박
+당첨금을 "우발이득"(windfall gain)으로 봐서 소득세법 과세 대상에서 아예 제외 — 중국·인도처럼
+계산된 세액을 FTC로 상계해서 0이 되는 게 아니라 애초에 캐나다 과세표준 자체가 없는 구조적으로
+다른 이유. 순효과: 연방 30% 원천징수, 캐나다 추가세 $0, 주(state) 수준 모델링 없음(비거주
+외국인 21개국 전부와 동일한 단순화 유지).
+
+`script.js` 변경: `TAX_MODEL.ca_resident`(`rate: 0`, CRA 비과세 근거 + 조약의 복권 제외 뉘앙스
+주석, `kh_resident`처럼 `unverified_rate`가 아니라 근거가 명확해서 `rate`로 명명) 신설.
+`calcTakeHome()`에 `ca` 분기 추가 — `cn`/`in`/`vn`과 같은 FTC-상계 코드 모양을 그대로 유지하되
+(일관성 우선, 마이크로 최적화 안 함) 계산된 캐나다 세액이 항상 0이라 상계 결과도 항상 0. label2/
+val2는 새 17개 언어 문구를 만들지 않고 기존 `buildAdditionalTaxMore('ca')`/`ZERO_OFFSET_MORE`
+제네릭 패턴 재사용(정밀한 이유는 랜딩페이지에 편집권이 있으니 거기서 설명). `COUNTRY_TAX_PROFILES`에
+`ca`(flagCode CA→🇨🇦 자동 변환, `detailPage: 'us-lottery-tax-for-canadians.html'`) 추가.
+`COUNTRY_NAMES_MORE` 21개 언어 전부에 `ca:` 키 추가(ar 코드부터 tet까지, 값은 이번 세션에
+미리 조사된 값 그대로). `SUPPORTED_TAX_COUNTRIES`에 `'ca'` 추가해 `index.html?country=ca` 딥링크
+활성화.
+
+⚠️ 사용자 지시서에 없던 추가 수정(코드 흐름을 직접 추적해서 발견 — 없으면 `?country=ca`가
+조용히 한국 기준으로 계산되는 버그였음): `index.html`의 `#homeCountrySelect`(네이티브 select,
+`updateHomeCalc()`가 여기서 국가값을 직접 읽음)와 `#homeCountryToggle`의 "더보기" 버튼 그리드에
+`ca`/`CA` 옵션·버튼이 없으면 `setHomeCountry('ca')`가 `select.value = 'ca'`를 시도해도 매칭되는
+`<option>`이 없어 조용히 무시되고 실제로는 이전 국가(보통 kr) 기준으로 계산됨 — 두 곳 다 `ca`
+항목 추가. 같은 이유로 `COUNTRY_TAX_AUTHORITY`(신뢰 문구 "OO 공식 자료 기반"용, `[country]` 조회에
+`ca` 없으면 `.kr` 폴백 — 캐나다 시나리오에 "한국 국세청 자료 기반"이라고 잘못 표시될 뻔함, `us`와
+동일하게 언어 불문 "IRS" 고정 표기로 추가)와 `REAL_ABROAD_CURRENCY`("다른 나라에 살아요" 퀵픽
+드롭다운용, CAD는 이 계산기가 아예 지원 안 하는 통화라 자연스러운 값인 USD로 매핑) 두 맵에도
+`ca` 항목 추가. `input.optCanada`(더보기 버튼 라벨) i18n 키를 `i18n-source/translations.json`에
+26개 언어 전부 채워 넣고(`optJapan`/`optKorea` 등 기존 항목의 문법 패턴을 그대로 따라감)
+`build-i18n.js` 재실행 — 처음엔 en만 넣고 나머지는 빌드 스크립트의 "번역 없으면 영어로 폴백"
+메커니즘에 맡기려 했으나, `tests/i18n_coverage_audit.js`가 "partial coverage"로 잡아내서 26개
+언어 전부 채우는 쪽으로 마무리함(테스트가 실제로 유용했던 사례). `COUNTRY_MAP_COORDS`(지도 핀)에는
+의도적으로 캐나다를 안 넣음 — index.html의 SVG 세계지도에 캐나다 국경선 자체가 없어서(21개국만
+트레이싱돼있음), 새 SVG path를 손으로 그리는 건 이번 세션 범위 밖의 별도 작업. `highlightCountryOnMap()`/
+`renderCountryMapPinsOnce()`는 `Object.keys(COUNTRY_MAP_COORDS)`만 순회해서 캐나다가 없어도
+에러 없이 그냥 핀이 안 그려질 뿐(코드 추적으로 확인, 정상 동작).
+
+`FLEX_REF`(플렉스 탭 아파트/차/커피 비교, 캐나다 진입에 `FLEX_REF.kr`로 폴백)와 `FAQ_PANEL_DESC`/
+`FAQ_TG2`(FAQ 탭 요약 카드, `sharedCountry` 없으면 `.kr`로 폴백)는 캐나다뿐 아니라 이미 여러
+기존 국가도 이 폴백을 타는 사전부터 있던 단순화라 그대로 둠(캐나다 전용 버그 아님).
+
+새 페이지 `us-lottery-tax-for-canadians.html`: `california-lottery-tax.html`을 원본으로
+`<style>` 블록을 diff로 바이트 단위 일치 확인 후 콘텐츠만 교체. $1M 예시(30% 연방세 →
+$300,000 / 캐나다 세금 $0 / 실수령 약 $700,000), FAQ 4개(캐나다인 미국 복권 과세 여부 / 30%
+환급 가능 여부 — 왜 안 되는지 조약 조항 인용 / 로또맥스·6/49 국내 복권도 비과세인지 / 어느
+주에서 샀는지가 중요한지 — NY 주별 페이지의 NYC 캐비어트와 같은 톤으로 "이 계산기는 주세를
+모델링 안 함" 정직하게 명시), JSON-LD 세트(Breadcrumb/FAQPage/Organization/WebSite/
+SoftwareApplication/HowTo/WebPage speakable) 전부 포함. CTA는
+`index.html?lang=en&country=ca`. `sitemap.xml`·`sitemap.html`("거주 국가별" 섹션, 21→22개국
+헤더 갱신) 등재, `biggest-lottery-jackpots-after-tax.html`의 related-links에 상호 링크 추가.
+
+일부러 뺀 것(사용자가 명시적으로 "core only"라고 지정): 프랑스어 번역, 온타리오/BC/앨버타
+같은 주(province)별 페이지, 로또맥스/6·49 자체 국내 복권 계산기. 전부 별도 라운드로 미룸.
+
+검증: `node --check script.js` 통과. `node scripts/build-min.js`로 `script.min.js`/
+`styles.min.css` 재생성(styles는 안 건드려서 내용 무변화). `index.html`의 `script.min.js?v=`
+20260816-3→20260816-4, `sw.js`의 `CACHE_NAME` v57→v58. 로컬 서버 + Playwright로
+`index.html?lang=en&amount=800&country=ca`(amount=1은 슬라이더 최소값 10에 clamp되는 걸
+확인해서 800으로 바꿔 검증) 결과가 연방세 -30% / 캐나다 추가세 "₩0 (offset by tax credit)" /
+실수령 약 $560M(=$800M×0.7)로 정확히 나오는 것 확인, 캐나다 토글 버튼 active 클래스·
+`homeCountrySelect` 값도 확인. `us-lottery-tax-for-canadians.html` 직접 로드 시 콘솔 에러
+0건(광고/폰트 CDN 차단으로 인한 네트워크 에러 제외), CTA 클릭 후 계산기가 정확히 `ca`로
+프리셀렉트되는 것 확인. `tests/broken_link_audit.js`(0/107) · `tests/i18n_coverage_audit.js`
+(0/770, 위 optCanada 이슈 발견 후 수정해서 통과) · `tests/link_navigation_audit.js`(0/8) ·
+`tests/console_error_audit.js`(0/161 언어×화면 조합) · `tests/lang_leak_audit.js`(0/104) ·
+`tests/fact_consistency_audit.js`(0/112) · `tests/i18n_attr_lint.js`(0) 전부 통과.
+
+참고 — 이번 세션에서 안 건드린 것: 사이트 전역 "21개국" 문구(og:description·메타·JSON-LD 등
+~30개 파일에 흩어져 있음, `index.html` 자체 주석이 이미 "4개국→21개국으로 늘어난 뒤에도
+안 갱신된" 사례를 인정하고 있어서 새 나라 추가 때마다 매번 전부 갱신하지는 않는 게 이
+저장소의 기존 관례로 보임) — 이번엔 새로 건드린 파일(`sitemap.html`의 헤더·메타 3곳,
+`us-lottery-tax-for-canadians.html`의 JSON-LD)만 22개국으로 갱신하고 나머지는 그대로 둠.
+`realAbroadSelect`(index.html "사는 나라를 골라서 바로 보기" 드롭다운)에는 원래 지시에 없었지만
+기존 20개국이 전부 들어있어서 `ca|en`을 추가함(빠지면 눈에 띄는 공백이라 판단).
+
+### 2026-08-16 이어서 — 파워볼 8/15 회차(5,8,27,29,63+13) 반영
+
+사용자가 공유한 스크린샷(usamega.com)으로 파워볼 8/15 회차 확인 — 당첨자 없어 다음 추첨(8/17)
+잭팟이 $35M(현금가치 $15.2M)로 증가. `JACKPOT_DATA.powerball`/`LATEST_DRAW.powerball` 갱신,
+`odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`·`POWERBALL_JACKPOT_ARCHIVE`(예고액 $20M, 기존
+관례대로 회차 시점 추적값 기록)에도 8/15 회차 추가 + `odds-data.js?v` 캐시버스팅
+20260815-1→20260816-1. 메가밀리언즈는 스크린샷의 8/14 회차·다음 추첨(8/18) $100M/$42.8M
+잭팟이 이미 위 값과 일치해서 변경 없음. Power Play 배율·더블플레이는 기존 관례대로 이
+아카이브 스코프 밖이라 반영 안 함.
+
+검증: `node --check script.js`/`odds-data.js` 통과, `tests/draw_archive_integrity_check.js`
+(날짜 오름차순·중복 없음, 4개 아카이브 전부 ISSUES:0), `tests/console_error_audit.js`
+(0/161), `tests/broken_link_audit.js`(0/107), `tests/home_audit.js`(0/18) 전부 통과.
+`node scripts/build-min.js`로 `script.min.js` 재생성(styles는 안 건드려서 무변화),
+`index.html`의 `script.min.js?v=` 20260816-4→20260816-5, `sw.js`의 `CACHE_NAME` v58→v59.
+
+### 2026-08-16 이어서 — 일본 SEO 제안 검토: 대부분 이미 구현됨, 한 문단만 추가
+
+사용자가 일본 유입 확대용 4단계 제안(미국 복권 세금 일본어 페이지/타카라쿠지 비과세+증여세/
+hreflang·야후재팬/야후 지혜부대) 제시 → 대조 결과 1번(30% 원천징수+일시소득+외국납부세액공제)은
+`japan-resident-us-lottery-tax.html`에 이미 상세히 있음, 3번(야후재팬은 구글 검색엔진 기반이라
+별도 SEO 불필요, hreflang은 번역 버전 없는 단독 페이지라 다른 신규 페이지들과 같은 이유로
+미부착 유지)·4번(지혜부대는 코드 작업 아닌 외부 계정 활동, Reddit·Quora와 동일 분류)은 실행할
+코드 작업 없음. 2번(타카라쿠지 비과세+증여세 간이계산기) 중 "간이계산기"는 일본 증여세 구간
+데이터·계산 로직이 필요한 새 기능이라 이번 라운드에서 보류(사용자에게 확인), "비과세+증여세"
+사실 한 문단만 추가— 당せん금부증표법(当せん金付証票法) 근거는 script.js의 기존
+`jp_resident` 주석(국세청 タックスアンサー No.1490과 별개로 이미 확인돼있던 근거)을 그대로
+재사용, 새 리서치 없이 반영. `tests/broken_link_audit.js`(0/107) 통과.
+
+### 2026-08-16 이어서 — 대만·홍콩을 23·24번째 지원 국가로 추가 + 번체 랜딩페이지 2개 신설 (서브에이전트 세션 한도로 중단 → 메인 세션이 이어받아 완료)
+
+사용자의 중국어권 유입 확대 제안 검토 → 1번(간체 국가별 페이지)은 `china-resident-us-lottery-tax.html`이
+이미 충분히 커버, "미국 거주 유학생/취업비자" 페르소나는 사실 중국 세법이 아니라 미국 거주자
+세법 문제라 정정 안내. 3·4번(hreflang·야후재팬, 지후/샤오홍슈 등 커뮤니티)은 이전 라운드들과
+동일하게 SEO상 불필요하거나 코드 작업 아님. 실제 갭은 번체(대만·홍콩) — 캐나다와 동일 규모로
+신규 국가 추가하기로 사용자가 선택.
+
+**세금 근거**: 홍콩은 속지주의 3개 개별세(급여세·이윤세·재산세)만 있고 일반소득세·양도소득세
+자체가 없어(IRD 안내 확인) 도박·복권 당첨금이 애초에 과세 대상 밖 — 캐나다와 같은 "국내
+과세표준 자체가 없음" 구조. 대만은 국내 지급 상금에만 적용되는 "기회중상세"(20% 원천징수)가
+아니라 소득기본세액조례(개인 최저한세)의 해외소득 규정이 실제로 적용됨을 확인 —
+기본세액=(기본소득액−면제액)×20%(제13조 1항), 113년도(2024년) 개정 기준 면제액 NT$750만은
+잭팟 규모 대비 무시 가능해 일본 특별공제 생략 전례와 같은 원칙으로 계산에서 제외, 전액×20%로
+근사. 제13조 1항 단서에서 국외세액공제(한도 내 상계) 조문 근거를 명확히 확인해 cn/in/vn과
+동일한 FTC 구조 적용(⚠️ 불명확 표시 없이) — 대만 20% < 미국 30%라 이 계산기 모델에서는 사실상
+항상 미국 원천징수분이 대만 세액을 전부 상계해 대만 쪽 추가 납부가 0원으로 나옴(단, 이건
+계산기 단순화 모델의 결과이지 자동 발생이 아니라는 점을 페이지 본문에 명시적으로 안내).
+
+**서브에이전트가 세션 한도로 중단된 지점과 이어받은 작업**: `TAX_MODEL.tw_resident`/
+`hk_resident`, `calcTakeHome()` tw/hk 분기, `COUNTRY_TAX_PROFILES`/`COUNTRY_NAMES_MORE`(21개
+언어)/`SUPPORTED_TAX_COUNTRIES`/`COUNTRY_TAX_AUTHORITY`/`REAL_ABROAD_CURRENCY`(TWD/HKD가
+이 앱 통화 목록에 없어 캐나다 CAD와 동일하게 USD로 폴백, 이유도 주석에 명시)/index.html의
+select·토글버튼·realAbroadSelect 3곳 배선/i18n 26개 언어 `input.optTaiwan`·`input.optHongKong`
+키까지는 완료된 상태였고, `taiwan-resident-us-lottery-tax.html`/`hongkong-resident-us-lottery-tax.html`
+본문도 내용은 완성돼 있었으나 `<style>` 블록이 빈 채로 남아있었음(정산 티켓 CSS 주입 스크립트
+실행 전 단계에서 중단) — 메인 세션이 `node scripts/apply-landing-ticket-style.js`로 마무리,
+sitemap.xml/sitemap.html 등재, `node scripts/build-min.js` 재빌드, `index.html`의
+`script.min.js?v=`(서브에이전트가 이미 20260816-6으로 올려둠, 재빌드 후에도 값 유지)와
+`sw.js`의 `CACHE_NAME`(v59→v60, 서브에이전트가 못 올린 부분) 갱신까지 이어서 완료.
+
+**검증**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`(0/772),
+`tests/broken_link_audit.js`(0/109), `tests/console_error_audit.js`(0/161),
+`tests/home_audit.js`(0/18) 전부 통과. Playwright로 `index.html?lang=zh&amount=800&country=tw`·
+`...=hk` 둘 다 연방세 -30%, 추가세 "0원(세액공제로 상계)", 최종 실수령 800×0.7 비율 정확히
+확인(표시 통화가 ¥CNY로 나오는 건 국가와 통화가 독립 선택지라는 기존 설계 때문 — `?country=`
+딥링크는 원래 통화를 안 바꾸고 언어(zh) 기준 기본 통화만 따름, 캐나다 등 기존 국가도 동일하게
+동작하는 기존 동작이라 이번 작업의 버그 아님). 두 페이지 CTA가 각각 `tw`/`hk`로 정확히
+프리셀렉트되는 것도 확인. 간체(china-resident-us-lottery-tax.html)는 이번에 건드리지 않음.
+
+### 2026-08-16 이어서 — 영국을 25번째 지원 국가로 추가 + GBP를 신규 실지원 통화로 추가, 영문 랜딩페이지 신설 (2단계 커밋)
+
+캐나다·홍콩과 같은 패턴("국내 과세표준 자체가 없음")의 세 번째 사례 — HMRC는 도박·복권
+당첨금에 소득세(Income Tax)·양도소득세(Capital Gains Tax)·국민보험(National Insurance) 어디에도
+과세하지 않으며, 이 비과세 원칙은 미국 복권처럼 해외에서 받은 당첨금에도 영국 국내 복권
+(National Lottery·EuroMillions)과 완전히 동일하게 적용됨. `TAX_MODEL.uk_resident`(rate:0,
+ca_resident/hk_resident와 같은 phrasing 패턴), `calcTakeHome()` uk 분기(hk 분기와 동일한
+FTC-상계-코드-모양-유지 구조), `COUNTRY_TAX_PROFILES`(flagCode는 ISO 3166-1 alpha-2 기준
+`GB` — 내부 국가 코드는 이 앱 관례대로 `uk` 유지, 둘을 혼동하지 않도록 주의)·
+`COUNTRY_NAMES_MORE`(21개 언어)·`SUPPORTED_TAX_COUNTRIES`·`COUNTRY_TAX_AUTHORITY`(ca/hk가
+IRS 단독 표기였던 것과 달리 `uk`는 사용자 지시대로 "HMRC" 단독 표기 — HMRC가 $0 판단의
+명확한 근거이므로)에 25번째 국가로 반영.
+
+**GBP는 캐나다/대만/홍콩(CAD/TWD/HKD)과 달리 진짜로 추가함**: 이 계산기의 환율 소스
+(Frankfurter/open.er-api)가 이미 GBP를 지원해서 새 API가 필요 없었음 — `EXCHANGE_RATE_GBP`
+변수(기본값 0.739, USD/GBP, 2026-08-16 WebSearch로 확인한 파운드/달러 1.3532 역산) +
+`CURRENCY_RATE_CONFIG`/`CURRENCY_DISPLAY_META`(£ 기호, 🇬🇧, en-GB 로케일) 항목 신설,
+`REAL_ABROAD_CURRENCY['uk']='GBP'`(USD 우회 불필요, 캐나다/대만/홍콩과 다른 점). index.html의
+`homeCurrencySelect`/`compareCurrencySelect`/`homeCountrySelect`/`homeCountryToggle`/
+`realAbroadSelect` 5곳 배선, `i18n-source/translations.json`의 `input.optUK` 키(26개 언어) 추가
+후 `node scripts/build-i18n.js`로 `i18n/*.json` 26개 파일 재생성.
+
+**랜딩페이지**: `us-lottery-tax-for-uk-residents.html` 신설(캐나다 페이지를 가장 가까운 템플릿으로
+재사용) — $1M 예시(미국 원천징수 -$300,000, 영국 세금 £0, 실수령 약 $700,000, GBP 환산 참고치
+약 £517,000도 한 줄 추가), HMRC 비과세 설명, 30% 비거주자 원천징수 설명, **영국 상속세(IHT)
+"7년 규칙" 전용 섹션**(닐레이트밴드 £325,000(2026/27), 3년 이내 사망 시 초과분 40% 전액,
+3~7년은 테이퍼 릴리프로 20%/40%/60%/80% 단계적 경감, 7년 생존 시 완전 비과세 — 복권과 무관한
+일반 상속세 규정임을 명시), FAQ 4개(영국 거주자 미국 복권 과세 여부 / 유로밀리언즈·내셔널
+로터리도 비과세인지 / 가족에게 나눠주면 어떻게 되는지(IHT 7년 규칙) / 30% 원천징수 환급
+가능 여부 — 미-영 조세조약의 "기타소득" 조항이 복권에 별도 낮은 세율을 안 두는 것도 다른
+나라와 동일한 기준선임을 명시), JSON-LD 세트(25개국으로 SoftwareApplication description 갱신)
+전부 포함. `node scripts/apply-landing-ticket-style.js`로 CSS 주입 후 홍콩 페이지 style
+블록과 바이트 단위로 동일한지 diff-check해서 빈 스타일 블록으로 안 남았는지 확인(이전 라운드
+"서브에이전트 세션 한도로 중단" 사례 재발 방지). CTA는 `index.html?lang=en&country=uk`.
+`sitemap.xml`·`sitemap.html`("거주 국가별" 리스트에 항목만 추가, 헤더/메타의 국가 수 문구는
+tw/hk 라운드와 같은 이유로 이미 stale해서 이번에도 안 건드림 — 아래 "알려진 미해결 항목" 참고)
+등재, `us-lottery-tax-for-canadians.html`의 related-links에 상호 링크 추가.
+
+**검증**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`(0/773),
+`tests/broken_link_audit.js`(0/110, 신규 페이지 포함), `tests/console_error_audit.js`(0/161),
+`tests/home_audit.js`(0/18) 전부 통과. Playwright로 `index.html?lang=en&amount=800&country=uk`
+결과가 연방세 -30% / 영국 추가세 "₩0 (offset by tax credit)" / 실수령 정확히 $560M(=$800M×0.7)로
+나오는 것 확인, `flagEmojiFromCode('GB')`가 🇬🇧를 정확히 반환하는 것도 확인. **GBP 실시간 환율은
+이 샌드박스의 아웃바운드 프록시 제약(Playwright Chromium이 프록시 CA를 신뢰 안 함, 2026-08
+"목업 렌더링 관련 인프라 이슈" 참고) 때문에 기본 폴백값만 확인하고 끝낼 뻔했으나,
+`page.route(/^https:\//)` + Node `fetch()` 우회 트릭(같은 세션의 대만·홍콩 스크린샷 인프라에서
+재사용)으로 실제 Frankfurter API에서 라이브 값 0.7387을 fetch하는 것까지 직접 확인** — 정적
+폴백값(0.739)이 아니라 진짜 실시간 조회가 동작함을 검증. 랜딩페이지 직접 로드 시 콘솔 에러
+0건, `<style>` 블록이 홍콩 페이지와 바이트 단위 동일(빈 스타일 아님) 확인, CTA 클릭 시 `uk`로
+정확히 프리셀렉트되는 것도 확인.
+
+**2단계 커밋**: 1단계(script.js/index.html/i18n 코드 변경, 커밋 `74f957b`)를 먼저 테스트·커밋한
+뒤 2단계(랜딩페이지+sitemap)를 진행 — 이전 대만·홍콩 라운드의 "서브에이전트 세션 한도 중단"
+교훈을 반영해 핵심 로직이 먼저 안전하게 커밋되도록 함.
+
+**참고 — 이번에도 안 건드린 것**: `sitemap.html`의 "거주 국가별" 섹션 헤더("(22개국)")와 상단
+메타 설명 3곳의 국가 수 문구, `SM_I18N` 객체의 26개 언어 버전(전부 "21개국/21 countries"로
+더 오래 정체됨) — 캐나다 라운드가 처음 22로 갱신했다가 대만·홍콩 라운드에서 리스트에 항목만
+추가하고 헤더는 안 건드린 전례를 그대로 따름(신규 페이지 추가 때마다 26개 언어 문구를 전부
+갱신하는 게 이 저장소의 실제 관례가 아닌 것으로 보임 — `index.html` 자체 주석도 비슷한
+누적 stale 사례를 인정하고 있음, 위 캐나다 항목 참고). 다음에 국가 수 문구를 한 번에 정리하는
+별도 라운드가 있으면 좋을 듯.
+
+### 2026-08-16 이어서 — 호주를 26번째 지원 국가로 추가 + AUD를 신규 실지원 통화로 추가, 영문 랜딩페이지 신설 (2단계 커밋)
+
+영국과 완전히 같은 패턴("국내 과세표준 자체가 없음")의 네 번째 사례 — ATO(Australian
+Taxation Office)는 도박·복권 당첨금을 과세 대상 소득(assessable income)으로 보지 않고
+증여·상속과 같은 "우연한 이득"(windfall)으로 분류하며, 이 원칙은 호주 국내 복권(Powerball
+AU·Oz Lotto)이든 미국 복권 같은 해외 복권이든 완전히 동일하게 적용됨(해외소득 면제가 아니라
+과세 대상 자체가 아니라는 뜻). 유일한 예외는 도박이 "직업적 도박사"처럼 반복적 사업으로
+인정될 때뿐이라 복권 한 장 사서 당첨된 경우엔 해당 없음(랜딩페이지에 각주로 명시). `TAX_MODEL.
+au_resident`(rate:0, uk_resident/ca_resident/hk_resident와 같은 phrasing 패턴), `calcTakeHome()`
+au 분기(uk 분기와 동일한 FTC-상계-코드-모양-유지 구조), `COUNTRY_TAX_PROFILES`(flagCode는
+ISO 3166-1 alpha-2 기준 `AU` — GB처럼 내부 코드와 어긋나는 문제 없음)·`COUNTRY_NAMES_MORE`
+(21개 언어)·`SUPPORTED_TAX_COUNTRIES`·`COUNTRY_TAX_AUTHORITY`(uk가 HMRC 단독 표기였던 것과
+같은 이유로 `au`는 "ATO" 단독 표기)에 26번째 국가로 반영.
+
+**AUD는 GBP와 같은 이유로 진짜로 추가함**: 이 계산기의 환율 소스(Frankfurter/open.er-api)가
+이미 AUD를 지원해서 새 API가 필요 없었음 — `EXCHANGE_RATE_AUD` 변수(기본값 1.535, USD/AUD,
+2026-08-16 기준 대략적인 최근 환율) + `CURRENCY_RATE_CONFIG`/`CURRENCY_DISPLAY_META`(🇦🇺,
+en-AU 로케일) 항목 신설, `REAL_ABROAD_CURRENCY['au']='AUD'`(USD 우회 불필요). **AUD 심볼이
+USD와 같은 '$'인 문제**는 새 disambiguation 스킴을 만들지 않고, NPR/LKR/PKR가 전부 'Rs'를
+공유하는 이 코드베이스의 기존 관례를 그대로 따름 — 통화 선택창의 플래그+코드(🇦🇺 AUD)로
+구분되고 실제 혼동 사례 없음. index.html의 `homeCurrencySelect`/`compareCurrencySelect`/
+`homeCountrySelect`/`homeCountryToggle`/`realAbroadSelect` 5곳 배선, `i18n-source/
+translations.json`의 `input.optAustralia` 키(26개 언어) 추가 후 `node scripts/build-i18n.js`로
+`i18n/*.json` 26개 파일 재생성.
+
+**랜딩페이지**: `us-lottery-tax-for-australians.html` 신설(영국 페이지를 가장 가까운 템플릿으로
+재사용, UK 커밋 메시지가 권한 대로) — $1M 예시(미국 원천징수 -$300,000, 호주 세금 $0, 실수령
+약 $700,000, AUD 환산 참고치 약 A$1,074,500(환율 1.535 기준)도 한 줄 추가), ATO windfall-gain
+원칙 설명(국내·해외 복권 동일 적용), 30% 비거주자 원천징수 설명, **당첨금을 투자했을 때의
+과세 섹션**(UK의 상속세 7년 규칙 섹션과 같은 깊이의 정보성 콘텐츠 — 당첨금 자체는 비과세지만
+그걸로 번 이자·배당은 일반 소득세율로 과세, 그걸로 산 자산을 나중에 처분하면 일반 CGT 규정
+적용(12개월 이상 보유 시 50% CGT 할인 포함) — 복권과 무관한 일반 ATO 원칙임을 명시), FAQ
+4개(호주 거주자 미국 복권 과세 여부 / 호주 국내 복권(Powerball AU·Oz Lotto)도 비과세인지 /
+당첨금을 투자하면 어떻게 되는지(이자·배당·CGT) / 30% 원천징수 환급 가능 여부 — 미-호주
+조세조약의 "기타소득" 조항이 복권에 별도 낮은 세율을 안 두는 것도 다른 나라와 동일한 기준선임을
+명시), JSON-LD 세트(26개국으로 SoftwareApplication description 갱신) 전부 포함. `node
+scripts/apply-landing-ticket-style.js`로 CSS 주입 후 영국 페이지 style 블록과 바이트 단위로
+동일한지 diff-check해서 빈 스타일 블록으로 안 남았는지 확인. CTA는 `index.html?lang=en&
+country=au`. `sitemap.xml`·`sitemap.html`("거주 국가별" 리스트에 항목만 추가, 헤더/메타의 국가
+수 문구는 uk 라운드와 같은 이유로 이미 stale해서 이번에도 안 건드림) 등재,
+`us-lottery-tax-for-uk-residents.html`과 `us-lottery-tax-for-canadians.html` 양쪽의
+related-links에 상호 링크 추가(UK 페이지에도 호주 링크를 넣어 UK↔CA↔AU 세 페이지가 서로
+연결되게 함).
+
+**검증**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`(0/774),
+`tests/broken_link_audit.js`(0/111, 신규 페이지 포함), `tests/console_error_audit.js`(0/161),
+`tests/home_audit.js`(0/18) 전부 통과. Playwright로 `index.html?lang=en&amount=800&country=au`
+결과가 연방세 -30% / 호주 추가세 "₩0 (offset by tax credit)" / 실수령 정확히 $560M(=$800M×0.7)로
+나오는 것 확인. **AUD 실시간 환율은 uk 라운드와 같은 `page.route(/^https:\//)` + Node
+`fetch()` 우회 트릭으로 실제 Frankfurter API에서 라이브 값 1.41을 fetch하는 것까지 직접
+확인**(정적 폴백값 1.535가 아님) — 통화를 AUD로 전환하면 $560M×1.41=$789.6M로 정확히 반영되는
+것도 확인. 랜딩페이지 직접 로드 시 콘솔 에러 0건, `<style>` 블록이 영국 페이지와 바이트 단위
+동일(빈 스타일 아님) 확인, CTA 클릭 시 `au`로 정확히 프리셀렉트되는 것도 확인.
+
+**2단계 커밋**: 1단계(script.js/index.html/i18n 코드 변경, 커밋 `743eb87`)를 먼저 테스트·커밋해
+푸시한 뒤 2단계(랜딩페이지+sitemap)를 진행 — uk 라운드와 같은 이유로 핵심 로직이 먼저 안전하게
+커밋되도록 함.
+
+### 2026-08-16 이어서 — 멕시코를 27번째 지원 국가로 추가 (ca/hk/uk/au와 다른, 실제 0보다 큰 추가세 케이스) + 스페인어 영문X 랜딩페이지 신설 (2단계 커밋)
+
+**지금까지의 uk/ca/hk/au(4개국)와 구조적으로 다른 첫 사례**: 저 넷은 전부 "자국 과세표준 자체가
+없음"(rate:0) 케이스였지만, 멕시코는 cn/in처럼 FTC로 일부만 상계되는 **실제 0보다 큰 추가세**
+케이스임. **흔한 오해부터 확인**: 멕시코 소득세법(LISR) 제138조("premios", 1% 연방+최대 21%
+주별 원천징수)는 유명하지만 **멕시코 영토 내에서 조직된** 추첨·복권에만 적용되는 조항(멕시코 측
+원천징수의무자가 전제)이라, 미국 로또리위원회가 미국에서 직접 추첨·지급하는 파워볼/메가밀리언즈에는
+**적용 안 됨** — 이 계산기는 1%/21% 수치를 모델링하지 않음. **실제로 적용되는 건 제9장 "Demás
+ingresos"(기타소득) 제142조**: 해외 복권 당첨금은 다른 장에 안 걸리는 "기타소득"으로 분류돼
+제152조의 **일반 누진 개인소득세율표 그대로** 적용됨(복권 전용 세율표 없음). 2026년 최고구간은
+연 3,898,140.13페소 초과분에 **35%**(참고용 규모감: 대략 19.5~21.5만 달러대, 이 문턱값 자체는
+세금 계산 로직에 하드코딩 안 함 — 순수 페소 기준). 잭팟 규모(슬라이더 최저값이 이미 $10M)는 항상
+이 문턱을 압도적으로 초과하므로 ph/mm/bd_resident와 같은 원칙으로 하위 구간 생략, 35% 단일
+근사 사용. **제5조(Artículo 5 LISR) FTC**: 해외에서 낸 세금을 멕시코 세액 한도 내에서 공제
+가능(cn/in/vn/tw와 같은 Math.min/Math.max 상한 구조) — 단, **멕시코 최고세율(35%)이 미국
+원천징수(30%)보다 높아서** FTC가 30%를 전부 상계하고도 **약 5%p가 그대로 남음**, in_resident
+(인도, ~39%>30%)와 구조적으로 동일한 "실질 추가세 발생" 케이스. `TAX_MODEL.mx_resident`
+(top_bracket_rate:0.35, ftc_available:true, 위 근거 전부 주석에 명시)·`calcTakeHome()`의 `mx`
+분기(cn/in 분기와 완전히 동일한 구조 — wonAmount/usWithholdingWon/mxCalculatedTaxWon/
+ftcCreditWon/mxAdditionalTaxWon, val2는 "0원 상계" 문자열이 아니라 실제 퍼센트 문자열)·
+`COUNTRY_TAX_PROFILES`(flagCode `MX`, detailPage `mexico-resident-us-lottery-tax.html`,
+detailLabel `Español →`)·`COUNTRY_NAMES_MORE`(21개 언어)·`SUPPORTED_TAX_COUNTRIES`·
+`COUNTRY_TAX_AUTHORITY`(cn/in처럼 실제 자국세가 남는 케이스라 "IRS만 표기"하는 ca/hk/uk/au와
+달리 "{나라이름} SAT·IRS" 형태로 SAT(멕시코 국세청, Servicio de Administración Tributaria)를
+ATO/HMRC처럼 언어 불문 약어로 병기)에 27번째 국가로 반영. 6개 주요 인라인 언어(ko/en/zh/vi/th/ru)
+라벨: 멕시코/Mexico/墨西哥/Mexico/เม็กซิโก/Мексика.
+
+**MXN 통화도 GBP/AUD와 같은 이유로 진짜로 추가함**: Frankfurter/open.er-api가 이미 지원하는
+통화라 새 API 불필요 — `EXCHANGE_RATE_MXN`(기본값 17.1, 2026-08-16 WebSearch로 8월 중순
+17.0~17.3페소대 확인) + `CURRENCY_RATE_CONFIG`/`CURRENCY_DISPLAY_META`(🇲🇽, es-MX 로케일,
+심볼은 AUD와 같은 이유로 '$' 그대로 — NPR/LKR/PKR가 'Rs'를 공유하는 기존 관례를 그대로 따름)
+항목 신설, `REAL_ABROAD_CURRENCY['mx']='MXN'`(USD 우회 불필요). index.html의
+`homeCurrencySelect`/`compareCurrencySelect`/`homeCountrySelect`/`homeCountryToggle`/
+`realAbroadSelect` 5곳 배선(`realAbroadSelect`는 `mx|es`로 스페인어 진입), `i18n-source/
+translations.json`의 `input.optMexico` 키(26개 언어) 추가 후 `node scripts/build-i18n.js`로
+`i18n/*.json` 26개 파일 재생성(775키). `COUNTRY_MAP_COORDS`에는 멕시코 항목 없음(SVG 지도에
+멕시코 랜드마스 경로 없음) — 이전 라운드들과 동일하게 `Object.keys(COUNTRY_MAP_COORDS)`로
+순회하는 구조라 크래시 없이 그냥 핀이 안 뜰 뿐(Playwright로 compare 탭 크래시 없음 확인).
+
+**랜딩페이지**: `mexico-resident-us-lottery-tax.html` 신설(`lang="es"`) — 이 계산기 최초의
+"국가 거주자 대상" 스페인어 페이지(기존 `spanish_in_korea_lottery_tax.html`은 "한국에 사는
+스페인어권" 페르소나로 완전히 다른 페이지, 안 건드림). 호주 페이지를 head-tag/JSON-LD 구조
+템플릿으로, `spanish_in_korea_lottery_tax.html`을 톤·어휘 참고(내용은 안 베낌)로 삼음. $1M
+예시(미국 원천징수 -$300,000, 멕시코 계산세액 $350,000, FTC 공제 -$300,000, 순추가세 -$50,000,
+실수령 ≈$650,000 — Math.min/Math.max 수기 검산 완료), 제138조가 왜 적용 안 되는지(흔한 오해
+정정), 제142조/제152조 실제 근거, 제5조 FTC와 왜 부분 상계에 그치는지, gray-zone-box로 "항상
+최고구간 가정"이 단순화 모델임을 명시하고 미-멕시코 이중과세 전문 세무사 상담 권유(대만 페이지의
+캐비어트 박스와 같은 정직성 패턴), FAQ 4개(멕시코인이 미국 복권 당첨 시 과세되는지 / 1% 프리미오
+세금이 적용되는지(아니오, 이유 설명) / 30% 원천징수 환급 가능한지 / 멕시코 국내 복권(Melate 등)은
+어떻게 다른지 — 별개 제138조 국내 규정임을 짧게 정직히 답만 하고 깊게 안 다룸), CTA는
+`index.html?lang=es&country=mx`, related-links로 `china-resident-us-lottery-tax.html`(유일한
+기존 비영어 거주자 페이지)·영문 페이지들·`index.html?lang=es#faq`·`sitemap.html` 상호 연결(중국
+페이지 쪽에도 멕시코 링크 역방향 추가). hreflang 없음(자기완결 페이지, ca/uk/au와 같은 확인된
+관례). JSON-LD 7종 세트(SoftwareApplication description을 27개국으로 갱신) 전부 스페인어.
+`sitemap.xml`·`sitemap.html`("거주 국가별" 리스트에 항목만 추가, 헤더 국가 수 문구는 이미 이전
+라운드들 때부터 stale해서 — 실제 25개 항목인데 "22개국"으로 표기 — 이번에도 범위 밖이라 안 건드림,
+사용자에게 별도 보고함) 등재.
+
+**검증**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`(0/775),
+`tests/broken_link_audit.js`(0/112, 신규 페이지 포함), `tests/console_error_audit.js`(0/161),
+`tests/home_audit.js`(0/18), `tests/i18n_attr_lint.js`(0건) 전부 통과. Playwright로
+`index.html?lang=es&amount=800&country=mx` 결과 확인: 연방세 -30%, **멕시코 추가세가 "0원
+상계" 문자열이 아니라 실제 "-5.0%"로 표시됨**(이번 라운드의 핵심 차이점), 실수령 ₩773.6억
+(=$520M×1487.73원, $520M=$800M−$240M(30%)−$40M(FTC 상계 후 순추가세, 800M×0.05))으로
+수기 검산과 정확히 일치. 랜딩페이지 직접 로드 시 콘솔 에러 0건, CTA 클릭 시 `mx`로 정확히
+프리셀렉트되는 것 확인.
+
+**2단계 커밋**: 1단계(script.js/index.html/i18n 코드 변경)를 먼저 테스트·커밋해 푸시한 뒤
+2단계(랜딩페이지+sitemap+china 페이지 상호링크)를 진행 — 지금까지의 라운드와 같은 이유로 핵심
+로직이 먼저 안전하게 커밋되도록 함.
+
+### 2026-08-16 이어서 — ⚠️ 일본 미-일 조세조약 결론 정정 + 영국에 같은 사실 추가 (콘텐츠 전용, 계산 로직 무변경, PR #238 브랜치, 아직 미푸시)
+
+**정정 대상**: 2026-07-23 AI 교차검증 결과를 근거로 `TAX_MODEL.jp_resident`/`calcTakeHome()`의
+`jp` 분기 주석에 "미-일 조세조약의 '기타소득'(제21조) 조항이 복권 소득을 면제 대상으로 다루지
+않는다"고 적어뒀던 게 **틀린 결론**으로 확인됨. 이번 세션(별도 리서치 패스)이 조약 원문 +
+미 재무부(Treasury)가 공식 발간한 Technical Explanation을 직접 대조(WebFetch로 PDF 다운로드 →
+`pdftotext -layout` → grep, 텍스트가 압축 스트림이라 WebFetch 자체 파싱은 실패해서 이 방법이
+필요했음)한 결과, **미-일(제21조)·미-영(제22조) 조세조약의 "기타소득" 조항 모두 미 재무부
+Technical Explanation이 "gambling"(도박)을 이 조항이 다루는 소득의 명시적 예시로 들고 있음**을
+1차 사료로 직접 확인:
+- 일본: irs.gov/pub/irs-trty/japante04.pdf — "Examples of items of income covered by
+  Article 21 include income from gambling, ..."
+- 영국: home.treasury.gov/system/files/131/Treaty-UK-Protocol-TE-7-22-2002.pdf —
+  "Examples of items of income covered by Article 22 include income from gambling, ..."
+(사용자가 사전에 전달한 별도 리서치 패스에서는 프랑스·독일·네덜란드·아일랜드까지 총 6개국 조약을
+확인했다고 하나, 이번 세션은 일본·영국 2개국만 실제로 재검증함 — 나머지 4개국은 이번 작업 범위 밖.)
+
+**의미**: 이 조항은 "다루지 않는 소득에 대한 과세권을 거주지국에 전속"시키는 OECD 모델식
+조항이라, 일본/영국 거주자가 미국측 30% 원천징수분(IRC §871(a), 지급 시점에 그대로 걸림 —
+이 계산기의 대전제, 변경 없음)에 대해 **사후에 Form 1040-NR을 제출해 환급을 청구할 근거가
+있을 수 있다**는 뜻. 다만 (1) 자동 환급이 아니고 실제 신고 절차가 필요, (2) 주 복권위원회가
+지급 시점에 조약 면제를 실시간 심사해준다는 근거는 못 찾음(카지노가 상습 외국인 고객에게 해주는
+것과는 다름), (3) 복권 당첨금 특유의 환급 사례가 실제로 확립돼 있다는 증거는 없음(카지노 환급
+관행만큼 전례가 쌓여있진 않음) — "받을 수 있다고 확정"이 아니라 "받을 근거가 있다"는 톤으로
+전 페이지에 일관되게 씀.
+
+**계산 로직은 전혀 안 바뀜(사용자가 사전에 명시적으로 지시한 제약)**: `calcTakeHome()`의
+`wonAmount`/`usWithholdingWon`/`jpCalculatedTaxWon`/`ftcCreditWon`/`jpAdditionalTaxWon`/
+`afterUS`/`final`, `uk` 분기의 `ukCalculatedTaxWon`(=0)/`ftcCreditWon`/`ukAdditionalTaxWon`,
+`TAX_MODEL.jp_resident.half_inclusion_top_rate`(0.279725)·`TAX_MODEL.uk_resident.rate`(0)
+전부 한 글자도 안 건드림 — `git diff script.js`가 주석 줄만 보여줌. **`us_treaty_exemption_applies`
+필드도 조사함**(이름이 딱 이 질문 같아서 사전에 로직에 실제로 쓰이는지 확인 필요했음) — grep 결과
+`TAX_MODEL.jp_resident` 정의부 한 곳에서만 나오고 `calcTakeHome()`을 포함해 그 어디에서도 안
+읽힘, 즉 **순수 문서화 목적 필드라 로직에 영향 없음** 확인. 그래서 값(`false`)은 그대로 두고,
+"조약상 면제 조항 실재 여부"(→ 정정: 실재함)와 "이 계산기 숫자가 달라지는가"(→ 아니다, 원천징수는
+여전히 자동 적용 안 됨)를 구분해서 이 필드가 후자를 뜻한다는 설명으로 주석만 확장함.
+
+**바뀐 파일**:
+- `script.js`: `TAX_MODEL.jp_resident`/`TAX_MODEL.uk_resident`/`calcTakeHome()`의 `jp` 분기
+  주석만 확장(정정 날짜·근거·인용문 명시). 수치·연산 변경 0건.
+- `japan-resident-us-lottery-tax.html`: "일본 국내 복권" 섹션 뒤에 `.note-box`(대만/멕시코
+  페이지의 정직성 캐비어트 박스와 같은 패턴) 1개 신규 추가(30% 환급 가능성 설명, 위 두 인용
+  출처 명시). FAQ에 "米国から源泉徴収された30%は取り戻せますか？" 신규 1개 추가(기존
+  "いつ、どうやって申告するの？" FAQ는 FTC로 이중과세 상계하는 별개 질문이라 안 건드리고 새로
+  추가) — 보이는 `<details>`와 `FAQPage` JSON-LD 양쪽 다 반영. 최종 수정일 2026-08-03→08-16.
+- `us-lottery-tax-for-uk-residents.html`: 기존에 이미 있던 "The 30% US withholding — and why
+  you (probably) can't get it back" 섹션 제목을 "and whether you can get any of it back"으로
+  바꾸고 본문에 `.note-box` 추가. **기존 FAQ "Can I get the US 30% withholding back?"의 답이
+  이전엔 "Generally, no... not a deposit you can reclaim"으로 이번에 정정된 사실과 정면으로
+  어긋나서(캐나다는 이 답이 여전히 맞음, 영국만 다름) — 중복 추가가 아니라 기존 답을 UPDATE함**,
+  `<details>`와 `FAQPage` JSON-LD 양쪽 다. (기존 최종 수정일이 이미 2026-08-16이라 날짜는
+  안 건드림.)
+
+**검증**: `node --check script.js` 통과. `tests/broken_link_audit.js`(0/112),
+`tests/console_error_audit.js`(0/161), `tests/home_audit.js`(0/18), `tests/faq_audit.js`
+(0/18, FAQPage JSON-LD와 보이는 `<details>` 텍스트 일치 여부까지 체크하는 감사라 이번 FAQ
+수정 검증에 특히 유효) 전부 통과.
+
+**아직 안 한 것**: 사용자가 "이건 이미 공개된 사실관계 정정이라 푸시 전에 직접 검토하겠다"고
+명시해서 **커밋만 하고 push는 안 함** — 다음 세션(또는 사용자 본인)이 diff 검토 후 push할 것.
+프랑스·독일·네덜란드·아일랜드 4개국은 이번 작업 범위 밖(사용자 리서치 패스에서는 확인됐다고
+하나 이 세션에서 코드/페이지에 반영 안 함 — 필요하면 후속 세션에서 같은 패턴으로 처리).
+(메인 세션이 이후 diff 확인하고 직접 push함, 커밋 `3a6a17e`.)
+
+### 2026-08-16 이어서 — 독일어(de)가 사이트 지원 언어 목록에 없음을 발견, 국가 확장 순서 재조정
+
+사용자가 독일(Germany, `de`) 국가 추가를 요청 → 세금 근거 자체는 이미 조사 완료(EStG 제2조
+1항이 과세소득을 7개 유형으로 열거하는데 복권 당첨금은 미포함, 국내·해외 동일 적용 — 캐나다/
+홍콩/영국/호주와 같은 "국내 과세표준 자체가 없음" 0% 구조), 조약 환급 가능성도 미 재무부
+1차 사료로 확인됨(제21조, 도박 예시는 명시적으로 못 찾았지만 UK/일본과 동일한 OECD식
+"거주지국에만 과세" 문언 확인 — HIGH 신뢰도). **다만 착수 직전 `i18n/*.json` 목록을 확인한
+결과 독일어(`de`)가 이 사이트의 26개 지원 UI 언어에 아예 없음을 발견** — 멕시코/브라질 때
+스페인어(`es`)·포르투갈어(`pt`)가 이미 계산기 전체를 완전 지원하고 있어서 "나라 하나 추가"로
+끝났던 것과 달리, 독일은 계산기 UI 자체(`translations.json` 775개+ 키)를 통째로 새로 번역해야
+진짜 `?lang=de`가 동작함 — 지금까지의 국가 추가 작업(코드+페이지 하루~한나절 단위)과는
+규모가 다른, 이 세션에서 가장 큰 작업이 될 사이트 신규 언어 추가 프로젝트임. **네덜란드어
+(`nl`)도 같은 문제**(목록에 없음) — 반면 **프랑스어(`fr`)·영어(`en`)는 이미 완전 지원 중이라
+프랑스·아일랜드는 이 문제 없이 기존 국가 추가 패턴 그대로 진행 가능**(스위스는 불어권만
+문제없고 독일어권은 동일 이슈 있음).
+
+**사용자 결정**: 독일(그리고 같은 문제인 네덜란드)은 보류하고, 언어 지원에 문제없는 나라부터
+먼저 진행하기로 함. **다음 세션 참고**: 독일/네덜란드를 다시 꺼낼 땐 (a) 사이트 신규 언어
+추가(전체 번역, 큰 작업)로 제대로 할지, (b) 계산기 UI는 영어로 두고 랜딩페이지만 독일어/
+네덜란드어로 만들지(단, 이 경우 CTA로 계산기에 들어가면 독일어 화면이 아니라는 점을 사용자
+경험상 감안해야 함) 사용자에게 먼저 확인할 것.
+
+### 2026-08-16 이어서 — 프랑스를 28번째 지원 국가로 추가 + EUR을 신규 실지원 통화로 추가, 프랑스어 랜딩페이지 신설 (2단계 커밋)
+
+위 항목에서 확인한 대로 프랑스어(`fr`)는 이미 이 사이트의 26개 UI 언어에 완전 지원 중이라
+(계산기 전체 번역 불필요, "나라 하나 추가"로 끝나는 통상 규모) 캐나다/홍콩/영국/호주와 같은
+"국내 과세표준 자체가 없음" 0% 구조의 다섯 번째 사례로 진행. 프랑스 조세일반법(CGI) 제92조
+1항은 "비상업적 이익"(bénéfices non commerciaux)을 넓게 정의하지만, 판례·DGFiP(프랑스
+재정총국) 안내가 일관되게 확인하는 바는 플레이어가 결과를 좌우할 수 없는 순수 우연(hasard)
+게임 — 복권·추첨 등 — 은 "영리 목적의 상시적 직업 또는 이익원"에 해당하지 않아 과세 대상
+소득 범주 자체에 들지 않는다는 것(유일한 예외는 "직업적 포커 플레이어"). 이 원칙은 프랑스
+국내 복권(FDJ의 Loto·EuroMillions)이든 미국 복권 같은 해외 복권이든 완전히 동일하게 적용됨
+(2026-08-16 웹서치 — euromillions-loterie.fr가 파워볼을 직접 언급하며 프랑스 거주자가 해외
+복권 당첨금에도 소득세를 안 낸다고 확인, FDJ 복권과 같은 근거를 든 1차 사료). `TAX_MODEL.
+fr_resident`(rate:0, ca/hk/uk/au_resident와 같은 phrasing 패턴), `calcTakeHome()` fr 분기
+(같은 FTC-상계-코드-모양-유지 구조), `COUNTRY_TAX_PROFILES`(flagCode `FR`, `detailPage`는
+멕시코와 같은 "번역 언어 페르소나 페이지" 계열 명명 규칙을 따라 `france-resident-us-lottery-
+tax.html`, detailLabel "Français →")·`COUNTRY_NAMES_MORE`(21개 언어 — `fr`이 언어 키로도
+이미 쓰이고 있어서 혼동하기 쉬웠지만, 이번엔 국가 코드 `fr`을 21개 outer 언어 객체 각각의
+inner 키로 추가하는 것이라 정확히 구분해서 처리, outer `fr`(프랑스어) 객체 안에도 inner
+`fr:'France'`를 정상적으로 추가함)·`SUPPORTED_TAX_COUNTRIES`·`COUNTRY_TAX_AUTHORITY`
+(uk가 HMRC, au가 ATO 단독 표기였던 것과 같은 이유로 `fr`은 "DGFiP" 단독 표기)에 28번째
+국가로 반영. `COUNTRY_MAP_COORDS`는 CA/TW/HK/GB/AU/MX와 같은 이유(SVG에 프랑스 랜드마스
+path 없음)로 좌표 추가 안 함(핀만 안 그려지고 나머지 정상 동작, Playwright로 확인) — 이
+기회에 멕시코 라운드가 빠뜨렸던 코멘트도 같이 보충함.
+
+**⚠️ 프랑스는 처음부터 조세조약 환급 가능성 정보를 포함시킴** (일본/영국은 나중에 정정 커밋
+`3a6a17e`로 추가했던 것과 달리, 이번엔 그 사실이 이미 알려진 상태로 시작): 미-프랑스 조세조약
+제22조("기타소득")의 미 재무부 공식 Technical Explanation(home.treasury.gov/.../Treaty-
+France-Pr2-TE-1-13-2009.pdf)이 OECD식 "거주지국에만 과세" 문언을 쓰면서 "gambling"(도박)을
+이 조항이 다루는 소득의 명시적 예시로 들고 있음 — 프랑스 거주자가 미국측 30% 원천징수분에
+대해 사후 Form 1040-NR로 환급을 청구할 수 있는 근거가 될 수 있다는 뜻(자동 환급 아님, 계산기
+숫자엔 영향 없음). 랜딩페이지의 note-box+FAQ에 UK 페이지(`3a6a17e`)의 톤을 그대로 옮기지
+않고 프랑스어로 자연스럽게 새로 작성해서 반영.
+
+**EUR은 GBP/AUD/MXN과 같은 이유로 진짜로 추가함**: 이 계산기의 환율 소스(Frankfurter/
+open.er-api)가 이미 EUR을 지원해서 새 API가 필요 없었음 — `EXCHANGE_RATE_EUR` 변수(기본값
+0.92, USD/EUR 폴백, 실시간 fetch가 덮어씀) + `CURRENCY_RATE_CONFIG`/`CURRENCY_DISPLAY_META`
+(🇫🇷 국기·`fr-FR` 로케일 — 첫 유로존 지원국인 프랑스를 대표로 사용) 항목 신설,
+`REAL_ABROAD_CURRENCY['fr']='EUR'`(USD 우회 불필요). **EUR을 프랑스 전용 이름으로 짓지 않고
+그냥 'EUR'로 남겨둠** — 나중에 독일이 추가되면 `REAL_ABROAD_CURRENCY['de']='EUR'`처럼 같은
+`CURRENCY_DISPLAY_META.EUR` 항목을 그대로 재사용 가능(신규 통화 중복 정의 불필요, 위 독일
+보류 결정과 자연스럽게 이어지는 설계). index.html의 `homeCurrencySelect`/
+`compareCurrencySelect`/`homeCountrySelect`/`homeCountryToggle`/`realAbroadSelect` 5곳
+배선, `i18n-source/translations.json`의 `input.optFrance` 키(26개 언어) 추가 후 각
+`i18n/*.json` 26개 파일에 직접 반영(압축 포맷 유지, 기존 파일 포맷과 바이트 단위로 동일한
+스타일 확인).
+
+**랜딩페이지**: `france-resident-us-lottery-tax.html` 신설(멕시코 페이지를 head-tag/JSON-LD
+형태의 템플릿으로, 영국 페이지를 0%-club 서사+조약환급 note-box/FAQ 구조의 템플릿으로 각각
+참고) — $1M 예시(미국 원천징수 -$300,000, 프랑스 세금 0€ CGI 제92조, 실수령 약 $700,000,
+EUR 환산 참고치 약 605,000€(환율 약 0.86 기준)), CGI 제92조 비과세 구조 설명(국내·해외 복권
+동일 적용, 직업적 포커 예외 각주), 30% 비거주자 원천징수 설명 + 조약환급 note-box, **PFU
+(prélèvement forfaitaire unique) 31.4% 섹션**(2026년 세율 인상 — 12.8% 소득세+18.6% 사회
+보장분담금, 법률 n° 2025-1403 LFSS 2026의 CSG 인상 반영 — 예전에 흔히 인용되던 30%가 아닌
+정정된 수치, 당첨금 자체가 아니라 그걸 투자해서 나중에 생기는 이자·배당·양도소득에만 적용되는
+일반 저축과세 규정임을 명시 — UK 상속세 섹션과 같은 깊이의 정보성 콘텐츠), FAQ 4개(과세 여부
+/ Loto·EuroMillions도 비과세인지 / 투자하면 어떻게 되는지(PFU) / 30% 원천징수 환급 가능
+여부), JSON-LD 세트(28개국으로 SoftwareApplication description 갱신) 전부 포함. `node
+scripts/apply-landing-ticket-style.js`로 CSS 주입 후 멕시코 페이지 style 블록과 바이트 단위로
+동일한지 diff-check해서 빈 스타일 블록으로 안 남았는지 확인(23,350바이트, 완전 일치). CTA는
+`index.html?lang=fr&country=fr`. `sitemap.xml`·`sitemap.html`("거주 국가별" 리스트에 항목만
+추가, 헤더의 국가 수 문구는 uk/au 라운드와 같은 이유로 이미 stale해서 이번에도 안 건드림)
+등재, `mexico-resident-us-lottery-tax.html`의 related-links에 프랑스어 페이지 상호 링크 추가
+(현재 스페인어·프랑스어 두 개뿐인 "번역 언어 페르소나 페이지" 계열끼리 서로 연결).
+
+**검증**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`(0/776),
+`tests/broken_link_audit.js`(0/113, 신규 페이지 포함), `tests/console_error_audit.js`
+(0/161), `tests/home_audit.js`(0/18) 전부 통과. `tests/faq_audit.js`는 랜딩페이지 FAQPage
+JSON-LD를 검증하는 스크립트가 아니라(계산기 자체 FAQ 뷰의 좁은 화면 overflow 검사임을 이번에
+확인) 0/18로 통과했지만 별도로 Python으로 새 랜딩페이지의 JSON-LD `acceptedAnswer.text` 4개와
+화면에 보이는 `<details><p>` 텍스트 4개를 직접 diff해서 완전 일치 확인. Playwright로
+`index.html?lang=fr&amount=800&country=fr` 결과가 연방세 -30% / 프랑스 추가세 "₩0 (offset
+by tax credit)" / `calcTakeHome(800,'fr')`이 `{afterUS:560, final:560}`으로 정확히 $560M
+(=$800M×0.7)을 반환하는 것 확인. **EUR 실시간 환율은 uk/au 라운드와 같은
+`page.route(/^https:\//)` + Node `fetch()` 우회 트릭으로 실제 Frankfurter API에서 라이브 값
+0.8645를 fetch하는 것까지 직접 확인**(정적 폴백값 0.92가 아님) — 통화를 EUR로 전환하면
+$560M×0.8645=€484.1M로 정확히 반영되는 것도 확인. 랜딩페이지 직접 로드 시 콘솔 에러 0건,
+CTA 클릭 시 `fr`로 정확히 프리셀렉트되는 것도 확인.
+
+**2단계 커밋**: 1단계(script.js/index.html/i18n 코드 변경)를 먼저 테스트·커밋해 푸시한 뒤
+2단계(랜딩페이지+sitemap+멕시코 페이지 상호링크)를 진행 — uk/au/mx 라운드와 같은 이유로 핵심
+로직이 먼저 안전하게 커밋되도록 함.

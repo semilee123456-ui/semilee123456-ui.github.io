@@ -627,6 +627,10 @@ let EXCHANGE_RATE_PKR = 278;    // 기본값(fallback), USD/PKR (2026-07-18 확�
 let EXCHANGE_RATE_KHR = 4020;   // 기본값(fallback), USD/KHR (2026-07-18 확인)
 let EXCHANGE_RATE_MNT = 3590;   // 기본값(fallback), USD/MNT (2026-07-18 확인)
 let EXCHANGE_RATE_LAK = 22600;  // 기본값(fallback), USD/LAK (2026-07-18 확인)
+let EXCHANGE_RATE_GBP = 0.739;  // 기본값(fallback), USD/GBP (2026-08-16 확인, 파운드/달러 1.3532 기준 역산) — 영국(uk) 신규 지원과 함께 추가
+let EXCHANGE_RATE_AUD = 1.535;  // 기본값(fallback), USD/AUD (2026-08-16 확인, 최근 호주달러/달러 환율 기준) — 호주(au) 신규 지원과 함께 추가
+let EXCHANGE_RATE_MXN = 17.1;   // 기본값(fallback), USD/MXN (2026-08-16 확인, WebSearch로 8월 중순 17.0~17.3 페소대 재확인) — 멕시코(mx) 신규 지원과 함께 추가. GBP/AUD와 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함
+let EXCHANGE_RATE_EUR = 0.92;   // 기본값(fallback), USD/EUR (2026-08-16 확인, 최근 유로/달러 환율대 기준 역산) — 프랑스(fr) 신규 지원과 함께 추가. GBP/AUD/MXN과 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함. 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용. EUR은 유로존 전체 공용 통화라 이름을 국가 전용으로 짓지 않음(나중에 독일 등이 추가돼도 이 변수·CURRENCY_DISPLAY_META.EUR을 그대로 재사용)
 
 // 환율 입력창(표시값)을 실제 계산에 쓰이는 EXCHANGE_RATE와 강제로 맞춰줌.
 // 이게 없으면 HTML에 하드코딩된 옛 기본값이 입력창에 남아있는 채로, 실제 계산은
@@ -734,6 +738,10 @@ const CURRENCY_RATE_CONFIG = [
   { code: 'KHR', apply: (v) => { EXCHANGE_RATE_KHR = Math.round(v); } },
   { code: 'MNT', apply: (v) => { EXCHANGE_RATE_MNT = Math.round(v); } },
   { code: 'LAK', apply: (v) => { EXCHANGE_RATE_LAK = Math.round(v); } },
+  { code: 'GBP', apply: (v) => { EXCHANGE_RATE_GBP = Math.round(v * 10000) / 10000; } }, // CNY와 비슷하게 1 미만대라 소수점 넷째자리까지
+  { code: 'AUD', apply: (v) => { EXCHANGE_RATE_AUD = Math.round(v * 100) / 100; } }, // INR/PHP처럼 1대라 소수점 둘째자리까지
+  { code: 'MXN', apply: (v) => { EXCHANGE_RATE_MXN = Math.round(v * 100) / 100; } }, // PHP/THB처럼 10~20대라 소수점 둘째자리까지
+  { code: 'EUR', apply: (v) => { EXCHANGE_RATE_EUR = Math.round(v * 10000) / 10000; } }, // GBP와 비슷하게 1 미만대라 소수점 넷째자리까지
 ];
 const EXCHANGE_RATE_ALL_CODES = ['KRW', ...CURRENCY_RATE_CONFIG.map(c => c.code)];
 
@@ -767,6 +775,16 @@ const CURRENCY_DISPLAY_META = {
   KHR: { symbol: '៛', flagEmoji: '🇰🇭', locale: 'km-KH', get: () => EXCHANGE_RATE_KHR },
   MNT: { symbol: '₮', flagEmoji: '🇲🇳', locale: 'mn-MN', get: () => EXCHANGE_RATE_MNT },
   LAK: { symbol: '₭', flagEmoji: '🇱🇦', locale: 'lo-LA', get: () => EXCHANGE_RATE_LAK },
+  GBP: { symbol: '£', flagEmoji: '🇬🇧', locale: 'en-GB', get: () => EXCHANGE_RATE_GBP },
+  // 심볼이 USD와 같은 '$'지만, 이 코드베이스는 NPR/LKR/PKR가 전부 'Rs'를 공유하는 것과 같은
+  // 관례로 별도 접두사(A$ 등) 없이 그대로 둠 — 통화 선택창에는 플래그+코드(🇦🇺 AUD)가 항상
+  // 같이 표시돼서 실제 혼동은 없음(기존 관례 그대로 유지, 새 disambiguation 스킴 도입 안 함).
+  AUD: { symbol: '$', flagEmoji: '🇦🇺', locale: 'en-AU', get: () => EXCHANGE_RATE_AUD },
+  MXN: { symbol: '$', flagEmoji: '🇲🇽', locale: 'es-MX', get: () => EXCHANGE_RATE_MXN },
+  // 유로존 공용 통화 — 프랑스가 첫 유로존 지원국이라 대표로 프랑스 국기/로케일을 씀. 코드 자체를
+  // 'EUR'로 국가 무관하게 이름 지어서, 나중에 독일 등 다른 유로존 국가가 추가돼도 이 항목을
+  // 그대로 재사용 가능(REAL_ABROAD_CURRENCY['de']='EUR'처럼 가리키기만 하면 됨, 통화 중복 정의 불필요).
+  EUR: { symbol: '€', flagEmoji: '🇫🇷', locale: 'fr-FR', get: () => EXCHANGE_RATE_EUR },
 };
 const EXCHANGE_RATE_SOURCES = [
   { url: 'https://api.frankfurter.app/latest?from=USD&to=' + EXCHANGE_RATE_ALL_CODES.join(','), getRate: (data, code) => data && data.rates && data.rates[code], name: 'Frankfurter (중앙은행 기준환율)', nameEn: 'Frankfurter (central bank reference rate)' },
@@ -1244,10 +1262,26 @@ const TAX_MODEL = {
     // 근사함. 최고 실효세율 = (국세 최고구간 45% × 부흥특별소득세 1.021배) + 지방주민세 10% = 55.945%
     half_inclusion_top_rate: 0.279725, // = 0.55945 × 0.5
     // 미국측 30% 원천징수(IRC 871(a))가 복권·도박 소득에 예외 없이 적용된다는 점은 이 계산기 전체의
-    // 기본 전제(한국 케이스와 동일 논리 — 한미 조세조약도 복권·도박 소득을 커버하지 않음). 일본도
-    // 마찬가지로 미-일 조세조약의 "기타소득" 조항이 복권 소득을 면제 대상으로 다루지 않는 것으로
-    // 파악돼(AI 교차검증 결과, 2026-07-23 — 확정된 법률 해석 아님), 30% 원천징수가 그대로 적용된다고
-    // 봄. (계산 자체는 원래부터 30%를 무조건 적용해왔고, 이번에 정리된 건 UI 문구뿐 — 계산 로직 변경 없음)
+    // 기본 전제(한국 케이스와 동일 논리 — 한미 조세조약도 복권·도박 소득을 커버하지 않음).
+    //
+    // 2026-08-16 정정: 이전 버전은 여기서 "미-일 조세조약의 '기타소득' 조항이 복권 소득을 면제
+    // 대상으로 다루지 않는 것으로 파악됨(AI 교차검증 결과, 2026-07-23 — 확정된 법률 해석 아님)"이라고
+    // 적었으나, 이후 전담 조사에서 실제 조약 원문과 미 재무부(Treasury Department)가 공식 발간한
+    // 이 조약의 Technical Explanation(irs.gov/pub/irs-trty/japante04.pdf)을 직접 대조한 결과 이
+    // 결론은 틀린 것으로 확인됨. 미-일 조세조약 제21조("기타소득")는 다른 조문이 다루지 않는 소득에
+    // 대한 과세권을 거주지국(즉 일본 쪽)에 전속시키는 OECD 모델식 조항이고, 재무부의 공식 해설은
+    // "gambling"(도박)을 이 조항이 다루는 소득의 예시로 명시적으로 들고 있음("Examples of items of
+    // income covered by Article 21 include income from gambling, ..." — pdftotext -layout으로
+    // 직접 대조 확인). 즉 조약상 면제 근거 자체는 실재함 — 이 부분은 정정.
+    //
+    // 다만 이게 계산기 숫자를 바꾸지는 않음: 이 조항은 "거주지국에서만 과세"를 규정할 뿐 미국측
+    // 원천징수 시점에 자동으로 적용되는 게 아니고(주 복권위원회가 지급 시점에 조약 면제를 실시간
+    // 심사해준다는 근거를 찾지 못함 — 카지노가 상습 외국인 고객에게 해주는 것과는 다름), 일본
+    // 거주자가 사후에 Form 1040-NR(미국 비거주자 소득세 신고서)을 별도로 제출해야 환급을 청구할 수
+    // 있는 구조로 보임. 그래서 "조약상 면제 조항이 실재하는가"(→ 그렇다, 정정됨)와 "이 계산기가
+    // 계산하는 숫자가 달라지는가"(→ 아니다, 원천징수 시점엔 여전히 30%가 그대로 걸림)는 별개 질문 —
+    // us_treaty_exemption_applies는 후자를 나타내는 플래그이므로 false를 유지함(현재 이 필드는
+    // 계산 로직 어디에서도 읽히지 않고 순수 문서화 목적 — calcTakeHome()의 jp 분기 확인함).
     us_treaty_exemption_applies: false
   },
   ru_resident: {
@@ -1364,6 +1398,138 @@ const TAX_MODEL = {
     // 2026-07-20 후속 검증에서 재확인). UI에도 이 불확실성을 별도 표시함.
     unverified_rate: 0.05,
     ftc_available: false
+  },
+  ca_resident: {
+    // 캐나다 CRA(Canada Revenue Agency)는 복권·도박 당첨금을 "우발이득"(windfall gain)으로 보고
+    // 소득세법(Income Tax Act) 과세 대상에서 아예 제외함(TaxTips.ca, TurboTax Canada, 복수 캐나다
+    // 회계법인 안내 확인, 2026-08-16) — 중국·인도처럼 계산된 세액을 FTC로 상계해서 0이 되는 게
+    // 아니라, 애초에 캐나다 국내 과세표준 자체가 존재하지 않아서 0임(구조적으로 다른 이유).
+    // ⚠️ 중요한 예외 확인: 미-캐나다 조세조약(제XXII조 3항)은 캐나다 거주자가 미국에서 낸 도박
+    // 손실을 당첨금에서 공제해 30% 원천징수를 줄일 수 있게 하지만(TaxTips.ca, RMS 환급 가이드,
+    // greenbacktaxservices.com 확인), 이 조항은 블랙잭·바카라·크랩스·룰렛·빅식스 휠 등 특정
+    // 카지노 게임에만 적용되고 복권(lottery)은 대상이 아님 — 그래서 복권 당첨금은 이 조항으로
+    // 30% 원천징수를 환급받을 길이 없고, 원천징수가 사실상 최종세로 확정됨. rate 자체는 "근거
+    // 불명확"이 아니라 CRA의 명확한 비과세 근거가 있는 0이라 unverified_rate가 아닌 rate로 표기.
+    rate: 0
+  },
+  tw_resident: {
+    // 대만 "기회중상세"(재산 없이 우연히 얻는 상금에 20% 원천징수, 소득세법 제88·92-1조 등)는
+    // "대만 내 원천징수의무자"가 지급하는 상금(공익복권, 회사 송년회 경품 등)에만 적용되고,
+    // 미국 복권판매기관이 직접 지급하는 당첨금처럼 대만 측 원천징수의무자가 없는 경우엔 이
+    // 조항 자체가 적용 안 됨 — 그래서 이 계산기는 이 조항을 모델링하지 않음.
+    //
+    // 실제로 적용되는 건 "소득기본세액조례"(所得基本稅額條例, 개인 최저한세/AMT)의 해외소득
+    // (海外所得) 규정임: 한 신고가구의 그 해 해외소득 합계가 신대만달러(NT$) 100만 이상이면
+    // 초과분이 아니라 전액이 "기본소득액"에 산입됨. 기본세액 = (기본소득액 − 면제액) × 20%
+    // (제13조 1항) — 이 기본세액이 일반 종합소득세 산출세액보다 클 때만 그 차액을 추가 납부하는
+    // 표준 AMT "더 큰 쪽" 구조라, 이 계산기가 다루는 잭팟 규모(8~9자리 달러)에서는 일반세액이
+    // 기본세액에 압도적으로 못 미쳐 사실상 항상 기본세액 쪽이 적용됨(재정부/각 지역국세국
+    // 안내, 2026-08-16 확인: 113년도=2024년 개정 기준 면제액 신대만달러 750만원, 세율 20%
+    // 고정 — 그 이후 추가 조정 여부는 재검증 안 함).
+    //
+    // 750만 대만달러 면제액(달러 환산 시 약 23~25만 달러 수준)은 잭팟 규모 대비 무시 가능한
+    // 수준이라, jp_resident의 특별공제(50만엔) 생략과 같은 원칙으로 계산에서 뺌 — 환율 변환+
+    // 차감을 모델링하지 않고 전액에 20% 단일세율을 근사로 적용.
+    basic_tax_rate: 0.20,
+    // 소득기본세액조례 제13조 1항 단서: 해외소득(제12조 1항 1호)에 대해 이미 소득원천지국에
+    // 납부한 세금은, 그 해외소득을 합산해서 늘어난 기본세액 한도 내에서 공제(扣抵) 가능 —
+    // cn/in/vn과 같은 구조적 상한(Math.min) 방식의 FTC가 조문 자체로 명확히 확인됨(2026-08-16
+    // 웹서치, 전국법규자료库 조문 원문 대조). 신청 요건(소득원천지 세무기관 발급 납세증명 +
+    // 대만 주재기관 인증)까지는 원문 대조 안 했지만 공제 조항 존재 자체는 명확해 ⚠️ 표시 없이 적용.
+    ftc_available: true
+  },
+  hk_resident: {
+    // 홍콩은 지역주의(territorial) 과세 원칙만 쓰는 세 가지 개별세(급여세·이윤세·재산세)만
+    // 있고, 일반 소득세나 자본이득세 자체가 없음(홍콩 세무국 IRD 안내 + 복수 국제 회계법인
+    // 홍콩 세무 요약 확인, 2026-08-16) — 개인의 복권·도박 당첨금은 "고용소득"(급여세)도
+    // "사업이윤"(이윤세)도 "부동산임대소득"(재산세)도 아니라서 이 세 세목 중 어디에도
+    // 해당하지 않아 애초에 과세 대상에서 빠짐. 미국 복권(역외소득)이라서 면제되는 게 아니라
+    // 홍콩 국내 복권이었어도 똑같이 비과세라는 뜻(ca_resident와 같은 "국내 과세표준 자체가
+    // 없음" 구조 — FTC 상계로 0이 되는 cn/in/vn과는 다름). 유일한 예외는 도박 자체가
+    // "직업적 도박사"처럼 반복적 사업(trade)으로 인정될 때뿐이라, 복권 한 장 사서 당첨된
+    // 경우엔 해당 없음.
+    rate: 0
+  },
+  uk_resident: {
+    // 영국 HMRC는 도박·복권 당첨금에 소득세(Income Tax)도, 양도소득세(Capital Gains Tax)도,
+    // 국민보험(National Insurance)도 매기지 않음 — 세 세목 어디에도 해당 안 되는 게 아니라
+    // 애초에 당첨금 자체를 "소득"으로 취급하지 않는 원칙(HMRC 안내 + 복수 영국 세무 정보 확인,
+    // 2026-08-16). 이 비과세 원칙은 미국 복권처럼 해외에서 받은 당첨금에도 영국 국내 복권
+    // (National Lottery·EuroMillions)과 완전히 동일하게 적용됨 — ca_resident/hk_resident와
+    // 같은 "국내 과세표준 자체가 없음" 구조(FTC 상계로 0이 되는 cn/in/vn과는 다름).
+    //
+    // 2026-08-16 추가: 위 내용은 영국측(HMRC) 과세가 왜 0원인지에 대한 것이고, 이건 그대로 맞음 —
+    // 별도로 확인된 사실 하나를 덧붙임. 미-영 조세조약 제22조("기타소득")는 다른 조문이 다루지 않는
+    // 소득에 대한 과세권을 거주지국에 전속시키는 조항이고, 미 재무부가 공식 발간한 이 조약(1975년
+    // 의정서)의 Technical Explanation(home.treasury.gov/.../Treaty-UK-Protocol-TE-7-22-2002.pdf)은
+    // "gambling"(도박)을 이 조항이 다루는 소득의 예시로 명시하고 있음(pdftotext -layout으로 직접
+    // 대조 확인). 이는 영국 거주자가 미국측 30% 원천징수분에 대해 사후에 Form 1040-NR(미국
+    // 비거주자 소득세 신고서)을 제출해 환급을 청구할 수 있는 근거가 될 수 있다는 뜻 — 단, 자동
+    // 환급이 아니고 별도 신고 절차가 필요하며, 계산기가 모델링하는 숫자(미국측 30% 원천징수 자체)는
+    // 이 사실과 무관하게 그대로임(계산 로직 변경 없음).
+    rate: 0
+  },
+  au_resident: {
+    // 호주 ATO(Australian Taxation Office)는 도박·복권 당첨금을 과세 대상 소득(assessable
+    // income)으로 보지 않고, 증여·상속과 같은 "우연한 이득"(windfall)으로 분류함(ATO 안내 +
+    // 복수 호주 세무 정보 확인, 2026-08-16) — 세율이 낮거나 공제가 있는 게 아니라 애초에
+    // 과세표준 자체가 없다는 뜻. 이 원칙은 호주 국내 복권(Powerball AU·Oz Lotto)이든 미국
+    // 복권처럼 해외 복권이든 완전히 동일하게 적용됨(해외소득 면제가 아니라 국내/해외 구분
+    // 자체가 없는 원리) — uk_resident/ca_resident/hk_resident와 같은 "국내 과세표준 자체가
+    // 없음" 구조(FTC 상계로 0이 되는 cn/in/vn과는 다름). 유일한 예외는 도박이 "직업적
+    // 도박사"처럼 반복적 사업(business)으로 인정될 때뿐이라, 복권 한 장 사서 당첨된 경우엔
+    // 해당 없음(당첨금 자체와는 별개로, 당첨금으로 예금·주식 등에 투자해서 나중에 생기는
+    // 이자·배당·양도소득은 일반 원칙대로 과세 대상 — landing page 참고).
+    rate: 0
+  },
+  mx_resident: {
+    // 멕시코는 캐나다·홍콩·영국·호주(uk/ca/hk/au_resident, "국내 과세표준 자체가 없음")와 달리
+    // 실제로 0보다 큰 자국세가 남는 케이스임 — cn/in처럼 FTC로 일부만 상계됨.
+    //
+    // ⚠️ 흔한 오해부터 정리: 멕시코 소득세법(LISR) 제138조 "premios"(상금) 조항은 국내에서
+    // 조직된 복권·추첨·경품에 1%(연방)+최대 21%(주별 부가) 원천징수를 매기는 유명한 규정이지만,
+    // 이건 "멕시코 영토 내에서 조직된" 추첨에만 적용됨(부의 원천이 멕시코 영토인 경우로 한정,
+    // 제138조 문언 자체가 "premios" 지급자=멕시코 원천징수의무자를 전제로 함) — 미국 로또리
+    // 위원회가 미국에서 추첨하고 미국에서 직접 지급하는 파워볼/메가밀리언즈처럼 멕시코 측
+    // 원천징수의무자가 아예 없는 경우엔 이 조항 자체가 적용 대상이 아님. 그래서 이 계산기는
+    // 1%/21% 수치를 모델링하지 않음(검색하면 흔히 나오는 수치지만 이 케이스엔 안 맞음).
+    //
+    // 실제로 적용되는 건 소득세법 제9장 "Demás ingresos"(기타소득) 제142조: 거주자가 해외에서
+    // 받은 복권 당첨금처럼 다른 장(章)에 명시적으로 열거되지 않은 소득은 "기타소득"으로
+    // 분류되고, 제152조의 일반 누진 개인소득세율표(tarifa) 그대로 적용됨(급여·사업소득과
+    // 똑같은 누진 구간을 그대로 씀 — 복권 전용 별도 세율표가 없음). 2026년 최고구간은 연
+    // 3,898,140.13 페소 초과분에 35% (참고용 규모감: 최근 환율 기준 대략 19.5~21.5만 달러
+    // 수준 — 세금 계산 로직 자체에는 달러 환산을 하드코딩하지 않음, 순수 페소 기준 문턱임).
+    // 이 계산기가 다루는 건 잭팟 규모(슬라이더 최저값이 이미 미화 1천만 달러)라 항상 이
+    // 문턱을 압도적으로 초과하므로, ph_resident/mm_resident/bd_resident와 같은 원칙으로
+    // 누진 구간별 정밀 계산 대신 최고세율 35% 단일 근사를 사용함(하위 구간은 잭팟 규모
+    // 대비 무시 가능한 수준이라 생략).
+    top_bracket_rate: 0.35,
+    // 제5조(Artículo 5 LISR): 멕시코 거주자가 해외소득에 대해 외국에서 낸 소득세는, 그 해외
+    // 소득에 대응하는 멕시코 세액 한도 내에서 세액공제(FTC) 가능 — cn/in/vn/tw와 같은
+    // Math.min/Math.max 상한 방식 구조가 조문으로 명확함(2026-08-16 웹서치 확인).
+    // ⚠️ 여기서 다른 나라(캐나다·영국·대만 등, 전부 자국세율 ≤20%)와 결정적으로 다른 지점:
+    // 멕시코 최고세율(35%)이 미국 원천징수(30%)보다 높아서, FTC가 미국 원천징수분(30%)을
+    // 전부 상계하고도 5%포인트가 그대로 멕시코에 추가로 남음 — in_resident(인도, ~39%>30%)와
+    // 구조적으로 동일한 "실질적 추가세 발생" 케이스이지 uk/ca/hk/au처럼 상계로 0이 되는
+    // 케이스가 아님.
+    ftc_available: true
+  },
+  fr_resident: {
+    // 프랑스는 캐나다·홍콩·영국·호주(ca/hk/uk/au_resident)와 같은 "국내 과세표준 자체가 없음"
+    // 구조 — 멕시코(FTC로 일부만 상계, 잔여세 발생)와는 다름. 프랑스 조세일반법(CGI) 제92조
+    // 1항은 "비상업적 이익"(bénéfices non commerciaux)을 상당히 넓게 정의하지만, 판례와
+    // DGFiP(프랑스 재정총국) 안내가 일관되게 확인하는 바는: 플레이어가 결과에 영향을 줄 수
+    // 없는 순수 우연(hasard) 게임 — 복권·추첨 등 — 은 "영리 목적의 상시적 직업 또는 이익원"에
+    // 해당하지 않아 과세 대상 소득 범주 자체에 들지 않는다는 것(유일한 예외는 "직업적 포커
+    // 플레이어"처럼 반복적·상시적으로 도박을 영위하는 경우뿐 — 복권 한 장 사서 당첨된 경우엔
+    // 해당 없음). 이건 세율이 낮거나 공제가 있는 게 아니라 애초에 과세표준 자체가 없다는 뜻이며,
+    // 프랑스 국내 복권(FDJ의 Loto·EuroMillions)이든 미국 복권 같은 해외 복권이든 완전히 동일하게
+    // 적용되는 구조적 배제임(2026-08-16 웹서치 — euromillions-loterie.fr가 파워볼을 직접 언급하며
+    // 프랑스 거주자가 해외 복권 당첨금에도 소득세를 안 낸다고 확인, FDJ 복권과 같은 근거).
+    // (당첨금 자체와는 별개로, 당첨금을 예금·주식 등에 투자해서 나중에 생기는 이자·배당·양도소득은
+    // 별도의 투자소득 과세 원칙 — PFU 통합정률세 — 대상 — landing page 참고.)
+    rate: 0
   }
 };
 
@@ -1699,9 +1865,12 @@ function calcTakeHome(amount, country, stateCode){
     };
   } else if (country === 'jp') {
     // 일본: 해외 복권은 「일시소득」으로 과세, 1/2 포함 후 최고 실효세율(55.945%)로 근사.
-    // AI 교차검증 결과(2026-07-23, 확정된 법률 해석 아님): 미-일 조세조약이 복권·도박 소득을 면제
-    // 대상으로 다루지 않는 것으로 파악돼, 미국측 30% 원천징수(계산은 원래부터 무조건 적용해왔음,
-    // 변경 없음)에 조약상 면제 가능성이 있다고 보지 않음.
+    // 2026-08-16 정정: 미-일 조세조약 제21조("기타소득") + 미 재무부 공식 Technical Explanation
+    // (irs.gov/pub/irs-trty/japante04.pdf)이 "gambling"을 이 조항 대상 예시로 명시하는 것으로
+    // 확인돼, 이전에 여기 적혀있던 "조약이 복권 소득을 면제 대상으로 다루지 않는다"는 결론(2026-07-23
+    // AI 교차검증)은 틀린 것으로 정정함 — 상세 근거는 TAX_MODEL.jp_resident 주석 참고. 다만 이건
+    // 사후 Form 1040-NR 신고를 통한 환급 가능성 얘기이지, 미국측 30% 원천징수(아래 계산, 원래부터
+    // 무조건 적용해왔음) 자체를 바꾸지 않음 — 계산 로직 변경 없음.
     const wonAmount = amount * 100000000;
     const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
     const jpCalculatedTaxWon = wonAmount * TAX_MODEL.jp_resident.half_inclusion_top_rate;
@@ -1944,6 +2113,157 @@ function calcTakeHome(amount, country, stateCode){
       val2: laAdditionalTaxWon > 0 ? '-' + laEffectivePct.toFixed(1) + '%' : pickLang('0원', '₩0', '0元', '0 KRW', '0 วอน', '0 вон', { km:'0 វ៉ុន', ne:'₩0', id:'₩0', my:'၀ ဝမ်း', si:'0 වොන්', uz:'0 von', mn:'0 вон', kk:'0 вон', ky:'0 вон', ur:'0 وون', bn:'০ ওন', lo:'0 ວອນ', ja:'0ウォン', ar:'0 وون', hi:'₩0', fr:'0 KRW', tl:'₩0' , pt: `₩0`, es: `₩0`, uk: `₩0`, tet: `₩0`}),
       basisSuffix: pickLang('라오스 거주자 (추정치 ⚠️)', 'Laos resident (estimate ⚠️)', '老挝居民（估算值⚠️）', 'Cư dân Lào (ước tính ⚠️)', 'ผู้พำนักในลาว (ค่าประมาณ ⚠️)', 'Резидент Лаоса (оценка ⚠️)', buildCountryMore('la', 'estimate'))
     };
+  } else if (country === 'ca') {
+    // 캐나다: CRA가 복권 당첨금을 우발이득으로 봐서 비과세(ca_resident.rate = 0) — cn/in/vn과
+    // 같은 FTC 상계 코드 모양은 그대로 유지하되(일관성), 계산된 캐나다 세액 자체가 항상 0이라
+    // ftcCreditWon/caAdditionalTaxWon도 항상 0이 됨. 미-캐나다 조세조약의 도박손실공제 조항은
+    // 복권을 포함하지 않아 30% 원천징수 환급 경로도 없음(ca_resident 주석 참고).
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const caCalculatedTaxWon = wonAmount * TAX_MODEL.ca_resident.rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, caCalculatedTaxWon);
+    const caAdditionalTaxWon = Math.max(caCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (caAdditionalTaxWon / 100000000);
+    const caEffectivePct = wonAmount > 0 ? (caAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('캐나다 추가 납부 (FTC 적용)', 'Canada additional tax (FTC applied)', '加拿大追加缴税（已抵免FTC）', 'Thuế bổ sung tại Canada (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของแคนาดา (ใช้ FTC แล้ว)', 'Дополнительный налог в Канаде (с учётом FTC)', buildAdditionalTaxMore('ca')),
+      val2: caAdditionalTaxWon > 0 ? '-' + caEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      basisSuffix: pickLang('캐나다 거주자', 'Canada resident', '加拿大居民', 'Cư dân Canada', 'ผู้พำนักในแคนาดา', 'Резидент Канады', buildCountryMore('ca'))
+    };
+  } else if (country === 'tw') {
+    // 대만: 대만 내 원천징수의무자가 없는 미국 복권 당첨금엔 20% 기회중상세가 적용되지 않고,
+    // 대신 소득기본세액조례(개인 AMT)의 해외소득 규정이 적용됨 — NT$750만 면제액은 잭팟 규모
+    // 대비 무시 가능해 생략하고 전액에 20% 근사(tw_resident 주석 참고). 제13조 1항 단서로
+    // FTC(외국납부세액공제)가 명문 확인돼 cn/in/vn과 같은 Math.min 상한 방식으로 적용함.
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const twCalculatedTaxWon = wonAmount * TAX_MODEL.tw_resident.basic_tax_rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, twCalculatedTaxWon);
+    const twAdditionalTaxWon = Math.max(twCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (twAdditionalTaxWon / 100000000);
+    const twEffectivePct = wonAmount > 0 ? (twAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('대만 추가 납부 (FTC 적용)', 'Taiwan additional tax (FTC applied)', '台湾追加缴税（已抵免FTC）', 'Thuế bổ sung tại Đài Loan (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของไต้หวัน (ใช้ FTC แล้ว)', 'Дополнительный налог на Тайване (с учётом FTC)', buildAdditionalTaxMore('tw')),
+      val2: twAdditionalTaxWon > 0 ? '-' + twEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      basisSuffix: pickLang('대만 거주자', 'Taiwan resident', '台湾居民', 'Cư dân Đài Loan', 'ผู้พำนักในไต้หวัน', 'Резидент Тайваня', buildCountryMore('tw'))
+    };
+  } else if (country === 'hk') {
+    // 홍콩: IRD가 지역주의 원칙상 복권 당첨금을 애초에 과세 대상으로 보지 않아(hk_resident.rate = 0)
+    // — ca와 같은 이유(과세표준 자체가 없음)로 cn/in/vn과 같은 FTC 상계 코드 모양은 유지하되
+    // 계산된 홍콩 세액 자체가 항상 0이라 ftcCreditWon/hkAdditionalTaxWon도 항상 0이 됨.
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const hkCalculatedTaxWon = wonAmount * TAX_MODEL.hk_resident.rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, hkCalculatedTaxWon);
+    const hkAdditionalTaxWon = Math.max(hkCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (hkAdditionalTaxWon / 100000000);
+    const hkEffectivePct = wonAmount > 0 ? (hkAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('홍콩 추가 납부 (FTC 적용)', 'Hong Kong additional tax (FTC applied)', '香港追加缴税（已抵免FTC）', 'Thuế bổ sung tại Hồng Kông (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของฮ่องกง (ใช้ FTC แล้ว)', 'Дополнительный налог в Гонконге (с учётом FTC)', buildAdditionalTaxMore('hk')),
+      val2: hkAdditionalTaxWon > 0 ? '-' + hkEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      basisSuffix: pickLang('홍콩 거주자', 'Hong Kong resident', '香港居民', 'Cư dân Hồng Kông', 'ผู้พำนักในฮ่องกง', 'Резидент Гонконга', buildCountryMore('hk'))
+    };
+  } else if (country === 'uk') {
+    // 영국: HMRC가 도박·복권 당첨금을 애초에 과세 대상으로 보지 않아(uk_resident.rate = 0)
+    // — ca/hk와 같은 이유(과세표준 자체가 없음)로 cn/in/vn과 같은 FTC 상계 코드 모양은 유지하되
+    // 계산된 영국 세액 자체가 항상 0이라 ftcCreditWon/ukAdditionalTaxWon도 항상 0이 됨.
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const ukCalculatedTaxWon = wonAmount * TAX_MODEL.uk_resident.rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, ukCalculatedTaxWon);
+    const ukAdditionalTaxWon = Math.max(ukCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (ukAdditionalTaxWon / 100000000);
+    const ukEffectivePct = wonAmount > 0 ? (ukAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('영국 추가 납부 (FTC 적용)', 'UK additional tax (FTC applied)', '英国追加缴税（已抵免FTC）', 'Thuế bổ sung tại Anh (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของสหราชอาณาจักร (ใช้ FTC แล้ว)', 'Дополнительный налог в Великобритании (с учётом FTC)', buildAdditionalTaxMore('uk')),
+      val2: ukAdditionalTaxWon > 0 ? '-' + ukEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      basisSuffix: pickLang('영국 거주자', 'UK resident', '英国居民', 'Cư dân Vương quốc Anh', 'ผู้พำนักในสหราชอาณาจักร', 'Резидент Великобритании', buildCountryMore('uk'))
+    };
+  } else if (country === 'au') {
+    // 호주: ATO가 도박·복권 당첨금을 애초에 과세 대상 소득으로 보지 않아(au_resident.rate = 0)
+    // — uk/ca/hk와 같은 이유(과세표준 자체가 없음)로 cn/in/vn과 같은 FTC 상계 코드 모양은 유지하되
+    // 계산된 호주 세액 자체가 항상 0이라 ftcCreditWon/auAdditionalTaxWon도 항상 0이 됨.
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const auCalculatedTaxWon = wonAmount * TAX_MODEL.au_resident.rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, auCalculatedTaxWon);
+    const auAdditionalTaxWon = Math.max(auCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (auAdditionalTaxWon / 100000000);
+    const auEffectivePct = wonAmount > 0 ? (auAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('호주 추가 납부 (FTC 적용)', 'Australia additional tax (FTC applied)', '澳大利亚追加缴税（已抵免FTC）', 'Thuế bổ sung tại Úc (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของออสเตรเลีย (ใช้ FTC แล้ว)', 'Дополнительный налог в Австралии (с учётом FTC)', buildAdditionalTaxMore('au')),
+      val2: auAdditionalTaxWon > 0 ? '-' + auEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      basisSuffix: pickLang('호주 거주자', 'Australia resident', '澳大利亚居民', 'Cư dân Úc', 'ผู้พำนักในออสเตรเลีย', 'Резидент Австралии', buildCountryMore('au'))
+    };
+  } else if (country === 'mx') {
+    // 멕시코: 소득세법 제142조(기타소득)+제152조(누진세율) 최고구간 35% 근사(mx_resident 주석
+    // 참고) — 제5조 FTC로 미국 원천징수(30%)를 한도 내 상계하지만, 멕시코 세율(35%)이 미국
+    // 원천징수(30%)보다 높아 cn/in과 같은 구조로 실제 잔여세액(≈5%p)이 남음(uk/ca/hk/au처럼
+    // 0으로 상계되는 케이스가 아님).
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const mxCalculatedTaxWon = wonAmount * TAX_MODEL.mx_resident.top_bracket_rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, mxCalculatedTaxWon); // FTC 공제액(제5조 LISR, 한도 내 상계)
+    const mxAdditionalTaxWon = Math.max(mxCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (mxAdditionalTaxWon / 100000000);
+    const mxEffectivePct = wonAmount > 0 ? (mxAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('멕시코 추가 납부 (FTC 적용)', 'Mexico additional tax (FTC applied)', '墨西哥追加缴税（已抵免FTC）', 'Thuế bổ sung tại Mexico (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของเม็กซิโก (ใช้ FTC แล้ว)', 'Дополнительный налог в Мексике (с учётом FTC)', buildAdditionalTaxMore('mx')),
+      val2: mxAdditionalTaxWon > 0 ? '-' + mxEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      basisSuffix: pickLang('멕시코 거주자', 'Mexico resident', '墨西哥居民', 'Cư dân Mexico', 'ผู้พำนักในเม็กซิโก', 'Резидент Мексики', buildCountryMore('mx'))
+    };
+  } else if (country === 'fr') {
+    // 프랑스: DGFiP가 순수 우연 게임(복권 포함) 당첨금을 애초에 과세 대상 소득으로 보지 않아
+    // (fr_resident.rate = 0, CGI 제92조) — ca/hk/uk/au와 같은 이유(과세표준 자체가 없음)로
+    // cn/in/vn과 같은 FTC 상계 코드 모양은 유지하되 계산된 프랑스 세액 자체가 항상 0이라
+    // ftcCreditWon/frAdditionalTaxWon도 항상 0이 됨.
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const frCalculatedTaxWon = wonAmount * TAX_MODEL.fr_resident.rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, frCalculatedTaxWon);
+    const frAdditionalTaxWon = Math.max(frCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (frAdditionalTaxWon / 100000000);
+    const frEffectivePct = wonAmount > 0 ? (frAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('프랑스 추가 납부 (FTC 적용)', 'France additional tax (FTC applied)', '法国追加缴税（已抵免FTC）', 'Thuế bổ sung tại Pháp (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของฝรั่งเศส (ใช้ FTC แล้ว)', 'Дополнительный налог во Франции (с учётом FTC)', buildAdditionalTaxMore('fr')),
+      val2: frAdditionalTaxWon > 0 ? '-' + frEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      basisSuffix: pickLang('프랑스 거주자', 'France resident', '法国居民', 'Cư dân Pháp', 'ผู้พำนักในฝรั่งเศส', 'Резидент Франции', buildCountryMore('fr'))
+    };
   } else if (country === 'other') {
     // "기타 국가" — COUNTRY_TAX_PROFILES 목록에 없는 나라 방문자를 위한 안전망(2026-07-28,
     // 사용자 요청). 자국 세법을 조사하지 않고도 확정적으로 말할 수 있는 건 미국 IRS의 비거주자
@@ -2175,7 +2495,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260815-1';
+    script.src = 'odds-data.js?v=20260816-1';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -2233,6 +2553,30 @@ const REAL_ABROAD_CURRENCY = {
   us: 'USD', in: 'INR', cn: 'CNY', vn: 'VND', th: 'THB', ru: 'RUB', kh: 'KHR',
   np: 'NPR', id: 'IDR', mm: 'MMK', lk: 'LKR', uz: 'UZS', mn: 'MNT', kz: 'KZT',
   kg: 'KGS', pk: 'PKR', bd: 'BDT', la: 'LAK', jp: 'JPY', ph: 'PHP',
+  // 캐나다(CAD)는 이 계산기가 지원하는 통화 목록에 아예 없음(이번 세션 범위 밖 — CAD 추가는
+  // 환율/포맷 등 별도 작업) — 잭팟 자체가 USD 표시이기도 해서 자연스러운 값인 USD로 맞춤
+  ca: 'USD',
+  // 대만(TWD)·홍콩(HKD)도 캐나다(CAD)와 같은 이유로 CURRENCY_DISPLAY_META/환율 소스 어디에도
+  // 없음(2026-08-16 확인 — 추가는 환율/포맷 등 별도 작업, 이번 세션 범위 밖) — setSharedInputCurrency()가
+  // CURRENCY_DISPLAY_META에 없는 코드는 조용히 무시(no-op)하기 때문에, 여기 그대로 'TWD'/'HKD'를
+  // 넣으면 통화가 조용히 이전 상태로 남는 버그가 남으므로 ca와 동일하게 USD로 맞춤.
+  tw: 'USD', hk: 'USD',
+  // 영국(GBP)은 ca/tw/hk와 달리 CURRENCY_DISPLAY_META에 실제로 추가됨(2026-08-16, GBP 실시간
+  // 환율 소스가 이미 있어서 새 API 없이 지원 가능) — 그래서 USD로 우회할 필요 없이 실제
+  // 통화코드 그대로 연결
+  uk: 'GBP',
+  // 호주(AUD)도 GBP와 같은 이유로 실제로 지원됨(2026-08-16, Frankfurter/open.er-api가 이미
+  // AUD를 지원해서 새 API 없이 지원 가능) — USD 우회 불필요, 실제 통화코드 그대로 연결
+  au: 'AUD',
+  // 멕시코(MXN)도 GBP/AUD와 같은 이유로 실제로 지원됨(2026-08-16, Frankfurter/open.er-api가
+  // 이미 MXN을 지원해서 새 API 없이 지원 가능) — USD 우회 불필요, 실제 통화코드 그대로 연결
+  mx: 'MXN',
+  // 프랑스(EUR)도 GBP/AUD/MXN과 같은 이유로 실제로 지원됨(2026-08-16, Frankfurter/open.er-api가
+  // 이미 EUR을 지원해서 새 API 없이 지원 가능) — USD 우회 불필요, 실제 통화코드 그대로 연결.
+  // EUR은 유로존 공용 통화라 이름을 France 전용으로 짓지 않고 그냥 'EUR'로 둠 — 나중에 독일 등
+  // 다른 유로존 국가가 추가돼도 REAL_ABROAD_CURRENCY['de']='EUR'처럼 같은 통화를 그대로 재사용
+  // 가능(신규 통화 중복 정의 불필요, CURRENCY_DISPLAY_META.EUR도 마찬가지).
+  fr: 'EUR',
 };
 
 // "실제로 다른 나라에 살아요" 카드의 US/CN 버튼 — 한국이랑 아무 상관없는 진짜 외국인(예: 순수
@@ -4283,8 +4627,12 @@ function buildDrawScheduleMore(days){
 // (3,23,27,46,60+11) 확인 — WebSearch(DraftKings 기사) 교차검증, 당첨자 없어 다음 추첨(8/18)
 // 잭팟이 $100M(현금가치 $42.8M)으로 증가. 파워볼은 8/12 회차 이후 다음 추첨(8/15) 잭팟 $20M
 // (현금가치 $8.7M)으로 이미 정확히 반영돼 있어 변경 없음.
+// 2026-08-16 이어서: 사용자가 공유한 스크린샷(usamega.com)으로 파워볼 8/15 회차(5,8,27,29,63+13,
+// Power Play 2x — 배율은 이 사이트가 추적 안 하는 필드라 스코프 밖) 확인, 당첨자 없어 다음 추첨
+// (8/17) 잭팟이 $35M(현금가치 $15.2M)으로 증가. 메가밀리언즈는 스크린샷의 다음 추첨(8/18) 잭팟
+// $100M(현금가치 $42.8M)이 위 8/14 갱신값과 그대로 일치해 변경 없음.
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 20000000, cashUsd: 8700000 },
+  powerball:    { amountUsd: 35000000, cashUsd: 15200000 },
   megamillions: { amountUsd: 100000000, cashUsd: 42800000 },
 };
 
@@ -4350,8 +4698,14 @@ const GAME_NAME_MORE = {
 // 그대로 기록). 메가밀리언즈는 스크린샷의 8/11 회차·$90M/$38.7M 잭팟이 이미 위 값과
 // 정확히 일치해서 변경 없음(더블플레이 3,4,19,21,58+8은 odds-data.js 87행 주석대로
 // 이 아카이브 스코프 밖이라 반영 안 함).
+// 2026-08-16 이어서: 사용자가 공유한 스크린샷(usamega.com)으로 파워볼 8/15 회차(5,8,27,29,63 /
+// 파워볼 13, Power Play 2x·더블플레이 19,21,45,46,65+20은 기존 관례대로 스코프 밖) 확인 —
+// 당첨자 없어 다음 추첨(8/17) 잭팟이 $35M(현금가치 $15.2M)로 증가, 위 JACKPOT_DATA.powerball
+// 갱신. odds-data.js의 POWERBALL_DRAW_ARCHIVE에 8/15 회차 추가, POWERBALL_JACKPOT_ARCHIVE에도
+// 이 회차 추첨 전 예고액이었던 $20M(기존 관례대로) 그대로 기록. 메가밀리언즈는 스크린샷의
+// 8/14 회차·다음 추첨(8/18) $100M/$42.8M 잭팟이 이미 위 값과 정확히 일치해서 변경 없음.
 const LATEST_DRAW = {
-  powerball:    { date: '2026-08-12', numbers: [4, 26, 66, 67, 69], special: 9 },
+  powerball:    { date: '2026-08-15', numbers: [5, 8, 27, 29, 63], special: 13 },
   megamillions: { date: '2026-08-14', numbers: [3, 23, 27, 46, 60], special: 11 },
 };
 
@@ -9548,8 +9902,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // 맞춰줌 — 지정 안 하면 기본값(한국 기준)이 그대로 유지됨(한국에 사는 외국인 페르소나
   // 페이지들은 애초에 한국 세법이 맞는 기준이라 이 파라미터가 필요 없음).
   // COUNTRY_TAX_PROFILES에 실제로 있는 코드로만 제한해서, 오타·구버전 링크가 미검증
-  // 국가로 계산기를 조용히 맞춰버리는 걸 막음(21개국 토글 버튼과 동일한 목록).
-  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','other'];
+  // 국가로 계산기를 조용히 맞춰버리는 걸 막음(28개국 토글 버튼과 동일한 목록).
+  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','other'];
   const urlCountry = params.get('country');
   if (SUPPORTED_TAX_COUNTRIES.includes(urlCountry)) {
     setHomeCountry(urlCountry);
@@ -11963,7 +12317,159 @@ const COUNTRY_TAX_AUTHORITY = {
       hi: "IRS",
       fr: "IRS",
       tl: "IRS"
-    , pt: `IRS`, es: `IRS`, uk: `IRS`, tet: `IRS`})
+    , pt: `IRS`, es: `IRS`, uk: `IRS`, tet: `IRS`}),
+  // 캐나다는 CRA가 복권 당첨금 자체를 과세 대상으로 보지 않아서(ca_resident 주석 참고) CRA발
+  // 세액 계산이 존재하지 않음 — 이 화면에 실제로 표시되는 숫자(30% 원천징수)의 유일한 근거는
+  // IRS라 us와 동일하게 언어 불문 "IRS" 고정 표기
+  ca: () => pickLang('IRS', 'IRS', 'IRS', 'IRS', 'IRS', 'IRS', {
+      km: "IRS",
+      ne: "IRS",
+      id: "IRS",
+      my: "IRS",
+      si: "IRS",
+      uz: "IRS",
+      mn: "IRS",
+      kk: "IRS",
+      ky: "IRS",
+      ur: "IRS",
+      bn: "IRS",
+      lo: "IRS",
+      ja: "IRS",
+      ar: "IRS",
+      hi: "IRS",
+      fr: "IRS",
+      tl: "IRS"
+    , pt: `IRS`, es: `IRS`, uk: `IRS`, tet: `IRS`}),
+  tw: () => pickLang('대만 재정부 국세국·IRS', 'Taiwan National Taxation Bureau/IRS', '台湾财政部国税局·IRS', 'Cục Thuế Quốc gia Đài Loan·IRS', 'กรมสรรพากรแห่งชาติไต้หวัน·IRS', 'Национальное налоговое бюро Тайваня·IRS', {
+      km: "ការិយាល័យពន្ធដារជាតិតៃវ៉ាន់·IRS",
+      ne: "ताइवान राष्ट्रिय कर ब्युरो·IRS",
+      id: "Biro Pajak Nasional Taiwan·IRS",
+      my: "ထိုင်ဝမ် အမျိုးသားအခွန်ဦးစီးဌာန·IRS",
+      si: "තායිවාන ජාතික බදු කාර්යාංශය·IRS",
+      uz: "Tayvan Milliy soliq byurosi·IRS",
+      mn: "Тайваны Үндэсний татварын алба·IRS",
+      kk: "Тайваньның Ұлттық салық басқармасы·IRS",
+      ky: "Тайваньдын Улуттук салык башкармалыгы·IRS",
+      ur: "تائیوان نیشنل ٹیکسیشن بیورو·IRS",
+      bn: "তাইওয়ান জাতীয় কর ব্যুরো·IRS",
+      lo: "ອົງການສ່ວຍສາອາກອນແຫ່ງຊາດໄຕ້ຫວັນ·IRS",
+      ja: "台湾国税局·IRS",
+      ar: "مكتب الضرائب الوطني التايواني·IRS",
+      hi: "ताइवान राष्ट्रीय कर ब्यूरो·IRS",
+      fr: "Bureau national des impôts de Taïwan·IRS",
+      tl: "Pambansang Buwis Bureau ng Taiwan·IRS"
+    , pt: `Departamento Nacional de Impostos de Taiwan/IRS`, es: `Oficina Nacional de Impuestos de Taiwán/IRS`, uk: `Національне податкове бюро Тайваню/IRS`, tet: `Reparti Impostu Nasionál Taiwan/IRS`}),
+  // 홍콩은 IRD(세무국)가 지역주의 원칙상 복권 당첨금 자체를 과세 대상으로 보지 않아서
+  // (hk_resident 주석 참고) IRD발 세액 계산이 존재하지 않음 — ca와 같은 이유로 이 화면에
+  // 실제로 표시되는 숫자(30% 원천징수)의 유일한 근거는 IRS라 언어 불문 "IRS" 고정 표기
+  hk: () => pickLang('IRS', 'IRS', 'IRS', 'IRS', 'IRS', 'IRS', {
+      km: "IRS",
+      ne: "IRS",
+      id: "IRS",
+      my: "IRS",
+      si: "IRS",
+      uz: "IRS",
+      mn: "IRS",
+      kk: "IRS",
+      ky: "IRS",
+      ur: "IRS",
+      bn: "IRS",
+      lo: "IRS",
+      ja: "IRS",
+      ar: "IRS",
+      hi: "IRS",
+      fr: "IRS",
+      tl: "IRS"
+    , pt: `IRS`, es: `IRS`, uk: `IRS`, tet: `IRS`}),
+  // 영국은 HMRC가 도박·복권 당첨금 비과세 원칙(uk_resident 주석 참고)의 명확한 근거라, ca/hk와
+  // 달리 "HMRC"를 그대로 표기함(IRS만 표기하지 않음) — "HMRC"는 IRS처럼 언어 불문 통용되는
+  // 고유명사라 26개 언어 전부 동일 문자열
+  uk: () => pickLang('HMRC', 'HMRC', 'HMRC', 'HMRC', 'HMRC', 'HMRC', {
+      km: "HMRC",
+      ne: "HMRC",
+      id: "HMRC",
+      my: "HMRC",
+      si: "HMRC",
+      uz: "HMRC",
+      mn: "HMRC",
+      kk: "HMRC",
+      ky: "HMRC",
+      ur: "HMRC",
+      bn: "HMRC",
+      lo: "HMRC",
+      ja: "HMRC",
+      ar: "HMRC",
+      hi: "HMRC",
+      fr: "HMRC",
+      tl: "HMRC"
+    , pt: `HMRC`, es: `HMRC`, uk: `HMRC`, tet: `HMRC`}),
+  // 호주는 ATO가 도박·복권 당첨금 비과세 원칙(au_resident 주석 참고)의 명확한 근거라, ca/hk/uk와
+  // 달리 "ATO"를 그대로 표기함(IRS만 표기하지 않음) — "ATO"는 IRS/HMRC처럼 언어 불문 통용되는
+  // 고유명사라 26개 언어 전부 동일 문자열
+  au: () => pickLang('ATO', 'ATO', 'ATO', 'ATO', 'ATO', 'ATO', {
+      km: "ATO",
+      ne: "ATO",
+      id: "ATO",
+      my: "ATO",
+      si: "ATO",
+      uz: "ATO",
+      mn: "ATO",
+      kk: "ATO",
+      ky: "ATO",
+      ur: "ATO",
+      bn: "ATO",
+      lo: "ATO",
+      ja: "ATO",
+      ar: "ATO",
+      hi: "ATO",
+      fr: "ATO",
+      tl: "ATO"
+    , pt: `ATO`, es: `ATO`, uk: `ATO`, tet: `ATO`}),
+  // 멕시코는 cn/in/tw처럼 실제 자국세(SAT 관할)가 남는 케이스라, ca/hk/uk/au처럼 "IRS만
+  // 표기"하지 않고 SAT(Servicio de Administración Tributaria, 멕시코 국세청)와 IRS를
+  // 함께 표기함(2026-08-16) — SAT는 ATO/HMRC와 마찬가지로 언어 불문 통용되는 약어라
+  // 번역하지 않고 그대로 씀, 앞의 나라 이름만 언어별로 다르게 표기
+  mx: () => pickLang('멕시코 SAT·IRS', 'Mexico SAT/IRS', '墨西哥SAT·IRS', 'SAT Mexico·IRS', 'SAT เม็กซิโก·IRS', 'SAT Мексики·IRS', {
+      km: "ម៉ិកស៊ិក SAT·IRS",
+      ne: "मेक्सिको SAT·IRS",
+      id: "Meksiko SAT·IRS",
+      my: "မက်ဆီကို SAT·IRS",
+      si: "මෙක්සිකෝව SAT·IRS",
+      uz: "Meksika SAT·IRS",
+      mn: "Мексик SAT·IRS",
+      kk: "Мексика SAT·IRS",
+      ky: "Мексика SAT·IRS",
+      ur: "میکسیکو SAT·IRS",
+      bn: "মেক্সিকো SAT·IRS",
+      lo: "ເມັກຊິໂກ SAT·IRS",
+      ja: "メキシコ SAT·IRS",
+      ar: "المكسيك SAT·IRS",
+      hi: "मेक्सिको SAT·IRS",
+      fr: "Mexique SAT·IRS",
+      tl: "Mexico SAT·IRS"
+    , pt: `México SAT/IRS`, es: `México SAT/IRS`, uk: `Мексика SAT/IRS`, tet: `Meksiku SAT/IRS`}),
+  // 프랑스는 DGFiP(프랑스 재정총국)의 CGI 제92조 비과세 원칙(fr_resident 주석 참고)의 명확한
+  // 근거라, ca/hk와 달리 "DGFiP"를 그대로 표기함(IRS만 표기하지 않음) — uk의 HMRC/au의 ATO와
+  // 같은 관례. "DGFiP"는 언어 불문 통용되는 약어라 번역하지 않고 26개 언어 전부 동일 문자열
+  fr: () => pickLang('DGFiP', 'DGFiP', 'DGFiP', 'DGFiP', 'DGFiP', 'DGFiP', {
+      km: "DGFiP",
+      ne: "DGFiP",
+      id: "DGFiP",
+      my: "DGFiP",
+      si: "DGFiP",
+      uz: "DGFiP",
+      mn: "DGFiP",
+      kk: "DGFiP",
+      ky: "DGFiP",
+      ur: "DGFiP",
+      bn: "DGFiP",
+      lo: "DGFiP",
+      ja: "DGFiP",
+      ar: "DGFiP",
+      hi: "DGFiP",
+      fr: "DGFiP",
+      tl: "DGFiP"
+    , pt: `DGFiP`, es: `DGFiP`, uk: `DGFiP`, tet: `DGFiP`})
 };
 
 // 세율 자체가 불확실하거나(공식 근거를 못 찾음), 세율은 알아도 실제 적용 여부가 불확실한 나라들을
@@ -12898,29 +13404,31 @@ function updateCalc(usdOverride){
 // 커버해서, 나머지 17개 언어(아랍어·벵골어·프랑스어·힌디어·인도네시아어·일본어·카자흐어·크메르어·
 // 키르기스어·라오어·몽골어·미얀마어·네팔어·신할라어·타갈로그어·우르두어·우즈베크어)에서는 나라 이름이
 // 전부 영어로 조용히 대체되고 있었음(일본어 화면에서 숫자는 일본어인데 나라 이름만 영어로 나오는 등)
-// — 21개국 × 17개 언어 나라 이름표를 만들어 pickLang()의 7번째 more 인자로 채움
+// — 28개국(2026-08-16 캐나다 추가, 같은 날 후속으로 대만·홍콩 추가, 이어서 영국 추가, 다시
+// 이어서 호주 추가, 이어서 멕시코 추가, 이어서 프랑스 추가) × 17개 언어 나라 이름표를 만들어
+// pickLang()의 7번째 more 인자로 채움
 const COUNTRY_NAMES_MORE = {
-  ar: { kr:'كوريا', us:'الولايات المتحدة', vn:'فيتنام', cn:'الصين', in:'الهند', id:'إندونيسيا', ph:'الفلبين', th:'تايلاند', jp:'اليابان', ru:'روسيا', np:'نيبال', lk:'سريلانكا', uz:'أوزبكستان', kz:'كازاخستان', kg:'قيرغيزستان', mm:'ميانمار', bd:'بنغلاديش', pk:'باكستان', kh:'كمبوديا', mn:'منغوليا', la:'لاوس' },
-  bn: { kr:'কোরিয়া', us:'যুক্তরাষ্ট্র', vn:'ভিয়েতনাম', cn:'চীন', in:'ভারত', id:'ইন্দোনেশিয়া', ph:'ফিলিপাইন', th:'থাইল্যান্ড', jp:'জাপান', ru:'রাশিয়া', np:'নেপাল', lk:'শ্রীলঙ্কা', uz:'উজবেকিস্তান', kz:'কাজাখস্তান', kg:'কিরগিজস্তান', mm:'মিয়ানমার', bd:'বাংলাদেশ', pk:'পাকিস্তান', kh:'কম্বোডিয়া', mn:'মঙ্গোলিয়া', la:'লাওস' },
-  fr: { kr:'Corée', us:'États-Unis', vn:'Vietnam', cn:'Chine', in:'Inde', id:'Indonésie', ph:'Philippines', th:'Thaïlande', jp:'Japon', ru:'Russie', np:'Népal', lk:'Sri Lanka', uz:'Ouzbékistan', kz:'Kazakhstan', kg:'Kirghizistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodge', mn:'Mongolie', la:'Laos' },
-  hi: { kr:'कोरिया', us:'अमेरिका', vn:'वियतनाम', cn:'चीन', in:'भारत', id:'इंडोनेशिया', ph:'फिलीपींस', th:'थाईलैंड', jp:'जापान', ru:'रूस', np:'नेपाल', lk:'श्रीलंका', uz:'उज़्बेकिस्तान', kz:'कज़ाकिस्तान', kg:'किर्गिज़स्तान', mm:'म्यांमार', bd:'बांग्लादेश', pk:'पाकिस्तान', kh:'कंबोडिया', mn:'मंगोलिया', la:'लाओस' },
-  id: { kr:'Korea', us:'Amerika Serikat', vn:'Vietnam', cn:'Tiongkok', in:'India', id:'Indonesia', ph:'Filipina', th:'Thailand', jp:'Jepang', ru:'Rusia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakhstan', kg:'Kirgistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kamboja', mn:'Mongolia', la:'Laos' },
-  ja: { kr:'韓国', us:'アメリカ', vn:'ベトナム', cn:'中国', in:'インド', id:'インドネシア', ph:'フィリピン', th:'タイ', jp:'日本', ru:'ロシア', np:'ネパール', lk:'スリランカ', uz:'ウズベキスタン', kz:'カザフスタン', kg:'キルギス', mm:'ミャンマー', bd:'バングラデシュ', pk:'パキスタン', kh:'カンボジア', mn:'モンゴル', la:'ラオス' },
-  kk: { kr:'Корея', us:'АҚШ', vn:'Вьетнам', cn:'Қытай', in:'Үндістан', id:'Индонезия', ph:'Филиппин', th:'Тайланд', jp:'Жапония', ru:'Ресей', np:'Непал', lk:'Шри-Ланка', uz:'Өзбекстан', kz:'Қазақстан', kg:'Қырғызстан', mm:'Мьянма', bd:'Бангладеш', pk:'Пәкістан', kh:'Камбоджа', mn:'Моңғолия', la:'Лаос' },
-  km: { kr:'កូរ៉េ', us:'សហរដ្ឋអាមេរិក', vn:'វៀតណាម', cn:'ចិន', in:'ឥណ្ឌា', id:'ឥណ្ឌូនេស៊ី', ph:'ហ្វីលីពីន', th:'ថៃ', jp:'ជប៉ុន', ru:'រុស្ស៊ី', np:'នេប៉ាល់', lk:'ស្រីលង្កា', uz:'អ៊ូសបេគីស្ថាន', kz:'កាហ្សាក់ស្ថាន', kg:'គារហ្គីស្ថាន', mm:'មីយ៉ាន់ម៉ា', bd:'បង់ក្លាដែស', pk:'ប៉ាគីស្ថាន', kh:'កម្ពុជា', mn:'ម៉ុងហ្គោលី', la:'ឡាវ' },
-  ky: { kr:'Корея', us:'АКШ', vn:'Вьетнам', cn:'Кытай', in:'Индия', id:'Индонезия', ph:'Филиппин', th:'Тайланд', jp:'Япония', ru:'Орусия', np:'Непал', lk:'Шри-Ланка', uz:'Өзбекстан', kz:'Казакстан', kg:'Кыргызстан', mm:'Мьянма', bd:'Бангладеш', pk:'Пакистан', kh:'Камбоджа', mn:'Монголия', la:'Лаос' },
-  lo: { kr:'ເກົາຫຼີ', us:'ສະຫະລັດ', vn:'ຫວຽດນາມ', cn:'ຈີນ', in:'ອິນເດຍ', id:'ອິນໂດເນເຊຍ', ph:'ຟີລິບປິນ', th:'ໄທ', jp:'ຍີ່ປຸ່ນ', ru:'ລັດເຊຍ', np:'ເນປານ', lk:'ສີລັງກາ', uz:'ອຸສເບກິສະຖານ', kz:'ຄາຊັກສະຖານ', kg:'ຄີກີສະຖານ', mm:'ມຽນມາ', bd:'ບັງກະລາເທດ', pk:'ປາກີສະຖານ', kh:'ກຳປູເຈຍ', mn:'ມົງໂກເລຍ', la:'ລາວ' },
-  mn: { kr:'Солонгос', us:'АНУ', vn:'Вьетнам', cn:'Хятад', in:'Энэтхэг', id:'Индонез', ph:'Филиппин', th:'Тайланд', jp:'Япон', ru:'Орос', np:'Балба', lk:'Шри Ланка', uz:'Узбекистан', kz:'Казахстан', kg:'Киргизстан', mm:'Мьянмар', bd:'Бангладеш', pk:'Пакистан', kh:'Камбож', mn:'Монгол', la:'Лаос' },
-  my: { kr:'ကိုရီးယား', us:'အမေရိကန်ပြည်ထောင်စု', vn:'ဗီယက်နမ်', cn:'တရုတ်', in:'အိန္ဒိယ', id:'အင်ဒိုနီးရှား', ph:'ဖိလစ်ပိုင်', th:'ထိုင်း', jp:'ဂျပန်', ru:'ရုရှား', np:'နီပေါ', lk:'သီရိလင်္ကာ', uz:'ဥဇဗက်ကစ္စတန်', kz:'ကာဇက်စတန်', kg:'ကာဂျစ္စတန်', mm:'မြန်မာ', bd:'ဘင်္ဂလားဒေ့ရှ်', pk:'ပါကစ္စတန်', kh:'ကမ္ဘောဒီးယား', mn:'မွန်ဂိုလီးယား', la:'လာအို' },
-  ne: { kr:'कोरिया', us:'अमेरिका', vn:'भियतनाम', cn:'चीन', in:'भारत', id:'इन्डोनेसिया', ph:'फिलिपिन्स', th:'थाइल्यान्ड', jp:'जापान', ru:'रुस', np:'नेपाल', lk:'श्रीलंका', uz:'उज्बेकिस्तान', kz:'कजाकिस्तान', kg:'किर्गिस्तान', mm:'म्यानमार', bd:'बंगलादेश', pk:'पाकिस्तान', kh:'कम्बोडिया', mn:'मंगोलिया', la:'लाओस' },
-  si: { kr:'කොරියාව', us:'ඇමරිකා එක්සත් ජනපදය', vn:'වියට්නාමය', cn:'චීනය', in:'ඉන්දියාව', id:'ඉන්දුනීසියාව', ph:'පිලිපීනය', th:'තායිලන්තය', jp:'ජපානය', ru:'රුසියාව', np:'නේපාලය', lk:'ශ්‍රී ලංකාව', uz:'උස්බෙකිස්තානය', kz:'කසකස්තානය', kg:'කිර්ගිස්තානය', mm:'මියන්මාරය', bd:'බංග්ලාදේශය', pk:'පකිස්තානය', kh:'කාම්බෝජය', mn:'මොංගෝලියාව', la:'ලාඕසය' },
-  tl: { kr:'Korea', us:'Estados Unidos', vn:'Vietnam', cn:'Tsina', in:'India', id:'Indonesia', ph:'Pilipinas', th:'Thailand', jp:'Japan', ru:'Russia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakhstan', kg:'Kyrgyzstan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodia', mn:'Mongolia', la:'Laos' },
-  ur: { kr:'کوریا', us:'امریکہ', vn:'ویتنام', cn:'چین', in:'بھارت', id:'انڈونیشیا', ph:'فلپائن', th:'تھائی لینڈ', jp:'جاپان', ru:'روس', np:'نیپال', lk:'سری لنکا', uz:'ازبکستان', kz:'قازقستان', kg:'کرغزستان', mm:'میانمار', bd:'بنگلہ دیش', pk:'پاکستان', kh:'کمبوڈیا', mn:'منگولیا', la:'لاؤس' },
-  uz: { kr:'Koreya', us:'AQSH', vn:'Vetnam', cn:'Xitoy', in:'Hindiston', id:'Indoneziya', ph:'Filippin', th:'Tailand', jp:'Yaponiya', ru:'Rossiya', np:'Nepal', lk:'Shri-Lanka', uz:'Oʻzbekiston', kz:'Qozogʻiston', kg:'Qirgʻiziston', mm:'Myanma', bd:'Bangladesh', pk:'Pokiston', kh:'Kambodja', mn:'Mongoliya', la:'Laos' },
-  pt: { kr:'Coreia', us:'Estados Unidos', vn:'Vietnã', cn:'China', in:'Índia', id:'Indonésia', ph:'Filipinas', th:'Tailândia', jp:'Japão', ru:'Rússia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbequistão', kz:'Cazaquistão', kg:'Quirguistão', mm:'Mianmar', bd:'Bangladesh', pk:'Paquistão', kh:'Camboja', mn:'Mongólia', la:'Laos' },
-  es: { kr:'Corea', us:'Estados Unidos', vn:'Vietnam', cn:'China', in:'India', id:'Indonesia', ph:'Filipinas', th:'Tailandia', jp:'Japón', ru:'Rusia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistán', kz:'Kazajistán', kg:'Kirguistán', mm:'Myanmar', bd:'Bangladés', pk:'Pakistán', kh:'Camboya', mn:'Mongolia', la:'Laos' },
-  uk: { kr:'Корея', us:'США', vn:"В'єтнам", cn:'Китай', in:'Індія', id:'Індонезія', ph:'Філіппіни', th:'Таїланд', jp:'Японія', ru:'Росія', np:'Непал', lk:'Шрі-Ланка', uz:'Узбекистан', kz:'Казахстан', kg:'Киргизстан', mm:"М'янма", bd:'Бангладеш', pk:'Пакистан', kh:'Камбоджа', mn:'Монголія', la:'Лаос' },
-  tet: { kr:'Korea', us:'EUA', vn:'Vietname', cn:'China', in:'Índia', id:'Indonésia', ph:'Filipinas', th:'Tailándia', jp:'Japaun', ru:'Rúsia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbequistão', kz:'Cazaquistão', kg:'Quirguizistão', mm:'Mianmar', bd:'Bangladesh', pk:'Paquistão', kh:'Camboja', mn:'Mongólia', la:'Laos' },
+  ar: { kr:'كوريا', us:'الولايات المتحدة', vn:'فيتنام', cn:'الصين', in:'الهند', id:'إندونيسيا', ph:'الفلبين', th:'تايلاند', jp:'اليابان', ru:'روسيا', np:'نيبال', lk:'سريلانكا', uz:'أوزبكستان', kz:'كازاخستان', kg:'قيرغيزستان', mm:'ميانمار', bd:'بنغلاديش', pk:'باكستان', kh:'كمبوديا', mn:'منغوليا', la:'لاوس' , ca:'كندا' , tw:'تايوان', hk:'هونغ كونغ' , uk:'المملكة المتحدة' , au:'أستراليا'  , mx:'المكسيك'  , fr:'فرنسا' },
+  bn: { kr:'কোরিয়া', us:'যুক্তরাষ্ট্র', vn:'ভিয়েতনাম', cn:'চীন', in:'ভারত', id:'ইন্দোনেশিয়া', ph:'ফিলিপাইন', th:'থাইল্যান্ড', jp:'জাপান', ru:'রাশিয়া', np:'নেপাল', lk:'শ্রীলঙ্কা', uz:'উজবেকিস্তান', kz:'কাজাখস্তান', kg:'কিরগিজস্তান', mm:'মিয়ানমার', bd:'বাংলাদেশ', pk:'পাকিস্তান', kh:'কম্বোডিয়া', mn:'মঙ্গোলিয়া', la:'লাওস' , ca:'কানাডা' , tw:'তাইওয়ান', hk:'হংকং' , uk:'যুক্তরাজ্য' , au:'অস্ট্রেলিয়া'  , mx:'মেক্সিকো'  , fr:'ফ্রান্স' },
+  fr: { kr:'Corée', us:'États-Unis', vn:'Vietnam', cn:'Chine', in:'Inde', id:'Indonésie', ph:'Philippines', th:'Thaïlande', jp:'Japon', ru:'Russie', np:'Népal', lk:'Sri Lanka', uz:'Ouzbékistan', kz:'Kazakhstan', kg:'Kirghizistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodge', mn:'Mongolie', la:'Laos' , ca:'Canada' , tw:'Taïwan', hk:'Hong Kong' , uk:'Royaume-Uni' , au:'Australie'  , mx:'Mexique'  , fr:'France' },
+  hi: { kr:'कोरिया', us:'अमेरिका', vn:'वियतनाम', cn:'चीन', in:'भारत', id:'इंडोनेशिया', ph:'फिलीपींस', th:'थाईलैंड', jp:'जापान', ru:'रूस', np:'नेपाल', lk:'श्रीलंका', uz:'उज़्बेकिस्तान', kz:'कज़ाकिस्तान', kg:'किर्गिज़स्तान', mm:'म्यांमार', bd:'बांग्लादेश', pk:'पाकिस्तान', kh:'कंबोडिया', mn:'मंगोलिया', la:'लाओस' , ca:'कनाडा' , tw:'ताइवान', hk:'हांगकांग' , uk:'यूनाइटेड किंगडम' , au:'ऑस्ट्रेलिया'  , mx:'मेक्सिको'  , fr:'फ़्रांस' },
+  id: { kr:'Korea', us:'Amerika Serikat', vn:'Vietnam', cn:'Tiongkok', in:'India', id:'Indonesia', ph:'Filipina', th:'Thailand', jp:'Jepang', ru:'Rusia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakhstan', kg:'Kirgistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kamboja', mn:'Mongolia', la:'Laos' , ca:'Kanada' , tw:'Taiwan', hk:'Hong Kong' , uk:'Britania Raya' , au:'Australia'  , mx:'Meksiko'  , fr:'Prancis' },
+  ja: { kr:'韓国', us:'アメリカ', vn:'ベトナム', cn:'中国', in:'インド', id:'インドネシア', ph:'フィリピン', th:'タイ', jp:'日本', ru:'ロシア', np:'ネパール', lk:'スリランカ', uz:'ウズベキスタン', kz:'カザフスタン', kg:'キルギス', mm:'ミャンマー', bd:'バングラデシュ', pk:'パキスタン', kh:'カンボジア', mn:'モンゴル', la:'ラオス' , ca:'カナダ' , tw:'台湾', hk:'香港' , uk:'イギリス' , au:'オーストラリア'  , mx:'メキシコ'  , fr:'フランス' },
+  kk: { kr:'Корея', us:'АҚШ', vn:'Вьетнам', cn:'Қытай', in:'Үндістан', id:'Индонезия', ph:'Филиппин', th:'Тайланд', jp:'Жапония', ru:'Ресей', np:'Непал', lk:'Шри-Ланка', uz:'Өзбекстан', kz:'Қазақстан', kg:'Қырғызстан', mm:'Мьянма', bd:'Бангладеш', pk:'Пәкістан', kh:'Камбоджа', mn:'Моңғолия', la:'Лаос' , ca:'Канада' , tw:'Тайвань', hk:'Гонконг' , uk:'Ұлыбритания' , au:'Австралия'  , mx:'Мексика'  , fr:'Франция' },
+  km: { kr:'កូរ៉េ', us:'សហរដ្ឋអាមេរិក', vn:'វៀតណាម', cn:'ចិន', in:'ឥណ្ឌា', id:'ឥណ្ឌូនេស៊ី', ph:'ហ្វីលីពីន', th:'ថៃ', jp:'ជប៉ុន', ru:'រុស្ស៊ី', np:'នេប៉ាល់', lk:'ស្រីលង្កា', uz:'អ៊ូសបេគីស្ថាន', kz:'កាហ្សាក់ស្ថាន', kg:'គារហ្គីស្ថាន', mm:'មីយ៉ាន់ម៉ា', bd:'បង់ក្លាដែស', pk:'ប៉ាគីស្ថាន', kh:'កម្ពុជា', mn:'ម៉ុងហ្គោលី', la:'ឡាវ' , ca:'កាណាដា' , tw:'តៃវ៉ាន់', hk:'ហុងកុង' , uk:'ចក្រភពអង់គ្លេស' , au:'អូស្ត្រាលី'  , mx:'ម៉ិកស៊ិក'  , fr:'បារាំង' },
+  ky: { kr:'Корея', us:'АКШ', vn:'Вьетнам', cn:'Кытай', in:'Индия', id:'Индонезия', ph:'Филиппин', th:'Тайланд', jp:'Япония', ru:'Орусия', np:'Непал', lk:'Шри-Ланка', uz:'Өзбекстан', kz:'Казакстан', kg:'Кыргызстан', mm:'Мьянма', bd:'Бангладеш', pk:'Пакистан', kh:'Камбоджа', mn:'Монголия', la:'Лаос' , ca:'Канада' , tw:'Тайвань', hk:'Гонконг' , uk:'Улуу Британия' , au:'Австралия'  , mx:'Мексика'  , fr:'Франция' },
+  lo: { kr:'ເກົາຫຼີ', us:'ສະຫະລັດ', vn:'ຫວຽດນາມ', cn:'ຈີນ', in:'ອິນເດຍ', id:'ອິນໂດເນເຊຍ', ph:'ຟີລິບປິນ', th:'ໄທ', jp:'ຍີ່ປຸ່ນ', ru:'ລັດເຊຍ', np:'ເນປານ', lk:'ສີລັງກາ', uz:'ອຸສເບກິສະຖານ', kz:'ຄາຊັກສະຖານ', kg:'ຄີກີສະຖານ', mm:'ມຽນມາ', bd:'ບັງກະລາເທດ', pk:'ປາກີສະຖານ', kh:'ກຳປູເຈຍ', mn:'ມົງໂກເລຍ', la:'ລາວ' , ca:'ການາດາ' , tw:'ໄຕ້ຫວັນ', hk:'ຮົງກົງ' , uk:'ອັງກິດ' , au:'ອົດສະຕາລີ'  , mx:'ເມັກຊິໂກ'  , fr:'ຝຣັ່ງ' },
+  mn: { kr:'Солонгос', us:'АНУ', vn:'Вьетнам', cn:'Хятад', in:'Энэтхэг', id:'Индонез', ph:'Филиппин', th:'Тайланд', jp:'Япон', ru:'Орос', np:'Балба', lk:'Шри Ланка', uz:'Узбекистан', kz:'Казахстан', kg:'Киргизстан', mm:'Мьянмар', bd:'Бангладеш', pk:'Пакистан', kh:'Камбож', mn:'Монгол', la:'Лаос' , ca:'Канад' , tw:'Тайвань', hk:'Хонг Конг' , uk:'Их Британи' , au:'Австрали'  , mx:'Мексик'  , fr:'Франц' },
+  my: { kr:'ကိုရီးယား', us:'အမေရိကန်ပြည်ထောင်စု', vn:'ဗီယက်နမ်', cn:'တရုတ်', in:'အိန္ဒိယ', id:'အင်ဒိုနီးရှား', ph:'ဖိလစ်ပိုင်', th:'ထိုင်း', jp:'ဂျပန်', ru:'ရုရှား', np:'နီပေါ', lk:'သီရိလင်္ကာ', uz:'ဥဇဗက်ကစ္စတန်', kz:'ကာဇက်စတန်', kg:'ကာဂျစ္စတန်', mm:'မြန်မာ', bd:'ဘင်္ဂလားဒေ့ရှ်', pk:'ပါကစ္စတန်', kh:'ကမ္ဘောဒီးယား', mn:'မွန်ဂိုလီးယား', la:'လာအို' , ca:'ကနေဒါ' , tw:'ထိုင်ဝမ်', hk:'ဟောင်ကောင်' , uk:'ယူနိုက်တက်ကင်းဒမ်း' , au:'သြစတြေးလျ'  , mx:'မက်ဆီကို'  , fr:'ပြင်သစ်' },
+  ne: { kr:'कोरिया', us:'अमेरिका', vn:'भियतनाम', cn:'चीन', in:'भारत', id:'इन्डोनेसिया', ph:'फिलिपिन्स', th:'थाइल्यान्ड', jp:'जापान', ru:'रुस', np:'नेपाल', lk:'श्रीलंका', uz:'उज्बेकिस्तान', kz:'कजाकिस्तान', kg:'किर्गिस्तान', mm:'म्यानमार', bd:'बंगलादेश', pk:'पाकिस्तान', kh:'कम्बोडिया', mn:'मंगोलिया', la:'लाओस' , ca:'क्यानाडा' , tw:'ताइवान', hk:'हङकङ' , uk:'संयुक्त अधिराज्य' , au:'अष्ट्रेलिया'  , mx:'मेक्सिको'  , fr:'फ्रान्स' },
+  si: { kr:'කොරියාව', us:'ඇමරිකා එක්සත් ජනපදය', vn:'වියට්නාමය', cn:'චීනය', in:'ඉන්දියාව', id:'ඉන්දුනීසියාව', ph:'පිලිපීනය', th:'තායිලන්තය', jp:'ජපානය', ru:'රුසියාව', np:'නේපාලය', lk:'ශ්‍රී ලංකාව', uz:'උස්බෙකිස්තානය', kz:'කසකස්තානය', kg:'කිර්ගිස්තානය', mm:'මියන්මාරය', bd:'බංග්ලාදේශය', pk:'පකිස්තානය', kh:'කාම්බෝජය', mn:'මොංගෝලියාව', la:'ලාඕසය' , ca:'කැනඩාව' , tw:'තායිවානය', hk:'හොංකොං' , uk:'එක්සත් රාජධානිය' , au:'ඕස්ට්‍රේලියාව'  , mx:'මෙක්සිකෝව'  , fr:'ප්‍රංශය' },
+  tl: { kr:'Korea', us:'Estados Unidos', vn:'Vietnam', cn:'Tsina', in:'India', id:'Indonesia', ph:'Pilipinas', th:'Thailand', jp:'Japan', ru:'Russia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakhstan', kg:'Kyrgyzstan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodia', mn:'Mongolia', la:'Laos' , ca:'Canada' , tw:'Taiwan', hk:'Hong Kong' , uk:'United Kingdom' , au:'Australia'  , mx:'Mexico'  , fr:'France' },
+  ur: { kr:'کوریا', us:'امریکہ', vn:'ویتنام', cn:'چین', in:'بھارت', id:'انڈونیشیا', ph:'فلپائن', th:'تھائی لینڈ', jp:'جاپان', ru:'روس', np:'نیپال', lk:'سری لنکا', uz:'ازبکستان', kz:'قازقستان', kg:'کرغزستان', mm:'میانمار', bd:'بنگلہ دیش', pk:'پاکستان', kh:'کمبوڈیا', mn:'منگولیا', la:'لاؤس' , ca:'کینیڈا' , tw:'تائیوان', hk:'ہانگ کانگ' , uk:'برطانیہ' , au:'آسٹریلیا'  , mx:'میکسیکو'  , fr:'فرانس' },
+  uz: { kr:'Koreya', us:'AQSH', vn:'Vetnam', cn:'Xitoy', in:'Hindiston', id:'Indoneziya', ph:'Filippin', th:'Tailand', jp:'Yaponiya', ru:'Rossiya', np:'Nepal', lk:'Shri-Lanka', uz:'Oʻzbekiston', kz:'Qozogʻiston', kg:'Qirgʻiziston', mm:'Myanma', bd:'Bangladesh', pk:'Pokiston', kh:'Kambodja', mn:'Mongoliya', la:'Laos' , ca:'Kanada' , tw:'Tayvan', hk:'Gonkong' , uk:'Buyuk Britaniya' , au:'Avstraliya'  , mx:'Meksika'  , fr:'Fransiya' },
+  pt: { kr:'Coreia', us:'Estados Unidos', vn:'Vietnã', cn:'China', in:'Índia', id:'Indonésia', ph:'Filipinas', th:'Tailândia', jp:'Japão', ru:'Rússia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbequistão', kz:'Cazaquistão', kg:'Quirguistão', mm:'Mianmar', bd:'Bangladesh', pk:'Paquistão', kh:'Camboja', mn:'Mongólia', la:'Laos' , ca:'Canadá' , tw:'Taiwan', hk:'Hong Kong' , uk:'Reino Unido' , au:'Austrália'  , mx:'México'  , fr:'França' },
+  es: { kr:'Corea', us:'Estados Unidos', vn:'Vietnam', cn:'China', in:'India', id:'Indonesia', ph:'Filipinas', th:'Tailandia', jp:'Japón', ru:'Rusia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistán', kz:'Kazajistán', kg:'Kirguistán', mm:'Myanmar', bd:'Bangladés', pk:'Pakistán', kh:'Camboya', mn:'Mongolia', la:'Laos' , ca:'Canadá' , tw:'Taiwán', hk:'Hong Kong' , uk:'Reino Unido' , au:'Australia'  , mx:'México'  , fr:'Francia' },
+  uk: { kr:'Корея', us:'США', vn:"В'єтнам", cn:'Китай', in:'Індія', id:'Індонезія', ph:'Філіппіни', th:'Таїланд', jp:'Японія', ru:'Росія', np:'Непал', lk:'Шрі-Ланка', uz:'Узбекистан', kz:'Казахстан', kg:'Киргизстан', mm:"М'янма", bd:'Бангладеш', pk:'Пакистан', kh:'Камбоджа', mn:'Монголія', la:'Лаос' , ca:'Канада' , tw:'Тайвань', hk:'Гонконг' , uk:'Велика Британія' , au:'Австралія'  , mx:'Мексика'  , fr:'Франція' },
+  tet: { kr:'Korea', us:'EUA', vn:'Vietname', cn:'China', in:'Índia', id:'Indonésia', ph:'Filipinas', th:'Tailándia', jp:'Japaun', ru:'Rúsia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbequistão', kz:'Cazaquistão', kg:'Quirguizistão', mm:'Mianmar', bd:'Bangladesh', pk:'Paquistão', kh:'Camboja', mn:'Mongólia', la:'Laos' , ca:'Kanadá' , tw:'Taiwan', hk:'Hong Kong' , uk:'Reinu Unidu' , au:'Australia'  , mx:'Meksiku'  , fr:'Fransa' },
 };
 
 // 언어별 "~ 거주자" 관용구 템플릿 — 위 COUNTRY_NAMES_MORE의 나라 이름을 채워서 완성
@@ -13231,6 +13739,13 @@ const COUNTRY_TAX_PROFILES = [
   { code: 'kh', flagCode: 'KH', label: '캄보디아 거주자 (실제 캄보디아 거주 기준, 추정치 ⚠️)', labelEn: 'Cambodia resident (living in Cambodia, unverified estimate ⚠️)', labelZh: '柬埔寨居民（实际住在柬埔寨，估算值⚠️）', labelVi: 'Cư dân Campuchia (sống thực tế tại Campuchia, ước tính ⚠️)', labelTh: 'ผู้พำนักในกัมพูชา (อาศัยอยู่จริงในกัมพูชา, ค่าประมาณ ⚠️)', labelRu: 'Резидент Камбоджи (проживающий в Камбодже, оценка ⚠️)', implemented: true, needsState: false, detailPage: 'cambodia-resident-us-lottery-tax.html', detailLabel: 'ខ្មែរ →', more: buildCountryMore('kh', 'estimate') },
   { code: 'mn', flagCode: 'MN', label: '몽골 거주자 (실제 몽골 거주 기준, 추정치 ⚠️)', labelEn: 'Mongolia resident (living in Mongolia, unverified estimate ⚠️)', labelZh: '蒙古居民（实际住在蒙古，估算值⚠️）', labelVi: 'Cư dân Mông Cổ (sống thực tế tại Mông Cổ, ước tính ⚠️)', labelTh: 'ผู้พำนักในมองโกเลีย (อาศัยอยู่จริงในมองโกเลีย, ค่าประมาณ ⚠️)', labelRu: 'Резидент Монголии (проживающий в Монголии, оценка ⚠️)', implemented: true, needsState: false, detailPage: 'mongolia-resident-us-lottery-tax.html', detailLabel: 'Монгол →', more: buildCountryMore('mn', 'estimate') },
   { code: 'la', flagCode: 'LA', label: '라오스 거주자 (실제 라오스 거주 기준, 추정치 ⚠️)', labelEn: 'Laos resident (living in Laos, unverified estimate ⚠️)', labelZh: '老挝居民（实际住在老挝，估算值⚠️）', labelVi: 'Cư dân Lào (sống thực tế tại Lào, ước tính ⚠️)', labelTh: 'ผู้พำนักในลาว (อาศัยอยู่จริงในลาว, ค่าประมาณ ⚠️)', labelRu: 'Резидент Лаоса (проживающий в Лаосе, оценка ⚠️)', implemented: true, needsState: false, detailPage: 'laos-resident-us-lottery-tax.html', detailLabel: 'ລາວ →', more: buildCountryMore('la', 'estimate') },
+  { code: 'ca', flagCode: 'CA', label: '캐나다 거주자 (실제 캐나다 거주 기준)', labelEn: 'Canada resident (living in Canada)', labelZh: '加拿大居民（实际住在加拿大）', labelVi: 'Cư dân Canada (sống thực tế tại Canada)', labelTh: 'ผู้พำนักในแคนาดา (อาศัยอยู่จริงในแคนาดา)', labelRu: 'Резидент Канады (проживающий в Канаде)', implemented: true, needsState: false, detailPage: 'us-lottery-tax-for-canadians.html', detailLabel: 'US lottery tax for Canadians →', more: buildCountryMore('ca') },
+  { code: 'tw', flagCode: 'TW', label: '대만 거주자 (실제 대만 거주 기준)', labelEn: 'Taiwan resident (living in Taiwan)', labelZh: '台湾居民（实际住在台湾）', labelVi: 'Cư dân Đài Loan (sống thực tế tại Đài Loan)', labelTh: 'ผู้พำนักในไต้หวัน (อาศัยอยู่จริงในไต้หวัน)', labelRu: 'Резидент Тайваня (проживающий на Тайване)', implemented: true, needsState: false, detailPage: 'taiwan-resident-us-lottery-tax.html', detailLabel: '台灣居民中美國樂透稅金 →', more: buildCountryMore('tw') },
+  { code: 'hk', flagCode: 'HK', label: '홍콩 거주자 (실제 홍콩 거주 기준)', labelEn: 'Hong Kong resident (living in Hong Kong)', labelZh: '香港居民（实际住在香港）', labelVi: 'Cư dân Hồng Kông (sống thực tế tại Hồng Kông)', labelTh: 'ผู้พำนักในฮ่องกง (อาศัยอยู่จริงในฮ่องกง)', labelRu: 'Резидент Гонконга (проживающий в Гонконге)', implemented: true, needsState: false, detailPage: 'hongkong-resident-us-lottery-tax.html', detailLabel: '香港居民中美國樂透稅金 →', more: buildCountryMore('hk') },
+  { code: 'uk', flagCode: 'GB', label: '영국 거주자 (실제 영국 거주 기준)', labelEn: 'United Kingdom resident (living in the UK)', labelZh: '英国居民（实际住在英国）', labelVi: 'Cư dân Vương quốc Anh (sống thực tế tại Vương quốc Anh)', labelTh: 'ผู้พำนักในสหราชอาณาจักร (อาศัยอยู่จริงในสหราชอาณาจักร)', labelRu: 'Резидент Великобритании (проживающий в Великобритании)', implemented: true, needsState: false, detailPage: 'us-lottery-tax-for-uk-residents.html', detailLabel: 'US lottery tax for UK residents →', more: buildCountryMore('uk') },
+  { code: 'au', flagCode: 'AU', label: '호주 거주자 (실제 호주 거주 기준)', labelEn: 'Australia resident (living in Australia)', labelZh: '澳大利亚居民（实际住在澳大利亚）', labelVi: 'Cư dân Úc (sống thực tế tại Úc)', labelTh: 'ผู้พำนักในออสเตรเลีย (อาศัยอยู่จริงในออสเตรเลีย)', labelRu: 'Резидент Австралии (проживающий в Австралии)', implemented: true, needsState: false, detailPage: 'us-lottery-tax-for-australians.html', detailLabel: 'US lottery tax for Australians →', more: buildCountryMore('au') },
+  { code: 'mx', flagCode: 'MX', label: '멕시코 거주자 (실제 멕시코 거주 기준)', labelEn: 'Mexico resident (living in Mexico)', labelZh: '墨西哥居民（实际住在墨西哥）', labelVi: 'Cư dân Mexico (sống thực tế tại Mexico)', labelTh: 'ผู้พำนักในเม็กซิโก (อาศัยอยู่จริงในเม็กซิโก)', labelRu: 'Резидент Мексики (проживающий в Мексике)', implemented: true, needsState: false, detailPage: 'mexico-resident-us-lottery-tax.html', detailLabel: 'Español →', more: buildCountryMore('mx') },
+  { code: 'fr', flagCode: 'FR', label: '프랑스 거주자 (실제 프랑스 거주 기준)', labelEn: 'France resident (living in France)', labelZh: '法国居民（实际住在法国）', labelVi: 'Cư dân Pháp (sống thực tế tại Pháp)', labelTh: 'ผู้พำนักในฝรั่งเศส (อาศัยอยู่จริงในฝรั่งเศส)', labelRu: 'Резидент Франции (проживающий во Франции)', implemented: true, needsState: false, detailPage: 'france-resident-us-lottery-tax.html', detailLabel: 'Français →', more: buildCountryMore('fr') },
 ];
 
 // 나라별 비교 카드가 텍스트/숫자로만 나열돼서 폰에서 심심하다는 피드백 — 카드를 탭하면 이
@@ -13258,6 +13773,22 @@ const COUNTRY_MAP_COORDS = {
   KH: { x: 80.1, y: 58.0 },
   MN: { x: 79.2, y: 24.7 },
   LA: { x: 79.6, y: 52.4 },
+  // 2026-08-16: CA(캐나다)는 COUNTRY_TAX_PROFILES에 22번째 국가로 추가됐지만, index.html의
+  // SVG 세계지도(country-map-land path들)에 캐나다 국경선 자체가 없어서(기존 21개국만 트레이싱
+  // 돼있음) 여기 좌표를 추가하지 않음 — 새 SVG path를 손으로 그려 넣는 건 별개의 큰 작업이라
+  // 의도적으로 범위 밖으로 둠. renderCountryMapPinsOnce()/highlightCountryOnMap()은 이 객체의
+  // 키만 순회하므로 CA가 없어도 에러 없이 그냥 핀이 안 그려질 뿐(정상 동작).
+  // 2026-08-16 후속: TW(대만)·HK(홍콩)도 23·24번째 국가로 추가됐지만 같은 이유(SVG에 대만·홍콩
+  // 랜드마스 path가 없음)로 좌표를 추가하지 않음 — CA와 동일하게 핀만 안 그려지고 나머지는
+  // 정상 동작(에러 없음, Playwright로 실제 확인).
+  // 2026-08-16 재후속: GB(영국)도 25번째 국가로 추가됐지만 같은 이유(SVG에 영국 랜드마스 path가
+  // 없음)로 좌표를 추가하지 않음 — CA/TW/HK와 동일하게 핀만 안 그려지고 나머지는 정상 동작.
+  // 2026-08-16 삼차 후속: AU(호주)도 26번째 국가로 추가됐지만 같은 이유(SVG에 호주 랜드마스
+  // path가 없음)로 좌표를 추가하지 않음 — CA/TW/HK/GB와 동일하게 핀만 안 그려지고 나머지는
+  // 정상 동작.
+  // 2026-08-16 사차 후속: MX(멕시코)·FR(프랑스)도 각각 27·28번째 국가로 추가됐지만 같은 이유
+  // (SVG에 멕시코·프랑스 랜드마스 path가 없음)로 좌표를 추가하지 않음 — 위와 동일하게 핀만
+  // 안 그려지고 나머지는 정상 동작(Playwright로 실제 확인).
 };
 
 let countryMapPinsRendered = false;
