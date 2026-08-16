@@ -4010,3 +4010,79 @@ australians.html`의 related-links에 신규 페이지 상호 링크 추가(같�
 푸시한 뒤 2단계(`a0e7f1c`, 랜딩페이지+sitemap+호주 페이지 상호링크)를 진행 — uk/au/mx/fr
 라운드와 같은 이유로 핵심 로직이 먼저 안전하게 커밋되도록 함. `script.min.js?v=20260816-10
 → -11`, `sw.js CACHE_NAME v64 → v65`로 각각 버전 갱신.
+### 2026-08-16 새 세션 — 싱가포르를 29번째 지원 국가로 추가 + SGD를 신규 실지원 통화로 추가, 영문 랜딩페이지 신설 (2단계 커밋, PR 새로 생성)
+
+**세션 시작**: `main`을 기준으로 새 브랜치(`claude/singapore-country-2026-08-16`)를 팜(다른
+두 세션이 각각 뉴질랜드 PR #239·아일랜드 PR #240을 병행 작업 중이지만 둘 다 아직 `main`에
+안 머지돼 있어 이 세션의 `main`엔 안 보임 — 독립적인 PR이라 문제 없음, 서로 건드리지 않음).
+
+싱가포르 IRAS(Inland Revenue Authority of Singapore)는 공식 FAQ 페이지(iras.gov.sg/taxes/
+individual-income-tax/basics-of-individual-income-tax/what-is-taxable-what-is-not/
+winnings-(toto-4d-))에서 도박·복권 당첨금(4D·토토·싱가포르 스윕·경마·과일머신 잭팟·카지노
+당첨금 등)은 "우발이득"(windfall)이고 소득이 아니라서 소득세 신고서에 신고할 필요조차
+없다고 명시함(2026-08-16 WebSearch로 직접 확인·재확인) — ca/hk/uk/au/fr_resident와 같은
+"국내 과세표준 자체가 없음" 구조(FTC 상계로 0이 되는 cn/in/vn과는 다름), 싱가포르 국내
+복권(싱가포르 풀스의 4D·토토)이든 미국 복권 같은 해외 복권이든 완전히 동일하게 적용됨. 유일한
+예외는 도박이 "직업적 도박사"처럼 반복적 사업으로 인정될 때뿐(IRAS FAQ에도 명시, 복권 한 장
+사서 당첨된 경우엔 해당 없음). 보강 근거로 싱가포르가 개인의 해외원천소득을(파트너십 송금
+경유 제외) 과세하지 않는 원칙도 `sg_resident` 주석에 같이 적어뒀지만, 1차 근거는 어디까지나
+위 IRAS windfall FAQ임. `TAX_MODEL.sg_resident`(rate:0)·`calcTakeHome()`의 `sg` 분기(au/fr
+분기와 동일한 FTC-상계-코드-모양-유지 구조)·`COUNTRY_TAX_PROFILES`(flagCode `SG`, detailPage
+`us-lottery-tax-for-singapore-residents.html`)·`COUNTRY_NAMES_MORE`(21개 언어)·
+`SUPPORTED_TAX_COUNTRIES`·`COUNTRY_TAX_AUTHORITY`(uk의 HMRC/au의 ATO/fr의 DGFiP와 같은
+관례로 `sg`는 "IRAS" 단독 표기)에 29번째 국가로 반영.
+
+**⚠️ 이번 라운드는 조약 환급 리서치를 안 함** — UK/일본/프랑스/아일랜드처럼 별도 Technical
+Explanation 리서치 패스를 거치지 않았으므로, 랜딩페이지 FAQ에 조약 환급 가능성을 주장하는
+문구를 넣지 않고 캐나다/호주/뉴질랜드 페이지와 같은 보수적인 "일반적으로 안 됨" 답변만 씀.
+오히려 이번엔 WebSearch로 **미국-싱가포르 간 포괄적 소득세 조약 자체가 아예 없다는 사실**을
+확인해서(항공·해운소득 관련 제한적 협정만 있음), 그 사실을 그대로 FAQ 근거로 씀 — "조약이
+있는데 복권에 적용 안 됨"(캐나다·호주 패턴)이 아니라 "애초에 조약이 없어서 원천징수를 줄일
+방법 자체가 없음"이라는, 더 단순하고 명확한 이유.
+
+**SGD는 GBP/AUD/MXN/EUR과 같은 이유로 진짜로 추가함**: 이 계산기의 환율 소스(Frankfurter/
+open.er-api)가 이미 SGD를 지원해서 새 API가 필요 없었음 — `EXCHANGE_RATE_SGD` 변수(기본값
+1.28, USD/SGD, 2026-08-16 WebSearch로 1.277~1.28대 재확인) + `CURRENCY_RATE_CONFIG`/
+`CURRENCY_DISPLAY_META`(🇸🇬, en-SG 로케일) 항목 신설, `REAL_ABROAD_CURRENCY['sg']='SGD'`(USD
+우회 불필요). **심볼은 AUD/MXN의 "그냥 '$' 재사용" 관례를 안 따르고 'S$'를 씀** — 싱가포르는
+'S$'가 국제적으로 이미 통용되는 명확한 표기라(브루나이달러 'B$'와 같은 관례), NPR/LKR/PKR가
+이미 'Rs'라는 2글자 심볼을 문제없이 지원하고 있는 선례가 있어 포맷 코드 쪽 추가 대응이 필요
+없었음. index.html의 `homeCurrencySelect`/`compareCurrencySelect`/`homeCountrySelect`/
+`homeCountryToggle`/`realAbroadSelect` 5곳 배선, `i18n-source/translations.json`의
+`input.optSingapore` 키(26개 언어) 추가 후 `node scripts/build-i18n.js`로 `i18n/*.json` 26개
+파일 재생성(수작업 편집 안 함).
+
+**랜딩페이지**: `us-lottery-tax-for-singapore-residents.html` 신설(호주 페이지를 템플릿으로
+재사용) — $1M 예시(미국 원천징수 -$300,000, 싱가포르 세금 $0, 실수령 약 $700,000, SGD 환산
+참고치 약 S$896,000(환율 1.28 기준) 한 줄 추가), IRAS windfall 원칙 설명(국내 4D/토토·해외
+복권 동일 적용, iras.gov.sg 직접 인용), 30% 비거주자 원천징수 설명(+ 미-싱가포르 포괄적
+소득세 조약 부재 사실), **당첨금을 투자했을 때의 섹션은 짧고 정직하게** — 싱가포르는 일반
+양도소득세(CGT) 자체가 없고 개인 투자소득(이자·배당·주식/부동산 처분이익) 대부분을 과세하지
+않으므로, 다른 나라 페이지들처럼 "투자소득엔 이런 세금이 붙는다"를 길게 쓰지 않고 "특별히
+새로 생기는 세금이 없다"는 사실만 짧게 서술(없는 세금을 지어내지 않음, 사용자 지시사항 준수).
+FAQ 4개(싱가포르 거주자 미국 복권 과세 여부 / 4D·토토도 비과세인지 / 당첨금을 투자하면
+어떻게 되는지 / 30% 원천징수 환급 가능 여부 — 조약 자체가 없다는 보수적 답변), JSON-LD
+세트(29개국으로 SoftwareApplication description 갱신) 전부 포함. `node scripts/
+apply-landing-ticket-style.js`로 CSS 주입 후 호주 페이지 style 블록과 Python으로 바이트
+단위 diff 비교해서 완전히 동일함(빈 스타일 블록으로 안 남음) 확인. CTA는
+`index.html?lang=en&country=sg`. `sitemap.xml`·`sitemap.html` 등재,
+`us-lottery-tax-for-australians.html`의 related-links에 싱가포르 페이지 상호 링크 추가(뉴질랜드
+페이지가 이 브랜치의 `main`엔 아직 없어서, 작업 지시에 언급된 NZ 대신 실제로 존재하는
+캐나다·호주로 related-links를 구성함).
+
+**검증**: `node --check script.js` 통과. `tests/broken_link_audit.js`(0/114),
+`tests/i18n_coverage_audit.js`(0/777), `tests/console_error_audit.js`(0/161),
+`tests/home_audit.js`(0/18) 전부 통과. Playwright(`page.route(/^https:\//)` + Node `fetch()`
+프록시 우회 트릭)로 `index.html?lang=en&amount=800&country=sg` 결과가 연방세 -30% / 최종
+$560M(=$800M×0.7)로 정확히 나오는 것 확인, `home-final-basis-mini`가 "800M USD prize ·
+Singapore resident"로 정확히 표시되는 것도 확인. **SGD 실시간 환율은 실제로 Frankfurter
+API에서 라이브 값 1.28을 fetch하는 것까지 직접 확인**(`exchangeRateIsLive===true`,
+`exchangeRateSourceName.name==='Frankfurter (중앙은행 기준환율)'`로 검증 — 정적 폴백값과
+우연히 반올림 후 값이 같아서, isLive 플래그와 소스명까지 확인해 진짜 라이브 fetch임을
+재확인) — 통화를 SGD로 전환하면 $560M×1.28=S$716.8M로 정확히 반영되는 것도 확인. 랜딩페이지
+직접 로드 시 콘솔 에러 0건 확인.
+
+**2단계 커밋**: 1단계(script.js/index.html/i18n 코드 변경, `script.min.js?v=20260816-11`/
+`sw.js CACHE_NAME v65`로 버전 갱신)를 먼저 테스트·커밋해 푸시한 뒤 2단계(랜딩페이지+sitemap+
+호주 페이지 상호링크)를 진행 — 이전 라운드들과 같은 이유로 핵심 로직이 먼저 안전하게
+커밋되도록 함. 이번 세션은 기존 PR을 이어가지 않고 새 브랜치·새 PR로 시작함(작업 지시사항).
