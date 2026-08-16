@@ -4086,3 +4086,73 @@ API에서 라이브 값 1.28을 fetch하는 것까지 직접 확인**(`exchangeR
 `sw.js CACHE_NAME v65`로 버전 갱신)를 먼저 테스트·커밋해 푸시한 뒤 2단계(랜딩페이지+sitemap+
 호주 페이지 상호링크)를 진행 — 이전 라운드들과 같은 이유로 핵심 로직이 먼저 안전하게
 커밋되도록 함. 이번 세션은 기존 PR을 이어가지 않고 새 브랜치·새 PR로 시작함(작업 지시사항).
+### 2026-08-16 이어서 — 남아프리카공화국을 29번째 지원 국가로 추가 + ZAR을 신규 실지원 통화로 추가, 영문 랜딩페이지 신설 (2단계 커밋, 별도 세션/PR)
+
+프랑스·호주와 완전히 같은 패턴("국내 과세표준 자체가 없음")의 여섯 번째 사례 — 남아공
+소득세법 제58호(Income Tax Act No. 58 of 1962) 아래 복권 당첨금은 "자본적 성격"(capital
+in nature)의 횡재(windfall)로 분류되어 애초에 "총소득"(gross income) 범주에서 제외되고,
+여기에 더해 복권 당첨금은 자본이득세(CGT)에서도 별도 면제 특례를 받음(2026-08-16 웹서치
+확인) — 소득세·CGT 어느 쪽으로도 과세되지 않는 구조적 배제. 이 원칙은 남아공 국내 복권
+(Lotto·PowerBall SA)이든 미국 복권 같은 해외 복권이든 완전히 동일하게 적용됨. 유일한 예외는
+도박을 "직업적으로" 주업으로 영위하는 경우(전업 도박사)뿐이라 복권 한 장 사서 당첨된 경우엔
+해당 없음(au/fr의 "직업적 도박사/포커 플레이어" 예외와 같은 구조, 랜딩페이지에 각주로 명시).
+`TAX_MODEL.za_resident`(rate:0, ca/hk/uk/au/fr_resident와 같은 phrasing 패턴),
+`calcTakeHome()` za 분기(FTC-상계-코드-모양-유지 구조), `COUNTRY_TAX_PROFILES`(flagCode는
+ISO 3166-1 alpha-2 기준 `ZA`, detailPage는 호주와 같은 명명 규칙을 따라
+`us-lottery-tax-for-south-africans.html`)·`COUNTRY_NAMES_MORE`(21개 언어)·
+`SUPPORTED_TAX_COUNTRIES`·`COUNTRY_TAX_AUTHORITY`(uk의 HMRC/au의 ATO/fr의 DGFiP와 같은
+이유로 `za`는 "SARS" 단독 표기)에 29번째 국가로 반영.
+
+**⚠️ 조약 관련해서 과잉 확신하지 않도록 명시적으로 처리한 부분**: 미국-남아공 조세조약은
+실제로 존재함(1997년 체결) — 싱가포르처럼 "조약 자체가 없다"고 말할 수 없는 케이스. 하지만
+이 라운드에서는 UK/일본/프랑스/아일랜드 라운드처럼 조약의 Technical Explanation 수준까지
+조사하지 않았으므로, 계산 로직·랜딩페이지 FAQ 어디에도 "환급 가능"이라고 주장하지 않고
+뉴질랜드 라운드와 같은 어법으로 "이번 라운드에서 조사되지 않았다"고 명시(조약이 없다고도,
+있어서 유리하다고도 주장하지 않는 중립적 baseline).
+
+**ZAR은 GBP/AUD/MXN/EUR과 같은 이유로 진짜로 추가함**: 이 계산기의 환율 소스
+(Frankfurter/open.er-api)가 이미 ZAR을 지원해서 새 API가 필요 없었음 — `EXCHANGE_RATE_ZAR`
+변수(기본값 16.5, USD/ZAR, 2026-08-16 WebSearch로 8월 중순 16.0~17.0대·평균 약 16.46 확인) +
+`CURRENCY_RATE_CONFIG`/`CURRENCY_DISPLAY_META`(🇿🇦, en-ZA 로케일, 심볼 'R') 항목 신설,
+`REAL_ABROAD_CURRENCY['za']='ZAR'`(USD 우회 불필요). index.html의 `homeCurrencySelect`/
+`compareCurrencySelect`/`homeCountrySelect`/`homeCountryToggle`/`realAbroadSelect` 5곳
+배선, `i18n-source/translations.json`의 `input.optSouthAfrica` 키(26개 언어) 추가 후
+`node scripts/build-i18n.js`로 `i18n/*.json` 26개 파일 재생성.
+
+**랜딩페이지**: `us-lottery-tax-for-south-africans.html` 신설(호주 페이지를 가장 가까운
+템플릿으로 재사용) — $1M 예시(미국 원천징수 -$300,000, 남아공 세금 $0, 실수령 약
+$700,000, ZAR 환산 참고치 약 R11,550,000(환율 16.5 기준)도 한 줄 추가), 소득세법 제58호의
+자본적 성격/CGT 면제 설명(국내·해외 복권 동일 적용), 30% 비거주자 원천징수 설명(조약은
+존재하지만 이번 라운드엔 미조사라는 어법으로 처리), **가족과 당첨금을 나눌 때의 증여세
+(Donations Tax) 섹션**(UK의 상속세 7년 규칙 섹션과 같은 깊이의 정보성 콘텐츠 — 20%(누적
+R3천만 초과분은 25%), 연 R150,000 개인별 면제(과거 R100,000에서 상향된 현재 수치 사용),
+납세 의무자는 증여자 본인, 배우자 간 증여는 전액 면제), 당첨금을 예금 등에 투자했을 때의
+이자소득 과세 언급(남아공은 싱가포르와 달리 이자소득도 과세 — 최근 SARS 안내 기준 65세
+미만 연 면제 한도 약 R23,800(65세 이상 R34,500), "최근 안내 기준"이라는 캐비어 포함), FAQ
+4개(남아공 거주자 미국 복권 과세 여부 / SA Lotto·PowerBall도 비과세인지 / 가족에게 나눠주면
+증여세는 어떻게 되는지 / 30% 원천징수 환급 가능 여부 — 조약은 있지만 미조사라 뉴질랜드
+라운드와 같은 baseline 어법), JSON-LD 세트(29개국으로 SoftwareApplication description 갱신)
+전부 포함. `node scripts/apply-landing-ticket-style.js`로 CSS 주입 후 호주 페이지 style
+블록과 바이트 단위로 동일한지 diff-check해서 빈 스타일 블록으로 안 남았는지 확인. CTA는
+`index.html?lang=en&country=za`. `sitemap.xml`·`sitemap.html`("거주 국가별" 리스트에
+항목만 추가, 헤더의 국가 수 문구는 이전 라운드들과 같은 이유로 이미 stale해서 이번에도 안
+건드림) 등재, `us-lottery-tax-for-australians.html`의 related-links에 상호 링크 추가.
+
+**검증**: `node --check script.js` 통과. `tests/broken_link_audit.js`(0/114, 신규 페이지
+포함)·`tests/console_error_audit.js`(0/161)·`tests/i18n_coverage_audit.js`(0/777)·
+`tests/home_audit.js`(0/18) 전부 통과. Playwright(`page.route(/^https:\//)` + Node
+`fetch()` 프록시 우회 트릭)로 `calcTakeHome(800, 'za')`가 `{afterUS:560, final:560}`로
+정확히 나오는 것과 `index.html?lang=en&amount=800&country=za` 화면에 연방세 -30% / 남아공
+추가세 "₩0 (offset by tax credit)" / 실수령 정확히 $560M(=$800M×0.7)로 표시되는 것 둘 다
+확인. **ZAR 실시간 환율은 프랑스/호주 라운드와 같은 방식으로 실제 Frankfurter API에서 라이브
+값(16.16)을 fetch하는 것까지 `exchangeRateIsLive`/`exchangeRateSourceName` 플래그로 직접
+확인**(정적 폴백값 16.5가 아님, 소스 이름이 "Frankfurter (central bank reference rate)"임을
+확인) — 통화를 ZAR로 전환하면 실수령 표시가 R9.0 billion(=$560M×16.16)으로 정확히 반영되는
+것도 확인. 랜딩페이지 직접 로드 시 콘솔 에러 0건, CTA 클릭 시 `za`로 정확히 프리셀렉트되는
+것도 확인.
+
+**2단계 커밋 + 새 PR**: `main`이 기준(다른 세션의 뉴질랜드(#239)·아일랜드(#240)·싱가포르
+(#241) PR과는 독립적으로 작업, 서로 건드리지 않음)이라 `main`에서 새 브랜치
+(`claude/south-africa-country-2026-08-16`)를 따서 1단계(script.js/index.html/i18n 코드
+변경)를 먼저 테스트·커밋한 뒤 2단계(랜딩페이지+sitemap+HANDOFF.md)를 진행, `main`으로
+PR을 새로 열고(머지는 안 함) 리뷰 대기 상태로 둠.
