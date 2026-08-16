@@ -3374,3 +3374,19 @@ SoftwareApplication/HowTo/WebPage speakable) 전부 포함. CTA는
 `us-lottery-tax-for-canadians.html`의 JSON-LD)만 22개국으로 갱신하고 나머지는 그대로 둠.
 `realAbroadSelect`(index.html "사는 나라를 골라서 바로 보기" 드롭다운)에는 원래 지시에 없었지만
 기존 20개국이 전부 들어있어서 `ca|en`을 추가함(빠지면 눈에 띄는 공백이라 판단).
+
+### 2026-08-16 이어서 — 파워볼 8/15 회차(5,8,27,29,63+13) 반영
+
+사용자가 공유한 스크린샷(usamega.com)으로 파워볼 8/15 회차 확인 — 당첨자 없어 다음 추첨(8/17)
+잭팟이 $35M(현금가치 $15.2M)로 증가. `JACKPOT_DATA.powerball`/`LATEST_DRAW.powerball` 갱신,
+`odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`·`POWERBALL_JACKPOT_ARCHIVE`(예고액 $20M, 기존
+관례대로 회차 시점 추적값 기록)에도 8/15 회차 추가 + `odds-data.js?v` 캐시버스팅
+20260815-1→20260816-1. 메가밀리언즈는 스크린샷의 8/14 회차·다음 추첨(8/18) $100M/$42.8M
+잭팟이 이미 위 값과 일치해서 변경 없음. Power Play 배율·더블플레이는 기존 관례대로 이
+아카이브 스코프 밖이라 반영 안 함.
+
+검증: `node --check script.js`/`odds-data.js` 통과, `tests/draw_archive_integrity_check.js`
+(날짜 오름차순·중복 없음, 4개 아카이브 전부 ISSUES:0), `tests/console_error_audit.js`
+(0/161), `tests/broken_link_audit.js`(0/107), `tests/home_audit.js`(0/18) 전부 통과.
+`node scripts/build-min.js`로 `script.min.js` 재생성(styles는 안 건드려서 무변화),
+`index.html`의 `script.min.js?v=` 20260816-4→20260816-5, `sw.js`의 `CACHE_NAME` v58→v59.

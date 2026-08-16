@@ -2210,7 +2210,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260815-1';
+    script.src = 'odds-data.js?v=20260816-1';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -4321,8 +4321,12 @@ function buildDrawScheduleMore(days){
 // (3,23,27,46,60+11) 확인 — WebSearch(DraftKings 기사) 교차검증, 당첨자 없어 다음 추첨(8/18)
 // 잭팟이 $100M(현금가치 $42.8M)으로 증가. 파워볼은 8/12 회차 이후 다음 추첨(8/15) 잭팟 $20M
 // (현금가치 $8.7M)으로 이미 정확히 반영돼 있어 변경 없음.
+// 2026-08-16 이어서: 사용자가 공유한 스크린샷(usamega.com)으로 파워볼 8/15 회차(5,8,27,29,63+13,
+// Power Play 2x — 배율은 이 사이트가 추적 안 하는 필드라 스코프 밖) 확인, 당첨자 없어 다음 추첨
+// (8/17) 잭팟이 $35M(현금가치 $15.2M)으로 증가. 메가밀리언즈는 스크린샷의 다음 추첨(8/18) 잭팟
+// $100M(현금가치 $42.8M)이 위 8/14 갱신값과 그대로 일치해 변경 없음.
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 20000000, cashUsd: 8700000 },
+  powerball:    { amountUsd: 35000000, cashUsd: 15200000 },
   megamillions: { amountUsd: 100000000, cashUsd: 42800000 },
 };
 
@@ -4388,8 +4392,14 @@ const GAME_NAME_MORE = {
 // 그대로 기록). 메가밀리언즈는 스크린샷의 8/11 회차·$90M/$38.7M 잭팟이 이미 위 값과
 // 정확히 일치해서 변경 없음(더블플레이 3,4,19,21,58+8은 odds-data.js 87행 주석대로
 // 이 아카이브 스코프 밖이라 반영 안 함).
+// 2026-08-16 이어서: 사용자가 공유한 스크린샷(usamega.com)으로 파워볼 8/15 회차(5,8,27,29,63 /
+// 파워볼 13, Power Play 2x·더블플레이 19,21,45,46,65+20은 기존 관례대로 스코프 밖) 확인 —
+// 당첨자 없어 다음 추첨(8/17) 잭팟이 $35M(현금가치 $15.2M)로 증가, 위 JACKPOT_DATA.powerball
+// 갱신. odds-data.js의 POWERBALL_DRAW_ARCHIVE에 8/15 회차 추가, POWERBALL_JACKPOT_ARCHIVE에도
+// 이 회차 추첨 전 예고액이었던 $20M(기존 관례대로) 그대로 기록. 메가밀리언즈는 스크린샷의
+// 8/14 회차·다음 추첨(8/18) $100M/$42.8M 잭팟이 이미 위 값과 정확히 일치해서 변경 없음.
 const LATEST_DRAW = {
-  powerball:    { date: '2026-08-12', numbers: [4, 26, 66, 67, 69], special: 9 },
+  powerball:    { date: '2026-08-15', numbers: [5, 8, 27, 29, 63], special: 13 },
   megamillions: { date: '2026-08-14', numbers: [3, 23, 27, 46, 60], special: 11 },
 };
 
