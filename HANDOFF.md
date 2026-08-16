@@ -3942,3 +3942,71 @@ Playwright로 `calcTakeHome(800,'ie') === {afterUS:560, final:560}` 확인($800M
 에러 0건, CTA 클릭 시 `country=ie`로 정확히 프리셀렉트되는 것도 확인. FAQ의 JSON-LD
 `acceptedAnswer.text` 4개와 화면 `<details><p>` 텍스트 4개를 Python으로 직접 diff해서 완전
 일치 확인(프랑스 세션과 같은 검증 방법).
+
+### 2026-08-16 이어서 — 뉴질랜드를 29번째 지원 국가로 추가 + NZD를 신규 실지원 통화로 추가, 영문 랜딩페이지 신설 (2단계 커밋, 새 PR #239)
+
+**직전 PR #238이 이미 머지돼 있어**(위 항목에서 확인) 이번 라운드는 이어 쓸 열린 PR이 없음 —
+`git fetch origin main`·`git status`로 `main`이 클린·최신임을 확인한 뒤 `main`에서 새 브랜치
+`claude/nz-country-2026-08-16`으로 분기해 작업하고, 완료 후 새 PR(#239)을 열었음(머지는 안 함,
+사용자 리뷰 대기 — 이 세션 내내 유지된 관례).
+
+뉴질랜드 IRD(Inland Revenue)는 도박·복권 당첨금(Lotto NZ, 카지노, TAB 베팅 포함)을 과세 대상
+소득으로 보지 않고, 결과가 순전히 우연(chance)에 의해 결정되고 체계적인 노력의 산물이 아니라는
+이유로 증여·상속과 같은 "우연한 이득"(windfall)으로 분류함(2026-08-16 웹서치 확인, 호주와 같은
+법 전통·논리) — 뉴질랜드 국내 복권(Lotto NZ의 Powerball·Strike)이든 미국 복권 같은 해외 복권이든
+완전히 동일하게 적용되는 구조적 배제. `ca/hk/uk/au/fr_resident`와 같은 "국내 과세표준 자체가
+없음" 0% 구조의 여섯 번째 사례로 `TAX_MODEL.nz_resident`(rate:0, `au_resident`의 주석 구조를
+가장 가깝게 따름)·`calcTakeHome()` nz 분기(같은 FTC-상계-코드-모양-유지 구조)·
+`COUNTRY_TAX_PROFILES`(flagCode `NZ`, `detailPage`는 캐나다/영국/호주와 같은 "영문 페이지" 계열
+명명 규칙을 따라 `us-lottery-tax-for-nz-residents.html`, detailLabel "US lottery tax for New
+Zealanders →" — 영어는 이미 완전 지원 UI 언어라 프랑스/멕시코 같은 번역 페르소나 페이지 아님)·
+`COUNTRY_NAMES_MORE`(21개 언어)·`SUPPORTED_TAX_COUNTRIES`·`COUNTRY_TAX_AUTHORITY`(uk의 HMRC·
+au의 ATO·fr의 DGFiP와 같은 이유로 `nz`는 "IRD" 단독 표기)에 29번째 국가로 반영.
+`COUNTRY_MAP_COORDS`는 CA/TW/HK/GB/AU/MX/FR과 같은 이유(SVG에 뉴질랜드 랜드마스 path 없음)로
+좌표 추가 안 함(핀만 안 그려지고 나머지 정상 동작).
+
+**⚠️ 이번 라운드는 미-뉴질랜드 조세조약 리서치를 하지 않음** — 영국/일본/프랑스에 적용된
+Technical Explanation 조사 라운드(정정 커밋 `3a6a17e`, 프랑스 신설 커밋)에 뉴질랜드는 포함되지
+않았고, 이번 세션에서 새로 조사하지도 않음. `nz_resident` 주석과 랜딩페이지 FAQ 모두 조약환급
+가능성을 주장하지 않고, 캐나다/호주/대만과 같은 "일반적으로 안 됨" 기본 답변을 명시적으로
+사용함(작업 지시서 자체가 이 경계를 의도적으로 그었음 — 다음에 이 나라를 다시 다룰 때 UK/일본/
+프랑스 결론을 그대로 확장하지 말고 별도 1차 사료 검증을 먼저 할 것).
+
+**NZD는 GBP/AUD/MXN/EUR과 같은 이유로 진짜로 추가함**: 계산기의 환율 소스(Frankfurter/
+open.er-api)가 이미 NZD를 지원해서 새 API가 필요 없었음 — `EXCHANGE_RATE_NZD` 변수(기본값
+1.66, 최근 NZD/USD 환율대 1.6~1.7 기준 폴백, 실시간 fetch가 덮어씀) + `CURRENCY_RATE_CONFIG`/
+`CURRENCY_DISPLAY_META`(🇳🇿 국기·`en-NZ` 로케일, 심볼은 AUD와 마찬가지로 USD와 같은 '$' — 새
+disambiguation 스킴 도입 안 함, 플래그+코드로 구분하는 기존 관례 그대로) 항목 신설,
+`REAL_ABROAD_CURRENCY['nz']='NZD'`(USD 우회 불필요). index.html의 `homeCurrencySelect`/
+`compareCurrencySelect`/`homeCountrySelect`/`homeCountryToggle`/`realAbroadSelect` 5곳 배선,
+`i18n-source/translations.json`의 `input.optNewZealand` 키(26개 언어) 추가 후
+`node scripts/build-i18n.js`로 `i18n/*.json` 26개 파일 재생성(각 2줄 diff, 기존 패턴과 동일).
+
+**랜딩페이지**: `us-lottery-tax-for-nz-residents.html` 신설(`us-lottery-tax-for-australians.
+html`을 템플릿으로 — 같은 "0% club, 영어 UI, 신규 통화" 케이스이자 가장 가까운 법 전통·논리) —
+$1M 예시(미국 원천징수 -$300,000, 뉴질랜드 세금 $0 IRD windfall 원칙, 실수령 약 $700,000, NZD
+환산 참고치 약 NZ$1,162,000(환율 1.66 기준)), IRD windfall 원칙 설명(국내 Lotto NZ·해외 복권
+동일 적용, 직업적 도박사 예외 각주), 30% 비거주자 원천징수 설명(조약환급 주장 없이 "이번엔
+리서치 안 함" 명시), RWT(거주자 원천징수세) 이자소득 섹션(정보 제공용, 핵심 계산 로직과 무관),
+FAQ 4개(과세 여부 / Lotto NZ 국내 복권도 비과세인지 / 은행 예금 시 RWT / 30% 환급 가능 여부 —
+마지막 항목은 호주 페이지의 신중한 답변을 그대로 따라 "일반적으로 안 됨"으로 답하고 조약
+리서치를 안 했다는 점을 명시), JSON-LD 세트(29개국으로 SoftwareApplication description 갱신)
+전부 포함. `node scripts/apply-landing-ticket-style.js`로 CSS 주입 후 호주 페이지 style
+블록과 diff로 완전 일치 확인(23,351자, 빈 스타일 블록으로 안 남았음). CTA는
+`index.html?lang=en&country=nz`. `sitemap.xml`·`sitemap.html` 등재, `us-lottery-tax-for-
+australians.html`의 related-links에 신규 페이지 상호 링크 추가(같은 법 전통 국가끼리 교차
+링크하는 기존 관례).
+
+**검증**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`(0/777),
+`tests/broken_link_audit.js`(0/114, 신규 페이지 포함), `tests/console_error_audit.js`
+(0/161), `tests/home_audit.js`(0/18) 전부 통과. Playwright로 `calcTakeHome(800,'nz')`가
+`{afterUS:560, final:560}`으로 정확히 $560M(=$800M×0.7)을 반환하는 것 확인. **NZD 실시간
+환율은 uk/au/mx/fr 라운드와 같은 `page.route(/^https:\//)` + Node `fetch()` 우회 트릭으로
+실제 Frankfurter/open.er-api에서 라이브 값 1.7을 fetch하는 것까지 직접 확인**(정적 폴백값
+1.66이 아님). 랜딩페이지 직접 로드 시 콘솔 에러 0건, title/CTA href 확인, CTA 클릭 시
+`homeCountrySelect` 값이 `nz`로 정확히 프리셀렉트되는 것도 확인.
+
+**2단계 커밋**: 1단계(`7d7f7f7`, script.js/index.html/i18n 코드 변경)를 먼저 테스트·커밋해
+푸시한 뒤 2단계(`a0e7f1c`, 랜딩페이지+sitemap+호주 페이지 상호링크)를 진행 — uk/au/mx/fr
+라운드와 같은 이유로 핵심 로직이 먼저 안전하게 커밋되도록 함. `script.min.js?v=20260816-10
+→ -11`, `sw.js CACHE_NAME v64 → v65`로 각각 버전 갱신.

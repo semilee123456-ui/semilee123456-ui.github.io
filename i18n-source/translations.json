@@ -22292,5 +22292,33 @@
     "es": "JACKPOT",
     "uk": "JACKPOT",
     "tet": "JACKPOT"
+  },
+  "input.optNewZealand": {
+    "en": "New Zealand basis",
+    "zh": "新西兰标准",
+    "vi": "Theo tiêu chuẩn New Zealand",
+    "th": "เกณฑ์นิวซีแลนด์",
+    "ru": "По правилам Новой Зеландии",
+    "km": "គោលការណ៍នូវែលសេឡង់",
+    "ne": "न्युजिल्यान्ड आधार",
+    "id": "Basis Selandia Baru",
+    "my": "နယူးဇီလန်စံ",
+    "si": "නවසීලන්ත පදනම",
+    "uz": "Yangi Zelandiya asosida",
+    "mn": "Шинэ Зеландын үндэслэл",
+    "kk": "Жаңа Зеландия негізі",
+    "ky": "Жаңы Зеландия негизи",
+    "ur": "نیوزی لینڈ کی بنیاد پر",
+    "bn": "নিউজিল্যান্ড ভিত্তি",
+    "lo": "ພື້ນຖານນິວຊີແລນ",
+    "ja": "ニュージーランド基準",
+    "ar": "أساس نيوزيلندا",
+    "hi": "न्यूज़ीलैंड आधार",
+    "fr": "Base néo-zélandaise",
+    "tl": "Batayan ng New Zealand",
+    "pt": "Base da Nova Zelândia",
+    "es": "Base de Nueva Zelanda",
+    "uk": "База Нової Зеландії",
+    "tet": "Base Nova Zelándia"
   }
 }
