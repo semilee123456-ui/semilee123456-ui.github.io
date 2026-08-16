@@ -3390,3 +3390,16 @@ SoftwareApplication/HowTo/WebPage speakable) 전부 포함. CTA는
 (0/161), `tests/broken_link_audit.js`(0/107), `tests/home_audit.js`(0/18) 전부 통과.
 `node scripts/build-min.js`로 `script.min.js` 재생성(styles는 안 건드려서 무변화),
 `index.html`의 `script.min.js?v=` 20260816-4→20260816-5, `sw.js`의 `CACHE_NAME` v58→v59.
+
+### 2026-08-16 이어서 — 일본 SEO 제안 검토: 대부분 이미 구현됨, 한 문단만 추가
+
+사용자가 일본 유입 확대용 4단계 제안(미국 복권 세금 일본어 페이지/타카라쿠지 비과세+증여세/
+hreflang·야후재팬/야후 지혜부대) 제시 → 대조 결과 1번(30% 원천징수+일시소득+외국납부세액공제)은
+`japan-resident-us-lottery-tax.html`에 이미 상세히 있음, 3번(야후재팬은 구글 검색엔진 기반이라
+별도 SEO 불필요, hreflang은 번역 버전 없는 단독 페이지라 다른 신규 페이지들과 같은 이유로
+미부착 유지)·4번(지혜부대는 코드 작업 아닌 외부 계정 활동, Reddit·Quora와 동일 분류)은 실행할
+코드 작업 없음. 2번(타카라쿠지 비과세+증여세 간이계산기) 중 "간이계산기"는 일본 증여세 구간
+데이터·계산 로직이 필요한 새 기능이라 이번 라운드에서 보류(사용자에게 확인), "비과세+증여세"
+사실 한 문단만 추가— 당せん금부증표법(当せん金付証票法) 근거는 script.js의 기존
+`jp_resident` 주석(국세청 タックスアンサー No.1490과 별개로 이미 확인돼있던 근거)을 그대로
+재사용, 새 리서치 없이 반영. `tests/broken_link_audit.js`(0/107) 통과.
