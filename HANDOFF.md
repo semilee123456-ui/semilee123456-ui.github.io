@@ -3506,3 +3506,61 @@ tw/hk 라운드와 같은 이유로 이미 stale해서 이번에도 안 건드�
 갱신하는 게 이 저장소의 실제 관례가 아닌 것으로 보임 — `index.html` 자체 주석도 비슷한
 누적 stale 사례를 인정하고 있음, 위 캐나다 항목 참고). 다음에 국가 수 문구를 한 번에 정리하는
 별도 라운드가 있으면 좋을 듯.
+
+### 2026-08-16 이어서 — 호주를 26번째 지원 국가로 추가 + AUD를 신규 실지원 통화로 추가, 영문 랜딩페이지 신설 (2단계 커밋)
+
+영국과 완전히 같은 패턴("국내 과세표준 자체가 없음")의 네 번째 사례 — ATO(Australian
+Taxation Office)는 도박·복권 당첨금을 과세 대상 소득(assessable income)으로 보지 않고
+증여·상속과 같은 "우연한 이득"(windfall)으로 분류하며, 이 원칙은 호주 국내 복권(Powerball
+AU·Oz Lotto)이든 미국 복권 같은 해외 복권이든 완전히 동일하게 적용됨(해외소득 면제가 아니라
+과세 대상 자체가 아니라는 뜻). 유일한 예외는 도박이 "직업적 도박사"처럼 반복적 사업으로
+인정될 때뿐이라 복권 한 장 사서 당첨된 경우엔 해당 없음(랜딩페이지에 각주로 명시). `TAX_MODEL.
+au_resident`(rate:0, uk_resident/ca_resident/hk_resident와 같은 phrasing 패턴), `calcTakeHome()`
+au 분기(uk 분기와 동일한 FTC-상계-코드-모양-유지 구조), `COUNTRY_TAX_PROFILES`(flagCode는
+ISO 3166-1 alpha-2 기준 `AU` — GB처럼 내부 코드와 어긋나는 문제 없음)·`COUNTRY_NAMES_MORE`
+(21개 언어)·`SUPPORTED_TAX_COUNTRIES`·`COUNTRY_TAX_AUTHORITY`(uk가 HMRC 단독 표기였던 것과
+같은 이유로 `au`는 "ATO" 단독 표기)에 26번째 국가로 반영.
+
+**AUD는 GBP와 같은 이유로 진짜로 추가함**: 이 계산기의 환율 소스(Frankfurter/open.er-api)가
+이미 AUD를 지원해서 새 API가 필요 없었음 — `EXCHANGE_RATE_AUD` 변수(기본값 1.535, USD/AUD,
+2026-08-16 기준 대략적인 최근 환율) + `CURRENCY_RATE_CONFIG`/`CURRENCY_DISPLAY_META`(🇦🇺,
+en-AU 로케일) 항목 신설, `REAL_ABROAD_CURRENCY['au']='AUD'`(USD 우회 불필요). **AUD 심볼이
+USD와 같은 '$'인 문제**는 새 disambiguation 스킴을 만들지 않고, NPR/LKR/PKR가 전부 'Rs'를
+공유하는 이 코드베이스의 기존 관례를 그대로 따름 — 통화 선택창의 플래그+코드(🇦🇺 AUD)로
+구분되고 실제 혼동 사례 없음. index.html의 `homeCurrencySelect`/`compareCurrencySelect`/
+`homeCountrySelect`/`homeCountryToggle`/`realAbroadSelect` 5곳 배선, `i18n-source/
+translations.json`의 `input.optAustralia` 키(26개 언어) 추가 후 `node scripts/build-i18n.js`로
+`i18n/*.json` 26개 파일 재생성.
+
+**랜딩페이지**: `us-lottery-tax-for-australians.html` 신설(영국 페이지를 가장 가까운 템플릿으로
+재사용, UK 커밋 메시지가 권한 대로) — $1M 예시(미국 원천징수 -$300,000, 호주 세금 $0, 실수령
+약 $700,000, AUD 환산 참고치 약 A$1,074,500(환율 1.535 기준)도 한 줄 추가), ATO windfall-gain
+원칙 설명(국내·해외 복권 동일 적용), 30% 비거주자 원천징수 설명, **당첨금을 투자했을 때의
+과세 섹션**(UK의 상속세 7년 규칙 섹션과 같은 깊이의 정보성 콘텐츠 — 당첨금 자체는 비과세지만
+그걸로 번 이자·배당은 일반 소득세율로 과세, 그걸로 산 자산을 나중에 처분하면 일반 CGT 규정
+적용(12개월 이상 보유 시 50% CGT 할인 포함) — 복권과 무관한 일반 ATO 원칙임을 명시), FAQ
+4개(호주 거주자 미국 복권 과세 여부 / 호주 국내 복권(Powerball AU·Oz Lotto)도 비과세인지 /
+당첨금을 투자하면 어떻게 되는지(이자·배당·CGT) / 30% 원천징수 환급 가능 여부 — 미-호주
+조세조약의 "기타소득" 조항이 복권에 별도 낮은 세율을 안 두는 것도 다른 나라와 동일한 기준선임을
+명시), JSON-LD 세트(26개국으로 SoftwareApplication description 갱신) 전부 포함. `node
+scripts/apply-landing-ticket-style.js`로 CSS 주입 후 영국 페이지 style 블록과 바이트 단위로
+동일한지 diff-check해서 빈 스타일 블록으로 안 남았는지 확인. CTA는 `index.html?lang=en&
+country=au`. `sitemap.xml`·`sitemap.html`("거주 국가별" 리스트에 항목만 추가, 헤더/메타의 국가
+수 문구는 uk 라운드와 같은 이유로 이미 stale해서 이번에도 안 건드림) 등재,
+`us-lottery-tax-for-uk-residents.html`과 `us-lottery-tax-for-canadians.html` 양쪽의
+related-links에 상호 링크 추가(UK 페이지에도 호주 링크를 넣어 UK↔CA↔AU 세 페이지가 서로
+연결되게 함).
+
+**검증**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`(0/774),
+`tests/broken_link_audit.js`(0/111, 신규 페이지 포함), `tests/console_error_audit.js`(0/161),
+`tests/home_audit.js`(0/18) 전부 통과. Playwright로 `index.html?lang=en&amount=800&country=au`
+결과가 연방세 -30% / 호주 추가세 "₩0 (offset by tax credit)" / 실수령 정확히 $560M(=$800M×0.7)로
+나오는 것 확인. **AUD 실시간 환율은 uk 라운드와 같은 `page.route(/^https:\//)` + Node
+`fetch()` 우회 트릭으로 실제 Frankfurter API에서 라이브 값 1.41을 fetch하는 것까지 직접
+확인**(정적 폴백값 1.535가 아님) — 통화를 AUD로 전환하면 $560M×1.41=$789.6M로 정확히 반영되는
+것도 확인. 랜딩페이지 직접 로드 시 콘솔 에러 0건, `<style>` 블록이 영국 페이지와 바이트 단위
+동일(빈 스타일 아님) 확인, CTA 클릭 시 `au`로 정확히 프리셀렉트되는 것도 확인.
+
+**2단계 커밋**: 1단계(script.js/index.html/i18n 코드 변경, 커밋 `743eb87`)를 먼저 테스트·커밋해
+푸시한 뒤 2단계(랜딩페이지+sitemap)를 진행 — uk 라운드와 같은 이유로 핵심 로직이 먼저 안전하게
+커밋되도록 함.
