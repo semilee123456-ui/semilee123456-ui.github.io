@@ -3635,3 +3635,66 @@ translations.json`의 `input.optMexico` 키(26개 언어) 추가 후 `node scrip
 **2단계 커밋**: 1단계(script.js/index.html/i18n 코드 변경)를 먼저 테스트·커밋해 푸시한 뒤
 2단계(랜딩페이지+sitemap+china 페이지 상호링크)를 진행 — 지금까지의 라운드와 같은 이유로 핵심
 로직이 먼저 안전하게 커밋되도록 함.
+
+### 2026-08-16 이어서 — ⚠️ 일본 미-일 조세조약 결론 정정 + 영국에 같은 사실 추가 (콘텐츠 전용, 계산 로직 무변경, PR #238 브랜치, 아직 미푸시)
+
+**정정 대상**: 2026-07-23 AI 교차검증 결과를 근거로 `TAX_MODEL.jp_resident`/`calcTakeHome()`의
+`jp` 분기 주석에 "미-일 조세조약의 '기타소득'(제21조) 조항이 복권 소득을 면제 대상으로 다루지
+않는다"고 적어뒀던 게 **틀린 결론**으로 확인됨. 이번 세션(별도 리서치 패스)이 조약 원문 +
+미 재무부(Treasury)가 공식 발간한 Technical Explanation을 직접 대조(WebFetch로 PDF 다운로드 →
+`pdftotext -layout` → grep, 텍스트가 압축 스트림이라 WebFetch 자체 파싱은 실패해서 이 방법이
+필요했음)한 결과, **미-일(제21조)·미-영(제22조) 조세조약의 "기타소득" 조항 모두 미 재무부
+Technical Explanation이 "gambling"(도박)을 이 조항이 다루는 소득의 명시적 예시로 들고 있음**을
+1차 사료로 직접 확인:
+- 일본: irs.gov/pub/irs-trty/japante04.pdf — "Examples of items of income covered by
+  Article 21 include income from gambling, ..."
+- 영국: home.treasury.gov/system/files/131/Treaty-UK-Protocol-TE-7-22-2002.pdf —
+  "Examples of items of income covered by Article 22 include income from gambling, ..."
+(사용자가 사전에 전달한 별도 리서치 패스에서는 프랑스·독일·네덜란드·아일랜드까지 총 6개국 조약을
+확인했다고 하나, 이번 세션은 일본·영국 2개국만 실제로 재검증함 — 나머지 4개국은 이번 작업 범위 밖.)
+
+**의미**: 이 조항은 "다루지 않는 소득에 대한 과세권을 거주지국에 전속"시키는 OECD 모델식
+조항이라, 일본/영국 거주자가 미국측 30% 원천징수분(IRC §871(a), 지급 시점에 그대로 걸림 —
+이 계산기의 대전제, 변경 없음)에 대해 **사후에 Form 1040-NR을 제출해 환급을 청구할 근거가
+있을 수 있다**는 뜻. 다만 (1) 자동 환급이 아니고 실제 신고 절차가 필요, (2) 주 복권위원회가
+지급 시점에 조약 면제를 실시간 심사해준다는 근거는 못 찾음(카지노가 상습 외국인 고객에게 해주는
+것과는 다름), (3) 복권 당첨금 특유의 환급 사례가 실제로 확립돼 있다는 증거는 없음(카지노 환급
+관행만큼 전례가 쌓여있진 않음) — "받을 수 있다고 확정"이 아니라 "받을 근거가 있다"는 톤으로
+전 페이지에 일관되게 씀.
+
+**계산 로직은 전혀 안 바뀜(사용자가 사전에 명시적으로 지시한 제약)**: `calcTakeHome()`의
+`wonAmount`/`usWithholdingWon`/`jpCalculatedTaxWon`/`ftcCreditWon`/`jpAdditionalTaxWon`/
+`afterUS`/`final`, `uk` 분기의 `ukCalculatedTaxWon`(=0)/`ftcCreditWon`/`ukAdditionalTaxWon`,
+`TAX_MODEL.jp_resident.half_inclusion_top_rate`(0.279725)·`TAX_MODEL.uk_resident.rate`(0)
+전부 한 글자도 안 건드림 — `git diff script.js`가 주석 줄만 보여줌. **`us_treaty_exemption_applies`
+필드도 조사함**(이름이 딱 이 질문 같아서 사전에 로직에 실제로 쓰이는지 확인 필요했음) — grep 결과
+`TAX_MODEL.jp_resident` 정의부 한 곳에서만 나오고 `calcTakeHome()`을 포함해 그 어디에서도 안
+읽힘, 즉 **순수 문서화 목적 필드라 로직에 영향 없음** 확인. 그래서 값(`false`)은 그대로 두고,
+"조약상 면제 조항 실재 여부"(→ 정정: 실재함)와 "이 계산기 숫자가 달라지는가"(→ 아니다, 원천징수는
+여전히 자동 적용 안 됨)를 구분해서 이 필드가 후자를 뜻한다는 설명으로 주석만 확장함.
+
+**바뀐 파일**:
+- `script.js`: `TAX_MODEL.jp_resident`/`TAX_MODEL.uk_resident`/`calcTakeHome()`의 `jp` 분기
+  주석만 확장(정정 날짜·근거·인용문 명시). 수치·연산 변경 0건.
+- `japan-resident-us-lottery-tax.html`: "일본 국내 복권" 섹션 뒤에 `.note-box`(대만/멕시코
+  페이지의 정직성 캐비어트 박스와 같은 패턴) 1개 신규 추가(30% 환급 가능성 설명, 위 두 인용
+  출처 명시). FAQ에 "米国から源泉徴収された30%は取り戻せますか？" 신규 1개 추가(기존
+  "いつ、どうやって申告するの？" FAQ는 FTC로 이중과세 상계하는 별개 질문이라 안 건드리고 새로
+  추가) — 보이는 `<details>`와 `FAQPage` JSON-LD 양쪽 다 반영. 최종 수정일 2026-08-03→08-16.
+- `us-lottery-tax-for-uk-residents.html`: 기존에 이미 있던 "The 30% US withholding — and why
+  you (probably) can't get it back" 섹션 제목을 "and whether you can get any of it back"으로
+  바꾸고 본문에 `.note-box` 추가. **기존 FAQ "Can I get the US 30% withholding back?"의 답이
+  이전엔 "Generally, no... not a deposit you can reclaim"으로 이번에 정정된 사실과 정면으로
+  어긋나서(캐나다는 이 답이 여전히 맞음, 영국만 다름) — 중복 추가가 아니라 기존 답을 UPDATE함**,
+  `<details>`와 `FAQPage` JSON-LD 양쪽 다. (기존 최종 수정일이 이미 2026-08-16이라 날짜는
+  안 건드림.)
+
+**검증**: `node --check script.js` 통과. `tests/broken_link_audit.js`(0/112),
+`tests/console_error_audit.js`(0/161), `tests/home_audit.js`(0/18), `tests/faq_audit.js`
+(0/18, FAQPage JSON-LD와 보이는 `<details>` 텍스트 일치 여부까지 체크하는 감사라 이번 FAQ
+수정 검증에 특히 유효) 전부 통과.
+
+**아직 안 한 것**: 사용자가 "이건 이미 공개된 사실관계 정정이라 푸시 전에 직접 검토하겠다"고
+명시해서 **커밋만 하고 push는 안 함** — 다음 세션(또는 사용자 본인)이 diff 검토 후 push할 것.
+프랑스·독일·네덜란드·아일랜드 4개국은 이번 작업 범위 밖(사용자 리서치 패스에서는 확인됐다고
+하나 이 세션에서 코드/페이지에 반영 안 함 — 필요하면 후속 세션에서 같은 패턴으로 처리).
