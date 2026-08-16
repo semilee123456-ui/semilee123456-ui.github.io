@@ -3294,3 +3294,83 @@ California/New York 링크 추가.
 0건, CTA 클릭 후 계산기 `homeStateSelect` 값이 기대한 주 코드와 정확히 일치하는지 확인 — 전부
 통과. `script.js`/`styles.css`는 안 건드려서 `build-min.js` 재빌드·`index.html`/`sw.js` 캐시
 버전은 그대로 둠.
+
+### 2026-08-16 이어서 — 캐나다를 22번째 지원 국가로 추가 (핵심 로직만, 사용자 요청: "core only")
+
+배경: 사용자가 이번 세션에서 세금 사실관계를 미리 조사해옴(WebSearch로 검증) — 미국-캐나다
+조세조약(제XXII조 3항)의 도박손실 공제 조항이 존재하지만, 복권(lottery)은 대상이 아니고
+블랙잭·바카라·크랩스·룰렛·빅식스 휠 등 특정 카지노 게임에만 적용됨(TaxTips.ca·RMS 환급
+가이드·greenbacktaxservices.com 교차 확인). 그래서 캐나다 거주자의 미국 복권 당첨금은 30%
+원천징수가 환급 경로 없이 사실상 최종세로 확정됨. 반대로 CRA(캐나다 국세청)는 복권·도박
+당첨금을 "우발이득"(windfall gain)으로 봐서 소득세법 과세 대상에서 아예 제외 — 중국·인도처럼
+계산된 세액을 FTC로 상계해서 0이 되는 게 아니라 애초에 캐나다 과세표준 자체가 없는 구조적으로
+다른 이유. 순효과: 연방 30% 원천징수, 캐나다 추가세 $0, 주(state) 수준 모델링 없음(비거주
+외국인 21개국 전부와 동일한 단순화 유지).
+
+`script.js` 변경: `TAX_MODEL.ca_resident`(`rate: 0`, CRA 비과세 근거 + 조약의 복권 제외 뉘앙스
+주석, `kh_resident`처럼 `unverified_rate`가 아니라 근거가 명확해서 `rate`로 명명) 신설.
+`calcTakeHome()`에 `ca` 분기 추가 — `cn`/`in`/`vn`과 같은 FTC-상계 코드 모양을 그대로 유지하되
+(일관성 우선, 마이크로 최적화 안 함) 계산된 캐나다 세액이 항상 0이라 상계 결과도 항상 0. label2/
+val2는 새 17개 언어 문구를 만들지 않고 기존 `buildAdditionalTaxMore('ca')`/`ZERO_OFFSET_MORE`
+제네릭 패턴 재사용(정밀한 이유는 랜딩페이지에 편집권이 있으니 거기서 설명). `COUNTRY_TAX_PROFILES`에
+`ca`(flagCode CA→🇨🇦 자동 변환, `detailPage: 'us-lottery-tax-for-canadians.html'`) 추가.
+`COUNTRY_NAMES_MORE` 21개 언어 전부에 `ca:` 키 추가(ar 코드부터 tet까지, 값은 이번 세션에
+미리 조사된 값 그대로). `SUPPORTED_TAX_COUNTRIES`에 `'ca'` 추가해 `index.html?country=ca` 딥링크
+활성화.
+
+⚠️ 사용자 지시서에 없던 추가 수정(코드 흐름을 직접 추적해서 발견 — 없으면 `?country=ca`가
+조용히 한국 기준으로 계산되는 버그였음): `index.html`의 `#homeCountrySelect`(네이티브 select,
+`updateHomeCalc()`가 여기서 국가값을 직접 읽음)와 `#homeCountryToggle`의 "더보기" 버튼 그리드에
+`ca`/`CA` 옵션·버튼이 없으면 `setHomeCountry('ca')`가 `select.value = 'ca'`를 시도해도 매칭되는
+`<option>`이 없어 조용히 무시되고 실제로는 이전 국가(보통 kr) 기준으로 계산됨 — 두 곳 다 `ca`
+항목 추가. 같은 이유로 `COUNTRY_TAX_AUTHORITY`(신뢰 문구 "OO 공식 자료 기반"용, `[country]` 조회에
+`ca` 없으면 `.kr` 폴백 — 캐나다 시나리오에 "한국 국세청 자료 기반"이라고 잘못 표시될 뻔함, `us`와
+동일하게 언어 불문 "IRS" 고정 표기로 추가)와 `REAL_ABROAD_CURRENCY`("다른 나라에 살아요" 퀵픽
+드롭다운용, CAD는 이 계산기가 아예 지원 안 하는 통화라 자연스러운 값인 USD로 매핑) 두 맵에도
+`ca` 항목 추가. `input.optCanada`(더보기 버튼 라벨) i18n 키를 `i18n-source/translations.json`에
+26개 언어 전부 채워 넣고(`optJapan`/`optKorea` 등 기존 항목의 문법 패턴을 그대로 따라감)
+`build-i18n.js` 재실행 — 처음엔 en만 넣고 나머지는 빌드 스크립트의 "번역 없으면 영어로 폴백"
+메커니즘에 맡기려 했으나, `tests/i18n_coverage_audit.js`가 "partial coverage"로 잡아내서 26개
+언어 전부 채우는 쪽으로 마무리함(테스트가 실제로 유용했던 사례). `COUNTRY_MAP_COORDS`(지도 핀)에는
+의도적으로 캐나다를 안 넣음 — index.html의 SVG 세계지도에 캐나다 국경선 자체가 없어서(21개국만
+트레이싱돼있음), 새 SVG path를 손으로 그리는 건 이번 세션 범위 밖의 별도 작업. `highlightCountryOnMap()`/
+`renderCountryMapPinsOnce()`는 `Object.keys(COUNTRY_MAP_COORDS)`만 순회해서 캐나다가 없어도
+에러 없이 그냥 핀이 안 그려질 뿐(코드 추적으로 확인, 정상 동작).
+
+`FLEX_REF`(플렉스 탭 아파트/차/커피 비교, 캐나다 진입에 `FLEX_REF.kr`로 폴백)와 `FAQ_PANEL_DESC`/
+`FAQ_TG2`(FAQ 탭 요약 카드, `sharedCountry` 없으면 `.kr`로 폴백)는 캐나다뿐 아니라 이미 여러
+기존 국가도 이 폴백을 타는 사전부터 있던 단순화라 그대로 둠(캐나다 전용 버그 아님).
+
+새 페이지 `us-lottery-tax-for-canadians.html`: `california-lottery-tax.html`을 원본으로
+`<style>` 블록을 diff로 바이트 단위 일치 확인 후 콘텐츠만 교체. $1M 예시(30% 연방세 →
+$300,000 / 캐나다 세금 $0 / 실수령 약 $700,000), FAQ 4개(캐나다인 미국 복권 과세 여부 / 30%
+환급 가능 여부 — 왜 안 되는지 조약 조항 인용 / 로또맥스·6/49 국내 복권도 비과세인지 / 어느
+주에서 샀는지가 중요한지 — NY 주별 페이지의 NYC 캐비어트와 같은 톤으로 "이 계산기는 주세를
+모델링 안 함" 정직하게 명시), JSON-LD 세트(Breadcrumb/FAQPage/Organization/WebSite/
+SoftwareApplication/HowTo/WebPage speakable) 전부 포함. CTA는
+`index.html?lang=en&country=ca`. `sitemap.xml`·`sitemap.html`("거주 국가별" 섹션, 21→22개국
+헤더 갱신) 등재, `biggest-lottery-jackpots-after-tax.html`의 related-links에 상호 링크 추가.
+
+일부러 뺀 것(사용자가 명시적으로 "core only"라고 지정): 프랑스어 번역, 온타리오/BC/앨버타
+같은 주(province)별 페이지, 로또맥스/6·49 자체 국내 복권 계산기. 전부 별도 라운드로 미룸.
+
+검증: `node --check script.js` 통과. `node scripts/build-min.js`로 `script.min.js`/
+`styles.min.css` 재생성(styles는 안 건드려서 내용 무변화). `index.html`의 `script.min.js?v=`
+20260816-3→20260816-4, `sw.js`의 `CACHE_NAME` v57→v58. 로컬 서버 + Playwright로
+`index.html?lang=en&amount=800&country=ca`(amount=1은 슬라이더 최소값 10에 clamp되는 걸
+확인해서 800으로 바꿔 검증) 결과가 연방세 -30% / 캐나다 추가세 "₩0 (offset by tax credit)" /
+실수령 약 $560M(=$800M×0.7)로 정확히 나오는 것 확인, 캐나다 토글 버튼 active 클래스·
+`homeCountrySelect` 값도 확인. `us-lottery-tax-for-canadians.html` 직접 로드 시 콘솔 에러
+0건(광고/폰트 CDN 차단으로 인한 네트워크 에러 제외), CTA 클릭 후 계산기가 정확히 `ca`로
+프리셀렉트되는 것 확인. `tests/broken_link_audit.js`(0/107) · `tests/i18n_coverage_audit.js`
+(0/770, 위 optCanada 이슈 발견 후 수정해서 통과) · `tests/link_navigation_audit.js`(0/8) ·
+`tests/console_error_audit.js`(0/161 언어×화면 조합) · `tests/lang_leak_audit.js`(0/104) ·
+`tests/fact_consistency_audit.js`(0/112) · `tests/i18n_attr_lint.js`(0) 전부 통과.
+
+참고 — 이번 세션에서 안 건드린 것: 사이트 전역 "21개국" 문구(og:description·메타·JSON-LD 등
+~30개 파일에 흩어져 있음, `index.html` 자체 주석이 이미 "4개국→21개국으로 늘어난 뒤에도
+안 갱신된" 사례를 인정하고 있어서 새 나라 추가 때마다 매번 전부 갱신하지는 않는 게 이
+저장소의 기존 관례로 보임) — 이번엔 새로 건드린 파일(`sitemap.html`의 헤더·메타 3곳,
+`us-lottery-tax-for-canadians.html`의 JSON-LD)만 22개국으로 갱신하고 나머지는 그대로 둠.
+`realAbroadSelect`(index.html "사는 나라를 골라서 바로 보기" 드롭다운)에는 원래 지시에 없었지만
+기존 20개국이 전부 들어있어서 `ca|en`을 추가함(빠지면 눈에 띄는 공백이라 판단).
