@@ -3721,3 +3721,85 @@ Technical Explanation이 "gambling"(도박)을 이 조항이 다루는 소득의
 추가(전체 번역, 큰 작업)로 제대로 할지, (b) 계산기 UI는 영어로 두고 랜딩페이지만 독일어/
 네덜란드어로 만들지(단, 이 경우 CTA로 계산기에 들어가면 독일어 화면이 아니라는 점을 사용자
 경험상 감안해야 함) 사용자에게 먼저 확인할 것.
+
+### 2026-08-16 이어서 — 프랑스를 28번째 지원 국가로 추가 + EUR을 신규 실지원 통화로 추가, 프랑스어 랜딩페이지 신설 (2단계 커밋)
+
+위 항목에서 확인한 대로 프랑스어(`fr`)는 이미 이 사이트의 26개 UI 언어에 완전 지원 중이라
+(계산기 전체 번역 불필요, "나라 하나 추가"로 끝나는 통상 규모) 캐나다/홍콩/영국/호주와 같은
+"국내 과세표준 자체가 없음" 0% 구조의 다섯 번째 사례로 진행. 프랑스 조세일반법(CGI) 제92조
+1항은 "비상업적 이익"(bénéfices non commerciaux)을 넓게 정의하지만, 판례·DGFiP(프랑스
+재정총국) 안내가 일관되게 확인하는 바는 플레이어가 결과를 좌우할 수 없는 순수 우연(hasard)
+게임 — 복권·추첨 등 — 은 "영리 목적의 상시적 직업 또는 이익원"에 해당하지 않아 과세 대상
+소득 범주 자체에 들지 않는다는 것(유일한 예외는 "직업적 포커 플레이어"). 이 원칙은 프랑스
+국내 복권(FDJ의 Loto·EuroMillions)이든 미국 복권 같은 해외 복권이든 완전히 동일하게 적용됨
+(2026-08-16 웹서치 — euromillions-loterie.fr가 파워볼을 직접 언급하며 프랑스 거주자가 해외
+복권 당첨금에도 소득세를 안 낸다고 확인, FDJ 복권과 같은 근거를 든 1차 사료). `TAX_MODEL.
+fr_resident`(rate:0, ca/hk/uk/au_resident와 같은 phrasing 패턴), `calcTakeHome()` fr 분기
+(같은 FTC-상계-코드-모양-유지 구조), `COUNTRY_TAX_PROFILES`(flagCode `FR`, `detailPage`는
+멕시코와 같은 "번역 언어 페르소나 페이지" 계열 명명 규칙을 따라 `france-resident-us-lottery-
+tax.html`, detailLabel "Français →")·`COUNTRY_NAMES_MORE`(21개 언어 — `fr`이 언어 키로도
+이미 쓰이고 있어서 혼동하기 쉬웠지만, 이번엔 국가 코드 `fr`을 21개 outer 언어 객체 각각의
+inner 키로 추가하는 것이라 정확히 구분해서 처리, outer `fr`(프랑스어) 객체 안에도 inner
+`fr:'France'`를 정상적으로 추가함)·`SUPPORTED_TAX_COUNTRIES`·`COUNTRY_TAX_AUTHORITY`
+(uk가 HMRC, au가 ATO 단독 표기였던 것과 같은 이유로 `fr`은 "DGFiP" 단독 표기)에 28번째
+국가로 반영. `COUNTRY_MAP_COORDS`는 CA/TW/HK/GB/AU/MX와 같은 이유(SVG에 프랑스 랜드마스
+path 없음)로 좌표 추가 안 함(핀만 안 그려지고 나머지 정상 동작, Playwright로 확인) — 이
+기회에 멕시코 라운드가 빠뜨렸던 코멘트도 같이 보충함.
+
+**⚠️ 프랑스는 처음부터 조세조약 환급 가능성 정보를 포함시킴** (일본/영국은 나중에 정정 커밋
+`3a6a17e`로 추가했던 것과 달리, 이번엔 그 사실이 이미 알려진 상태로 시작): 미-프랑스 조세조약
+제22조("기타소득")의 미 재무부 공식 Technical Explanation(home.treasury.gov/.../Treaty-
+France-Pr2-TE-1-13-2009.pdf)이 OECD식 "거주지국에만 과세" 문언을 쓰면서 "gambling"(도박)을
+이 조항이 다루는 소득의 명시적 예시로 들고 있음 — 프랑스 거주자가 미국측 30% 원천징수분에
+대해 사후 Form 1040-NR로 환급을 청구할 수 있는 근거가 될 수 있다는 뜻(자동 환급 아님, 계산기
+숫자엔 영향 없음). 랜딩페이지의 note-box+FAQ에 UK 페이지(`3a6a17e`)의 톤을 그대로 옮기지
+않고 프랑스어로 자연스럽게 새로 작성해서 반영.
+
+**EUR은 GBP/AUD/MXN과 같은 이유로 진짜로 추가함**: 이 계산기의 환율 소스(Frankfurter/
+open.er-api)가 이미 EUR을 지원해서 새 API가 필요 없었음 — `EXCHANGE_RATE_EUR` 변수(기본값
+0.92, USD/EUR 폴백, 실시간 fetch가 덮어씀) + `CURRENCY_RATE_CONFIG`/`CURRENCY_DISPLAY_META`
+(🇫🇷 국기·`fr-FR` 로케일 — 첫 유로존 지원국인 프랑스를 대표로 사용) 항목 신설,
+`REAL_ABROAD_CURRENCY['fr']='EUR'`(USD 우회 불필요). **EUR을 프랑스 전용 이름으로 짓지 않고
+그냥 'EUR'로 남겨둠** — 나중에 독일이 추가되면 `REAL_ABROAD_CURRENCY['de']='EUR'`처럼 같은
+`CURRENCY_DISPLAY_META.EUR` 항목을 그대로 재사용 가능(신규 통화 중복 정의 불필요, 위 독일
+보류 결정과 자연스럽게 이어지는 설계). index.html의 `homeCurrencySelect`/
+`compareCurrencySelect`/`homeCountrySelect`/`homeCountryToggle`/`realAbroadSelect` 5곳
+배선, `i18n-source/translations.json`의 `input.optFrance` 키(26개 언어) 추가 후 각
+`i18n/*.json` 26개 파일에 직접 반영(압축 포맷 유지, 기존 파일 포맷과 바이트 단위로 동일한
+스타일 확인).
+
+**랜딩페이지**: `france-resident-us-lottery-tax.html` 신설(멕시코 페이지를 head-tag/JSON-LD
+형태의 템플릿으로, 영국 페이지를 0%-club 서사+조약환급 note-box/FAQ 구조의 템플릿으로 각각
+참고) — $1M 예시(미국 원천징수 -$300,000, 프랑스 세금 0€ CGI 제92조, 실수령 약 $700,000,
+EUR 환산 참고치 약 605,000€(환율 약 0.86 기준)), CGI 제92조 비과세 구조 설명(국내·해외 복권
+동일 적용, 직업적 포커 예외 각주), 30% 비거주자 원천징수 설명 + 조약환급 note-box, **PFU
+(prélèvement forfaitaire unique) 31.4% 섹션**(2026년 세율 인상 — 12.8% 소득세+18.6% 사회
+보장분담금, 법률 n° 2025-1403 LFSS 2026의 CSG 인상 반영 — 예전에 흔히 인용되던 30%가 아닌
+정정된 수치, 당첨금 자체가 아니라 그걸 투자해서 나중에 생기는 이자·배당·양도소득에만 적용되는
+일반 저축과세 규정임을 명시 — UK 상속세 섹션과 같은 깊이의 정보성 콘텐츠), FAQ 4개(과세 여부
+/ Loto·EuroMillions도 비과세인지 / 투자하면 어떻게 되는지(PFU) / 30% 원천징수 환급 가능
+여부), JSON-LD 세트(28개국으로 SoftwareApplication description 갱신) 전부 포함. `node
+scripts/apply-landing-ticket-style.js`로 CSS 주입 후 멕시코 페이지 style 블록과 바이트 단위로
+동일한지 diff-check해서 빈 스타일 블록으로 안 남았는지 확인(23,350바이트, 완전 일치). CTA는
+`index.html?lang=fr&country=fr`. `sitemap.xml`·`sitemap.html`("거주 국가별" 리스트에 항목만
+추가, 헤더의 국가 수 문구는 uk/au 라운드와 같은 이유로 이미 stale해서 이번에도 안 건드림)
+등재, `mexico-resident-us-lottery-tax.html`의 related-links에 프랑스어 페이지 상호 링크 추가
+(현재 스페인어·프랑스어 두 개뿐인 "번역 언어 페르소나 페이지" 계열끼리 서로 연결).
+
+**검증**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`(0/776),
+`tests/broken_link_audit.js`(0/113, 신규 페이지 포함), `tests/console_error_audit.js`
+(0/161), `tests/home_audit.js`(0/18) 전부 통과. `tests/faq_audit.js`는 랜딩페이지 FAQPage
+JSON-LD를 검증하는 스크립트가 아니라(계산기 자체 FAQ 뷰의 좁은 화면 overflow 검사임을 이번에
+확인) 0/18로 통과했지만 별도로 Python으로 새 랜딩페이지의 JSON-LD `acceptedAnswer.text` 4개와
+화면에 보이는 `<details><p>` 텍스트 4개를 직접 diff해서 완전 일치 확인. Playwright로
+`index.html?lang=fr&amount=800&country=fr` 결과가 연방세 -30% / 프랑스 추가세 "₩0 (offset
+by tax credit)" / `calcTakeHome(800,'fr')`이 `{afterUS:560, final:560}`으로 정확히 $560M
+(=$800M×0.7)을 반환하는 것 확인. **EUR 실시간 환율은 uk/au 라운드와 같은
+`page.route(/^https:\//)` + Node `fetch()` 우회 트릭으로 실제 Frankfurter API에서 라이브 값
+0.8645를 fetch하는 것까지 직접 확인**(정적 폴백값 0.92가 아님) — 통화를 EUR로 전환하면
+$560M×0.8645=€484.1M로 정확히 반영되는 것도 확인. 랜딩페이지 직접 로드 시 콘솔 에러 0건,
+CTA 클릭 시 `fr`로 정확히 프리셀렉트되는 것도 확인.
+
+**2단계 커밋**: 1단계(script.js/index.html/i18n 코드 변경)를 먼저 테스트·커밋해 푸시한 뒤
+2단계(랜딩페이지+sitemap+멕시코 페이지 상호링크)를 진행 — uk/au/mx 라운드와 같은 이유로 핵심
+로직이 먼저 안전하게 커밋되도록 함.
