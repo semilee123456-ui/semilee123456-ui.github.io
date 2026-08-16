@@ -3870,3 +3870,75 @@ v64`·`script.min.js` 안에 `fr_resident` 존재까지 직접 확인해 실제 
 14개 쌓여 파일 상단 유지보수 규칙(최근 3개 세션 초과 시 아카이브)을 상당히 넘어섰음** —
 다음 세션 시작 시 이 파일 맨 위 안내대로 오래된 항목부터 `HANDOFF-ARCHIVE.md`로 옮기는
 정리 작업을 먼저 할 것(이번 세션은 요약 작성에 집중하느라 아카이빙까지는 안 함).
+
+### 2026-08-16 이어서 — 아일랜드를 29번째 지원 국가로 추가 + EUR 재사용, 영문 랜딩페이지 신설 (2단계 커밋, 새 PR)
+
+`git fetch origin main`·`git status`로 `main`이 클린·최신임을 확인한 뒤(다른 세션이 같은 날
+`claude/nz-country-2026-08-16` 브랜치에서 뉴질랜드를 다루고 있었고 PR #239가 별도로 열려있음 —
+그 브랜치는 건드리지 않고 `main`에서 새 브랜치 `claude/ireland-country-2026-08-16`으로 분기해
+작업, `main`에는 아직 뉴질랜드가 없는 상태라 이번 작업은 28개국 기준에서 29번째로 진행) 새 PR을
+열었음(머지는 안 함, 사용자 리뷰 대기).
+
+아일랜드 Revenue(Irish Tax and Customs)는 도박·복권 당첨금을 애초에 과세 대상 소득으로 보지
+않음 — 1997년 세법통합법(Taxes Consolidation Act, TCA) 제613조 2항이 베팅 소득은 과세대상
+양도소득이 아니라고 명시하고, 더 근본적으로는 아일랜드 세법이 정의하는 어떤 소득 범주에도
+도박·복권 당첨금이 애초에 해당하지 않는다는 수십 년간 일관된 Revenue의 입장(2026-08-16
+웹서치 확인) — 아일랜드 국내 복권(National Lottery의 Lotto·EuroMillions)이든 미국 복권 같은
+해외 복권이든 완전히 동일하게 적용되는 구조적 배제. `ca/hk/uk/au/fr_resident`와 같은 "국내
+과세표준 자체가 없음" 0% 구조의 여섯 번째 사례로 `TAX_MODEL.ie_resident`(rate:0)·
+`calcTakeHome()` ie 분기(같은 FTC-상계-코드-모양-유지 구조)·`COUNTRY_TAX_PROFILES`(flagCode
+`IE`, `detailPage`는 캐나다/영국/호주와 같은 "영문 페이지" 계열 명명 규칙을 따라
+`us-lottery-tax-for-irish-residents.html`, detailLabel "US lottery tax for Irish residents →")·
+`COUNTRY_NAMES_MORE`(21개 언어)·`SUPPORTED_TAX_COUNTRIES`·`COUNTRY_TAX_AUTHORITY`(uk의
+HMRC·au의 ATO·fr의 DGFiP와 같은 이유로 `ie`는 "Revenue" 단독 표기)에 29번째 국가로 반영.
+`COUNTRY_MAP_COORDS`는 ca/tw/hk/uk/au/mx/fr과 같은 이유(SVG에 아일랜드 랜드마스 path 없음)로
+좌표 추가 안 함.
+
+**조세조약 조사 — 이번 세션은 UK/일본/프랑스에 이어 아일랜드도 1차 사료 검증한 6개국 중
+하나**(정정 커밋 `3a6a17e`가 세운 "미 재무부 공식 Technical Explanation이 gambling을 명시
+예시로 드는지 직접 대조" 기준을 그대로 적용, 이번 세션에서 irs.gov/pub/irs-trty/ireland.pdf
+원문 대조): 미-아일랜드 조세조약 제22조("기타소득")는 OECD 모델식 "shall be taxable only in
+that State" 문언으로 다른 조문이 다루지 않는 소득의 과세권을 거주지국에 전속시키는 조항이라는
+점까지는 UK/일본/프랑스와 동일하게 확인됨. **다만 UK/일본/프랑스와 달리, 아일랜드 조약의 미
+재무부 Technical Explanation에서는 "gambling"을 이 조항의 적용 예시로 명시하는 문구를 찾지
+못함** — 그래서 `ie_resident` 주석과 랜딩페이지 note-box/FAQ 모두 "조약 원문 문언 + 나머지
+5개국과의 구조적 일관성에 근거한 HIGH 신뢰도이되, 명시적 재무부 예시가 확인된 UK/일본/프랑스
+보다는 한 단계 낮은 확신 수준"이라고 명시적으로 헤지해서 서술함(과신 방지 — 다음에 이 결론을
+다시 인용할 때 UK/일본/프랑스와 동급으로 취급하지 말 것). 계산 로직(미국측 30% 원천징수 자체)
+에는 영향 없음.
+
+**EUR은 프랑스 라운드에서 이미 추가된 통화라 재사용만 함**: `REAL_ABROAD_CURRENCY['ie']='EUR'`
+배선 하나로 끝(CURRENCY_DISPLAY_META.EUR/EXCHANGE_RATE_EUR 등 신규 통화 작업 전혀 없음).
+index.html의 `homeCountrySelect`/`homeCountryToggle`/`realAbroadSelect` 3곳 배선
+(`homeCurrencySelect`/`compareCurrencySelect`는 EUR 옵션이 이미 있어 변경 불필요),
+`i18n-source/translations.json`의 `input.optIreland` 키(26개 언어) 추가 후
+`node scripts/build-i18n.js`로 `i18n/*.json` 26개 파일 재생성(각 1줄 diff).
+
+**랜딩페이지**: `us-lottery-tax-for-irish-residents.html` 신설(`us-lottery-tax-for-uk-
+residents.html`을 "0% club + 조약환급 note-box/FAQ" 구조 템플릿으로, 프랑스 페이지를 EUR
+환산 quick-answer 줄 + "당첨금 자체와 별개인 투자소득 과세"(PFU 자리에 DIRT) 섹션의 템플릿으로
+각각 참고) — $1M 예시(미국 원천징수 -$300,000, 아일랜드 세금 €0 TCA 1997 s.613(2), 실수령 약
+$700,000, EUR 환산 참고치 약 €602,000, 참고환율 0.86), TCA 1997 s.613(2) + Revenue 구조적
+비과세 설명(National Lottery/EuroMillions와 해외 복권 동일 취급, 직업적 도박사 예외 각주),
+DIRT(예금이자 원천징수세) 33% 섹션(당첨금 자체가 아니라 나중에 생기는 예금이자에만 적용),
+위에서 서술한 헤지된 조약환급 note-box, FAQ 4개("아일랜드 거주자가 미국 복권 당첨금에 세금을
+내나요?"/"아일랜드 국내 복권(National Lottery·EuroMillions)도 비과세인가요?"(예)/"당첨금을
+은행에 넣으면?"(DIRT)/"미국측 30%를 돌려받을 수 있나요?"(헤지된 답변)), JSON-LD 세트(29개국으로
+SoftwareApplication 갱신). `node scripts/apply-landing-ticket-style.js us-lottery-tax-for-
+irish-residents.html`로 CSS 주입 후 UK 페이지 style 블록과 바이트 단위(23,350바이트)로 완전
+동일한지 확인(빈 스타일 블록 방지). sitemap.xml/sitemap.html 등재,
+`us-lottery-tax-for-uk-residents.html`의 related-links에 아일랜드 페이지 상호 링크 추가.
+
+**빌드**: `node scripts/build-min.js`로 `script.min.js` 재빌드(styles.css는 안 건드려서
+`styles.min.css`는 무변경 — 버전 안 올림), `index.html`의 `script.min.js?v=20260816-11`,
+`sw.js`의 `chamtax-shell-v65`로 캐시버스팅 버전 갱신(직전 값 `20260816-10`/`v64` 확인 후
++1).
+
+**테스트**: `node --check` 통과, `console_error_audit`(161조합 0건)·`broken_link_audit`
+(신규 페이지 포함 114파일 0건)·`i18n_coverage_audit`(0건)·`home_audit`(18항목 0건) 전부 통과.
+Playwright로 `calcTakeHome(800,'ie') === {afterUS:560, final:560}` 확인($800M → 30%
+원천징수만 적용, 최종 정확히 $560M), `lang=en&country=ie` URL 로드 시 "Ireland resident"/
+"Ireland additional tax (FTC applied) ₩0" 정상 표시 확인. 신규 랜딩페이지 직접 로드 시 콘솔
+에러 0건, CTA 클릭 시 `country=ie`로 정확히 프리셀렉트되는 것도 확인. FAQ의 JSON-LD
+`acceptedAnswer.text` 4개와 화면 `<details><p>` 텍스트 4개를 Python으로 직접 diff해서 완전
+일치 확인(프랑스 세션과 같은 검증 방법).
