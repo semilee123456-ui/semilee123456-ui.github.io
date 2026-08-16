@@ -3564,3 +3564,74 @@ related-links에 상호 링크 추가(UK 페이지에도 호주 링크를 넣어
 **2단계 커밋**: 1단계(script.js/index.html/i18n 코드 변경, 커밋 `743eb87`)를 먼저 테스트·커밋해
 푸시한 뒤 2단계(랜딩페이지+sitemap)를 진행 — uk 라운드와 같은 이유로 핵심 로직이 먼저 안전하게
 커밋되도록 함.
+
+### 2026-08-16 이어서 — 멕시코를 27번째 지원 국가로 추가 (ca/hk/uk/au와 다른, 실제 0보다 큰 추가세 케이스) + 스페인어 영문X 랜딩페이지 신설 (2단계 커밋)
+
+**지금까지의 uk/ca/hk/au(4개국)와 구조적으로 다른 첫 사례**: 저 넷은 전부 "자국 과세표준 자체가
+없음"(rate:0) 케이스였지만, 멕시코는 cn/in처럼 FTC로 일부만 상계되는 **실제 0보다 큰 추가세**
+케이스임. **흔한 오해부터 확인**: 멕시코 소득세법(LISR) 제138조("premios", 1% 연방+최대 21%
+주별 원천징수)는 유명하지만 **멕시코 영토 내에서 조직된** 추첨·복권에만 적용되는 조항(멕시코 측
+원천징수의무자가 전제)이라, 미국 로또리위원회가 미국에서 직접 추첨·지급하는 파워볼/메가밀리언즈에는
+**적용 안 됨** — 이 계산기는 1%/21% 수치를 모델링하지 않음. **실제로 적용되는 건 제9장 "Demás
+ingresos"(기타소득) 제142조**: 해외 복권 당첨금은 다른 장에 안 걸리는 "기타소득"으로 분류돼
+제152조의 **일반 누진 개인소득세율표 그대로** 적용됨(복권 전용 세율표 없음). 2026년 최고구간은
+연 3,898,140.13페소 초과분에 **35%**(참고용 규모감: 대략 19.5~21.5만 달러대, 이 문턱값 자체는
+세금 계산 로직에 하드코딩 안 함 — 순수 페소 기준). 잭팟 규모(슬라이더 최저값이 이미 $10M)는 항상
+이 문턱을 압도적으로 초과하므로 ph/mm/bd_resident와 같은 원칙으로 하위 구간 생략, 35% 단일
+근사 사용. **제5조(Artículo 5 LISR) FTC**: 해외에서 낸 세금을 멕시코 세액 한도 내에서 공제
+가능(cn/in/vn/tw와 같은 Math.min/Math.max 상한 구조) — 단, **멕시코 최고세율(35%)이 미국
+원천징수(30%)보다 높아서** FTC가 30%를 전부 상계하고도 **약 5%p가 그대로 남음**, in_resident
+(인도, ~39%>30%)와 구조적으로 동일한 "실질 추가세 발생" 케이스. `TAX_MODEL.mx_resident`
+(top_bracket_rate:0.35, ftc_available:true, 위 근거 전부 주석에 명시)·`calcTakeHome()`의 `mx`
+분기(cn/in 분기와 완전히 동일한 구조 — wonAmount/usWithholdingWon/mxCalculatedTaxWon/
+ftcCreditWon/mxAdditionalTaxWon, val2는 "0원 상계" 문자열이 아니라 실제 퍼센트 문자열)·
+`COUNTRY_TAX_PROFILES`(flagCode `MX`, detailPage `mexico-resident-us-lottery-tax.html`,
+detailLabel `Español →`)·`COUNTRY_NAMES_MORE`(21개 언어)·`SUPPORTED_TAX_COUNTRIES`·
+`COUNTRY_TAX_AUTHORITY`(cn/in처럼 실제 자국세가 남는 케이스라 "IRS만 표기"하는 ca/hk/uk/au와
+달리 "{나라이름} SAT·IRS" 형태로 SAT(멕시코 국세청, Servicio de Administración Tributaria)를
+ATO/HMRC처럼 언어 불문 약어로 병기)에 27번째 국가로 반영. 6개 주요 인라인 언어(ko/en/zh/vi/th/ru)
+라벨: 멕시코/Mexico/墨西哥/Mexico/เม็กซิโก/Мексика.
+
+**MXN 통화도 GBP/AUD와 같은 이유로 진짜로 추가함**: Frankfurter/open.er-api가 이미 지원하는
+통화라 새 API 불필요 — `EXCHANGE_RATE_MXN`(기본값 17.1, 2026-08-16 WebSearch로 8월 중순
+17.0~17.3페소대 확인) + `CURRENCY_RATE_CONFIG`/`CURRENCY_DISPLAY_META`(🇲🇽, es-MX 로케일,
+심볼은 AUD와 같은 이유로 '$' 그대로 — NPR/LKR/PKR가 'Rs'를 공유하는 기존 관례를 그대로 따름)
+항목 신설, `REAL_ABROAD_CURRENCY['mx']='MXN'`(USD 우회 불필요). index.html의
+`homeCurrencySelect`/`compareCurrencySelect`/`homeCountrySelect`/`homeCountryToggle`/
+`realAbroadSelect` 5곳 배선(`realAbroadSelect`는 `mx|es`로 스페인어 진입), `i18n-source/
+translations.json`의 `input.optMexico` 키(26개 언어) 추가 후 `node scripts/build-i18n.js`로
+`i18n/*.json` 26개 파일 재생성(775키). `COUNTRY_MAP_COORDS`에는 멕시코 항목 없음(SVG 지도에
+멕시코 랜드마스 경로 없음) — 이전 라운드들과 동일하게 `Object.keys(COUNTRY_MAP_COORDS)`로
+순회하는 구조라 크래시 없이 그냥 핀이 안 뜰 뿐(Playwright로 compare 탭 크래시 없음 확인).
+
+**랜딩페이지**: `mexico-resident-us-lottery-tax.html` 신설(`lang="es"`) — 이 계산기 최초의
+"국가 거주자 대상" 스페인어 페이지(기존 `spanish_in_korea_lottery_tax.html`은 "한국에 사는
+스페인어권" 페르소나로 완전히 다른 페이지, 안 건드림). 호주 페이지를 head-tag/JSON-LD 구조
+템플릿으로, `spanish_in_korea_lottery_tax.html`을 톤·어휘 참고(내용은 안 베낌)로 삼음. $1M
+예시(미국 원천징수 -$300,000, 멕시코 계산세액 $350,000, FTC 공제 -$300,000, 순추가세 -$50,000,
+실수령 ≈$650,000 — Math.min/Math.max 수기 검산 완료), 제138조가 왜 적용 안 되는지(흔한 오해
+정정), 제142조/제152조 실제 근거, 제5조 FTC와 왜 부분 상계에 그치는지, gray-zone-box로 "항상
+최고구간 가정"이 단순화 모델임을 명시하고 미-멕시코 이중과세 전문 세무사 상담 권유(대만 페이지의
+캐비어트 박스와 같은 정직성 패턴), FAQ 4개(멕시코인이 미국 복권 당첨 시 과세되는지 / 1% 프리미오
+세금이 적용되는지(아니오, 이유 설명) / 30% 원천징수 환급 가능한지 / 멕시코 국내 복권(Melate 등)은
+어떻게 다른지 — 별개 제138조 국내 규정임을 짧게 정직히 답만 하고 깊게 안 다룸), CTA는
+`index.html?lang=es&country=mx`, related-links로 `china-resident-us-lottery-tax.html`(유일한
+기존 비영어 거주자 페이지)·영문 페이지들·`index.html?lang=es#faq`·`sitemap.html` 상호 연결(중국
+페이지 쪽에도 멕시코 링크 역방향 추가). hreflang 없음(자기완결 페이지, ca/uk/au와 같은 확인된
+관례). JSON-LD 7종 세트(SoftwareApplication description을 27개국으로 갱신) 전부 스페인어.
+`sitemap.xml`·`sitemap.html`("거주 국가별" 리스트에 항목만 추가, 헤더 국가 수 문구는 이미 이전
+라운드들 때부터 stale해서 — 실제 25개 항목인데 "22개국"으로 표기 — 이번에도 범위 밖이라 안 건드림,
+사용자에게 별도 보고함) 등재.
+
+**검증**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`(0/775),
+`tests/broken_link_audit.js`(0/112, 신규 페이지 포함), `tests/console_error_audit.js`(0/161),
+`tests/home_audit.js`(0/18), `tests/i18n_attr_lint.js`(0건) 전부 통과. Playwright로
+`index.html?lang=es&amount=800&country=mx` 결과 확인: 연방세 -30%, **멕시코 추가세가 "0원
+상계" 문자열이 아니라 실제 "-5.0%"로 표시됨**(이번 라운드의 핵심 차이점), 실수령 ₩773.6억
+(=$520M×1487.73원, $520M=$800M−$240M(30%)−$40M(FTC 상계 후 순추가세, 800M×0.05))으로
+수기 검산과 정확히 일치. 랜딩페이지 직접 로드 시 콘솔 에러 0건, CTA 클릭 시 `mx`로 정확히
+프리셀렉트되는 것 확인.
+
+**2단계 커밋**: 1단계(script.js/index.html/i18n 코드 변경)를 먼저 테스트·커밋해 푸시한 뒤
+2단계(랜딩페이지+sitemap+china 페이지 상호링크)를 진행 — 지금까지의 라운드와 같은 이유로 핵심
+로직이 먼저 안전하게 커밋되도록 함.
