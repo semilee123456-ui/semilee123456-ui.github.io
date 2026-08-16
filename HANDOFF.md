@@ -3244,3 +3244,53 @@ PSI 모바일 55점/FCP 19.8초/LCP 25.9초가 다시 보고돼서 HANDOFF의 �
 변경 파일: `script.js`(`setupStickyResultBadgeCollisionWatch()`에 `ResizeObserver` 추가),
 `script.min.js`(재빌드), `index.html`(`script.min.js?v` → `20260816-3`),
 `sw.js`(`CACHE_NAME` → `v57`).
+
+### 2026-08-16 이어서 — 미국 주(州)별 SEO 랜딩페이지 10개 신설 (홍보·마케팅 5단계 제안 중 남은 항목)
+
+배경: "홍보·마케팅 작업 전체 이력"에 정리된 5단계 성장 제안 중 나머지는 이미 다 처리됐고,
+"미국인은 '캘리포니아 복권 세금'처럼 주 이름으로 검색한다"는 항목만 미착수 상태였음. 2026-08-14
+세션 요약(위 참고, "비거주자 FAQ + 주별 세율 표 검토" 항목)은 계산기 안 `renderUsStateCompareTable()`
+비교표가 "주별 세율 TOP5 표"라는 성장 리스트 항목 자체는 이미 충족한다고 결론냈지만, 그건 계산기
+탭 안에 있는 JS 렌더링 콘텐츠일 뿐 자체 URL·title·H1이 있는 색인 가능한 페이지가 아니라서 "주
+이름 검색"에 대한 SEO 랜딩페이지 필요는 별개로 남아있었음(국가별 거주자 랜딩페이지 18개는 이미
+있는데 주별은 없었음). 인구 상위 10개 주를 골라 국가별
+랜딩페이지(`korea-resident-us-lottery-tax.html` 등 18개)와 같은 패턴으로 신설:
+`california-lottery-tax.html`(CA), `texas-lottery-tax.html`(TX), `florida-lottery-tax.html`(FL),
+`new-york-lottery-tax.html`(NY), `pennsylvania-lottery-tax.html`(PA), `illinois-lottery-tax.html`(IL),
+`ohio-lottery-tax.html`(OH), `georgia-lottery-tax.html`(GA), `north-carolina-lottery-tax.html`(NC),
+`michigan-lottery-tax.html`(MI).
+
+`biggest-lottery-jackpots-after-tax.html`을 원본으로 복사해 "정산 티켓" 인라인 style 블록·
+nav·푸터 스크립트(공유 버튼/테마 토글)를 바이트 단위로 그대로 유지하고 콘텐츠만 교체(스크립트로
+생성 — 마커 기반 추출이라 style/nav/theme-toggle 스크립트가 원본과 정확히 일치하는지 diff로
+확인함). 영어 전용이라 hreflang은 안 넣음(`press-kit.html`/`powerball-tax.html`처럼 hreflang
+없는 단일 목적 페이지 패턴 확인 후 결정), canonical만 자기 자신을 가리킴. og:image는 페이지별
+전용 이미지가 없어서(og-share-worker는 정적 사전생성 방식이고 이 10개는 없음) 범용
+`og-image.png`로 폴백.
+
+세율 출처: `script.js`의 `STATE_TAX_RATES`(유일한 소스) 그대로 사용 — CA/TX/FL 0%(각각 "복권
+당첨금 자체 면제"/"주 소득세 자체가 없음", 사유 다름을 본문에서 구분), NY 10.9%(최고), PA
+3.07%, IL 4.95%, OH 2.75%, GA 5.39%, NC 3.99%, MI 4.25%. 시(city) 단위 부가세는
+`STATE_TAX_RATES`가 모델링 안 하므로 NYC/Yonkers 구체 세율 숫자는 안 쓰고 "이 계산기가 반영하지
+않는 지방세가 별도로 있을 수 있다"는 중립적 문구만 NY 페이지에 추가. 연방세는 전 페이지 공통으로
+"원천징수 24% vs 잭팟급 실제 최고세율 37%" 프레이밍(`TAX_MODEL.us_resident.federal`과 일치),
+$1,000,000 예시 실수령액은 `calcTakeHome()`의 `amount*(1-0.37-stateRate)` 공식을 그대로 손계산해
+반영(CA/TX/FL $630,000, NY $521,000, PA $599,300, IL $580,500, OH $602,500, GA $576,100,
+NC $590,100, MI $587,500). 비거주 외국인 세율 30%는 `TAX_MODEL.nonresident.us_withholding`과
+`korea-resident-us-lottery-tax.html`의 기존 문구로 교차 검증.
+
+CTA는 `index.html?lang=en&country=us&state=XX`(country+state 동시 전달, script.js
+9552~9630행 `SUPPORTED_TAX_COUNTRIES`/`effectiveCountryForState`/`urlState` 로직 확인 후 사용) —
+Playwright로 10개 페이지 전부 실제 클릭해서 `homeStateSelect`가 정확히 그 주로 세팅되는 것까지
+검증함(아래 참고).
+
+사이트 연결: `sitemap.xml`·`sitemap.html`(새 "US State Lottery Tax Calculators" 섹션)에 10개
+전부 등재, 서로 2~3개씩 교차링크(전부 다른 새 페이지에서 최소 2번 이상 인바운드 링크 받게
+배치해 고아 페이지 없음), `biggest-lottery-jackpots-after-tax.html`의 related-links에도
+California/New York 링크 추가.
+
+검증: `tests/broken_link_audit.js` 0 issues(106개 파일). 로컬 서버(`python3 -m http.server 9000`)
+띄우고 Playwright(`NODE_PATH=/opt/node22/lib/node_modules`)로 10개 페이지 전부 콘솔/페이지 에러
+0건, CTA 클릭 후 계산기 `homeStateSelect` 값이 기대한 주 코드와 정확히 일치하는지 확인 — 전부
+통과. `script.js`/`styles.css`는 안 건드려서 `build-min.js` 재빌드·`index.html`/`sw.js` 캐시
+버전은 그대로 둠.
