@@ -3443,3 +3443,66 @@ sitemap.xml/sitemap.html 등재, `node scripts/build-min.js` 재빌드, `index.h
 딥링크는 원래 통화를 안 바꾸고 언어(zh) 기준 기본 통화만 따름, 캐나다 등 기존 국가도 동일하게
 동작하는 기존 동작이라 이번 작업의 버그 아님). 두 페이지 CTA가 각각 `tw`/`hk`로 정확히
 프리셀렉트되는 것도 확인. 간체(china-resident-us-lottery-tax.html)는 이번에 건드리지 않음.
+
+### 2026-08-16 이어서 — 영국을 25번째 지원 국가로 추가 + GBP를 신규 실지원 통화로 추가, 영문 랜딩페이지 신설 (2단계 커밋)
+
+캐나다·홍콩과 같은 패턴("국내 과세표준 자체가 없음")의 세 번째 사례 — HMRC는 도박·복권
+당첨금에 소득세(Income Tax)·양도소득세(Capital Gains Tax)·국민보험(National Insurance) 어디에도
+과세하지 않으며, 이 비과세 원칙은 미국 복권처럼 해외에서 받은 당첨금에도 영국 국내 복권
+(National Lottery·EuroMillions)과 완전히 동일하게 적용됨. `TAX_MODEL.uk_resident`(rate:0,
+ca_resident/hk_resident와 같은 phrasing 패턴), `calcTakeHome()` uk 분기(hk 분기와 동일한
+FTC-상계-코드-모양-유지 구조), `COUNTRY_TAX_PROFILES`(flagCode는 ISO 3166-1 alpha-2 기준
+`GB` — 내부 국가 코드는 이 앱 관례대로 `uk` 유지, 둘을 혼동하지 않도록 주의)·
+`COUNTRY_NAMES_MORE`(21개 언어)·`SUPPORTED_TAX_COUNTRIES`·`COUNTRY_TAX_AUTHORITY`(ca/hk가
+IRS 단독 표기였던 것과 달리 `uk`는 사용자 지시대로 "HMRC" 단독 표기 — HMRC가 $0 판단의
+명확한 근거이므로)에 25번째 국가로 반영.
+
+**GBP는 캐나다/대만/홍콩(CAD/TWD/HKD)과 달리 진짜로 추가함**: 이 계산기의 환율 소스
+(Frankfurter/open.er-api)가 이미 GBP를 지원해서 새 API가 필요 없었음 — `EXCHANGE_RATE_GBP`
+변수(기본값 0.739, USD/GBP, 2026-08-16 WebSearch로 확인한 파운드/달러 1.3532 역산) +
+`CURRENCY_RATE_CONFIG`/`CURRENCY_DISPLAY_META`(£ 기호, 🇬🇧, en-GB 로케일) 항목 신설,
+`REAL_ABROAD_CURRENCY['uk']='GBP'`(USD 우회 불필요, 캐나다/대만/홍콩과 다른 점). index.html의
+`homeCurrencySelect`/`compareCurrencySelect`/`homeCountrySelect`/`homeCountryToggle`/
+`realAbroadSelect` 5곳 배선, `i18n-source/translations.json`의 `input.optUK` 키(26개 언어) 추가
+후 `node scripts/build-i18n.js`로 `i18n/*.json` 26개 파일 재생성.
+
+**랜딩페이지**: `us-lottery-tax-for-uk-residents.html` 신설(캐나다 페이지를 가장 가까운 템플릿으로
+재사용) — $1M 예시(미국 원천징수 -$300,000, 영국 세금 £0, 실수령 약 $700,000, GBP 환산 참고치
+약 £517,000도 한 줄 추가), HMRC 비과세 설명, 30% 비거주자 원천징수 설명, **영국 상속세(IHT)
+"7년 규칙" 전용 섹션**(닐레이트밴드 £325,000(2026/27), 3년 이내 사망 시 초과분 40% 전액,
+3~7년은 테이퍼 릴리프로 20%/40%/60%/80% 단계적 경감, 7년 생존 시 완전 비과세 — 복권과 무관한
+일반 상속세 규정임을 명시), FAQ 4개(영국 거주자 미국 복권 과세 여부 / 유로밀리언즈·내셔널
+로터리도 비과세인지 / 가족에게 나눠주면 어떻게 되는지(IHT 7년 규칙) / 30% 원천징수 환급
+가능 여부 — 미-영 조세조약의 "기타소득" 조항이 복권에 별도 낮은 세율을 안 두는 것도 다른
+나라와 동일한 기준선임을 명시), JSON-LD 세트(25개국으로 SoftwareApplication description 갱신)
+전부 포함. `node scripts/apply-landing-ticket-style.js`로 CSS 주입 후 홍콩 페이지 style
+블록과 바이트 단위로 동일한지 diff-check해서 빈 스타일 블록으로 안 남았는지 확인(이전 라운드
+"서브에이전트 세션 한도로 중단" 사례 재발 방지). CTA는 `index.html?lang=en&country=uk`.
+`sitemap.xml`·`sitemap.html`("거주 국가별" 리스트에 항목만 추가, 헤더/메타의 국가 수 문구는
+tw/hk 라운드와 같은 이유로 이미 stale해서 이번에도 안 건드림 — 아래 "알려진 미해결 항목" 참고)
+등재, `us-lottery-tax-for-canadians.html`의 related-links에 상호 링크 추가.
+
+**검증**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`(0/773),
+`tests/broken_link_audit.js`(0/110, 신규 페이지 포함), `tests/console_error_audit.js`(0/161),
+`tests/home_audit.js`(0/18) 전부 통과. Playwright로 `index.html?lang=en&amount=800&country=uk`
+결과가 연방세 -30% / 영국 추가세 "₩0 (offset by tax credit)" / 실수령 정확히 $560M(=$800M×0.7)로
+나오는 것 확인, `flagEmojiFromCode('GB')`가 🇬🇧를 정확히 반환하는 것도 확인. **GBP 실시간 환율은
+이 샌드박스의 아웃바운드 프록시 제약(Playwright Chromium이 프록시 CA를 신뢰 안 함, 2026-08
+"목업 렌더링 관련 인프라 이슈" 참고) 때문에 기본 폴백값만 확인하고 끝낼 뻔했으나,
+`page.route(/^https:\//)` + Node `fetch()` 우회 트릭(같은 세션의 대만·홍콩 스크린샷 인프라에서
+재사용)으로 실제 Frankfurter API에서 라이브 값 0.7387을 fetch하는 것까지 직접 확인** — 정적
+폴백값(0.739)이 아니라 진짜 실시간 조회가 동작함을 검증. 랜딩페이지 직접 로드 시 콘솔 에러
+0건, `<style>` 블록이 홍콩 페이지와 바이트 단위 동일(빈 스타일 아님) 확인, CTA 클릭 시 `uk`로
+정확히 프리셀렉트되는 것도 확인.
+
+**2단계 커밋**: 1단계(script.js/index.html/i18n 코드 변경, 커밋 `74f957b`)를 먼저 테스트·커밋한
+뒤 2단계(랜딩페이지+sitemap)를 진행 — 이전 대만·홍콩 라운드의 "서브에이전트 세션 한도 중단"
+교훈을 반영해 핵심 로직이 먼저 안전하게 커밋되도록 함.
+
+**참고 — 이번에도 안 건드린 것**: `sitemap.html`의 "거주 국가별" 섹션 헤더("(22개국)")와 상단
+메타 설명 3곳의 국가 수 문구, `SM_I18N` 객체의 26개 언어 버전(전부 "21개국/21 countries"로
+더 오래 정체됨) — 캐나다 라운드가 처음 22로 갱신했다가 대만·홍콩 라운드에서 리스트에 항목만
+추가하고 헤더는 안 건드린 전례를 그대로 따름(신규 페이지 추가 때마다 26개 언어 문구를 전부
+갱신하는 게 이 저장소의 실제 관례가 아닌 것으로 보임 — `index.html` 자체 주석도 비슷한
+누적 stale 사례를 인정하고 있음, 위 캐나다 항목 참고). 다음에 국가 수 문구를 한 번에 정리하는
+별도 라운드가 있으면 좋을 듯.
