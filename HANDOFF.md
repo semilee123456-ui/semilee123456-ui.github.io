@@ -3403,3 +3403,43 @@ hreflang·야후재팬/야후 지혜부대) 제시 → 대조 결과 1번(30% �
 사실 한 문단만 추가— 당せん금부증표법(当せん金付証票法) 근거는 script.js의 기존
 `jp_resident` 주석(국세청 タックスアンサー No.1490과 별개로 이미 확인돼있던 근거)을 그대로
 재사용, 새 리서치 없이 반영. `tests/broken_link_audit.js`(0/107) 통과.
+
+### 2026-08-16 이어서 — 대만·홍콩을 23·24번째 지원 국가로 추가 + 번체 랜딩페이지 2개 신설 (서브에이전트 세션 한도로 중단 → 메인 세션이 이어받아 완료)
+
+사용자의 중국어권 유입 확대 제안 검토 → 1번(간체 국가별 페이지)은 `china-resident-us-lottery-tax.html`이
+이미 충분히 커버, "미국 거주 유학생/취업비자" 페르소나는 사실 중국 세법이 아니라 미국 거주자
+세법 문제라 정정 안내. 3·4번(hreflang·야후재팬, 지후/샤오홍슈 등 커뮤니티)은 이전 라운드들과
+동일하게 SEO상 불필요하거나 코드 작업 아님. 실제 갭은 번체(대만·홍콩) — 캐나다와 동일 규모로
+신규 국가 추가하기로 사용자가 선택.
+
+**세금 근거**: 홍콩은 속지주의 3개 개별세(급여세·이윤세·재산세)만 있고 일반소득세·양도소득세
+자체가 없어(IRD 안내 확인) 도박·복권 당첨금이 애초에 과세 대상 밖 — 캐나다와 같은 "국내
+과세표준 자체가 없음" 구조. 대만은 국내 지급 상금에만 적용되는 "기회중상세"(20% 원천징수)가
+아니라 소득기본세액조례(개인 최저한세)의 해외소득 규정이 실제로 적용됨을 확인 —
+기본세액=(기본소득액−면제액)×20%(제13조 1항), 113년도(2024년) 개정 기준 면제액 NT$750만은
+잭팟 규모 대비 무시 가능해 일본 특별공제 생략 전례와 같은 원칙으로 계산에서 제외, 전액×20%로
+근사. 제13조 1항 단서에서 국외세액공제(한도 내 상계) 조문 근거를 명확히 확인해 cn/in/vn과
+동일한 FTC 구조 적용(⚠️ 불명확 표시 없이) — 대만 20% < 미국 30%라 이 계산기 모델에서는 사실상
+항상 미국 원천징수분이 대만 세액을 전부 상계해 대만 쪽 추가 납부가 0원으로 나옴(단, 이건
+계산기 단순화 모델의 결과이지 자동 발생이 아니라는 점을 페이지 본문에 명시적으로 안내).
+
+**서브에이전트가 세션 한도로 중단된 지점과 이어받은 작업**: `TAX_MODEL.tw_resident`/
+`hk_resident`, `calcTakeHome()` tw/hk 분기, `COUNTRY_TAX_PROFILES`/`COUNTRY_NAMES_MORE`(21개
+언어)/`SUPPORTED_TAX_COUNTRIES`/`COUNTRY_TAX_AUTHORITY`/`REAL_ABROAD_CURRENCY`(TWD/HKD가
+이 앱 통화 목록에 없어 캐나다 CAD와 동일하게 USD로 폴백, 이유도 주석에 명시)/index.html의
+select·토글버튼·realAbroadSelect 3곳 배선/i18n 26개 언어 `input.optTaiwan`·`input.optHongKong`
+키까지는 완료된 상태였고, `taiwan-resident-us-lottery-tax.html`/`hongkong-resident-us-lottery-tax.html`
+본문도 내용은 완성돼 있었으나 `<style>` 블록이 빈 채로 남아있었음(정산 티켓 CSS 주입 스크립트
+실행 전 단계에서 중단) — 메인 세션이 `node scripts/apply-landing-ticket-style.js`로 마무리,
+sitemap.xml/sitemap.html 등재, `node scripts/build-min.js` 재빌드, `index.html`의
+`script.min.js?v=`(서브에이전트가 이미 20260816-6으로 올려둠, 재빌드 후에도 값 유지)와
+`sw.js`의 `CACHE_NAME`(v59→v60, 서브에이전트가 못 올린 부분) 갱신까지 이어서 완료.
+
+**검증**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`(0/772),
+`tests/broken_link_audit.js`(0/109), `tests/console_error_audit.js`(0/161),
+`tests/home_audit.js`(0/18) 전부 통과. Playwright로 `index.html?lang=zh&amount=800&country=tw`·
+`...=hk` 둘 다 연방세 -30%, 추가세 "0원(세액공제로 상계)", 최종 실수령 800×0.7 비율 정확히
+확인(표시 통화가 ¥CNY로 나오는 건 국가와 통화가 독립 선택지라는 기존 설계 때문 — `?country=`
+딥링크는 원래 통화를 안 바꾸고 언어(zh) 기준 기본 통화만 따름, 캐나다 등 기존 국가도 동일하게
+동작하는 기존 동작이라 이번 작업의 버그 아님). 두 페이지 CTA가 각각 `tw`/`hk`로 정확히
+프리셀렉트되는 것도 확인. 간체(china-resident-us-lottery-tax.html)는 이번에 건드리지 않음.
