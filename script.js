@@ -2986,7 +2986,7 @@ async function submitContactForm(e){
 // (applyTranslations()) 항상 현재 언어로 다시 반영해야 함. 예전엔 go()에서만, 그것도 한국어
 // 문구로 고정 세팅해서 영어·중국어로 보고 있어도 화면 전환마다 탭 제목이 한국어로 돌아가던 버그가 있었음
 const PAGE_TITLES = {
-  home: { ko: '미국 복권 세금 계산기 | 참택스 - 미국 파워볼·메가밀리언즈 실수령액', en: 'US Lottery Tax Calculator | ChamTax — Powerball & Mega Millions Take-Home', zh: '美国彩票税金计算器 | ChamTax — 强力球·超级百万实得金额' },
+  home: { ko: '미국 복권 세금 계산기 | 참택스 - 미국 파워볼·메가밀리언즈 실수령액', en: 'Powerball & Mega Millions Tax Calculator | ChamTax', zh: '美国彩票税金计算器 | ChamTax — 强力球·超级百万实得金额' },
   compare: { ko: '미국 복권 이중과세·국가별 실수령액 비교 | 참택스', en: 'US Lottery Double Taxation & Country Comparison | ChamTax', zh: '美国彩票双重征税·各国实得金额对比 | ChamTax' },
   odds: { ko: '미국 파워볼 당첨 확률 체감 | 참택스', en: 'US Powerball Odds, Visualized | ChamTax', zh: '美国强力球中奖概率体验 | ChamTax' },
   faq: { ko: '미국 복권 세금 FAQ - 이중과세·원천징수 | 참택스', en: 'US Lottery Tax FAQ — Double Taxation & Withholding | ChamTax', zh: '美国彩票税金FAQ — 双重征税·预扣税 | ChamTax' },
@@ -3031,7 +3031,7 @@ function applyCurrentViewTitle(view){
 const PAGE_DESCRIPTIONS = {
   home: {
     ko: '미국 복권(파워볼·메가밀리언즈) 당첨 시 세금과 실수령액을 확인해보세요. 한국 거주자 이중과세, 미국 비거주자 원천징수까지 한 번에 계산해볼 수 있어요.',
-    en: 'Calculate US Powerball & Mega Millions after-tax take-home instantly — nonresident withholding, Korea double-taxation, and more, all in one place.',
+    en: 'Free calculator for your real lottery take-home after tax. Covers US nonresident withholding and double-taxation for 38 countries — lump sum or annuity.',
     zh: '立即计算美国强力球·超级百万彩票中奖后的税后实得金额 — 涵盖非居民预扣税、韩国双重征税等。',
   },
 };
