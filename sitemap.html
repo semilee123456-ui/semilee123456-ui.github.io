@@ -483,11 +483,19 @@
   .mascot{ text-align:center; margin:40px 0 8px; }
   .mascot svg{ width:96px; height:96px; }
 
-  /* sitemap.html 언어 목록 — 기존 .lang-links 배지 문법 재사용, 가로 배열만 추가 */
+  /* sitemap.html 언어 목록 — 기존 .lang-links 배지 문법 재사용, 가로 배열만 추가.
+     2026-08-17: display:flex가 빠져있어서 flex-direction/flex-wrap이 아무 효과 없이
+     그냥 세로로 한 줄씩 쌓이던 버그(칩 테두리/배경도 같이 빠져있었음) — 사용자가 실제
+     폰 화면에서 "사이트맵이 어지럽다"고 지적해서 발견. .lang-links와 동일한 칩 스타일로 맞춤. */
   .lang-tag{ color:var(--text-muted); font-weight:400; font-size:0.85em; }
-  ul.lang-grid{ flex-direction:row; flex-wrap:wrap; }
+  ul.lang-grid{ display:flex; flex-direction:row; flex-wrap:wrap; gap:8px; margin:14px 0 32px; padding:0; }
   ul.lang-grid li{ flex:0 0 auto; list-style:none; }
-  ul.lang-grid li a{ padding:7px 14px; font-size:var(--fs-small); }
+  ul.lang-grid li a{
+    font-weight:700; color:var(--text-dark); text-decoration:none;
+    border:1px solid var(--teal); border-radius:999px; padding:7px 15px; background:var(--card);
+    display:inline-block; transition:background-color 0.15s ease; font-size:var(--fs-small);
+  }
+  ul.lang-grid li a:hover{ background:rgba(var(--teal-rgb),0.08); }
 
   /* ---- 아주 좁은 화면(240~380px) 보호 — 계산기 리디자인 때 겪은 카드/버튼 잘림 재발 방지 ---- */
   @media (max-width:380px){
