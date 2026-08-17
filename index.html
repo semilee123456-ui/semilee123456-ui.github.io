@@ -136,7 +136,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260816-15" defer></script>
+<script src="script.min.js?v=20260817-1" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -625,6 +625,7 @@
                   <option value="sg|en">SG · English</option>
                   <option value="za|en">ZA · English</option>
                   <option value="my|en">MY · English</option>
+                  <option value="de|de">DE · Deutsch</option>
                 </select>
                 <button type="button" class="intro-lang-go-btn" onclick="goRealAbroadFromSelect('realAbroadSelect')" data-i18n="intro.goBtn">이동</button>
               </div>
@@ -779,6 +780,7 @@
                     <option value="sg">SG</option>
                     <option value="za">ZA</option>
                     <option value="my">MY</option>
+                    <option value="de">DE</option>
                     <option value="other">OTHER</option>
                   </select>
                   <button type="button" class="amount-currency-select select-sheet-trigger" id="homeCountrySelectTrigger" tabindex="-1" aria-hidden="true" onclick="openSelectSheet('homeCountrySelect')"><span class="select-sheet-trigger-label">KR</span></button>
@@ -933,6 +935,7 @@
                   <button type="button" class="country-toggle-btn" data-country="sg" onclick="setHomeCountry('sg')"><span class="flag-badge">SG</span> <span data-i18n="input.optSingapore">싱가포르 기준</span></button>
                   <button type="button" class="country-toggle-btn" data-country="za" onclick="setHomeCountry('za')"><span class="flag-badge">ZA</span> <span data-i18n="input.optSouthAfrica">남아공 기준</span></button>
                   <button type="button" class="country-toggle-btn" data-country="my" onclick="setHomeCountry('my')"><span class="flag-badge">MY</span> <span data-i18n="input.optMalaysia">말레이시아 기준</span></button>
+                  <button type="button" class="country-toggle-btn" data-country="de" onclick="setHomeCountry('de')"><span class="flag-badge">DE</span> <span data-i18n="input.optGermany">독일 기준</span></button>
                   <button type="button" class="country-toggle-btn" data-country="other" onclick="setHomeCountry('other')"><span class="flag-badge">🌐</span> <span data-i18n="input.optOther">기타 국가 (미국 30% 기준)</span></button>
                 </div>
                 <!-- ⚠️ 아이콘이 태국·러시아·파키스탄·캄보디아·몽골·라오스 버튼에 붙어있는데, 그

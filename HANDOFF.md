@@ -319,15 +319,16 @@ git commit/push(origin main)까지 끝내고, 애매하거나 위험한 판단�
 - **대상**: 한국에 거주하는 40~60대가 주 타겟 — 접근성(최소 폰트 크기, 명암비) 기준이
   명시적으로 있음. 한국 거주 외국인(재외국민이 아닌, 한국에 사는 외국인)도 별도 페르소나로
   지원함 — FAQ 등에서 두 페르소나를 혼동하지 않도록 주의(아래 "대상 배지" 참고).
-- **26개 언어 지원**(2026-07-28, pt/es/uk/tet 4개 신규 추가로 22개→26개): ko(기본, HTML에
-  직접 한글로 박혀있음), en/zh/vi/th/ru(이상 5개는 `pickLang`의 위치 인자), 나머지 21개
-  (km/ne/id/my/si/uz/mn/kk/ky/ur/bn/lo/ja/ar/hi/fr/tl/pt/es/uk/tet — `pickLang`의 `more` 객체
-  인자로 처리, `ADDITIONAL_LANGS`에서 확인 가능). `i18n-source/translations.json`(정적 텍스트,
-  574개 키) + `script.js` 안의 `pickLang()` 동적 문자열(인라인 호출 189개 + 공유 상수/함수
-  58개) 양쪽 다 26개 언어 100% 채워진 상태 — 회귀 테스트는 여전히 "22개 언어"라고 적힌 옛
-  주석/변수명이 코드 여기저기 남아있을 수 있는데(예: 테스트 파일 로그 문구), 실제 지원
-  언어 수는 `ADDITIONAL_LANGS.length + 5`(위치인자)로 확인할 것 — 문서·주석 서술보다 코드가
-  진실.
+- **27개 언어 지원**(2026-08-17, `de` 독일어 신규 추가로 26개→27개 — pt/es/uk/tet 4개 추가
+  이후 최초의 신규 언어. 위치인자 6개 언어(ko/en/zh/vi/th/ru)를 재사용하지 않는 진짜 새 언어라
+  Canada/UK/Australia류 국가 추가 라운드보다 작업량이 훨씬 큼): ko(기본, HTML에 직접 한글로
+  박혀있음), en/zh/vi/th/ru(이상 5개는 `pickLang`의 위치 인자), 나머지 22개
+  (km/ne/id/my/si/uz/mn/kk/ky/ur/bn/lo/ja/ar/hi/fr/tl/pt/es/uk/tet/de — `pickLang`의 `more`
+  객체 인자로 처리, `ADDITIONAL_LANGS`에서 확인 가능). `i18n-source/translations.json`(정적
+  텍스트, 801개 키) + `script.js` 안의 `pickLang()` 동적 문자열(`tet:` 마커가 붙은 "more" 객체
+  296개) 양쪽 다 27개 언어 100% 채워진 상태 — 회귀 테스트는 여전히 옛 언어 수가 적힌 주석/
+  변수명이 코드 여기저기 남아있을 수 있는데, 실제 지원 언어 수는
+  `ADDITIONAL_LANGS.length + 5`(위치인자)로 확인할 것 — 문서·주석 서술보다 코드가 진실.
 
 ### 파일/폴더 구조
 ```
@@ -1404,3 +1405,94 @@ singapore-residents,south-africans,malaysians}.html`) 전부 존재, 실제 프�
 초과 시 아카이브)을 크게 넘어섰던 상태라, 이번 항목 작성과 함께 오래된 항목들을
 `HANDOFF-ARCHIVE.md`로 옮기는 아카이빙도 이어서 진행함(아래 "작업 이력" 섹션 참고 — 최근
 몇 개 세션만 남기고 나머지는 아카이브로 이동).
+
+### 2026-08-17 — 독일어(de)를 신규 UI 언어로 추가 + 독일을 34번째 지원 국가로 추가 (3단계 커밋, 새 PR)
+
+이전 세션이 "다음 후보는 독일·네덜란드(언어 지원 결정 필요)"라고 남긴 대로, 이번 세션은
+Canada/UK/Australia류(이미 지원되던 언어 재사용)보다 훨씬 큰 작업인 **새 UI 언어 자체를
+추가**하는 라운드였음 — 시작 전에 브리프가 요구한 대로 규모를 직접 검증함(`grep -c '\btet:'
+script.js`가 296을 반환, `ADDITIONAL_LANGS` 21개 확인 — 브리프의 가정이 정확했음).
+
+**1단계(언어 인프라)**: `script.js`의 `ADDITIONAL_LANGS`와 `scripts/build-i18n.js`/
+`tests/console_error_audit.js`/`tests/lang_leak_audit.js`의 각 `LANGS` 배열에 `'de'` 추가
+(4개 파일 동기화). `i18n-source/translations.json` 800개 키 전체에 실제 독일어 번역 추가
+(플레이스홀더 없음 — 800개 항목을 8개 청크 파일로 나눠 직접 번역해서 스크립트로 병합).
+`i18n/de.json` 신규 생성 + 기존 26개 언어 파일 재생성(`node scripts/build-i18n.js`, 내용은
+동일하고 JSON 재직렬화만 발생 — 26개 파일 전부 diff로 실제 번역 텍스트가 안 바뀐 것을
+확인). `script.js`의 `tet:` 마커가 붙은 "more" 객체 296개 전부에 `de:` 항목 추가 — 대부분
+(286개)은 line-surgery 스크립트로 자동 삽입했고, 특수 형태 10개(배열 1개, 객체 3개 —
+`COUNTRY_NAMES_MORE`/match-no-plus-only 객체/국가명 객체, 화살표 함수 6개)는 직접 Edit로
+처리. **여기서 실수로 놓칠 뻔한 부분**: `COUNTRY_NAMES_MORE`는 언어별 행(`de:` 새 행 포함
+22개 언어) 각각이 "나라 코드 → 그 언어로 된 나라 이름" 맵인데, 처음엔 새 `de`(독일어) *언어*
+행만 추가하고 `de`(독일) *국가* 코드를 기존 22개 언어 행 전부에 추가하는 걸 깜빡함 —
+Playwright로 `calcTakeHome(800,'de')`를 직접 돌려보다가 `label2`에 "Zusätzliche Steuer in
+undefined"가 찍히는 걸 발견해서 잡음(스크립트로 22개 행 전부에 `de:'Deutschland'`류 국가명
+일괄 삽입). 이 단계에서 `tests/i18n_coverage_audit.js`(0/781)·`tests/console_error_audit.js`
+(0/168, 24개 언어)·`tests/lang_leak_audit.js`(0/108, 27개 언어) 전부 통과 확인 후 커밋.
+
+**2단계(독일 국가 로직)**: `TAX_MODEL.de_resident`(rate: 0) + `calcTakeHome()`의 `'de'` 분기 +
+`COUNTRY_TAX_PROFILES`/`SUPPORTED_TAX_COUNTRIES`/`COUNTRY_TAX_AUTHORITY`(`Finanzamt`)/
+`REAL_ABROAD_CURRENCY['de']='EUR'`(프랑스/아일랜드와 같은 유로존 통화 재사용, 신규 통화
+작업 불필요) 추가. **세율 조사(WebSearch, 2026-08-17)**: 브리프가 명시적으로 경고한 대로
+"유럽이니까 당연히 0% 클럽"이라고 가정하지 않고 직접 조사함 — 독일 소득세법(EStG) 제2조
+3항이 과세 대상 소득을 7개 소득 종류(Einkunftsarten, 제22조가 열거)로 한정하는데 복권·도박
+당첨금은 그 어디에도 해당하지 않아 "과세 불가"(nicht steuerbar)라는 게 다수 독일 세무
+포털(steuern.de/vlh.de/taxfix.de/smartsteuer.de/steuerstudies.de)의 일관된 설명 — 세율이
+낮은 게 아니라 애초에 과세표준 자체가 없는 구조라 uk/au/fr/ie/sg/za/my_resident와 같은
+"진짜 0%" 케이스(FTC 상계로 0이 되는 mx/in과는 다름). 미-독일 조세조약 원문(irs.gov/
+pub/irs-trty/germany.pdf)의 제21조 1항("기타소득")이 OECD 모델식 "shall be taxable only in
+that State" 문언인 것도 직접 대조했고, 2006/2007년 의정서 Technical Explanation(germanyte07.pdf,
+`pdftotext -layout`으로 직접 대조)에서는 "gambling"을 명시하는 문구를 찾지 못해 — 명시적
+재무부 예시가 확인된 영국/일본/프랑스보다 한 단계 낮고 아일랜드(ie_resident)와 같은 확신
+수준("조약 본문 문언 + 나머지 국가들과의 구조적 일관성")으로 주석에 명시함. 증여세
+(Schenkungsteuer, 배우자 50만 유로·자녀 40만 유로 등 관계별 공제)는 당첨금 자체가 아니라
+나중에 증여하는 시점에만 발생하는 별개 세목이라 별도 각주로 분리(당첨 시점 실수령액 계산
+로직과 무관 — fr_resident의 PFU 각주와 같은 성격). `index.html`의 3개 국가 선택 지점
+(`realAbroadSelect` `de|de`, `homeCountrySelect`, `homeCountryToggle` 버튼 그리드) 배선 +
+새 i18n 키 `input.optGermany`(27개 언어) 추가. `script.min.js?v=20260817-1`/`sw.js
+CACHE_NAME v70`로 버전 갱신(`node scripts/build-min.js`) — **`index.html`이 `script.min.js`를
+불러온다는 걸 처음엔 깜빡하고 `script.js`만 고친 채 Playwright로 `calcTakeHome`을 테스트해서
+"홈 국가로 안 바뀜" 버그를 잠깐 봤음, minify를 다시 돌리고서야 정상 확인** — 다음 세션도 같은
+실수를 반복하지 않도록 기록. `node --check` 통과, `tests/i18n_coverage_audit.js`(0/782)·
+`tests/console_error_audit.js`(0/168)·`tests/lang_leak_audit.js`(0/108)·
+`tests/broken_link_audit.js`(0/118)·`tests/home_audit.js`(0/18) 전부 통과 후, 프로덕션과
+동일하게 `script.min.js`를 서빙하는 로컬 서버로 `calcTakeHome(800,'de')`가
+`{afterUS:560, final:560}`(=$800M×0.7=$560M), `calcTakeHome(1,'de')`가
+`{afterUS:0.7, final:0.7}`(=$700,000)을 정확히 반환하는 것과 compare 화면에서도 독일
+옵션이 콘솔 에러 없이 정상 렌더링되는 것을 확인 후 커밋.
+
+**3단계(랜딩페이지+사이트맵+이 항목)**: `germany-resident-us-lottery-tax.html` 신설 —
+프랑스 페이지를 구조 템플릿으로 재사용(가장 가까운 사례: 유로존 국가, 자기 언어 랜딩페이지,
+EUR 통화, "정산 티켓" CSS 템플릿). 프랑스/멕시코 라운드와 같은 이유로 영어가 아니라 독일어로
+작성(독일어가 이번 세션부터 진짜로 지원되므로). $1M 예시(미국 원천징수 -$300,000, 독일
+추가세 0€, 실수령 약 $700,000, EUR 환산 참고치 약 644,000€ — `EXCHANGE_RATE_EUR` 폴백값
+0.92 기준), EStG 제2조 3항·제22조 근거 설명, 30% 비거주자 원천징수 + 조약 제21조 1항 환급
+가능성(위 de_resident 주석과 동일한 확신 수준 — 자동 환급 아님, 결과 보장 안 함이라고 명시),
+Abgeltungsteuer(자본소득세 25%+연대부가세) 각주, 증여세(Schenkungsteuer) 각주 별도 박스,
+FAQ 4개 포함. `node scripts/apply-landing-ticket-style.js germany-resident-us-lottery-tax.html`
+실행 후 프랑스 페이지 `<style>` 블록과 diff해서 23,366바이트 완전히 동일함 확인(빈 스타일
+블록 방지 확인). CTA는 `index.html?lang=de&country=de` — Playwright로 클릭 시 홈 국가
+select가 정확히 `de`로, `<html lang>`이 `de`로 프리셀렉트되는 것도 확인. `sitemap.xml`·
+`sitemap.html` 등재(JSON-LD `SoftwareApplication`은 `COUNTRY_TAX_PROFILES` 실제 카운트인
+"34개국"으로 신규 작성 — 다른 페이지들의 오래된 카운트 문구는 이번 라운드 범위 밖이라
+손대지 않음), **"같은 법 전통" 관례대로 프랑스 페이지(같은 유로존 국가·자기 언어 랜딩페이지
+패밀리)의 `related-links`에 상호 링크 추가**(아일랜드 페이지는 영어 랜딩이라 대신 프랑스를
+선택). `tests/broken_link_audit.js`(0/119, 신규 페이지 포함) 통과.
+
+**테스트(3단계 종합)**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`
+(0/782)·`tests/broken_link_audit.js`(0/119)·`tests/console_error_audit.js`(0/168, 24개
+언어)·`tests/home_audit.js`(0/18)·`tests/lang_leak_audit.js`(0/108, 27개 언어) 전부 통과.
+
+**3단계 커밋 + 새 PR**: 이번 라운드는 브리프가 명시한 대로 평소보다 한 단계 더 쪼갠
+3단계 커밋(언어 인프라 → 국가 로직 → 랜딩페이지/사이트맵/이 항목)으로 진행 — 세션/예산
+한도에 걸려도 부분 진행이 안전하게 보호되도록, 각 단계마다 테스트 통과 확인 후 즉시 push함.
+브랜치 `claude/german-language-and-country-2026-08-17`에서 PR을 열어 리뷰 대기 상태로
+남김(직접 병합 안 함).
+
+**⚠️ 세율 조사 확신 수준 요약**(다음 세션이 재조사 없이 참고할 수 있도록): 독일 소득세
+비과세 자체(EStG 제2조 3항/제22조)는 다수 2차 자료(세무 포털) 일관 확인으로 확신 높음.
+조세조약 제21조 1항의 원문·구조는 1차 자료(irs.gov 원문 PDF) 직접 대조로 확신 높음. 다만
+"gambling이 제21조 적용 예시로 명시됐는지"는 2006/2007 의정서 Technical Explanation에서만
+확인했고 1989년 원 조약 자체의 Technical Explanation은 이번 세션에서 별도로 찾아 대조하지
+않았음 — 아일랜드 라운드와 동일한 한계이니 완전히 새로 조사하기보다 그 결과를 재확인하는
+정도로 충분할 것.
