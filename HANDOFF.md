@@ -1593,6 +1593,29 @@ double-taxation for 38 countries — lump sum or annuity.`(비거주자 원천�
 검증할 것 — 지금 이 페이지를 서치콘솔로 더 파도 표본이 작아 같은 벽(빈 테이블)에
 부딪힐 가능성이 높음.
 
+**이어서 심층 가이드 아티클 "Lump Sum vs. Annuity" 신설**: 사용자가 외부 AI(추정)로부터
+"E-E-A-T 강화용 심층 정보성 아티클/Reddit·Quora 아웃리치/CRO 공유기능" 3개 제안을 받아왔는데,
+코드·`HANDOFF.md` 대조 결과 **뒤 2개는 이미 반영됨**을 확인 — 공유 기능은 `navigator.share()`
+이미지 카드로 몇 차례 다듬어져 있고, Reddit/Quora는 "상시 모니터링+댓글"은 2026-08-05에
+이미 명시적으로 거절된 정책(스팸/어스트로터핑 우려)이고 대신 r/SideProject·r/IndieHackers·
+Show HN 1회성 게시 3개는 2026-08-06에 이미 초안까지 써서 `SendUserFile`로 전달 완료,
+2026-08-12부터 게시 가능 상태로 대기 중(오늘 8/17 기준 실제 게시 여부는 미확인 —
+다음 세션이 사용자에게 물어볼 것). **아티클만 진짜 신규 작업** — 여러 개 중 "Lump sum vs
+Annuity"부터 우선 작성하기로 사용자와 합의(`AskUserQuestion`). 새 파일
+`lump-sum-vs-annuity-lottery-tax.html` — 계산기 안 `renderAnnuityFromCash()`/
+`buildAnnuitySchedule()`(`CASH_VALUE_RATIO=0.58`, 30년 5% 등비수열 지급)를 그대로 가져와
+$500M 예시 표를 실제 공식으로 검산(Playwright로 `calcTakeHome(500,'us')`/직접 등비수열
+계산과 대조, 일치 확인). 핵심 메시지는 "세율은 일시불/연금 무관하게 동일, 총액과 시점만
+다르다" — 기존 주별 페이지(`california-lottery-tax.html`)를 원본으로 복사해 콘텐츠만
+교체하고 `scripts/apply-landing-ticket-style.js`로 스타일 블록을 최신 템플릿과 동기화,
+FAQPage(4문항, 페이지 본문과 1:1 일치)/SoftwareApplication 등 JSON-LD 포함. `sitemap.xml`·
+`sitemap.html`에 새 "In-Depth Guides" 섹션으로 등재, california/texas/new-york 3개 주
+페이지 `related-links`에 상호링크 추가(고아 페이지 방지). `broken_link_audit`(0/124) 통과,
+`script.js`/`styles.css`는 안 건드려서 `build-min.js` 재빌드·캐시 버전업 불필요.
+**⚠️ 다음 세션 메모**: 나머지 가이드 2개("1042-S 양식/환급 절차", "비거주자 당첨금 수령
+절차")는 아직 미착수 — 사용자가 원하면 이어서 작성. 새 페이지도 방금 만들어져서 GSC
+색인 요청 필요(사용자가 직접, [URL 검사]에서 `lump-sum-vs-annuity-lottery-tax.html` 제출).
+
 **⚠️ 다음 세션을 위한 메모**: (1) 인수인계 아카이브 정리는 일회성이 아니라 반복 유지보수임 —
 "작업 이력"에 4번째 항목이 쌓이면(현재 3개) 다시 가장 오래된 항목부터 `HANDOFF-ARCHIVE.md`로
 옮길 것. (2) PSI 모바일 55점/FCP·LCP 18~26초가 또 보고되면 재조사하지 말고 위 "재검증" 항목과
