@@ -607,6 +607,13 @@ document.addEventListener('click', (e) => {
   if (menu && menu.open && !menu.contains(e.target)) menu.open = false;
 });
 
+// 홈 화면 "OO년 세율" 신뢰 배지처럼 실제 세율 데이터를 담지 않는 순수 "올해" 라벨용 —
+// 매년 1월 사람이 고칠 필요 없이 방문 시점 기준으로 자동 계산됨. ⚠️ 세율 구간·공제액·법
+// 시행일 등 실제 숫자가 걸린 문구에는 절대 쓰지 말 것 — 그런 값은 실제로 그 해 발표된
+// 진짜 수치를 사람이 확인해서 넣어야 함(연도만 이걸로 바꿔치기하면 틀린 숫자에 새 연도
+// 라벨만 붙는 꼴이 됨). 매년 점검이 필요한 항목은 HANDOFF.md의 연간 롤오버 체크리스트 참고.
+const CURRENT_YEAR = new Date().getFullYear();
+
 let EXCHANGE_RATE = 1487.73; // 기본값(fallback). 중앙은행 고시 기반 기준환율(2026-07-17 확인 — 한국은행 기준금리 인상으로 원화 강세 반영) — 페이지 로드 시 실시간 환율로 자동 갱신을 시도함. 이 기본값은 주기적으로 수동 업데이트 필요
 let EXCHANGE_RATE_CNY = 6.77; // 기본값(fallback), USD/CNY (2026-07-17 확인). 중국 거주자 기준 결과에서 위안화 참고 환산용 — KRW와 마찬가지로 실시간 조회 시도, 실패하면 이 기본값 사용
 let EXCHANGE_RATE_INR = 87.0; // 기본값(fallback), USD/INR (2026-07-18 확인). 인도 거주자 기준 결과에서 루피 참고 환산용 — KRW와 마찬가지로 실시간 조회 시도, 실패하면 이 기본값 사용
@@ -13315,58 +13322,58 @@ function updateHomeCalc(usdOverride){
     // 세법 계산에 쓰인 것처럼 오해될 수 있어 kr에서만 환율 문구를 붙임
     trustLine.textContent = (country === 'kr')
       ? pickLang(
-          `${authorityText} 공식 자료 기반 · 2026년 세율 · 환율 ${rateStr}원 적용`,
-          `Based on ${authorityText} official data · 2026 tax rates · rate ${rateStr} KRW/USD`,
-          `基于${authorityText}官方数据 · 2026年税率 · 汇率${rateStr}韩元/美元`,
-          `Dựa trên dữ liệu chính thức của ${authorityText} · thuế suất 2026 · tỷ giá ${rateStr} KRW/USD`,
-          `อ้างอิงข้อมูลทางการจาก ${authorityText} · อัตราภาษีปี 2026 · อัตราแลกเปลี่ยน ${rateStr} วอน/ดอลลาร์`,
-          `На основе официальных данных ${authorityText} · налоговые ставки 2026 · курс ${rateStr} вон/долл.`,
+          `${authorityText} 공식 자료 기반 · ${CURRENT_YEAR}년 세율 · 환율 ${rateStr}원 적용`,
+          `Based on ${authorityText} official data · ${CURRENT_YEAR} tax rates · rate ${rateStr} KRW/USD`,
+          `基于${authorityText}官方数据 · ${CURRENT_YEAR}年税率 · 汇率${rateStr}韩元/美元`,
+          `Dựa trên dữ liệu chính thức của ${authorityText} · thuế suất ${CURRENT_YEAR} · tỷ giá ${rateStr} KRW/USD`,
+          `อ้างอิงข้อมูลทางการจาก ${authorityText} · อัตราภาษีปี ${CURRENT_YEAR} · อัตราแลกเปลี่ยน ${rateStr} วอน/ดอลลาร์`,
+          `На основе официальных данных ${authorityText} · налоговые ставки ${CURRENT_YEAR} · курс ${rateStr} вон/долл.`,
           {
-            ar: `استنادًا إلى بيانات ${authorityText} الرسمية · معدلات ضريبة 2026 · سعر الصرف ${rateStr} وون/دولار`,
-            bn: `${authorityText}-এর সরকারি তথ্যের ভিত্তিতে · ২০২৬ করহার · বিনিময় হার ${rateStr} ওন/ডলার`,
-            fr: `Basé sur les données officielles de ${authorityText} · taux d'imposition 2026 · taux de change ${rateStr} KRW/USD`,
-            hi: `${authorityText} के आधिकारिक डेटा पर आधारित · 2026 कर दरें · विनिमय दर ${rateStr} KRW/USD`,
-            id: `Berdasarkan data resmi ${authorityText} · tarif pajak 2026 · kurs ${rateStr} KRW/USD`,
-            ja: `${authorityText}の公式データに基づく · 2026年税率 · 為替レート${rateStr}ウォン/ドル`,
-            kk: `${authorityText} ресми деректері негізінде · 2026 салық мөлшерлемелері · айырбас бағамы ${rateStr} вон/долл.`,
-            km: `ផ្អែកលើទិន្នន័យផ្លូវការរបស់ ${authorityText} · អត្រាពន្ធឆ្នាំ 2026 · អត្រាប្តូរប្រាក់ ${rateStr} វ៉ុន/ដុល្លារ`,
-            ky: `${authorityText} расмий маалыматтарынын негизинде · 2026 салык коэффициенттери · алмашуу курсу ${rateStr} вон/доллар`,
-            lo: `ອີງໃສ່ຂໍ້ມູນທາງການຂອງ ${authorityText} · ອັດຕາພາສີປີ 2026 · ອັດຕາແລກປ່ຽນ ${rateStr} ວອນ/ໂດລາ`,
-            mn: `${authorityText}-ийн албан ёсны мэдээлэлд үндэслэсэн · 2026 оны татварын хувь · ханш ${rateStr} вон/доллар`,
-            my: `${authorityText} ၏ တရားဝင်အချက်အလက်ကို အခြေခံသည် · 2026 အခွန်နှုန်း · ငွေလဲနှုန်း ${rateStr} ဝမ်း/ဒေါ်လာ`,
-            ne: `${authorityText} को आधिकारिक डेटामा आधारित · 2026 कर दर · विनिमय दर ${rateStr} वोन/डलर`,
-            si: `${authorityText} හි නිල දත්ත මත පදනම්ව · 2026 බදු අනුපාත · විනිමය අනුපාතය ${rateStr} වොන්/ඩොලර්`,
-            tl: `Batay sa opisyal na datos ng ${authorityText} · 2026 tax rates · exchange rate ${rateStr} KRW/USD`,
-            ur: `${authorityText} کے سرکاری ڈیٹا پر مبنی · 2026 ٹیکس کی شرحیں · شرح مبادلہ ${rateStr} وون/ڈالر`,
-            uz: `${authorityText} rasmiy ma'lumotlariga asoslangan · 2026 soliq stavkalari · valyuta kursi ${rateStr} von/dollar`,
-           pt: `Baseado em dados oficiais de ${authorityText} · Alíquotas de 2026 · taxa ${rateStr} KRW/USD`, es: `Basado en datos oficiales de ${authorityText} · Tasas fiscales de 2026 · tipo de cambio ${rateStr} KRW/USD`, uk: `На основі офіційних даних ${authorityText} · Податкові ставки 2026 року · курс ${rateStr} KRW/USD`, tet: `Baseia iha dadus ofisiál ${authorityText} · Taxa impostu 2026 · taxa ${rateStr} KRW/USD`, de: `Basierend auf offiziellen Daten von ${authorityText} · Sätze 2026 · Kurs ${rateStr} KRW/USD`, nl: `Gebaseerd op officiële gegevens van ${authorityText} · tarieven 2026 · koers ${rateStr} KRW/USD`, sv: `Baserat på officiella uppgifter från ${authorityText} · satser 2026 · kurs ${rateStr} KRW/USD`}
+            ar: `استنادًا إلى بيانات ${authorityText} الرسمية · معدلات ضريبة ${CURRENT_YEAR} · سعر الصرف ${rateStr} وون/دولار`,
+            bn: `${authorityText}-এর সরকারি তথ্যের ভিত্তিতে · ${CURRENT_YEAR} করহার · বিনিময় হার ${rateStr} ওন/ডলার`,
+            fr: `Basé sur les données officielles de ${authorityText} · taux d'imposition ${CURRENT_YEAR} · taux de change ${rateStr} KRW/USD`,
+            hi: `${authorityText} के आधिकारिक डेटा पर आधारित · ${CURRENT_YEAR} कर दरें · विनिमय दर ${rateStr} KRW/USD`,
+            id: `Berdasarkan data resmi ${authorityText} · tarif pajak ${CURRENT_YEAR} · kurs ${rateStr} KRW/USD`,
+            ja: `${authorityText}の公式データに基づく · ${CURRENT_YEAR}年税率 · 為替レート${rateStr}ウォン/ドル`,
+            kk: `${authorityText} ресми деректері негізінде · ${CURRENT_YEAR} салық мөлшерлемелері · айырбас бағамы ${rateStr} вон/долл.`,
+            km: `ផ្អែកលើទិន្នន័យផ្លូវការរបស់ ${authorityText} · អត្រាពន្ធឆ្នាំ ${CURRENT_YEAR} · អត្រាប្តូរប្រាក់ ${rateStr} វ៉ុន/ដុល្លារ`,
+            ky: `${authorityText} расмий маалыматтарынын негизинде · ${CURRENT_YEAR} салык коэффициенттери · алмашуу курсу ${rateStr} вон/доллар`,
+            lo: `ອີງໃສ່ຂໍ້ມູນທາງການຂອງ ${authorityText} · ອັດຕາພາສີປີ ${CURRENT_YEAR} · ອັດຕາແລກປ່ຽນ ${rateStr} ວອນ/ໂດລາ`,
+            mn: `${authorityText}-ийн албан ёсны мэдээлэлд үндэслэсэн · ${CURRENT_YEAR} оны татварын хувь · ханш ${rateStr} вон/доллар`,
+            my: `${authorityText} ၏ တရားဝင်အချက်အလက်ကို အခြေခံသည် · ${CURRENT_YEAR} အခွန်နှုန်း · ငွေလဲနှုန်း ${rateStr} ဝမ်း/ဒေါ်လာ`,
+            ne: `${authorityText} को आधिकारिक डेटामा आधारित · ${CURRENT_YEAR} कर दर · विनिमय दर ${rateStr} वोन/डलर`,
+            si: `${authorityText} හි නිල දත්ත මත පදනම්ව · ${CURRENT_YEAR} බදු අනුපාත · විනිමය අනුපාතය ${rateStr} වොන්/ඩොලර්`,
+            tl: `Batay sa opisyal na datos ng ${authorityText} · ${CURRENT_YEAR} tax rates · exchange rate ${rateStr} KRW/USD`,
+            ur: `${authorityText} کے سرکاری ڈیٹا پر مبنی · ${CURRENT_YEAR} ٹیکس کی شرحیں · شرح مبادلہ ${rateStr} وون/ڈالر`,
+            uz: `${authorityText} rasmiy ma'lumotlariga asoslangan · ${CURRENT_YEAR} soliq stavkalari · valyuta kursi ${rateStr} von/dollar`,
+           pt: `Baseado em dados oficiais de ${authorityText} · Alíquotas de ${CURRENT_YEAR} · taxa ${rateStr} KRW/USD`, es: `Basado en datos oficiales de ${authorityText} · Tasas fiscales de ${CURRENT_YEAR} · tipo de cambio ${rateStr} KRW/USD`, uk: `На основі офіційних даних ${authorityText} · Податкові ставки ${CURRENT_YEAR} року · курс ${rateStr} KRW/USD`, tet: `Baseia iha dadus ofisiál ${authorityText} · Taxa impostu ${CURRENT_YEAR} · taxa ${rateStr} KRW/USD`, de: `Basierend auf offiziellen Daten von ${authorityText} · Sätze ${CURRENT_YEAR} · Kurs ${rateStr} KRW/USD`, nl: `Gebaseerd op officiële gegevens van ${authorityText} · tarieven ${CURRENT_YEAR} · koers ${rateStr} KRW/USD`, sv: `Baserat på officiella uppgifter från ${authorityText} · satser ${CURRENT_YEAR} · kurs ${rateStr} KRW/USD`}
         )
       : pickLang(
-          `${authorityText} 공식 자료 기반 · 2026년 세율 (화면 금액은 참고용 환산)`,
-          `Based on ${authorityText} official data · 2026 tax rates (amount shown is a reference conversion)`,
-          `基于${authorityText}官方数据 · 2026年税率（显示金额仅为参考换算值）`,
-          `Dựa trên dữ liệu chính thức của ${authorityText} · thuế suất 2026 (số tiền hiển thị chỉ là giá trị quy đổi tham khảo)`,
-          `อ้างอิงข้อมูลทางการจาก ${authorityText} · อัตราภาษีปี 2026 (จำนวนที่แสดงเป็นเพียงค่าแปลงเพื่อการอ้างอิง)`,
-          `На основе официальных данных ${authorityText} · налоговые ставки 2026 (показанная сумма — справочная конвертация)`,
+          `${authorityText} 공식 자료 기반 · ${CURRENT_YEAR}년 세율 (화면 금액은 참고용 환산)`,
+          `Based on ${authorityText} official data · ${CURRENT_YEAR} tax rates (amount shown is a reference conversion)`,
+          `基于${authorityText}官方数据 · ${CURRENT_YEAR}年税率（显示金额仅为参考换算值）`,
+          `Dựa trên dữ liệu chính thức của ${authorityText} · thuế suất ${CURRENT_YEAR} (số tiền hiển thị chỉ là giá trị quy đổi tham khảo)`,
+          `อ้างอิงข้อมูลทางการจาก ${authorityText} · อัตราภาษีปี ${CURRENT_YEAR} (จำนวนที่แสดงเป็นเพียงค่าแปลงเพื่อการอ้างอิง)`,
+          `На основе официальных данных ${authorityText} · налоговые ставки ${CURRENT_YEAR} (показанная сумма — справочная конвертация)`,
           {
-            ar: `استنادًا إلى بيانات ${authorityText} الرسمية · معدلات ضريبة 2026 (المبلغ المعروض هو تحويل مرجعي)`,
-            bn: `${authorityText}-এর সরকারি তথ্যের ভিত্তিতে · ২০২৬ করহার (দেখানো পরিমাণ একটি রেফারেন্স রূপান্তর)`,
-            fr: `Basé sur les données officielles de ${authorityText} · taux d'imposition 2026 (le montant affiché est une conversion de référence)`,
-            hi: `${authorityText} के आधिकारिक डेटा पर आधारित · 2026 कर दरें (दिखाई गई राशि एक संदर्भ रूपांतरण है)`,
-            id: `Berdasarkan data resmi ${authorityText} · tarif pajak 2026 (jumlah yang ditampilkan adalah konversi referensi)`,
-            ja: `${authorityText}の公式データに基づく · 2026年税率（表示金額は参考換算値）`,
-            kk: `${authorityText} ресми деректері негізінде · 2026 салық мөлшерлемелері (көрсетілген сома — анықтамалық айырбас)`,
-            km: `ផ្អែកលើទិន្នន័យផ្លូវការរបស់ ${authorityText} · អត្រាពន្ធឆ្នាំ 2026 (ចំនួនទឹកប្រាក់ដែលបង្ហាញគឺជាការប្តូរប្រាក់សម្រាប់យោង)`,
-            ky: `${authorityText} расмий маалыматтарынын негизинде · 2026 салык коэффициенттери (көрсөтүлгөн сумма — маалымдама конверсия)`,
-            lo: `ອີງໃສ່ຂໍ້ມູນທາງການຂອງ ${authorityText} · ອັດຕາພາສີປີ 2026 (ຈຳນວນທີ່ສະແດງແມ່ນການແປງເພື່ອອ້າງອີງ)`,
-            mn: `${authorityText}-ийн албан ёсны мэдээлэлд үндэслэсэн · 2026 оны татварын хувь (харагдаж буй дүн нь лавлагаа хөрвүүлэлт)`,
-            my: `${authorityText} ၏ တရားဝင်အချက်အလက်ကို အခြေခံသည် · 2026 အခွန်နှုန်း (ပြသထားသောပမာဏသည် ရည်ညွှန်းအတွက်သာလဲလှယ်ထားခြင်းဖြစ်သည်)`,
-            ne: `${authorityText} को आधिकारिक डेटामा आधारित · 2026 कर दर (देखाइएको रकम सन्दर्भका लागि गरिएको रूपान्तरण हो)`,
-            si: `${authorityText} හි නිල දත්ත මත පදනම්ව · 2026 බදු අනුපාත (පෙන්වා ඇති මුදල යොමු කිරීම සඳහා පරිවර්තනයකි)`,
-            tl: `Batay sa opisyal na datos ng ${authorityText} · 2026 tax rates (ang halagang ipinapakita ay reference conversion)`,
-            ur: `${authorityText} کے سرکاری ڈیٹا پر مبنی · 2026 ٹیکس کی شرحیں (دکھائی گئی رقم ایک حوالہ جاتی تبدیلی ہے)`,
-            uz: `${authorityText} rasmiy ma'lumotlariga asoslangan · 2026 soliq stavkalari (ko'rsatilgan summa ma'lumot uchun konvertatsiya)`,
-           pt: `Baseado em dados oficiais de ${authorityText} · Alíquotas de 2026 (o valor mostrado é uma conversão de referência)`, es: `Basado en datos oficiales de ${authorityText} · Tasas fiscales de 2026 (el monto mostrado es una conversión de referencia)`, uk: `На основі офіційних даних ${authorityText} · Податкові ставки 2026 року (показана сума є довідковою конвертацією)`, tet: `Baseia iha dadus ofisiál ${authorityText} · Taxa impostu 2026 (valór ne'ebé hatudu sá de'it konversaun referénsia)`, de: `Basierend auf offiziellen Daten von ${authorityText} · Sätze 2026 (angezeigter Wert ist eine Referenzumrechnung)`, nl: `Gebaseerd op officiële gegevens van ${authorityText} · tarieven 2026 (getoonde waarde is een referentieomrekening)`, sv: `Baserat på officiella uppgifter från ${authorityText} · satser 2026 (visat värde är en referensomräkning)`}
+            ar: `استنادًا إلى بيانات ${authorityText} الرسمية · معدلات ضريبة ${CURRENT_YEAR} (المبلغ المعروض هو تحويل مرجعي)`,
+            bn: `${authorityText}-এর সরকারি তথ্যের ভিত্তিতে · ${CURRENT_YEAR} করহার (দেখানো পরিমাণ একটি রেফারেন্স রূপান্তর)`,
+            fr: `Basé sur les données officielles de ${authorityText} · taux d'imposition ${CURRENT_YEAR} (le montant affiché est une conversion de référence)`,
+            hi: `${authorityText} के आधिकारिक डेटा पर आधारित · ${CURRENT_YEAR} कर दरें (दिखाई गई राशि एक संदर्भ रूपांतरण है)`,
+            id: `Berdasarkan data resmi ${authorityText} · tarif pajak ${CURRENT_YEAR} (jumlah yang ditampilkan adalah konversi referensi)`,
+            ja: `${authorityText}の公式データに基づく · ${CURRENT_YEAR}年税率（表示金額は参考換算値）`,
+            kk: `${authorityText} ресми деректері негізінде · ${CURRENT_YEAR} салық мөлшерлемелері (көрсетілген сома — анықтамалық айырбас)`,
+            km: `ផ្អែកលើទិន្នន័យផ្លូវការរបស់ ${authorityText} · អត្រាពន្ធឆ្នាំ ${CURRENT_YEAR} (ចំនួនទឹកប្រាក់ដែលបង្ហាញគឺជាការប្តូរប្រាក់សម្រាប់យោង)`,
+            ky: `${authorityText} расмий маалыматтарынын негизинде · ${CURRENT_YEAR} салык коэффициенттери (көрсөтүлгөн сумма — маалымдама конверсия)`,
+            lo: `ອີງໃສ່ຂໍ້ມູນທາງການຂອງ ${authorityText} · ອັດຕາພາສີປີ ${CURRENT_YEAR} (ຈຳນວນທີ່ສະແດງແມ່ນການແປງເພື່ອອ້າງອີງ)`,
+            mn: `${authorityText}-ийн албан ёсны мэдээлэлд үндэслэсэн · ${CURRENT_YEAR} оны татварын хувь (харагдаж буй дүн нь лавлагаа хөрвүүлэлт)`,
+            my: `${authorityText} ၏ တရားဝင်အချက်အလက်ကို အခြေခံသည် · ${CURRENT_YEAR} အခွန်နှုန်း (ပြသထားသောပမာဏသည် ရည်ညွှန်းအတွက်သာလဲလှယ်ထားခြင်းဖြစ်သည်)`,
+            ne: `${authorityText} को आधिकारिक डेटामा आधारित · ${CURRENT_YEAR} कर दर (देखाइएको रकम सन्दर्भका लागि गरिएको रूपान्तरण हो)`,
+            si: `${authorityText} හි නිල දත්ත මත පදනම්ව · ${CURRENT_YEAR} බදු අනුපාත (පෙන්වා ඇති මුදල යොමු කිරීම සඳහා පරිවර්තනයකි)`,
+            tl: `Batay sa opisyal na datos ng ${authorityText} · ${CURRENT_YEAR} tax rates (ang halagang ipinapakita ay reference conversion)`,
+            ur: `${authorityText} کے سرکاری ڈیٹا پر مبنی · ${CURRENT_YEAR} ٹیکس کی شرحیں (دکھائی گئی رقم ایک حوالہ جاتی تبدیلی ہے)`,
+            uz: `${authorityText} rasmiy ma'lumotlariga asoslangan · ${CURRENT_YEAR} soliq stavkalari (ko'rsatilgan summa ma'lumot uchun konvertatsiya)`,
+           pt: `Baseado em dados oficiais de ${authorityText} · Alíquotas de ${CURRENT_YEAR} (o valor mostrado é uma conversão de referência)`, es: `Basado en datos oficiales de ${authorityText} · Tasas fiscales de ${CURRENT_YEAR} (el monto mostrado es una conversión de referencia)`, uk: `На основі офіційних даних ${authorityText} · Податкові ставки ${CURRENT_YEAR} року (показана сума є довідковою конвертацією)`, tet: `Baseia iha dadus ofisiál ${authorityText} · Taxa impostu ${CURRENT_YEAR} (valór ne'ebé hatudu sá de'it konversaun referénsia)`, de: `Basierend auf offiziellen Daten von ${authorityText} · Sätze ${CURRENT_YEAR} (angezeigter Wert ist eine Referenzumrechnung)`, nl: `Gebaseerd op officiële gegevens van ${authorityText} · tarieven ${CURRENT_YEAR} (getoonde waarde is een referentieomrekening)`, sv: `Baserat på officiella uppgifter från ${authorityText} · satser ${CURRENT_YEAR} (visat värde är en referensomräkning)`}
         );
   }
 

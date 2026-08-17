@@ -1187,102 +1187,12 @@ LotteryUSA만 노출됨) — "이미 1순위 노출된다"는 전제는 틀림. 
 
 ## 작업 이력 (날짜순, 세션마다 맨 아래에 새 항목 추가)
 
-이보다 오래된 세션 기록(~2026-08-16 PR #239~#243 순차 머지까지)은 `HANDOFF-ARCHIVE.md` 참고
-(특정 과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님). 이 본문에는 최근 세션(독일 UI
-언어+국가 추가, 네덜란드 UI 언어+국가 추가, 스웨덴 UI 언어+국가 추가, script.js 로또 갱신
-코멘트 정리) 기록만 남겨둠 — 날짜별 항목이 3~4개를 다시 넘어가면 가장 오래된 날짜부터 또 이
-방식으로 정리할 것(같은 패턴 반복, `HANDOFF-ARCHIVE.md` 맨 뒤에 이어 붙이면 됨).
-
-### 2026-08-17 — 독일어(de)를 신규 UI 언어로 추가 + 독일을 34번째 지원 국가로 추가 (3단계 커밋, 새 PR)
-
-이전 세션이 "다음 후보는 독일·네덜란드(언어 지원 결정 필요)"라고 남긴 대로, 이번 세션은
-Canada/UK/Australia류(이미 지원되던 언어 재사용)보다 훨씬 큰 작업인 **새 UI 언어 자체를
-추가**하는 라운드였음 — 시작 전에 브리프가 요구한 대로 규모를 직접 검증함(`grep -c '\btet:'
-script.js`가 296을 반환, `ADDITIONAL_LANGS` 21개 확인 — 브리프의 가정이 정확했음).
-
-**1단계(언어 인프라)**: `script.js`의 `ADDITIONAL_LANGS`와 `scripts/build-i18n.js`/
-`tests/console_error_audit.js`/`tests/lang_leak_audit.js`의 각 `LANGS` 배열에 `'de'` 추가
-(4개 파일 동기화). `i18n-source/translations.json` 800개 키 전체에 실제 독일어 번역 추가
-(플레이스홀더 없음 — 800개 항목을 8개 청크 파일로 나눠 직접 번역해서 스크립트로 병합).
-`i18n/de.json` 신규 생성 + 기존 26개 언어 파일 재생성(`node scripts/build-i18n.js`, 내용은
-동일하고 JSON 재직렬화만 발생 — 26개 파일 전부 diff로 실제 번역 텍스트가 안 바뀐 것을
-확인). `script.js`의 `tet:` 마커가 붙은 "more" 객체 296개 전부에 `de:` 항목 추가 — 대부분
-(286개)은 line-surgery 스크립트로 자동 삽입했고, 특수 형태 10개(배열 1개, 객체 3개 —
-`COUNTRY_NAMES_MORE`/match-no-plus-only 객체/국가명 객체, 화살표 함수 6개)는 직접 Edit로
-처리. **여기서 실수로 놓칠 뻔한 부분**: `COUNTRY_NAMES_MORE`는 언어별 행(`de:` 새 행 포함
-22개 언어) 각각이 "나라 코드 → 그 언어로 된 나라 이름" 맵인데, 처음엔 새 `de`(독일어) *언어*
-행만 추가하고 `de`(독일) *국가* 코드를 기존 22개 언어 행 전부에 추가하는 걸 깜빡함 —
-Playwright로 `calcTakeHome(800,'de')`를 직접 돌려보다가 `label2`에 "Zusätzliche Steuer in
-undefined"가 찍히는 걸 발견해서 잡음(스크립트로 22개 행 전부에 `de:'Deutschland'`류 국가명
-일괄 삽입). 이 단계에서 `tests/i18n_coverage_audit.js`(0/781)·`tests/console_error_audit.js`
-(0/168, 24개 언어)·`tests/lang_leak_audit.js`(0/108, 27개 언어) 전부 통과 확인 후 커밋.
-
-**2단계(독일 국가 로직)**: `TAX_MODEL.de_resident`(rate: 0) + `calcTakeHome()`의 `'de'` 분기 +
-`COUNTRY_TAX_PROFILES`/`SUPPORTED_TAX_COUNTRIES`/`COUNTRY_TAX_AUTHORITY`(`Finanzamt`)/
-`REAL_ABROAD_CURRENCY['de']='EUR'`(프랑스/아일랜드와 같은 유로존 통화 재사용, 신규 통화
-작업 불필요) 추가. **세율 조사(WebSearch, 2026-08-17)**: 브리프가 명시적으로 경고한 대로
-"유럽이니까 당연히 0% 클럽"이라고 가정하지 않고 직접 조사함 — 독일 소득세법(EStG) 제2조
-3항이 과세 대상 소득을 7개 소득 종류(Einkunftsarten, 제22조가 열거)로 한정하는데 복권·도박
-당첨금은 그 어디에도 해당하지 않아 "과세 불가"(nicht steuerbar)라는 게 다수 독일 세무
-포털(steuern.de/vlh.de/taxfix.de/smartsteuer.de/steuerstudies.de)의 일관된 설명 — 세율이
-낮은 게 아니라 애초에 과세표준 자체가 없는 구조라 uk/au/fr/ie/sg/za/my_resident와 같은
-"진짜 0%" 케이스(FTC 상계로 0이 되는 mx/in과는 다름). 미-독일 조세조약 원문(irs.gov/
-pub/irs-trty/germany.pdf)의 제21조 1항("기타소득")이 OECD 모델식 "shall be taxable only in
-that State" 문언인 것도 직접 대조했고, 2006/2007년 의정서 Technical Explanation(germanyte07.pdf,
-`pdftotext -layout`으로 직접 대조)에서는 "gambling"을 명시하는 문구를 찾지 못해 — 명시적
-재무부 예시가 확인된 영국/일본/프랑스보다 한 단계 낮고 아일랜드(ie_resident)와 같은 확신
-수준("조약 본문 문언 + 나머지 국가들과의 구조적 일관성")으로 주석에 명시함. 증여세
-(Schenkungsteuer, 배우자 50만 유로·자녀 40만 유로 등 관계별 공제)는 당첨금 자체가 아니라
-나중에 증여하는 시점에만 발생하는 별개 세목이라 별도 각주로 분리(당첨 시점 실수령액 계산
-로직과 무관 — fr_resident의 PFU 각주와 같은 성격). `index.html`의 3개 국가 선택 지점
-(`realAbroadSelect` `de|de`, `homeCountrySelect`, `homeCountryToggle` 버튼 그리드) 배선 +
-새 i18n 키 `input.optGermany`(27개 언어) 추가. `script.min.js?v=20260817-1`/`sw.js
-CACHE_NAME v70`로 버전 갱신(`node scripts/build-min.js`) — **`index.html`이 `script.min.js`를
-불러온다는 걸 처음엔 깜빡하고 `script.js`만 고친 채 Playwright로 `calcTakeHome`을 테스트해서
-"홈 국가로 안 바뀜" 버그를 잠깐 봤음, minify를 다시 돌리고서야 정상 확인** — 다음 세션도 같은
-실수를 반복하지 않도록 기록. `node --check` 통과, `tests/i18n_coverage_audit.js`(0/782)·
-`tests/console_error_audit.js`(0/168)·`tests/lang_leak_audit.js`(0/108)·
-`tests/broken_link_audit.js`(0/118)·`tests/home_audit.js`(0/18) 전부 통과 후, 프로덕션과
-동일하게 `script.min.js`를 서빙하는 로컬 서버로 `calcTakeHome(800,'de')`가
-`{afterUS:560, final:560}`(=$800M×0.7=$560M), `calcTakeHome(1,'de')`가
-`{afterUS:0.7, final:0.7}`(=$700,000)을 정확히 반환하는 것과 compare 화면에서도 독일
-옵션이 콘솔 에러 없이 정상 렌더링되는 것을 확인 후 커밋.
-
-**3단계(랜딩페이지+사이트맵+이 항목)**: `germany-resident-us-lottery-tax.html` 신설 —
-프랑스 페이지를 구조 템플릿으로 재사용(가장 가까운 사례: 유로존 국가, 자기 언어 랜딩페이지,
-EUR 통화, "정산 티켓" CSS 템플릿). 프랑스/멕시코 라운드와 같은 이유로 영어가 아니라 독일어로
-작성(독일어가 이번 세션부터 진짜로 지원되므로). $1M 예시(미국 원천징수 -$300,000, 독일
-추가세 0€, 실수령 약 $700,000, EUR 환산 참고치 약 644,000€ — `EXCHANGE_RATE_EUR` 폴백값
-0.92 기준), EStG 제2조 3항·제22조 근거 설명, 30% 비거주자 원천징수 + 조약 제21조 1항 환급
-가능성(위 de_resident 주석과 동일한 확신 수준 — 자동 환급 아님, 결과 보장 안 함이라고 명시),
-Abgeltungsteuer(자본소득세 25%+연대부가세) 각주, 증여세(Schenkungsteuer) 각주 별도 박스,
-FAQ 4개 포함. `node scripts/apply-landing-ticket-style.js germany-resident-us-lottery-tax.html`
-실행 후 프랑스 페이지 `<style>` 블록과 diff해서 23,366바이트 완전히 동일함 확인(빈 스타일
-블록 방지 확인). CTA는 `index.html?lang=de&country=de` — Playwright로 클릭 시 홈 국가
-select가 정확히 `de`로, `<html lang>`이 `de`로 프리셀렉트되는 것도 확인. `sitemap.xml`·
-`sitemap.html` 등재(JSON-LD `SoftwareApplication`은 `COUNTRY_TAX_PROFILES` 실제 카운트인
-"34개국"으로 신규 작성 — 다른 페이지들의 오래된 카운트 문구는 이번 라운드 범위 밖이라
-손대지 않음), **"같은 법 전통" 관례대로 프랑스 페이지(같은 유로존 국가·자기 언어 랜딩페이지
-패밀리)의 `related-links`에 상호 링크 추가**(아일랜드 페이지는 영어 랜딩이라 대신 프랑스를
-선택). `tests/broken_link_audit.js`(0/119, 신규 페이지 포함) 통과.
-
-**테스트(3단계 종합)**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`
-(0/782)·`tests/broken_link_audit.js`(0/119)·`tests/console_error_audit.js`(0/168, 24개
-언어)·`tests/home_audit.js`(0/18)·`tests/lang_leak_audit.js`(0/108, 27개 언어) 전부 통과.
-
-**3단계 커밋 + 새 PR**: 이번 라운드는 브리프가 명시한 대로 평소보다 한 단계 더 쪼갠
-3단계 커밋(언어 인프라 → 국가 로직 → 랜딩페이지/사이트맵/이 항목)으로 진행 — 세션/예산
-한도에 걸려도 부분 진행이 안전하게 보호되도록, 각 단계마다 테스트 통과 확인 후 즉시 push함.
-브랜치 `claude/german-language-and-country-2026-08-17`에서 PR을 열어 리뷰 대기 상태로
-남김(직접 병합 안 함).
-
-**⚠️ 세율 조사 확신 수준 요약**(다음 세션이 재조사 없이 참고할 수 있도록): 독일 소득세
-비과세 자체(EStG 제2조 3항/제22조)는 다수 2차 자료(세무 포털) 일관 확인으로 확신 높음.
-조세조약 제21조 1항의 원문·구조는 1차 자료(irs.gov 원문 PDF) 직접 대조로 확신 높음. 다만
-"gambling이 제21조 적용 예시로 명시됐는지"는 2006/2007 의정서 Technical Explanation에서만
-확인했고 1989년 원 조약 자체의 Technical Explanation은 이번 세션에서 별도로 찾아 대조하지
-않았음 — 아일랜드 라운드와 동일한 한계이니 완전히 새로 조사하기보다 그 결과를 재확인하는
-정도로 충분할 것.
+이보다 오래된 세션 기록(~2026-08-17 독일어 UI 언어 추가까지)은 `HANDOFF-ARCHIVE.md` 참고
+(특정 과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님). 이 본문에는 최근 세션(네덜란드
+UI 언어+국가 추가, 스웨덴 UI 언어+국가 추가, script.js 로또 갱신 코멘트 정리, CURRENT_YEAR
+도입+연간 롤오버 점검 Routine) 기록만 남겨둠 — 날짜별 항목이 3~4개를 다시 넘어가면 가장
+오래된 날짜부터 또 이 방식으로 정리할 것(같은 패턴 반복, `HANDOFF-ARCHIVE.md` 맨 뒤에 이어
+붙이면 됨).
 
 ### 2026-08-17 이어서 — 네덜란드어(nl)를 신규 UI 언어로 추가 + 네덜란드를 35번째 지원 국가로 추가 (3단계 커밋, 새 PR)
 
@@ -1608,3 +1518,48 @@ sandbox에 미설치 상태였음) 후 `npm run build:min` 재실행 — terser�
 기준 약 60여 곳 더 있었음) — 이번엔 사용자가 보여준 로또 카드 영역만 정리했고 나머지는
 손대지 않음. 전체 파일을 훑는 건 이번 스코프 밖이라 진행 안 함, 필요하면 다음 세션에 별도로
 요청할 것.
+
+### 2026-08-17 이어서 — 매년 연도가 자동으로 바뀌게 해달라는 요청: CURRENT_YEAR 도입 + 연간 롤오버 점검 Routine 생성
+
+사용자가 "매년 연도가 바뀔 때 자동으로 갱신되게 해달라"고 요청. 먼저 리서치 서브에이전트로
+저장소 전체에서 "2026"이 박힌 189개 파일·약 850곳을 카테고리별로 조사(코드 변경 없이
+읽기 전용) — 결과: 대부분(script.js 538곳 중 409곳)은 세션 작업 로그 커밋 코멘트, 나머지는
+크게 (1) 숫자 없는 순수 "올해" 라벨(자동화 안전), (2) 미국 증여세 면제한도 등 실제 세율/공제
+금액(IRS가 매년 발표하는 실제값을 사람이 넣어야 함, 연도만 기계적으로 바꾸면 틀린 숫자에 새
+연도 라벨만 붙는 최악의 실패 모드), (3) "카자흐스탄 2026-01-01 시행" 같은 각국 법 시행일
+(연도가 바뀌어도 안 바뀌는 역사적 사실, 잘못 찾아바꾸면 사실 왜곡), (4) 빌드 단계가 없는
+100여 개 정적 HTML의 title/메타(런타임에 안전하게 자동화 불가) 로 나뉨. "완전 자동"으로
+처리하면 세율 숫자가 틀렸는데 연도만 최신처럼 보이는 게 제일 위험하다고 판단해, 사용자에게
+범위를 확인받음(AskUserQuestion) — "안전한 라벨만 자동 + 매년 점검 알림" 선택.
+
+**구현**: `script.js`에 `const CURRENT_YEAR = new Date().getFullYear();`를 새로 추가(환율
+폴백 상수들 바로 위, 방문 시점 기준 매번 계산됨 — 언제 갱신해야 하는지도 주석으로 명시,
+실제 세율/공제/법 시행일에는 절대 쓰지 말라고 경고). 홈 화면 "OO년 세율" 신뢰 배지
+(`home-trust-line`, `updateHomeCalc()` 내부, 30개 언어 × 2개 변형 = 60곳)의 하드코딩된
+"2026"을 전부 `${CURRENT_YEAR}`로 교체 — 이 문구들은 이미 `${authorityText}`/`${rateStr}`
+보간이 있는 템플릿 리터럴이라 숫자 데이터 없이 순수 연도 표시뿐임을 확인 후 진행. 부수적으로
+발견: 방글라데시어(bn) 항목만 "২০২৬"(벵골 숫자)로 하드코딩돼 있었는데, 같은 파일의 다른 bn
+문구(가격 등)는 전부 서구 숫자를 쓰고 있어서 오히려 이번 교체로 일관성이 맞춰짐.
+
+**검증**: `node --check script.js` 통과. `npm run build:min` 재실행(이번엔 실제 로직이
+바뀌어서 `script.min.js`가 진짜로 달라짐, 지난 코멘트 정리 세션과 다름) → `index.html`의
+`script.min.js?v=` 캐시버스팅을 20260817-5→20260817-6으로 갱신. Playwright로 로컬
+서버(`python3 -m http.server 9000`) 띄워 직접 확인 — `document.getElementById('home-trust-line')`
+텍스트가 "2026 tax rates"로 정상 렌더(오늘 날짜 기준 `CURRENT_YEAR`가 2026으로 계산돼 기존
+하드코딩 값과 동일하게 나옴, 회귀 없음 확인). `tests/console_error_audit.js`(182개 설정
+0건)·`tests/home_audit.js`(18개 0건) 통과.
+
+**연간 점검 Routine 생성**: 실제 세율 숫자·법 시행일은 사람이 매년 확인해야 하므로, 매년
+1/15에 새 세션을 띄워 점검 체크리스트(미국 증여세 면제한도/최고세율, `KOREA_TAX_BRACKETS`,
+각국 신법 시행일 문구, 정적 페이지에 남은 지난 연도 문구, 환율 폴백)를 수행하도록
+`create_trigger`로 예약함(`trig_01JYWdnPkNXjnxEC7XnkboHF`, cron `0 1 15 1 *`, 매번 새
+세션 생성, 다음 실행 2027-01-15). 프롬프트에 "2026→2027 기계적 찾아바꾸기 절대 금지" 경고를
+포함시켜 뒀음 — 이 위험은 이번 세션 리서치에서 발견한 핵심 함정이라 다음 세션이 반복하지
+않도록. 이 Routine 자체는 커넥터(MCP) 없이 실행됨(경고 메시지 확인 — 필요해지면 사용자가
+claude.ai 루틴 UI에서 다시 만들어야 함, 지금은 WebFetch/WebSearch/Bash/Edit 등 기본 도구만
+필요해서 문제없음).
+
+**다음 세션 참고**: `CURRENT_YEAR`는 지금 딱 한 곳(홈 신뢰 배지)에만 쓰임 — 앞으로 "숫자 데이터
+없는 순수 연도 라벨"을 새로 추가할 일이 있으면 하드코딩 대신 이 상수를 재사용할 것. 정적 HTML
+title/메타의 지난 연도 문구는 이번에 손대지 않았음(위 Routine의 점검 항목으로 넘김) — 급하면
+다음 세션이 `grep -rn "2026" *.html`로 직접 찾아서 사람이 하나씩 확인 후 처리할 것.
