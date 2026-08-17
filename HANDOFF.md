@@ -1625,3 +1625,33 @@ FAQPage(4문항, 페이지 본문과 1:1 일치)/SoftwareApplication 등 JSON-LD
 일치하는지, 언어별로 동기화할 가치가 있는지)과 (5) `us-lottery-take-home.html` 등 한국어
 전용 서브페이지 영어 지원 여부(바로 위 항목)는 둘 다 이번 라운드에서 확인/보류만 하고
 미반영 — 트래픽이 더 쌓인 뒤 재검토.
+
+**PR #250 머지 완료 후 — 320px/다크모드/보안헤더 점검, 실제 버그 1건 발견·수정(PR #251)**:
+사용자가 외부 AI 제안으로 320px 뷰포트·다크모드·보안헤더 점검을 요청 — 이번엔 진짜 버그가
+하나 나옴. `lump-sum-vs-annuity-lottery-tax.html`의 $500M 예시 표를 `lottery-prize-tiers.html`
+전용으로 설계된 `.table-wrap`(배지+title/amt/odds/krw grid-template-areas, `<thead>` 시각적
+숨김)에 잘못 넣어서, 4열 일반 비교표인데 `class="amt"`가 붙은 두 열(Gross amount/Net)이 같은
+grid-area를 두고 겹쳐 렌더링되고 헤더 행 자체가 안 보이던 문제 — Playwright 320px 스크린샷으로
+실제 겹침 확인 후 `.table-wrap` 제거하고 다른 90여 개 페이지가 쓰는 일반 `<table>`로 되돌려
+수정. **PR #250이 이미 머지·클로즈된 상태라 같은 브랜치에 새 커밋을 푸시해도 자동으로 안
+올라감을 확인**(`git push origin main` 오타로 403 경험, 이후 브랜치를 `origin/main` 기준으로
+재구성해 새 PR #251 오픈) — 이 저장소에서 세션이 "머지된 PR 브랜치에 후속 커밋"을 다시 할 땐
+브랜치를 최신 main 기준으로 재구성(cherry-pick 또는 rebase)하고 새 PR을 열 것, 옛 PR이
+재사용되길 기대하지 말 것. PR #251도 머지 완료, GitHub Pages 캐시(`cache-control: max-age=600`)
+때문에 배포 후 실제 반영까지 몇 분 걸림을 확인(즉시 반영 아님 — 다음 세션이 "방금 머지했는데
+왜 반영이 안 되지" 헷갈리지 않도록 기록).
+
+다크모드는 가이드 2개 다 스크린샷으로 확인해 문제 없음. 보안 헤더(`X-Content-Type-Options`/
+`X-Frame-Options`/`Strict-Transport-Security`)는 `curl -I`로 실측 확인한 결과 전부 없음 —
+다만 GitHub Pages가 커스텀 응답 헤더를 지원하지 않아 저장소 코드로 고칠 수 있는 부분이 아님,
+사이트 앞단에 Cloudflare가 확인됨(`server: cloudflare`)이라 필요하면 Cloudflare 대시보드의
+Transform Rules로 추가해야 함(사용자 몫, 코드 작업 아님).
+
+**manifest.json도 이미 있음 재확인**: 사용자가 또 다른 외부 AI 제안(PWA manifest.json 설정)을
+가져왔는데 이미 루트에 존재하고 `index.html`에 링크도 이미 돼있어 손댈 것 없음 — 이걸로
+같은 세션에서 "이미 구현된 걸 다시 제안받은" 사례가 스키마 마크업·FAQ·공유기능·주별
+페이지·manifest.json까지 5번째. **다음 세션 참고**: 사용자가 외부 AI 제안을 가져오면 먼저
+코드부터 확인하고 답할 것(이번 세션 전체가 이 패턴의 반복이었음), 특히 "이미 있다"고 답할 때도
+정말 요청한 형태 그대로 있는지 실제로 열어서 확인할 것 — 이번 라운드처럼 "있긴 한데 잘못
+쓰여서 깨져있는" 경우도 있으므로 존재 여부만 grep으로 확인하고 넘어가지 말고, 가능하면
+Playwright로 실제 렌더링까지 봐야 안전함(이번 table-wrap 버그가 정확히 그 사례).
