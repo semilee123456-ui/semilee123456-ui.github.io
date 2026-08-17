@@ -14998,3 +14998,58 @@ sitemap+호주 페이지 상호링크+이 HANDOFF 항목)를 커밋 — 이전 �
 확장 배치는 말레이시아로 종료. 다음 후보는 위 "다음 세션 후보" 문단대로 독일·네덜란드(언어
 지원 결정 필요)부터.
 
+
+### 2026-08-16 이어서 — 인수인계: PR #239~#243(뉴질랜드·아일랜드·싱가포르·남아공·말레이시아) 5개 순차 머지 완료
+
+사용자 지시("네가 해야된다고 생각하는 거 전부 해줘")에 따라, 같은 날 서로 독립적으로 작업된
+5개의 "0% club" 국가 추가 PR을 `main`에 순서대로(PR이 열린 순서: #239→#240→#241→#242→#243)
+직접 머지함. 각 PR이 `script.js`·`index.html`·`i18n/*.json`·`sitemap.xml`/`sitemap.html`·
+`sw.js`·`HANDOFF.md`·`us-lottery-tax-for-australians.html`(상호링크)를 독립적으로 건드려서
+순서대로 머지할 때마다 충돌이 났고, 매번 격리된 `git worktree`(메인 작업 디렉터리·동시 진행
+중이던 말레이시아 서브에이전트와 분리)에서 직접 충돌을 해결한 뒤 테스트를 다시 돌리고
+PR을 갱신·머지했음.
+
+**충돌 해결 원칙**: 모든 충돌이 "같은 파일의 다른 위치에 각자 새 국가를 추가"하는 순수
+독립 삽입이라, 실제 의미 충돌은 단 한 건도 없었음(양쪽 다 유지가 항상 정답). `TAX_MODEL`·
+`calcTakeHome()`의 else-if 블록·`COUNTRY_TAX_PROFILES`·`SUPPORTED_TAX_COUNTRIES`·
+`COUNTRY_TAX_AUTHORITY`·`REAL_ABROAD_CURRENCY`·`CURRENCY_DISPLAY_META`·
+`CURRENCY_RATE_CONFIG`·`index.html`의 3개 select/toggle·`sitemap.xml`/`sitemap.html`은
+전부 "PR이 열린 순서대로(nz→ie→sg→za→my) 나열" 관례로 통일해서 정리. `COUNTRY_NAMES_MORE`
+(21개 언어 객체)와 `i18n/*.json`(26개 파일)은 항목 수가 많아 손으로 하나씩 고치는 대신
+매 라운드 Python 스크립트를 새로 작성해 프로그래밍적으로 병합(두 브랜치의 해당 블록을 각각
+온전한 JSON/객체로 재구성해 `json.loads`/파싱한 뒤 유니온) — 실제 키 충돌은 0건으로 확인됨.
+
+**⚠️ 발견한 실수와 교정**: 싱가포르 라운드에서 `i18n-source/translations.json`(마스터
+소스 — 원래 들여쓰기 2칸의 pretty-print JSON) 충돌을 해결하며 `i18n/*.json`(파생 파일,
+원래도 한 줄 압축 포맷이 맞음)과 같은 압축 포맷으로 잘못 저장해버려서, PR diff가
+`+946 -22383`처럼 부풀어 보이는 문제가 발생함 — `git diff`로 실제 확인해보니 데이터
+유실은 아니었고(모든 키 보존 확인) 순수 포맷 문제였음. 별도 커밋으로 `json.dump(...,
+indent=2)`로 되돌려 정정(`+55 -27`로 정상화). 이후 라운드(남아공·말레이시아)부터는
+소스 파일과 파생 파일을 분리 처리하는 스크립트로 고쳐서 재발 방지. 또, 대용량 텍스트를
+손으로 옮겨적다가 "居民"(중국어 居民)을 "居민"(한중 혼용 오타)으로 잘못 입력한 사례가
+2번 있었음 — 매번 직후에 `grep`으로 발견해 즉시 수정, 최종적으로 전체 파일에 이 오타가
+남아있지 않음을 확인.
+
+**검증**: 5개 브랜치 각각 머지 직후 `node --check script.js`·`tests/broken_link_audit.js`·
+`tests/i18n_coverage_audit.js`·`tests/console_error_audit.js`·`tests/home_audit.js`
+전부 0건 확인 + Playwright로 `calcTakeHome(800, <country>)`가 각 나라마다 정확히
+`{afterUS:560, final:560}`(30% 미국 원천징수만 적용)을 반환하는 것을 직접 확인. 마지막
+말레이시아 머지 이후 `main`을 최종 fetch해 `SUPPORTED_TAX_COUNTRIES`에 33개국(kr/us 등
+논스톱 국가 포함) 전부 존재, `script.min.js?v=20260816-15`/`sw.js CACHE_NAME v69`로
+버전 일치, 5개 랜딩페이지(`us-lottery-tax-for-{nz-residents,irish-residents,
+singapore-residents,south-africans,malaysians}.html`) 전부 존재, 실제 프로덕션과 동일하게
+로컬 서버로 `script.min.js`(압축본)를 직접 서빙해 5개국 `calcTakeHome()` 재확인(콘솔 에러
+0건)까지 마쳤음 — "고쳤다고 기록했는데 실제로는 반영 안 됨" 사고를 반복하지 않기 위해
+소스 코드 확인이 아닌 실제 배포 아티팩트 기준으로 검증.
+
+**정리**: 병합 작업에 쓰인 임시 `git worktree`(스크래치 디렉터리)와 4개의 로컬 임시 브랜치
+(`ireland-merge`/`singapore-merge`/`southafrica-merge`/`malaysia-merge`)를 작업 완료 후
+삭제. 메인 작업 디렉터리는 최종적으로 `main` 브랜치, `origin/main`과 정확히 일치하는
+상태로 정리해둠(이전에 말레이시아 서브에이전트가 남겨둔 `claude/malaysia-country-2026-08-16`
+브랜치 체크아웃 상태였던 것도 `main`으로 되돌림).
+
+**다음 세션 참고**: 이 파일이 날짜별 세션 항목 20개를 넘어 파일 상단 유지보수 규칙(3~4개
+초과 시 아카이브)을 크게 넘어섰던 상태라, 이번 항목 작성과 함께 오래된 항목들을
+`HANDOFF-ARCHIVE.md`로 옮기는 아카이빙도 이어서 진행함(아래 "작업 이력" 섹션 참고 — 최근
+몇 개 세션만 남기고 나머지는 아카이브로 이동).
+
