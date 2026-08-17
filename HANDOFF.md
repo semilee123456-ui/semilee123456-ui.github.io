@@ -1849,3 +1849,9 @@ PR #251(lump-sum-vs-annuity 표 table-wrap 버그 수정), PR #252(문서 전용
 `#lang-toggle`·`#foreignerLangSelect` `<select>` 옵션엔 빠져있던 실제 버그 확인·수정. **다음
 세션 참고**: 새 UI 언어 추가 시 이 두 `<select>`도 체크리스트에 포함할 것(지금까지 최소 2번
 반복된 누락 패턴).
+
+**PR #257**: 사용자가 폰에서 사이트맵(`us-lottery-basics`/`in_korea` 26·27개 언어 목록)이
+어지럽다고 지적 → `ul.lang-grid`에 `display:flex`가 빠져서 칩 그리드가 그냥 세로 목록으로
+보이던 CSS 버그 발견·수정(`.lang-links`와 같은 칩 스타일 적용). 같은 요청에서 실제 복권
+당첨번호 최신화 여부도 확인 — `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`(2026-08-15)·
+`MEGAMILLIONS_DRAW_ARCHIVE`(2026-08-14) 전부 실제 결과와 정확히 일치, 손댈 것 없었음.
