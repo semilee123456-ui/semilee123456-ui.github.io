@@ -1,6 +1,6 @@
 // 언어 x 화면 조합을 로드할 때 JS 콘솔 에러(console.error, 처리되지 않은 예외)가 나는지 검사.
 const { chromium } = require('playwright');
-const LANGS = ['ko', 'en', 'zh', 'vi', 'th', 'ru', 'km', 'ne', 'id', 'my', 'si', 'uz', 'mn', 'kk', 'ky', 'ur', 'bn', 'lo', 'ja', 'ar', 'hi', 'fr', 'tl', 'de', 'nl'];
+const LANGS = ['ko', 'en', 'zh', 'vi', 'th', 'ru', 'km', 'ne', 'id', 'my', 'si', 'uz', 'mn', 'kk', 'ky', 'ur', 'bn', 'lo', 'ja', 'ar', 'hi', 'fr', 'tl', 'de', 'nl', 'sv'];
 const VIEWS = ['home', 'compare', 'odds', 'faq', 'privacy', 'disclaimer', 'contact'];
 
 (async () => {

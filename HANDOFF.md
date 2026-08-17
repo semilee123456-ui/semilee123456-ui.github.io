@@ -319,16 +319,18 @@ git commit/push(origin main)까지 끝내고, 애매하거나 위험한 판단�
 - **대상**: 한국에 거주하는 40~60대가 주 타겟 — 접근성(최소 폰트 크기, 명암비) 기준이
   명시적으로 있음. 한국 거주 외국인(재외국민이 아닌, 한국에 사는 외국인)도 별도 페르소나로
   지원함 — FAQ 등에서 두 페르소나를 혼동하지 않도록 주의(아래 "대상 배지" 참고).
-- **27개 언어 지원**(2026-08-17, `de` 독일어 신규 추가로 26개→27개 — pt/es/uk/tet 4개 추가
-  이후 최초의 신규 언어. 위치인자 6개 언어(ko/en/zh/vi/th/ru)를 재사용하지 않는 진짜 새 언어라
-  Canada/UK/Australia류 국가 추가 라운드보다 작업량이 훨씬 큼): ko(기본, HTML에 직접 한글로
-  박혀있음), en/zh/vi/th/ru(이상 5개는 `pickLang`의 위치 인자), 나머지 22개
-  (km/ne/id/my/si/uz/mn/kk/ky/ur/bn/lo/ja/ar/hi/fr/tl/pt/es/uk/tet/de — `pickLang`의 `more`
-  객체 인자로 처리, `ADDITIONAL_LANGS`에서 확인 가능). `i18n-source/translations.json`(정적
-  텍스트, 801개 키) + `script.js` 안의 `pickLang()` 동적 문자열(`tet:` 마커가 붙은 "more" 객체
-  296개) 양쪽 다 27개 언어 100% 채워진 상태 — 회귀 테스트는 여전히 옛 언어 수가 적힌 주석/
-  변수명이 코드 여기저기 남아있을 수 있는데, 실제 지원 언어 수는
+- **29개 언어 지원**(2026-08-17, `sv` 스웨덴어 신규 추가로 28개→29개 — pt/es/uk/tet 4개 추가
+  이후 de/nl/sv 세 번의 신규 언어 라운드가 이어짐. 위치인자 6개 언어(ko/en/zh/vi/th/ru)를
+  재사용하지 않는 진짜 새 언어라 Canada/UK/Australia류 국가 추가 라운드보다 작업량이 훨씬 큼):
+  ko(기본, HTML에 직접 한글로 박혀있음), en/zh/vi/th/ru(이상 5개는 `pickLang`의 위치 인자),
+  나머지 24개(km/ne/id/my/si/uz/mn/kk/ky/ur/bn/lo/ja/ar/hi/fr/tl/pt/es/uk/tet/de/nl/sv —
+  `pickLang`의 `more` 객체 인자로 처리, `ADDITIONAL_LANGS`에서 확인 가능). `i18n-source/
+  translations.json`(정적 텍스트, 803개 키) + `script.js` 안의 `pickLang()` 동적 문자열
+  (`tet:` 마커가 붙은 "more" 객체 298개) 양쪽 다 29개 언어 100% 채워진 상태 — 회귀 테스트는
+  여전히 옛 언어 수가 적힌 주석/변수명이 코드 여기저기 남아있을 수 있는데, 실제 지원 언어 수는
   `ADDITIONAL_LANGS.length + 5`(위치인자)로 확인할 것 — 문서·주석 서술보다 코드가 진실.
+  (참고: 이 줄은 26일까지 "27개 언어"로 멈춰 있었음 — 독일 라운드 이후 네덜란드 라운드가
+  이 요약 줄 갱신을 빠뜨렸던 것으로 보임, 이번 세션에서 27→29로 한 번에 정정.)
 
 ### 파일/폴더 구조
 ```
@@ -1458,3 +1460,175 @@ $800M×0.378=$257.6M)과 정확히 일치 확인. **`index.html`이 `script.min.
 같은 카운트 문구는 독일 라운드 이전부터 이미 stale한 상태였고 이번 라운드도 건드리지
 않음(범위 밖 별도 작업으로 남겨둠, 다음 세션이 전체 카운트 문구 일괄 정리를 원하면 별도
 작업으로 진행할 것).
+
+### 2026-08-17 이어서 — 스웨덴어(sv)를 신규 UI 언어로 추가 + 스웨덴을 36번째 지원 국가로 추가 (3단계 커밋, 새 PR)
+
+이전 세션이 남긴 브리프대로, 독일(PR #244)·네덜란드(PR #245, 둘 다 이미 `main`에 병합됨)에
+이어 세 번째 신규 UI 언어(스웨덴어) 추가 + 스웨덴을 새 세금 계산 국가로 추가하는 라운드.
+작업 시작 전 `git fetch origin main` + `git log --oneline HEAD..origin/main`로 두 PR이
+실제로 `main`에 병합됐음을 확인, `grep -c '\btet:' script.js` → 300(독일→네덜란드 사이
+296→297이었던 것처럼 네덜란드→스웨덴 사이에도 297→300으로 3개 더 늘어난 상태 — 매번
+직접 재검증하라는 이전 세션들의 당부가 실제로 유효했음을 재확인).
+
+**작업 중 발견한 중요한 실수와 복구**: 1단계 작업 도중 여러 Bash 명령을 `cd /home/user/
+semilee123456-ui.github.io && ...` 형태로 실행했는데, 이 경로가 실제로는 이 세션에 할당된
+격리 워크트리(`/home/user/semilee123456-ui.github.io/.claude/worktrees/agent-...`)가 아니라
+**다른 세션들이 공유하는 원본 체크아웃**이었음(git 명령은 격리 가드가 막아줬지만 일반 파일
+쓰기 명령(`node`/`python3`/`cp`)은 가드를 통과해서 `script.js`를 그 공유 디렉터리에 실수로
+써버림). `git show HEAD:script.js`로 해당 디렉터리의 정확한 원본을 복원해 되돌린 뒤,
+실제 워크트리(`pwd` 확인 결과 애초에 여기가 맞았음)에서 처음부터 다시 작업함 — 이후 모든
+명령은 `cd` 없이 현재 디렉터리 기준으로 실행. 다음 세션은 Bash 명령에서 `cd <다른 경로>`를
+쓰기 전에 반드시 `pwd`로 지금 어디 있는지부터 확인할 것.
+
+**1단계 — 언어 인프라**: `script.js`의 `ADDITIONAL_LANGS`와 `scripts/build-i18n.js`/
+`tests/console_error_audit.js`/`tests/lang_leak_audit.js`의 각 `LANGS` 배열에 `'sv'` 추가
+(4개 파일 동기화). `i18n-source/translations.json` 802개 키 전체에 실제 스웨덴어 번역
+추가(플레이스홀더 없음 — 직접 번역), `i18n/sv.json` 신규 생성 + 기존 28개 언어 파일 재생성.
+`script.js`의 `tet:` 마커가 붙은 "more" 객체 298개(중복 텍스트 제외 고유 번역 286개) 전부에
+`sv:` 항목 추가 — 이번엔 정규식 순서 매칭 대신, TypeScript 컴파일러(`typescript` 패키지가
+`/opt/node22/lib/node_modules`에 이미 있음 — Playwright처럼 전역 설치만 있고 로컬 의존성
+아님)로 실제 AST를 파싱해서 "속성 이름이 전부 `ADDITIONAL_LANGS`의 부분집합인 객체 리터럴"만
+정확히 골라내는 스크립트를 새로 작성함(네덜란드 라운드의 "287개는 정규식, 9곳은 수작업"보다
+더 견고한 방식 — `COUNTRY_NAMES_MORE`처럼 `nl:'Nederland'` 같은 나라 코드 값이 우연히 `de`/
+`nl` 등 언어 코드와 같은 텍스트를 포함해서 정규식이 엉뚱한 곳(나라 코드가 들어있는 내부
+객체)에 매칭될 뻔한 위험을 원천 차단, 298개 객체를 한 번에 정확히 처리). 이 스크립트는
+저장소에 커밋하지 않고 `/tmp` 스크래치패드에만 둠(1회성이지만 다음 신규 언어 라운드가
+재사용하고 싶다면 이 항목의 설명을 참고해 다시 작성 가능).
+
+`COUNTRY_NAMES_MORE`는 독일·네덜란드 라운드와 같은 두 방향(①새 `sv:` 언어 행 추가 ②기존
+23개 언어 행 전부에 `sv` 국가코드 키 추가)을 모두 처리했으나, **①에서 실수가 하나 있었음**:
+AST 스크립트가 만든 새 `sv` 언어 행은 "네덜란드 행을 스웨덴어로 번역"해서 만들었는데, 그
+시점엔 스웨덴이 아직 대상 국가가 아니었으므로 원본 네덜란드 행에 `nl:'Nederland'`(자기 자신)
+항목이 없었던 것과 마찬가지로, 새 `sv` 행에도 자기 자신을 가리키는 `sv:'Sverige'` 항목이
+누락됨 — 이 버그는 1단계 시점에는 어떤 코드 경로도 `COUNTRY_NAMES_MORE['sv']['sv']`를 조회할
+일이 없어 드러나지 않았고, 2단계에서 스웨덴이 실제 국가로 추가된 뒤 Playwright로
+`calcTakeHome(800,'sv')`를 직접 돌려보고서야 `label2`가 "Extra skatt i undefined"로 깨지는
+것을 발견함 — 즉시 `sv:'Sverige'` 항목을 추가해 수정(2단계 커밋에 포함). 독일 라운드가 겪은
+"COUNTRY_NAMES_MORE 두 방향" 버그, 네덜란드 라운드가 겪은 "COUNTRY_TAX_AUTHORITY에 고유명사
+행까지 번역이 새어들어간" 버그에 이어, 이번 라운드는 "새 언어가 스스로를 가리키는 자기참조
+항목 누락"이라는 **세 번째 종류의 버그**를 만났음 — 다음 신규 언어 라운드는 이 세 가지를
+전부 체크리스트에 넣을 것.
+
+`tests/i18n_coverage_audit.js`(0/783)·`tests/console_error_audit.js`(0/182, 26개 언어)
+통과 후, Playwright로 `calcTakeHome(800,'kr')`을 스웨덴어 UI로 실행해(이 시점엔 스웨덴이
+아직 국가로 없으므로 다른 나라 조회로 언어만 검증) `label2`/`basisSuffix` 등에 "undefined"
+노출이 없음을 확인.
+
+**2단계 — 스웨덴 국가 로직**: 세율 조사(2026-08-17, WebSearch + Skatteverket 공식 안내
+페이지 + 원문 법령 대조) — 브리프가 경고한 대로 "유럽이니까 0%"로 넘겨짚지 않고 직접
+조사한 결과, 독일(과세표준 자체 없음)도 네덜란드(과세하지만 FTC 없음)도 아닌 **세 번째
+패턴**임을 발견:
+- **소득세법(Inkomstskattelagen 1999:1229) 42장 25조**: 외국 복권 당첨금(100크로나 초과)은
+  자본소득(inkomst av kapital)으로 30% 과세하되, EU/EES 역내에서 조직된 복권만 면제 —
+  Skatteverket 공식 안내 페이지(vinsterispelochtavlingar, 2026-08-17 직접 확인)가 "EES
+  역외에서 조직된 게임의 당첨금은 스웨덴에서 과세되며 세율은 순당첨금의 30%"라고 명시해
+  1차 자료와 함께 교차 확인(확신 높음). 미국 파워볼·메가밀리언즈는 미국 현지 실물 티켓
+  구매 방식이라 EU/EES 역내 사업자가 아니므로 면제 대상에서 빠지고 과세 대상에 포함됨.
+  네덜란드 칸스펠벌라스팅 사례와는 정반대 논리("라이선스 없어서 과세 안 됨"이 아니라
+  "EU/EES 밖에서 조직됐기 때문에" 과세)라는 점에 특히 주의해서 확인함(브리프가 정확히
+  짚은 함정).
+- **FTC(세액공제) 가능**: 스웨덴 국내법인 외국세액공제법(avräkningslagen, Lag 1986:468 om
+  avräkning av utländsk skatt)이 "스웨덴이 이미 과세한 해외원천 소득에 대해 외국에 낸 세금"에
+  폭넓게 적용되는 일반 조항(소득 종류를 열거하는 방식이 아님)이라는 걸 Skatteverket 공식
+  안내(avrakningavutlandskskatt)로 확인(확신 중간 — 도박소득 원천징수가 이 조항에 기술적으로
+  해당하는지 조문 번호까지 직접 대조하지는 못함). 공제 한도(스페르벨로프/spärrbelopp)는
+  "그 해외소득에 대한 스웨덴 세액을 초과할 수 없음" — mx/in/cn과 같은 FTC 상한부 공제 구조.
+  **미국 원천징수 30%와 스웨덴 자본소득세율 30%가 같은 총액 기준으로 정확히 일치**하기 때문에
+  공제 후 잔여세액이 항상 정확히 0이 되는 특수 케이스 — cn(20%<30%, 공제 후 0)이나 mx/in
+  (35%·~39%>30%, 잔여세액 발생)과 다른, "미국과 세율이 정확히 같아서" 0이 되는 세 번째 하위
+  패턴. 일부 2차 자료(Lawline·lottoguiden)는 "공제 가능하나 항상 100%는 아님"이라 언급해
+  ⚠️로 남김(낮은 확신, 실무 확인 권장).
+
+**신뢰도 요약**
+| 항목 | 근거 유형 | 확신 수준 |
+|---|---|---|
+| 세율 30% + EU/EES 예외 (42장 25조) | 1차 자료(Skatteverket 공식 안내) 직접 확인 | 높음 |
+| 미국 복권이 EU/EES 예외에서 빠짐 | 위 조항 해석 적용 (구조적으로 명확) | 높음 |
+| avräkningslagen이 일반적으로 해외원천 이중과세에 적용됨 | 1차 자료(Skatteverket 공식 안내) 확인 | 높음 |
+| 도박소득 원천징수가 avräkningslagen상 공제 대상 외국세에 해당 | 일반 원칙 적용, 조문 번호 직접 대조는 못함 | 중간 (⚠️) |
+| "공제가 항상 100%는 아님"의 구체적 조건 | 2차 자료만 확인, 계산 로직엔 반영(보수적으로 0 처리) | 낮음 (⚠️) |
+
+`TAX_MODEL.sv_resident`(`rate: 0.30, ftc_available: true`, cn/in/mx와 같은 FTC 상한부 공제
+코드 모양 재사용) + `calcTakeHome()` `'sv'` 분기 + `COUNTRY_TAX_PROFILES`/
+`SUPPORTED_TAX_COUNTRIES`/`COUNTRY_TAX_AUTHORITY['sv']`("Skatteverket", uk의 HMRC/de의
+Finanzamt/nl의 Belastingdienst와 같이 번역 안 하는 고유명사 관례)에 36번째 국가로 반영.
+
+**SEK 통화 — 독일/네덜란드와 달리 진짜 신규 통화**: 독일·프랑스·아일랜드·네덜란드는 전부
+유로존이라 기존 `EXCHANGE_RATE_EUR`/`CURRENCY_DISPLAY_META.EUR`를 재사용했지만, 스웨덴은
+유로존이 아니라 크로나(SEK)를 씀 — GBP/AUD/MXN/ZAR/MYR를 추가했을 때와 같은 이유로
+Frankfurter/open.er-api가 이미 SEK를 지원하는지 먼저 확인(`curl`로 두 API 직접 호출, 각각
+9.5089·9.518 확인) 후 실제로 추가함: `EXCHANGE_RATE_SEK` 폴백 9.51(2026-08-17 확인, WebSearch
+9.46~9.76대 재확인 + 위 두 API 실측치로 교차검증), `CURRENCY_RATE_CONFIG`/
+`CURRENCY_DISPLAY_META.SEK`/`REAL_ABROAD_CURRENCY['sv']='SEK'` 추가, `index.html`의 통화
+select 2곳(`homeCurrencySelect`/`compareCurrencySelect`)에 `SEK` 옵션 추가. **폴백값이 마침
+실측치와 비슷해서 "실시간 fetch가 실패해도 우연히 맞아 보이는" 착시를 배제하기 위해, 폴백을
+일부러 틀린 값(1.23)으로 바꾼 뒤 Playwright + `page.route(/^https:\//)` 프록시 우회(브리프가
+가리킨 `scripts/screenshot-dc-mockup.js` 패턴 그대로 재사용)로 실제 페이지를 로드해
+`exchangeRateIsLive===true`이고 `EXCHANGE_RATE_SEK`가 9.51로 실제로 덮어써지는 것까지 확인**
+(소스는 Frankfurter, `exchangeRateSourceName.name` 필드로 확인) — 검증 후 폴백값을 9.51로
+원복.
+
+`index.html` 3개 국가 선택 지점(`realAbroadSelect` `sv|sv`, `homeCountrySelect`,
+`homeCountryToggle` 버튼 그리드) 배선 + 신규 i18n 키 `input.optSweden`(29개 언어, ⚠️ 표시
+없음 — 최종 잔여세액이 0으로 확정적이라 다른 나라의 "세율 불확실" ⚠️와는 성격이 다름).
+Playwright로 `calcTakeHome(800,'sv')`를 스웨덴어 UI로 실행해 `afterUS === final === 560`
+(즉 30% 원천징수만 적용되고 스웨덴 추가세액이 정확히 0)임을 확인 — `label2`가 "Extra skatt i
+Sverige (FTC tillämpad)", `val2`가 "₩0 (kvittat mot skattekredit)"로 정상 렌더링됨(중국/
+인도처럼 FTC로 완전 상계됐을 때 쓰는 것과 같은 문구 패턴). 매 단계 `node scripts/
+build-min.js`를 다시 돌리고 그 결과물(`script.min.js`)로 서빙되는 페이지를 테스트함(독일
+라운드가 겪은 함정을 이번에도 재확인하며 피함).
+
+**3단계 — 랜딩페이지 + sitemap + HANDOFF.md**: `sweden-resident-us-lottery-tax.html` 신설 —
+독일 페이지를 구조 템플릿으로 재사용(가장 가까운 사례: 최종 결과 숫자가 독일과 동일한
+$700,000/세전 $1M 기준·0% 순추가세, "정산 티켓" CSS). 프랑스/독일/멕시코/네덜란드 라운드와
+같은 이유로 영어가 아니라 **스웨덴어로 작성**하되, 내용 자체는 독일 페이지를 그대로 베끼지
+않고 스웨덴의 실제 메커니즘(진짜 과세+진짜 공제의 우연한 완전 상쇄)을 정직하게 설명함 —
+"독일처럼 원래 과세 대상이 아님"이 아니라 "실제로는 과세되지만 세액공제로 상쇄됨"이라는 점을
+`note-box`로 명확히 구분해서 강조.
+- $1M 예시(미국 원천징수 -$300,000, 스웨덴 세금 0 kr, 실수령 약 $700,000, SEK 환산 참고치
+  약 6,660,000 kr — `EXCHANGE_RATE_SEK` 폴백값 9.51 기준)
+- 소득세법 42장 25조(과세 범위·EU/EES 예외)·avräkningslagen(세액공제 메커니즘) 근거 설명을
+  `note-box`로, 두 가지 불확실성(도박소득이 공제 대상 외국세에 해당하는지, "항상 100%는
+  아님" 2차 자료 언급)을 `gray-zone-box`로 분리해서 명확히 강조
+- 투자 시 자본소득세 30%(당첨금 자체와 같은 세율이지만 별개 계산) 각주, 가족에게 나눠줄 때는
+  스웨덴이 2005년 1월 1일부로 상속세·증여세를 완전히 폐지해 증여가 완전 비과세라는 점을
+  `example-box`로 별도 강조(독일 페이지의 Abgeltungsteuer/Schenkungsteuer 각주, 네덜란드
+  페이지의 schenkbelasting 각주와 같은 성격이지만 결론은 정반대 — 스웨덴은 증여세 자체가
+  없음)
+- FAQ 4개(과세 여부 / 왜 정확히 0크로나가 되는지 / 투자·증여 시 처리 / 확신 수준과
+  불확실성)
+- `node scripts/apply-landing-ticket-style.js` 실행 후 독일 페이지 style 블록과 diff해서
+  바이트 단위로 완전히 동일함 확인(빈 스타일 블록 방지)
+- CTA는 `index.html?lang=sv&country=sv`
+- `sitemap.xml`·`sitemap.html` 등재, **독일 페이지와 네덜란드 페이지 양쪽의 `related-links`에
+  스웨덴 페이지로의 상호 링크 추가**(최종 결과 숫자가 같은 독일 페이지가 가장 가까운 사례라
+  우선 선택, 이미 서로 링크하던 독일·네덜란드·프랑스 삼각 구조에 스웨덴이 추가로 연결됨)
+- Playwright로 랜딩페이지 직접 로드해 제목/h1/FAQ 4개 정상 렌더링, "undefined" 노출 없음
+  확인 — 콘솔 에러 4건은 발생했으나 동일한 방식으로 이미 병합된 독일 페이지를 똑같이
+  테스트해도 동일하게 4건(`ERR_CONNECTION_RESET`, 이 샌드박스의 프록시가 Google 폰트/
+  AdSense/GA4 등 외부 CDN 요청을 막아서 생기는 환경 문제)이 나와 내 페이지만의 문제가
+  아님을 확인함
+
+**테스트**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`(0/784)·
+`tests/console_error_audit.js`(0/182, 26개 언어 — 이 파일의 `LANGS`는 pt/es/uk/tet가
+원래부터 빠진 25→26개 별도 목록, 다른 파일들의 29개와 다름에 주의)·
+`tests/broken_link_audit.js`(0/120)·`tests/home_audit.js`(0/18)·`tests/lang_leak_audit.js`
+(1단계 0/116, 2단계 0/116) 전부 통과.
+
+**3단계 커밋 + 새 PR**: 독일·네덜란드 라운드와 같은 이유로 3단계 커밋(언어 인프라 → 국가
+로직 → 랜딩페이지/사이트맵/이 항목)으로 진행 — 세션/예산 한도에 걸려도 부분 진행이 안전하게
+보호되도록, 1·2단계 완료 직후 각각 즉시 push함(위에서 설명한 워크트리 실수를 겪은 뒤라 특히
+신경 씀). 브랜치 `claude/swedish-language-and-country-2026-08-17`에서 PR을 열어 리뷰 대기
+상태로 남김(직접 병합 안 함). `script.min.js?v=20260817-5`, `sw.js CACHE_NAME v74`로
+버전업(1단계에서 20260817-4/v73로 한 번, 2단계에서 20260817-5/v74로 한 번 더 — 국가 로직
+변경분까지 반영).
+
+**⚠️ 다음 세션을 위한 메모**: 이번 라운드로 언어는 29개, 국가는 36개(+ `other`)가 됨. 다음
+언어 후보를 고를 때 `grep -c '\btet:' script.js`로 규모를 반드시 직접 재검증할 것(독일→
+네덜란드→스웨덴 사이에 296→297→300으로 계속 늘어난 전례 있음). `sitemap.html`의
+"21개국/26개 언어" 같은 카운트 문구는 여전히 stale하고 이번 라운드도 건드리지 않음(범위
+밖). **새 UI 언어를 추가할 때 반드시 체크할 세 가지 버그 패턴**(독일: `COUNTRY_TAX_AUTHORITY`
+같은 "고유명사만" 행에 번역이 새어들어감 / 네덜란드: `COUNTRY_NAMES_MORE`의 언어 행 추가와
+국가코드 키 추가 두 방향을 다 처리해야 함 / 스웨덴: 새로 추가한 언어 행 자신이 아직 대상
+국가가 아닐 때 만들어지면 자기참조 국가코드 키가 빠짐 — 국가 단계에서 뒤늦게 발견됨)를
+다음 세션 시작 전에 미리 숙지할 것.
