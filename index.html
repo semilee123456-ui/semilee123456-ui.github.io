@@ -136,7 +136,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260817-9" defer></script>
+<script src="script.min.js?v=20260817-10" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -536,6 +536,7 @@
                   <option value="no">Norsk</option>
                   <option value="da">Dansk</option>
                   <option value="fi">Suomi</option>
+                  <option value="it">Italiano</option>
                 </select>
                 <button type="button" id="theme-toggle" class="settings-row-btn" onclick="toggleTheme()" aria-label="다크모드 전환" data-i18n-aria-label="a11y.themeToggle"><span class="settings-row-icon">🌙</span><span data-i18n="a11y.themeToggleLabel">다크모드</span></button>
                 <button type="button" id="textsize-toggle" class="settings-row-btn" onclick="toggleTextSize()" aria-label="글자 크게 보기 전환" data-i18n-aria-label="a11y.textSizeToggle"><span class="settings-row-icon">가+</span><span data-i18n="a11y.textSizeToggleLabel">글자 크게 보기</span></button>
@@ -689,6 +690,7 @@
                   <option value="no">Norsk</option>
                   <option value="da">Dansk</option>
                   <option value="fi">Suomi</option>
+                  <option value="it">Italiano</option>
                   <option value="uk">Українська</option>
                 </select>
                 <button type="button" class="intro-lang-go-btn" onclick="goWithLangSelect('foreignerLangSelect', true)" data-i18n="intro.goBtn">이동</button>

@@ -15,7 +15,7 @@ const SOURCE_PATH = path.join(ROOT, 'i18n-source', 'translations.json');
 const OUT_DIR = path.join(ROOT, 'i18n');
 
 // script.js의 ADDITIONAL_LANGS와 반드시 일치해야 함 (새 언어 추가 시 여기와 script.js 양쪽 다 갱신)
-const LANGS = ['en','zh','vi','th','ru','km','ne','id','my','si','uz','mn','kk','ky','ur','bn','lo','ja','ar','hi','fr','tl','pt','es','uk','tet','de','nl','sv','no','da','fi'];
+const LANGS = ['en','zh','vi','th','ru','km','ne','id','my','si','uz','mn','kk','ky','ur','bn','lo','ja','ar','hi','fr','tl','pt','es','uk','tet','de','nl','sv','no','da','fi','it'];
 
 const I18N = JSON.parse(fs.readFileSync(SOURCE_PATH, 'utf8'));
 const keys = Object.keys(I18N);
