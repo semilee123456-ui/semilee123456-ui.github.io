@@ -1694,6 +1694,42 @@ const TAX_MODEL = {
     // 뜻이나, 자동 환급이 아니고 결과를 보장하지 않음. 계산기가 모델링하는 숫자(미국측 30%
     // 원천징수 자체)는 이 사실과 무관하게 그대로임(계산 로직 변경 없음).
     rate: 0
+  },
+  nl_resident: {
+    // 네덜란드는 독일(de_resident)과 확연히 다른 케이스 — "유럽이니까 0% 클럽"으로 넘겨짚지
+    // 않고 원문 법령(wetten.overheid.nl, Wet op de kansspelbelasting, BWBR0002359,
+    // 2026-01-01 시행본 직접 대조, 2026-08-17)을 확인한 결과 복권 당첨금에 일반 소득세가 아닌
+    // 별도 세목 "칸스펠벌라스팅"(kansspelbelasting, 게임세)이 적용되는 실질 과세국임.
+    // - 제1조 1항 h호: 네덜란드 거주자가 "해외 게임"(buitenlandse kansspelen)에서 받은
+    //   당첨금은 원칙적으로 과세 대상. 예외는 ①EU/EEA 역내 사업자가 운영하는 카지노게임·
+    //   슬롯머신·스포츠베팅·토토(casinospelen, kansspelautomatenspelen, sportweddenschappen
+    //   en totalisatoren)와 ②"온라인/원격 제공"(op afstand aangeboden) 게임 두 가지뿐임.
+    //   미국 파워볼·메가밀리언즈는 미국 현지에서 실물 티켓을 사는 방식이라 ①(비EU/EEA)에도
+    //   ②(비온라인)에도 해당하지 않아 두 예외 모두 비켜가고 과세 대상 범위에 그대로 포함됨 —
+    //   즉 "네덜란드에 라이선스가 없는 해외 사업자라 과세 안 됨"이 아니라 정반대로, 라이선스
+    //   없는 해외(비EU) 복권이기 때문에 오히려 원칙 과세 대상이 되는 구조.
+    // - 제4조: 건당 449유로 이하는 면제 — 잭팟 규모 당첨금엔 사실상 무의미한 문턱이라 이
+    //   계산기에서는 반영하지 않고 전액에 세율을 적용(jp_resident의 50만엔 특별공제 생략과
+    //   같은 원칙, 면제 문턱이 당첨금 대비 무시 가능한 수준일 때의 처리 방식).
+    // - 제5조: 세율 37.8% — 2024년 30.5% → 2025년 34.2% → 2026년 37.8%로 단계적 인상됐고
+    //   (Bird & Bird 등 복수 국제 세무법인 발표로 교차 확인), 2026-01-01 시행 법조문 원문에서
+    //   "De belasting bedraagt 37,8 percent."로 직접 재확인함(가장 최신·1차 자료 기준).
+    // - FTC(세액공제) 불가 판단: Wet op de kansspelbelasting 원문 전체를 훑어봐도 해외 납부세액을
+    //   상계·공제하는 조항이 보이지 않음(mx/in/cn·uz/kz처럼 상한부 세액공제 구조가 법에 명시된
+    //   것과 대조적). 칸스펠벌라스팅은 네덜란드 세법 체계상 "소득세"(inkomstenbelasting)가 아니라
+    //   완전히 별도인 세목이라, 미-네덜란드 소득세 조세조약(1992년 체결, 2004년 의정서로 개정)의
+    //   "대상 조세"(Taxes Covered) 조항에도 애초에 포함되지 않는 것으로 보임 — 조약이 통상 열거하는
+    //   네덜란드측 대상 조세는 소득세·임금세·법인세·배당세뿐이라 게임세 자체가 조약 적용 범위
+    //   밖에 있을 가능성이 높음(다만 조약 제2조 원문 조문 번호까지 직접 대조하지는 못해 ⚠️로 표시).
+    //   그래서 이 계산기는 미국 원천징수(30%)에 네덜란드 칸스펠벌라스팅(37.8%)이 공제 없이 그대로
+    //   추가되는 것으로 계산함(la_resident와 같은 "전액 이중과세 가정, FTC 없음" 구조 — mx/in/cn/
+    //   uz/kz처럼 세액공제로 일부만 상계되는 구조가 아님). ⚠️ 일부 2차 자료(intikkertje.nl 등
+    //   네덜란드 세무 정보 사이트)는 "해외에서 이미 비교 가능한 세금을 냈다는 걸 증명하면 면제받을
+    //   수 있다"는 행정 구제 절차를 언급하나, 이게 EU/EEA 상호인정에 한정된 것인지 미국까지
+    //   포함하는지 원문 법령·행정 지침으로 확인하지 못해 반영하지 않음(보수적으로 미반영 — 실제
+    //   신고 시 이 구제가 적용될 가능성을 완전히 배제하는 뜻은 아니니 세무 전문가 확인 권장).
+    rate: 0.378,
+    ftc_available: false
   }
 };
 
@@ -2561,6 +2597,30 @@ function calcTakeHome(amount, country, stateCode){
       val2: deAdditionalTaxWon > 0 ? '-' + deEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
       basisSuffix: pickLang('독일 거주자', 'Germany resident', '德国居民', 'Cư dân Đức', 'ผู้พำนักในเยอรมนี', 'Резидент Германии', buildCountryMore('de'))
     };
+  } else if (country === 'nl') {
+    // 네덜란드: 칸스펠벌라스팅(kansspelbelasting, 게임세) 37.8%가 미국 원천징수(30%)와
+    // 별개로 공제 없이 전액 추가됨(nl_resident.ftc_available = false — 상세 근거는
+    // TAX_MODEL.nl_resident 주석 참고). la_resident와 같은 "FTC 없음, 전액 이중과세 가정" 구조.
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const nlAdditionalTaxWon = wonAmount * TAX_MODEL.nl_resident.rate; // FTC 없음 — 원천징수와 별개로 전액 추가
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (nlAdditionalTaxWon / 100000000);
+    const nlEffectivePct = wonAmount > 0 ? (nlAdditionalTaxWon / wonAmount * 100) : 0;
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('네덜란드 추가 납부 (FTC 미적용 ⚠️)', 'Netherlands additional tax (no FTC ⚠️)', '荷兰追加缴税（不适用FTC⚠️）', 'Thuế bổ sung tại Hà Lan (không áp dụng FTC ⚠️)', 'ภาษีเพิ่มเติมของเนเธอร์แลนด์ (ไม่ใช้ FTC ⚠️)', 'Дополнительный налог в Нидерландах (без FTC ⚠️)', {
+        km: 'ពន្ធបន្ថែមនៅហូឡង់ (គ្មាន FTC ⚠️)', ne: 'नेदरल्यान्ड्समा थप कर (FTC छैन ⚠️)', id: 'Pajak tambahan di Belanda (tanpa FTC ⚠️)',
+        my: 'နယ်သာလန်တွင်ထပ်ဆောင်းအခွန် (FTC မရှိ ⚠️)', si: 'නෙදර්ලන්තයේ අමතර බද්ද (FTC නැත ⚠️)', uz: "Niderlandiyada qo'shimcha soliq (FTC yo'q ⚠️)",
+        mn: 'Нидерландад нэмэлт татвар (FTC байхгүй ⚠️)', kk: 'Нидерландыда қосымша салық (FTC жоқ ⚠️)', ky: 'Нидерландияда кошумча салык (FTC жок ⚠️)',
+        ur: 'نیدرلینڈز میں اضافی ٹیکس (کوئی FTC نہیں ⚠️)', bn: 'নেদারল্যান্ডসে অতিরিক্ত কর (FTC নেই ⚠️)', lo: 'ພາສີເພີ່ມເຕີມໃນເນເທີແລນ (ບໍ່ມີ FTC ⚠️)',
+        ja: 'オランダでの追加納税（FTCなし ⚠️）', ar: 'ضريبة إضافية في هولندا (بدون FTC ⚠️)', hi: 'नीदरलैंड में अतिरिक्त कर (कोई FTC नहीं ⚠️)', fr: 'Taxe supplémentaire aux Pays-Bas (sans FTC ⚠️)',
+        tl: 'Karagdagang buwis sa Netherlands (walang FTC ⚠️)',
+       pt: `Imposto adicional na Holanda (sem FTC ⚠️)`, es: `Impuesto adicional en los Países Bajos (sin FTC ⚠️)`, uk: `Додатковий податок у Нідерландах (без FTC ⚠️)`, tet: `Impostu adisionál Holanda (la iha FTC ⚠️)`, de: `Zusätzliche Steuer in den Niederlanden (ohne FTC ⚠️)`, nl: `Extra belasting in Nederland (zonder FTC ⚠️)`}),
+      val2: nlAdditionalTaxWon > 0 ? '-' + nlEffectivePct.toFixed(1) + '%' : pickLang('0원', '₩0', '0元', '0 KRW', '0 วอน', '0 вон', { km:'0 វ៉ុន', ne:'₩0', id:'₩0', my:'၀ ဝမ်း', si:'0 වොන්', uz:'0 von', mn:'0 вон', kk:'0 вон', ky:'0 вон', ur:'0 وون', bn:'০ ওন', lo:'0 ວອນ', ja:'0ウォン', ar:'0 وون', hi:'₩0', fr:'0 KRW', tl:'₩0' , pt: `₩0`, es: `₩0`, uk: `₩0`, tet: `₩0`, de: `₩0`, nl: `₩0`}),
+      basisSuffix: pickLang('네덜란드 거주자', 'Netherlands resident', '荷兰居民', 'Cư dân Hà Lan', 'ผู้พำนักในเนเธอร์แลนด์', 'Резидент Нидерландов', buildCountryMore('nl'))
+    };
   } else if (country === 'other') {
     // "기타 국가" — COUNTRY_TAX_PROFILES 목록에 없는 나라 방문자를 위한 안전망(2026-07-28,
     // 사용자 요청). 자국 세법을 조사하지 않고도 확정적으로 말할 수 있는 건 미국 IRS의 비거주자
@@ -2896,6 +2956,8 @@ const REAL_ABROAD_CURRENCY = {
   // 독일(EUR)은 프랑스/아일랜드와 같은 유로존 공용 통화 재사용 세 번째 사례 — 위 fr 항목
   // 주석대로 CURRENCY_DISPLAY_META.EUR/EXCHANGE_RATE_EUR을 그대로 씀, 신규 통화 정의 불필요.
   de: 'EUR',
+  // 네덜란드(EUR)도 같은 이유로 유로존 통화 재사용 — 신규 통화 정의 불필요.
+  nl: 'EUR',
 };
 
 // "실제로 다른 나라에 살아요" 카드의 US/CN 버튼 — 한국이랑 아무 상관없는 진짜 외국인(예: 순수
@@ -10224,7 +10286,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 페이지들은 애초에 한국 세법이 맞는 기준이라 이 파라미터가 필요 없음).
   // COUNTRY_TAX_PROFILES에 실제로 있는 코드로만 제한해서, 오타·구버전 링크가 미검증
   // 국가로 계산기를 조용히 맞춰버리는 걸 막음(33개국 토글 버튼과 동일한 목록).
-  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','other'];
+  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','other'];
   const urlCountry = params.get('country');
   if (SUPPORTED_TAX_COUNTRIES.includes(urlCountry)) {
     setHomeCountry(urlCountry);
@@ -12927,7 +12989,30 @@ const COUNTRY_TAX_AUTHORITY = {
       hi: "Finanzamt",
       fr: "Finanzamt",
       tl: "Finanzamt"
-    , pt: `Finanzamt`, es: `Finanzamt`, uk: `Finanzamt`, tet: `Finanzamt`, de: `Finanzamt`, nl: `Finanzamt`})
+    , pt: `Finanzamt`, es: `Finanzamt`, uk: `Finanzamt`, tet: `Finanzamt`, de: `Finanzamt`, nl: `Finanzamt`}),
+  // 네덜란드는 칸스펠벌라스팅법(Wet op de kansspelbelasting) 자체가 근거라(nl_resident 주석
+  // 참고), 특정 판례·유권해석 기관명이 아니라 국세청 공식명 "Belastingdienst"(세무청)를 uk의
+  // HMRC/au의 ATO/fr의 DGFiP/sg의 IRAS/de의 Finanzamt와 같은 관례로 표기함 — 언어 불문
+  // 통용되는 고유명사라 번역하지 않고 27개 언어 전부 동일 문자열
+  nl: () => pickLang('Belastingdienst', 'Belastingdienst', 'Belastingdienst', 'Belastingdienst', 'Belastingdienst', 'Belastingdienst', {
+      km: "Belastingdienst",
+      ne: "Belastingdienst",
+      id: "Belastingdienst",
+      my: "Belastingdienst",
+      si: "Belastingdienst",
+      uz: "Belastingdienst",
+      mn: "Belastingdienst",
+      kk: "Belastingdienst",
+      ky: "Belastingdienst",
+      ur: "Belastingdienst",
+      bn: "Belastingdienst",
+      lo: "Belastingdienst",
+      ja: "Belastingdienst",
+      ar: "Belastingdienst",
+      hi: "Belastingdienst",
+      fr: "Belastingdienst",
+      tl: "Belastingdienst"
+    , pt: `Belastingdienst`, es: `Belastingdienst`, uk: `Belastingdienst`, tet: `Belastingdienst`, de: `Belastingdienst`, nl: `Belastingdienst`})
 };
 
 // 세율 자체가 불확실하거나(공식 근거를 못 찾음), 세율은 알아도 실제 적용 여부가 불확실한 나라들을
@@ -14212,6 +14297,7 @@ const COUNTRY_TAX_PROFILES = [
   { code: 'za', flagCode: 'ZA', label: '남아프리카공화국 거주자 (실제 남아공 거주 기준)', labelEn: 'South Africa resident (living in South Africa)', labelZh: '南非居民（实际住在南非）', labelVi: 'Cư dân Nam Phi (sống thực tế tại Nam Phi)', labelTh: 'ผู้พำนักในแอฟริกาใต้ (อาศัยอยู่จริงในแอฟริกาใต้)', labelRu: 'Резидент ЮАР (проживающий в ЮАР)', implemented: true, needsState: false, detailPage: 'us-lottery-tax-for-south-africans.html', detailLabel: 'US lottery tax for South Africans →', more: buildCountryMore('za') },
   { code: 'my', flagCode: 'MY', label: '말레이시아 거주자 (실제 말레이시아 거주 기준)', labelEn: 'Malaysia resident (living in Malaysia)', labelZh: '马来西亚居民（实际住在马来西亚）', labelVi: 'Cư dân Malaysia (sống thực tế tại Malaysia)', labelTh: 'ผู้พำนักในมาเลเซีย (อาศัยอยู่จริงในมาเลเซีย)', labelRu: 'Резидент Малайзии (проживающий в Малайзии)', implemented: true, needsState: false, detailPage: 'us-lottery-tax-for-malaysians.html', detailLabel: 'US lottery tax for Malaysians →', more: buildCountryMore('my') },
   { code: 'de', flagCode: 'DE', label: '독일 거주자 (실제 독일 거주 기준)', labelEn: 'Germany resident (living in Germany)', labelZh: '德国居民（实际住在德国）', labelVi: 'Cư dân Đức (sống thực tế tại Đức)', labelTh: 'ผู้พำนักในเยอรมนี (อาศัยอยู่จริงในเยอรมนี)', labelRu: 'Резидент Германии (проживающий в Германии)', implemented: true, needsState: false, detailPage: 'germany-resident-us-lottery-tax.html', detailLabel: 'Deutsch →', more: buildCountryMore('de') },
+  { code: 'nl', flagCode: 'NL', label: '네덜란드 거주자 (실제 네덜란드 거주 기준, FTC 미적용 ⚠️)', labelEn: 'Netherlands resident (living in the Netherlands, no FTC ⚠️)', labelZh: '荷兰居民（实际住在荷兰，不适用FTC⚠️）', labelVi: 'Cư dân Hà Lan (sống thực tế tại Hà Lan, không áp dụng FTC ⚠️)', labelTh: 'ผู้พำนักในเนเธอร์แลนด์ (อาศัยอยู่จริงในเนเธอร์แลนด์, ไม่ใช้ FTC ⚠️)', labelRu: 'Резидент Нидерландов (проживающий в Нидерландах, без FTC ⚠️)', implemented: true, needsState: false, detailPage: 'netherlands-resident-us-lottery-tax.html', detailLabel: 'Nederlands →', more: buildCountryMore('nl') },
 ];
 
 // 나라별 비교 카드가 텍스트/숫자로만 나열돼서 폰에서 심심하다는 피드백 — 카드를 탭하면 이
