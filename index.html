@@ -630,6 +630,7 @@
                   <option value="sv|sv">SE · Svenska</option>
                   <option value="no|no">NO · Norsk</option>
                   <option value="da|da">DK · Dansk</option>
+                  <option value="fi|fi">FI · Suomi</option>
                 </select>
                 <button type="button" class="intro-lang-go-btn" onclick="goRealAbroadFromSelect('realAbroadSelect')" data-i18n="intro.goBtn">이동</button>
               </div>
@@ -789,6 +790,7 @@
                     <option value="sv">SE</option>
                     <option value="no">NO</option>
                     <option value="da">DK</option>
+                    <option value="fi">FI</option>
                     <option value="other">OTHER</option>
                   </select>
                   <button type="button" class="amount-currency-select select-sheet-trigger" id="homeCountrySelectTrigger" tabindex="-1" aria-hidden="true" onclick="openSelectSheet('homeCountrySelect')"><span class="select-sheet-trigger-label">KR</span></button>
@@ -951,6 +953,7 @@
                   <button type="button" class="country-toggle-btn" data-country="sv" onclick="setHomeCountry('sv')"><span class="flag-badge">SE</span> <span data-i18n="input.optSweden">스웨덴 기준</span></button>
                   <button type="button" class="country-toggle-btn" data-country="no" onclick="setHomeCountry('no')"><span class="flag-badge">NO</span> <span data-i18n="input.optNorway">노르웨이 기준</span></button>
                   <button type="button" class="country-toggle-btn" data-country="da" onclick="setHomeCountry('da')"><span class="flag-badge">DK</span> <span data-i18n="input.optDenmark">덴마크 기준</span></button>
+                  <button type="button" class="country-toggle-btn" data-country="fi" onclick="setHomeCountry('fi')"><span class="flag-badge">FI</span> <span data-i18n="input.optFinland">핀란드 기준</span></button>
                   <button type="button" class="country-toggle-btn" data-country="other" onclick="setHomeCountry('other')"><span class="flag-badge">🌐</span> <span data-i18n="input.optOther">기타 국가 (미국 30% 기준)</span></button>
                 </div>
                 <!-- ⚠️ 아이콘이 태국·러시아·파키스탄·캄보디아·몽골·라오스 버튼에 붙어있는데, 그
