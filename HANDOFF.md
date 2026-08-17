@@ -1187,156 +1187,11 @@ LotteryUSA만 노출됨) — "이미 1순위 노출된다"는 전제는 틀림. 
 
 ## 작업 이력 (날짜순, 세션마다 맨 아래에 새 항목 추가)
 
-이보다 오래된 세션 기록(~2026-08-16 말레이시아 라운드까지)은 `HANDOFF-ARCHIVE.md` 참고(특정
-과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님). 이 본문에는 최근 세션(PR #239~#243
-머지 인수인계, 독일 UI 언어+국가 추가, 네덜란드 UI 언어+국가 추가) 기록만 남겨둠 — 날짜별
-항목이 3~4개를 다시 넘어가면 가장 오래된 날짜부터 또 이 방식으로 정리할 것(같은 패턴 반복,
-`HANDOFF-ARCHIVE.md` 맨 뒤에 이어 붙이면 됨).
-
-### 2026-08-16 이어서 — 인수인계: PR #239~#243(뉴질랜드·아일랜드·싱가포르·남아공·말레이시아) 5개 순차 머지 완료
-
-사용자 지시("네가 해야된다고 생각하는 거 전부 해줘")에 따라, 같은 날 서로 독립적으로 작업된
-5개의 "0% club" 국가 추가 PR을 `main`에 순서대로(PR이 열린 순서: #239→#240→#241→#242→#243)
-직접 머지함. 각 PR이 `script.js`·`index.html`·`i18n/*.json`·`sitemap.xml`/`sitemap.html`·
-`sw.js`·`HANDOFF.md`·`us-lottery-tax-for-australians.html`(상호링크)를 독립적으로 건드려서
-순서대로 머지할 때마다 충돌이 났고, 매번 격리된 `git worktree`(메인 작업 디렉터리·동시 진행
-중이던 말레이시아 서브에이전트와 분리)에서 직접 충돌을 해결한 뒤 테스트를 다시 돌리고
-PR을 갱신·머지했음.
-
-**충돌 해결 원칙**: 모든 충돌이 "같은 파일의 다른 위치에 각자 새 국가를 추가"하는 순수
-독립 삽입이라, 실제 의미 충돌은 단 한 건도 없었음(양쪽 다 유지가 항상 정답). `TAX_MODEL`·
-`calcTakeHome()`의 else-if 블록·`COUNTRY_TAX_PROFILES`·`SUPPORTED_TAX_COUNTRIES`·
-`COUNTRY_TAX_AUTHORITY`·`REAL_ABROAD_CURRENCY`·`CURRENCY_DISPLAY_META`·
-`CURRENCY_RATE_CONFIG`·`index.html`의 3개 select/toggle·`sitemap.xml`/`sitemap.html`은
-전부 "PR이 열린 순서대로(nz→ie→sg→za→my) 나열" 관례로 통일해서 정리. `COUNTRY_NAMES_MORE`
-(21개 언어 객체)와 `i18n/*.json`(26개 파일)은 항목 수가 많아 손으로 하나씩 고치는 대신
-매 라운드 Python 스크립트를 새로 작성해 프로그래밍적으로 병합(두 브랜치의 해당 블록을 각각
-온전한 JSON/객체로 재구성해 `json.loads`/파싱한 뒤 유니온) — 실제 키 충돌은 0건으로 확인됨.
-
-**⚠️ 발견한 실수와 교정**: 싱가포르 라운드에서 `i18n-source/translations.json`(마스터
-소스 — 원래 들여쓰기 2칸의 pretty-print JSON) 충돌을 해결하며 `i18n/*.json`(파생 파일,
-원래도 한 줄 압축 포맷이 맞음)과 같은 압축 포맷으로 잘못 저장해버려서, PR diff가
-`+946 -22383`처럼 부풀어 보이는 문제가 발생함 — `git diff`로 실제 확인해보니 데이터
-유실은 아니었고(모든 키 보존 확인) 순수 포맷 문제였음. 별도 커밋으로 `json.dump(...,
-indent=2)`로 되돌려 정정(`+55 -27`로 정상화). 이후 라운드(남아공·말레이시아)부터는
-소스 파일과 파생 파일을 분리 처리하는 스크립트로 고쳐서 재발 방지. 또, 대용량 텍스트를
-손으로 옮겨적다가 "居民"(중국어 居民)을 "居민"(한중 혼용 오타)으로 잘못 입력한 사례가
-2번 있었음 — 매번 직후에 `grep`으로 발견해 즉시 수정, 최종적으로 전체 파일에 이 오타가
-남아있지 않음을 확인.
-
-**검증**: 5개 브랜치 각각 머지 직후 `node --check script.js`·`tests/broken_link_audit.js`·
-`tests/i18n_coverage_audit.js`·`tests/console_error_audit.js`·`tests/home_audit.js`
-전부 0건 확인 + Playwright로 `calcTakeHome(800, <country>)`가 각 나라마다 정확히
-`{afterUS:560, final:560}`(30% 미국 원천징수만 적용)을 반환하는 것을 직접 확인. 마지막
-말레이시아 머지 이후 `main`을 최종 fetch해 `SUPPORTED_TAX_COUNTRIES`에 33개국(kr/us 등
-논스톱 국가 포함) 전부 존재, `script.min.js?v=20260816-15`/`sw.js CACHE_NAME v69`로
-버전 일치, 5개 랜딩페이지(`us-lottery-tax-for-{nz-residents,irish-residents,
-singapore-residents,south-africans,malaysians}.html`) 전부 존재, 실제 프로덕션과 동일하게
-로컬 서버로 `script.min.js`(압축본)를 직접 서빙해 5개국 `calcTakeHome()` 재확인(콘솔 에러
-0건)까지 마쳤음 — "고쳤다고 기록했는데 실제로는 반영 안 됨" 사고를 반복하지 않기 위해
-소스 코드 확인이 아닌 실제 배포 아티팩트 기준으로 검증.
-
-**정리**: 병합 작업에 쓰인 임시 `git worktree`(스크래치 디렉터리)와 4개의 로컬 임시 브랜치
-(`ireland-merge`/`singapore-merge`/`southafrica-merge`/`malaysia-merge`)를 작업 완료 후
-삭제. 메인 작업 디렉터리는 최종적으로 `main` 브랜치, `origin/main`과 정확히 일치하는
-상태로 정리해둠(이전에 말레이시아 서브에이전트가 남겨둔 `claude/malaysia-country-2026-08-16`
-브랜치 체크아웃 상태였던 것도 `main`으로 되돌림).
-
-**다음 세션 참고**: 이 파일이 날짜별 세션 항목 20개를 넘어 파일 상단 유지보수 규칙(3~4개
-초과 시 아카이브)을 크게 넘어섰던 상태라, 이번 항목 작성과 함께 오래된 항목들을
-`HANDOFF-ARCHIVE.md`로 옮기는 아카이빙도 이어서 진행함(아래 "작업 이력" 섹션 참고 — 최근
-몇 개 세션만 남기고 나머지는 아카이브로 이동).
-
-### 2026-08-17 — 독일어(de)를 신규 UI 언어로 추가 + 독일을 34번째 지원 국가로 추가 (3단계 커밋, 새 PR)
-
-이전 세션이 "다음 후보는 독일·네덜란드(언어 지원 결정 필요)"라고 남긴 대로, 이번 세션은
-Canada/UK/Australia류(이미 지원되던 언어 재사용)보다 훨씬 큰 작업인 **새 UI 언어 자체를
-추가**하는 라운드였음 — 시작 전에 브리프가 요구한 대로 규모를 직접 검증함(`grep -c '\btet:'
-script.js`가 296을 반환, `ADDITIONAL_LANGS` 21개 확인 — 브리프의 가정이 정확했음).
-
-**1단계(언어 인프라)**: `script.js`의 `ADDITIONAL_LANGS`와 `scripts/build-i18n.js`/
-`tests/console_error_audit.js`/`tests/lang_leak_audit.js`의 각 `LANGS` 배열에 `'de'` 추가
-(4개 파일 동기화). `i18n-source/translations.json` 800개 키 전체에 실제 독일어 번역 추가
-(플레이스홀더 없음 — 800개 항목을 8개 청크 파일로 나눠 직접 번역해서 스크립트로 병합).
-`i18n/de.json` 신규 생성 + 기존 26개 언어 파일 재생성(`node scripts/build-i18n.js`, 내용은
-동일하고 JSON 재직렬화만 발생 — 26개 파일 전부 diff로 실제 번역 텍스트가 안 바뀐 것을
-확인). `script.js`의 `tet:` 마커가 붙은 "more" 객체 296개 전부에 `de:` 항목 추가 — 대부분
-(286개)은 line-surgery 스크립트로 자동 삽입했고, 특수 형태 10개(배열 1개, 객체 3개 —
-`COUNTRY_NAMES_MORE`/match-no-plus-only 객체/국가명 객체, 화살표 함수 6개)는 직접 Edit로
-처리. **여기서 실수로 놓칠 뻔한 부분**: `COUNTRY_NAMES_MORE`는 언어별 행(`de:` 새 행 포함
-22개 언어) 각각이 "나라 코드 → 그 언어로 된 나라 이름" 맵인데, 처음엔 새 `de`(독일어) *언어*
-행만 추가하고 `de`(독일) *국가* 코드를 기존 22개 언어 행 전부에 추가하는 걸 깜빡함 —
-Playwright로 `calcTakeHome(800,'de')`를 직접 돌려보다가 `label2`에 "Zusätzliche Steuer in
-undefined"가 찍히는 걸 발견해서 잡음(스크립트로 22개 행 전부에 `de:'Deutschland'`류 국가명
-일괄 삽입). 이 단계에서 `tests/i18n_coverage_audit.js`(0/781)·`tests/console_error_audit.js`
-(0/168, 24개 언어)·`tests/lang_leak_audit.js`(0/108, 27개 언어) 전부 통과 확인 후 커밋.
-
-**2단계(독일 국가 로직)**: `TAX_MODEL.de_resident`(rate: 0) + `calcTakeHome()`의 `'de'` 분기 +
-`COUNTRY_TAX_PROFILES`/`SUPPORTED_TAX_COUNTRIES`/`COUNTRY_TAX_AUTHORITY`(`Finanzamt`)/
-`REAL_ABROAD_CURRENCY['de']='EUR'`(프랑스/아일랜드와 같은 유로존 통화 재사용, 신규 통화
-작업 불필요) 추가. **세율 조사(WebSearch, 2026-08-17)**: 브리프가 명시적으로 경고한 대로
-"유럽이니까 당연히 0% 클럽"이라고 가정하지 않고 직접 조사함 — 독일 소득세법(EStG) 제2조
-3항이 과세 대상 소득을 7개 소득 종류(Einkunftsarten, 제22조가 열거)로 한정하는데 복권·도박
-당첨금은 그 어디에도 해당하지 않아 "과세 불가"(nicht steuerbar)라는 게 다수 독일 세무
-포털(steuern.de/vlh.de/taxfix.de/smartsteuer.de/steuerstudies.de)의 일관된 설명 — 세율이
-낮은 게 아니라 애초에 과세표준 자체가 없는 구조라 uk/au/fr/ie/sg/za/my_resident와 같은
-"진짜 0%" 케이스(FTC 상계로 0이 되는 mx/in과는 다름). 미-독일 조세조약 원문(irs.gov/
-pub/irs-trty/germany.pdf)의 제21조 1항("기타소득")이 OECD 모델식 "shall be taxable only in
-that State" 문언인 것도 직접 대조했고, 2006/2007년 의정서 Technical Explanation(germanyte07.pdf,
-`pdftotext -layout`으로 직접 대조)에서는 "gambling"을 명시하는 문구를 찾지 못해 — 명시적
-재무부 예시가 확인된 영국/일본/프랑스보다 한 단계 낮고 아일랜드(ie_resident)와 같은 확신
-수준("조약 본문 문언 + 나머지 국가들과의 구조적 일관성")으로 주석에 명시함. 증여세
-(Schenkungsteuer, 배우자 50만 유로·자녀 40만 유로 등 관계별 공제)는 당첨금 자체가 아니라
-나중에 증여하는 시점에만 발생하는 별개 세목이라 별도 각주로 분리(당첨 시점 실수령액 계산
-로직과 무관 — fr_resident의 PFU 각주와 같은 성격). `index.html`의 3개 국가 선택 지점
-(`realAbroadSelect` `de|de`, `homeCountrySelect`, `homeCountryToggle` 버튼 그리드) 배선 +
-새 i18n 키 `input.optGermany`(27개 언어) 추가. `script.min.js?v=20260817-1`/`sw.js
-CACHE_NAME v70`로 버전 갱신(`node scripts/build-min.js`) — **`index.html`이 `script.min.js`를
-불러온다는 걸 처음엔 깜빡하고 `script.js`만 고친 채 Playwright로 `calcTakeHome`을 테스트해서
-"홈 국가로 안 바뀜" 버그를 잠깐 봤음, minify를 다시 돌리고서야 정상 확인** — 다음 세션도 같은
-실수를 반복하지 않도록 기록. `node --check` 통과, `tests/i18n_coverage_audit.js`(0/782)·
-`tests/console_error_audit.js`(0/168)·`tests/lang_leak_audit.js`(0/108)·
-`tests/broken_link_audit.js`(0/118)·`tests/home_audit.js`(0/18) 전부 통과 후, 프로덕션과
-동일하게 `script.min.js`를 서빙하는 로컬 서버로 `calcTakeHome(800,'de')`가
-`{afterUS:560, final:560}`(=$800M×0.7=$560M), `calcTakeHome(1,'de')`가
-`{afterUS:0.7, final:0.7}`(=$700,000)을 정확히 반환하는 것과 compare 화면에서도 독일
-옵션이 콘솔 에러 없이 정상 렌더링되는 것을 확인 후 커밋.
-
-**3단계(랜딩페이지+사이트맵+이 항목)**: `germany-resident-us-lottery-tax.html` 신설 —
-프랑스 페이지를 구조 템플릿으로 재사용(가장 가까운 사례: 유로존 국가, 자기 언어 랜딩페이지,
-EUR 통화, "정산 티켓" CSS 템플릿). 프랑스/멕시코 라운드와 같은 이유로 영어가 아니라 독일어로
-작성(독일어가 이번 세션부터 진짜로 지원되므로). $1M 예시(미국 원천징수 -$300,000, 독일
-추가세 0€, 실수령 약 $700,000, EUR 환산 참고치 약 644,000€ — `EXCHANGE_RATE_EUR` 폴백값
-0.92 기준), EStG 제2조 3항·제22조 근거 설명, 30% 비거주자 원천징수 + 조약 제21조 1항 환급
-가능성(위 de_resident 주석과 동일한 확신 수준 — 자동 환급 아님, 결과 보장 안 함이라고 명시),
-Abgeltungsteuer(자본소득세 25%+연대부가세) 각주, 증여세(Schenkungsteuer) 각주 별도 박스,
-FAQ 4개 포함. `node scripts/apply-landing-ticket-style.js germany-resident-us-lottery-tax.html`
-실행 후 프랑스 페이지 `<style>` 블록과 diff해서 23,366바이트 완전히 동일함 확인(빈 스타일
-블록 방지 확인). CTA는 `index.html?lang=de&country=de` — Playwright로 클릭 시 홈 국가
-select가 정확히 `de`로, `<html lang>`이 `de`로 프리셀렉트되는 것도 확인. `sitemap.xml`·
-`sitemap.html` 등재(JSON-LD `SoftwareApplication`은 `COUNTRY_TAX_PROFILES` 실제 카운트인
-"34개국"으로 신규 작성 — 다른 페이지들의 오래된 카운트 문구는 이번 라운드 범위 밖이라
-손대지 않음), **"같은 법 전통" 관례대로 프랑스 페이지(같은 유로존 국가·자기 언어 랜딩페이지
-패밀리)의 `related-links`에 상호 링크 추가**(아일랜드 페이지는 영어 랜딩이라 대신 프랑스를
-선택). `tests/broken_link_audit.js`(0/119, 신규 페이지 포함) 통과.
-
-**테스트(3단계 종합)**: `node --check script.js` 통과. `tests/i18n_coverage_audit.js`
-(0/782)·`tests/broken_link_audit.js`(0/119)·`tests/console_error_audit.js`(0/168, 24개
-언어)·`tests/home_audit.js`(0/18)·`tests/lang_leak_audit.js`(0/108, 27개 언어) 전부 통과.
-
-**3단계 커밋 + 새 PR**: 이번 라운드는 브리프가 명시한 대로 평소보다 한 단계 더 쪼갠
-3단계 커밋(언어 인프라 → 국가 로직 → 랜딩페이지/사이트맵/이 항목)으로 진행 — 세션/예산
-한도에 걸려도 부분 진행이 안전하게 보호되도록, 각 단계마다 테스트 통과 확인 후 즉시 push함.
-브랜치 `claude/german-language-and-country-2026-08-17`에서 PR을 열어 리뷰 대기 상태로
-남김(직접 병합 안 함).
-
-**⚠️ 세율 조사 확신 수준 요약**(다음 세션이 재조사 없이 참고할 수 있도록): 독일 소득세
-비과세 자체(EStG 제2조 3항/제22조)는 다수 2차 자료(세무 포털) 일관 확인으로 확신 높음.
-조세조약 제21조 1항의 원문·구조는 1차 자료(irs.gov 원문 PDF) 직접 대조로 확신 높음. 다만
-"gambling이 제21조 적용 예시로 명시됐는지"는 2006/2007 의정서 Technical Explanation에서만
-확인했고 1989년 원 조약 자체의 Technical Explanation은 이번 세션에서 별도로 찾아 대조하지
-않았음 — 아일랜드 라운드와 동일한 한계이니 완전히 새로 조사하기보다 그 결과를 재확인하는
-정도로 충분할 것.
+이보다 오래된 세션 기록(~2026-08-17 독일 라운드까지)은 `HANDOFF-ARCHIVE.md` 참고(특정
+과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님). 이 본문에는 최근 세션(네덜란드·
+스웨덴·노르웨이·덴마크 UI 언어+국가 추가) 기록만 남겨둠 — 날짜별 항목이 3~4개를 다시
+넘어가면 가장 오래된 날짜부터 또 이 방식으로 정리할 것(같은 패턴 반복, `HANDOFF-ARCHIVE.md`
+맨 뒤에 이어 붙이면 됨).
 
 ### 2026-08-17 이어서 — 네덜란드어(nl)를 신규 UI 언어로 추가 + 네덜란드를 35번째 지원 국가로 추가 (3단계 커밋, 새 PR)
 
@@ -1679,3 +1534,104 @@ related-links에 노르웨이 상호 링크 추가(노르웨이 페이지는 서
 등재 + HANDOFF 기록"이라는 마무리 작업뿐이었음 — 핵심 로직(세율 조사·계산 코드·통화 배선)은
 전혀 다시 할 필요가 없었음. 이 패턴(1·2단계 통합 커밋 후 3단계 진행 중 중단)이 반복될 걸
 가정하고, 다음 세션도 랜딩페이지 파일이 워킹카피에 untracked 상태로 남아있는지부터 확인할 것.
+
+### 2026-08-17 이어서 — 덴마크어(da)를 신규 UI 언어로 추가 + 덴마크를 38번째 지원 국가로 추가 + DKK 통화 실지원
+
+독일(#244)·네덜란드(#245)·스웨덴(#246)·노르웨이(#247)에 이어 다섯 번째 신규 UI 언어(덴마크어)
+추가 라운드. 브리프가 명시적으로 "북유럽=노르웨이·스웨덴과 비슷하겠지로 넘겨짚지 말 것"이라고
+지시했는데, 실제로 조사 결과 덴마크는 앞선 네 나라 중 어느 패턴과도 다른 **다섯 번째 세율
+메커니즘**으로 밝혀짐 — 미리 정답을 정해두지 않고 원문부터 확인한 게 실제로 유의미했던 경우.
+
+**1단계(언어 인프라)**: script.js의 ADDITIONAL_LANGS와 scripts/build-i18n.js/
+tests/console_error_audit.js/tests/lang_leak_audit.js의 각 LANGS 배열에 'da' 추가.
+i18n-source/translations.json 804개 키 전체에 실제 덴마크어 번역 추가(노르웨이어를 1차
+참고 자료로 삼되 skatt→skat·mye→meget·søk→søg·gaveskatt→gaveafgift 등 덴마크어 고유의
+어휘·철자 차이를 실제로 반영해 작성 — 기계적 문자 치환이 아님), i18n/da.json 신규 생성.
+들여쓰기 2칸 유지 확인(노르웨이 라운드에서 반복된 1칸 들여쓰기 버그 재발 방지, 매 단계 확인
+습관화). script.js의 tet: 마커가 붙은 "more" 객체 302개 전부에 da: 항목 추가 — TypeScript
+컴파일러 AST 파서로 "모든 키가 언어코드 집합의 부분집합"인 객체 리터럴만 정확히 식별해
+자동 삽입(스크래치 디렉터리의 중간 JSON에 의존하는 이번 라운드 전용 스크립트라 CLAUDE.md
+지침대로 scripts/에 영구 저장하지 않음 — 필요하면 이 항목의 커밋을 참고해 재구성). 단순
+문자열(242개)·템플릿 리터럴(47개)·배열(1개) 외에 화살표 함수 값 6개와 중첩 객체 값 3개
+(STATE_DISPLAY_NAMES_MORE·MATCH_LABEL_TEMPLATES_MORE·COUNTRY_NAMES_MORE)는 별도 처리.
+COUNTRY_NAMES_MORE는 신규 da 언어 행(자기참조 da:'Danmark' 포함) + 기존 25개 언어 행 전체에
+da 국가코드 키 추가라는 두 방향 모두 이 단계에서 함께 처리(자기참조 누락 버그를 독일 라운드
+이후 계속 예방 중). LOCALE_MAP·FAQ_VOICE_LANG_MAP(둘 다 이전 세션들이 tet: 값을 잘못
+채워뒀던 자리 — 새로 발견한 기존 버그는 아니고 그대로 둠, 내 스코프 밖)에도 da: 'da-DK' 추가.
+
+**세율 조사(2026-08-17, Skattestyrelsen·spilleafgiftsloven·미-덴마크 조세조약 원문 직접
+대조)**: 덴마크는 2012년 EU 최초로 온라인 도박을 전면 자유화·규제한 나라 중 하나로,
+스필레먈뒤그헤덴(Spillemyndigheden) 면허 사업자에게 사업자 단위로 게임세를 부과하는
+"게임세법"(spilleafgiftsloven) §12가 핵심 — 덴마크 면허 게임 및 "다른 EU/EEA 회원국에서
+동등하게 제공되고 공적 감독을 받는" 게임의 당첨금만 플레이어 비과세. 미국 파워볼·
+메가밀리언즈는 둘 다 아니므로 그대로 과세 대상 — 스웨덴·노르웨이와 같은 "EU/EEA산+공적감독"
+면제 논리 구조지만, 미국 복권을 특정해 별도로 확인하지 않고 넘겨짚은 게 아니라 skat.dk
+공식 소비자 안내 페이지("gevinster, præmier og dusører")가 **"미국 라스베이거스 카지노에서
+딴 당첨금도 과세 대상"이라고 직접 명시한 문구**를 1차 자료로 확인 — 파워볼에도 그대로
+적용 가능한 사실상의 명시적 예시. 소득 분류는 자본소득이 아니라 인적소득 중 "기타 인적소득"
+(anden personlig indkomst, 신고서 rubrik 20).
+
+TAX_MODEL.da_resident(rate: 0.5707, ftc_available: true) — 세율은 2026년 신설된 "톱톱세"
+(top-topskat, 초고소득자 대상 추가 5%p)를 포함한 2026년 최고 한계세율(국세+지방세 기준
+세금상한/skatteloft, AM-bidrag 8% 제외)을 근사치로 사용. AM-bidrag(노동시장분담금)는 근로소득
+전용이라 복권 당첨금 같은 우발적 소득(rubrik 20)엔 적용 안 되는 것으로 판단했으나 1차 자료로
+100% 확정은 못함(⚠️, 코드 주석에 명시). FTC는 국내법 리닝스로벤(ligningsloven) 제33조의
+상한부 통상세액공제 — 덴마크 세율(57.07%)이 미국 원천징수(30%)보다 훨씬 높아 mx_resident/
+in_resident와 같은 산식 구조로 공제 후에도 상당한 실제 잔여세액(≈27.07%p)이 남음. 독일(0%)·
+네덜란드(과세+FTC無)·스웨덴(과세+FTC로 정확히 상쇄)·노르웨이(과세+FTC 한도 내 완전 상쇄)
+어디에도 안 겹치는 다섯 번째 패턴.
+
+**흥미로운 조약상 특이점**: 미-덴마크 조세조약(1999년 체결, 2001년 발효)은 독일·프랑스·
+일본·영국과 같은 최신형 구조로 제21조("기타소득") 1항이 "다른 조항에서 안 다루는 소득은
+거주지국 전속과세"를 규정하고, IRS 기술설명서(irs.gov/pub/irs-trty/dentech.pdf) 원문이
+**"income from gambling"(도박소득)을 이 조항이 다루는 소득의 명시적 예시로 직접 열거**함 —
+즉 조약 원칙만 보면 덴마크 거주자의 복권 당첨금엔 미국이 애초에 과세권이 없어 30% 원천징수
+자체가 조약상 부당징수이고 1040-NR로 전액 환급 청구가 가능한 구조. 그러나 미국 복권위원회는
+편의점 즉석 당첨자를 상대로 사전 조세조약 신고를 접수·심사하는 절차 자체가 없어(배당·이자처럼
+대량 정기 처리하는 기관과 다름) 실무상 국적·거주지 불문 전원 30% 일률 원천징수됨 — 이
+계산기는 다른 모든 나라와의 일관성을 위해 "환급 청구 안 한 채 30%를 그대로 맞는" 실제
+다수 당첨자의 경험을 기준으로 30% 원천징수 단계를 유지하고, 그 위에 리닝스로벤 제33조
+상한부 공제를 적용함. 이 특이점은 랜딩페이지에 별도 h2 섹션으로 설명(다른 나라 페이지엔
+없는, 덴마크만의 독자적 콘텐츠).
+
+**DKK 통화 신규 지원**(독일/네덜란드/아일랜드/프랑스와 달리 덴마크는 유로존 미가입이라
+진짜 신규 통화 — 스웨덴/노르웨이와 같은 상황): USD/DKK 폴백 6.46(2026-08-17 확인, WebSearch
+6.46~6.49대 + Frankfurter 실측 6.463 + open.er-api 실측 6.4627로 교차검증) — GBP/AUD/MXN/
+SEK/NOK와 같은 이유로 Frankfurter/open.er-api가 이미 지원해서 실제로 추가함
+(EXCHANGE_RATE_DKK, CURRENCY_RATE_CONFIG, CURRENCY_DISPLAY_META.DKK,
+REAL_ABROAD_CURRENCY['da']='DKK', index.html 통화 select 2곳). Playwright로
+`calcTakeHome(800,'da')` 실행 결과 확인: afterUS=560(-30%), final=343.44(덴마크 추가
+-27.1%), label1/val1/label2/val2/basisSuffix 어디에도 undefined 없음 확인.
+COUNTRY_NAMES_MORE.da/COUNTRY_NAMES_MORE.no.da/buildCountryMore('da') 전부 정상 렌더링
+확인(자기참조 누락 버그 없음).
+
+index.html 3곳(realAbroadSelect/homeCountrySelect/homeCountryToggle)에 da 항목 추가,
+새 i18n 키 input.optDenmark 805번째로 추가(전체 언어 번역, 노르웨이의 input.optNorway
+패턴을 언어별로 정확히 대응). COUNTRY_TAX_AUTHORITY.da(Skattestyrelsen) 신규 추가.
+`script.min.js?v=20260817-7`, `sw.js CACHE_NAME v76`로 갱신.
+
+**3단계**: 노르웨이 페이지를 가장 가까운 구조적 템플릿으로 삼아 `denmark-resident-
+us-lottery-tax.html` 신설(JSON-LD 4개 FAQ 포함, 조약 특이점을 다루는 별도 h2 섹션 추가).
+`node scripts/apply-landing-ticket-style.js denmark-resident-us-lottery-tax.html` 실행 후
+노르웨이 페이지와 style 블록 shadow-hard 개수(8개) 일치 확인(빈 스타일 블록으로 안 남음).
+Playwright로 랜딩페이지 직접 로드 시 제목·h1·quick-answer 본문 정상 렌더링, 콘솔 에러는
+광고/애널리틱스 외부 리소스 차단으로 인한 벤치마크성 net::ERR_CONNECTION_RESET 4건뿐(같은
+샌드박스에서 no 언어 기준선 로드로도 동일 패턴 재현 확인 — 이 라운드 코드와 무관).
+`sitemap.xml`·`sitemap.html` 등재, 노르웨이·스웨덴 페이지의 related-links에 덴마크 상호
+링크 추가 + 덴마크 페이지에도 노르웨이·스웨덴 상호 링크 포함(양방향).
+
+인수인계 문서 자체도 이 세션에서 정리: "작업 이력" 섹션이 5개 항목(PR #239~#243 머지·독일·
+네덜란드·스웨덴·노르웨이)으로 3~4개 기준을 넘어서 있어, 가장 오래된 2개(PR #239~#243 머지,
+독일)를 `HANDOFF-ARCHIVE.md` 맨 뒤로 원문 그대로 이동하고 이 파일에는 네덜란드·스웨덴·
+노르웨이·덴마크 4개만 남김(포인터 문구도 "~2026-08-17 독일 라운드까지"로 갱신).
+
+테스트: 1단계는 i18n_coverage_audit(0건)·console_error_audit(196 configs, 0건)·
+i18n_attr_lint(0건)·lang_leak_audit(124 configs, 0건) 통과. 2단계는 i18n_coverage_audit
+(786개 키, 0건)·console_error_audit(196 configs, 0건)·home_audit(18건, 0건)·
+broken_link_audit(122개 파일, 0건) 통과.
+
+**3단계 커밋 + 새 PR**: `main`에서 새 브랜치 `claude/danish-language-and-country-2026-08-17`를
+만들어 1단계(언어 인프라)·2단계(덴마크 세율+DKK 통화)를 먼저 각각 테스트 직후 커밋+푸시한
+뒤 3단계(랜딩페이지+sitemap+상호링크+이 HANDOFF 항목)를 커밋 — 이전 라운드들과 같은 이유로
+세션 한도 중단에 대비해 핵심 로직이 먼저 안전하게 커밋되도록 함. PR을 열어 리뷰 대기 상태로
+남김(직접 병합 안 함).
