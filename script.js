@@ -1931,6 +1931,79 @@ const TAX_MODEL = {
     //   (sv_resident·no_resident와 같은 수준의 권고).
     rate: 0.5707,
     ftc_available: true
+  },
+  fi_resident: {
+    // 핀란드는 독일(과세표준 자체 없음)·네덜란드(과세+FTC 없음)·스웨덴(과세+세율 우연 일치)·
+    // 노르웨이(과세+FTC 한도 내 완전 상쇄)·덴마크(과세+FTC 있지만 세율 격차로 큰 잔여세액)와도
+    // 다른 여섯 번째 케이스 — "북유럽=이미 다룬 4개국과 비슷하겠지"로 넘겨짚지 않고 원문부터
+    // 확인(2026-08-17, Verohallinto 공식 안내·법조문·조세조약 원문 대조).
+    //
+    // [면제 기준: 소득세법(Tuloverolaki, TVL) 85 §] "아르파야이스베로락"(Arpajaisverolaki, 복권세법)
+    // 2 §가 정하는 핀란드 국내 복권 또는 유럽경제지역(ETA/EEA) 회원국의 법령에 따라 그 나라에서
+    // 시행된 복권에서 얻은 당첨금은 당첨자에게 과세 대상이 아님(vero.fi 공식 안내
+    // "Arpajaisten verotus" 5절, TVL 85 § 원문 대조, 2026-08-17 직접 확인) — 스웨덴·노르웨이·
+    // 덴마크와 같은 "EU/EEA산+합법 사업자" 면제 논리 구조이나, 근거 법조문은 별개(핀란드는
+    // 소득세법 자체 조항, 덴마크는 게임세법 §12).
+    // - 미국 파워볼·메가밀리언즈는 핀란드 국내 복권도 아니고 EEA 회원국 법령에 따라 시행된 복권도
+    //   아니므로 이 면제(TVL 85 §)의 적용을 받지 못해 그대로 과세 대상.
+    // - 국세청 공식 유권해석(Verohallinnon kannanotto, "Muualla kuin Suomessa tai EU/ETA-alueella
+    //   järjestetyistä vedonlyönti-, veikkaus- ja raha-automaattipeleistä saatavien tulojen
+    //   verotus tuloverolain mukaan", 문서번호 VH/1338/00.01.00/2023, 2023-04-27 발표, vero.fi
+    //   원문 직접 확인)이 "EU/ETA-alueen ulkopuolella järjestetystä vedonlyönnistä ja veikkauksesta
+    //   saadut tulot (voitot) ovat veronalaista ansiotuloa"(EU/ETA 역외에서 조직된 베팅·복권에서
+    //   얻은 소득(당첨금)은 과세 대상 근로소득(ansiotulo)이다)라고 명시 — 자본소득(pääomatulo,
+    //   스웨덴의 30% 정률과 같은 구조)이 아니라 누진 근로소득세율이 적용되는 "기타 근로소득"으로
+    //   분류된다는 점이 이 계산기가 이미 다룬 6개국 중 유일함(TVL 61 § 1항: 자본소득이 아닌 소득은
+    //   근로소득). 이 유권해석은 베팅 건별로 당첨금 총액을 과세하고 진 베팅의 판돈은 공제 불가하다는
+    //   점도 명시(당첨금 총액 기준 과세, 이 계산기의 "잭팟 전액 과세" 가정과 부합).
+    // - 세율: 2026년 세제개편으로 기존 "연대세"(solidaarisuusvero, 8만8200유로 초과분 +3%p)가
+    //   폐지되고 국세(valtion tulovero) 최고 구간이 37.5%로 낮아짐(veronmaksajat.fi·kuntaliitto.fi
+    //   등 복수 자료 교차 확인, 2026-08-17) — 국세는 약 5만2100유로 초과분부터 이 최고구간이
+    //   적용되므로 잭팟 규모 당첨금은 사실상 전액이 이 구간에 해당(다른 나라들의 "면제 문턱
+    //   생략과 같은 원칙"). 여기에 지방소득세(kunnallisvero, 2026년 전국 가중평균 7.57%,
+    //   Veronmaksajain Keskusliitto 발표)와 피보험자 의료보험료(sairaanhoitomaksu, 지방세와 같은
+    //   과세표준에 부과, 2026년 1.10%, 사회보건부 발표)를 더함 — 단 실업급여용 일당보험료
+    //   (päivärahamaksu, 0.88%)는 임금·사업소득에만 부과되고 복권 당첨금 같은 "기타 근로소득"에는
+    //   적용되지 않는 것으로 판단(스웨덴·노르웨이·덴마크가 근로소득 전용 부가세를 배제한 것과
+    //   같은 원칙, 공식 안내에 päivärahamaksu 대상이 "palkka- ja yrittäjätulo"로 명시됨). 합계
+    //   37.5%+7.57%+1.10%≈46.17%를 근사 세율로 사용. ⚠️ sairaanhoitomaksu가 복권 당첨금처럼
+    //   비경상적 "기타 근로소득"에도 실제로 부과되는지를 위 2023년 유권해석 원문이 직접 언급하지는
+    //   않아(지방세와 같은 과세표준이라는 일반 원칙에서 추론) 완전히 1차 자료로 확정하지는 못함.
+    // - 2023년 사회보건개혁(hyvinvointialueuudistus)으로 지방소득세율이 큰 폭으로 낮아진 대신
+    //   국세 구간이 그만큼 올라간 구조 개편이 있었음(복지서비스지역·hyvinvointialue 자체는 독자
+    //   과세권이 없고 국가 재원으로 운영) — 위 지방소득세 7.57%는 이 개편 이후의 2026년 수치.
+    // - FTC(세액공제) 가능 여부: 국내법인 "국제적 이중과세 제거법"("메네텔멜라키", Laki
+    //   kansainvälisen kaksinkertaisen verotuksen poistamisesta, 1552/1995)이 조세조약 유무와
+    //   무관하게 외국원천소득에 이미 낸 외국세를 핀란드 세액 한도 내에서 공제하는 일반적 통상세액
+    //   공제(hyvitysmenetelmä) 조항을 둠(vero.fi·전문 세무법인 자료 교차 확인, 2026-08-17) —
+    //   한도를 초과해 공제받지 못한 부분은 이후 5년간 같은 소득종류·같은 출처국 소득에서 이월
+    //   공제 가능하다는 점이 이 계산기가 다룬 다른 나라(mx/in/da 등)에는 없던 특징(단, 잭팟은
+    //   1회성 소득이라 이월 공제를 실제로 쓸 기회가 없어 이 계산기 로직에는 영향 없음). ⚠️ 이
+    //   일반 공제법이 복권 당첨금(기타 근로소득)에 구체적으로 적용된다는 사례·유권해석까지는
+    //   직접 대조하지 못해(일반 원칙 적용, 조문 번호까지 대조는 안 됨) 중간 확신.
+    // - 흥미로운 조약상 특이점(덴마크와 같은 구조): 미-핀란드 조세조약(1989년 체결, 2006년
+    //   의정서로 개정, irs.gov/pub/irs-trty/finland.pdf 원문 직접 대조, 2026-08-17)은 독일·
+    //   프랑스·일본·영국·덴마크와 같은 최신형 구조로 제21조("기타소득") 1항이 "다른 조항에서
+    //   다루지 않는 거주지국 거주자의 소득은, 발생지를 불문하고 그 거주지국에서만 과세한다"라고
+    //   명시(원문: "Items of income of a resident of a Contracting State, wherever arising, not
+    //   dealt with in the foregoing Articles of this Convention shall be taxable only in that
+    //   State.") — 도박·복권소득을 다루는 별도 조항이 조약에 없으므로 이 "기타소득" 거주지국
+    //   전속과세 원칙이 적용되어, 조약 원칙만 보면 핀란드 거주자의 복권 당첨금엔 미국이 애초에
+    //   과세권이 없어 30% 원천징수 자체가 조약상 부당징수인 구조 — 덴마크와 정확히 같은 종류의
+    //   특이점. 그러나 덴마크와 같은 이유(미국 복권위원회는 편의점 즉석 당첨자 상대 사전 조세조약
+    //   신고 접수 절차가 없음)로 실무상 국적·거주지 불문 전원 30% 일률 원천징수됨 — 이 계산기는
+    //   다른 모든 나라와의 일관성을 위해 "환급 청구 안 한 채 30%를 그대로 맞는" 실제 다수 당첨자의
+    //   경험을 기준으로 30% 원천징수 단계를 유지하고, 그 위에 메네텔멜라키 상한부 공제를 적용함.
+    // - 핀란드 세율(약 46.17%)이 미국 원천징수(30%)보다 높으므로 미국 세액 30% 전액이 공제되고도
+    //   (46.17%-30%)≈16.17%p의 실질 잔여세액이 남음 — 덴마크(≈27.07%p)보다는 작지만 노르웨이
+    //   (0%p, 세율 역전으로 완전 상쇄)보다는 훨씬 큰, mx_resident·da_resident와 같은 구조.
+    //   ⚠️ 불확실성 요약: (1) sairaanhoitomaksu의 실제 적용 여부(위 참고, 중간 확신) (2) 메네텔멜라키가
+    //   이 소득종류에 구체적으로 적용된다는 유권해석 직접 대조는 안 됨(중간 확신) (3) 조약상 미국의
+    //   과세권 부재가 핀란드 국내법상 공제 계산에 영향을 주는지는 확정 못함(덴마크와 같은 수준의
+    //   불확실성). 실제 신고 시엔 반드시 핀란드 세무 전문가 확인 권장(다른 북유럽국들과 같은 수준의
+    //   권고).
+    rate: 0.4617,
+    ftc_available: true
   }
 };
 
@@ -2896,6 +2969,32 @@ function calcTakeHome(amount, country, stateCode){
       val2: daAdditionalTaxWon > 0 ? '-' + daEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
       basisSuffix: pickLang('덴마크 거주자', 'Denmark resident', '丹麦居民', 'Cư dân Đan Mạch', 'ผู้พำนักในเดนมาร์ก', 'Резидент Дании', buildCountryMore('da'))
     };
+  } else if (country === 'fi') {
+    // 핀란드: 소득세법(Tuloverolaki) 85 §에 따라 핀란드·EEA산 복권 당첨금만 비과세이고, 미국
+    // 파워볼·메가밀리언즈는 둘 다 아니라 그대로 근로소득(ansiotulo, 국세청 유권해석
+    // VH/1338/00.01.00/2023)으로 과세되지만, 메네텔멜라키(1552/1995)의 상한부 세액공제로 미국
+    // 원천징수(30%)를 공제받을 수 있음 — 다만 핀란드 세율(약 46.17%, 국세 최고구간 37.5%+
+    // 지방세 평균 7.57%+의료보험료 1.10%)이 미국 원천징수보다 높아 mx/da와 같은 구조로 실제
+    // 잔여세액(≈16.17%p)이 남음(상세 근거·불확실성 표시는 TAX_MODEL.fi_resident 주석 참고 —
+    // 덴마크와 마찬가지로 미-핀란드 조세조약 제21조가 도박소득을 거주지국 전속과세로 규정해
+    // 원천징수 자체가 이론상 환급 대상일 수 있다는 특이점 포함).
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const fiCalculatedTaxWon = wonAmount * TAX_MODEL.fi_resident.rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, fiCalculatedTaxWon); // FTC 공제액(메네텔멜라키, 한도 내 상계)
+    const fiAdditionalTaxWon = Math.max(fiCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (fiAdditionalTaxWon / 100000000);
+    const fiEffectivePct = wonAmount > 0 ? (fiAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('핀란드 추가 납부 (FTC 적용)', 'Finland additional tax (FTC applied)', '芬兰追加缴税（已抵免FTC）', 'Thuế bổ sung tại Phần Lan (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของฟินแลนด์ (ใช้ FTC แล้ว)', 'Дополнительный налог в Финляндии (с учётом FTC)', buildAdditionalTaxMore('fi')),
+      val2: fiAdditionalTaxWon > 0 ? '-' + fiEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      basisSuffix: pickLang('핀란드 거주자', 'Finland resident', '芬兰居民', 'Cư dân Phần Lan', 'ผู้พำนักในฟินแลนด์', 'Резидент Финляндии', buildCountryMore('fi'))
+    };
   } else if (country === 'other') {
     // "기타 국가" — COUNTRY_TAX_PROFILES 목록에 없는 나라 방문자를 위한 안전망(2026-07-28,
     // 사용자 요청). 자국 세법을 조사하지 않고도 확정적으로 말할 수 있는 건 미국 IRS의 비거주자
@@ -3246,6 +3345,10 @@ const REAL_ABROAD_CURRENCY = {
   // GBP/AUD/MXN/ZAR/MYR/SEK/NOK와 같은 이유로 Frankfurter/open.er-api가 이미 DKK를 지원해서
   // 새 API 없이 지원 가능).
   da: 'DKK',
+  // 핀란드(EUR)는 독일/프랑스/아일랜드/네덜란드와 달리 유로존 정회원국이라(스웨덴/노르웨이/
+  // 덴마크와 달리 유로 채택국) EUR 유로존 공용 통화 재사용 네 번째 사례 — 위 fr/de/nl/ie 항목
+  // 주석대로 CURRENCY_DISPLAY_META.EUR/EXCHANGE_RATE_EUR을 그대로 씀, 신규 통화 정의 불필요.
+  fi: 'EUR',
 };
 
 // "실제로 다른 나라에 살아요" 카드의 US/CN 버튼 — 한국이랑 아무 상관없는 진짜 외국인(예: 순수
@@ -10574,7 +10677,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 페이지들은 애초에 한국 세법이 맞는 기준이라 이 파라미터가 필요 없음).
   // COUNTRY_TAX_PROFILES에 실제로 있는 코드로만 제한해서, 오타·구버전 링크가 미검증
   // 국가로 계산기를 조용히 맞춰버리는 걸 막음(33개국 토글 버튼과 동일한 목록).
-  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','no','da','other'];
+  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','no','da','fi','other'];
   const urlCountry = params.get('country');
   if (SUPPORTED_TAX_COUNTRIES.includes(urlCountry)) {
     setHomeCountry(urlCountry);
@@ -13363,7 +13466,29 @@ const COUNTRY_TAX_AUTHORITY = {
       hi: "Skattestyrelsen",
       fr: "Skattestyrelsen",
       tl: "Skattestyrelsen"
-    , pt: `Skattestyrelsen`, es: `Skattestyrelsen`, uk: `Skattestyrelsen`, tet: `Skattestyrelsen`, de: `Skattestyrelsen`, nl: `Skattestyrelsen`, sv: `Skattestyrelsen`, no: `Skattestyrelsen`, da: 'Skattestyrelsen', fi: 'Skattestyrelsen'})
+    , pt: `Skattestyrelsen`, es: `Skattestyrelsen`, uk: `Skattestyrelsen`, tet: `Skattestyrelsen`, de: `Skattestyrelsen`, nl: `Skattestyrelsen`, sv: `Skattestyrelsen`, no: `Skattestyrelsen`, da: 'Skattestyrelsen', fi: 'Skattestyrelsen'}),
+  // Verohallinto(핀란드 국세청)는 uk의 HMRC/de의 Finanzamt/nl의 Belastingdienst/sv의
+  // Skatteverket/no의 Skatteetaten/da의 Skattestyrelsen과 같이 번역하지 않는 고유명사 관례로
+  // 표기 — 언어 불문 26개 언어 전부 동일 문자열
+  fi: () => pickLang('Verohallinto', 'Verohallinto', 'Verohallinto', 'Verohallinto', 'Verohallinto', 'Verohallinto', {
+      km: "Verohallinto",
+      ne: "Verohallinto",
+      id: "Verohallinto",
+      my: "Verohallinto",
+      si: "Verohallinto",
+      uz: "Verohallinto",
+      mn: "Verohallinto",
+      kk: "Verohallinto",
+      ky: "Verohallinto",
+      ur: "Verohallinto",
+      bn: "Verohallinto",
+      lo: "Verohallinto",
+      ja: "Verohallinto",
+      ar: "Verohallinto",
+      hi: "Verohallinto",
+      fr: "Verohallinto",
+      tl: "Verohallinto"
+    , pt: `Verohallinto`, es: `Verohallinto`, uk: `Verohallinto`, tet: `Verohallinto`, de: `Verohallinto`, nl: `Verohallinto`, sv: `Verohallinto`, no: `Verohallinto`, da: `Verohallinto`, fi: 'Verohallinto'})
 };
 
 // 세율 자체가 불확실하거나(공식 근거를 못 찾음), 세율은 알아도 실제 적용 여부가 불확실한 나라들을
@@ -14653,6 +14778,7 @@ const COUNTRY_TAX_PROFILES = [
   { code: 'sv', flagCode: 'SE', label: '스웨덴 거주자 (실제 스웨덴 거주 기준)', labelEn: 'Sweden resident (living in Sweden)', labelZh: '瑞典居民（实际住在瑞典）', labelVi: 'Cư dân Thụy Điển (sống thực tế tại Thụy Điển)', labelTh: 'ผู้พำนักในสวีเดน (อาศัยอยู่จริงในสวีเดน)', labelRu: 'Резидент Швеции (проживающий в Швеции)', implemented: true, needsState: false, detailPage: 'sweden-resident-us-lottery-tax.html', detailLabel: 'Svenska →', more: buildCountryMore('sv') },
   { code: 'no', flagCode: 'NO', label: '노르웨이 거주자 (실제 노르웨이 거주 기준)', labelEn: 'Norway resident (living in Norway)', labelZh: '挪威居民（实际住在挪威）', labelVi: 'Cư dân Na Uy (sống thực tế tại Na Uy)', labelTh: 'ผู้พำนักในนอร์เวย์ (อาศัยอยู่จริงในนอร์เวย์)', labelRu: 'Резидент Норвегии (проживающий в Норвегии)', implemented: true, needsState: false, detailPage: 'norway-resident-us-lottery-tax.html', detailLabel: 'Norsk →', more: buildCountryMore('no') },
   { code: 'da', flagCode: 'DK', label: '덴마크 거주자 (실제 덴마크 거주 기준)', labelEn: 'Denmark resident (living in Denmark)', labelZh: '丹麦居民（实际住在丹麦）', labelVi: 'Cư dân Đan Mạch (sống thực tế tại Đan Mạch)', labelTh: 'ผู้พำนักในเดนมาร์ก (อาศัยอยู่จริงในเดนมาร์ก)', labelRu: 'Резидент Дании (проживающий в Дании)', implemented: true, needsState: false, detailPage: 'denmark-resident-us-lottery-tax.html', detailLabel: 'Dansk →', more: buildCountryMore('da') },
+  { code: 'fi', flagCode: 'FI', label: '핀란드 거주자 (실제 핀란드 거주 기준)', labelEn: 'Finland resident (living in Finland)', labelZh: '芬兰居民（实际住在芬兰）', labelVi: 'Cư dân Phần Lan (sống thực tế tại Phần Lan)', labelTh: 'ผู้พำนักในฟินแลนด์ (อาศัยอยู่จริงในฟินแลนด์)', labelRu: 'Резидент Финляндии (проживающий в Финляндии)', implemented: true, needsState: false, detailPage: 'finland-resident-us-lottery-tax.html', detailLabel: 'Suomi →', more: buildCountryMore('fi') },
 ];
 
 // 나라별 비교 카드가 텍스트/숫자로만 나열돼서 폰에서 심심하다는 피드백 — 카드를 탭하면 이
