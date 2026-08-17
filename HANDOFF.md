@@ -1565,11 +1565,26 @@ broken_link_audit(122개 파일, 0건) 통과.
   3.7초)와 같은 패턴 재현, 결론 유효함이 다시 검증됨. 코드 변경 없음(성능 최적화보다 SEO
   카피 쪽이 레버리지 크다는 결론에 사용자도 동의).
 
+**이어서 영문 홈페이지 title/description 카피 실제 개편**: PSI 조사가 "코드보다 SEO 카피가
+레버리지 크다"로 결론 나자, `PAGE_TITLES.home.en`/`PAGE_DESCRIPTIONS.home.en`(`script.js`)을
+실제로 교체함 — 근거 없는 카피 변경 리스크 때문에 직접 정하지 않고 "혜택 중심"/"질문형" 두
+안을 만들어 `AskUserQuestion`으로 사용자에게 골라달라고 함, **"혜택 중심" 안 채택**:
+title `Powerball & Mega Millions Tax Calculator | ChamTax`, description `Free calculator
+for your real lottery take-home after tax. Covers US nonresident withholding and
+double-taxation for 38 countries — lump sum or annuity.`(비거주자 원천징수·38개국 이중과세·
+일시불-연금 비교라는 실제 차별점을 앞세움). Playwright로 `?lang=en` 방문 시 `<title>`/
+`meta[name=description]`/`og:title`/`og:description` 4곳 전부 새 문구로 일치하는 것 확인
+(위에서 고친 `syncOgTags()` 덕분에 og: 태그도 자동으로 같이 바뀜). `home_audit`(0/18)·
+`console_error_audit`(0/196) 통과. `script.min.js?v=20260817-9`, `sw.js CACHE_NAME v78`로
+버전업. **⚠️ 다음 세션이 확인할 것**: 몇 주 뒤 서치콘솔에서 미국 국가 탭 평균 순위가
+12.04위에서 내려가는지, CTR이 오르는지 추적 — 효과 없으면 다른 카피(질문형 안)로 A/B 성격
+전환도 고려.
+
 **⚠️ 다음 세션을 위한 메모**: (1) 인수인계 아카이브 정리는 일회성이 아니라 반복 유지보수임 —
 "작업 이력"에 4번째 항목이 쌓이면(현재 3개) 다시 가장 오래된 항목부터 `HANDOFF-ARCHIVE.md`로
-옮길 것. (2) SEO는 아직 진행 중 사안 — 다음 우선순위는 ①`script.min.js` 번들 크기 점검(실제
-PageSpeed 점수 확인 후 판단), ②영문 홈페이지 title/description 카피 자체를 실제 미국 검색
-키워드 리서치 근거로 다듬는 것(이번 라운드는 "언어별로 안 바뀌던 버그"만 고쳤을 뿐 카피
-문구 자체는 손대지 않음 — 근거 없는 카피 변경은 오히려 CTR을 해칠 수 있어 보류함), ③홈페이지
-`FAQPage` JSON-LD가 한국어 고정인 점(다국어 FAQ 패널과 내용이 일치하는지, 언어별로 동기화할
+옮길 것. (2) PSI 모바일 55점/FCP·LCP 18~26초가 또 보고되면 재조사하지 말고 위 "재검증" 항목과
+`HANDOFF-ARCHIVE.md` 13690~13797행부터 확인. (3) `script.min.js` 번들 크기(1.27MB)는 참고만
+하고 이번 라운드에서 안 건드림 — 실제 PageSpeed 점수가 나쁘게 나오면(데스크톱 기준) 그때
+코드 스플리팅 검토. (4) 홈페이지 `FAQPage` JSON-LD가 한국어 고정인 점(다국어 FAQ 패널과 내용이
+일치하는지, 언어별로 동기화할
 가치가 있는지)은 이번 라운드에서 확인만 하고 미반영.
