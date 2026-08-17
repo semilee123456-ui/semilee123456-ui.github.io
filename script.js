@@ -637,6 +637,7 @@ let EXCHANGE_RATE_ZAR = 16.5;   // 기본값(fallback), USD/ZAR (2026-08-16 확�
 let EXCHANGE_RATE_MYR = 4.09;   // 기본값(fallback), USD/MYR (2026-08-16 확인, WebSearch로 8월 중순 4.08~4.09대 재확인) — 말레이시아(my) 신규 지원과 함께 추가. GBP/AUD/MXN/EUR과 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함. 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
 let EXCHANGE_RATE_SEK = 9.51;   // 기본값(fallback), USD/SEK (2026-08-17 확인, WebSearch로 8월 중순 9.46~9.76대 재확인 + Frankfurter 실측 9.5089, open.er-api 실측 9.518로 교차검증) — 스웨덴(sv) 신규 지원과 함께 추가. GBP/AUD/MXN/EUR과 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함(독일/네덜란드와 달리 스웨덴은 유로존이 아니라 진짜 신규 통화). 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
 let EXCHANGE_RATE_NOK = 9.45;   // 기본값(fallback), USD/NOK (2026-08-17 확인, WebSearch로 8월 중순 9.4~9.7대 재확인 + Frankfurter 실측 9.4515(2026-08-14 기준), open.er-api 실측 9.4437로 교차검증) — 노르웨이(no) 신규 지원과 함께 추가. 스웨덴(SEK)과 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함(노르웨이는 유로존은 물론 EU도 아니라 진짜 신규 통화 — EEA 회원국일 뿐, sv_resident와 마찬가지로 통화 자체는 세율과 무관). 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
+let EXCHANGE_RATE_DKK = 6.46;   // 기본값(fallback), USD/DKK (2026-08-17 확인, WebSearch로 8월 중순 6.46~6.49대 재확인 + Frankfurter 실측 6.463(2026-08-14 기준), open.er-api 실측 6.4627로 교차검증) — 덴마크(da) 신규 지원과 함께 추가. 스웨덴/노르웨이(SEK/NOK)와 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함(덴마크는 EU 회원국이지만 유로존에는 가입하지 않아 진짜 신규 통화 — 덴마크는 유로에 크로네를 사실상 고정환율로 페깅하고 있어(ERM II, ±2.25% 밴드) 변동폭 자체는 스웨덴/노르웨이보다 작지만, 그래도 USD 대비로는 실시간 환율 변동이 있어 실시간 fetch 가치가 있음). 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
 
 // 환율 입력창(표시값)을 실제 계산에 쓰이는 EXCHANGE_RATE와 강제로 맞춰줌.
 // 이게 없으면 HTML에 하드코딩된 옛 기본값이 입력창에 남아있는 채로, 실제 계산은
@@ -754,6 +755,7 @@ const CURRENCY_RATE_CONFIG = [
   { code: 'MYR', apply: (v) => { EXCHANGE_RATE_MYR = Math.round(v * 100) / 100; } }, // AUD/MXN처럼 1~10대라 소수점 둘째자리까지
   { code: 'SEK', apply: (v) => { EXCHANGE_RATE_SEK = Math.round(v * 100) / 100; } }, // MXN/ZAR처럼 1~10대라 소수점 둘째자리까지
   { code: 'NOK', apply: (v) => { EXCHANGE_RATE_NOK = Math.round(v * 100) / 100; } }, // SEK와 같은 이유로 1~10대라 소수점 둘째자리까지
+  { code: 'DKK', apply: (v) => { EXCHANGE_RATE_DKK = Math.round(v * 100) / 100; } }, // SEK/NOK와 같은 이유로 1~10대라 소수점 둘째자리까지
 ];
 const EXCHANGE_RATE_ALL_CODES = ['KRW', ...CURRENCY_RATE_CONFIG.map(c => c.code)];
 
@@ -816,6 +818,11 @@ const CURRENCY_DISPLAY_META = {
   // 크로나와 같은 'kr'이지만(둘 다 "크로네/크로나" 계열 통화), 통화 선택창엔 플래그+코드
   // (🇳🇴 NOK)가 항상 같이 표시돼서 AUD/MXN의 '$' 공유와 같은 이유로 혼동 없음.
   NOK: { symbol: 'kr', flagEmoji: '🇳🇴', locale: 'nb-NO', get: () => EXCHANGE_RATE_NOK },
+  // SEK/NOK와 같은 이유로 실제로 지원됨(2026-08-17, Frankfurter/open.er-api가 이미 DKK를 지원해서
+  // 새 API 없이 지원 가능) — 덴마크는 EU 회원국이지만 유로존 미가입이라 스웨덴/노르웨이처럼 진짜
+  // 신규 통화. 심볼도 같은 "크로네" 계열이라 'kr'을 공유하지만(3국 모두 kr), 통화 선택창엔
+  // 플래그+코드(🇩🇰 DKK)가 항상 같이 표시돼서 SEK/NOK와의 혼동 없음.
+  DKK: { symbol: 'kr', flagEmoji: '🇩🇰', locale: 'da-DK', get: () => EXCHANGE_RATE_DKK },
 };
 const EXCHANGE_RATE_SOURCES = [
   { url: 'https://api.frankfurter.app/latest?from=USD&to=' + EXCHANGE_RATE_ALL_CODES.join(','), getRate: (data, code) => data && data.rates && data.rates[code], name: 'Frankfurter (중앙은행 기준환율)', nameEn: 'Frankfurter (central bank reference rate)' },
@@ -1844,6 +1851,86 @@ const TAX_MODEL = {
     //   실제 신고 시엔 반드시 노르웨이 세무 전문가 확인을 권장함(sv_resident와 같은 수준의 권고).
     rate: 0.22,
     ftc_available: true
+  },
+  da_resident: {
+    // 덴마크는 독일(de_resident, 과세표준 자체 없음)·네덜란드(nl_resident, 실질 과세+FTC 없음)·
+    // 스웨덴(sv_resident, 실질 과세+세율이 미국 원천징수와 우연히 정확히 같아 상쇄)·노르웨이
+    // (no_resident, 실질 과세+세율이 미국보다 낮아 공제 한도 안에서 완전히 상쇄)와도 다른 다섯
+    // 번째 패턴 — "북유럽=노르웨이·스웨덴과 비슷하겠지"로 넘겨짚지 않고 원문 법령·조세조약을
+    // 직접 확인한 결과, 실제로 과세되고 세액공제도 되지만 덴마크 세율(약 57%)이 미국 원천징수
+    // (30%)보다 훨씬 높아 공제 한도에 걸려 상당한 잔여세액(약 27%p)이 남는 케이스임(2026-08-17
+    // 조사) — mx_resident(멕시코 35%>30%, 잔여 ≈5%p)·in_resident와 같은 산식 구조이나, 덴마크는
+    // 격차가 훨씬 커서(57%p-30%p=27%p) 잔여세액 비중이 이 계산기가 다루는 나라 중 가장 큼.
+    //
+    // [면허 기준: 덴마크식 도박세 체계] 덴마크는 2012년 온라인 도박을 EU 최초로 전면 자유화·
+    // 규제한 나라 중 하나로, 스필레먈뒤그헤덴(Spillemyndigheden, 덴마크 도박청)의 면허를 받은
+    // 사업자에게 "게임세법"(Lov om afgifter af spil, spilleafgiftsloven)에 따라 총매출의 세금
+    // (예: 온라인카지노·베팅 28%)을 부과하는 "사업자 과세" 구조 — spilleafgiftsloven §12는 이
+    // 법이 적용되는 게임(=덴마크 면허 게임)의 당첨금은 플레이어의 과세소득 계산에서 제외한다고
+    // 명시하며, "다른 EU/EEA 회원국에서 이 법이 적용되는 게임과 동등한 것으로 제공·주선되고 그
+    // 나라에서 합법인" 게임의 당첨금도 같은 면제를 받는다고 규정(elov.dk/danskelove.dk로 조문
+    // 직접 확인, 2026-08-17) — 스웨덴(sv_resident)·노르웨이(no_resident)의 "EU/EEA산+공적 감독"
+    // 면제 요건과 정확히 같은 논리 구조.
+    // - 미국 파워볼·메가밀리언즈는 (1)덴마크 면허가 없고 (2)EU/EEA 회원국에서 조직되지도
+    //   않았으므로 이 면제(§12)의 두 요건 중 어느 쪽도 충족하지 못해 그대로 과세 대상.
+    // - Skattestyrelsen(덴마크 국세청) 공식 소비자 안내 페이지(skat.dk, "gevinster, præmier og
+    //   dusører", 2026-08-17 직접 확인)가 이를 명시적으로 재확인: "미국 라스베이거스 카지노에서
+    //   딴 당첨금도 과세 대상이다"(원문: "En gevinst vundet på et af kasinoerne i Las Vegas i
+    //   USA er også skattepligtig")라고 못박아 미국발 도박·복권 당첨금 과세를 사실상 파워볼에도
+    //   그대로 적용 가능한 예시로 직접 언급 — 미국 복권을 특정해 조사하지 않고 EU식 논리로
+    //   "면허 없으니 과세"라고 넘겨짚은 게 아니라, 미국 카지노를 콕 집은 1차 자료 문구로 직접
+    //   확인. 세금 분류상 자본소득(kapitalindkomst)이 아니라 인적소득(personlig indkomst) 중
+    //   "기타 인적소득"(anden personlig indkomst, 연말정산 신고서 rubrik 20)으로 신고.
+    // - AM-bidrag(8% 노동시장분담금) 대상 여부: "기타 인적소득"(rubrik 20) 항목은 통상 "AM-bidrag를
+    //   내지 않는 기타 인적소득"으로 분류되는 항목이라, 복권 당첨금처럼 근로와 무관한 우발적
+    //   소득에는 AM-bidrag가 적용되지 않는 것으로 판단(스웨덴·노르웨이 세율도 마찬가지로 근로소득
+    //   전용 부가세는 배제하고 순수 소득세율만 적용한 것과 같은 원칙). ⚠️ 다만 skat.dk 소비자
+    //   안내 페이지 자체가 AM-bidrag 해당 여부를 명시적으로 언급하지는 않아 완전히 1차 자료로
+    //   확정하지는 못함 — 국세청 juridisk vejledning(법률 지침서) C.A.6.4 원문까지 대조하지는
+    //   못했으므로 실제 신고 시 반드시 덴마크 세무 전문가 확인 권장.
+    // - 세율: 잭팟 규모 당첨금은 덴마크의 최고 소득세 구간을 압도적으로 초과하므로 최고 한계세율을
+    //   근사치로 사용(다른 나라들과 같은 원칙). 덴마크는 2026년부터 기존 최고세율 구간
+    //   ("topskat") 위에 초고소득자 대상 "톱톱세"(top-topskat, 추가 5%p)를 신설(2026년 세제개편,
+    //   Folketinget 통과)해 최고 한계세율이 종전 대비 더 높아짐 — Deloitte·Schjødt·PwC 등 복수
+    //   조세 자문사가 2026년 톱톱세 한계세율(AM-bidrag 제외, 즉 국세+지방세 기준 "세금상한/
+    //   skatteloft")을 57.07%로 일관되게 확인(2026-08-17). 톱톱세 적용 기준(연 약 260만
+    //   크로네 안팎, 자료마다 물가연동 기준연도가 달라 정확한 액수는 다소 갈림)은 잭팟 당첨금
+    //   규모에선 사실상 0에 가까운 문턱이라 사실상 당첨금 전액에 최고 한계세율이 적용된다고
+    //   보는 게 합리적 근사(nl_resident의 449유로·sv_resident의 100크로나 면제 문턱 생략과 같은
+    //   원칙). ⚠️ 톱톱세는 2026년에 막 시행된 매우 최신 제도라 세율·기준액이 자료마다 약간씩
+    //   갈리고(예: 물가연동 전 2024년 기준액 인용 vs 2026년 실제 기준액), 향후 시행령·행정해석으로
+    //   조정될 가능성도 배제 못함.
+    // - FTC(세액공제) 가능 여부: 덴마크 국내법인 리닝스로벤(ligningsloven) 제33조가 해외원천소득에
+    //   이미 낸 외국세를 덴마크 세액 한도 내에서 공제하는 일반적 통상세액공제(ordinary credit)
+    //   조항을 두고 있어(mx/in/cn과 같은 "세액 계산→FTC 상한부 공제" 구조의 국내법적 근거) 그대로
+    //   적용 가능. 다만 흥미로운 조약상 특이점: 미-덴마크 조세조약(1999년 체결, 2001년 발효,
+    //   irs.gov/pub/irs-trty/dentech.pdf 기술설명서 원문 대조, 2026-08-17)은 독일·프랑스·일본·
+    //   영국과 같은 최신형 조약으로 제21조("기타소득") 1항이 "다른 조항에서 다루지 않는 소득은
+    //   거주지국에서만 과세"라는 거주지국 전속과세 원칙을 두고, 기술설명서가 "도박소득"(income
+    //   from gambling)을 이 제21조가 다루는 소득의 명시적 예시로 직접 열거함 — 즉 조약상 원칙만
+    //   보면 덴마크 거주자의 복권 당첨금은 미국이 애초에 과세권을 갖지 않아(제22조 LOB 요건은
+    //   일반 개인 거주자면 자동 충족) 30% 원천징수 자체가 조약상 부당징수이고 1040-NR로 전액
+    //   환급 청구가 가능한 구조 — 독일(de_resident)의 "과세표준 자체가 없어서 0%"와는 완전히
+    //   다른 이유("과세표준은 있지만 미국이 과세권 자체가 없음")로 결론만 우연히 비슷한 셈. 그러나
+    //   실무상 미국 복권위원회(주 정부 기관)는 개별 당첨자의 사전 조세조약 신고(W-8BEN 등)를
+    //   접수·심사하는 절차 자체가 없어(배당·이자처럼 정기적으로 대량 처리하는 기관과 달리, 편의점
+    //   즉석 당첨자에게 창구에서 조약 혜택을 사전 적용해줄 구조가 아님) 실제로는 국적·거주지와
+    //   무관하게 전원 일률적으로 30%가 원천징수됨(이 계산기가 모든 비거주국에 예외 없이 30%를
+    //   적용하는 것과 같은 실무 관행) — 사후 환급을 스스로 청구하지 않는 한 그 30%는 실제로
+    //   납부된 외국세로 남으므로, 리닝스로벤 제33조의 공제 대상 "이미 납부한 외국세"에 해당한다고
+    //   보는 게 합리적(청구하면 돌려받을 수 있는 돈을 돌려받지 않았다고 해서 국내법상 세액공제
+    //   자체가 부인된다는 명문 규정은 확인하지 못함). 이 계산기는 다른 모든 나라와의 일관성을
+    //   위해 "환급 청구 안 한 채 30% 원천징수를 그대로 맞는" 실제 다수 당첨자의 경험을 기준으로
+    //   삼아 30% 원천징수 단계를 그대로 유지하고, 그 위에 리닝스로벤 제33조 상한부 공제를
+    //   적용함 — 덴마크 세율(57.07%)이 미국 원천징수(30%)보다 훨씬 높으므로 공제는 30%
+    //   전액이 상계되고도 (57.07%-30%)≈27.07%p의 실질 잔여세액이 항상 남음.
+    //   ⚠️ 불확실성: (1) 조약상 미국의 30% 원천징수 자체가 부당징수라는 사실이 리닝스로벤 제33조
+    //   공제 가부에 실제로 영향을 주는지(스카트스타이렐센이 "돌려받을 수 있었던 세금"이라며
+    //   공제를 축소·부인할 가능성)는 1차 자료로 확정하지 못함. (2) AM-bidrag 비대상 여부(위 참고).
+    //   (3) 톱톱세 최신 제도의 세부 기준액. 실제 신고 시엔 반드시 덴마크 세무 전문가 확인 권장
+    //   (sv_resident·no_resident와 같은 수준의 권고).
+    rate: 0.5707,
+    ftc_available: true
   }
 };
 
@@ -2783,6 +2870,32 @@ function calcTakeHome(amount, country, stateCode){
       val2: noAdditionalTaxWon > 0 ? '-' + noEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
       basisSuffix: pickLang('노르웨이 거주자', 'Norway resident', '挪威居民', 'Cư dân Na Uy', 'ผู้พำนักในนอร์เวย์', 'Резидент Норвегии', buildCountryMore('no'))
     };
+  } else if (country === 'da') {
+    // 덴마크: 게임세법(spilleafgiftsloven) §12에 따라 덴마크 면허 게임 및 EU/EEA산 동등 게임의
+    // 당첨금만 비과세이고, 미국 파워볼·메가밀리언즈는 둘 다 아니라 그대로 인적소득(기타 인적소득,
+    // rubrik 20)으로 과세되지만, 리닝스로벤(ligningsloven) 제33조의 상한부 세액공제로 미국
+    // 원천징수(30%)를 공제받을 수 있음 — 다만 덴마크 세율(약 57.07%, 2026년 신설 톱톱세 포함
+    // 최고 한계세율)이 미국 원천징수보다 훨씬 높아 mx/in과 같은 구조로 상당한 실제 잔여세액
+    // (≈27%p)이 남음(상세 근거·불확실성 표시는 TAX_MODEL.da_resident 주석 참고 — 특히 미-덴마크
+    // 조세조약 제21조가 도박소득을 거주지국 전속과세로 규정해 원천징수 자체가 이론상 환급 대상일
+    // 수 있다는 특이점 포함).
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const daCalculatedTaxWon = wonAmount * TAX_MODEL.da_resident.rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, daCalculatedTaxWon); // FTC 공제액(ligningsloven §33, 한도 내 상계)
+    const daAdditionalTaxWon = Math.max(daCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (daAdditionalTaxWon / 100000000);
+    const daEffectivePct = wonAmount > 0 ? (daAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('덴마크 추가 납부 (FTC 적용)', 'Denmark additional tax (FTC applied)', '丹麦追加缴税（已抵免FTC）', 'Thuế bổ sung tại Đan Mạch (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของเดนมาร์ก (ใช้ FTC แล้ว)', 'Дополнительный налог в Дании (с учётом FTC)', buildAdditionalTaxMore('da')),
+      val2: daAdditionalTaxWon > 0 ? '-' + daEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      basisSuffix: pickLang('덴마크 거주자', 'Denmark resident', '丹麦居民', 'Cư dân Đan Mạch', 'ผู้พำนักในเดนมาร์ก', 'Резидент Дании', buildCountryMore('da'))
+    };
   } else if (country === 'other') {
     // "기타 국가" — COUNTRY_TAX_PROFILES 목록에 없는 나라 방문자를 위한 안전망(2026-07-28,
     // 사용자 요청). 자국 세법을 조사하지 않고도 확정적으로 말할 수 있는 건 미국 IRS의 비거주자
@@ -3128,6 +3241,11 @@ const REAL_ABROAD_CURRENCY = {
   // EXCHANGE_RATE_NOK를 새로 정의함(2026-08-17, GBP/AUD/MXN/ZAR/MYR/SEK와 같은 이유로
   // Frankfurter/open.er-api가 이미 NOK를 지원해서 새 API 없이 지원 가능).
   no: 'NOK',
+  // 덴마크(DKK)도 스웨덴/노르웨이처럼 유로존이 아니라 진짜 신규 통화(덴마크는 EU 회원국이지만
+  // 유로 미채택) — CURRENCY_DISPLAY_META.DKK/EXCHANGE_RATE_DKK를 새로 정의함(2026-08-17,
+  // GBP/AUD/MXN/ZAR/MYR/SEK/NOK와 같은 이유로 Frankfurter/open.er-api가 이미 DKK를 지원해서
+  // 새 API 없이 지원 가능).
+  da: 'DKK',
 };
 
 // "실제로 다른 나라에 살아요" 카드의 US/CN 버튼 — 한국이랑 아무 상관없는 진짜 외국인(예: 순수
@@ -10456,7 +10574,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 페이지들은 애초에 한국 세법이 맞는 기준이라 이 파라미터가 필요 없음).
   // COUNTRY_TAX_PROFILES에 실제로 있는 코드로만 제한해서, 오타·구버전 링크가 미검증
   // 국가로 계산기를 조용히 맞춰버리는 걸 막음(33개국 토글 버튼과 동일한 목록).
-  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','no','other'];
+  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','no','da','other'];
   const urlCountry = params.get('country');
   if (SUPPORTED_TAX_COUNTRIES.includes(urlCountry)) {
     setHomeCountry(urlCountry);
@@ -13226,7 +13344,26 @@ const COUNTRY_TAX_AUTHORITY = {
       hi: "Skatteetaten",
       fr: "Skatteetaten",
       tl: "Skatteetaten"
-    , pt: `Skatteetaten`, es: `Skatteetaten`, uk: `Skatteetaten`, tet: `Skatteetaten`, de: `Skatteetaten`, nl: `Skatteetaten`, sv: `Skatteetaten`, no: 'Skatteetaten', da: 'Skatteetaten'})
+    , pt: `Skatteetaten`, es: `Skatteetaten`, uk: `Skatteetaten`, tet: `Skatteetaten`, de: `Skatteetaten`, nl: `Skatteetaten`, sv: `Skatteetaten`, no: 'Skatteetaten', da: 'Skatteetaten'}),
+  da: () => pickLang('Skattestyrelsen', 'Skattestyrelsen', 'Skattestyrelsen', 'Skattestyrelsen', 'Skattestyrelsen', 'Skattestyrelsen', {
+      km: "Skattestyrelsen",
+      ne: "Skattestyrelsen",
+      id: "Skattestyrelsen",
+      my: "Skattestyrelsen",
+      si: "Skattestyrelsen",
+      uz: "Skattestyrelsen",
+      mn: "Skattestyrelsen",
+      kk: "Skattestyrelsen",
+      ky: "Skattestyrelsen",
+      ur: "Skattestyrelsen",
+      bn: "Skattestyrelsen",
+      lo: "Skattestyrelsen",
+      ja: "Skattestyrelsen",
+      ar: "Skattestyrelsen",
+      hi: "Skattestyrelsen",
+      fr: "Skattestyrelsen",
+      tl: "Skattestyrelsen"
+    , pt: `Skattestyrelsen`, es: `Skattestyrelsen`, uk: `Skattestyrelsen`, tet: `Skattestyrelsen`, de: `Skattestyrelsen`, nl: `Skattestyrelsen`, sv: `Skattestyrelsen`, no: `Skattestyrelsen`, da: 'Skattestyrelsen'})
 };
 
 // 세율 자체가 불확실하거나(공식 근거를 못 찾음), 세율은 알아도 실제 적용 여부가 불확실한 나라들을
@@ -14515,6 +14652,7 @@ const COUNTRY_TAX_PROFILES = [
   { code: 'nl', flagCode: 'NL', label: '네덜란드 거주자 (실제 네덜란드 거주 기준, FTC 미적용 ⚠️)', labelEn: 'Netherlands resident (living in the Netherlands, no FTC ⚠️)', labelZh: '荷兰居民（实际住在荷兰，不适用FTC⚠️）', labelVi: 'Cư dân Hà Lan (sống thực tế tại Hà Lan, không áp dụng FTC ⚠️)', labelTh: 'ผู้พำนักในเนเธอร์แลนด์ (อาศัยอยู่จริงในเนเธอร์แลนด์, ไม่ใช้ FTC ⚠️)', labelRu: 'Резидент Нидерландов (проживающий в Нидерландах, без FTC ⚠️)', implemented: true, needsState: false, detailPage: 'netherlands-resident-us-lottery-tax.html', detailLabel: 'Nederlands →', more: buildCountryMore('nl') },
   { code: 'sv', flagCode: 'SE', label: '스웨덴 거주자 (실제 스웨덴 거주 기준)', labelEn: 'Sweden resident (living in Sweden)', labelZh: '瑞典居民（实际住在瑞典）', labelVi: 'Cư dân Thụy Điển (sống thực tế tại Thụy Điển)', labelTh: 'ผู้พำนักในสวีเดน (อาศัยอยู่จริงในสวีเดน)', labelRu: 'Резидент Швеции (проживающий в Швеции)', implemented: true, needsState: false, detailPage: 'sweden-resident-us-lottery-tax.html', detailLabel: 'Svenska →', more: buildCountryMore('sv') },
   { code: 'no', flagCode: 'NO', label: '노르웨이 거주자 (실제 노르웨이 거주 기준)', labelEn: 'Norway resident (living in Norway)', labelZh: '挪威居民（实际住在挪威）', labelVi: 'Cư dân Na Uy (sống thực tế tại Na Uy)', labelTh: 'ผู้พำนักในนอร์เวย์ (อาศัยอยู่จริงในนอร์เวย์)', labelRu: 'Резидент Норвегии (проживающий в Норвегии)', implemented: true, needsState: false, detailPage: 'norway-resident-us-lottery-tax.html', detailLabel: 'Norsk →', more: buildCountryMore('no') },
+  { code: 'da', flagCode: 'DK', label: '덴마크 거주자 (실제 덴마크 거주 기준)', labelEn: 'Denmark resident (living in Denmark)', labelZh: '丹麦居民（实际住在丹麦）', labelVi: 'Cư dân Đan Mạch (sống thực tế tại Đan Mạch)', labelTh: 'ผู้พำนักในเดนมาร์ก (อาศัยอยู่จริงในเดนมาร์ก)', labelRu: 'Резидент Дании (проживающий в Дании)', implemented: true, needsState: false, detailPage: 'denmark-resident-us-lottery-tax.html', detailLabel: 'Dansk →', more: buildCountryMore('da') },
 ];
 
 // 나라별 비교 카드가 텍스트/숫자로만 나열돼서 폰에서 심심하다는 피드백 — 카드를 탭하면 이
