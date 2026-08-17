@@ -2005,6 +2005,86 @@ const TAX_MODEL = {
     //   권고).
     rate: 0.4617,
     ftc_available: true
+  },
+  it_resident: {
+    // 이탈리아는 독일(과세표준 자체 없음)·네덜란드(과세+FTC 없음)·스웨덴(과세+세율 우연 일치)·
+    // 노르웨이(과세+FTC 한도 내 완전 상쇄)·덴마크(과세+FTC 있지만 큰 잔여세액)·핀란드(과세+FTC
+    // 있지만 중간 규모 잔여세액)와도 다른 일곱 번째 케이스 — "유럽=이미 다룬 6개국과 비슷하겠지"로
+    // 넘겨짚지 않고 원문 법조문·조세조약부터 확인(2026-08-17, 소득세통합법(TUIR)·유럽사법재판소
+    // 판례·미-이탈리아 조세조약 원문 대조).
+    //
+    // [과세 여부: TUIR 제67조 1항 d호 + 제69조] 소득세통합법(Testo Unico delle Imposte sui Redditi,
+    // TUIR, 대통령령 917/1986) 제67조 1항 d호는 "복권·경품행사·게임·공개 모집 도박의 당첨금"(le
+    // vincite delle lotterie, dei concorsi a premio, dei giochi e delle scommesse organizzati per
+    // il pubblico)을 "기타소득"(redditi diversi)으로 분류하고, 제69조 1항은 이 당첨금이 "과세기간
+    // 중 수령한 전액이 공제 없이 소득을 구성한다"(costituiscono reddito per l'intero ammontare
+    // percepito nel periodo di imposta, senza alcuna deduzione)고 명시(brocardi.it 조문 원문
+    // 대조, 2026-08-17).
+    // - 유일한 예외는 제69조 1항의2(1-bis)호: "이탈리아 국내 또는 다른 EU 회원국·유럽경제지역(EEA)
+    //   협정 가입국에서 허가받은 게임장(case da gioco)이 지급하는 당첨금은 소득을 구성하지 않는다"
+    //   — 2016년 7월 7일 법률 122호(유럽연합법 2015-2016, 제9조)가 신설한 조항으로, 유럽사법재판소
+    //   2014년 10월 22일 판결(사건번호 C-344/13·C-367/13, EU 카지노 당첨금만 과세하고 자국
+    //   카지노는 면제하는 게 EU기능조약 제52·56조의 서비스 이동의 자유 위반이라는 판시)을 이행하기
+    //   위해 도입됨(gazzettaufficiale.it 관보 원문·복수 세무 포털 교차 확인, 2026-08-17). ⚠️ 이
+    //   면제 조문의 문언 자체는 "복권"(lotterie)이 아니라 "게임장"(case da gioco, 카지노류)이라고
+    //   좁게 표현되어 있어(다수 세무 블로그가 "EU 복권도 면제"라고 느슨하게 요약하지만 조문 원문은
+    //   카지노 한정) 정확한 적용 범위엔 논쟁 여지가 있음 — 그러나 미국 파워볼·메가밀리언즈는 카지노로
+    //   읽든 복권으로 읽든 어차피 (1)이탈리아 국내 허가가 없고 (2)EU/EEA 회원국이 아니므로 두 해석
+    //   중 어느 쪽으로도 이 면제(1-bis호)에 해당하지 않아 그대로 제69조 1항의 원칙대로 과세 대상.
+    // - 이탈리아 국내 복권(SuperEnalotto 등)은 이 계산기가 다루는 IRPEF 소득세 체계와 완전히 별개인
+    //   "복권·경품 단일세"(imposta unica sui concorsi pronostici e sulle scommesse, 입법령
+    //   504/1998)가 사업자에게 부과되는 구조라 당첨자 개인은 IRPEF를 내지 않음 — 미국 복권과는
+    //   과세 체계 자체가 다름(한국 국내 복권이 소득세법과 별개로 과세되는 것과 같은 구조적 이유).
+    // - 세율: 제69조 1항에 따라 전액이 "종합소득"(reddito complessivo)에 합산되어 누진 소득세
+    //   (IRPEF)로 과세됨(별도 대체세율 조항을 찾지 못함 — 예: 적격 지분 양도차익처럼 별도 대체세가
+    //   있는 다른 기타소득 항목과 달리, d호 당첨금엔 그런 특칙이 확인되지 않음). 2026년 IRPEF는
+    //   2026년 예산법(Legge di Bilancio 2026)으로 2단계 세율이 35%→33%로 인하되며 3단계 구조로
+    //   확정: 2만8000유로까지 23%, 2만8000~5만유로 33%, 5만유로 초과분 43%(복수 세무 포털 교차
+    //   확인, 2026-08-17) — 잭팟 규모 당첨금은 사실상 전액이 최고구간(43%)에 해당(다른 나라들과
+    //   같은 "면제 문턱 생략" 원칙). 여기에 주(레지오네)·시(코무네) 부가세(addizionale regionale·
+    //   addizionale comunale)가 지역마다 다르게(레지오네 0.9~3.33%, 코무네 0~0.8%) 더해짐 —
+    //   전국 단일 평균치를 공식 발표한 자료를 찾지 못해, 수도이자 인구 최다 지역인 라치오주·로마시
+    //   기준(라치오주 2026년 3만유로 초과분 3.33%, 로마시 2026년 0.90% — 각각 레지오네·코무니
+    //   공식 조례 대조)을 참고치로 사용함(43%+3.33%+0.90%≈47.23%). ⚠️ 거주 지역에 따라 실제
+    //   부가세율은 이보다 낮을 수 있음(최저 구간은 레지오네 0.9%+코무네 0%도 가능) — 이 계산기의
+    //   근사치는 상한에 가까운 참고값이라는 점을 명시할 필요(landing page에 gray-zone 표시 예정).
+    // - FTC(세액공제) 가능 여부: TUIR 제165조("해외원천소득 세액공제")는 (1)해외원천소득이 존재하고
+    //   (2)그 소득이 이탈리아 종합소득 형성에 산입되며(concorso alla formazione del reddito
+    //   complessivo) (3)해외세금이 확정적으로 납부됐을 것을 요건으로 하는 일반적 통상세액공제
+    //   (ordinary credit, 이탈리아 세액 한도 내)를 규정(fiscooggi.it·brocardi.it 등 교차 확인,
+    //   2026-08-17) — 제69조 1항이 이 당첨금을 "종합소득 형성"의 일부로 명시하므로(위 참고) 요건
+    //   (2)를 충족해 제165조 적용 대상(mx/in/da/fi와 같은 "세액 계산→FTC 상한부 공제" 구조의
+    //   국내법적 근거). ⚠️ 다만 이 계산기가 참고한 자료들은 제165조의 일반 원칙만 확인했을 뿐,
+    //   복권 당첨금(redditi diversi 항목)에 구체적으로 적용된 유권해석(interpello)·판례까지 직접
+    //   대조하지는 못함(중간 확신 — 다른 소득 종류에 일반적으로 적용되는 조문이라 적용 자체를
+    //   의심할 근거는 없으나, 이탈리아 국세청(Agenzia delle Entrate)에 파워볼류 복권을 특정한
+    //   해석례가 있는지는 검색으로 찾지 못함, 덴마크·핀란드와 같은 수준의 불확실성).
+    // - 조약상 특이점(덴마크·핀란드·독일과 같은 구조): 미-이탈리아 조세조약(1984년 4월 17일 로마
+    //   서명, 1999년 의정서로 개정, home.treasury.gov 기술설명서·irs-trty 원문 교차 대조,
+    //   2026-08-17)은 제22조("기타소득") 1항이 "다른 조항에서 다루지 않는 거주지국 거주자의
+    //   소득은, 발생지를 불문하고 그 거주지국에서만 과세한다"라고 명시(원문: "Items of income of a
+    //   resident of a Contracting State, wherever arising, not dealt with in the foregoing
+    //   Articles of this Convention shall be taxable only in that Contracting State.") — 미
+    //   재무부 1999년 의정서 기술설명서(Technical Explanation)가 "도박소득"(gambling income)을
+    //   이 제22조가 다루는 소득의 명시적 예시로 직접 열거함(taxnotes.com·sftaxcounsel.com 등
+    //   복수 자료 교차 확인) — 덴마크·핀란드·독일과 정확히 같은 종류의 특이점: 조약 원칙만 보면
+    //   이탈리아 거주자의 복권 당첨금엔 미국이 애초에 과세권이 없어 30% 원천징수 자체가 조약상
+    //   부당징수인 구조. 그러나 다른 모든 나라와 같은 이유(미국 복권위원회는 편의점 즉석 당첨자
+    //   상대 사전 조세조약 신고 접수 절차가 없음)로 실무상 국적·거주지 불문 전원 30% 일률
+    //   원천징수됨 — 이 계산기는 다른 모든 나라와의 일관성을 위해 "환급 청구 안 한 채 30%를 그대로
+    //   맞는" 실제 다수 당첨자의 경험을 기준으로 30% 원천징수 단계를 유지하고, 그 위에 제165조
+    //   상한부 공제를 적용함.
+    // - 이탈리아 세율(약 47.23%)이 미국 원천징수(30%)보다 높으므로 미국 세액 30% 전액이 공제되고도
+    //   (47.23%-30%)≈17.23%p의 실질 잔여세액이 남음 — 핀란드(≈16.17%p)와 비슷한 규모, 덴마크
+    //   (≈27.07%p)보다는 작고 노르웨이(0%p)보다는 훨씬 큰, mx_resident·da_resident·fi_resident와
+    //   같은 구조.
+    //   ⚠️ 불확실성 요약: (1) 제69조 1항의2호(1-bis) 면제 문언이 "게임장"으로 좁게 표현돼 "복권"까지
+    //   명시적으로 다루는지 논쟁 여지(위 참고, 결론에는 영향 없음) (2) 지역별 부가세 편차 —
+    //   라치오·로마 기준값은 상한에 가까운 참고치(위 참고) (3) 제165조가 이 소득종류에 구체적으로
+    //   적용된다는 유권해석 직접 대조는 안 됨(중간 확신). 실제 신고 시엔 반드시 이탈리아 세무
+    //   전문가(commercialista) 확인 권장(다른 유럽국들과 같은 수준의 권고).
+    rate: 0.4723,
+    ftc_available: true
   }
 };
 
@@ -2997,6 +3077,32 @@ function calcTakeHome(amount, country, stateCode){
       val2: fiAdditionalTaxWon > 0 ? '-' + fiEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
       basisSuffix: pickLang('핀란드 거주자', 'Finland resident', '芬兰居民', 'Cư dân Phần Lan', 'ผู้พำนักในฟินแลนด์', 'Резидент Финляндии', buildCountryMore('fi'))
     };
+  } else if (country === 'it') {
+    // 이탈리아: TUIR 제67조 1항 d호·제69조에 따라 이탈리아·EU/EEA 게임장(case da gioco) 당첨금만
+    // 비과세이고, 미국 파워볼·메가밀리언즈는 둘 다 아니라 그대로 기타소득(redditi diversi)으로
+    // 과세되지만, TUIR 제165조의 상한부 세액공제로 미국 원천징수(30%)를 공제받을 수 있음 — 다만
+    // 이탈리아 세율(약 47.23%, IRPEF 최고구간 43%+라치오주 부가세 3.33%+로마시 부가세 0.90%
+    // 참고치)이 미국 원천징수보다 높아 mx/da/fi와 같은 구조로 실제 잔여세액(≈17.23%p)이 남음
+    // (상세 근거·불확실성 표시는 TAX_MODEL.it_resident 주석 참고 — 덴마크·핀란드와 마찬가지로
+    // 미-이탈리아 조세조약 제22조가 도박소득을 거주지국 전속과세로 규정해 원천징수 자체가 이론상
+    // 환급 대상일 수 있다는 특이점 포함).
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const itCalculatedTaxWon = wonAmount * TAX_MODEL.it_resident.rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, itCalculatedTaxWon); // FTC 공제액(TUIR 제165조, 한도 내 상계)
+    const itAdditionalTaxWon = Math.max(itCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (itAdditionalTaxWon / 100000000);
+    const itEffectivePct = wonAmount > 0 ? (itAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('이탈리아 추가 납부 (FTC 적용)', 'Italy additional tax (FTC applied)', '意大利追加缴税（已抵免FTC）', 'Thuế bổ sung tại Ý (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของอิตาลี (ใช้ FTC แล้ว)', 'Дополнительный налог в Италии (с учётом FTC)', buildAdditionalTaxMore('it')),
+      val2: itAdditionalTaxWon > 0 ? '-' + itEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      basisSuffix: pickLang('이탈리아 거주자', 'Italy resident', '意大利居民', 'Cư dân Ý', 'ผู้พำนักในอิตาลี', 'Резидент Италии', buildCountryMore('it'))
+    };
   } else if (country === 'other') {
     // "기타 국가" — COUNTRY_TAX_PROFILES 목록에 없는 나라 방문자를 위한 안전망(2026-07-28,
     // 사용자 요청). 자국 세법을 조사하지 않고도 확정적으로 말할 수 있는 건 미국 IRS의 비거주자
@@ -3366,6 +3472,10 @@ const REAL_ABROAD_CURRENCY = {
   // 덴마크와 달리 유로 채택국) EUR 유로존 공용 통화 재사용 네 번째 사례 — 위 fr/de/nl/ie 항목
   // 주석대로 CURRENCY_DISPLAY_META.EUR/EXCHANGE_RATE_EUR을 그대로 씀, 신규 통화 정의 불필요.
   fi: 'EUR',
+  // 이탈리아(EUR)도 독일/프랑스/아일랜드/네덜란드/핀란드처럼 유로존 정회원국이라 EUR 유로존
+  // 공용 통화 재사용 다섯 번째 사례 — 위 fr/de/nl/ie/fi 항목 주석대로
+  // CURRENCY_DISPLAY_META.EUR/EXCHANGE_RATE_EUR을 그대로 씀, 신규 통화 정의 불필요.
+  it: 'EUR',
 };
 
 // "실제로 다른 나라에 살아요" 카드의 US/CN 버튼 — 한국이랑 아무 상관없는 진짜 외국인(예: 순수
@@ -10694,7 +10804,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 페이지들은 애초에 한국 세법이 맞는 기준이라 이 파라미터가 필요 없음).
   // COUNTRY_TAX_PROFILES에 실제로 있는 코드로만 제한해서, 오타·구버전 링크가 미검증
   // 국가로 계산기를 조용히 맞춰버리는 걸 막음(33개국 토글 버튼과 동일한 목록).
-  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','no','da','fi','other'];
+  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','no','da','fi','it','other'];
   const urlCountry = params.get('country');
   if (SUPPORTED_TAX_COUNTRIES.includes(urlCountry)) {
     setHomeCountry(urlCountry);
@@ -13505,7 +13615,30 @@ const COUNTRY_TAX_AUTHORITY = {
       hi: "Verohallinto",
       fr: "Verohallinto",
       tl: "Verohallinto"
-    , pt: `Verohallinto`, es: `Verohallinto`, uk: `Verohallinto`, tet: `Verohallinto`, de: `Verohallinto`, nl: `Verohallinto`, sv: `Verohallinto`, no: `Verohallinto`, da: `Verohallinto`, fi: 'Verohallinto', it: "Verohallinto"})
+    , pt: `Verohallinto`, es: `Verohallinto`, uk: `Verohallinto`, tet: `Verohallinto`, de: `Verohallinto`, nl: `Verohallinto`, sv: `Verohallinto`, no: `Verohallinto`, da: `Verohallinto`, fi: 'Verohallinto', it: "Verohallinto"}),
+  // 이탈리아는 TUIR 제67조 1항 d호·제69조·제165조가 근거라(it_resident 주석 참고), 특정 판례·
+  // 유권해석 기관명이 아니라 국세청 공식명 "Agenzia delle Entrate"(국세청)를 uk의 HMRC/au의
+  // ATO/fr의 DGFiP/de의 Finanzamt/nl의 Belastingdienst/sv의 Skatteverket와 같은 관례로 표기함 —
+  // 언어 불문 통용되는 고유명사라 번역하지 않고 전체 언어 동일 문자열
+  it: () => pickLang('Agenzia delle Entrate', 'Agenzia delle Entrate', 'Agenzia delle Entrate', 'Agenzia delle Entrate', 'Agenzia delle Entrate', 'Agenzia delle Entrate', {
+      km: "Agenzia delle Entrate",
+      ne: "Agenzia delle Entrate",
+      id: "Agenzia delle Entrate",
+      my: "Agenzia delle Entrate",
+      si: "Agenzia delle Entrate",
+      uz: "Agenzia delle Entrate",
+      mn: "Agenzia delle Entrate",
+      kk: "Agenzia delle Entrate",
+      ky: "Agenzia delle Entrate",
+      ur: "Agenzia delle Entrate",
+      bn: "Agenzia delle Entrate",
+      lo: "Agenzia delle Entrate",
+      ja: "Agenzia delle Entrate",
+      ar: "Agenzia delle Entrate",
+      hi: "Agenzia delle Entrate",
+      fr: "Agenzia delle Entrate",
+      tl: "Agenzia delle Entrate"
+    , pt: `Agenzia delle Entrate`, es: `Agenzia delle Entrate`, uk: `Agenzia delle Entrate`, tet: `Agenzia delle Entrate`, de: `Agenzia delle Entrate`, nl: `Agenzia delle Entrate`, sv: `Agenzia delle Entrate`, no: `Agenzia delle Entrate`, da: `Agenzia delle Entrate`, fi: `Agenzia delle Entrate`, it: "Agenzia delle Entrate"})
 };
 
 // 세율 자체가 불확실하거나(공식 근거를 못 찾음), 세율은 알아도 실제 적용 여부가 불확실한 나라들을
@@ -14491,7 +14624,7 @@ const RESIDENT_PHRASE_MORE = {
   ur: n => `${n} کا رہائشی`,
   uz: n => `${n} rezidenti`,
 
-  pt: n => `Residente de ${n}`, es: n => `Residente de ${n}`, uk: n => `Резидент країни ${n}`, tet: n => `Rezidente husi ${n}`, de: n => `Ansässig in ${n}`, nl: n => `Woonachtig in ${n}`, sv: n => `Bosatt i ${n}`, no: n => `Bosatt i ${n}`, da: n => `Bosiddende i ${n}`, fi: n => `Asuu maassa ${n}`, it: n => `Residente di ${n}`,
+  pt: n => `Residente de ${n}`, es: n => `Residente de ${n}`, uk: n => `Резидент країни ${n}`, tet: n => `Rezidente husi ${n}`, de: n => `Ansässig in ${n}`, nl: n => `Woonachtig in ${n}`, sv: n => `Bosatt i ${n}`, no: n => `Bosatt i ${n}`, da: n => `Bosiddende i ${n}`, fi: n => `Asuu maassa ${n}`, it: n => `Residente in ${n}`,
 };
 
 // 비교 카드 그룹핑 노트("N개국 동일")의 17개 언어 템플릿 — updateSideBySide()에서 씀
@@ -14797,6 +14930,7 @@ const COUNTRY_TAX_PROFILES = [
   { code: 'no', flagCode: 'NO', label: '노르웨이 거주자 (실제 노르웨이 거주 기준)', labelEn: 'Norway resident (living in Norway)', labelZh: '挪威居民（实际住在挪威）', labelVi: 'Cư dân Na Uy (sống thực tế tại Na Uy)', labelTh: 'ผู้พำนักในนอร์เวย์ (อาศัยอยู่จริงในนอร์เวย์)', labelRu: 'Резидент Норвегии (проживающий в Норвегии)', implemented: true, needsState: false, detailPage: 'norway-resident-us-lottery-tax.html', detailLabel: 'Norsk →', more: buildCountryMore('no') },
   { code: 'da', flagCode: 'DK', label: '덴마크 거주자 (실제 덴마크 거주 기준)', labelEn: 'Denmark resident (living in Denmark)', labelZh: '丹麦居民（实际住在丹麦）', labelVi: 'Cư dân Đan Mạch (sống thực tế tại Đan Mạch)', labelTh: 'ผู้พำนักในเดนมาร์ก (อาศัยอยู่จริงในเดนมาร์ก)', labelRu: 'Резидент Дании (проживающий в Дании)', implemented: true, needsState: false, detailPage: 'denmark-resident-us-lottery-tax.html', detailLabel: 'Dansk →', more: buildCountryMore('da') },
   { code: 'fi', flagCode: 'FI', label: '핀란드 거주자 (실제 핀란드 거주 기준)', labelEn: 'Finland resident (living in Finland)', labelZh: '芬兰居民（实际住在芬兰）', labelVi: 'Cư dân Phần Lan (sống thực tế tại Phần Lan)', labelTh: 'ผู้พำนักในฟินแลนด์ (อาศัยอยู่จริงในฟินแลนด์)', labelRu: 'Резидент Финляндии (проживающий в Финляндии)', implemented: true, needsState: false, detailPage: 'finland-resident-us-lottery-tax.html', detailLabel: 'Suomi →', more: buildCountryMore('fi') },
+  { code: 'it', flagCode: 'IT', label: '이탈리아 거주자 (실제 이탈리아 거주 기준)', labelEn: 'Italy resident (living in Italy)', labelZh: '意大利居民（实际住在意大利）', labelVi: 'Cư dân Ý (sống thực tế tại Ý)', labelTh: 'ผู้พำนักในอิตาลี (อาศัยอยู่จริงในอิตาลี)', labelRu: 'Резидент Италии (проживающий в Италии)', implemented: true, needsState: false, detailPage: 'italy-resident-us-lottery-tax.html', detailLabel: 'Italiano →', more: buildCountryMore('it') },
 ];
 
 // 나라별 비교 카드가 텍스트/숫자로만 나열돼서 폰에서 심심하다는 피드백 — 카드를 탭하면 이
