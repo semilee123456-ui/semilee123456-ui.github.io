@@ -375,6 +375,7 @@ function applyTranslations(){
     const activeViewName = activeView.id.replace('view-', '');
     applyCurrentViewTitle(activeViewName);
     applyCurrentViewDescription(activeViewName);
+    syncOgTags();
   }
 
   document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -3052,6 +3053,20 @@ function applyCurrentViewDescription(view){
   if (entry) metaEl.setAttribute('content', entry.ko);
 }
 
+// <meta property="og:title">/<meta property="og:description">는 <title>/<meta name="description">와
+// 달리 언어 전환 시 갱신되는 로직이 없어서 항상 index.html에 박힌 한국어 문구로 고정돼있었음
+// (2026-08-17, 미국 시장 SEO 점검 중 발견 — 영어로 언어를 바꿔 보고 있어도 카카오톡/트위터/
+// Slack 등에 공유하면 미리보기 카드는 한국어로 뜸). applyCurrentViewTitle/Description이 이미
+// document.title과 meta[name="description"]을 그 시점 언어로 갱신해두므로, 그 값을 그대로
+// 복사해서 og: 태그도 같이 맞춤 — 새 번역 없이 기존 로직만 재사용
+function syncOgTags(){
+  const ogTitleEl = document.querySelector('meta[property="og:title"]');
+  const ogDescEl = document.querySelector('meta[property="og:description"]');
+  const descEl = document.querySelector('meta[name="description"]');
+  if (ogTitleEl) ogTitleEl.setAttribute('content', document.title);
+  if (ogDescEl && descEl) ogDescEl.setAttribute('content', descEl.getAttribute('content'));
+}
+
 // 2026-08-15: `.nav`가 position:sticky로 항상 화면 상단에 떠 있는데, 아래 두 곳
 // (탭 전환 시 .page 스크롤, "한국에 살아요" 클릭 시 입력 카드로 스크롤)이 그냥
 // `scrollIntoView({block:'start'})`만 써서 대상 요소의 맨 윗줄(뒤로가기 버튼·카드 라벨 등)이
@@ -3075,6 +3090,7 @@ function go(view){
   document.getElementById('nav-faq').classList.toggle('active', view === 'faq');
   applyCurrentViewTitle(view);
   applyCurrentViewDescription(view);
+  syncOgTags();
 
   // 홈 ↔ 국가비교 이동 시, 어느 쪽에서 왔든 상관없이 항상 공용 상태(sharedAmountUsd/sharedCountry/EXCHANGE_RATE)를
   // 기준으로 화면을 다시 그려서 입력값·환율이 끊기지 않게 함
