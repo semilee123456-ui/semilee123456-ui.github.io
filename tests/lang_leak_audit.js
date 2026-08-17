@@ -2,7 +2,7 @@
 // 누락으로 인한 언어 혼용)를 찾음. getClientRects().length로 실제 렌더링 여부를 확인해서
 // 조상 요소의 display:none에 가려진 요소를 오탐하지 않게 함.
 const { chromium } = require('playwright');
-const LANGS = ['en','zh','vi','th','ru','km','ne','id','my','si','uz','mn','kk','ky','ur','bn','lo','ja','ar','hi','fr','tl','pt','es','uk','tet'];
+const LANGS = ['en','zh','vi','th','ru','km','ne','id','my','si','uz','mn','kk','ky','ur','bn','lo','ja','ar','hi','fr','tl','pt','es','uk','tet','de'];
 const VIEWS = ['home', 'compare', 'odds', 'faq'];
 const HANGUL_RUN = /[가-힣]{3,}/g;
 
