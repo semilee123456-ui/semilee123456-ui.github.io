@@ -635,6 +635,7 @@ let EXCHANGE_RATE_NZD = 1.66;   // 기본값(fallback), USD/NZD (2026-08-16 확�
 let EXCHANGE_RATE_SGD = 1.28;   // 기본값(fallback), USD/SGD (2026-08-16 확인, WebSearch로 8월 중순 1.278~1.28대 재확인) — 싱가포르(sg) 신규 지원과 함께 추가. GBP/AUD/MXN/EUR과 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함. 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
 let EXCHANGE_RATE_ZAR = 16.5;   // 기본값(fallback), USD/ZAR (2026-08-16 확인, WebSearch로 8월 중순 랜드 16.0~17.0대 재확인, 평균 약 16.46) — 남아프리카공화국(za) 신규 지원과 함께 추가. GBP/AUD/MXN/EUR과 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함. 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
 let EXCHANGE_RATE_MYR = 4.09;   // 기본값(fallback), USD/MYR (2026-08-16 확인, WebSearch로 8월 중순 4.08~4.09대 재확인) — 말레이시아(my) 신규 지원과 함께 추가. GBP/AUD/MXN/EUR과 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함. 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
+let EXCHANGE_RATE_SEK = 9.51;   // 기본값(fallback), USD/SEK (2026-08-17 확인, WebSearch로 8월 중순 9.46~9.76대 재확인 + Frankfurter 실측 9.5089, open.er-api 실측 9.518로 교차검증) — 스웨덴(sv) 신규 지원과 함께 추가. GBP/AUD/MXN/EUR과 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함(독일/네덜란드와 달리 스웨덴은 유로존이 아니라 진짜 신규 통화). 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
 
 // 환율 입력창(표시값)을 실제 계산에 쓰이는 EXCHANGE_RATE와 강제로 맞춰줌.
 // 이게 없으면 HTML에 하드코딩된 옛 기본값이 입력창에 남아있는 채로, 실제 계산은
@@ -750,6 +751,7 @@ const CURRENCY_RATE_CONFIG = [
   { code: 'SGD', apply: (v) => { EXCHANGE_RATE_SGD = Math.round(v * 100) / 100; } }, // AUD/MXN처럼 1대라 소수점 둘째자리까지
   { code: 'ZAR', apply: (v) => { EXCHANGE_RATE_ZAR = Math.round(v * 100) / 100; } }, // MXN처럼 10~20대라 소수점 둘째자리까지
   { code: 'MYR', apply: (v) => { EXCHANGE_RATE_MYR = Math.round(v * 100) / 100; } }, // AUD/MXN처럼 1~10대라 소수점 둘째자리까지
+  { code: 'SEK', apply: (v) => { EXCHANGE_RATE_SEK = Math.round(v * 100) / 100; } }, // MXN/ZAR처럼 1~10대라 소수점 둘째자리까지
 ];
 const EXCHANGE_RATE_ALL_CODES = ['KRW', ...CURRENCY_RATE_CONFIG.map(c => c.code)];
 
@@ -803,6 +805,10 @@ const CURRENCY_DISPLAY_META = {
   SGD: { symbol: 'S$', flagEmoji: '🇸🇬', locale: 'en-SG', get: () => EXCHANGE_RATE_SGD },
   ZAR: { symbol: 'R', flagEmoji: '🇿🇦', locale: 'en-ZA', get: () => EXCHANGE_RATE_ZAR },
   MYR: { symbol: 'RM', flagEmoji: '🇲🇾', locale: 'en-MY', get: () => EXCHANGE_RATE_MYR },
+  // GBP/AUD/MXN/ZAR/MYR와 같은 이유로 실제로 지원됨(2026-08-17, Frankfurter/open.er-api가 이미
+  // SEK를 지원해서 새 API 없이 지원 가능) — EUR 재사용 국가(fr/de/nl/ie)와 달리 스웨덴은 유로존이
+  // 아니라 진짜 신규 통화라 새 변수/메타를 만듦. USD 우회 불필요, 실제 통화코드 그대로 연결
+  SEK: { symbol: 'kr', flagEmoji: '🇸🇪', locale: 'sv-SE', get: () => EXCHANGE_RATE_SEK },
 };
 const EXCHANGE_RATE_SOURCES = [
   { url: 'https://api.frankfurter.app/latest?from=USD&to=' + EXCHANGE_RATE_ALL_CODES.join(','), getRate: (data, code) => data && data.rates && data.rates[code], name: 'Frankfurter (중앙은행 기준환율)', nameEn: 'Frankfurter (central bank reference rate)' },
@@ -1730,6 +1736,47 @@ const TAX_MODEL = {
     //   신고 시 이 구제가 적용될 가능성을 완전히 배제하는 뜻은 아니니 세무 전문가 확인 권장).
     rate: 0.378,
     ftc_available: false
+  },
+  sv_resident: {
+    // 스웨덴은 독일(de_resident, 과세표준 자체 없음)도 네덜란드(nl_resident, 실질 과세+FTC 없음)도
+    // 아닌 세 번째 패턴 — "유럽이니까 0% 클럽"으로 넘겨짚지 않고 원문 법령을 직접 확인한 결과,
+    // 실제로 과세되긴 하지만 세액공제로 정확히 전액 상쇄되는 케이스임(2026-08-17 조사).
+    // - 소득세법(Inkomstskattelagen, 1999:1229) 제42장 25조: 외국 복권 당첨금이 100크로나를
+    //   초과하면 자본소득(inkomst av kapital)으로 과세하되, EU/EEA 역내에서 조직된 복권은
+    //   면제. Skatteverket(스웨덴 국세청) 공식 안내 페이지(vinsterispelochtavlingar,
+    //   2026-08-17 직접 확인)가 이를 그대로 재확인: "EES 역외에서 조직된 게임의 당첨금은
+    //   스웨덴에서 과세되며, 세율은 순당첨금(그해 같은 사업자 기준 당첨액-투입액)의 30%"라고
+    //   명시. 미국 파워볼·메가밀리언즈는 미국 현지에서 실물 티켓을 사는 방식이라 EU/EEA
+    //   역내 사업자가 아니므로 면제 대상에서 빠지고 그대로 과세 대상에 포함됨 — 네덜란드
+    //   칸스펠벌라스팅 사례(nl_resident 주석 참고)와 정반대로 "라이선스 없는 해외 복권이라
+    //   과세 안 됨"이 아니라 "EU/EEA 밖에서 조직됐기 때문에" 과세되는 구조.
+    // - 100크로나 이하 면제 문턱은 잭팟 규모 당첨금엔 무의미한 수준이라 이 계산기에서는
+    //   반영하지 않고 전액에 세율 적용(nl_resident의 449유로 면제 문턱 생략과 같은 원칙).
+    // - FTC(세액공제) 가능 여부: 스웨덴은 네덜란드의 칸스펠벌라스팅과 달리 이 당첨금을
+    //   "소득세"(inkomstskatt) 체계 안의 정규 소득 종류(자본소득)로 과세하기 때문에, 조세조약이
+    //   아니라 스웨덴 국내법인 "외국세액공제법"(Lag (1986:468) om avräkning av utländsk skatt)이
+    //   적용 대상으로 삼는 일반적 "해외 원천소득에 대해 스웨덴에서도 과세되는 경우"에 해당함.
+    //   Skatteverket 공식 안내(avrakningavutlandskskatt) 확인 결과 이 공제는 소득 종류를
+    //   열거하는 방식이 아니라 "스웨덴이 이미 과세한 해외원천 소득에 대해 외국에 낸 세금"이면
+    //   폭넓게 적용되는 일반 조항이고, 공제 한도(스페르벨로프/spärrbelopp)는 "그 해외소득에
+    //   대한 스웨덴 세액을 초과할 수 없음"으로 명시됨(mx/in/cn과 같은 "상한부 세액공제" 구조).
+    //   미국의 30% 비거주자 원천징수(TAX_MODEL.nonresident.us_withholding)와 스웨덴의 30%
+    //   자본소득세율이 같은 총액(당첨금 원금) 기준으로 정확히 일치하기 때문에, 공제 한도(=스웨덴
+    //   세액)와 공제액(=미국 납부세액)이 서로 같아져 잔여세액이 정확히 0이 되는 특수 케이스임 —
+    //   세율이 미국보다 낮아 공제 후 0이 되는 cn(20%<30%)이나, 세율이 높아 잔여세액이 남는
+    //   mx/in(35%·~39%>30%)과 달리, 스웨덴은 세율이 미국과 "정확히 같아서" 0이 되는 경우.
+    //   uk/ca/hk/au/de처럼 애초에 과세표준이 없어서 0인 게 아니라, 실제 과세+실제 공제가 정확히
+    //   맞아떨어져서 0이 되는 구조라는 점이 이 계산기가 모델링하는 핵심 차이(계산 로직 자체는
+    //   cn/in/mx와 동일한 "세액 계산→FTC 상한부 공제→잔여세액" 형태를 그대로 따름).
+    //   ⚠️ 다만 두 가지 불확실성: (1) 미국의 비거주자 도박소득 원천징수가 avräkningslagen이
+    //   말하는 "공제 가능한 외국세"에 기술적으로 해당하는지를 법조문 원문에서 조항 번호까지
+    //   직접 대조하지는 못함(일반 원칙상 해당할 것으로 보이나 1차 자료로 완전히 확정하지 못함).
+    //   (2) 일부 2차 자료(Lawline·lottoguiden 등 스웨덴 세무 정보 사이트)는 "이미 낸 외국세에
+    //   대해 공제가 가능하나, 항상 100%는 아니다"라는 취지로 언급하고 있어 실무상 완전한 100%
+    //   상쇄가 보장되지 않을 가능성을 배제할 수 없음 — 그래서 이 계산기의 결과(잔여세액 0)는
+    //   법령상 원칙에 따른 것이며, 실제 신고 시엔 반드시 스웨덴 세무 전문가 확인을 권장함.
+    rate: 0.30,
+    ftc_available: true
   }
 };
 
@@ -2621,6 +2668,29 @@ function calcTakeHome(amount, country, stateCode){
       val2: nlAdditionalTaxWon > 0 ? '-' + nlEffectivePct.toFixed(1) + '%' : pickLang('0원', '₩0', '0元', '0 KRW', '0 วอน', '0 вон', { km:'0 វ៉ុន', ne:'₩0', id:'₩0', my:'၀ ဝမ်း', si:'0 වොන්', uz:'0 von', mn:'0 вон', kk:'0 вон', ky:'0 вон', ur:'0 وون', bn:'০ ওন', lo:'0 ວອນ', ja:'0ウォン', ar:'0 وون', hi:'₩0', fr:'0 KRW', tl:'₩0' , pt: `₩0`, es: `₩0`, uk: `₩0`, tet: `₩0`, de: `₩0`, nl: `₩0`, sv: `₩0`}),
       basisSuffix: pickLang('네덜란드 거주자', 'Netherlands resident', '荷兰居民', 'Cư dân Hà Lan', 'ผู้พำนักในเนเธอร์แลนด์', 'Резидент Нидерландов', buildCountryMore('nl'))
     };
+  } else if (country === 'sv') {
+    // 스웨덴: 소득세법 42장 25조에 따라 미국(비EU/EEA) 복권 당첨금은 자본소득 30% 과세 대상이지만,
+    // 스웨덴 국내법인 외국세액공제법(avräkningslagen)으로 미국 원천징수(30%)를 한도 내 공제받을 수
+    // 있고, 두 세율이 우연히 정확히 같아(30%=30%) 공제 후 잔여세액이 항상 0이 됨(상세 근거·불확실성
+    // 표시는 TAX_MODEL.sv_resident 주석 참고) — cn/in/mx와 같은 "세액 계산→FTC 상한부 공제" 코드
+    // 형태를 그대로 쓰되, 계산된 스웨덴 세액 자체가 항상 미국 원천징수액과 같아 잔여세액만 0이 됨.
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const svCalculatedTaxWon = wonAmount * TAX_MODEL.sv_resident.rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, svCalculatedTaxWon); // FTC 공제액(avräkningslagen, 한도 내 상계)
+    const svAdditionalTaxWon = Math.max(svCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (svAdditionalTaxWon / 100000000);
+    const svEffectivePct = wonAmount > 0 ? (svAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('스웨덴 추가 납부 (FTC 적용)', 'Sweden additional tax (FTC applied)', '瑞典追加缴税（已抵免FTC）', 'Thuế bổ sung tại Thụy Điển (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของสวีเดน (ใช้ FTC แล้ว)', 'Дополнительный налог в Швеции (с учётом FTC)', buildAdditionalTaxMore('sv')),
+      val2: svAdditionalTaxWon > 0 ? '-' + svEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      basisSuffix: pickLang('스웨덴 거주자', 'Sweden resident', '瑞典居民', 'Cư dân Thụy Điển', 'ผู้พำนักในสวีเดน', 'Резидент Швеции', buildCountryMore('sv'))
+    };
   } else if (country === 'other') {
     // "기타 국가" — COUNTRY_TAX_PROFILES 목록에 없는 나라 방문자를 위한 안전망(2026-07-28,
     // 사용자 요청). 자국 세법을 조사하지 않고도 확정적으로 말할 수 있는 건 미국 IRS의 비거주자
@@ -2958,6 +3028,10 @@ const REAL_ABROAD_CURRENCY = {
   de: 'EUR',
   // 네덜란드(EUR)도 같은 이유로 유로존 통화 재사용 — 신규 통화 정의 불필요.
   nl: 'EUR',
+  // 스웨덴(SEK)은 fr/de/nl/ie와 달리 유로존이 아니라 진짜 신규 통화 — CURRENCY_DISPLAY_META.SEK/
+  // EXCHANGE_RATE_SEK를 새로 정의함(2026-08-17, GBP/AUD/MXN/ZAR/MYR와 같은 이유로 Frankfurter/
+  // open.er-api가 이미 SEK를 지원해서 새 API 없이 지원 가능).
+  sv: 'SEK',
 };
 
 // "실제로 다른 나라에 살아요" 카드의 US/CN 버튼 — 한국이랑 아무 상관없는 진짜 외국인(예: 순수
@@ -10286,7 +10360,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 페이지들은 애초에 한국 세법이 맞는 기준이라 이 파라미터가 필요 없음).
   // COUNTRY_TAX_PROFILES에 실제로 있는 코드로만 제한해서, 오타·구버전 링크가 미검증
   // 국가로 계산기를 조용히 맞춰버리는 걸 막음(33개국 토글 버튼과 동일한 목록).
-  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','other'];
+  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','other'];
   const urlCountry = params.get('country');
   if (SUPPORTED_TAX_COUNTRIES.includes(urlCountry)) {
     setHomeCountry(urlCountry);
@@ -13012,7 +13086,30 @@ const COUNTRY_TAX_AUTHORITY = {
       hi: "Belastingdienst",
       fr: "Belastingdienst",
       tl: "Belastingdienst"
-    , pt: `Belastingdienst`, es: `Belastingdienst`, uk: `Belastingdienst`, tet: `Belastingdienst`, de: `Belastingdienst`, nl: `Belastingdienst`, sv: `Belastingdienst`})
+    , pt: `Belastingdienst`, es: `Belastingdienst`, uk: `Belastingdienst`, tet: `Belastingdienst`, de: `Belastingdienst`, nl: `Belastingdienst`, sv: `Belastingdienst`}),
+  // 스웨덴은 소득세법 42장 25조(자본소득 30%)+외국세액공제법(avräkningslagen)이 근거라(sv_resident
+  // 주석 참고), 특정 판례·유권해석 기관명이 아니라 국세청 공식명 "Skatteverket"(세무청)를 uk의
+  // HMRC/au의 ATO/fr의 DGFiP/de의 Finanzamt/nl의 Belastingdienst와 같은 관례로 표기함 — 언어
+  // 불문 통용되는 고유명사라 번역하지 않고 전체 언어 동일 문자열
+  sv: () => pickLang('Skatteverket', 'Skatteverket', 'Skatteverket', 'Skatteverket', 'Skatteverket', 'Skatteverket', {
+      km: "Skatteverket",
+      ne: "Skatteverket",
+      id: "Skatteverket",
+      my: "Skatteverket",
+      si: "Skatteverket",
+      uz: "Skatteverket",
+      mn: "Skatteverket",
+      kk: "Skatteverket",
+      ky: "Skatteverket",
+      ur: "Skatteverket",
+      bn: "Skatteverket",
+      lo: "Skatteverket",
+      ja: "Skatteverket",
+      ar: "Skatteverket",
+      hi: "Skatteverket",
+      fr: "Skatteverket",
+      tl: "Skatteverket"
+    , pt: `Skatteverket`, es: `Skatteverket`, uk: `Skatteverket`, tet: `Skatteverket`, de: `Skatteverket`, nl: `Skatteverket`, sv: `Skatteverket`})
 };
 
 // 세율 자체가 불확실하거나(공식 근거를 못 찾음), 세율은 알아도 실제 적용 여부가 불확실한 나라들을
@@ -13973,7 +14070,7 @@ const COUNTRY_NAMES_MORE = {
   uk: { kr:'Корея', us:'США', vn:"В'єтнам", cn:'Китай', in:'Індія', id:'Індонезія', ph:'Філіппіни', th:'Таїланд', jp:'Японія', ru:'Росія', np:'Непал', lk:'Шрі-Ланка', uz:'Узбекистан', kz:'Казахстан', kg:'Киргизстан', mm:"М'янма", bd:'Бангладеш', pk:'Пакистан', kh:'Камбоджа', mn:'Монголія', la:'Лаос' , ca:'Канада' , tw:'Тайвань', hk:'Гонконг' , uk:'Велика Британія' , au:'Австралія'  , mx:'Мексика'  , fr:'Франція' , nz:'Нова Зеландія', ie:'Ірландія', sg:'Сінгапур', za:'Південна Африка', my:'Малайзія', de:'Німеччина', nl:'Нідерланди', sv:'Швеція' },
   tet: { kr:'Korea', us:'EUA', vn:'Vietname', cn:'China', in:'Índia', id:'Indonésia', ph:'Filipinas', th:'Tailándia', jp:'Japaun', ru:'Rúsia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbequistão', kz:'Cazaquistão', kg:'Quirguizistão', mm:'Mianmar', bd:'Bangladesh', pk:'Paquistão', kh:'Camboja', mn:'Mongólia', la:'Laos' , ca:'Kanadá' , tw:'Taiwan', hk:'Hong Kong' , uk:'Reinu Unidu' , au:'Australia'  , mx:'Meksiku'  , fr:'Fransa' , nz:'Nova Zelándia', ie:'Irlanda', sg:'Singapura', za:'Áfrika Súl', my:'Malaysia', de:'Alemaña', nl:'Holanda', sv:'Suésia' },
   de: { kr:'Korea', us:'USA', vn:'Vietnam', cn:'China', in:'Indien', id:'Indonesien', ph:'Philippinen', th:'Thailand', jp:'Japan', ru:'Russland', np:'Nepal', lk:'Sri Lanka', uz:'Usbekistan', kz:'Kasachstan', kg:'Kirgistan', mm:'Myanmar', bd:'Bangladesch', pk:'Pakistan', kh:'Kambodscha', mn:'Mongolei', la:'Laos' , ca:'Kanada' , tw:'Taiwan', hk:'Hongkong' , uk:'Vereinigtes Königreich' , au:'Australien'  , mx:'Mexiko'  , fr:'Frankreich' , nz:'Neuseeland', ie:'Irland', sg:'Singapur', za:'Südafrika', my:'Malaysia', de:'Deutschland', nl:'Niederlande', sv:'Schweden' },
-  nl: { kr:'Korea', us:'Verenigde Staten', vn:'Vietnam', cn:'China', in:'India', id:'Indonesië', ph:'Filipijnen', th:'Thailand', jp:'Japan', ru:'Rusland', np:'Nepal', lk:'Sri Lanka', uz:'Oezbekistan', kz:'Kazachstan', kg:'Kirgizië', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodja', mn:'Mongolië', la:'Laos' , ca:'Canada' , tw:'Taiwan', hk:'Hongkong' , uk:'Verenigd Koninkrijk' , au:'Australië'  , mx:'Mexico'  , fr:'Frankrijk' , nz:'Nieuw-Zeeland', ie:'Ierland', sg:'Singapore', za:'Zuid-Afrika', my:'Maleisië', de:'Duitsland', nl:'Nederland', sv:'Zweden' }, sv: { kr:'Korea', us:'USA', vn:'Vietnam', cn:'Kina', in:'Indien', id:'Indonesien', ph:'Filippinerna', th:'Thailand', jp:'Japan', ru:'Ryssland', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakstan', kg:'Kirgizistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kambodja', mn:'Mongoliet', la:'Laos' , ca:'Kanada' , tw:'Taiwan', hk:'Hongkong' , uk:'Storbritannien' , au:'Australien'  , mx:'Mexiko'  , fr:'Frankrike' , nz:'Nya Zeeland', ie:'Irland', sg:'Singapore', za:'Sydafrika', my:'Malaysia', de:'Tyskland', nl:'Nederländerna' },
+  nl: { kr:'Korea', us:'Verenigde Staten', vn:'Vietnam', cn:'China', in:'India', id:'Indonesië', ph:'Filipijnen', th:'Thailand', jp:'Japan', ru:'Rusland', np:'Nepal', lk:'Sri Lanka', uz:'Oezbekistan', kz:'Kazachstan', kg:'Kirgizië', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodja', mn:'Mongolië', la:'Laos' , ca:'Canada' , tw:'Taiwan', hk:'Hongkong' , uk:'Verenigd Koninkrijk' , au:'Australië'  , mx:'Mexico'  , fr:'Frankrijk' , nz:'Nieuw-Zeeland', ie:'Ierland', sg:'Singapore', za:'Zuid-Afrika', my:'Maleisië', de:'Duitsland', nl:'Nederland', sv:'Zweden' }, sv: { kr:'Korea', us:'USA', vn:'Vietnam', cn:'Kina', in:'Indien', id:'Indonesien', ph:'Filippinerna', th:'Thailand', jp:'Japan', ru:'Ryssland', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakstan', kg:'Kirgizistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kambodja', mn:'Mongoliet', la:'Laos' , ca:'Kanada' , tw:'Taiwan', hk:'Hongkong' , uk:'Storbritannien' , au:'Australien'  , mx:'Mexiko'  , fr:'Frankrike' , nz:'Nya Zeeland', ie:'Irland', sg:'Singapore', za:'Sydafrika', my:'Malaysia', de:'Tyskland', nl:'Nederländerna', sv:'Sverige' },
 };
 
 // 언어별 "~ 거주자" 관용구 템플릿 — 위 COUNTRY_NAMES_MORE의 나라 이름을 채워서 완성
@@ -14298,6 +14395,7 @@ const COUNTRY_TAX_PROFILES = [
   { code: 'my', flagCode: 'MY', label: '말레이시아 거주자 (실제 말레이시아 거주 기준)', labelEn: 'Malaysia resident (living in Malaysia)', labelZh: '马来西亚居民（实际住在马来西亚）', labelVi: 'Cư dân Malaysia (sống thực tế tại Malaysia)', labelTh: 'ผู้พำนักในมาเลเซีย (อาศัยอยู่จริงในมาเลเซีย)', labelRu: 'Резидент Малайзии (проживающий в Малайзии)', implemented: true, needsState: false, detailPage: 'us-lottery-tax-for-malaysians.html', detailLabel: 'US lottery tax for Malaysians →', more: buildCountryMore('my') },
   { code: 'de', flagCode: 'DE', label: '독일 거주자 (실제 독일 거주 기준)', labelEn: 'Germany resident (living in Germany)', labelZh: '德国居民（实际住在德国）', labelVi: 'Cư dân Đức (sống thực tế tại Đức)', labelTh: 'ผู้พำนักในเยอรมนี (อาศัยอยู่จริงในเยอรมนี)', labelRu: 'Резидент Германии (проживающий в Германии)', implemented: true, needsState: false, detailPage: 'germany-resident-us-lottery-tax.html', detailLabel: 'Deutsch →', more: buildCountryMore('de') },
   { code: 'nl', flagCode: 'NL', label: '네덜란드 거주자 (실제 네덜란드 거주 기준, FTC 미적용 ⚠️)', labelEn: 'Netherlands resident (living in the Netherlands, no FTC ⚠️)', labelZh: '荷兰居民（实际住在荷兰，不适用FTC⚠️）', labelVi: 'Cư dân Hà Lan (sống thực tế tại Hà Lan, không áp dụng FTC ⚠️)', labelTh: 'ผู้พำนักในเนเธอร์แลนด์ (อาศัยอยู่จริงในเนเธอร์แลนด์, ไม่ใช้ FTC ⚠️)', labelRu: 'Резидент Нидерландов (проживающий в Нидерландах, без FTC ⚠️)', implemented: true, needsState: false, detailPage: 'netherlands-resident-us-lottery-tax.html', detailLabel: 'Nederlands →', more: buildCountryMore('nl') },
+  { code: 'sv', flagCode: 'SE', label: '스웨덴 거주자 (실제 스웨덴 거주 기준)', labelEn: 'Sweden resident (living in Sweden)', labelZh: '瑞典居民（实际住在瑞典）', labelVi: 'Cư dân Thụy Điển (sống thực tế tại Thụy Điển)', labelTh: 'ผู้พำนักในสวีเดน (อาศัยอยู่จริงในสวีเดน)', labelRu: 'Резидент Швеции (проживающий в Швеции)', implemented: true, needsState: false, detailPage: 'sweden-resident-us-lottery-tax.html', detailLabel: 'Svenska →', more: buildCountryMore('sv') },
 ];
 
 // 나라별 비교 카드가 텍스트/숫자로만 나열돼서 폰에서 심심하다는 피드백 — 카드를 탭하면 이
