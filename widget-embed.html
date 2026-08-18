@@ -116,10 +116,27 @@ function render(){
   document.getElementById('w-result').textContent = '$' + takeHome.toLocaleString('en-US', {maximumFractionDigits: 1}) + 'M';
   document.getElementById('w-sub').textContent =
     '발표 금액 $' + amount.toLocaleString('en-US') + 'M 기준, ' + name + ' 거주자 약 ' + pct + '% 실수령 — 대형 일시불(약 $100M) 시나리오 기준 참고치예요. 금액이 다르면 누진세율 등으로 비율이 달라질 수 있어요.';
-  document.getElementById('w-cta').href = 'https://chamtax.com/?amount=' + Math.round(amount) + '&utm_source=widget&utm_medium=embed';
+  document.getElementById('w-cta').href = 'https://chamtax.com/?amount=' + Math.round(amount) + '&country=' + sel.value + '&utm_source=widget&utm_medium=embed';
 }
 document.getElementById('w-country').addEventListener('change', render);
 document.getElementById('w-amount').addEventListener('input', render);
+
+// 2026-08-18: 임베드하는 쪽이 <iframe src="widget-embed.html?country=kr&amount=250">처럼
+// 자기 사이트 방문자층에 맞는 초기값을 지정할 수 있게 함 — 그동안은 항상 대한민국/$100M
+// 고정값으로만 떠서, 예를 들어 베트남 커뮤니티 블로그가 임베드해도 한국 기준 화면이 먼저
+// 보였음. 지원 안 하는 country 코드나 잘못된 amount는 조용히 무시하고 기존 기본값 유지.
+(function applyEmbedParams(){
+  const params = new URLSearchParams(location.search);
+  const countryParam = params.get('country');
+  if (countryParam && COUNTRY_NAMES[countryParam]) {
+    document.getElementById('w-country').value = countryParam;
+  }
+  const amountParam = parseFloat(params.get('amount'));
+  if (amountParam > 0) {
+    document.getElementById('w-amount').value = amountParam;
+  }
+})();
+
 render();
 </script>
 </body>

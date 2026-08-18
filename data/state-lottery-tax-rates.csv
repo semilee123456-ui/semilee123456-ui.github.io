@@ -1,0 +1,52 @@
+state_code,state_name,top_marginal_rate_pct,no_state_income_tax,lottery_winnings_exempt
+AK,Alaska,0,true,false
+AL,Alabama,5,false,false
+AR,Arkansas,3.9,false,false
+AZ,Arizona,2.5,false,false
+CA,California,0,false,true
+CO,Colorado,4.4,false,false
+CT,Connecticut,6.99,false,false
+DC,Washington D.C.,10.75,false,false
+DE,Delaware,6.6,false,false
+FL,Florida,0,true,false
+GA,Georgia,5.39,false,false
+HI,Hawaii,11,false,false
+IA,Iowa,3.8,false,false
+ID,Idaho,5.3,false,false
+IL,Illinois,4.95,false,false
+IN,Indiana,2.95,false,false
+KS,Kansas,5.58,false,false
+KY,Kentucky,3.5,false,false
+LA,Louisiana,3,false,false
+MA,Massachusetts,9,false,false
+MD,Maryland,6.5,false,false
+ME,Maine,9.15,false,false
+MI,Michigan,4.25,false,false
+MN,Minnesota,9.85,false,false
+MO,Missouri,4.7,false,false
+MS,Mississippi,4,false,false
+MT,Montana,5.65,false,false
+NC,North Carolina,3.99,false,false
+ND,North Dakota,1.95,false,false
+NE,Nebraska,4.55,false,false
+NH,New Hampshire,0,true,false
+NJ,New Jersey,10.75,false,false
+NM,New Mexico,5.9,false,false
+NV,Nevada,0,true,false
+NY,New York,10.9,false,false
+OH,Ohio,2.75,false,false
+OK,Oklahoma,4.5,false,false
+OR,Oregon,9.9,false,false
+PA,Pennsylvania,3.07,false,false
+RI,Rhode Island,5.99,false,false
+SC,South Carolina,6.2,false,false
+SD,South Dakota,0,true,false
+TN,Tennessee,0,true,false
+TX,Texas,0,true,false
+UT,Utah,4.55,false,false
+VA,Virginia,5.75,false,false
+VT,Vermont,8.75,false,false
+WA,Washington,0,true,false
+WI,Wisconsin,7.65,false,false
+WV,West Virginia,4.82,false,false
+WY,Wyoming,0,true,false

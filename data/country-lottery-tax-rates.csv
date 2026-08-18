@@ -1,0 +1,42 @@
+country_code,country_name,tax_authority,us_nonresident_withholding_pct,effective_total_tax_pct_at_500m_usd,take_home_pct_at_500m_usd,confidence,tax_structure_notes
+kr,South Korea,National Tax Service (NTS)/IRS,30,46.49,53.51,verified,"Progressive (comprehensive income tax, 8 brackets up to 45%) + 10% local surtax, FTC applied"
+pk,Pakistan,Estimate based on FBR data/IRS,30,46.5,53.5,estimate,"⚠️ Base 35% + 8% super tax + 10% surcharge on the base; FTC offsets only the base-rate component, not super tax/surcharge"
+cn,China,State Taxation Administration/IRS,30,30,70,verified,"Flat 20% ""incidental income"" tax, FTC applied"
+in,India,Income Tax Department/IRS,30,39,61,verified,"Flat 30% + 25% surcharge + 4% cess (≈39% effective), no deductions, FTC applied"
+vn,Vietnam,General Department of Taxation/IRS,30,30,70,verified,"Flat 10% prize-income tax, FTC applied under domestic law (no US-Vietnam treaty in force)"
+id,Indonesia,Directorate General of Taxes/IRS,30,30,70,verified,"Flat 25% final tax on lottery winnings, FTC applied"
+ph,Philippines,Bureau of Internal Revenue/IRS,30,35,65,approximate,Approximated at the top progressive bracket (35%) since foreign winnings do not get the 20% domestic-lottery final tax rate; FTC applied
+th,Thailand,Estimate based on Revenue Department data/IRS,30,35,65,estimate,⚠️ No clear official guidance found for foreign lottery winnings; approximated at the top personal income tax bracket (35%)
+jp,Japan,National Tax Agency (NTA)/IRS,30,30,70,verified,"""Temporary income"" with 1/2 inclusion, taxed at top marginal rate (≈27.97% effective), FTC applied"
+ru,Russia,Federal Tax Service (FNS)/IRS,30,52,48,verified,Flat top progressive rate (22%); FTC believed unavailable since the US-Russia tax treaty’s double-taxation article has been suspended since 2023
+np,Nepal,Inland Revenue Department (IRD)/IRS,30,30,70,verified,"Flat 25% ""windfall gain"" final tax, FTC applied under domestic law"
+lk,Sri Lanka,Inland Revenue Department (IRD)/IRS,30,36,64,approximate,Approximated at the top progressive bracket (36%); a possible 15% preferential rate for remitted foreign income has unclear applicability to lottery winnings
+uz,Uzbekistan,State Tax Committee/IRS,30,30,70,verified,"Flat 12% on all personal income, FTC applied"
+kz,Kazakhstan,Committee of State Revenues/IRS,30,30,70,verified,"Flat 10% on ""winnings""-category income, FTC applied"
+kg,Kyrgyzstan,State Tax Service/IRS,30,30,70,verified,"Flat 10% on personal income including winnings, FTC applied"
+mm,Myanmar,Internal Revenue Department (IRD)/IRS,30,30,70,approximate,"Approximated at the top bracket (25%) for ""income from other sources"", FTC applied"
+bd,Bangladesh,National Board of Revenue (NBR)/IRS,30,30,70,verified,"Flat 25% on ""income from other sources"" (prizes), FTC applied"
+kh,Cambodia,Estimate based on GDT data/IRS,30,30,70,estimate,"⚠️ No clear legal basis found for taxing personal lottery/prize income — treated as 0% pending verification, NOT a confirmed exemption"
+mn,Mongolia,Estimate based on Tax Administration data/IRS,30,40,60,estimate,⚠️ Approximated at 40% per secondary-source summaries; not independently verified against primary legislation
+la,Laos,Estimate based on Ministry of Finance data/IRS,30,35,65,estimate,"⚠️ Flat 5% under the new income tax law; no US-Laos tax treaty, so no FTC — stacks fully on top of US withholding"
+ca,Canada,Canada Revenue Agency (CRA)/IRS,30,30,70,verified,Non-taxable windfall under the Income Tax Act — no domestic tax base
+tw,Taiwan,National Taxation Bureau/IRS,30,30,70,verified,"Worldwide-income Alternative Minimum Tax, flat 20% on foreign-source income above NT$7.5M, FTC applied against the AMT increase"
+hk,Hong Kong,Inland Revenue Department (IRD)/IRS,30,30,70,verified,"Territorial system (salaries/profits/property tax only) — lottery winnings fall outside all three, no domestic tax base"
+uk,United Kingdom,HMRC/IRS,30,30,70,verified,"No Income Tax, Capital Gains Tax, or National Insurance on gambling/lottery winnings — no domestic tax base"
+au,Australia,Australian Taxation Office (ATO)/IRS,30,30,70,verified,"Non-assessable windfall gain, not income — no domestic tax base"
+mx,Mexico,Servicio de Administración Tributaria (SAT)/IRS,30,35,65,verified,"Foreign winnings taxed as ""other income"" at the top progressive bracket (35%), FTC applied"
+fr,France,DGFiP/IRS,30,30,70,verified,Pure games of chance fall outside taxable-income categories under the CGI — no domestic tax base
+nz,New Zealand,Inland Revenue (IRD)/IRS,30,30,70,verified,"Non-taxable windfall, not assessable income — no domestic tax base"
+ie,Ireland,Revenue/IRS,30,30,70,verified,Betting/lottery/prize winnings have never been within any taxable-income category — no domestic tax base
+sg,Singapore,IRAS/IRS,30,30,70,verified,"Official IRAS FAQ: gambling/lottery winnings are windfall, not taxable income — no domestic tax base"
+za,South Africa,South African Revenue Service (SARS)/IRS,30,30,70,verified,"Capital in nature, excluded from ""gross income"" and exempt from CGT — no domestic tax base"
+my,Malaysia,Lembaga Hasil Dalam Negeri (LHDN)/IRS,30,30,70,verified,Non-taxable windfall under the Income Tax Act 1967 — no domestic tax base
+de,Germany,Finanzamt/IRS,30,30,70,verified,"Falls outside all 7 enumerated taxable-income categories (EStG) — ""nicht steuerbar"", no domestic tax base"
+nl,Netherlands,Belastingdienst/IRS,30,67.8,32.2,verified,"⚠️ Kansspelbelasting (games-of-chance tax), flat 37.8% — a separate tax head with no FTC provision found, stacks in full on top of US withholding"
+sv,Sweden,Skatteverket/IRS,30,30,70,verified,Flat 30% capital-income tax on non-EU/EEA winnings; FTC exactly offsets the 30% US withholding (coincidence of equal rates)
+no,Norway,Skatteetaten/IRS,30,30,70,verified,"Flat 22% general-income rate; FTC fully absorbs the (lower) Norwegian tax, residual 0"
+da,Denmark,Skattestyrelsen/IRS,30,57.07,42.93,verified,"Top marginal personal-income rate (57.07%, incl. 2026 ""top-top tax""); FTC leaves the largest residual of any supported country (≈27pp)"
+fi,Finland,Verohallinto/IRS,30,46.17,53.83,verified,Top marginal rate (46.17%) on non-EEA winnings; FTC leaves a residual of ≈16pp
+it,Italy,Agenzia delle Entrate/IRS,30,47.23,52.77,verified,Top progressive IRPEF bracket + regional/municipal surtax (≈47.23% combined); FTC leaves a residual of ≈17pp
+pl,Poland,Krajowa Administracja Skarbowa/IRS,30,36,64,verified,"General progressive tax (12%/32%) + 4% solidarity levy above PLN 1M, approximated at 36% combined; FTC leaves a residual of ≈6pp"
+tr,Turkey,Gelir İdaresi Başkanlığı/IRS,30,50,50,verified,"⚠️ Taxed under inheritance/transfer tax law (VİVK), flat 20%, not income tax — outside the income tax treaty’s scope, no FTC, stacks in full"

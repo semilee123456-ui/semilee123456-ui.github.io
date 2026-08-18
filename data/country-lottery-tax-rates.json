@@ -1,0 +1,419 @@
+{
+  "source": "https://chamtax.com/lottery-tax-data-hub.html",
+  "license": "CC0-1.0 (public domain) — attribution to ChamTax (chamtax.com) appreciated but not required",
+  "lastUpdated": "2026-08-18",
+  "methodology": "US federal withholding on lottery/gambling winnings for non-resident aliens is a flat 30% (IRC §871(a)). effective_total_tax_pct_at_500m_usd is the combined US + home-country effective rate computed by ChamTax’s calculation engine for a $500,000,000 lump-sum payout (chosen because it is large enough that every country’s top-bracket/flat-rate approximation applies), after any Foreign Tax Credit the country’s law/treaty allows. confidence: \"verified\" = primary statute/treaty/official guidance found; \"approximate\" = reasonable secondary-source estimate, some structural simplification; \"estimate\" = best-effort, no authoritative primary source found — see chamtax.com’s per-country landing pages for full citations.",
+  "unit": "percent (except country_code, country_name, tax_authority, confidence, tax_structure_notes)",
+  "rows": [
+    {
+      "code": "kr",
+      "name": "South Korea",
+      "authority": "National Tax Service (NTS)/IRS",
+      "confidence": "verified",
+      "structure": "Progressive (comprehensive income tax, 8 brackets up to 45%) + 10% local surtax, FTC applied",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 46.49,
+      "takeHomePct500M": 53.51
+    },
+    {
+      "code": "pk",
+      "name": "Pakistan",
+      "authority": "Estimate based on FBR data/IRS",
+      "confidence": "estimate",
+      "structure": "⚠️ Base 35% + 8% super tax + 10% surcharge on the base; FTC offsets only the base-rate component, not super tax/surcharge",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 46.5,
+      "takeHomePct500M": 53.5
+    },
+    {
+      "code": "cn",
+      "name": "China",
+      "authority": "State Taxation Administration/IRS",
+      "confidence": "verified",
+      "structure": "Flat 20% \"incidental income\" tax, FTC applied",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "in",
+      "name": "India",
+      "authority": "Income Tax Department/IRS",
+      "confidence": "verified",
+      "structure": "Flat 30% + 25% surcharge + 4% cess (≈39% effective), no deductions, FTC applied",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 39,
+      "takeHomePct500M": 61
+    },
+    {
+      "code": "vn",
+      "name": "Vietnam",
+      "authority": "General Department of Taxation/IRS",
+      "confidence": "verified",
+      "structure": "Flat 10% prize-income tax, FTC applied under domestic law (no US-Vietnam treaty in force)",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "id",
+      "name": "Indonesia",
+      "authority": "Directorate General of Taxes/IRS",
+      "confidence": "verified",
+      "structure": "Flat 25% final tax on lottery winnings, FTC applied",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "ph",
+      "name": "Philippines",
+      "authority": "Bureau of Internal Revenue/IRS",
+      "confidence": "approximate",
+      "structure": "Approximated at the top progressive bracket (35%) since foreign winnings do not get the 20% domestic-lottery final tax rate; FTC applied",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 35,
+      "takeHomePct500M": 65
+    },
+    {
+      "code": "th",
+      "name": "Thailand",
+      "authority": "Estimate based on Revenue Department data/IRS",
+      "confidence": "estimate",
+      "structure": "⚠️ No clear official guidance found for foreign lottery winnings; approximated at the top personal income tax bracket (35%)",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 35,
+      "takeHomePct500M": 65
+    },
+    {
+      "code": "jp",
+      "name": "Japan",
+      "authority": "National Tax Agency (NTA)/IRS",
+      "confidence": "verified",
+      "structure": "\"Temporary income\" with 1/2 inclusion, taxed at top marginal rate (≈27.97% effective), FTC applied",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "ru",
+      "name": "Russia",
+      "authority": "Federal Tax Service (FNS)/IRS",
+      "confidence": "verified",
+      "structure": "Flat top progressive rate (22%); FTC believed unavailable since the US-Russia tax treaty’s double-taxation article has been suspended since 2023",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 52,
+      "takeHomePct500M": 48
+    },
+    {
+      "code": "np",
+      "name": "Nepal",
+      "authority": "Inland Revenue Department (IRD)/IRS",
+      "confidence": "verified",
+      "structure": "Flat 25% \"windfall gain\" final tax, FTC applied under domestic law",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "lk",
+      "name": "Sri Lanka",
+      "authority": "Inland Revenue Department (IRD)/IRS",
+      "confidence": "approximate",
+      "structure": "Approximated at the top progressive bracket (36%); a possible 15% preferential rate for remitted foreign income has unclear applicability to lottery winnings",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 36,
+      "takeHomePct500M": 64
+    },
+    {
+      "code": "uz",
+      "name": "Uzbekistan",
+      "authority": "State Tax Committee/IRS",
+      "confidence": "verified",
+      "structure": "Flat 12% on all personal income, FTC applied",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "kz",
+      "name": "Kazakhstan",
+      "authority": "Committee of State Revenues/IRS",
+      "confidence": "verified",
+      "structure": "Flat 10% on \"winnings\"-category income, FTC applied",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "kg",
+      "name": "Kyrgyzstan",
+      "authority": "State Tax Service/IRS",
+      "confidence": "verified",
+      "structure": "Flat 10% on personal income including winnings, FTC applied",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "mm",
+      "name": "Myanmar",
+      "authority": "Internal Revenue Department (IRD)/IRS",
+      "confidence": "approximate",
+      "structure": "Approximated at the top bracket (25%) for \"income from other sources\", FTC applied",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "bd",
+      "name": "Bangladesh",
+      "authority": "National Board of Revenue (NBR)/IRS",
+      "confidence": "verified",
+      "structure": "Flat 25% on \"income from other sources\" (prizes), FTC applied",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "kh",
+      "name": "Cambodia",
+      "authority": "Estimate based on GDT data/IRS",
+      "confidence": "estimate",
+      "structure": "⚠️ No clear legal basis found for taxing personal lottery/prize income — treated as 0% pending verification, NOT a confirmed exemption",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "mn",
+      "name": "Mongolia",
+      "authority": "Estimate based on Tax Administration data/IRS",
+      "confidence": "estimate",
+      "structure": "⚠️ Approximated at 40% per secondary-source summaries; not independently verified against primary legislation",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 40,
+      "takeHomePct500M": 60
+    },
+    {
+      "code": "la",
+      "name": "Laos",
+      "authority": "Estimate based on Ministry of Finance data/IRS",
+      "confidence": "estimate",
+      "structure": "⚠️ Flat 5% under the new income tax law; no US-Laos tax treaty, so no FTC — stacks fully on top of US withholding",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 35,
+      "takeHomePct500M": 65
+    },
+    {
+      "code": "ca",
+      "name": "Canada",
+      "authority": "Canada Revenue Agency (CRA)/IRS",
+      "confidence": "verified",
+      "structure": "Non-taxable windfall under the Income Tax Act — no domestic tax base",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "tw",
+      "name": "Taiwan",
+      "authority": "National Taxation Bureau/IRS",
+      "confidence": "verified",
+      "structure": "Worldwide-income Alternative Minimum Tax, flat 20% on foreign-source income above NT$7.5M, FTC applied against the AMT increase",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "hk",
+      "name": "Hong Kong",
+      "authority": "Inland Revenue Department (IRD)/IRS",
+      "confidence": "verified",
+      "structure": "Territorial system (salaries/profits/property tax only) — lottery winnings fall outside all three, no domestic tax base",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "uk",
+      "name": "United Kingdom",
+      "authority": "HMRC/IRS",
+      "confidence": "verified",
+      "structure": "No Income Tax, Capital Gains Tax, or National Insurance on gambling/lottery winnings — no domestic tax base",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "au",
+      "name": "Australia",
+      "authority": "Australian Taxation Office (ATO)/IRS",
+      "confidence": "verified",
+      "structure": "Non-assessable windfall gain, not income — no domestic tax base",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "mx",
+      "name": "Mexico",
+      "authority": "Servicio de Administración Tributaria (SAT)/IRS",
+      "confidence": "verified",
+      "structure": "Foreign winnings taxed as \"other income\" at the top progressive bracket (35%), FTC applied",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 35,
+      "takeHomePct500M": 65
+    },
+    {
+      "code": "fr",
+      "name": "France",
+      "authority": "DGFiP/IRS",
+      "confidence": "verified",
+      "structure": "Pure games of chance fall outside taxable-income categories under the CGI — no domestic tax base",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "nz",
+      "name": "New Zealand",
+      "authority": "Inland Revenue (IRD)/IRS",
+      "confidence": "verified",
+      "structure": "Non-taxable windfall, not assessable income — no domestic tax base",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "ie",
+      "name": "Ireland",
+      "authority": "Revenue/IRS",
+      "confidence": "verified",
+      "structure": "Betting/lottery/prize winnings have never been within any taxable-income category — no domestic tax base",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "sg",
+      "name": "Singapore",
+      "authority": "IRAS/IRS",
+      "confidence": "verified",
+      "structure": "Official IRAS FAQ: gambling/lottery winnings are windfall, not taxable income — no domestic tax base",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "za",
+      "name": "South Africa",
+      "authority": "South African Revenue Service (SARS)/IRS",
+      "confidence": "verified",
+      "structure": "Capital in nature, excluded from \"gross income\" and exempt from CGT — no domestic tax base",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "my",
+      "name": "Malaysia",
+      "authority": "Lembaga Hasil Dalam Negeri (LHDN)/IRS",
+      "confidence": "verified",
+      "structure": "Non-taxable windfall under the Income Tax Act 1967 — no domestic tax base",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "de",
+      "name": "Germany",
+      "authority": "Finanzamt/IRS",
+      "confidence": "verified",
+      "structure": "Falls outside all 7 enumerated taxable-income categories (EStG) — \"nicht steuerbar\", no domestic tax base",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "nl",
+      "name": "Netherlands",
+      "authority": "Belastingdienst/IRS",
+      "confidence": "verified",
+      "structure": "⚠️ Kansspelbelasting (games-of-chance tax), flat 37.8% — a separate tax head with no FTC provision found, stacks in full on top of US withholding",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 67.8,
+      "takeHomePct500M": 32.2
+    },
+    {
+      "code": "sv",
+      "name": "Sweden",
+      "authority": "Skatteverket/IRS",
+      "confidence": "verified",
+      "structure": "Flat 30% capital-income tax on non-EU/EEA winnings; FTC exactly offsets the 30% US withholding (coincidence of equal rates)",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "no",
+      "name": "Norway",
+      "authority": "Skatteetaten/IRS",
+      "confidence": "verified",
+      "structure": "Flat 22% general-income rate; FTC fully absorbs the (lower) Norwegian tax, residual 0",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "da",
+      "name": "Denmark",
+      "authority": "Skattestyrelsen/IRS",
+      "confidence": "verified",
+      "structure": "Top marginal personal-income rate (57.07%, incl. 2026 \"top-top tax\"); FTC leaves the largest residual of any supported country (≈27pp)",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 57.07,
+      "takeHomePct500M": 42.93
+    },
+    {
+      "code": "fi",
+      "name": "Finland",
+      "authority": "Verohallinto/IRS",
+      "confidence": "verified",
+      "structure": "Top marginal rate (46.17%) on non-EEA winnings; FTC leaves a residual of ≈16pp",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 46.17,
+      "takeHomePct500M": 53.83
+    },
+    {
+      "code": "it",
+      "name": "Italy",
+      "authority": "Agenzia delle Entrate/IRS",
+      "confidence": "verified",
+      "structure": "Top progressive IRPEF bracket + regional/municipal surtax (≈47.23% combined); FTC leaves a residual of ≈17pp",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 47.23,
+      "takeHomePct500M": 52.77
+    },
+    {
+      "code": "pl",
+      "name": "Poland",
+      "authority": "Krajowa Administracja Skarbowa/IRS",
+      "confidence": "verified",
+      "structure": "General progressive tax (12%/32%) + 4% solidarity levy above PLN 1M, approximated at 36% combined; FTC leaves a residual of ≈6pp",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 36,
+      "takeHomePct500M": 64
+    },
+    {
+      "code": "tr",
+      "name": "Turkey",
+      "authority": "Gelir İdaresi Başkanlığı/IRS",
+      "confidence": "verified",
+      "structure": "⚠️ Taxed under inheritance/transfer tax law (VİVK), flat 20%, not income tax — outside the income tax treaty’s scope, no FTC, stacks in full",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 50,
+      "takeHomePct500M": 50
+    }
+  ]
+}

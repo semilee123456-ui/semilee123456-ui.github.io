@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" width="720" height="460" role="img" aria-labelledby="ctChartTitle ctChartDesc">
+  <title id="ctChartTitle">$500 million US lottery jackpot take-home by country of residence</title>
+  <desc id="ctChartDesc">Horizontal bar chart comparing the estimated after-tax take-home amount of a $500,000,000 lump-sum US Powerball or Mega Millions jackpot across 8 countries of residence, including US federal/state tax and non-resident withholding plus each country's own tax treatment.</desc>
+  <rect x="0" y="0" width="720" height="460" fill="#FFFFFF"/>
+  <text x="200" y="30" font-size="18" font-weight="700" fill="#262420" font-family="Arial,Helvetica,sans-serif">$500M jackpot take-home by country</text>
+  <text x="200" y="50" font-size="13" fill="#544E42" font-family="Arial,Helvetica,sans-serif">Lump-sum win, after US + home-country tax, by residence</text>
+  
+    <text x="190" y="94" text-anchor="end" font-size="14" fill="#262420" font-family="Arial,Helvetica,sans-serif">Vietnam</text>
+    <rect x="200" y="74" width="341.3" height="30" rx="4" fill="#155445"/>
+    <text x="549.25" y="94" font-size="13" fill="#262420" font-family="Arial,Helvetica,sans-serif" font-weight="700">70.0% ($350M)</text>
+    <text x="190" y="138" text-anchor="end" font-size="14" fill="#262420" font-family="Arial,Helvetica,sans-serif">China</text>
+    <rect x="200" y="118" width="341.3" height="30" rx="4" fill="#155445"/>
+    <text x="549.25" y="138" font-size="13" fill="#262420" font-family="Arial,Helvetica,sans-serif" font-weight="700">70.0% ($350M)</text>
+    <text x="190" y="182" text-anchor="end" font-size="14" fill="#262420" font-family="Arial,Helvetica,sans-serif">Poland</text>
+    <rect x="200" y="162" width="312.0" height="30" rx="4" fill="#155445"/>
+    <text x="520" y="182" font-size="13" fill="#262420" font-family="Arial,Helvetica,sans-serif" font-weight="700">64.0% ($320M)</text>
+    <text x="190" y="226" text-anchor="end" font-size="14" fill="#262420" font-family="Arial,Helvetica,sans-serif">US resident (Texas)</text>
+    <rect x="200" y="206" width="307.1" height="30" rx="4" fill="#155445"/>
+    <text x="515.125" y="226" font-size="13" fill="#262420" font-family="Arial,Helvetica,sans-serif" font-weight="700">63.0% ($315M)</text>
+    <text x="190" y="270" text-anchor="end" font-size="14" fill="#262420" font-family="Arial,Helvetica,sans-serif">US resident (California)</text>
+    <rect x="200" y="250" width="307.1" height="30" rx="4" fill="#155445"/>
+    <text x="515.125" y="270" font-size="13" fill="#262420" font-family="Arial,Helvetica,sans-serif" font-weight="700">63.0% ($315M)</text>
+    <text x="190" y="314" text-anchor="end" font-size="14" fill="#262420" font-family="Arial,Helvetica,sans-serif">India</text>
+    <rect x="200" y="294" width="297.4" height="30" rx="4" fill="#155445"/>
+    <text x="505.375" y="314" font-size="13" fill="#262420" font-family="Arial,Helvetica,sans-serif" font-weight="700">61.0% ($305M)</text>
+    <text x="190" y="358" text-anchor="end" font-size="14" fill="#262420" font-family="Arial,Helvetica,sans-serif">South Korea</text>
+    <rect x="200" y="338" width="260.9" height="30" rx="4" fill="#155445"/>
+    <text x="468.86125" y="358" font-size="13" fill="#262420" font-family="Arial,Helvetica,sans-serif" font-weight="700">53.5% ($268M)</text>
+    <text x="190" y="402" text-anchor="end" font-size="14" fill="#262420" font-family="Arial,Helvetica,sans-serif">Turkey</text>
+    <rect x="200" y="382" width="243.8" height="30" rx="4" fill="#155445"/>
+    <text x="451.75" y="402" font-size="13" fill="#262420" font-family="Arial,Helvetica,sans-serif" font-weight="700">50.0% ($250M)</text>
+</svg>
