@@ -1784,3 +1784,24 @@ og:title/twitter:title, description/og:description/twitter:description 전부 �
 "고쳐도 이득이 거의 없고 고치다 위 2곳과 헷갈릴 리스크만 있다"는 이유로 **미실행 결정**.
 다음 세션이 이 제안을 다시 받아도 위 2곳(`flagEmojiFromCode`/언어 태그 파싱)은 절대
 로케일 인식으로 바꾸지 말 것 — 재조사 불필요.
+
+**같은 날 이어서 — 파워볼 8/17 회차 반영 + Cloudflare 보안 헤더 설정 진행 중**: 사용자가
+공유한 스크린샷(usamega.com)으로 파워볼 8/17 회차(8,15,25,49,65 / 파워볼 22) 확인,
+`LATEST_DRAW`/`JACKPOT_DATA`(script.js)·`POWERBALL_DRAW_ARCHIVE`/
+`POWERBALL_JACKPOT_ARCHIVE`(odds-data.js) 동기화, `script.min.js` 재빌드·캐시버전업
+(`v20260818-5`)까지 완료(자세한 내용은 위 커밋 메시지 참고). 메가밀리언즈는 스크린샷의
+8/14 회차가 이미 최신값과 일치해 변경 없음.
+
+**Cloudflare Transform Rules로 보안 헤더 추가(사용자 진행 중, 코드 작업 아님)**: GitHub
+Pages가 커스텀 응답 헤더를 지원 안 해서(위 "현재 남아있는" 섹션 참고 없음, 과거 세션
+기록 — `X-Content-Type-Options`/`X-Frame-Options`/`Strict-Transport-Security` 전부
+미설정 상태였음) 앞단 Cloudflare 대시보드에서 추가하는 작업. **주의: `X-Frame-Options:
+SAMEORIGIN`을 사이트 전체에 걸면 `widget-embed.html`(오늘 만든 임베드 위젯, 다른
+사이트가 iframe으로 심는 용도)이 깨짐** — 그래서 규칙을 2개로 분리하도록 안내함:
+①"Security Headers (all pages)" — 조건 `Hostname eq chamtax.com AND not(URI Path eq
+"/widget-embed.html")`, 헤더 3개 다 추가. ②"Security Headers (widget page)" — 조건
+`URI Path eq "/widget-embed.html"`, HSTS·`X-Content-Type-Options` 2개만(X-Frame-Options
+제외). 사용자가 규칙 ①의 설정 화면(조건식·헤더 3개)을 스크린샷으로 보여줘서 정확함을
+확인해줌 — **다음 세션 확인할 것**: 규칙 ①은 Deploy했는지, 규칙 ②(위젯 전용, X-Frame-
+Options 제외)는 아직 만들었는지 사용자에게 물어볼 것(이 문서 작성 시점엔 규칙 ①
+Deploy 여부·규칙② 생성 여부 둘 다 미확인 상태).
