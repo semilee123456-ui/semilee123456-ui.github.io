@@ -1731,3 +1731,45 @@ GA4 보유 페이지 집합과 Clarity 보유 페이지 집합을 `diff`로 완�
 접수 절차 부재로 실무상 전원 30% 원천징수됨" 섹션으로 선제 반영돼 있어 수정 불필요로 결론
 (덴마크 라운드가 원래 정립한 "이론값 아닌 실측 경험 기준" 설계 원칙, HANDOFF.md 1246번대
 줄 참고). 터키 건은 아직 사용자 검수 결과 회신 전 — 다음 세션이 이어받을 것.
+
+### 2026-08-18 이어서 — hreflang/robots 기술 SEO 감사 (GSC/Bing API 접근 없이 정적 분석만)
+
+사용자가 "홍보 채널 추가 말고 사이트 자체를 홍보 자산으로 강화"하는 방향의 대규모 아이디어
+11개를 제시(색인 감사, 42개국 차별화, hreflang 감사, 잭팟 DB, 계산결과 공유 URL, AI 인용
+추적 등) → GSC/Bing Webmaster Tools는 로그인 세션 필요해 API 접근 불가 확인, 그래서 이번
+세션은 저장소 안에서 정적 분석만으로 가능한 두 항목(hreflang 감사, robots 메타 감사)만
+먼저 처리하기로 사용자와 합의.
+
+**발견 및 수정 1 — `index.html` hreflang/og:locale:alternate 9개 언어 누락(커밋
+`90e2947`)**: 독일어(de)·네덜란드어(nl)·스웨덴어(sv)·노르웨이어(no)·덴마크어(da)·
+핀란드어(fi)·이탈리아어(it)·폴란드어(pl)·터키어(tr) — 이 9개는 각자 신규 UI 언어 추가
+라운드 때 `script.js`의 `SUPPORTED_LANGS`/`i18n/*.json`에는 반영됐지만, 메인 페이지
+`index.html`의 `<link rel="alternate" hreflang>` 블록과 `og:locale:alternate` 메타에는
+누락된 채로 방치돼 있었음(각 언어 라운드 세션이 이 파일을 안 건드리는 패턴이라 계속
+누적된 것으로 보임). 두 블록 다 9개씩 추가, 이후 hreflang 37줄(ko+35개 언어+x-default)·
+og:locale:alternate 35줄이 `SUPPORTED_LANGS` 개수와 정확히 일치하는 것 확인. **다음
+새 UI 언어 추가 세션은 반드시 이 두 블록도 같이 갱신할 것** — 이번처럼 누적되지 않게.
+
+**서브에이전트 전수 감사 결과 — 나머지 129개 페이지는 깨끗함**: hreflang 5개 클러스터
+(총 67개 파일)의 상호 링크·x-default 일관성·중복 코드·hreflang 코드(zh vs zh-Hant 등)
+전수 확인, 끊어진 링크·비대칭 링크 0건. canonical도 전부 자기참조 정상(`contact.html`
+1건만 의도된 리다이렉트 스텁이라 예외). sitemap.xml 123개 URL = 색인 대상 파일 수와
+정확히 일치. 리다이렉트 체인도 없음(`contact.html`→`index.html#contact` 1홉으로 끝).
+
+**발견 및 수정 2 — robots 메타 `max-image-preview:large` 전체 누락(커밋
+`5490614`)**: 129개 페이지 중 노출용 robots 메타를 가진 페이지가 단 4개(404/contact/
+press-kit/widget-embed, 전부 의도된 noindex)뿐이었고 나머지는 전부 robots 메타 자체가
+없어서 Google 기본값(`max-image-preview:standard`, 2019년부터 적용)을 따르고 있었음 —
+이 사이트는 언어별 전용 og:image 78개까지 만들어놨는데 검색 결과에서는 작은 썸네일만
+허용되는 상태였던 것. viewport 메타 태그가 있고 robots 메타가 없는 123개 페이지 전부에
+`<meta name="robots" content="max-image-preview:large">`를 viewport 바로 다음 줄에
+추가(소유확인용 파일 2개는 viewport 자체가 없어 자동 스킵됨, 의도대로). 재사용 가능하도록
+`scripts/add-max-image-preview.js`로 스크립트화 — 새 국가/언어 랜딩페이지 라운드가 이
+태그 없이 추가되면 이 스크립트를 다시 돌려서 채우면 됨.
+
+**미착수(참고용, 재조사 금지)**: 사용자가 원래 제시한 11개 항목 중 ①⑩(GSC/Bing 실제 색인
+현황·AI 인용 추적)은 API/로그인 접근 없이는 검증 불가 — API 연결 방법을 다음에 사용자가
+물어보면 안내할 것. ②(42개국 페이지 콘텐츠 차별화, 세무 조사 필요)·⑤⑥⑦(잭팟
+DB·실시간 자동화)·③(계산결과 공유 URL, 정적 호스팅이라 빌드타임 프리렌더 방식 필요)·
+⑨(연간 Tax Reference PDF/CSV/JSON)는 전부 실제 리서치/엔지니어링 규모가 커서 이번
+세션에서 손 안 댐 — 다음에 이어서 할 때는 이 문서의 이 항목부터 참고.
