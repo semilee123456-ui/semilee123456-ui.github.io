@@ -1186,6 +1186,17 @@
           <div class="ticket-torn-bottom" aria-hidden="true"></div>
         </div><!-- /.ticket-shell -->
 
+          <!-- 2026-08-18: "홍보 8대 우선순위" 3번 — 국가별로 한 번에 나란히 비교하는 새 페이지로
+               연결하는 저자극 텍스트 링크. explore-section의 "국가별 비교" 카드(단일 상대국
+               토글, goToCompareWithOppositeCountry())와는 다른 기능이라 그 카드를 대체하지 않고
+               별도 줄로 추가함 — 버튼/카드가 아니라 sim-note와 같은 조용한 텍스트 한 줄로 둬서
+               결과 영역을 과하게 채우지 않음. 링크 대상(lottery-tax-by-country.html)이
+               영어 전용 페이지라 라벨도 새 i18n 키를 만들지 않고 영어 그대로 둠(다른 영어 전용
+               링크 — Lump Sum vs. Annuity Guide 등 — 와 같은 관례). -->
+          <p style="text-align:center; margin:10px 0 0; font-size:var(--fs-small); color:var(--text-muted);">
+            <a href="lottery-tax-by-country.html" style="color:var(--teal); font-weight:700; text-decoration:none;">🌍 See 8 countries side by side →</a>
+          </p>
+
           <details class="calc-detail-toggle" id="home-detail-toggle">
             <summary class="calc-detail-summary" data-i18n="home.detailSummary">결과 더 자세히 보기</summary>
             <span id="tax-impact-after" style="display:none;"></span>
@@ -3167,6 +3178,7 @@
             <a href="michigan-lottery-tax.html">Michigan Lottery Tax</a>
             <a href="lump-sum-vs-annuity-lottery-tax.html">Lump Sum vs. Annuity Guide</a>
             <a href="nonresident-lottery-tax-refund.html">Nonresident Prize & Refund Guide</a>
+            <a href="lottery-tax-by-country.html">Compare 8 Countries Side by Side</a>
           </div>
           <a href="sitemap.html" class="related-guides-all">전체 페이지 보기 →</a>
         </div>
