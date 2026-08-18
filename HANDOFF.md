@@ -1729,3 +1729,37 @@ GitHub 저장소·`mcp-server/` MCP 서버 링크도 페이지 안에서 안내(
 재생성 대상 — 세율이 바뀌면 `script.js` → `mcp-server/tax-data.js`(README에 명시된 관례) →
 `scripts/build-lottery-tax-data-hub.js` 재실행 → `data/*` 재생성 → 페이지 표/차트 갱신,
 순서로 진행할 것(이번에 한 번에 정리해둔 파이프라인 그대로 재사용).
+
+**같은 날 이어서 — 사용자가 GSC "실적(Performance)" 리포트 zip을 전달, 홍보 8대 우선순위
+6번(6~20위 페이지 개선) 실행**: `페이지.csv`(지난 3개월, 실질 데이터 26일치) 분석 결과 —
+전체 트래픽이 극히 적어(26일간 클릭 3~4건) 임프레션 1~2건짜리는 통계적으로 무의미, 임프레션
+5개 이상인 13개 페이지만 유효 신호로 취급. 그 중 **6~20위 구간(조금만 밀면 클릭 날 만한
+자리)** 5개(korea-resident-us-lottery-tax/china-resident-us-lottery-tax/lottery-prize-tiers/
+us-lottery-basics/korean_abroad_us_lottery_tax_ko)를 선정. **부수적으로 발견한 실제
+기술적 문제**: `chamtax.com/`과 `chamtax.com/index.html`이 GSC에 별도 URL로 잡혀 순위·
+임프레션 신호가 쪼개지고 있었음(9.4위/67 vs 5.6위/10) — `index.html` 자체의 canonical은
+이미 "/"였지만 나머지 137개 페이지의 헤더 로고·언어전환 링크가 전부 `href="index.html..."`
+(non-canonical)이라 신호를 계속 분산시키던 게 원인, 137개 파일 520곳을 `href="/..."`로
+통일해 해결(쿼리 파라미터 보존). `us-lottery-basics-zh.html`이 69위로 튄 것도 발견했으나
+임프레션 1건뿐이라 통계적 의미 없음으로 결론(콘텐츠 길이·canonical·noindex 다 정상 확인,
+데이터 더 쌓이면 재검토).
+
+**title/description 재작성**: 위 5개 페이지의 title이 Latin 환산 63~98자(한글/중국어라
+실제 SERP 폭은 훨씬 넓음)로 CJK SERP 잘림 한도(~30자)를 2~3배 초과, description도
+139~235자로 한도(~70~80자)를 크게 초과해있었음 — 핵심 키워드·의미는 유지하되 전부
+27~31자(title)/55~66자(description)로 축약해 SERP에서 안 잘리게 재작성(title/
+og:title/twitter:title, description/og:description/twitter:description 전부 동기화,
+각 파일이 원래 갖고 있던 og/twitter suffix 유무 컨벤션은 그대로 유지 — 사이트 전체가
+이 컨벤션에 일관되진 않았음, 이번엔 건드리지 않고 각 파일 기존 패턴만 보존).
+`broken_link_audit.js` 143개 파일 0 issues, 5개 파일 JSON-LD 전수 파싱 검증 통과.
+
+**⚠️ 다음 세션 참고**: (1) `lottery-prize-tiers.html`·`korean_abroad_us_lottery_tax_ko.html`은
+내부 링크 유입이 각 5곳뿐(다른 3개는 10~59곳) — 다음에 시간 나면 관련 페이지에서 이 둘로
+가는 내부링크를 몇 개 더 추가하면 좋음(이번 세션은 title/desc 축약까지만 하고 안 함).
+(2) 사용자가 보내준 GSC zip은 3개월 필터였지만 실제 유의미한 데이터는 26일치뿐이었음 —
+다음에 또 GSC 데이터를 받으면 "필터=3개월"이라는 라벨만 보고 데이터가 3개월치라고
+가정하지 말고 실제 날짜 범위(차트.csv의 첫/마지막 non-zero 날짜)부터 확인할 것.
+(3) GSC 상단에 "다른 사이트가 이 사이트로 이전 중" 배너가 있었는데 확인해보니
+`semilee123456-ui.github.io`(이 저장소의 GitHub Pages 기본 주소)에서 `chamtax.com`
+커스텀 도메인으로의 정상적인 주소 이전 신호였음 — 문제 아님, 다음 세션이 이 배너를 보고
+다시 놀라거나 재조사할 필요 없음.
