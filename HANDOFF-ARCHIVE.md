@@ -16291,3 +16291,103 @@ GA4 보유 페이지 집합과 Clarity 보유 페이지 집합을 `diff`로 완�
 (덴마크 라운드가 원래 정립한 "이론값 아닌 실측 경험 기준" 설계 원칙, HANDOFF.md 1246번대
 줄 참고). 터키 건은 아직 사용자 검수 결과 회신 전 — 다음 세션이 이어받을 것.
 
+
+---
+
+### 2026-08-18 이어서 — 주별 복권세금 랜딩페이지 12개 추가 (pSEO 2라운드, worktree 서브에이전트)
+
+california/texas/florida/new-york/pennsylvania/illinois/ohio/georgia/north-carolina/michigan
+(인구 상위 10개 주, 기존)에 이어 그다음 인구 규모 12개 주 랜딩페이지 신설: New Jersey·
+Virginia·Washington·Arizona·Massachusetts·Tennessee·Indiana·Missouri·Maryland·Wisconsin·
+Colorado·Minnesota(`{주이름}-lottery-tax.html`, 총 22개 주로 확장).
+
+**주 선정 검증**: 작업 전 WebSearch로 Powerball/Mega Millions 미판매 5개 주(앨라배마·알래스카·
+하와이·네바다·유타)가 여전히 맞는지 재확인 — 2026년 기준으로도 동일하게 5개 주 전부 두
+복권을 안 팜을 확인. 이번 12개 주도 전부 실제 판매 주로 확인되어 교체 없이 그대로 진행.
+
+**세율 리서치**: `script.js`의 `STATE_TAX_RATES`(2026-07 컴파일, 각 주 공식 최고 한계세율)가
+이미 이 12개 주를 전부 포함하고 있어 그 숫자를 그대로 재사용(계산기 실제 출력과 랜딩페이지
+문구가 어긋나지 않게 하기 위함 — CA/GA/NY 등 기존 10개 페이지도 이 방식). 추가로 WebSearch로
+각 주의 복권 원천징수율(주 복권위원회가 당첨 시점에 실제로 떼는 정액 비율)을 따로 조사해
+`STATE_TAX_RATES`의 "최고 한계세율"과 다를 때(대부분 그렇다 — 연방 24%/37% 패턴과 동일한
+구조) 페이지 본문에 그 차이를 설명하는 문단을 추가:
+
+| 주 | 원천징수(claim 시점) | 실제 최고세율(계산기 반영값) | 비고 |
+|---|---|---|---|
+| New Jersey | 8%($50만 초과) | 10.75% | |
+| Virginia | 4%($5천 초과) | 5.75% | |
+| Washington | — | 0% | 주소득세 자체 없음 |
+| Arizona | 2.5% | 2.5% | 2023 flat tax 이후 원천징수=최고세율 일치 |
+| Massachusetts | 5% | 9% | 5% 기본 + 소득 $1,107,750(2026) 초과분 4%p 밀리어네어 서차지 |
+| Tennessee | — | 0% | 2021년 Hall tax(이자·배당 한정) 완전 폐지 |
+| Indiana | (flat, 별도 원천징수 없음) | 2.95% | flat tax 매년 인하 중(2027년 2.90% 예정) |
+| Missouri | 4%($600 초과) | 4.7% | |
+| Maryland | 9.5%(거주자, 지방세 포함 추정치) | 6.5%(주세만, 2025년 신설 $100만 초과 구간) | 지방(county)세 2.25~3.20%는 다른 주와 일관되게 계산기에서 제외 — 페이지에 note-box로 명시 |
+| Wisconsin | 7.65%($2천 초과) | 7.65% | 원천징수=최고세율 일치 |
+| Colorado | 4%($5천 초과) | 4.4% | |
+| Minnesota | 7.25% | 9.85% | |
+
+캘리포니아 같은 "복권 당첨금 자체 면제" 규정은 이번 12개 주 중 없음(전부 일반 소득세 체계
+그대로 적용, 또는 WA/TN처럼 주소득세 자체가 없음).
+
+**페이지 생성**: california-lottery-tax.html을 앵커 기반으로 치환하는
+`scripts/generate-state-lottery-pages.js` 신규 작성(재사용 가능하도록 스크립트로 저장 —
+다음에 또 주를 늘릴 때 STATES 배열에 항목만 추가하면 됨). title/meta/og/twitter/canonical,
+JSON-LD(BreadcrumbList/FAQPage/Organization/WebSite/SoftwareApplication/HowTo/WebPage
+speakable) 전부 주 이름·세율 반영, FAQ 4문항 재사용(숫자만 교체). Maryland는 지방세 caveat을
+`note-box`로 추가(다른 11개 주는 기존 10개 페이지와 동일한 단순 구조 유지 — 과설계 방지).
+
+**상호링크**: 22개 주를 지역별로 느슨하게 순서 지은 링(ring) 구조로 새 12개 페이지 각각에
+3개 주 링크 배치, 기존 10개 페이지에도 각각 새 주 1개씩 링크 추가(California→Washington,
+Texas→Colorado, Florida→Arizona, Georgia→Virginia, North Carolina→Tennessee,
+Michigan→Minnesota, New York→New Jersey, Pennsylvania→Massachusetts, Illinois→Wisconsin,
+Ohio→Indiana) — 양방향 내부링크 확보.
+
+**sitemap 반영**: `sitemap.xml`에 12개 `<url>` 항목 추가(michigan 다음, lump-sum-vs-annuity
+앞), `sitemap.html`의 "US State Lottery Tax Calculators" 섹션에 12개 항목 추가하고 안내 문구를
+"10개 주"→"22개 주(Powerball·Mega Millions 판매 기준)"로 갱신.
+
+**검증**: `tests/broken_link_audit.js` 141개 파일 전수 0 issues(신규 12개+상호링크 변경분
+전부 포함), 12개 파일 전체 JSON-LD 블록 `JSON.parse` 파싱 확인, `python3 -m
+xml.etree.ElementTree` 로 `sitemap.xml` 유효성 확인. `script.js`/`styles.css`는 건드리지
+않아 `build-min.js` 재빌드·캐시 버전업 불필요.
+
+**HANDOFF 아카이브 정리**: 상단 자체 유지보수 규칙(날짜별 항목 3~4개 초과 시 가장 오래된 것부터
+`HANDOFF-ARCHIVE.md`로 원문 그대로 이동)에 따라, 이번 항목이 추가되며 5개가 된 시점에 가장
+오래된 2026-08-17 이탈리아어 라운드 항목을 `HANDOFF-ARCHIVE.md` 맨 뒤로 원문 그대로 이동하고
+포인터 문구를 "~2026-08-17 이탈리아어 라운드까지"로 갱신, 본문엔 폴란드·터키·Clarity/GA4·
+이번 라운드 4개만 남김.
+
+**같은 날 이어서 — 사용자가 제안한 기술 SEO 3종("코어 웹 바이탈 100점"·"hreflang 정밀
+매핑"·"FAQ/계산기 구조화 데이터 확장") 점검, hreflang에서 실제 버그 발견·수정**:
+- **hreflang — 실제 버그 발견·수정(완료)**: `index.html`의 hreflang 태그가 27개 언어만
+  가리키고 있었는데, `script.js`의 `ADDITIONAL_LANGS`(실제 서빙되는 UI 언어)는 이미 36개라
+  최근 추가된 9개(de/nl/sv/no/da/fi/it/pl/tr — 정확히 유럽어 확장 라운드들에서 새로 생긴
+  언어들)가 검색엔진 언어 매핑에서 빠져있었음. 9개 태그 추가로 수정. 나머지 66개 페이지의
+  hreflang(주로 `*_in_korea_lottery_tax.html` 28개 계열)은 각자 실제 존재하는 페이지끼리만
+  참조하는 닫힌 세트라 확인 결과 문제없음 — 재조사 불필요.
+- **코어 웹 바이탈**: 코드 리뷰로는 이미 async 광고/GA4, preconnect+preload-swap 폰트 로딩,
+  minify+defer+버전 캐시버스팅까지 돼있어 눈에 띄는 문제 없음. 실측(Lighthouse/PageSpeed)은
+  이 세션 샌드박스 네트워크가 왜곡을 줄 수 있어 안 돌림 — 실제 점수 확인은 사용자가
+  PageSpeed Insights로 직접 `chamtax.com`을 넣어보는 걸 권장함.
+- **구조화 데이터**: `Calculator`는 schema.org에 실존하는 타입이 아님(사용자 착오로 보임).
+  FAQPage/HowTo/SoftwareApplication+Offer/Speakable/BreadcrumbList가 이미 118~125개
+  페이지 전체에 적용돼있어 표준 스키마로 더 추가할 게 없음.
+
+**같은 날 이어서 — 사용자가 제시한 "홍보 8대 우선순위"(임베드 위젯 배포·원본 데이터 허브·
+인터랙티브 실수령액 비교·이미지 SEO·AI 검색 노출 측정·SC 8~20위 페이지 개선·공유 결과 카드·
+백링크용 데이터 페이지) 중 1번(임베드 위젯)만 우선 실행 확정, 나머지는 미착수**: `AskUserQuestion`으로
+확인한 결과 사용자가 "1번만 지금 시작"으로 선택. **임베드 위젯 쿼리 파라미터 지원 추가(완료)**:
+`widget-embed.html`이 그동안 항상 대한민국/$100M 고정값으로만 떴는데(임베드하는 쪽이 자기
+방문자층에 맞출 방법이 없었음), `?country=`/`?amount=` 쿼리 파라미터로 초기값을 지정할 수
+있게 함(`<iframe src="widget-embed.html?country=vn&amount=250">`, 지원 안 하는 값은 조용히
+기본값 폴백 — Playwright로 정상값/기본값/잘못된 값 3케이스 다 라이브 확인함). CTA 링크도
+선택된 국가를 `chamtax.com`으로 그대로 넘기도록 수정(전엔 금액만 넘기고 국가는 안 넘겼음).
+`press-kit.html`에 사용법(지원 국가 코드 7개: kr/us/vn/cn/in/ph/jp) 설명 추가. **다음 세션
+참고**: "8대 우선순위" 중 2~8번(원본 데이터 허브 페이지, 국가별 나란히 비교하는 인터랙티브
+뷰, 이미지 SEO용 차트, AI 검색 노출 모니터링, Search Console 8~20위 페이지 개선, 공유 카드
+강화, 인용 가능한 데이터 페이지)은 사용자가 아직 실행을 확정 안 한 상태 — 임의로 시작하지
+말고 사용자가 다음에 어느 걸 원하는지 물어볼 것. 특히 3번(인터랙티브 비교)은 지금 홈
+계산기(`index.html`)가 이미 국가/주/일시불·연금/공유까지 다 하고 있어서, "새 기능"인지
+"기존 계산기 재포장"인지부터 사용자에게 확인 필요(이 세션이 확인 요청했지만 아직 답 안 옴).
+

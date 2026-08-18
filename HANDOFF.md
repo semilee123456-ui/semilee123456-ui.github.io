@@ -1227,12 +1227,20 @@ LotteryUSA만 노출됨) — "이미 1순위 노출된다"는 전제는 틀림. 
 
 ## 작업 이력 (날짜순, 세션마다 맨 아래에 새 항목 추가)
 
-이보다 오래된 세션 기록(~2026-08-18 Clarity 설치/GA4 안내 세션까지)은 `HANDOFF-ARCHIVE.md`
-참고(특정 과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님). 이 본문에는 최근
-세션(주 12개 pSEO 랜딩페이지+hreflang 버그 수정, 국가별 비교 페이지+공유카드 강화,
-원본 데이터 허브 페이지 신설, hreflang/robots 기술 SEO 감사) 기록만 남겨둠 — 날짜별
+이보다 오래된 세션 기록(~2026-08-18 주 12개 pSEO 랜딩페이지 라운드까지)은
+`HANDOFF-ARCHIVE.md` 참고(특정 과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님).
+이 본문에는 최근 세션(국가별 비교 페이지+공유카드 강화, 원본 데이터 허브 페이지 신설,
+hreflang/robots 기술 SEO 감사, us-lottery-tax-data 42개국 갱신) 기록만 남겨둠 — 날짜별
 항목이 3~4개를 다시 넘어가면 가장 오래된 날짜부터 또 이 방식으로 정리할 것(같은 패턴
 반복, `HANDOFF-ARCHIVE.md` 맨 뒤에 이어 붙이면 됨).
+
+**⚠️ 다음 세션 참고 — 이 저장소에서 여러 세션이 동시에 활동 중일 수 있음**: 2026-08-18
+하루 동안 이 세션(`claude/handover-token-optimization-kf232u`)과 별개로 최소 1개의
+다른 세션(`claude/github-progress-check-3ya82j`)이 병행으로 `main`에 직접 PR을 올려
+머지함(#265/#267/#268 — hreflang/robots 감사, us-lottery-tax-data 42개국 갱신). 이
+세션이 최종 PR을 머지하려 할 때마다 `main`이 이미 앞서 있어 매번 다시 merge·충돌
+해결이 필요했음 — **PR을 머지하기 직전엔 항상 `git fetch origin main`으로 다시 한번
+확인**하고, 뒤쳐져 있으면 로컬에서 먼저 merge·검증(broken_link_audit 등)한 뒤 push할 것.
 
 사용자가 "깃허브 파일이랑 인수인계 읽고 토큰 최대한 적게 사용할 수 있게 해줘"라고 요청 —
 `CLAUDE.md`의 세션 자체 컨텍스트 절약 규칙과는 별개로, `HANDOFF.md`가 매 세션 전체를
@@ -1428,103 +1436,6 @@ PR #251(lump-sum-vs-annuity 표 table-wrap 버그 수정), PR #252(문서 전용
 보이던 CSS 버그 발견·수정(`.lang-links`와 같은 칩 스타일 적용). 같은 요청에서 실제 복권
 당첨번호 최신화 여부도 확인 — `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`(2026-08-15)·
 `MEGAMILLIONS_DRAW_ARCHIVE`(2026-08-14) 전부 실제 결과와 정확히 일치, 손댈 것 없었음.
-
-### 2026-08-18 이어서 — 주별 복권세금 랜딩페이지 12개 추가 (pSEO 2라운드, worktree 서브에이전트)
-
-california/texas/florida/new-york/pennsylvania/illinois/ohio/georgia/north-carolina/michigan
-(인구 상위 10개 주, 기존)에 이어 그다음 인구 규모 12개 주 랜딩페이지 신설: New Jersey·
-Virginia·Washington·Arizona·Massachusetts·Tennessee·Indiana·Missouri·Maryland·Wisconsin·
-Colorado·Minnesota(`{주이름}-lottery-tax.html`, 총 22개 주로 확장).
-
-**주 선정 검증**: 작업 전 WebSearch로 Powerball/Mega Millions 미판매 5개 주(앨라배마·알래스카·
-하와이·네바다·유타)가 여전히 맞는지 재확인 — 2026년 기준으로도 동일하게 5개 주 전부 두
-복권을 안 팜을 확인. 이번 12개 주도 전부 실제 판매 주로 확인되어 교체 없이 그대로 진행.
-
-**세율 리서치**: `script.js`의 `STATE_TAX_RATES`(2026-07 컴파일, 각 주 공식 최고 한계세율)가
-이미 이 12개 주를 전부 포함하고 있어 그 숫자를 그대로 재사용(계산기 실제 출력과 랜딩페이지
-문구가 어긋나지 않게 하기 위함 — CA/GA/NY 등 기존 10개 페이지도 이 방식). 추가로 WebSearch로
-각 주의 복권 원천징수율(주 복권위원회가 당첨 시점에 실제로 떼는 정액 비율)을 따로 조사해
-`STATE_TAX_RATES`의 "최고 한계세율"과 다를 때(대부분 그렇다 — 연방 24%/37% 패턴과 동일한
-구조) 페이지 본문에 그 차이를 설명하는 문단을 추가:
-
-| 주 | 원천징수(claim 시점) | 실제 최고세율(계산기 반영값) | 비고 |
-|---|---|---|---|
-| New Jersey | 8%($50만 초과) | 10.75% | |
-| Virginia | 4%($5천 초과) | 5.75% | |
-| Washington | — | 0% | 주소득세 자체 없음 |
-| Arizona | 2.5% | 2.5% | 2023 flat tax 이후 원천징수=최고세율 일치 |
-| Massachusetts | 5% | 9% | 5% 기본 + 소득 $1,107,750(2026) 초과분 4%p 밀리어네어 서차지 |
-| Tennessee | — | 0% | 2021년 Hall tax(이자·배당 한정) 완전 폐지 |
-| Indiana | (flat, 별도 원천징수 없음) | 2.95% | flat tax 매년 인하 중(2027년 2.90% 예정) |
-| Missouri | 4%($600 초과) | 4.7% | |
-| Maryland | 9.5%(거주자, 지방세 포함 추정치) | 6.5%(주세만, 2025년 신설 $100만 초과 구간) | 지방(county)세 2.25~3.20%는 다른 주와 일관되게 계산기에서 제외 — 페이지에 note-box로 명시 |
-| Wisconsin | 7.65%($2천 초과) | 7.65% | 원천징수=최고세율 일치 |
-| Colorado | 4%($5천 초과) | 4.4% | |
-| Minnesota | 7.25% | 9.85% | |
-
-캘리포니아 같은 "복권 당첨금 자체 면제" 규정은 이번 12개 주 중 없음(전부 일반 소득세 체계
-그대로 적용, 또는 WA/TN처럼 주소득세 자체가 없음).
-
-**페이지 생성**: california-lottery-tax.html을 앵커 기반으로 치환하는
-`scripts/generate-state-lottery-pages.js` 신규 작성(재사용 가능하도록 스크립트로 저장 —
-다음에 또 주를 늘릴 때 STATES 배열에 항목만 추가하면 됨). title/meta/og/twitter/canonical,
-JSON-LD(BreadcrumbList/FAQPage/Organization/WebSite/SoftwareApplication/HowTo/WebPage
-speakable) 전부 주 이름·세율 반영, FAQ 4문항 재사용(숫자만 교체). Maryland는 지방세 caveat을
-`note-box`로 추가(다른 11개 주는 기존 10개 페이지와 동일한 단순 구조 유지 — 과설계 방지).
-
-**상호링크**: 22개 주를 지역별로 느슨하게 순서 지은 링(ring) 구조로 새 12개 페이지 각각에
-3개 주 링크 배치, 기존 10개 페이지에도 각각 새 주 1개씩 링크 추가(California→Washington,
-Texas→Colorado, Florida→Arizona, Georgia→Virginia, North Carolina→Tennessee,
-Michigan→Minnesota, New York→New Jersey, Pennsylvania→Massachusetts, Illinois→Wisconsin,
-Ohio→Indiana) — 양방향 내부링크 확보.
-
-**sitemap 반영**: `sitemap.xml`에 12개 `<url>` 항목 추가(michigan 다음, lump-sum-vs-annuity
-앞), `sitemap.html`의 "US State Lottery Tax Calculators" 섹션에 12개 항목 추가하고 안내 문구를
-"10개 주"→"22개 주(Powerball·Mega Millions 판매 기준)"로 갱신.
-
-**검증**: `tests/broken_link_audit.js` 141개 파일 전수 0 issues(신규 12개+상호링크 변경분
-전부 포함), 12개 파일 전체 JSON-LD 블록 `JSON.parse` 파싱 확인, `python3 -m
-xml.etree.ElementTree` 로 `sitemap.xml` 유효성 확인. `script.js`/`styles.css`는 건드리지
-않아 `build-min.js` 재빌드·캐시 버전업 불필요.
-
-**HANDOFF 아카이브 정리**: 상단 자체 유지보수 규칙(날짜별 항목 3~4개 초과 시 가장 오래된 것부터
-`HANDOFF-ARCHIVE.md`로 원문 그대로 이동)에 따라, 이번 항목이 추가되며 5개가 된 시점에 가장
-오래된 2026-08-17 이탈리아어 라운드 항목을 `HANDOFF-ARCHIVE.md` 맨 뒤로 원문 그대로 이동하고
-포인터 문구를 "~2026-08-17 이탈리아어 라운드까지"로 갱신, 본문엔 폴란드·터키·Clarity/GA4·
-이번 라운드 4개만 남김.
-
-**같은 날 이어서 — 사용자가 제안한 기술 SEO 3종("코어 웹 바이탈 100점"·"hreflang 정밀
-매핑"·"FAQ/계산기 구조화 데이터 확장") 점검, hreflang에서 실제 버그 발견·수정**:
-- **hreflang — 실제 버그 발견·수정(완료)**: `index.html`의 hreflang 태그가 27개 언어만
-  가리키고 있었는데, `script.js`의 `ADDITIONAL_LANGS`(실제 서빙되는 UI 언어)는 이미 36개라
-  최근 추가된 9개(de/nl/sv/no/da/fi/it/pl/tr — 정확히 유럽어 확장 라운드들에서 새로 생긴
-  언어들)가 검색엔진 언어 매핑에서 빠져있었음. 9개 태그 추가로 수정. 나머지 66개 페이지의
-  hreflang(주로 `*_in_korea_lottery_tax.html` 28개 계열)은 각자 실제 존재하는 페이지끼리만
-  참조하는 닫힌 세트라 확인 결과 문제없음 — 재조사 불필요.
-- **코어 웹 바이탈**: 코드 리뷰로는 이미 async 광고/GA4, preconnect+preload-swap 폰트 로딩,
-  minify+defer+버전 캐시버스팅까지 돼있어 눈에 띄는 문제 없음. 실측(Lighthouse/PageSpeed)은
-  이 세션 샌드박스 네트워크가 왜곡을 줄 수 있어 안 돌림 — 실제 점수 확인은 사용자가
-  PageSpeed Insights로 직접 `chamtax.com`을 넣어보는 걸 권장함.
-- **구조화 데이터**: `Calculator`는 schema.org에 실존하는 타입이 아님(사용자 착오로 보임).
-  FAQPage/HowTo/SoftwareApplication+Offer/Speakable/BreadcrumbList가 이미 118~125개
-  페이지 전체에 적용돼있어 표준 스키마로 더 추가할 게 없음.
-
-**같은 날 이어서 — 사용자가 제시한 "홍보 8대 우선순위"(임베드 위젯 배포·원본 데이터 허브·
-인터랙티브 실수령액 비교·이미지 SEO·AI 검색 노출 측정·SC 8~20위 페이지 개선·공유 결과 카드·
-백링크용 데이터 페이지) 중 1번(임베드 위젯)만 우선 실행 확정, 나머지는 미착수**: `AskUserQuestion`으로
-확인한 결과 사용자가 "1번만 지금 시작"으로 선택. **임베드 위젯 쿼리 파라미터 지원 추가(완료)**:
-`widget-embed.html`이 그동안 항상 대한민국/$100M 고정값으로만 떴는데(임베드하는 쪽이 자기
-방문자층에 맞출 방법이 없었음), `?country=`/`?amount=` 쿼리 파라미터로 초기값을 지정할 수
-있게 함(`<iframe src="widget-embed.html?country=vn&amount=250">`, 지원 안 하는 값은 조용히
-기본값 폴백 — Playwright로 정상값/기본값/잘못된 값 3케이스 다 라이브 확인함). CTA 링크도
-선택된 국가를 `chamtax.com`으로 그대로 넘기도록 수정(전엔 금액만 넘기고 국가는 안 넘겼음).
-`press-kit.html`에 사용법(지원 국가 코드 7개: kr/us/vn/cn/in/ph/jp) 설명 추가. **다음 세션
-참고**: "8대 우선순위" 중 2~8번(원본 데이터 허브 페이지, 국가별 나란히 비교하는 인터랙티브
-뷰, 이미지 SEO용 차트, AI 검색 노출 모니터링, Search Console 8~20위 페이지 개선, 공유 카드
-강화, 인용 가능한 데이터 페이지)은 사용자가 아직 실행을 확정 안 한 상태 — 임의로 시작하지
-말고 사용자가 다음에 어느 걸 원하는지 물어볼 것. 특히 3번(인터랙티브 비교)은 지금 홈
-계산기(`index.html`)가 이미 국가/주/일시불·연금/공유까지 다 하고 있어서, "새 기능"인지
-"기존 계산기 재포장"인지부터 사용자에게 확인 필요(이 세션이 확인 요청했지만 아직 답 안 옴).
 
 ### 2026-08-18 이어서 — "홍보 8대 우선순위" 3번(국가별 나란히 비교) + 7번(공유 결과 카드 강화) 실행 (worktree 서브에이전트)
 
@@ -1805,3 +1716,43 @@ press-kit/widget-embed, 전부 의도된 noindex)뿐이었고 나머지는 전�
 DB·실시간 자동화)·③(계산결과 공유 URL, 정적 호스팅이라 빌드타임 프리렌더 방식 필요)·
 ⑨(연간 Tax Reference PDF/CSV/JSON)는 전부 실제 리서치/엔지니어링 규모가 커서 이번
 세션에서 손 안 댐 — 다음에 이어서 할 때는 이 문서의 이 항목부터 참고.
+
+### 2026-08-18 이어서 — us-lottery-tax-data 저장소를 21개국→42개국으로 갱신 (별도 저장소 발견)
+
+PR #265 머지 후 사용자가 "혼자 할 수 있는 것부터" 진행해달라고 요청 → 위 ⑨(연간 Tax
+Reference 데이터 자산화)를 골라 `script.js`의 42개국 세금 계산 로직을 구조화된 JSON/CSV로
+추출하려던 중, **`press-kit.html`(이 저장소)이 이미
+`github.com/semilee123456-ui/us-lottery-tax-data`라는 별도 공개 저장소를 "머신리더블
+데이터셋(JSON/CSV)"으로 링크하고 있는 걸 발견**(CC0 라이선스, `data.json`/`data.csv`) —
+확인해보니 그 저장소가 2026-08-05 스냅샷(21개국) 그대로 방치돼 있어서, 이 사이트가 이후
+여러 라운드로 42개국까지 확장된 걸 전혀 반영 못 하고 있었음. 그래서 이 사이트 저장소 안에
+새 파일을 만드는 대신(중복 자산이 됐을 것) **그 저장소에 `add_repo`(push 권한)로 접근해서
+직접 갱신함** — 사용자에게 먼저 확인받고 진행(auto-mode 분류기가 다른 저장소로 범위 넓히는
+걸 자동 차단해서 명시적 승인 필요했음).
+
+**방법론 — 손으로 옮겨적지 않고 실제 엔진에서 생성(그 저장소의 기존 방법론 원칙 그대로
+지킴)**: jsdom을 스크래치 디렉터리에 임시 설치(이 사이트 저장소의 `package.json`에는 손
+안 댐 — "다른 목적으로 의존성 추가하지 말 것" 원칙 지킴), `script.js`를 실제 브라우저처럼
+로드해서 `calcTakeHome()`을 42개국 전부에 대해 직접 호출. **부수적으로 발견**: 계산 엔진이
+실제로 지원하는 나라가 42개인데, 이 사이트의 `*-resident-us-lottery-tax.html` 파일명
+패턴을 쓰는 랜딩페이지는 33개뿐이고 나머지 9개국(호주/캐나다/독일... 정정: 실제로는
+au/ca/ie/my/nz/sg/uk/za 8개국)은 `us-lottery-tax-for-*.html`이라는 다른 파일명 패턴을 씀
+— 다음에 "몇 개국 지원"을 셀 때 이 두 패턴을 다 확인할 것.
+
+**데이터 정확성 이슈 발견·수정**: 계산 엔진 코드를 직접 실행해보니 네덜란드·러시아·라오스
+3개국은 FTC(외국납부세액공제)를 아예 적용하지 않고 자국세가 미국 원천징수(30%) 위에 그대로
+쌓이는 구조였음 — 기존 데이터셋엔 라오스만 부분적으로 이렇게 표기돼 있었고 네덜란드는
+신규 추가라 이번에 처음 반영, 라벨을 `"(FTC applied)"`에서 `"(no FTC — stacks on top of
+US withholding)"`로 통일. confidence 등급(verified/approximate/unverified_estimate)도
+`script.js` 주석의 실제 법조문·조세조약·과세당국 공식 안내 인용 유무 기준으로 42개국 전부
+재평가(진행세율을 최고구간 단일세율로 근사하는 멕시코/미얀마는 approximate로 하향).
+
+결과: `semilee123456-ui/us-lottery-tax-data` 저장소에 PR #1
+(`claude/expand-to-42-countries-2026-08-18` 브랜치) — 아직 머지 대기 중.
+
+**다음 세션 참고**: 이 사이트 저장소의 `press-kit.html`(524~559번째 줄 근처)에는 아직 예전
+21개국 기준 하드코딩된 표와 "Data snapshot as of 2026-08-05" 문구가 그대로 남아있음 —
+위 PR #1이 머지되면 이 표도 42개국 기준으로 갱신하거나, 최소한 스냅샷 날짜와 "21
+countries"/"26 languages" 문구만이라도 고칠 것(현재 35개 언어). 이번 세션은 데이터셋
+저장소 갱신까지만 하고 이 표 자체는 손 안 댐(500줄 넘는 하드코딩된 HTML 표라 별도 작업
+단위로 판단).
