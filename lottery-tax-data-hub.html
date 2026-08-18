@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  try{ if(localStorage.getItem('theme')==='dark'){ document.documentElement.setAttribute('data-theme','dark'); } }catch(e){}
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9743479262743239" crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-K0S72CPYZM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-K0S72CPYZM');
+</script>
+<!-- Microsoft Clarity -->
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "y48efe1fv1");
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cellipse cx='6.1' cy='10.4' rx='2.7' ry='4' fill='%23FFFFFF' stroke='%23155445' stroke-width='1.7' transform='rotate(-24 6.1 10.4)'/%3E%3Cellipse cx='21.9' cy='10.4' rx='2.7' ry='4' fill='%23FFFFFF' stroke='%23155445' stroke-width='1.7' transform='rotate(24 21.9 10.4)'/%3E%3Ccircle cx='14' cy='15.6' r='9.7' fill='%23FFFFFF' stroke='%23155445' stroke-width='1.8'/%3E%3Cellipse cx='8.5' cy='17.5' rx='1.6' ry='1.05' fill='%23F0A98C' opacity='0.55'/%3E%3Cellipse cx='19.5' cy='17.5' rx='1.6' ry='1.05' fill='%23F0A98C' opacity='0.55'/%3E%3Ccircle cx='10.5' cy='14.4' r='1.7' fill='%23262420'/%3E%3Ccircle cx='11.05' cy='13.85' r='0.5' fill='%23fff'/%3E%3Ccircle cx='17.5' cy='14.4' r='1.7' fill='%23262420'/%3E%3Ccircle cx='18.05' cy='13.85' r='0.5' fill='%23fff'/%3E%3Cellipse cx='14' cy='17.75' rx='1.85' ry='1.3' fill='%23155445'/%3E%3Cpath d='M14 19.1v0.55M8.9 19.9c1.7 3.3 8.6 3.3 10.2 0' fill='none' stroke='%23155445' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#155445">
+
+<title>US Lottery Tax Rate Data by State & Country (2026) | Free CSV/JSON | ChamTax</title>
+<meta name="description" content="Open dataset: US Powerball/Mega Millions lottery tax rates for all 50 states + DC and 42 countries of residence, with reference take-home scenarios. Free CSV/JSON download, citable, updated 2026-08-18.">
+<link rel="canonical" href="https://chamtax.com/lottery-tax-data-hub.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ChamTax">
+<meta property="og:title" content="US Lottery Tax Rate Data — 50 States & 42 Countries">
+<meta property="og:description" content="Open dataset: US Powerball/Mega Millions lottery tax rates for all 50 states + DC and 42 countries of residence. Free CSV/JSON download, citable.">
+<meta property="og:url" content="https://chamtax.com/lottery-tax-data-hub.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://chamtax.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="US Lottery Tax Rate Data — 50 States & 42 Countries">
+<meta name="twitter:description" content="Open dataset: US Powerball/Mega Millions lottery tax rates for all 50 states + DC and 42 countries of residence. Free CSV/JSON download, citable.">
+<meta name="twitter:image" content="https://chamtax.com/og-image.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "ChamTax",
+      "item": "https://chamtax.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "US Lottery Tax Data Hub",
+      "item": "https://chamtax.com/lottery-tax-data-hub.html"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "US Lottery Jackpot Tax Rate by State",
+  "description": "Top marginal state income tax rate applied to a jackpot-size US Powerball/Mega Millions win, for all 50 US states plus Washington D.C., including states with no tax on lottery winnings.",
+  "url": "https://chamtax.com/lottery-tax-data-hub.html",
+  "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "creator": {
+    "@type": "Organization",
+    "name": "참택스",
+    "url": "https://chamtax.com/"
+  },
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "text/csv",
+      "contentUrl": "https://chamtax.com/data/state-lottery-tax-rates.csv"
+    },
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "application/json",
+      "contentUrl": "https://chamtax.com/data/state-lottery-tax-rates.json"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "US Lottery Jackpot Take-Home Tax by Country",
+  "description": "How much of a US Powerball/Mega Millions jackpot a winner actually keeps, broken down by 42 countries of residence, including US non-resident withholding and each country's own tax treatment after any Foreign Tax Credit — generated directly from the ChamTax calculation engine.",
+  "url": "https://chamtax.com/lottery-tax-data-hub.html",
+  "sameAs": "https://github.com/semilee123456-ui/us-lottery-tax-data",
+  "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "creator": {
+    "@type": "Organization",
+    "name": "참택스",
+    "url": "https://chamtax.com/"
+  },
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "text/csv",
+      "contentUrl": "https://chamtax.com/data/country-lottery-tax-rates.csv"
+    },
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "application/json",
+      "contentUrl": "https://chamtax.com/data/country-lottery-tax-rates.json"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ChamTax",
+  "alternateName": "참택스",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ChamTax",
+  "url": "https://chamtax.com/",
+  "description": "A free calculator for the after-tax take-home amount of US Powerball and Mega Millions lottery winnings."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "US Lottery Tax Rate Data Hub",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": [".lead", ".section-note"]
+  }
+}
+</script>
+<link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
+<noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" onload="this.onload=null; this.rel='stylesheet';">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap"></noscript>
+<style>
+/* ============================================================================
+   참택스 랜딩페이지 "정산 티켓" 스타일 템플릿 (공용) — press-kit.html/sitemap.html과
+   동일한 파일 그대로 주입(scripts/apply-landing-ticket-style.js 재사용 대상에 이 파일도
+   포함시킬 것). 이 페이지 전용 CSS는 style 태그 닫기 바로 위 "페이지 전용 보강" 절만 추가.
+   ============================================================================ */
+  *{box-sizing:border-box;}
+  :root{
+    --teal:#155445; --teal-rgb:21,84,69;
+    --indigo:#35507A; --gold:#9C6F1E;
+    --bg:#F4F5F7; --card:#FFFFFF; --text-dark:#262420; --text-muted:#544E42; --border:#828C97;
+    --status-red:#C0392B; --status-amber:#946716; --status-green:#1F7A4D;
+    --fs-hero:32px; --fs-h1:clamp(22px,7vw,28px); --fs-h2:clamp(19px,5.5vw,22px); --fs-h3:20px;
+    --fs-body:18px; --fs-note:17px; --fs-small:16px;
+    --font-display:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    --font-mono:'IBM Plex Mono','SFMono-Regular','Menlo','Consolas','Liberation Mono',monospace;
+    --shadow-hard:4px 4px 0 var(--text-dark);
+    --shadow-hard-sm:3px 3px 0 var(--text-dark);
+    --shadow-hard-xs:2px 2px 0 var(--text-dark);
+  }
+  :root[data-theme="dark"]{
+    --teal:#3AA98A; --teal-rgb:58,169,138;
+    --indigo:#7C9BD1; --gold:#D6AC55;
+    --bg:#1E1A16; --card:#453E34; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#6E6558;
+    --status-red:#E2776C; --status-amber:#D6AC55; --status-green:#5FC993;
+  }
+  .theme-toggle{
+    width:38px; height:38px; min-height:38px; flex:0 0 auto; border-radius:50%;
+    border:none; background:var(--teal); box-shadow:0 3px 10px rgba(var(--teal-rgb),0.35);
+    font-size:16px; line-height:1; cursor:pointer; font-family:inherit;
+    display:inline-flex; align-items:center; justify-content:center; padding:0; margin-left:10px;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .theme-toggle:active{ transform:scale(0.94); }
+
+  body{ margin:0; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg); color:var(--text-dark); line-height:1.7; overflow-x:hidden; }
+
+  .wrap{ max-width:680px; margin:0 auto; padding:0 18px 56px; }
+
+  .nav{
+    display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:18px 0 14px; margin:0 0 6px; border-bottom:2px dashed var(--border);
+  }
+  .logo{
+    font-size:21px; font-weight:800; color:var(--text-dark); text-decoration:none;
+    display:inline-flex; align-items:center; gap:7px; font-family:var(--font-display);
+  }
+  .logo span{ color:var(--teal); }
+  .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; font-weight:600; }
+  .nav a.back:hover{ color:var(--teal); text-decoration:underline; }
+
+  h1{
+    font-family:var(--font-display); font-size:var(--fs-h1); font-weight:700; line-height:1.35;
+    margin:22px 0 10px; overflow-wrap:anywhere;
+  }
+  .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 18px; overflow-wrap:anywhere; }
+  .updated-date{
+    display:inline-block; font-family:var(--font-mono); font-size:var(--fs-small); font-weight:600;
+    color:var(--text-muted); background:var(--bg); border:1.5px dashed var(--border); border-radius:999px;
+    padding:4px 12px; margin:0 0 20px;
+  }
+
+  h2{
+    font-family:var(--font-display); font-size:var(--fs-h2); font-weight:700; line-height:1.35;
+    margin:38px 0 14px; padding-bottom:10px; border-bottom:2px dashed var(--border);
+    overflow-wrap:anywhere;
+  }
+  h3{ font-family:var(--font-display); font-size:var(--fs-h3); font-weight:700; margin:20px 0 8px; overflow-wrap:anywhere; }
+  .section-note{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 14px; }
+  p{ font-size:var(--fs-body); margin:0 0 16px; overflow-wrap:anywhere; }
+  ul{ padding-left:22px; margin:0 0 14px; }
+  li{ font-size:var(--fs-body); margin-bottom:8px; overflow-wrap:anywhere; }
+  b, strong{ color:var(--text-dark); }
+
+  .gray-zone-box{
+    background:var(--card); border:2px dashed var(--status-amber); border-radius:14px;
+    padding:18px 20px; margin:22px 0;
+  }
+  .gray-zone-box p.label{ font-family:var(--font-display); font-size:var(--fs-small); font-weight:800; color:var(--status-amber); margin:0 0 8px; }
+
+  .note-box{
+    background:var(--card); border:1.5px solid var(--border); border-left:4px solid var(--teal);
+    border-radius:10px; padding:14px 16px; margin:18px 0; font-size:var(--fs-note);
+  }
+
+  table{
+    display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    width:100%; border-collapse:collapse; margin:18px 0; font-size:var(--fs-note);
+    font-family:var(--font-mono); border:1.5px solid var(--border); border-radius:10px;
+  }
+  th, td{ text-align:left; padding:10px; border-bottom:1px dashed var(--border); vertical-align:top; }
+  th{ font-family:var(--font-display); color:var(--text-muted); font-weight:700; background:var(--bg); }
+  tr:last-child td{ border-bottom:none; }
+  tr th:first-child, tr td:first-child{ white-space:nowrap; }
+  td.pct, td.num{ font-family:var(--font-mono); font-weight:800; }
+
+  .cta-box{
+    background:var(--teal); border:2px solid var(--text-dark); border-radius:16px;
+    box-shadow:var(--shadow-hard-sm); padding:26px 22px; text-align:center; margin:34px 0;
+  }
+  .cta-box p{ color:var(--card); font-family:var(--font-display); font-size:var(--fs-h3); font-weight:700; margin:0 0 16px; }
+  .cta-box a{
+    display:inline-block; background:var(--card); color:var(--teal); font-weight:800; font-size:var(--fs-body);
+    padding:13px 28px; border-radius:10px; text-decoration:none; border:2px solid var(--text-dark);
+    box-shadow:var(--shadow-hard-xs); transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .cta-box a:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--text-dark); }
+
+  .related-links{ display:flex; flex-direction:column; gap:10px; margin:18px 0 32px; }
+  .related-links a{
+    font-size:var(--fs-note); color:var(--teal); text-decoration:none; font-weight:600;
+    padding:2px 0; border-bottom:1px dashed transparent;
+  }
+  .related-links a:hover{ border-bottom-color:var(--teal); }
+
+  .disclaimer{
+    font-size:var(--fs-small); color:var(--text-muted); margin-top:36px; padding-top:18px;
+    border-top:2px dashed var(--border);
+  }
+
+  .kicker{
+    font-family:var(--font-display); font-size:var(--fs-small); font-weight:700; color:var(--teal);
+    text-transform:uppercase; letter-spacing:0.04em; margin:20px 0 4px;
+  }
+  .fact-grid, .asset-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:0 0 28px; }
+  .fact-card{ background:var(--card); border:1.5px solid var(--border); border-radius:14px; padding:14px 16px; }
+  .fact-card .num{ font-family:var(--font-mono); font-size:22px; font-weight:800; color:var(--teal); }
+  .fact-card .label, .legend{ font-size:var(--fs-small); color:var(--text-muted); }
+  .legend{ margin:10px 0 28px; display:flex; flex-direction:column; gap:4px; }
+  .asset-card{
+    background:var(--card); border:1.5px solid var(--border); border-radius:14px; padding:16px;
+    text-align:center;
+  }
+  .asset-card .filesize{ font-size:var(--fs-small); color:var(--text-muted); display:block; margin-top:2px; }
+  .asset-card a{ display:inline-block; font-size:var(--fs-note); font-weight:700; color:var(--teal); text-decoration:none; }
+  .citation-box{
+    background:var(--card); border:1.5px dashed var(--border); border-radius:14px;
+    padding:16px 18px; font-size:var(--fs-note); margin:0 0 28px;
+  }
+  .citation-box code{
+    background:rgba(var(--teal-rgb),0.08); padding:2px 6px; border-radius:5px; font-size:0.95em;
+    font-family:var(--font-mono);
+  }
+  .badge{
+    display:inline-block; font-size:var(--fs-small); font-weight:700; padding:2px 9px;
+    border-radius:999px; white-space:nowrap; border:1px solid currentColor;
+  }
+  .badge-verified{ color:var(--status-green); }
+  .badge-approx{ color:var(--status-amber); }
+  .badge-estimate{ color:var(--status-red); }
+
+  /* ---- 페이지 전용 보강: 차트 이미지 프레임 ---- */
+  .chart-frame{
+    background:var(--card); border:1.5px solid var(--border); border-radius:14px;
+    padding:14px; margin:0 0 8px; overflow-x:auto;
+  }
+  .chart-frame img{ display:block; width:100%; max-width:640px; height:auto; margin:0 auto; }
+  .chart-caption{ font-size:var(--fs-small); color:var(--text-muted); margin:0 0 24px; text-align:center; }
+
+  @media (max-width:380px){
+    .wrap{ padding:0 12px 44px; }
+    .nav{ padding:14px 0 12px; }
+    h1{ margin:18px 0 8px; }
+    h2{ margin:30px 0 12px; }
+    .cta-box{ padding:20px 16px; }
+    .fact-grid, .asset-grid{ grid-template-columns:1fr; }
+  }
+  @media (max-width:300px){
+    .wrap{ padding:0 8px 36px; }
+    .logo{ font-size:18px; }
+    .cta-box a{ padding:12px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav">
+    <a class="logo" href="index.html"><svg width="24" height="24" viewBox="0 0 28 28" aria-hidden="true" style="flex:0 0 auto;">
+      <ellipse cx="6.1" cy="10.4" rx="2.7" ry="4" fill="var(--card)" stroke="var(--teal)" stroke-width="1.7" transform="rotate(-24 6.1 10.4)"/>
+      <ellipse cx="21.9" cy="10.4" rx="2.7" ry="4" fill="var(--card)" stroke="var(--teal)" stroke-width="1.7" transform="rotate(24 21.9 10.4)"/>
+      <circle cx="14" cy="15.6" r="9.7" fill="var(--card)" stroke="var(--teal)" stroke-width="1.8"/>
+      <ellipse cx="8.5" cy="17.5" rx="1.6" ry="1.05" fill="#F0A98C" opacity="0.55"/>
+      <ellipse cx="19.5" cy="17.5" rx="1.6" ry="1.05" fill="#F0A98C" opacity="0.55"/>
+      <circle cx="10.5" cy="14.4" r="1.7" fill="var(--text-dark)"/><circle cx="11.05" cy="13.85" r="0.5" fill="#fff"/>
+      <circle cx="17.5" cy="14.4" r="1.7" fill="var(--text-dark)"/><circle cx="18.05" cy="13.85" r="0.5" fill="#fff"/>
+      <ellipse cx="14" cy="17.75" rx="1.85" ry="1.3" fill="var(--teal)"/>
+      <path d="M14 19.1v0.55M8.9 19.9c1.7 3.3 8.6 3.3 10.2 0" fill="none" stroke="var(--teal)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg><span>ChamTax</span></a>
+    <span style="display:flex; align-items:center;">
+      <a class="back" href="index.html">← Calculator</a>
+      <button type="button" id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">🌙</button>
+    </span>
+  </div>
+
+  <p class="kicker">Open Data & Charts</p>
+  <h1>US Lottery Jackpot Tax Rates — Full Dataset for 50 States & 42 Countries</h1>
+  <p class="lead">ChamTax's calculator computes the after-tax take-home amount of a US Powerball or Mega Millions jackpot for all 50 states + DC and 42 countries of residence. This page publishes that same underlying rate table as an open, downloadable dataset — for journalists, researchers, and anyone who wants to cite a real number instead of the pre-tax announced jackpot. <strong>This dataset may be cited or reused with attribution to ChamTax (chamtax.com).</strong></p>
+  <p class="updated-date">Data as of 2026-08-18 · generated directly from ChamTax's live calculation engine · maintained alongside <a href="https://chamtax.com" style="color:var(--teal);">chamtax.com</a></p>
+
+  <div class="fact-grid">
+    <div class="fact-card"><div class="num">51</div><div class="label">US jurisdictions covered (50 states + DC)</div></div>
+    <div class="fact-card"><div class="num">42</div><div class="label">countries of residence covered</div></div>
+    <div class="fact-card"><div class="num">30%</div><div class="label">flat US federal withholding for non-resident aliens (IRC §871(a))</div></div>
+    <div class="fact-card"><div class="num">CC0</div><div class="label">public-domain license, attribution appreciated</div></div>
+  </div>
+
+  <h2>Download the data</h2>
+  <p class="section-note">Four files, regenerated straight from the calculation engine (no hand-retyped numbers). Machine-readable and linked as <code>schema.org/Dataset</code> in this page's structured data for discovery by search engines and AI agents.</p>
+  <div class="asset-grid">
+    <div class="asset-card">
+      <div><a href="data/state-lottery-tax-rates.csv" download>State rates — CSV</a></div>
+      <span class="filesize">51 rows · state_code, state_name, top_marginal_rate_pct, no_state_income_tax, lottery_winnings_exempt</span>
+    </div>
+    <div class="asset-card">
+      <div><a href="data/state-lottery-tax-rates.json" download>State rates — JSON</a></div>
+      <span class="filesize">same fields, with methodology + license in the file header</span>
+    </div>
+    <div class="asset-card">
+      <div><a href="data/country-lottery-tax-rates.csv" download>Country rates — CSV</a></div>
+      <span class="filesize">42 rows · country_code, country_name, tax_authority, us_nonresident_withholding_pct, effective_total_tax_pct_at_500m_usd, take_home_pct_at_500m_usd, confidence, tax_structure_notes</span>
+    </div>
+    <div class="asset-card">
+      <div><a href="data/country-lottery-tax-rates.json" download>Country rates — JSON</a></div>
+      <span class="filesize">same fields, with methodology + license in the file header</span>
+    </div>
+  </div>
+
+  <h2>US lottery tax rate by state</h2>
+  <p class="section-note">Top marginal state individual income tax rate, applied as a flat approximation on the assumption that a jackpot-size prize always falls in the top bracket — <strong>this is not a withholding rate</strong> (see Methodology below for that distinction). California is a special case: it has a state income tax, but exempts lottery winnings specifically, so its rate here is 0% for a different reason than states with no income tax at all.</p>
+  <div class="chart-frame">
+    <img src="us-lottery-tax-rate-by-state-chart.svg" alt="US lottery tax rate by state chart comparing the 8 highest-tax states to 8 states with no tax on lottery winnings" loading="lazy" width="720" height="684">
+  </div>
+  <p class="chart-caption">The 8 highest-rate states vs. 8 states that charge no tax on lottery winnings. Full 51-row table below.</p>
+
+  <table>
+    <thead>
+      <tr><th>State</th><th>Code</th><th>Rate</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+<tr><td>Alaska</td><td>AK</td><td class="pct">0%</td><td>No state income tax</td></tr>
+<tr><td>Alabama</td><td>AL</td><td class="pct">5%</td><td></td></tr>
+<tr><td>Arkansas</td><td>AR</td><td class="pct">3.9%</td><td></td></tr>
+<tr><td>Arizona</td><td>AZ</td><td class="pct">2.5%</td><td></td></tr>
+<tr><td>California</td><td>CA</td><td class="pct">0%</td><td>Lottery winnings exempt</td></tr>
+<tr><td>Colorado</td><td>CO</td><td class="pct">4.4%</td><td></td></tr>
+<tr><td>Connecticut</td><td>CT</td><td class="pct">6.99%</td><td></td></tr>
+<tr><td>Washington D.C.</td><td>DC</td><td class="pct">10.75%</td><td></td></tr>
+<tr><td>Delaware</td><td>DE</td><td class="pct">6.6%</td><td></td></tr>
+<tr><td>Florida</td><td>FL</td><td class="pct">0%</td><td>No state income tax</td></tr>
+<tr><td>Georgia</td><td>GA</td><td class="pct">5.39%</td><td></td></tr>
+<tr><td>Hawaii</td><td>HI</td><td class="pct">11%</td><td></td></tr>
+<tr><td>Iowa</td><td>IA</td><td class="pct">3.8%</td><td></td></tr>
+<tr><td>Idaho</td><td>ID</td><td class="pct">5.3%</td><td></td></tr>
+<tr><td>Illinois</td><td>IL</td><td class="pct">4.95%</td><td></td></tr>
+<tr><td>Indiana</td><td>IN</td><td class="pct">2.95%</td><td></td></tr>
+<tr><td>Kansas</td><td>KS</td><td class="pct">5.58%</td><td></td></tr>
+<tr><td>Kentucky</td><td>KY</td><td class="pct">3.5%</td><td></td></tr>
+<tr><td>Louisiana</td><td>LA</td><td class="pct">3%</td><td></td></tr>
+<tr><td>Massachusetts</td><td>MA</td><td class="pct">9%</td><td></td></tr>
+<tr><td>Maryland</td><td>MD</td><td class="pct">6.5%</td><td></td></tr>
+<tr><td>Maine</td><td>ME</td><td class="pct">9.15%</td><td></td></tr>
+<tr><td>Michigan</td><td>MI</td><td class="pct">4.25%</td><td></td></tr>
+<tr><td>Minnesota</td><td>MN</td><td class="pct">9.85%</td><td></td></tr>
+<tr><td>Missouri</td><td>MO</td><td class="pct">4.7%</td><td></td></tr>
+<tr><td>Mississippi</td><td>MS</td><td class="pct">4%</td><td></td></tr>
+<tr><td>Montana</td><td>MT</td><td class="pct">5.65%</td><td></td></tr>
+<tr><td>North Carolina</td><td>NC</td><td class="pct">3.99%</td><td></td></tr>
+<tr><td>North Dakota</td><td>ND</td><td class="pct">1.95%</td><td></td></tr>
+<tr><td>Nebraska</td><td>NE</td><td class="pct">4.55%</td><td></td></tr>
+<tr><td>New Hampshire</td><td>NH</td><td class="pct">0%</td><td>No state income tax</td></tr>
+<tr><td>New Jersey</td><td>NJ</td><td class="pct">10.75%</td><td></td></tr>
+<tr><td>New Mexico</td><td>NM</td><td class="pct">5.9%</td><td></td></tr>
+<tr><td>Nevada</td><td>NV</td><td class="pct">0%</td><td>No state income tax</td></tr>
+<tr><td>New York</td><td>NY</td><td class="pct">10.9%</td><td></td></tr>
+<tr><td>Ohio</td><td>OH</td><td class="pct">2.75%</td><td></td></tr>
+<tr><td>Oklahoma</td><td>OK</td><td class="pct">4.5%</td><td></td></tr>
+<tr><td>Oregon</td><td>OR</td><td class="pct">9.9%</td><td></td></tr>
+<tr><td>Pennsylvania</td><td>PA</td><td class="pct">3.07%</td><td></td></tr>
+<tr><td>Rhode Island</td><td>RI</td><td class="pct">5.99%</td><td></td></tr>
+<tr><td>South Carolina</td><td>SC</td><td class="pct">6.2%</td><td></td></tr>
+<tr><td>South Dakota</td><td>SD</td><td class="pct">0%</td><td>No state income tax</td></tr>
+<tr><td>Tennessee</td><td>TN</td><td class="pct">0%</td><td>No state income tax</td></tr>
+<tr><td>Texas</td><td>TX</td><td class="pct">0%</td><td>No state income tax</td></tr>
+<tr><td>Utah</td><td>UT</td><td class="pct">4.55%</td><td></td></tr>
+<tr><td>Virginia</td><td>VA</td><td class="pct">5.75%</td><td></td></tr>
+<tr><td>Vermont</td><td>VT</td><td class="pct">8.75%</td><td></td></tr>
+<tr><td>Washington</td><td>WA</td><td class="pct">0%</td><td>No state income tax</td></tr>
+<tr><td>Wisconsin</td><td>WI</td><td class="pct">7.65%</td><td></td></tr>
+<tr><td>West Virginia</td><td>WV</td><td class="pct">4.82%</td><td></td></tr>
+<tr><td>Wyoming</td><td>WY</td><td class="pct">0%</td><td>No state income tax</td></tr>
+    </tbody>
+  </table>
+
+  <h2>US withholding & tax rate by country of residence</h2>
+  <p class="section-note">All figures for a US non-resident alien: a flat 30% federal withholding (IRC §871(a)) applies first, then each country's own tax treatment of the winnings — after any Foreign Tax Credit (FTC) the country's law or a tax treaty allows. "Effective total tax" and "take-home %" below are computed at a $500,000,000 lump-sum payout (see Reference scenarios for $100M/$500M/$1B side by side).</p>
+  <div class="chart-frame">
+    <img src="us-lottery-tax-by-country-500-million-chart.svg" alt="US Powerball and Mega Millions $500 million jackpot after-tax take-home amount by country of residence chart" loading="lazy" width="720" height="460">
+  </div>
+  <p class="chart-caption">8 representative countries at a $500M lump-sum jackpot. Full 42-row table below.</p>
+
+  <table>
+    <thead>
+      <tr><th>Country</th><th>Tax authority</th><th>Total tax</th><th>Take-home</th><th>Confidence</th></tr>
+    </thead>
+    <tbody>
+<tr><td>South Korea</td><td>National Tax Service (NTS)/IRS</td><td class="pct">46.49%</td><td class="pct">53.51%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Pakistan</td><td>Estimate based on FBR data/IRS</td><td class="pct">46.5%</td><td class="pct">53.5%</td><td><span class="badge badge-estimate">unverified estimate</span></td></tr>
+<tr><td>China</td><td>State Taxation Administration/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>India</td><td>Income Tax Department/IRS</td><td class="pct">39%</td><td class="pct">61%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Vietnam</td><td>General Department of Taxation/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Indonesia</td><td>Directorate General of Taxes/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Philippines</td><td>Bureau of Internal Revenue/IRS</td><td class="pct">35%</td><td class="pct">65%</td><td><span class="badge badge-approx">approximate</span></td></tr>
+<tr><td>Thailand</td><td>Estimate based on Revenue Department data/IRS</td><td class="pct">35%</td><td class="pct">65%</td><td><span class="badge badge-estimate">unverified estimate</span></td></tr>
+<tr><td>Japan</td><td>National Tax Agency (NTA)/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Russia</td><td>Federal Tax Service (FNS)/IRS</td><td class="pct">52%</td><td class="pct">48%</td><td><span class="badge badge-verified">verified (treaty suspended)</span></td></tr>
+<tr><td>Nepal</td><td>Inland Revenue Department (IRD)/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Sri Lanka</td><td>Inland Revenue Department (IRD)/IRS</td><td class="pct">36%</td><td class="pct">64%</td><td><span class="badge badge-approx">approximate</span></td></tr>
+<tr><td>Uzbekistan</td><td>State Tax Committee/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Kazakhstan</td><td>Committee of State Revenues/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Kyrgyzstan</td><td>State Tax Service/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Myanmar</td><td>Internal Revenue Department (IRD)/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-approx">approximate</span></td></tr>
+<tr><td>Bangladesh</td><td>National Board of Revenue (NBR)/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Cambodia</td><td>Estimate based on GDT data/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-estimate">unverified estimate</span></td></tr>
+<tr><td>Mongolia</td><td>Estimate based on Tax Administration data/IRS</td><td class="pct">40%</td><td class="pct">60%</td><td><span class="badge badge-estimate">unverified estimate</span></td></tr>
+<tr><td>Laos</td><td>Estimate based on Ministry of Finance data/IRS</td><td class="pct">35%</td><td class="pct">65%</td><td><span class="badge badge-estimate">unverified estimate</span></td></tr>
+<tr><td>Canada</td><td>Canada Revenue Agency (CRA)/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Taiwan</td><td>National Taxation Bureau/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Hong Kong</td><td>Inland Revenue Department (IRD)/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>United Kingdom</td><td>HMRC/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Australia</td><td>Australian Taxation Office (ATO)/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Mexico</td><td>Servicio de Administración Tributaria (SAT)/IRS</td><td class="pct">35%</td><td class="pct">65%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>France</td><td>DGFiP/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>New Zealand</td><td>Inland Revenue (IRD)/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Ireland</td><td>Revenue/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Singapore</td><td>IRAS/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>South Africa</td><td>South African Revenue Service (SARS)/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Malaysia</td><td>Lembaga Hasil Dalam Negeri (LHDN)/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Germany</td><td>Finanzamt/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Netherlands</td><td>Belastingdienst/IRS</td><td class="pct">67.8%</td><td class="pct">32.2%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Sweden</td><td>Skatteverket/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Norway</td><td>Skatteetaten/IRS</td><td class="pct">30%</td><td class="pct">70%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Denmark</td><td>Skattestyrelsen/IRS</td><td class="pct">57.07%</td><td class="pct">42.93%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Finland</td><td>Verohallinto/IRS</td><td class="pct">46.17%</td><td class="pct">53.83%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Italy</td><td>Agenzia delle Entrate/IRS</td><td class="pct">47.23%</td><td class="pct">52.77%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Poland</td><td>Krajowa Administracja Skarbowa/IRS</td><td class="pct">36%</td><td class="pct">64%</td><td><span class="badge badge-verified">verified</span></td></tr>
+<tr><td>Turkey</td><td>Gelir İdaresi Başkanlığı/IRS</td><td class="pct">50%</td><td class="pct">50%</td><td><span class="badge badge-verified">verified</span></td></tr>
+    </tbody>
+  </table>
+  <div class="legend">
+    <span><span class="badge badge-verified">verified</span> primary statute/treaty/official guidance found</span>
+    <span><span class="badge badge-approx">approximate</span> reasonable secondary-source estimate, some structural simplification</span>
+    <span><span class="badge badge-estimate">unverified estimate</span> best-effort, no authoritative primary source found</span>
+  </div>
+
+  <h2>Reference scenarios: $100M / $500M / $1B lump sum</h2>
+  <p class="section-note">Estimated take-home amount for 8 representative countries of residence, at three lump-sum jackpot sizes. "Lump sum" here means the actual payout amount evaluated — not the larger announced annuity total paid out over ~29-30 years.</p>
+  <table>
+    <thead>
+      <tr><th>Country</th><th>$100M</th><th>$500M</th><th>$1B</th></tr>
+    </thead>
+    <tbody>
+<tr><td>South Korea</td><td class="pct">$53,548,755<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(46.45% total tax)</span></td><td class="pct">$267,548,755<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(46.49% total tax)</span></td><td class="pct">$535,048,755<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(46.5% total tax)</span></td></tr>
+<tr><td>United States (Texas)</td><td class="pct">$63,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(37% total tax)</span></td><td class="pct">$315,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(37% total tax)</span></td><td class="pct">$630,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(37% total tax)</span></td></tr>
+<tr><td>United States (California)</td><td class="pct">$63,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(37% total tax)</span></td><td class="pct">$315,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(37% total tax)</span></td><td class="pct">$630,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(37% total tax)</span></td></tr>
+<tr><td>Vietnam</td><td class="pct">$70,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(30% total tax)</span></td><td class="pct">$350,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(30% total tax)</span></td><td class="pct">$700,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(30% total tax)</span></td></tr>
+<tr><td>China</td><td class="pct">$70,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(30% total tax)</span></td><td class="pct">$350,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(30% total tax)</span></td><td class="pct">$700,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(30% total tax)</span></td></tr>
+<tr><td>India</td><td class="pct">$61,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(39% total tax)</span></td><td class="pct">$305,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(39% total tax)</span></td><td class="pct">$610,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(39% total tax)</span></td></tr>
+<tr><td>Turkey</td><td class="pct">$50,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(50% total tax)</span></td><td class="pct">$250,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(50% total tax)</span></td><td class="pct">$500,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(50% total tax)</span></td></tr>
+<tr><td>Poland</td><td class="pct">$64,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(36% total tax)</span></td><td class="pct">$320,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(36% total tax)</span></td><td class="pct">$640,000,000<br><span style="color:var(--text-muted); font-size:var(--fs-small);">(36% total tax)</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="cta-box">
+    <p>Want a different amount, state, or country?</p>
+    <a href="index.html">Open the live calculator →</a>
+  </div>
+
+  <h2>Methodology</h2>
+  <p><strong>Top marginal rate vs. withholding rate</strong> — these are not the same number, and this page uses both. The <em>state</em> table uses each state's top marginal individual income tax rate (a filing-time rate), on the assumption that a jackpot-size prize always lands in the top bracket. The <em>country</em> table's US-side component is a <em>withholding</em> rate — the IRS withholds a flat 30% from a non-resident alien's winnings at the time of payment (IRC §871(a)); this happens to also be close to the true final US federal liability for a non-resident, but it's collected as withholding, not assessed after the fact. Each country's own tax is then computed as that country's statute/treaty rate applied to the winnings, minus any Foreign Tax Credit (FTC) the country allows for the US tax already withheld — capped at the smaller of the two amounts.</p>
+  <p><strong>Sources</strong> — every number on this page comes from ChamTax's live calculation engine (<code>script.js</code>'s <code>STATE_TAX_RATES</code> and <code>TAX_MODEL</code> objects, and the <code>calcTakeHome()</code> function that applies them), the same code that powers the interactive calculator. It is not a separate spreadsheet that can drift out of sync. Full citations (statute sections, treaty articles, official tax-authority guidance) for each country are published on that country's own in-depth landing page — linked from the table above isn't practical at this scale, but every country name in the "Reuse & technical assets" section below routes to its detail page via the main site's country selector.</p>
+  <p><strong>Confidence tiers</strong> — <span class="badge badge-verified">verified</span> means a primary source (statute text, tax treaty article, or official tax-authority guidance) was found and directly cited; <span class="badge badge-approx">approximate</span> means the treatment is confirmed but the exact rate is simplified (e.g. top-bracket approximation instead of full progressive-bracket math); <span class="badge badge-estimate">unverified estimate</span> means no authoritative primary source was found and the figure is a best-effort estimate from secondary sources — treat these as more likely to be wrong.</p>
+  <p><strong>Last updated:</strong> 2026-08-18. State and country tax law changes over time (see e.g. Maine's 2026 "millionaire surcharge" or Denmark's 2026 "top-top tax" in the underlying data) — check the "Data as of" date above before citing an old cached copy of this page.</p>
+
+  <h2>Reuse & technical assets</h2>
+  <div class="citation-box">
+    This dataset may be cited or reused with attribution to <strong>ChamTax (chamtax.com)</strong>. Data is public domain (CC0) — attribution is appreciated but not legally required.
+  </div>
+  <p>Related technical assets from the same project:</p>
+  <ul>
+    <li><a href="https://github.com/semilee123456-ui/us-lottery-tax-data" style="color:var(--teal); font-weight:700;">github.com/semilee123456-ui/us-lottery-tax-data</a> — the standalone open-data repository this dataset is also mirrored to.</li>
+    <li><a href="https://github.com/semilee123456-ui/semilee123456-ui.github.io/tree/main/mcp-server" style="color:var(--teal); font-weight:700;">mcp-server/</a> — a local <a href="https://modelcontextprotocol.io" style="color:var(--teal);">MCP</a> server exposing the same take-home calculation as a tool an AI agent can call directly, for all 50 states + DC and 42 countries.</li>
+    <li><a href="press-kit.html" style="color:var(--teal); font-weight:700;">Press kit</a> — brand assets and a quick-reference summary table for journalists.</li>
+  </ul>
+
+  <div class="related-links">
+    <a href="us-lottery-tax-rate.html">→ US lottery tax rates explained (federal, state, non-resident)</a>
+    <a href="lump-sum-vs-annuity-lottery-tax.html">→ Lump sum vs. annuity, explained</a>
+    <a href="biggest-jackpot-payouts.html">→ Biggest jackpots ever, after-tax</a>
+    <a href="press-kit.html">→ Press kit</a>
+    <a href="index.html#contact">→ Contact ChamTax</a>
+    <a href="sitemap.html">→ Full sitemap</a>
+  </div>
+
+  <p class="disclaimer">ChamTax is an informational simulator, not a lottery retailer or tax advisory service. Figures are reference estimates computed from simplified flat-rate/top-bracket approximations; actual tax liability depends on individual circumstances — consult a qualified tax professional before relying on these numbers for a real filing.</p>
+</div>
+<script>
+  function syncThemeToggleIcon(){
+    var btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+  }
+  function toggleTheme(){
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) { document.documentElement.removeAttribute('data-theme'); try{ localStorage.setItem('theme','light'); }catch(e){} }
+    else { document.documentElement.setAttribute('data-theme','dark'); try{ localStorage.setItem('theme','dark'); }catch(e){} }
+    syncThemeToggleIcon();
+  }
+  document.addEventListener('DOMContentLoaded', syncThemeToggleIcon);
+</script>
+</body>
+</html>
