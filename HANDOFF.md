@@ -1227,11 +1227,11 @@ LotteryUSA만 노출됨) — "이미 1순위 노출된다"는 전제는 틀림. 
 
 ## 작업 이력 (날짜순, 세션마다 맨 아래에 새 항목 추가)
 
-이보다 오래된 세션 기록(~2026-08-17 SEO 점검 세션까지)은 `HANDOFF-ARCHIVE.md` 참고(특정
-과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님). 이 본문에는 최근 세션(이탈리아·
-폴란드·터키 UI 언어+국가 추가, Clarity 설치) 기록만 남겨둠 — 날짜별 항목이 3~4개를 다시
-넘어가면 가장 오래된 날짜부터 또 이 방식으로 정리할 것(같은 패턴 반복, `HANDOFF-ARCHIVE.md`
-맨 뒤에 이어 붙이면 됨).
+이보다 오래된 세션 기록(~2026-08-17 이탈리아어 라운드까지)은 `HANDOFF-ARCHIVE.md` 참고(특정
+과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님). 이 본문에는 최근 세션(폴란드·터키 UI
+언어+국가 추가, Clarity 설치/GA4 안내, 주 12개 pSEO 랜딩페이지 추가) 기록만 남겨둠 — 날짜별
+항목이 3~4개를 다시 넘어가면 가장 오래된 날짜부터 또 이 방식으로 정리할 것(같은 패턴 반복,
+`HANDOFF-ARCHIVE.md` 맨 뒤에 이어 붙이면 됨).
 
 사용자가 "깃허브 파일이랑 인수인계 읽고 토큰 최대한 적게 사용할 수 있게 해줘"라고 요청 —
 `CLAUDE.md`의 세션 자체 컨텍스트 절약 규칙과는 별개로, `HANDOFF.md`가 매 세션 전체를
@@ -1427,76 +1427,6 @@ PR #251(lump-sum-vs-annuity 표 table-wrap 버그 수정), PR #252(문서 전용
 보이던 CSS 버그 발견·수정(`.lang-links`와 같은 칩 스타일 적용). 같은 요청에서 실제 복권
 당첨번호 최신화 여부도 확인 — `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`(2026-08-15)·
 `MEGAMILLIONS_DRAW_ARCHIVE`(2026-08-14) 전부 실제 결과와 정확히 일치, 손댈 것 없었음.
-
-### 2026-08-17 이어서 — 이탈리아어(it)를 신규 UI 언어로 추가 + 이탈리아를 40번째 지원 국가로 추가 (3단계 커밋)
-
-독일(#244)·네덜란드(#245)·스웨덴(#246)·노르웨이(#247)·덴마크(#249)·핀란드(#254)에 이어 일곱
-번째 신규 UI 언어(이탈리아어) 추가 라운드 — 3개국 연속 작업(이탈리아→폴란드→터키)의 첫 번째.
-
-**1단계(언어 인프라)**: `ADDITIONAL_LANGS`/`LOCALE_MAP`(script.js 안에 2곳 — `LOCALE_MAP`과
-`FAQ_VOICE_LANG_MAP` 둘 다 있는 걸 이번에 처음 확인, 핀란드 라운드 기록엔 1곳만 언급돼있었음)/
-`scripts/build-i18n.js`의 `LANGS`/`tests/console_error_audit.js`/`tests/lang_leak_audit.js`
-동기화. `i18n-source/translations.json` 806개 키 전체에 실제 이탈리아어 번역 추가(대량 JSON
-재직렬화 대신 각 키 마지막 언어 항목 뒤에 타겟팅 삽입만 수행 — git diff가 "806 deletions +
-1612 insertions"로 정확히 라인 분할 패턴만 나와 포맷 파괴 없음 확인), `i18n/it.json` 신규
-생성. script.js의 `tet:` 마커 "more" 객체 304개 전부에 `it:` 항목 추가(자동화 스크립트로 각
-항목 옆 `fr:`(로망스어권 참고용) 값을 문맥으로 추출해 306개 고유 문자열 번역, 위치 기반
-스크립트로 각 항목의 `fi:` 형제 항목 뒤에 삽입). `COUNTRY_NAMES_MORE`는 관례대로 두 방향
-처리(새 `it` 행 + 기존 27개 언어 행에 `it` 국가코드 키 추가) — **정규식이 언어코드를 2글자로만
-가정해서 3글자인 `tet` 행을 누락시킨 버그를 발견해 수동 보정함, 다음 라운드는 언어 코드 길이를
-가정하지 말 것.** `STATE_DISPLAY_NAMES_MORE`(주 이름 전용 별도 객체, 이번에 처음 발견 — 이전
-라운드 인수인계엔 기록 안 됐었음)에도 `it` 행 추가.
-
-⚠️ **자동 삽입 스크립트의 버그 하나 발견·수정**: `${변수}` 보간이 들어간 47개 문자열을
-`JSON.stringify`로 큰따옴표 문자열로 삽입했더니 템플릿 리터럴이 아니어서 보간이 전혀 안 되는
-문제(값 자체는 맞지만 `"${stateInfo.labelEn}"` 같은 리터럴 텍스트가 그대로 노출될 뻔함 —
-"undefined" 노출과 다른 종류의 버그라 `lang_leak_audit` 등 텍스트 매칭 테스트로는 못 잡음,
-Playwright로 `calcTakeHome()` 실제 반환값을 찍어보다가 발견). 다음 라운드가 같은 방식의
-자동 삽입 스크립트를 쓸 경우 이 함정을 미리 피할 것(백틱 감지 후 템플릿 리터럴로 재변환하는
-로직을 처음부터 포함시킬 것).
-
-**2단계(세금 계산 국가)**: "유럽=이미 다룬 6개국과 비슷하겠지"로 넘겨짚지 않고 소득세통합법
-(TUIR) 원문·유럽사법재판소 판례·미-이탈리아 조세조약 원문을 직접 조사. TUIR 제67조 1항 d호
-(복권·게임·도박 당첨금을 "기타소득"으로 분류)·제69조 1항(전액 과세, 공제 없음)·제69조
-1항의2호(2016년 법률 122호, EU사법재판소 2014-10-22 판결 C-344/13·C-367/13 이행 — 이탈리아·
-EU·EEA "허가받은 게임장" 당첨금만 면제, 미국 복권은 미해당)를 확인. ⚠️ 면제 조문 문언이
-"복권"이 아니라 "게임장"으로 좁게 표현돼 있어 다수 세무 블로그의 "EU 복권도 면제" 요약이
-다소 부정확하다는 점을 landing page에 명시(결론엔 영향 없음). 세율: 2026년 IRPEF 3단계
-(23%/33%/43%, 5만유로 초과 43%) + 지역별 부가세(전국 평균 공식 자료 못 찾아 라치오주·로마시
-2026년 실제 조례 3.33%+0.90%를 참고치로 사용) ≈ 47.23%. FTC: TUIR 제165조 일반 통상세액공제로
-미국 원천징수 30% 전액 공제되나 잔여세액 ≈17.23%p(핀란드 ≈16.17%p와 비슷한 규모, 덴마크
-≈27.07%p보다 작음). 미-이탈리아 조세조약(1984년 서명, 1999년 의정서)도 덴마크·핀란드·독일과
-같이 제22조 "기타소득"이 거주지국 전속과세를 규정 — 이론상 원천징수가 조약상 부당징수일
-수 있는 특이점이나 계산 로직은 일관성 위해 30% 원천징수 유지. `TAX_MODEL.it_resident`
-(rate: 0.4723)/`COUNTRY_TAX_PROFILES`/`SUPPORTED_TAX_COUNTRIES`/`COUNTRY_TAX_AUTHORITY['it']`
-("Agenzia delle Entrate")/`REAL_ABROAD_CURRENCY['it']='EUR'`(독일/프랑스/아일랜드/네덜란드/
-핀란드와 유로존 통화 재사용)에 반영. `RESIDENT_PHRASE_MORE.it`가 "Residente di ${n}"(문법
-오류 — 이탈리아어 거주지 전치사는 "in")로 잘못 작성돼있던 걸 실제 렌더링 확인 중 발견해 수정.
-
-**3단계(랜딩페이지)**: `italy-resident-us-lottery-tax.html` 신설 — 핀란드 페이지를 구조
-템플릿으로 재사용(FTC 있고 잔여세액 규모(≈17.23%p)가 핀란드(≈16.17%p)와 가장 가까운 구조,
-"정산 티켓" CSS는 `apply-landing-ticket-style.js` 실행 후 핀란드 페이지와 바이트 단위 완전
-동일 확인). $1,000,000 예시(미국 원천징수 -$300,000, 이탈리아 잔여세액 -$172,300, 실수령
-약 $527,700, EUR 환산 참고치 약 485,000유로), TUIR 조문·법률 122호·조세조약 제22조 설명,
-불확실성 3건(게임장 vs 복권 문언 차이·지역별 부가세 편차·제165조 구체 적용 유권해석 미확인)을
-gray-zone-box로 강조. FAQ 4개, JSON-LD(BreadcrumbList/FAQPage/Organization/WebSite/
-SoftwareApplication/HowTo/WebPage) 포함. `sitemap.xml`·`sitemap.html` 등재. 핀란드·덴마크·
-독일·프랑스·네덜란드 페이지(유로존 공통점)의 related-links에 이탈리아 상호 링크 추가.
-
-Playwright로 `calcTakeHome(800,'it')`을 ko/it 언어로 실행해 기대값(afterUS=560, final=422.16,
-잔여세액 -17.2%) 정확히 일치·"undefined" 노출 없음 확인(홈/비교/확률체감/FAQ 4개 화면 +
-신규 랜딩페이지 전부), `homeCountrySelect`·`realAbroadSelect`·`#lang-toggle`·
-`#foreignerLangSelect` 4곳 드롭다운 전부 `it` 옵션 정상 추가 확인(PR #255가 지적한 드롭다운
-누락 패턴을 1단계에서 미리 방지). `node --check script.js`·`tests/i18n_coverage_audit.js`
-(0/788)·`tests/console_error_audit.js`(0/210)·`tests/lang_leak_audit.js`(0/132)·
-`tests/i18n_attr_lint.js`(0)·`tests/home_audit.js`(0/18)·`tests/broken_link_audit.js`
-(0/127, 신규 페이지 포함) 전부 통과. `script.min.js?v=20260817-11`, `sw.js` `CACHE_NAME`
-v80으로 버전업(2단계 시점, 3단계는 script.js/styles.css 변경 없어 추가 버전업 불필요 —
-핀란드 3단계와 같은 판단).
-
-**남은 큐(오케스트레이팅 세션이 순차 진행 예정)**: 이탈리아 → 폴란드 → 터키. 다음 세션이
-폴란드 라운드를 시작하기 전에, 이번 세션에서 발견한 두 함정(①언어코드 길이를 2글자로
-가정하지 말 것 ②`${...}` 보간 문자열은 자동 삽입 시 템플릿 리터럴로 감쌀 것)을 먼저 확인할 것.
 
 ### 2026-08-18 이어서 — 폴란드어(pl)를 신규 UI 언어로 추가 + 폴란드를 41번째 지원 국가로 추가 + PLN 통화 실지원 (3단계 커밋)
 
@@ -1771,3 +1701,67 @@ GA4 보유 페이지 집합과 Clarity 보유 페이지 집합을 `diff`로 완�
 접수 절차 부재로 실무상 전원 30% 원천징수됨" 섹션으로 선제 반영돼 있어 수정 불필요로 결론
 (덴마크 라운드가 원래 정립한 "이론값 아닌 실측 경험 기준" 설계 원칙, HANDOFF.md 1246번대
 줄 참고). 터키 건은 아직 사용자 검수 결과 회신 전 — 다음 세션이 이어받을 것.
+
+### 2026-08-18 이어서 — 주별 복권세금 랜딩페이지 12개 추가 (pSEO 2라운드, worktree 서브에이전트)
+
+california/texas/florida/new-york/pennsylvania/illinois/ohio/georgia/north-carolina/michigan
+(인구 상위 10개 주, 기존)에 이어 그다음 인구 규모 12개 주 랜딩페이지 신설: New Jersey·
+Virginia·Washington·Arizona·Massachusetts·Tennessee·Indiana·Missouri·Maryland·Wisconsin·
+Colorado·Minnesota(`{주이름}-lottery-tax.html`, 총 22개 주로 확장).
+
+**주 선정 검증**: 작업 전 WebSearch로 Powerball/Mega Millions 미판매 5개 주(앨라배마·알래스카·
+하와이·네바다·유타)가 여전히 맞는지 재확인 — 2026년 기준으로도 동일하게 5개 주 전부 두
+복권을 안 팜을 확인. 이번 12개 주도 전부 실제 판매 주로 확인되어 교체 없이 그대로 진행.
+
+**세율 리서치**: `script.js`의 `STATE_TAX_RATES`(2026-07 컴파일, 각 주 공식 최고 한계세율)가
+이미 이 12개 주를 전부 포함하고 있어 그 숫자를 그대로 재사용(계산기 실제 출력과 랜딩페이지
+문구가 어긋나지 않게 하기 위함 — CA/GA/NY 등 기존 10개 페이지도 이 방식). 추가로 WebSearch로
+각 주의 복권 원천징수율(주 복권위원회가 당첨 시점에 실제로 떼는 정액 비율)을 따로 조사해
+`STATE_TAX_RATES`의 "최고 한계세율"과 다를 때(대부분 그렇다 — 연방 24%/37% 패턴과 동일한
+구조) 페이지 본문에 그 차이를 설명하는 문단을 추가:
+
+| 주 | 원천징수(claim 시점) | 실제 최고세율(계산기 반영값) | 비고 |
+|---|---|---|---|
+| New Jersey | 8%($50만 초과) | 10.75% | |
+| Virginia | 4%($5천 초과) | 5.75% | |
+| Washington | — | 0% | 주소득세 자체 없음 |
+| Arizona | 2.5% | 2.5% | 2023 flat tax 이후 원천징수=최고세율 일치 |
+| Massachusetts | 5% | 9% | 5% 기본 + 소득 $1,107,750(2026) 초과분 4%p 밀리어네어 서차지 |
+| Tennessee | — | 0% | 2021년 Hall tax(이자·배당 한정) 완전 폐지 |
+| Indiana | (flat, 별도 원천징수 없음) | 2.95% | flat tax 매년 인하 중(2027년 2.90% 예정) |
+| Missouri | 4%($600 초과) | 4.7% | |
+| Maryland | 9.5%(거주자, 지방세 포함 추정치) | 6.5%(주세만, 2025년 신설 $100만 초과 구간) | 지방(county)세 2.25~3.20%는 다른 주와 일관되게 계산기에서 제외 — 페이지에 note-box로 명시 |
+| Wisconsin | 7.65%($2천 초과) | 7.65% | 원천징수=최고세율 일치 |
+| Colorado | 4%($5천 초과) | 4.4% | |
+| Minnesota | 7.25% | 9.85% | |
+
+캘리포니아 같은 "복권 당첨금 자체 면제" 규정은 이번 12개 주 중 없음(전부 일반 소득세 체계
+그대로 적용, 또는 WA/TN처럼 주소득세 자체가 없음).
+
+**페이지 생성**: california-lottery-tax.html을 앵커 기반으로 치환하는
+`scripts/generate-state-lottery-pages.js` 신규 작성(재사용 가능하도록 스크립트로 저장 —
+다음에 또 주를 늘릴 때 STATES 배열에 항목만 추가하면 됨). title/meta/og/twitter/canonical,
+JSON-LD(BreadcrumbList/FAQPage/Organization/WebSite/SoftwareApplication/HowTo/WebPage
+speakable) 전부 주 이름·세율 반영, FAQ 4문항 재사용(숫자만 교체). Maryland는 지방세 caveat을
+`note-box`로 추가(다른 11개 주는 기존 10개 페이지와 동일한 단순 구조 유지 — 과설계 방지).
+
+**상호링크**: 22개 주를 지역별로 느슨하게 순서 지은 링(ring) 구조로 새 12개 페이지 각각에
+3개 주 링크 배치, 기존 10개 페이지에도 각각 새 주 1개씩 링크 추가(California→Washington,
+Texas→Colorado, Florida→Arizona, Georgia→Virginia, North Carolina→Tennessee,
+Michigan→Minnesota, New York→New Jersey, Pennsylvania→Massachusetts, Illinois→Wisconsin,
+Ohio→Indiana) — 양방향 내부링크 확보.
+
+**sitemap 반영**: `sitemap.xml`에 12개 `<url>` 항목 추가(michigan 다음, lump-sum-vs-annuity
+앞), `sitemap.html`의 "US State Lottery Tax Calculators" 섹션에 12개 항목 추가하고 안내 문구를
+"10개 주"→"22개 주(Powerball·Mega Millions 판매 기준)"로 갱신.
+
+**검증**: `tests/broken_link_audit.js` 141개 파일 전수 0 issues(신규 12개+상호링크 변경분
+전부 포함), 12개 파일 전체 JSON-LD 블록 `JSON.parse` 파싱 확인, `python3 -m
+xml.etree.ElementTree` 로 `sitemap.xml` 유효성 확인. `script.js`/`styles.css`는 건드리지
+않아 `build-min.js` 재빌드·캐시 버전업 불필요.
+
+**HANDOFF 아카이브 정리**: 상단 자체 유지보수 규칙(날짜별 항목 3~4개 초과 시 가장 오래된 것부터
+`HANDOFF-ARCHIVE.md`로 원문 그대로 이동)에 따라, 이번 항목이 추가되며 5개가 된 시점에 가장
+오래된 2026-08-17 이탈리아어 라운드 항목을 `HANDOFF-ARCHIVE.md` 맨 뒤로 원문 그대로 이동하고
+포인터 문구를 "~2026-08-17 이탈리아어 라운드까지"로 갱신, 본문엔 폴란드·터키·Clarity/GA4·
+이번 라운드 4개만 남김.
