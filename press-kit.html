@@ -527,6 +527,14 @@
   </div>
 
   <h2>Take-home percentage by country</h2>
+  <div class="citation-box">
+    <strong>Key takeaways for coverage:</strong>
+    <ul style="margin:10px 0 0; padding-left:20px;">
+      <li>Highest take-home: 25 countries net 70% — including Australia, Canada, the UK, Germany, and Japan — because their tax authorities don't treat lottery winnings as taxable income at all.</li>
+      <li>Lowest take-home: Netherlands (32.2% net) and Denmark (42.9% net), where domestic tax stacks on top of the 30% US withholding instead of being offset by it.</li>
+      <li>US and South Korea: US residents keep ~58.3% after federal + average state tax; South Korea residents keep ~53.6% after the US withholding and Korea's own progressive bracket.</li>
+    </ul>
+  </div>
   <p class="section-note">Reference scenario: a large lump-sum jackpot (~$100M USD). US federal withholding (30%, or graduated up to 37% for US residents) is applied first, then each country's own tax treatment of foreign lottery income — after any Foreign Tax Credit the country's law/treaty allows. Numbers come directly from ChamTax's live calculation engine, not manual estimates re-typed by hand.</p>
 
   <div class="table-wrap">
@@ -561,7 +569,7 @@
         <tr><td>India</td><td class="pct">61%</td><td>39%</td><td><span class="badge badge-verified">verified</span></td></tr>
         <tr><td>United States</td><td class="pct">58.3%</td><td>41.7%</td><td><span class="badge badge-verified">verified</span></td></tr>
         <tr><td>Finland</td><td class="pct">53.8%</td><td>46.2%</td><td><span class="badge badge-verified">verified</span></td></tr>
-        <tr><td>South Korea</td><td class="pct">53.6%</td><td>46.5%</td><td><span class="badge badge-verified">verified</span></td></tr>
+        <tr><td>South Korea</td><td class="pct">53.6%</td><td>46.4%</td><td><span class="badge badge-verified">verified</span></td></tr>
         <tr><td>Turkey</td><td class="pct">50%</td><td>50%</td><td><span class="badge badge-verified">verified</span></td></tr>
         <tr><td>Denmark</td><td class="pct">42.9%</td><td>57.1%</td><td><span class="badge badge-verified">verified</span></td></tr>
         <tr><td>Netherlands</td><td class="pct">32.2%</td><td>67.8%</td><td><span class="badge badge-verified">verified</span></td></tr>
@@ -586,7 +594,7 @@
     <span><span class="badge badge-estimate">unverified estimate</span> best-effort, no authoritative source found</span>
   </div>
 
-  <p class="section-note">Note on Netherlands, Russia, and Laos: these three apply no Foreign Tax Credit — home-country tax stacks fully on top of the 30% US withholding rather than offsetting it, unlike every other country above.</p>
+  <p class="section-note">Note on Netherlands, Russia, and Laos: these three apply no Foreign Tax Credit — each country's own tax (Netherlands 37.8%, Russia 22%, Laos 5%) stacks in full on top of the 30% US withholding rather than being offset by it, unlike every other country above. Laos's total (35%) looks unremarkable only because its own domestic rate happens to be small — the stacking mechanism is the same as Russia's and the Netherlands'.</p>
 
   <p>Full methodology, per-country citations, and a machine-readable version of this table (JSON/CSV) are published as an open dataset: <a href="https://github.com/semilee123456-ui/us-lottery-tax-data" style="color:var(--teal); font-weight:700;">github.com/semilee123456-ui/us-lottery-tax-data</a>.</p>
 
@@ -618,7 +626,7 @@
     <iframe src="https://chamtax.com/widget-embed.html" width="100%" height="420" style="border:0; max-width:480px; display:block;" loading="lazy" title="ChamTax mini calculator"></iframe>
   </div>
   <p class="section-note">Copy-paste this into your page:</p>
-  <div class="citation-box"><code>&lt;iframe src="https://chamtax.com/widget-embed.html" width="480" height="420" style="border:0; max-width:100%;" loading="lazy" title="ChamTax mini calculator"&gt;&lt;/iframe&gt;</code></div>
+  <div class="citation-box"><code>&lt;iframe src="https://chamtax.com/widget-embed.html" width="100%" height="420" style="border:0; max-width:480px; display:block;" loading="lazy" title="ChamTax mini calculator"&gt;&lt;/iframe&gt;</code></div>
 
   <div class="related-links">
     <a href="korea-resident-us-lottery-tax.html">→ Korea-resident US lottery tax, in depth</a>
