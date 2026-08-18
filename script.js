@@ -639,6 +639,7 @@ let EXCHANGE_RATE_MYR = 4.09;   // 기본값(fallback), USD/MYR (2026-08-16 확�
 let EXCHANGE_RATE_SEK = 9.51;   // 기본값(fallback), USD/SEK (2026-08-17 확인, WebSearch로 8월 중순 9.46~9.76대 재확인 + Frankfurter 실측 9.5089, open.er-api 실측 9.518로 교차검증) — 스웨덴(sv) 신규 지원과 함께 추가. GBP/AUD/MXN/EUR과 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함(독일/네덜란드와 달리 스웨덴은 유로존이 아니라 진짜 신규 통화). 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
 let EXCHANGE_RATE_NOK = 9.45;   // 기본값(fallback), USD/NOK (2026-08-17 확인, WebSearch로 8월 중순 9.4~9.7대 재확인 + Frankfurter 실측 9.4515(2026-08-14 기준), open.er-api 실측 9.4437로 교차검증) — 노르웨이(no) 신규 지원과 함께 추가. 스웨덴(SEK)과 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함(노르웨이는 유로존은 물론 EU도 아니라 진짜 신규 통화 — EEA 회원국일 뿐, sv_resident와 마찬가지로 통화 자체는 세율과 무관). 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
 let EXCHANGE_RATE_DKK = 6.46;   // 기본값(fallback), USD/DKK (2026-08-17 확인, WebSearch로 8월 중순 6.46~6.49대 재확인 + Frankfurter 실측 6.463(2026-08-14 기준), open.er-api 실측 6.4627로 교차검증) — 덴마크(da) 신규 지원과 함께 추가. 스웨덴/노르웨이(SEK/NOK)와 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함(덴마크는 EU 회원국이지만 유로존에는 가입하지 않아 진짜 신규 통화 — 덴마크는 유로에 크로네를 사실상 고정환율로 페깅하고 있어(ERM II, ±2.25% 밴드) 변동폭 자체는 스웨덴/노르웨이보다 작지만, 그래도 USD 대비로는 실시간 환율 변동이 있어 실시간 fetch 가치가 있음). 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
+let EXCHANGE_RATE_PLN = 3.72;   // 기본값(fallback), USD/PLN (2026-08-18 확인, WebSearch로 8월 중순 3.72~3.74대 재확인 + Frankfurter 실측 3.7146(2026-08-17 기준), open.er-api 실측 3.72123로 교차검증) — 폴란드(pl) 신규 지원과 함께 추가. 스웨덴/노르웨이/덴마크(SEK/NOK/DKK)와 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함(폴란드는 EU 회원국이지만 유로존에는 가입하지 않아 진짜 신규 통화 — 즈워티는 관리변동환율제라 덴마크 크로네와 달리 유로에 고정 페깅되어 있지 않음). 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
 
 // 환율 입력창(표시값)을 실제 계산에 쓰이는 EXCHANGE_RATE와 강제로 맞춰줌.
 // 이게 없으면 HTML에 하드코딩된 옛 기본값이 입력창에 남아있는 채로, 실제 계산은
@@ -757,6 +758,7 @@ const CURRENCY_RATE_CONFIG = [
   { code: 'SEK', apply: (v) => { EXCHANGE_RATE_SEK = Math.round(v * 100) / 100; } }, // MXN/ZAR처럼 1~10대라 소수점 둘째자리까지
   { code: 'NOK', apply: (v) => { EXCHANGE_RATE_NOK = Math.round(v * 100) / 100; } }, // SEK와 같은 이유로 1~10대라 소수점 둘째자리까지
   { code: 'DKK', apply: (v) => { EXCHANGE_RATE_DKK = Math.round(v * 100) / 100; } }, // SEK/NOK와 같은 이유로 1~10대라 소수점 둘째자리까지
+  { code: 'PLN', apply: (v) => { EXCHANGE_RATE_PLN = Math.round(v * 100) / 100; } }, // SEK/NOK/DKK와 같은 이유로 1~10대라 소수점 둘째자리까지
 ];
 const EXCHANGE_RATE_ALL_CODES = ['KRW', ...CURRENCY_RATE_CONFIG.map(c => c.code)];
 
@@ -824,6 +826,10 @@ const CURRENCY_DISPLAY_META = {
   // 신규 통화. 심볼도 같은 "크로네" 계열이라 'kr'을 공유하지만(3국 모두 kr), 통화 선택창엔
   // 플래그+코드(🇩🇰 DKK)가 항상 같이 표시돼서 SEK/NOK와의 혼동 없음.
   DKK: { symbol: 'kr', flagEmoji: '🇩🇰', locale: 'da-DK', get: () => EXCHANGE_RATE_DKK },
+  // SEK/NOK/DKK와 같은 이유로 실제로 지원됨(2026-08-18, Frankfurter/open.er-api가 이미 PLN을
+  // 지원해서 새 API 없이 지원 가능) — 심볼은 "zł"(즈워티), 플래그+코드(🇵🇱 PLN)가 항상 같이
+  // 표시돼서 다른 국가 통화와의 혼동 없음.
+  PLN: { symbol: 'zł', flagEmoji: '🇵🇱', locale: 'pl-PL', get: () => EXCHANGE_RATE_PLN },
 };
 const EXCHANGE_RATE_SOURCES = [
   { url: 'https://api.frankfurter.app/latest?from=USD&to=' + EXCHANGE_RATE_ALL_CODES.join(','), getRate: (data, code) => data && data.rates && data.rates[code], name: 'Frankfurter (중앙은행 기준환율)', nameEn: 'Frankfurter (central bank reference rate)' },
@@ -2085,6 +2091,81 @@ const TAX_MODEL = {
     //   전문가(commercialista) 확인 권장(다른 유럽국들과 같은 수준의 권고).
     rate: 0.4723,
     ftc_available: true
+  },
+  pl_resident: {
+    // 폴란드는 독일(과세표준 자체 없음)·네덜란드(과세+FTC 없음)·스웨덴(과세+세율 우연 일치)·
+    // 노르웨이(과세+FTC 한도 내 완전 상쇄)·덴마크(과세+FTC 있지만 큰 잔여세액)·핀란드(과세+FTC
+    // 있지만 중간 규모 잔여세액)·이탈리아(과세+FTC 있지만 중간 규모 잔여세액)와 구조는 비슷하지만
+    // 세율 산출 메커니즘 자체가 전혀 다른 여덟 번째 케이스 — "유럽=이미 다룬 7개국과 비슷하겠지"로
+    // 넘겨짚지 않고 원문 법조문부터 확인(2026-08-17, 소득세법(ustawa o PIT) 원문·미-폴란드 조세조약
+    // 원문 대조).
+    //
+    // [과세 여부·세율 체계: 결정적으로 "EU/EEA 복권 우대세율은 미국 복권에 적용 안 됨"]
+    // 폴란드 소득세법(ustawa o podatku dochodowym od osób fizycznych, PIT법) 제30조 1항 2호는
+    // 콩쿠르·게임·상호내기 당첨금에 10%(2026년부터 15%로 인상 예정·아래 참고) 정률 원천세를
+    // 규정하지만, 조문 문언이 "폴란드 또는 다른 EU 회원국·유럽경제지역(EEA) 회원국에서 조직·
+    // 운영되는" 게임의 당첨금으로 지리적 범위를 명시적으로 한정함(poradnikprzedsiebiorcy.pl·
+    // pit.pl 등 복수 세무 포털이 조문을 이렇게 일관되게 해설, 2026-08-17 확인) — 미국 파워볼·
+    // 메가밀리언즈는 EU/EEA 밖에서 조직되므로 이 우대세율 자체가 적용되지 않음(이탈리아의
+    // "EU/EEA 게임장만 면제" 구조와 표면적으로 비슷해 보이지만, 이탈리아는 "면제" 조항이고
+    // 폴란드는 "우대 정률세" 조항이라는 점이 다름 — 우대세율에 안 들어가면 자동으로 면세가 아니라
+    // 반대로 일반 누진세 체계로 넘어가 오히려 세율이 올라가는 구조라는 게 폴란드만의 특이점).
+    // ⚠️ 2,280 PLN 이하 당첨금 면세(제21조 1항 6a호)도 같은 지리적 한정(EU/EEA)이 붙어 있어 미국
+    // 복권에는 적용 안 됨 — 다만 잭팟 규모 당첨금엔 어차피 무의미한 문턱(다른 나라들과 같은
+    // "면제 문턱 생략" 원칙).
+    // - 그 결과 미국 복권 당첨금은 제20조 1항(다른 소득으로 분류되지 않는 소득) 및 제10조 1항
+    //   9호("기타 원천")에 따라 "기타 원천 소득"(przychody z innych źródeł)으로 분류되어, 제27조
+    //   1항의 일반 누진세율표(스칼라 포다트코바)로 종합과세됨(poradnikprzedsiebiorcy.pl "외국
+    //   금전 복권 당첨금과 PIT 정산" 항목 원문 확인, 2026-08-17) — 이탈리아·핀란드처럼 "종합소득에
+    //   합산" 구조이되, 정률세가 아니라 진짜 누진 구간을 통과한다는 점이 다름.
+    // - 2026년 누진세율표(제27조 1항, 2026년 세무 포털 다수 교차 확인): 12만 PLN까지 12%(기본
+    //   공제 3,600 PLN 차감 방식 — 즉 12만 PLN 정확히는 세액 10,800 PLN), 12만 PLN 초과분은 32%.
+    //   기초 면세점 3만 PLN도 잭팟 규모에선 무의미(다른 나라들과 같은 "면제 문턱 생략" 원칙).
+    //   잭팟 당첨금은 사실상 전액이 32% 최고구간에 해당.
+    // - ⚠️ 폴란드만의 추가 특이점: "연대세"(danina solidarnościowa, 제30h조) — 제27조(스칼라)·
+    //   제30b조(유가증권 양도차익)·제30c조(사업소득 정률세)·제30f조(해외지배법인세) 대상 소득
+    //   합계가 연 100만 PLN을 초과하면, 그 초과분에 대해 별도로 4%를 추가 부과(DSF-1이라는 별도
+    //   신고서로 매년 4월 30일까지 신고 — PIT-36과 별개 절차, e-pity.pl·poradnikprzedsiebiorcy.pl
+    //   등 교차 확인, 2026-08-17). 우리 복권 당첨금은 제27조 과세 대상이므로 이 기준에 포함됨 —
+    //   즉 실질 최고 한계세율은 32%+4%=36%. ⚠️ 연대세는 소득(과세표준) 자체에 부과되는 별도
+    //   신고·산정 절차라, 외국납부세액공제가 이 4% 부분까지 상쇄해주는지는 명확한 1차 자료를
+    //   찾지 못함(아래 FTC 항목 참고) — 이 계산기는 보수적으로 "연대세는 공제 대상 아님"으로 가정.
+    // - 잭팟 규모(수천만~수억 달러)에서는 12만 PLN 저구간·100만 PLN 문턱 둘 다 총액 대비 무시할
+    //   만큼 작아서 실질 세율이 36%에 수렴하지만, ⚠️ 이 계산기가 예시로 쓰는 $100만(약 372만 PLN)
+    //   같은 상대적으로 작은 금액에서는 두 문턱이 무시 못 할 비중을 차지해 정밀 구간 계산 시
+    //   실효세율이 36%보다 낮게(약 34.2%) 나옴 — landing page에 이 정밀도 차이를 gray-zone으로
+    //   명시할 것. 코드 상 rate는 다른 모든 나라와 같은 "flat effective rate" 구조라 정밀 구간
+    //   계산이 아니라 근사치(36%, 32%+4%)를 그대로 곱하는 방식임(이탈리아·덴마크 등과 동일한
+    //   "잭팟 규모 근사" 관례).
+    // - FTC(외국납부세액공제): 미-폴란드 조세조약(1974년, 아래 참고) 제20조 1항이 "폴란드는 폴란드
+    //   거주자에게 미국에 납부한 세액 상당분을 폴란드 세액에서 공제한다"고 규정, 폴란드 국내법
+    //   제27조 9항·9의2항("metoda odliczenia proporcjonalnego", 비례공제법 — 조약 체결국과의
+    //   소득에 적용, gofin.pl·adwokat-jakubowska.pl 교차 확인)이 이를 구체화 — 공제 한도는 그
+    //   외국소득에 대응하는 폴란드 세액(제27조 세액)까지, mx/in/da/fi/it와 같은 "세액 계산→FTC
+    //   상한부 공제" 구조. 미국 원천징수 30%가 폴란드 제27조 세액(최고구간 기준 32%)보다 낮으므로
+    //   원천징수 전액이 공제되고도 잔여세액이 남음.
+    // - ⚠️ 조약상 특이점 없음(다른 6개국과의 결정적 차이): 미-폴란드 조세조약은 1974년 10월 8일
+    //   서명·1976년 7월 22일 발효된 구세대 조약으로(irs.gov 공식 조세조약 문서 목록, 2026-05-07
+    //   갱신본 기준 폴란드 항목엔 이 1974년 조약만 등재돼있어 이것이 현재 발효 중인 조약임을
+    //   확인, 2026-08-17), 덴마크·핀란드·독일·이탈리아가 갖고 있던 "기타소득 거주지국 전속과세"
+    //   조항(현대식 OECD 모델의 Other Income 조) 자체가 아예 없음 — 조문 목차에 "Other Income"
+    //   조가 없고, 제5조 1항의 일반원칙("거주자는 원천지국 내 소득에 한해 원천지국이 과세 가능")만
+    //   있어 복권 당첨금 같은 미분류 소득엔 원천지국(미국)의 일반 과세권이 그대로 유지됨 —
+    //   즉 미국의 30% 원천징수가 조약상 특이점·부당징수 소지 없이 조약과 완전히 정합적임(다른
+    //   나라들과 달리 "이론상 환급 대상일 수 있다" 각주가 필요 없는 유일한 사례).
+    //   ⚠️ 별도로 2013년 2월 13일 서명된 신규 미-폴란드 조세조약(현대식 Other Income 조 포함)이
+    //   존재하며 미 상원이 비준동의는 했으나(2022년), IRS 공식 조세조약 문서 목록에 2026년
+    //   5월 기준으로도 여전히 1974년 조약만 등재돼있어 비준서 교환 등 발효 절차가 완료됐다는
+    //   confirmatory 자료를 찾지 못함 — 2013년 조약이 아직 발효되지 않았다는 강한 정황이나
+    //   100% 확정은 아님(양국 정부의 공식 발효 공지를 직접 확인하지 못함, 중간 확신) — landing
+    //   page에 이 불확실성을 명시할 것.
+    //   ⚠️ 불확실성 요약: (1) 연대세(danina solidarnościowa) 4%가 외국납부세액공제로 상쇄되는지
+    //   확인 못함(보수적으로 비상쇄 가정) (2) $100만 같은 상대적으로 작은 예시 금액에서는 flat-rate
+    //   근사(36%)가 정밀 구간 계산(약 34.2%)보다 다소 높게 나옴 (3) 2013년 신규 조세조약의 발효
+    //   여부 미확정. 실제 신고 시엔 반드시 폴란드 세무 전문가(doradca podatkowy) 확인 권장(다른
+    //   유럽국들과 같은 수준의 권고).
+    rate: 0.36,
+    ftc_available: true
   }
 };
 
@@ -3104,6 +3185,34 @@ function calcTakeHome(amount, country, stateCode){
       val2: itAdditionalTaxWon > 0 ? '-' + itEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
       basisSuffix: pickLang('이탈리아 거주자', 'Italy resident', '意大利居民', 'Cư dân Ý', 'ผู้พำนักในอิตาลี', 'Резидент Италии', buildCountryMore('it'))
     };
+  } else if (country === 'pl') {
+    // 폴란드: PIT법 제30조 1항 2호의 10%(2026년부터 15%) 정률 우대세율은 EU/EEA에서 조직된
+    // 게임의 당첨금에만 적용돼 미국 파워볼·메가밀리언즈는 해당 없음 — 대신 제20조 1항·제10조
+    // 1항 9호에 따라 "기타 원천 소득"으로 분류돼 제27조 일반 누진세율(12만 PLN까지 12%, 초과분
+    // 32%)로 종합과세되고, 여기에 연대세(danina solidarnościowa, 제30h조 — 연 소득 100만 PLN
+    // 초과분에 4% 추가)까지 더해져 잭팟 규모에서는 실질 최고 한계세율이 32%+4%=36%에 수렴함.
+    // 제27조 9항·9의2항의 비례공제법(FTC)으로 미국 원천징수(30%)를 상한부 공제받지만 폴란드
+    // 세율이 더 높아 da/fi/it와 같은 구조로 실제 잔여세액이 남음(상세 근거·불확실성 표시는
+    // TAX_MODEL.pl_resident 주석 참고 — 미-폴란드 조세조약은 1974년 구세대 조약이라 덴마크·
+    // 핀란드·독일·이탈리아가 가진 "기타소득 거주지국 전속과세" 조항 자체가 없어, 미국의 30%
+    // 원천징수가 조약상 특이점 없이 정합적이라는 점이 다른 6개국과의 결정적 차이).
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const plCalculatedTaxWon = wonAmount * TAX_MODEL.pl_resident.rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, plCalculatedTaxWon); // FTC 공제액(PIT법 제27조 9항 비례공제법, 한도 내 상계)
+    const plAdditionalTaxWon = Math.max(plCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (plAdditionalTaxWon / 100000000);
+    const plEffectivePct = wonAmount > 0 ? (plAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('폴란드 추가 납부 (FTC 적용)', 'Poland additional tax (FTC applied)', '波兰追加缴税（已抵免FTC）', 'Thuế bổ sung tại Ba Lan (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของโปแลนด์ (ใช้ FTC แล้ว)', 'Дополнительный налог в Польше (с учётом FTC)', buildAdditionalTaxMore('pl')),
+      val2: plAdditionalTaxWon > 0 ? '-' + plEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      basisSuffix: pickLang('폴란드 거주자', 'Poland resident', '波兰居民', 'Cư dân Ba Lan', 'ผู้พำนักในโปแลนด์', 'Резидент Польши', buildCountryMore('pl'))
+    };
   } else if (country === 'other') {
     // "기타 국가" — COUNTRY_TAX_PROFILES 목록에 없는 나라 방문자를 위한 안전망(2026-07-28,
     // 사용자 요청). 자국 세법을 조사하지 않고도 확정적으로 말할 수 있는 건 미국 IRS의 비거주자
@@ -3477,6 +3586,11 @@ const REAL_ABROAD_CURRENCY = {
   // 공용 통화 재사용 다섯 번째 사례 — 위 fr/de/nl/ie/fi 항목 주석대로
   // CURRENCY_DISPLAY_META.EUR/EXCHANGE_RATE_EUR을 그대로 씀, 신규 통화 정의 불필요.
   it: 'EUR',
+  // 폴란드(PLN, 즈워티)는 EU 회원국이지만 유로존 미가입이라 스웨덴/노르웨이/덴마크와 같은 상황의
+  // 진짜 신규 통화 — CURRENCY_DISPLAY_META.PLN/EXCHANGE_RATE_PLN을 새로 정의함(2026-08-17,
+  // GBP/AUD/MXN/ZAR/MYR/SEK/NOK/DKK와 같은 이유로 Frankfurter/open.er-api가 이미 PLN을 지원해서
+  // 새 API 없이 지원 가능).
+  pl: 'PLN',
 };
 
 // "실제로 다른 나라에 살아요" 카드의 US/CN 버튼 — 한국이랑 아무 상관없는 진짜 외국인(예: 순수
@@ -10805,7 +10919,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 페이지들은 애초에 한국 세법이 맞는 기준이라 이 파라미터가 필요 없음).
   // COUNTRY_TAX_PROFILES에 실제로 있는 코드로만 제한해서, 오타·구버전 링크가 미검증
   // 국가로 계산기를 조용히 맞춰버리는 걸 막음(33개국 토글 버튼과 동일한 목록).
-  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','no','da','fi','it','other'];
+  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','no','da','fi','it','pl','other'];
   const urlCountry = params.get('country');
   if (SUPPORTED_TAX_COUNTRIES.includes(urlCountry)) {
     setHomeCountry(urlCountry);
@@ -13639,7 +13753,30 @@ const COUNTRY_TAX_AUTHORITY = {
       hi: "Agenzia delle Entrate",
       fr: "Agenzia delle Entrate",
       tl: "Agenzia delle Entrate"
-    , pt: `Agenzia delle Entrate`, es: `Agenzia delle Entrate`, uk: `Agenzia delle Entrate`, tet: `Agenzia delle Entrate`, de: `Agenzia delle Entrate`, nl: `Agenzia delle Entrate`, sv: `Agenzia delle Entrate`, no: `Agenzia delle Entrate`, da: `Agenzia delle Entrate`, fi: `Agenzia delle Entrate`, it: "Agenzia delle Entrate", pl: "Agenzia delle Entrate"})
+    , pt: `Agenzia delle Entrate`, es: `Agenzia delle Entrate`, uk: `Agenzia delle Entrate`, tet: `Agenzia delle Entrate`, de: `Agenzia delle Entrate`, nl: `Agenzia delle Entrate`, sv: `Agenzia delle Entrate`, no: `Agenzia delle Entrate`, da: `Agenzia delle Entrate`, fi: `Agenzia delle Entrate`, it: "Agenzia delle Entrate", pl: "Agenzia delle Entrate"}),
+  // 폴란드는 PIT법 제27조·제30h조가 근거라(pl_resident 주석 참고), 특정 판례·유권해석 기관명이
+  // 아니라 국세청 격 행정기관 공식명 "Krajowa Administracja Skarbowa"(국가재정행정청, 약칭 KAS)를
+  // uk의 HMRC/de의 Finanzamt/da의 Skattestyrelsen/it의 Agenzia delle Entrate와 같은 관례로 표기함 —
+  // 언어 불문 통용되는 고유명사라 번역하지 않고 전체 언어 동일 문자열
+  pl: () => pickLang('Krajowa Administracja Skarbowa', 'Krajowa Administracja Skarbowa', 'Krajowa Administracja Skarbowa', 'Krajowa Administracja Skarbowa', 'Krajowa Administracja Skarbowa', 'Krajowa Administracja Skarbowa', {
+      km: "Krajowa Administracja Skarbowa",
+      ne: "Krajowa Administracja Skarbowa",
+      id: "Krajowa Administracja Skarbowa",
+      my: "Krajowa Administracja Skarbowa",
+      si: "Krajowa Administracja Skarbowa",
+      uz: "Krajowa Administracja Skarbowa",
+      mn: "Krajowa Administracja Skarbowa",
+      kk: "Krajowa Administracja Skarbowa",
+      ky: "Krajowa Administracja Skarbowa",
+      ur: "Krajowa Administracja Skarbowa",
+      bn: "Krajowa Administracja Skarbowa",
+      lo: "Krajowa Administracja Skarbowa",
+      ja: "Krajowa Administracja Skarbowa",
+      ar: "Krajowa Administracja Skarbowa",
+      hi: "Krajowa Administracja Skarbowa",
+      fr: "Krajowa Administracja Skarbowa",
+      tl: "Krajowa Administracja Skarbowa"
+    , pt: `Krajowa Administracja Skarbowa`, es: `Krajowa Administracja Skarbowa`, uk: `Krajowa Administracja Skarbowa`, tet: `Krajowa Administracja Skarbowa`, de: `Krajowa Administracja Skarbowa`, nl: `Krajowa Administracja Skarbowa`, sv: `Krajowa Administracja Skarbowa`, no: `Krajowa Administracja Skarbowa`, da: `Krajowa Administracja Skarbowa`, fi: `Krajowa Administracja Skarbowa`, it: `Krajowa Administracja Skarbowa`, pl: "Krajowa Administracja Skarbowa"})
 };
 
 // 세율 자체가 불확실하거나(공식 근거를 못 찾음), 세율은 알아도 실제 적용 여부가 불확실한 나라들을
@@ -14933,6 +15070,7 @@ const COUNTRY_TAX_PROFILES = [
   { code: 'da', flagCode: 'DK', label: '덴마크 거주자 (실제 덴마크 거주 기준)', labelEn: 'Denmark resident (living in Denmark)', labelZh: '丹麦居民（实际住在丹麦）', labelVi: 'Cư dân Đan Mạch (sống thực tế tại Đan Mạch)', labelTh: 'ผู้พำนักในเดนมาร์ก (อาศัยอยู่จริงในเดนมาร์ก)', labelRu: 'Резидент Дании (проживающий в Дании)', implemented: true, needsState: false, detailPage: 'denmark-resident-us-lottery-tax.html', detailLabel: 'Dansk →', more: buildCountryMore('da') },
   { code: 'fi', flagCode: 'FI', label: '핀란드 거주자 (실제 핀란드 거주 기준)', labelEn: 'Finland resident (living in Finland)', labelZh: '芬兰居民（实际住在芬兰）', labelVi: 'Cư dân Phần Lan (sống thực tế tại Phần Lan)', labelTh: 'ผู้พำนักในฟินแลนด์ (อาศัยอยู่จริงในฟินแลนด์)', labelRu: 'Резидент Финляндии (проживающий в Финляндии)', implemented: true, needsState: false, detailPage: 'finland-resident-us-lottery-tax.html', detailLabel: 'Suomi →', more: buildCountryMore('fi') },
   { code: 'it', flagCode: 'IT', label: '이탈리아 거주자 (실제 이탈리아 거주 기준)', labelEn: 'Italy resident (living in Italy)', labelZh: '意大利居民（实际住在意大利）', labelVi: 'Cư dân Ý (sống thực tế tại Ý)', labelTh: 'ผู้พำนักในอิตาลี (อาศัยอยู่จริงในอิตาลี)', labelRu: 'Резидент Италии (проживающий в Италии)', implemented: true, needsState: false, detailPage: 'italy-resident-us-lottery-tax.html', detailLabel: 'Italiano →', more: buildCountryMore('it') },
+  { code: 'pl', flagCode: 'PL', label: '폴란드 거주자 (실제 폴란드 거주 기준)', labelEn: 'Poland resident (living in Poland)', labelZh: '波兰居民（实际住在波兰）', labelVi: 'Cư dân Ba Lan (sống thực tế tại Ba Lan)', labelTh: 'ผู้พำนักในโปแลนด์ (อาศัยอยู่จริงในโปแลนด์)', labelRu: 'Резидент Польши (проживающий в Польше)', implemented: true, needsState: false, detailPage: 'poland-resident-us-lottery-tax.html', detailLabel: 'Polski →', more: buildCountryMore('pl') },
 ];
 
 // 나라별 비교 카드가 텍스트/숫자로만 나열돼서 폰에서 심심하다는 피드백 — 카드를 탭하면 이

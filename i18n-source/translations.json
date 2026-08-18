@@ -29861,7 +29861,43 @@
     "da": "Italiensk grundlag",
     "fi": "Italian peruste",
     "it": "Base Italia"
-  
+
 ,
-  "pl": "Podstawa: Włochy"}
+  "pl": "Podstawa: Włochy"},
+  "input.optPoland": {
+    "en": "Poland basis",
+    "zh": "波兰标准",
+    "vi": "Theo tiêu chuẩn Ba Lan",
+    "th": "เกณฑ์โปแลนด์",
+    "ru": "По правилам Польши",
+    "km": "គោលការណ៍ប៉ូឡូញ",
+    "ne": "पोल्यान्ड आधार",
+    "id": "Basis Polandia",
+    "my": "ပိုလန်စံ",
+    "si": "පෝලන්ත පදනම",
+    "uz": "Polsha asosida",
+    "mn": "Польшийн үндэслэл",
+    "kk": "Польша негізі",
+    "ky": "Польша негизи",
+    "ur": "پولینڈ کی بنیاد پر",
+    "bn": "পোল্যান্ড ভিত্তি",
+    "lo": "ພື້ນຖານໂປແລນ",
+    "ja": "ポーランド基準",
+    "ar": "أساس بولندا",
+    "hi": "पोलैंड आधार",
+    "fr": "Base polonaise",
+    "tl": "Batayan ng Poland",
+    "pt": "Base da Polónia",
+    "es": "Base de Polonia",
+    "uk": "База Польщі",
+    "tet": "Base Polónia",
+    "de": "Grundlage Polen",
+    "nl": "Poolse grondslag",
+    "sv": "Polsk grund",
+    "no": "Polsk grunnlag",
+    "da": "Polsk grundlag",
+    "fi": "Puolan peruste",
+    "it": "Base Polonia",
+    "pl": "Podstawa: Polska"
+  }
 }
