@@ -640,6 +640,7 @@ let EXCHANGE_RATE_SEK = 9.51;   // 기본값(fallback), USD/SEK (2026-08-17 확�
 let EXCHANGE_RATE_NOK = 9.45;   // 기본값(fallback), USD/NOK (2026-08-17 확인, WebSearch로 8월 중순 9.4~9.7대 재확인 + Frankfurter 실측 9.4515(2026-08-14 기준), open.er-api 실측 9.4437로 교차검증) — 노르웨이(no) 신규 지원과 함께 추가. 스웨덴(SEK)과 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함(노르웨이는 유로존은 물론 EU도 아니라 진짜 신규 통화 — EEA 회원국일 뿐, sv_resident와 마찬가지로 통화 자체는 세율과 무관). 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
 let EXCHANGE_RATE_DKK = 6.46;   // 기본값(fallback), USD/DKK (2026-08-17 확인, WebSearch로 8월 중순 6.46~6.49대 재확인 + Frankfurter 실측 6.463(2026-08-14 기준), open.er-api 실측 6.4627로 교차검증) — 덴마크(da) 신규 지원과 함께 추가. 스웨덴/노르웨이(SEK/NOK)와 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함(덴마크는 EU 회원국이지만 유로존에는 가입하지 않아 진짜 신규 통화 — 덴마크는 유로에 크로네를 사실상 고정환율로 페깅하고 있어(ERM II, ±2.25% 밴드) 변동폭 자체는 스웨덴/노르웨이보다 작지만, 그래도 USD 대비로는 실시간 환율 변동이 있어 실시간 fetch 가치가 있음). 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
 let EXCHANGE_RATE_PLN = 3.72;   // 기본값(fallback), USD/PLN (2026-08-18 확인, WebSearch로 8월 중순 3.72~3.74대 재확인 + Frankfurter 실측 3.7146(2026-08-17 기준), open.er-api 실측 3.72123로 교차검증) — 폴란드(pl) 신규 지원과 함께 추가. 스웨덴/노르웨이/덴마크(SEK/NOK/DKK)와 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함(폴란드는 EU 회원국이지만 유로존에는 가입하지 않아 진짜 신규 통화 — 즈워티는 관리변동환율제라 덴마크 크로네와 달리 유로에 고정 페깅되어 있지 않음). 실시간 fetch가 이 값을 덮어씀 — 순수 폴백용
+let EXCHANGE_RATE_TRY = 47.9;   // 기본값(fallback), USD/TRY (2026-08-18 확인, WebSearch로 8월 17~18일 47.8~47.9대 재확인 + Frankfurter 실측 47.902(2026-08-17 기준), open.er-api 실측 47.8926으로 교차검증) — 터키(tr) 신규 지원과 함께 추가. 스웨덴/노르웨이/덴마크/폴란드(SEK/NOK/DKK/PLN)와 같은 이유로 Frankfurter/open.er-api가 이미 지원하는 통화라 실제로 추가함(터키 리라는 유로존/EU 무관 진짜 신규 통화). ⚠️ 리라는 최근 몇 년간 변동성·평가절하가 매우 컸던 통화라(검색 결과 기준 최근 12개월 약 -17% 추가 하락) 이 값은 스냅샷일 뿐 — 실시간 fetch가 이 값을 덮어씀, 순수 폴백용
 
 // 환율 입력창(표시값)을 실제 계산에 쓰이는 EXCHANGE_RATE와 강제로 맞춰줌.
 // 이게 없으면 HTML에 하드코딩된 옛 기본값이 입력창에 남아있는 채로, 실제 계산은
@@ -759,6 +760,7 @@ const CURRENCY_RATE_CONFIG = [
   { code: 'NOK', apply: (v) => { EXCHANGE_RATE_NOK = Math.round(v * 100) / 100; } }, // SEK와 같은 이유로 1~10대라 소수점 둘째자리까지
   { code: 'DKK', apply: (v) => { EXCHANGE_RATE_DKK = Math.round(v * 100) / 100; } }, // SEK/NOK와 같은 이유로 1~10대라 소수점 둘째자리까지
   { code: 'PLN', apply: (v) => { EXCHANGE_RATE_PLN = Math.round(v * 100) / 100; } }, // SEK/NOK/DKK와 같은 이유로 1~10대라 소수점 둘째자리까지
+  { code: 'TRY', apply: (v) => { EXCHANGE_RATE_TRY = Math.round(v * 100) / 100; } }, // MXN/ZAR처럼 10~50대라 소수점 둘째자리까지
 ];
 const EXCHANGE_RATE_ALL_CODES = ['KRW', ...CURRENCY_RATE_CONFIG.map(c => c.code)];
 
@@ -830,6 +832,10 @@ const CURRENCY_DISPLAY_META = {
   // 지원해서 새 API 없이 지원 가능) — 심볼은 "zł"(즈워티), 플래그+코드(🇵🇱 PLN)가 항상 같이
   // 표시돼서 다른 국가 통화와의 혼동 없음.
   PLN: { symbol: 'zł', flagEmoji: '🇵🇱', locale: 'pl-PL', get: () => EXCHANGE_RATE_PLN },
+  // SEK/NOK/DKK/PLN과 같은 이유로 실제로 지원됨(2026-08-18, Frankfurter/open.er-api가 이미 TRY를
+  // 지원해서 새 API 없이 지원 가능) — 터키 리라는 유로존/EU 무관 진짜 신규 통화. 심볼은 "₺",
+  // 플래그+코드(🇹🇷 TRY)가 항상 같이 표시돼서 다른 국가 통화와의 혼동 없음.
+  TRY: { symbol: '₺', flagEmoji: '🇹🇷', locale: 'tr-TR', get: () => EXCHANGE_RATE_TRY },
 };
 const EXCHANGE_RATE_SOURCES = [
   { url: 'https://api.frankfurter.app/latest?from=USD&to=' + EXCHANGE_RATE_ALL_CODES.join(','), getRate: (data, code) => data && data.rates && data.rates[code], name: 'Frankfurter (중앙은행 기준환율)', nameEn: 'Frankfurter (central bank reference rate)' },
@@ -2166,6 +2172,64 @@ const TAX_MODEL = {
     //   유럽국들과 같은 수준의 권고).
     rate: 0.36,
     ftc_available: true
+  },
+  tr_resident: {
+    // 터키(9번째 신규 라운드)는 "유럽 인접국이니 비슷한 소득세 구조겠지"로 넘겨짚지 않고
+    // 원문 법령부터 확인(2026-08-18) — 놀랍게도 터키는 복권·경품 당첨금을 소득세법(Gelir
+    // Vergisi Kanunu, GVK)이 아니라 완전히 별개인 상속·증여세법(Veraset ve İntikal Vergisi
+    // Kanunu, VİVK, 7338호 법률)으로 과세함. GVK 제82조("아르지 카잔치", arızi kazançlar,
+    // 일시적/우발적 소득)가 언뜻 적용될 것 같아 보이지만, GİB(터키 국세청) 공식 안내 페이지
+    // (intvrg.gib.gov.tr/hazirbeyan/arizi.html, 2026-08-18 직접 확인)가 나열하는 제82조의
+    // 6개 호 중 어디에도 복권·경품·도박 당첨금이 포함되지 않음 — 대신 이 소득은 "이바즈스즈
+    // 인티칼"(ivazsız intikal, 무상 취득/증여성 이전)로 분류되어 VİVK가 적용됨.
+    // - VİVK 제16조(세율): "5602호 법률이 정의하는 샨스 오유운라르(şans oyunları, 사행성
+    //   게임)와 실제·법인이 조직하는 경연·추첨(yarışma ve çekiliş)에서 획득한 당첨금"에
+    //   정률 20%를 적용(lexpera.com 공개 조문 대조 확인) — 상속·증여의 누진세율표(1~30%)와
+    //   별개인 전용 정률 조항.
+    // - VİVK 제4조 1항: "이바즈스즈 인티칼"(증여성 취득) 전반에 적용되는 면제 한도가 매년
+    //   재평가율로 갱신되며, 2026년 GİB 일반통첩(Genel Tebliğ 57호, 2025-12-31 관보 게재,
+    //   2025년 재평가율 25.49% 반영) 기준 66,935 리라 — 잭팟 규모 당첨금엔 다른 나라들과
+    //   같은 "면제 문턱 생략" 원칙대로 무시 가능한 수준.
+    // - 인적 적용범위(VİVK 제1조): 이 세금은 거주지가 아니라 "터키 국적"(Türkiye Cumhuriyeti
+    //   tabiiyeti) 기준 — 조문이 명시적으로 "터키 국적자가 외국에서 같은 방식으로 취득하는
+    //   재산에도 적용된다"고 규정함(터키에 거주지가 없는 외국인이 해외에서 취득한 재산은
+    //   과세 제외). 이 계산기의 다른 나라 페이지는 전부 "거주자" 기준으로 프레이밍하지만,
+    //   VİVK의 실제 과세 근거는 국적이라는 점이 터키만의 구조적 특이점 — landing page에 명시.
+    //   ⚠️ 제16조의 "실제·법인이 조직하는 경연·추첨" 문언 자체는 조직자의 국적/소재지를
+    //   명시적으로 한정하지 않지만("5602호 법률이 정의하는" 수식은 샨스 오유운라르 항목에만
+    //   걸림), 미국 파워볼처럼 완전히 외국(비터키)에서 조직된 추첨에 실제로 적용된다는 걸
+    //   직접 확인해주는 판례·유권해석은 찾지 못함(터키 국적자의 해외 소득 전반이 VİVK
+    //   과세대상이 된다는 제1조의 명문 규정과 종합하면 적용된다고 보는 게 합리적 해석이나,
+    //   100% 확정은 아님 — 중간 확신, gray-zone으로 명시).
+    // - FTC(외국납부세액공제) 불가 판단: ①미-터키 소득세조약(1996년 3월 28일 워싱턴 서명,
+    //   1998년 1월 1일 발효, irs.gov 원문 직접 대조)은 제2조(대상조세)에서 터키측 대상조세를
+    //   "Gelir Vergisi"(소득세)·"Kurumlar Vergisi"(법인세) 2개로만 명시 — VİVK(상속·증여세)는
+    //   애초에 이 조약의 적용범위 밖. 제21조("기타소득")가 덴마크·핀란드·독일·이탈리아와 똑같이
+    //   "다른 조항이 다루지 않는 거주지국 거주자의 소득은 그 거주지국에서만 과세"라고 규정하지만,
+    //   이는 조약이 다루는 "소득세" 범주에 대한 조항이지 VİVK엔 애초에 적용 안 됨 — 즉 미국의
+    //   30% 원천징수(미 국내법상 비거주 외국인 소득세 원천징수)와 터키의 VİVK 20%(상속·증여세)는
+    //   서로 다른 세목이라 이 조약의 어느 조항으로도 충돌·조정되지 않음(다른 나라들의 "이론상
+    //   조약 부당징수 소지" 각주와는 성격이 다른 특이점 — 여기선 애초에 조약이 개입할 자리가
+    //   없음). ②VİVK 자체의 국내법상 외국납부세액 공제 조항(제20조, 구 제11조)도 확인해보면
+    //   "터키 국적자가 해외 소재 재산에 대해 외국에서 납부한 '베라세트 베 인티칼 베르기시'
+    //   (veraset ve intikal vergisi, 즉 외국의 상속·증여세류)"만 공제 대상으로 명시 — 미국의
+    //   원천징수는 미국의 소득세이지 상속·증여세가 아니므로 이 조항의 "같은 세목간 상계"
+    //   요건도 충족하지 못함. 결론적으로 nl_resident·ru_resident·la_resident와 같은 "FTC 전혀
+    //   없음, 미국 원천징수 위에 전액 그대로 추가" 구조 — 다만 그 나라들과 달리 터키는 아예
+    //   "적용 조세 종류가 다르다"는 구조적 이유로 FTC가 없다는 점이 다름.
+    // - 터키 자국 복권(Milli Piyango)·스포츠토토(İddaa)·경마 등도 참고 비교: 운영사 자체에
+    //   매출 기준으로 부과되는 별도 "샨스 오유운라르 베르기시"(Şans Oyunları Vergisi, 5602호·
+    //   7258호 법률, 오유운 종류별 5~10%)가 있으나 이는 사업자 매출세라 개인 당첨자가 내는
+    //   VİVK 20%와는 완전히 별개 세목(혼동 방지를 위해 landing page에서 구분 설명).
+    //   ⚠️ 불확실성 요약: (1) 완전히 외국에서 조직된 추첨(미국 파워볼 등)이 제16조 "경연·추첨"
+    //   문언에 실제로 포섭되는지 직접적인 판례·유권해석 대조 못함(중간 확신) (2) 신고 기한
+    //   (베얀나메 제출 시한)이 상속(사망 기준 4~8개월)과 증여성 취득(이바즈스즈 인티칼)에서
+    //   다르게 규정될 수 있어 정확한 개월수를 확정하지 못함 (3) 66,935리라 면제 한도가 "샨스
+    //   오유운라르·경연·추첨" 항목에 별도로 적용되는지, 아니면 일반 증여 면제 한도와 완전히
+    //   동일한 조항을 공유하는지 세부 호(항) 번호까지 대조하지 못함. 실제 신고 시엔 반드시
+    //   터키 세무사(mali müşavir/YMM) 확인 권장(다른 나라들과 같은 수준의 권고).
+    rate: 0.20,
+    ftc_available: false
   }
 };
 
@@ -3214,6 +3278,36 @@ function calcTakeHome(amount, country, stateCode){
       val2: plAdditionalTaxWon > 0 ? '-' + plEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
       basisSuffix: pickLang('폴란드 거주자', 'Poland resident', '波兰居民', 'Cư dân Ba Lan', 'ผู้พำนักในโปแลนด์', 'Резидент Польши', buildCountryMore('pl'))
     };
+  } else if (country === 'tr') {
+    // 터키: 복권 당첨금은 소득세법(GVK)이 아니라 상속·증여세법(VİVK, 7338호) 제16조로
+    // 과세되는 정률 20% — 상속·증여의 누진세율표와 별개인 "샨스 오유운라르·경연·추첨 당첨금"
+    // 전용 조항(제16조). 미-터키 조세조약(1996년 서명·1998년 발효)은 제2조(대상조세)에서
+    // 터키측 대상조세를 소득세·법인세로만 한정해 VİVK(상속·증여세)는 애초에 조약 적용범위
+    // 밖 — 즉 미국의 30% 원천징수(소득세)와 터키의 VİVK 20%(상속·증여세)는 서로 다른 세목이라
+    // 조약의 어느 조항으로도 조정되지 않고, VİVK 자체의 국내법상 외국납부세액공제(제20조)도
+    // "외국의 상속·증여세류"만 공제 대상으로 명시해 미국 소득세 원천징수는 그 요건도 충족
+    // 못함 — nl/ru/la와 같은 "FTC 전혀 없음, 미국 원천징수 위에 전액 그대로 추가" 구조
+    // (상세 근거·불확실성 표시는 TAX_MODEL.tr_resident 주석 참고).
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const trAdditionalTaxWon = wonAmount * TAX_MODEL.tr_resident.rate; // FTC 없음 — 원천징수와 별개로 전액 추가
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (trAdditionalTaxWon / 100000000);
+    const trEffectivePct = wonAmount > 0 ? (trAdditionalTaxWon / wonAmount * 100) : 0;
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('터키 추가 납부 (FTC 미적용 ⚠️)', 'Turkey additional tax (no FTC ⚠️)', '土耳其追加缴税（不适用FTC⚠️）', 'Thuế bổ sung tại Thổ Nhĩ Kỳ (không áp dụng FTC ⚠️)', 'ภาษีเพิ่มเติมของตุรกี (ไม่ใช้ FTC ⚠️)', 'Дополнительный налог в Турции (без FTC ⚠️)', {
+        km: 'ពន្ធបន្ថែមនៅតួកគី (គ្មាន FTC ⚠️)', ne: 'टर्कीमा थप कर (FTC छैन ⚠️)', id: 'Pajak tambahan di Turki (tanpa FTC ⚠️)',
+        my: 'တူရကီတွင်ထပ်ဆောင်းအခွန် (FTC မရှိ ⚠️)', si: 'තුර්කියේ අමතර බද්ද (FTC නැත ⚠️)', uz: "Turkiyada qo'shimcha soliq (FTC yo'q ⚠️)",
+        mn: 'Туркад нэмэлт татвар (FTC байхгүй ⚠️)', kk: 'Түркияда қосымша салық (FTC жоқ ⚠️)', ky: 'Түркияда кошумча салык (FTC жок ⚠️)',
+        ur: 'ترکی میں اضافی ٹیکس (کوئی FTC نہیں ⚠️)', bn: 'তুরস্কে অতিরিক্ত কর (FTC নেই ⚠️)', lo: 'ພາສີເພີ່ມເຕີມໃນຕວກກີ (ບໍ່ມີ FTC ⚠️)',
+        ja: 'トルコでの追加納税（FTCなし ⚠️）', ar: 'ضريبة إضافية في تركيا (بدون FTC ⚠️)', hi: 'तुर्की में अतिरिक्त कर (कोई FTC नहीं ⚠️)', fr: 'Taxe supplémentaire en Turquie (sans FTC ⚠️)',
+        tl: 'Karagdagang buwis sa Turkey (walang FTC ⚠️)',
+       pt: `Imposto adicional na Turquia (sem FTC ⚠️)`, es: `Impuesto adicional en Turquía (sin FTC ⚠️)`, uk: `Додатковий податок у Туреччині (без FTC ⚠️)`, tet: `Impostu adisionál Turkia (la iha FTC ⚠️)`, de: `Zusätzliche Steuer in der Türkei (ohne FTC ⚠️)`, nl: `Extra belasting in Turkije (zonder FTC ⚠️)`, sv: `Extra skatt i Turkiet (utan FTC ⚠️)`, no: 'Ekstra skatt i Tyrkia (uten FTC ⚠️)', da: 'Ekstra skat i Tyrkiet (uden FTC ⚠️)', fi: 'Turkin lisävero (ilman FTC:tä ⚠️)', it: "Imposta supplementare in Turchia (senza FTC ⚠️)", pl: "Dodatkowy podatek w Turcji (bez FTC ⚠️)", tr: 'Türkiye\'de ek vergi (FTC yok ⚠️)'}),
+      val2: trAdditionalTaxWon > 0 ? '-' + trEffectivePct.toFixed(1) + '%' : pickLang('0원', '₩0', '0元', '0 KRW', '0 วอน', '0 вон', { km:'0 វ៉ុន', ne:'₩0', id:'₩0', my:'၀ ဝမ်း', si:'0 වොන්', uz:'0 von', mn:'0 вон', kk:'0 вон', ky:'0 вон', ur:'0 وون', bn:'০ ওন', lo:'0 ວອນ', ja:'0ウォン', ar:'0 وون', hi:'₩0', fr:'0 KRW', tl:'₩0' , pt: `₩0`, es: `₩0`, uk: `₩0`, tet: `₩0`, de: `₩0`, nl: `₩0`, sv: `₩0`, no: '₩0', da: '₩0', fi: '₩0', it: "₩0", pl: "₩0", tr: '₩0'}),
+      basisSuffix: pickLang('터키 거주자', 'Turkey resident', '土耳其居民', 'Cư dân Thổ Nhĩ Kỳ', 'ผู้พำนักในตุรกี', 'Резидент Турции', buildCountryMore('tr'))
+    };
   } else if (country === 'other') {
     // "기타 국가" — COUNTRY_TAX_PROFILES 목록에 없는 나라 방문자를 위한 안전망(2026-07-28,
     // 사용자 요청). 자국 세법을 조사하지 않고도 확정적으로 말할 수 있는 건 미국 IRS의 비거주자
@@ -3592,6 +3686,10 @@ const REAL_ABROAD_CURRENCY = {
   // GBP/AUD/MXN/ZAR/MYR/SEK/NOK/DKK와 같은 이유로 Frankfurter/open.er-api가 이미 PLN을 지원해서
   // 새 API 없이 지원 가능).
   pl: 'PLN',
+  // 터키(TRY, 리라)도 폴란드와 같은 상황의 진짜 신규 통화 — CURRENCY_DISPLAY_META.TRY/
+  // EXCHANGE_RATE_TRY를 새로 정의함(2026-08-18, Frankfurter/open.er-api가 이미 TRY를 지원해서
+  // 새 API 없이 지원 가능). ⚠️ 리라는 변동성·평가절하가 큰 통화라 실시간 fetch 가치가 특히 큼.
+  tr: 'TRY',
 };
 
 // "실제로 다른 나라에 살아요" 카드의 US/CN 버튼 — 한국이랑 아무 상관없는 진짜 외국인(예: 순수
@@ -10920,7 +11018,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 페이지들은 애초에 한국 세법이 맞는 기준이라 이 파라미터가 필요 없음).
   // COUNTRY_TAX_PROFILES에 실제로 있는 코드로만 제한해서, 오타·구버전 링크가 미검증
   // 국가로 계산기를 조용히 맞춰버리는 걸 막음(33개국 토글 버튼과 동일한 목록).
-  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','no','da','fi','it','pl','other'];
+  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','no','da','fi','it','pl','tr','other'];
   const urlCountry = params.get('country');
   if (SUPPORTED_TAX_COUNTRIES.includes(urlCountry)) {
     setHomeCountry(urlCountry);
@@ -13778,6 +13876,30 @@ const COUNTRY_TAX_AUTHORITY = {
       fr: "Krajowa Administracja Skarbowa",
       tl: "Krajowa Administracja Skarbowa"
     , pt: `Krajowa Administracja Skarbowa`, es: `Krajowa Administracja Skarbowa`, uk: `Krajowa Administracja Skarbowa`, tet: `Krajowa Administracja Skarbowa`, de: `Krajowa Administracja Skarbowa`, nl: `Krajowa Administracja Skarbowa`, sv: `Krajowa Administracja Skarbowa`, no: `Krajowa Administracja Skarbowa`, da: `Krajowa Administracja Skarbowa`, fi: `Krajowa Administracja Skarbowa`, it: `Krajowa Administracja Skarbowa`, pl: "Krajowa Administracja Skarbowa", tr: 'Krajowa Administracja Skarbowa'}),
+  // 터키는 소득세법(GVK)이 아니라 상속·증여세법(VİVK, tr_resident 주석 참고)이 근거라, 폴란드
+  // (Krajowa Administracja Skarbowa)와 같은 이유로 특정 판례·유권해석 기관명이 아니라 터키
+  // 국세청 격 행정기관 공식명 "Gelir İdaresi Başkanlığı"(수입행정청, 약칭 GİB)를 uk의 HMRC/
+  // de의 Finanzamt/pl의 Krajowa Administracja Skarbowa와 같은 관례로 표기 — 언어 불문
+  // 통용되는 고유명사라 번역하지 않고 전체 언어 동일 문자열
+  tr: () => pickLang('Gelir İdaresi Başkanlığı', 'Gelir İdaresi Başkanlığı', 'Gelir İdaresi Başkanlığı', 'Gelir İdaresi Başkanlığı', 'Gelir İdaresi Başkanlığı', 'Gelir İdaresi Başkanlığı', {
+      km: "Gelir İdaresi Başkanlığı",
+      ne: "Gelir İdaresi Başkanlığı",
+      id: "Gelir İdaresi Başkanlığı",
+      my: "Gelir İdaresi Başkanlığı",
+      si: "Gelir İdaresi Başkanlığı",
+      uz: "Gelir İdaresi Başkanlığı",
+      mn: "Gelir İdaresi Başkanlığı",
+      kk: "Gelir İdaresi Başkanlığı",
+      ky: "Gelir İdaresi Başkanlığı",
+      ur: "Gelir İdaresi Başkanlığı",
+      bn: "Gelir İdaresi Başkanlığı",
+      lo: "Gelir İdaresi Başkanlığı",
+      ja: "Gelir İdaresi Başkanlığı",
+      ar: "Gelir İdaresi Başkanlığı",
+      hi: "Gelir İdaresi Başkanlığı",
+      fr: "Gelir İdaresi Başkanlığı",
+      tl: "Gelir İdaresi Başkanlığı"
+    , pt: `Gelir İdaresi Başkanlığı`, es: `Gelir İdaresi Başkanlığı`, uk: `Gelir İdaresi Başkanlığı`, tet: `Gelir İdaresi Başkanlığı`, de: `Gelir İdaresi Başkanlığı`, nl: `Gelir İdaresi Başkanlığı`, sv: `Gelir İdaresi Başkanlığı`, no: `Gelir İdaresi Başkanlığı`, da: `Gelir İdaresi Başkanlığı`, fi: `Gelir İdaresi Başkanlığı`, it: `Gelir İdaresi Başkanlığı`, pl: "Gelir İdaresi Başkanlığı", tr: "Gelir İdaresi Başkanlığı"})
 };
 
 // 세율 자체가 불확실하거나(공식 근거를 못 찾음), 세율은 알아도 실제 적용 여부가 불확실한 나라들을
@@ -15075,6 +15197,7 @@ const COUNTRY_TAX_PROFILES = [
   { code: 'fi', flagCode: 'FI', label: '핀란드 거주자 (실제 핀란드 거주 기준)', labelEn: 'Finland resident (living in Finland)', labelZh: '芬兰居民（实际住在芬兰）', labelVi: 'Cư dân Phần Lan (sống thực tế tại Phần Lan)', labelTh: 'ผู้พำนักในฟินแลนด์ (อาศัยอยู่จริงในฟินแลนด์)', labelRu: 'Резидент Финляндии (проживающий в Финляндии)', implemented: true, needsState: false, detailPage: 'finland-resident-us-lottery-tax.html', detailLabel: 'Suomi →', more: buildCountryMore('fi') },
   { code: 'it', flagCode: 'IT', label: '이탈리아 거주자 (실제 이탈리아 거주 기준)', labelEn: 'Italy resident (living in Italy)', labelZh: '意大利居民（实际住在意大利）', labelVi: 'Cư dân Ý (sống thực tế tại Ý)', labelTh: 'ผู้พำนักในอิตาลี (อาศัยอยู่จริงในอิตาลี)', labelRu: 'Резидент Италии (проживающий в Италии)', implemented: true, needsState: false, detailPage: 'italy-resident-us-lottery-tax.html', detailLabel: 'Italiano →', more: buildCountryMore('it') },
   { code: 'pl', flagCode: 'PL', label: '폴란드 거주자 (실제 폴란드 거주 기준)', labelEn: 'Poland resident (living in Poland)', labelZh: '波兰居民（实际住在波兰）', labelVi: 'Cư dân Ba Lan (sống thực tế tại Ba Lan)', labelTh: 'ผู้พำนักในโปแลนด์ (อาศัยอยู่จริงในโปแลนด์)', labelRu: 'Резидент Польши (проживающий в Польше)', implemented: true, needsState: false, detailPage: 'poland-resident-us-lottery-tax.html', detailLabel: 'Polski →', more: buildCountryMore('pl') },
+  { code: 'tr', flagCode: 'TR', label: '터키 거주자 (실제 터키 거주 기준)', labelEn: 'Turkey resident (living in Turkey)', labelZh: '土耳其居民（实际住在土耳其）', labelVi: 'Cư dân Thổ Nhĩ Kỳ (sống thực tế tại Thổ Nhĩ Kỳ)', labelTh: 'ผู้พำนักในตุรกี (อาศัยอยู่จริงในตุรกี)', labelRu: 'Резидент Турции (проживающий в Турции)', implemented: true, needsState: false, detailPage: 'turkey-resident-us-lottery-tax.html', detailLabel: 'Türkçe →', more: buildCountryMore('tr') },
 ];
 
 // 나라별 비교 카드가 텍스트/숫자로만 나열돼서 폰에서 심심하다는 피드백 — 카드를 탭하면 이
