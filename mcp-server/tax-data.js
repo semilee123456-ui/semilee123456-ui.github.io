@@ -1,12 +1,17 @@
 // Numeric tax rules for the "calculate_lottery_takehome" MCP tool.
 //
 // Source of truth is the main site's script.js (TAX_MODEL / STATE_TAX_RATES /
-// KOREA_TAX_BRACKETS / calcTakeHome(), roughly lines 1158-1990 as of 2026-08-06).
+// KOREA_TAX_BRACKETS / calcTakeHome(), roughly lines 1158-2429 as of 2026-08-18).
 // This file is a numeric-only re-derivation of that logic for a headless (no-DOM)
-// Node context — it intentionally drops the 26-language label strings, keeping
+// Node context — it intentionally drops the 30+-language label strings, keeping
 // only the math and a short English note per country. If the rates in script.js
 // change, this file needs to be updated to match by hand; it is NOT auto-generated
-// and there is no build step wiring the two together. Last synced with script.js: 2026-08-06.
+// and there is no build step wiring the two together. Last synced with script.js: 2026-08-18
+// (added the 21 countries introduced between 2026-08-16 and 2026-08-18: ca, tw, hk, uk,
+// au, mx, fr, nz, ie, sg, za, my, de, nl, sv, no, da, fi, it, pl, tr — all of them fit the
+// existing generic flat-rate + optional-FTC shape below, none needed bracket logic like
+// kr/pk, so they were folded straight into FLAT_COUNTRY_MODEL rather than given their own
+// branches).
 //
 // Every "additional country tax" branch below assumes the amount you pass in is
 // the actual payout you're evaluating (e.g. lump-sum cash value), not an announced
@@ -117,6 +122,28 @@ const FLAT_COUNTRY_MODEL = {
   kh: { rate: 0, ftcAvailable: true, note: '⚠️ Cambodia: no clear legal basis found for taxing personal lottery/prize income — treated as 0 pending verification, NOT a confirmed exemption.' },
   mn: { rate: 0.40, ftcAvailable: true, note: '⚠️ Mongolia: approximated at 40% per PwC Worldwide Tax Summaries ("Lotteries (net)"); not independently verified against primary legislation.' },
   la: { rate: 0.05, ftcAvailable: false, note: '⚠️ Laos: flat rate under the new income tax law; no US-Laos tax treaty, so no FTC — this stacks fully on top of US withholding.' },
+  // --- Added 2026-08-16 through 2026-08-18 (see file header) ---
+  ca: { rate: 0, ftcAvailable: true, note: 'Canada: lottery/gambling winnings are a non-taxable windfall under the Income Tax Act — no domestic tax base at all (not an FTC-to-zero case), same treatment for domestic and foreign lotteries.' },
+  tw: { rate: 0.20, ftcAvailable: true, note: 'Taiwan: worldwide-income Alternative Minimum Tax (Income Basic Tax Act Art. 13) applies a flat 20% to foreign-source income once it exceeds the NT$7.5M threshold (always true at jackpot scale); foreign tax paid is creditable against the resulting AMT increase (Art. 13 proviso).' },
+  hk: { rate: 0, ftcAvailable: true, note: 'Hong Kong: territorial system with only three narrow tax heads (salaries/profits/property tax) — lottery winnings fall outside all three, so there is no domestic tax base regardless of source.' },
+  uk: { rate: 0, ftcAvailable: true, note: 'UK: HMRC does not treat gambling/lottery winnings as taxable income at all (no Income Tax, Capital Gains Tax, or National Insurance) — same for the National Lottery and foreign lotteries.' },
+  au: { rate: 0, ftcAvailable: true, note: 'Australia: ATO treats gambling/lottery winnings as a non-assessable windfall gain rather than income — same for domestic (Powerball AU) and foreign lotteries, unless gambling is a taxpayer\'s business.' },
+  mx: { rate: 0.35, ftcAvailable: true, note: 'Mexico: a foreign lottery win falls under LISR Art. 142 "other income" (not the domestic-lottery Art. 138 withholding regime) and is taxed at the top progressive bracket (35%); Art. 5 foreign tax credit offsets the US withholding up to that amount, leaving a residual of ~5pp since Mexico\'s top rate exceeds the US 30%.' },
+  fr: { rate: 0, ftcAvailable: true, note: 'France: pure games of chance (lottery, draws with no player skill) fall outside every taxable-income category under the CGI unless gambling is a habitual profession — same domestic/foreign treatment.' },
+  nz: { rate: 0, ftcAvailable: true, note: 'New Zealand: IRD treats gambling/lottery winnings as a non-taxable windfall, not assessable income, for both Lotto NZ and foreign lotteries.' },
+  ie: { rate: 0, ftcAvailable: true, note: 'Ireland: Irish Revenue has never brought betting/lottery/prize winnings within any taxable-income category (TCA 1997 s.613(2) confirms this for betting gains specifically).' },
+  sg: { rate: 0, ftcAvailable: true, note: 'Singapore: IRAS\'s public FAQ states gambling/lottery winnings (4D/Toto/foreign lotteries alike) are windfall, not taxable income — no filing required.' },
+  za: { rate: 0, ftcAvailable: true, note: 'South Africa: lottery winnings are "capital in nature" and excluded from "gross income" under the Income Tax Act, and separately exempt from Capital Gains Tax.' },
+  my: { rate: 0, ftcAvailable: true, note: 'Malaysia: LHDN treats gambling/lottery winnings as a non-taxable windfall under the Income Tax Act 1967, same for domestic and foreign lotteries.' },
+  de: { rate: 0, ftcAvailable: true, note: 'Germany: EStG Sec. 2(3) limits taxable income to 7 enumerated categories (Sec 22 lists them) — lottery/gambling winnings fall outside all of them ("nicht steuerbar"), same for domestic and foreign lotteries.' },
+  nl: { rate: 0.378, ftcAvailable: false, note: '⚠️ Netherlands: a non-EU/EEA, non-online lottery win (i.e. Powerball/Mega Millions) is subject to kansspelbelasting (games-of-chance tax) at 37.8% (2026) — a separate tax head from income tax with no foreign-tax-credit provision found in its own statute, so it stacks in full on top of the US withholding.' },
+  sv: { rate: 0.30, ftcAvailable: true, note: 'Sweden: a non-EU/EEA lottery win is taxed as capital income at a flat 30% (Inkomstskattelagen ch.42 §25); the ordinary foreign tax credit exactly offsets the 30% US withholding, leaving a residual of 0 — coincidence of equal rates, not a structural exemption.' },
+  no: { rate: 0.22, ftcAvailable: true, note: 'Norway: "tilfeldige gevinster" (windfall prizes) over NOK 10,000 from a non-EEA/non-charitable operator are taxed at the flat general-income rate (22%); the treaty/domestic ordinary credit for the US withholding fully absorbs the (lower) Norwegian tax, leaving a residual of 0.' },
+  da: { rate: 0.5707, ftcAvailable: true, note: 'Denmark: winnings from an unlicensed (non-EU/EEA) game are taxed as personal income at the top marginal rate (57.07% including the new 2026 "top-top tax"); ordinary foreign tax credit under Ligningsloven §33 absorbs the 30% US withholding, leaving a residual of ~27.1pp — the largest of any supported country.' },
+  fi: { rate: 0.4617, ftcAvailable: true, note: 'Finland: a non-EEA lottery win is taxed at the top marginal rate (46.17%); ordinary foreign tax credit absorbs the 30% US withholding, leaving a residual of ~16.17pp.' },
+  it: { rate: 0.4723, ftcAvailable: true, note: 'Italy: a foreign lottery win is "redditi diversi" under TUIR Art. 67(1)(d), taxed at the top progressive IRPEF bracket plus regional/municipal surtax (~47.23% combined, using Lazio/Rome 2026 rates as a reference); Art. 165 ordinary foreign tax credit absorbs the 30% US withholding, leaving a residual of ~17.23pp.' },
+  pl: { rate: 0.36, ftcAvailable: true, note: 'Poland: the 10-15% preferential PIT rate on gambling winnings (Art. 30.1.2) is limited to games organized in Poland/EU/EEA, so a US lottery win falls into general progressive income tax (12%/32%) plus the "solidarity levy" (4% above PLN 1M), approximated at 36% combined; the 1974 US-Poland treaty has no modern "Other Income" article, and the proportional foreign tax credit leaves a residual of ~6pp.' },
+  tr: { rate: 0.20, ftcAvailable: false, note: '⚠️ Turkey: lottery/prize winnings are taxed under the Inheritance and Transfer Tax Law (VİVK) Art. 16 at a flat 20%, not under the income tax law (GVK) — since VİVK sits outside the scope of the US-Turkey income tax treaty (Art. 2) and VİVK\'s own domestic foreign tax credit (Art. 20) only covers foreign inheritance/gift tax, there is no credit against the US withholding; it stacks in full.' },
 };
 
 const SUPPORTED_COUNTRIES = ['kr', 'us', 'pk', 'other', ...Object.keys(FLAT_COUNTRY_MODEL)];

@@ -2,7 +2,7 @@
 
 An [MCP](https://modelcontextprotocol.io) server that exposes [ChamTax](https://chamtax.com)'s
 US lottery (Powerball / Mega Millions) after-tax take-home calculation as a tool an AI agent
-can call directly, for 21 countries plus all 50 US states + DC.
+can call directly, for 42 countries plus all 50 US states + DC.
 
 This is a **read-only, offline calculator** — no network calls, no API keys, no data collection.
 It runs entirely on your machine.
@@ -49,14 +49,20 @@ Other MCP clients follow the same shape — a command + args pointing at `index.
 | Argument | Type | Required | Notes |
 |---|---|---|---|
 | `amountUsd` | number | yes | The actual payout to evaluate (e.g. lump-sum cash value), **not** an announced annuity total. |
-| `country` | string | yes | One of: `kr, us, cn, in, vn, id, ph, th, jp, ru, np, lk, uz, kz, kg, mm, bd, pk, kh, mn, la, other` |
+| `country` | string | yes | One of: `kr, us, cn, in, vn, id, ph, th, jp, ru, np, lk, uz, kz, kg, mm, bd, pk, kh, mn, la, ca, tw, hk, uk, au, mx, fr, nz, ie, sg, za, my, de, nl, sv, no, da, fi, it, pl, tr, other` |
 | `stateCode` | string | no | US state code (e.g. `"CA"`). Only used when `country` is `"us"`. Defaults to the 50-state average. |
 | `krwPerUsd` | number | no | USD→KRW exchange rate. Only used when `country` is `"kr"` — every other country's rate is a flat percentage, so it doesn't need currency conversion. Defaults to an approximate, deliberately-stale placeholder if omitted. |
 
 Returns a JSON object with a tax breakdown, `takeHomeUsd`, `effectiveTaxRatePct`, and a `note`
-field — several countries (Thailand, Sri Lanka, Cambodia, Mongolia, Laos, Pakistan) carry an
-explicit ⚠️ in their note because no fully confirmed legal basis was found for their treatment
-of foreign lottery winnings; those are flagged approximations, not confirmed figures.
+field — several countries (Thailand, Sri Lanka, Cambodia, Mongolia, Laos, Pakistan, Netherlands,
+Turkey) carry an explicit ⚠️ in their note because either no fully confirmed legal basis was
+found for their treatment of foreign lottery winnings, or the tax head involved (e.g. Dutch
+kansspelbelasting, Turkish VİVK) sits outside the ordinary income-tax foreign-tax-credit
+machinery; those are flagged approximations or structurally-uncertain cases, not confirmed
+figures. Several other countries (Canada, Hong Kong, UK, Australia, France, New Zealand,
+Ireland, Singapore, South Africa, Malaysia, Germany) return `takeHomeUsd` equal to the amount
+after the 30% US withholding only — their home country simply has no domestic tax base for
+lottery/gambling winnings, so nothing is added on top.
 
 ## Not tax advice
 
@@ -69,7 +75,7 @@ their home-country tax law. See [chamtax.com](https://chamtax.com)'s disclaimer 
 
 **This file's numbers are hand-copied from the main site's `script.js`, not generated from
 it.** The site's tax logic lives in `script.js`'s `TAX_MODEL`, `STATE_TAX_RATES`,
-`KOREA_TAX_BRACKETS`, and `calcTakeHome()` (roughly lines 1158–1990 as of 2026-08-06),
+`KOREA_TAX_BRACKETS`, and `calcTakeHome()` (roughly lines 1158–2429 as of 2026-08-18),
 which is written for a browser DOM context, not headless Node. `tax-data.js` in this
 directory is a numeric-only re-derivation for that reason — if a country's rate changes in
 `script.js`, someone needs to update `mcp-server/tax-data.js` by hand to match. There is no

@@ -1,0 +1,366 @@
+{
+  "source": "https://chamtax.com/lottery-tax-data-hub.html",
+  "license": "CC0-1.0 (public domain) — attribution to ChamTax (chamtax.com) appreciated but not required",
+  "lastUpdated": "2026-08-18",
+  "methodology": "Top marginal individual state income tax rate, applied as a flat approximation on the assumption that a jackpot-size prize always falls in the top bracket. Not a withholding rate — see the page for the withholding-vs-top-rate distinction.",
+  "unit": "percent",
+  "rows": [
+    {
+      "code": "AK",
+      "name": "Alaska",
+      "ratePct": 0,
+      "exempt": false,
+      "noIncomeTax": true
+    },
+    {
+      "code": "AL",
+      "name": "Alabama",
+      "ratePct": 5,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "AR",
+      "name": "Arkansas",
+      "ratePct": 3.9,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "AZ",
+      "name": "Arizona",
+      "ratePct": 2.5,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "CA",
+      "name": "California",
+      "ratePct": 0,
+      "exempt": true,
+      "noIncomeTax": false
+    },
+    {
+      "code": "CO",
+      "name": "Colorado",
+      "ratePct": 4.4,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "CT",
+      "name": "Connecticut",
+      "ratePct": 6.99,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "DC",
+      "name": "Washington D.C.",
+      "ratePct": 10.75,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "DE",
+      "name": "Delaware",
+      "ratePct": 6.6,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "FL",
+      "name": "Florida",
+      "ratePct": 0,
+      "exempt": false,
+      "noIncomeTax": true
+    },
+    {
+      "code": "GA",
+      "name": "Georgia",
+      "ratePct": 5.39,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "HI",
+      "name": "Hawaii",
+      "ratePct": 11,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "IA",
+      "name": "Iowa",
+      "ratePct": 3.8,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "ID",
+      "name": "Idaho",
+      "ratePct": 5.3,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "IL",
+      "name": "Illinois",
+      "ratePct": 4.95,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "IN",
+      "name": "Indiana",
+      "ratePct": 2.95,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "KS",
+      "name": "Kansas",
+      "ratePct": 5.58,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "KY",
+      "name": "Kentucky",
+      "ratePct": 3.5,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "LA",
+      "name": "Louisiana",
+      "ratePct": 3,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "MA",
+      "name": "Massachusetts",
+      "ratePct": 9,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "MD",
+      "name": "Maryland",
+      "ratePct": 6.5,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "ME",
+      "name": "Maine",
+      "ratePct": 9.15,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "MI",
+      "name": "Michigan",
+      "ratePct": 4.25,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "MN",
+      "name": "Minnesota",
+      "ratePct": 9.85,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "MO",
+      "name": "Missouri",
+      "ratePct": 4.7,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "MS",
+      "name": "Mississippi",
+      "ratePct": 4,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "MT",
+      "name": "Montana",
+      "ratePct": 5.65,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "NC",
+      "name": "North Carolina",
+      "ratePct": 3.99,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "ND",
+      "name": "North Dakota",
+      "ratePct": 1.95,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "NE",
+      "name": "Nebraska",
+      "ratePct": 4.55,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "NH",
+      "name": "New Hampshire",
+      "ratePct": 0,
+      "exempt": false,
+      "noIncomeTax": true
+    },
+    {
+      "code": "NJ",
+      "name": "New Jersey",
+      "ratePct": 10.75,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "NM",
+      "name": "New Mexico",
+      "ratePct": 5.9,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "NV",
+      "name": "Nevada",
+      "ratePct": 0,
+      "exempt": false,
+      "noIncomeTax": true
+    },
+    {
+      "code": "NY",
+      "name": "New York",
+      "ratePct": 10.9,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "OH",
+      "name": "Ohio",
+      "ratePct": 2.75,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "OK",
+      "name": "Oklahoma",
+      "ratePct": 4.5,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "OR",
+      "name": "Oregon",
+      "ratePct": 9.9,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "PA",
+      "name": "Pennsylvania",
+      "ratePct": 3.07,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "RI",
+      "name": "Rhode Island",
+      "ratePct": 5.99,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "SC",
+      "name": "South Carolina",
+      "ratePct": 6.2,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "SD",
+      "name": "South Dakota",
+      "ratePct": 0,
+      "exempt": false,
+      "noIncomeTax": true
+    },
+    {
+      "code": "TN",
+      "name": "Tennessee",
+      "ratePct": 0,
+      "exempt": false,
+      "noIncomeTax": true
+    },
+    {
+      "code": "TX",
+      "name": "Texas",
+      "ratePct": 0,
+      "exempt": false,
+      "noIncomeTax": true
+    },
+    {
+      "code": "UT",
+      "name": "Utah",
+      "ratePct": 4.55,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "VA",
+      "name": "Virginia",
+      "ratePct": 5.75,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "VT",
+      "name": "Vermont",
+      "ratePct": 8.75,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "WA",
+      "name": "Washington",
+      "ratePct": 0,
+      "exempt": false,
+      "noIncomeTax": true
+    },
+    {
+      "code": "WI",
+      "name": "Wisconsin",
+      "ratePct": 7.65,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "WV",
+      "name": "West Virginia",
+      "ratePct": 4.82,
+      "exempt": false,
+      "noIncomeTax": false
+    },
+    {
+      "code": "WY",
+      "name": "Wyoming",
+      "ratePct": 0,
+      "exempt": false,
+      "noIncomeTax": true
+    }
+  ]
+}
