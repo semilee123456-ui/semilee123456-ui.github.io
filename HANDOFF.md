@@ -586,21 +586,36 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
 
 ## 알려진 미해결 항목
 
-- **👤 Zenodo 연동 마무리 — 사용자가 브라우저에서 직접 해야 함, 세션이 대신 못 함.**
-  `us-lottery-tax-data` 저장소는 이미 준비 완료(`LICENSE`+`CITATION.cff` 푸시됨, 커밋
-  `05507cb`). 남은 건 (1) zenodo.org에 GitHub 계정으로 로그인, (2) GitHub 연동에서
-  `semilee123456-ui/us-lottery-tax-data` 토글 ON, (3) 그 저장소 GitHub "Releases →
-  Draft a new release"로 `v1.0.0` 태그 만들어 게시 — 이 순간 Zenodo가 자동으로 DOI
-  발급함. 세션이 못 하는 이유: OAuth 로그인은 브라우저가 필요하고, 이 세션의 GitHub
-  MCP 툴셋엔 release 생성 API 자체가 없음(list/get만 있음, 재확인 불필요). 사용자가
-  완료하면 다음 세션이 README.md/press-kit.html에 DOI 배지 추가하는 후속 작업 가능
-  (요청 시). 경위는 "작업 이력"의 42개국 감사+홍보 검토 항목 참고.
-- **👤 `us-lottery-tax-data` GitHub 저장소 topics 태그 설정 — 사용자가 직접 해야 함.**
-  GitHub 저장소 설정 화면(gear 아이콘 옆 topics)에서 `lottery-tax`/`open-data`/`dataset`/
-  `powerball`/`csv` 등 태그 추가하면 GitHub 검색 노출에 도움됨 — 이 세션의 GitHub MCP
-  툴셋엔 topics 설정 API가 없어서(repo 메타데이터 업데이트 도구 자체가 없음) 못 함,
-  30초 작업이라 다음에 직접 하면 됨. README는 이미 CC0 문구를 앞으로 옮기고 데이터
-  허브/Kaggle 링크 추가해서 세션이 미리 개선해둠(커밋 `6817d49`).
+### 👤 사용자가 직접 해야 하는 일 (세션이 대신 못 함) — 2026-08-19 기준 총정리
+
+**지금 결정만 하면 바로 되는 것:**
+1. **Zenodo 3단계**: (1) zenodo.org에 GitHub 계정으로 로그인 → (2) GitHub 연동에서
+   `semilee123456-ui/us-lottery-tax-data` 토글 ON → (3) 그 저장소 GitHub "Releases →
+   Draft a new release"로 `v1.0.0` 태그 만들어 게시. 이 순간 DOI 자동 발급됨. 저장소
+   쪽 준비(LICENSE/CITATION.cff/README)는 세션이 이미 다 해둠. 브라우저 OAuth라 세션이
+   대신 못 함, GitHub MCP 툴셋에 release 생성 API도 없음.
+2. **`us-lottery-tax-data` GitHub topics 태그 추가** (저장소 설정 화면, 30초): 예)
+   `lottery-tax`/`open-data`/`dataset`/`powerball`/`csv`. repo 메타데이터 수정 API가
+   이 세션 도구셋에 없어서 못 함.
+3. **유료 검색광고(Google Ads) 진행 여부 결정**: 예산 지출 결정이라 세션이 임의로
+   진행 안 함 — 하기로 하면 다음 세션에 알려주면 됨(캠페인 자체 설정은 세션이 도울 수
+   있음, 계정 생성·결제수단 등록만 사용자 몫).
+
+**이미 준비돼있고, 본인이 "몇 개월 뒤 다시 요청"하기로 보류한 것(2026-08-06/18 결정,
+지금 재개할 필요 없음, 요청하면 그때 진행):**
+4. AlternativeTo·GeekNews·Reddit(r/SideProject, r/IndieHackers) 게시 — 계정/초안 준비
+   완료 상태로 대기 중.
+5. Show HN 재시도 — HN이 Show HN 카테고리를 사이트 전체적으로 임시 제한 중이라, 다른
+   글에 댓글 다는 등 커뮤니티 활동을 좀 한 뒤 재시도 필요(날짜 대기 아님).
+
+**액션 불필요 — 그냥 기다리면 됨(참고용, 매 세션 재점검 안 해도 됨):**
+- 구글 애드센스 승인 (2026-08-18 기준 미승인, 코드상 차단 요인 없음 확인됨, 순수 심사
+  대기 — 사용자가 "승인됐다"고 알려줄 때까지 이 상태로 둘 것)
+- Disquiet 제출 승인 대기
+- GitHub Awesome List PR 승인 대기
+
+---
+
 - **📋 2026-08-19 홍보 후속 제안(공공데이터 포털/디렉터리 대량 조사) — 의도적으로 착수
   안 함.** 사용자가 외부 AI의 후속 제안(Data.gov/CKAN/Socrata 등록 가능성 조사, Google
   Public Data Explorer, 데이터셋 디렉터리·계산기 디렉터리 전수 조사)을 공유 → 판단:
