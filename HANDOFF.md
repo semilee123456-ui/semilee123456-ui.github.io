@@ -1773,3 +1773,43 @@ netherlands/sweden/italy/poland. 위와 완전히 동일한 패턴(현지통화 
 국가(태국·키르기스스탄처럼 리서치가 오래 걸리는 곳)는 배치당 12만 토큰대까지 나옴 — 다음
 세션도 배치를 3개국 이하로 유지하고 배치마다 커밋·푸시할 것. 3단계(캄보디아/몽골/미얀마 등)는
 여전히 미착수.
+
+### 2026-08-19 이어서 — 2단계 완료(B등급 20개국 전부), 3단계만 남음
+
+사용자가 계속 "계속해줘"로 요청 → 남은 7개국(아일랜드/싱가포르/말레이시아,
+네덜란드/스웨덴/이탈리아/폴란드)을 서브에이전트 2개 병렬(3개국+4개국)로 마저 처리.
+**이 7개국은 전부 gap #1(현지통화 예시)이 이미 08-17/18에 다른 세션이 먼저 채워둔
+상태였음** — 이번 세션은 gap #2(송금/AML 신고 섹션)만 추가.
+
+**적용한 것**:
+- `us-lottery-tax-for-irish-residents.html`: Central Bank of Ireland AML 감독 + FIU
+  Ireland(Garda 소속) — 신뢰도 높음(공식 페이지 확인), 구체적 금액 임계값은 못 찾아 숫자 없이.
+- `us-lottery-tax-for-singapore-residents.html`: 싱가포르는 자본통제 자체가 없음(SGD 자유
+  태환) — MAS Notice 626 + STRO(싱가포르 경찰청 산하 FIU) — 신뢰도 높음(MAS 공식 문서).
+- `us-lottery-tax-for-malaysians.html`: BNM의 실물현금 신고 기준(USD 10,000/RM 1,000,
+  Customs Form 7)은 전신송금엔 적용 안 됨을 명확히 구분 — 이 기준 자체는 신뢰도 높음
+  (BNM/세관 공식 확인), 전신송금 전용 임계값은 못 찾아 숫자 없이 은행 AMLA 2001 KYC로만 서술.
+- `netherlands-resident-us-lottery-tax.html`: DNB 감독 + Wwft(자금세탁방지법) + FIU-Nederland
+  — 신뢰도 높음(기관명/역할), 구체적 금액 기준은 없음.
+- `sweden-resident-us-lottery-tax.html`: Finansinspektionen 감독 + Finanspolisen(경찰청
+  산하 FIU) — 신뢰도 높음(기관명/역할).
+- `italy-resident-us-lottery-tax.html`: Banca d'Italia 감독 + UIF(D.Lgs. 231/2007에 따른
+  SOS 의심거래보고) — 신뢰도 높음. 이탈리아의 현금거래 한도("soglia contante")는 전신송금에
+  적용 안 됨을 의도적으로 배제.
+- `poland-resident-us-lottery-tax.html`: 2018년 3월 AML/CFT법 + GIIF(재무부 산하 금융정보국)
+  — 신뢰도 높음(GIIF 역할), NBP는 부차적으로만 언급(주로 환전소 감독 기관이라 인바운드
+  송금과 직접 관련은 약함).
+- 7개 파일 전부: 새 FAQ 항목 1개 + JSON-LD FAQPage 동기화 + `updated-date` 08-19 갱신.
+
+**검증**: 배치 2번(3개국/4개국) 각각 JSON-LD Python 파싱 → `broken_link_audit`(143)·
+`fact_consistency_audit`(148)·`console_error_audit`(224) 전부 `ISSUES: 0` 확인 후 커밋
+2개로 분리 푸시.
+
+**✅ 이걸로 2단계(B등급 20개국 현지통화 예시+송금/AML 신고 섹션 일괄 주입)가 완전히
+종결됨.** 남은 것은 사용자가 정한 **3단계뿐**: 캄보디아/몽골/미얀마 등 법률 불확실
+A등급 국가에 태국 페이지식 "법적 공백 및 유의점" 섹션을 정직하게 명시하는 작업 — 원본
+42개국 감사(Artifact `https://claude.ai/code/artifact/be756499-bfd5-4088-9aac-408f64e43087`)
+결과에서 14개 A등급국 중 미착수로 남겨둔 것들. 어떤 국가가 정확히 3단계 대상인지는 그
+Artifact에서 서브에이전트로 재조회해서 확인하는 것부터 시작할 것(이번 세션들이 B등급
+목록 재조회할 때 썼던 것과 같은 방식). 다음 세션도 토큰 절약을 위해 배치 크기를 작게
+유지하고 배치마다 커밋·푸시할 것 — 이번 세션 전체가 이 패턴으로 진행돼 효과적이었음.
