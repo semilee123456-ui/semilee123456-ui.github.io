@@ -1687,3 +1687,47 @@ Python으로 JSON-LD 블록 전체 파싱 검증(신규 FAQ 항목이 트레일�
 올바르게 추가됐는지 포함) 통과. Artifact로 두 페이지 직접 렌더링해 육안 확인.
 
 **남은 후속 작업(2단계·3단계)은 위 우선순위 그대로 유지** — 다음 세션이 이어갈 것.
+
+### 2026-08-19 이어서 — 2단계 착수: B등급 6개국(캐나다/영국/호주/인도/베트남/필리핀) 완료
+
+사용자가 "계속해줘, 토큰 많이 없으니까 하면서 계속 머지해줘"로 요청 — 서브에이전트로 작업을
+넘기고, 배치가 끝날 때마다 바로 커밋·푸시하는 방식으로 진행(한 번에 몰아서 안 하고 나눠서
+머지). B등급 20개국 전체 목록은 이전 감사 Artifact(`https://claude.ai/code/artifact/
+be756499-bfd5-4088-9aac-408f64e43087`)에서 서브에이전트로 재조회해 확보:
+china/india/vietnam/indonesia/philippines/thailand/kyrgyzstan/laos/canada/uk/australia/
+france/nz/ireland/singapore/malaysia/netherlands/sweden/italy/poland (20개, nz는 이미
+1단계에서 처리 완료).
+
+**적용한 것(서브에이전트 2개 병렬, 국가당 리서치+작성 후 커밋 전 검증)**:
+- `us-lottery-tax-for-canadians.html`: FINTRAC EFTR(CA$10,000+ 전신송금 보고) — 공식
+  FINTRAC 가이드 직접 확인, 신뢰도 높음. 현지통화 예시(USD→CAD ~1.39)도 추가.
+- `us-lottery-tax-for-uk-residents.html`: 은행 AML/CDD(2017 Regulations, FCA 감독) —
+  구체적 파운드 임계값을 찾지 못해 숫자 없이 일반적으로 서술(신뢰도 낮음, 명시).
+- `us-lottery-tax-for-australians.html`: AUSTRAC IFTI(전신송금은 금액 무관 전건 10영업일
+  이내 보고, TTR의 A$10,000 현금 기준과는 별개) — 공식 AUSTRAC 페이지로 확인, 신뢰도 높음.
+- `india-resident-us-lottery-tax.html`(힌디어): 기존에 없던 FEMA/LRS(출국 송금 전용
+  한도, $250,000/년)와 인바운드 수취 시 실제 적용되는 은행 KYC/PMLA 규정을 명확히 구분
+  — 구체적 루피 임계값은 못 찾아 숫자 없이 서술(신뢰도 낮음, 명시). 현지통화 예시는
+  quick-answer에 달러 환산 수치 자체가 없는 페이지 구조라 스킵(의도적, 무리한 삽입 안 함).
+- `vietnam-resident-us-lottery-tax.html`(베트남어): SBV Circular 27/2025/TT-NHNN(2025-11-01
+  시행, USD 1,000+ 국제송금 SBV 보고) — 다수 출처로 교차확인, 신뢰도 높음. 현지통화 예시는
+  같은 이유로 스킵.
+- `philippines-resident-us-lottery-tax.html`(타갈로그어): AMLC Covered Transaction Report
+  (₱500,000+, RA 9160 개정 + BSP 규정) — 다수 출처로 교차확인, 신뢰도 높음. 현지통화 예시는
+  같은 이유로 스킵.
+- 6개 파일 전부: 새 FAQ 항목 1개 + JSON-LD FAQPage 동기화 + `updated-date` 08-19 갱신.
+
+**검증(배치 2번 다 동일하게 수행)**: 각 파일 JSON-LD Python 파싱 검증(트레일링 콤마 없음
+확인) → `broken_link_audit`(143)·`fact_consistency_audit`(148)·`console_error_audit`(224,
+서버 `python3 -m http.server 9000` 기동 후) 전부 `ISSUES: 0` 확인 후 커밋 2개로 분리 푸시
+(CA/UK/AU 먼저, IN/VN/PH 따로) — 사용자가 요청한 "나눠서 계속 머지" 방식.
+
+**⚠️ 다음 세션 이어서 할 작업 — 2단계 나머지 14개국 미착수**: china/indonesia/thailand/
+kyrgyzstan/laos/france/ireland/singapore/malaysia/netherlands/sweden/italy/poland (13개,
+정확히는 위 20개 중 이번 세션이 처리한 6개+nz를 뺀 나머지). 같은 패턴(현지통화 예시
+`.section-note` + 송금/AML 신고 섹션 `<h2>` + FAQ 1개 + JSON-LD 동기화, 국가당 실제
+WebSearch로 검증된 사실만 반영, 확인 안 되는 숫자는 지어내지 말고 일반적으로 서술)으로
+서브에이전트 배치를 이어가면 됨. 이번 세션이 확인한 것: 국가당 서브에이전트 리서치+작성에
+토큰이 상당히 듦(6개국에 서브에이전트 2개, 각각 9~12만 토큰 안팎 소모) — 사용자가 토큰
+제약을 명시했으므로 다음 세션도 배치를 작게 나누고 배치마다 커밋·푸시할 것. 3단계(캄보디아/
+몽골/미얀마 등 법률 불확실 A등급 국가)는 여전히 미착수, 2단계 완료 후 순서대로 진행.
