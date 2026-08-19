@@ -1227,12 +1227,12 @@ LotteryUSA만 노출됨) — "이미 1순위 노출된다"는 전제는 틀림. 
 
 ## 작업 이력 (날짜순, 세션마다 맨 아래에 새 항목 추가)
 
-이보다 오래된 세션 기록(~2026-08-18 주 12개 pSEO 랜딩페이지 라운드까지)은
+이보다 오래된 세션 기록(~2026-08-18 원본 데이터 허브 페이지 라운드까지)은
 `HANDOFF-ARCHIVE.md` 참고(특정 과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님).
-이 본문에는 최근 세션(국가별 비교 페이지+공유카드 강화, 원본 데이터 허브 페이지 신설,
-hreflang/robots 기술 SEO 감사, us-lottery-tax-data 42개국 갱신) 기록만 남겨둠 — 날짜별
-항목이 3~4개를 다시 넘어가면 가장 오래된 날짜부터 또 이 방식으로 정리할 것(같은 패턴
-반복, `HANDOFF-ARCHIVE.md` 맨 뒤에 이어 붙이면 됨).
+이 본문에는 최근 세션(hreflang/robots 기술 SEO 감사, us-lottery-tax-data 42개국 갱신,
+사이트 전체 국가·언어 표기 통일, PR #248 검토·재구현) 기록만 남겨둠 — 날짜별 항목이
+3~4개를 다시 넘어가면 가장 오래된 날짜부터 또 이 방식으로 정리할 것(같은 패턴 반복,
+`HANDOFF-ARCHIVE.md` 맨 뒤에 이어 붙이면 됨).
 
 **⚠️ 다음 세션 참고 — 이 저장소에서 여러 세션이 동시에 활동 중일 수 있음**: 2026-08-18
 하루 동안 이 세션(`claude/handover-token-optimization-kf232u`)과 별개로 최소 1개의
@@ -1437,244 +1437,6 @@ PR #251(lump-sum-vs-annuity 표 table-wrap 버그 수정), PR #252(문서 전용
 당첨번호 최신화 여부도 확인 — `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`(2026-08-15)·
 `MEGAMILLIONS_DRAW_ARCHIVE`(2026-08-14) 전부 실제 결과와 정확히 일치, 손댈 것 없었음.
 
-### 2026-08-18 이어서 — "홍보 8대 우선순위" 3번(국가별 나란히 비교) + 7번(공유 결과 카드 강화) 실행 (worktree 서브에이전트)
-
-사용자가 위 3번·7번 실행을 확정 → 직전 항목의 판단(지금 홈 계산기는 국가를 "하나씩 골라서
-보는" 방식이라, 여러 나라를 "동시에 나란히" 보여주는 화면은 실제로 없는 신규 기능)을 그대로
-따라 새 페이지 `lottery-tax-by-country.html`을 신설. 세션 시작 시 이전 시도(같은 요청의
-API 세션 한도 중단 재시도)가 남긴 파일이 있는지 `git status`/`git log`로 먼저 확인했으나
-없었음(깨끗한 상태에서 새로 시작). 동시에 진행 중일 수 있는 "데이터 허브 페이지" 서브에이전트
-(`.claude/worktrees/agent-ab6fcf35132fc04b0`, 격리 정책상 내용 직접 열람은 못 함)와는 다른
-파일(`lottery-tax-by-country.html` 신규, `index.html`/`sitemap.xml`/`sitemap.html`은 각자
-다른 지점에 추가하는 형태라 겹칠 가능성 낮음)이라 별도 작업으로 진행.
-
-**국가 선정(8개)**: 트래픽 상위(한국·미국·베트남·중국·인도 — `widget-embed.html`/
-`press-kit.html` "Reference scenario" 표에 이미 있는 조합) + 인지도 높은 나라(일본·영국·
-캐나다) 조합. 일본은 이미 위 5개국과 같은 그룹에 포함, 영국·캐나다는 사이트가 실지원하는
-42개국에 이미 있지만(`script.js`의 `uk_resident`/`ca_resident`, 둘 다 세율 0% — HMRC·CRA가
-복권 당첨금을 아예 과세 대상으로 안 봄) 지금까지 어떤 프로모션 자료(위젯·프레스킷)에도 등장한
-적 없어 새로 포함.
-
-**세율 로직 출처**: `mcp-server/tax-data.js`를 먼저 확인 — 파일 주석 그대로 "2026-08-06 이후
-sync 안 됨"이 사실이었지만, 이번에 쓸 8개국(kr/us/vn/cn/in/jp/uk/ca) 중 uk/ca 2개만 그
-파일에 아예 없었고(2026-08-16에 `script.js`에 새로 추가된 나라라 tax-data.js가 아직 못 따라감,
-이탈리아·폴란드·터키처럼 세율 자체가 달라진 게 아니라 "통째로 없음" 케이스) 나머지 6개국은
-`node`로 직접 실행해 `press-kit.html`의 "Reference scenario: ~$100M" 표(53.5%/58.3%/70%/
-70%/61%/70%)와 소수점까지 정확히 일치함을 확인 → 그대로 신뢰. uk/ca는 `script.js`의
-`TAX_MODEL.uk_resident`/`ca_resident` 원문(둘 다 `rate: 0`, FTC 상계 이전에 애초에 과세표준
-자체가 없는 구조)을 직접 읽어 새 페이지의 인라인 `<script>`에 바닐라 JS로 옮겨 적음 — Node
-모듈을 브라우저에 그대로 못 쓰기 때문에(정적 사이트, 빌드 스텝 없음) `calculateTakeHome()`의
-US/KR/flat-country 세 분기를 전부 손으로 포팅. **포팅 중 실제로 발견한 버그**: 첫 버전이
-한국 분기에서 `tax-data.js`가 하는 "국세 잔여분의 10% 지방소득세 surtax"를 빠뜨려 한국 결과가
-과소계상됐음(Playwright로 `$100M` 기준 실행값을 `press-kit.html` 53.5%와 대조하다가 55%로
-어긋나는 걸 발견) — surtax 항을 추가해 정확히 53.5%로 일치시킴. 또 렌더링 코드가
-`r.entry.note`(항상 undefined인 필드)를 읽던 오타도 스크린샷에서 발견해 `r.note`로 수정.
-미국 카드는 특정 주 대신 `STATE_TAX_RATES` 50개 주+DC 평균(`tax-data.js`로 계산한
-0.047192...)을 연방세 37%에 더해 사용(주별 정밀 비교는 기존 계산기로 유도).
-
-**기능**: 잭팟 금액 입력(기본 $500M, 자유 변경) 하나로 8개국 카드를 실수령액 내림차순으로
-동시에 렌더링 — 일시불/연금 토글은 만들지 않음(대부분 국가가 flat-rate라 금액에 무관하게
-%가 거의 고정, 한국만 누진이지만 잭팟 규모에선 사실상 항상 최고구간이라 토글이 주는 정보량이
-적어 과설계로 판단). 각 카드에 실수령액·총세율·바 그래프·1줄 근거(FTC로 상쇄됐는지, 왜
-0%인지 등)를 표시. 환율은 `script.js`의 `EXCHANGE_RATE` 폴백값(1487.73, 2026-07-17
-확인분)을 고정 참고환율로 재사용(정적 사이트라 실시간 조회 없음 — `widget-embed.html`과
-같은 방식), 한국 세율 구간 판정에만 영향.
-
-**공유(7번)**: `biggest-lottery-jackpots-after-tax.html`의 `sharePage()` 패턴(홈 화면
-`shareResult()`와 같은 `navigator.share` 우선 → `isDesktopPointerEnv` 판정으로 데스크톱은
-클립보드 복사 폴백 → 그마저 실패하면 `window.prompt`)을 그대로 재사용하되, 공유 문구를
-"1개국 기준 결과"가 아니라 "8개국 비교 결과 전체"로 새로 작성(1등 국가와 꼴찌 국가를 금액과
-함께 명시하는 한 문장 + 딥링크). 딥링크는 `?amount=`만 지원(국가 8개는 항상 고정 노출이라
-"어느 국가를 보여줄지"는 애초에 상태가 아님 — `?countries=` 같은 필터 파라미터는 만들지
-않음, 과설계 방지). 페이지 로드 시 `?amount=`를 읽어 입력값을 복원(홈 화면 `DOMContentLoaded`의
-대칭 처리와 같은 패턴). Playwright로 데스크톱(클립보드 복사 확인, `✅ Link copied` 토스트
-텍스트까지 확인)·모바일(`navigator.share` 호출 인자에 정확한 title/text/url이 실리는지)
-둘 다 라이브 검증함(오늘 세션이 이 폴백 흐름을 이미 검증했다는 인수인계 기록대로 같은 패턴
-재사용, 이번에도 다시 직접 검증).
-
-**정확도 검증**: `$100M` 기준 8개국 전부 `press-kit.html` 표와 소수점까지 일치(위 버그 수정
-후). `$500M` 기준으로도 재검증(한국 45.0%/미국 41.7%/인도 39.0%/나머지 5개국 30.0% —
-많은 나라가 30%로 같은 이유는 미국 원천징수 30%보다 자국세율이 낮아 FTC가 완전히 상쇄하기
-때문, FAQ에 이유 명시). 손계산 대조: 베트남 $500M → 원천징수 $150M + 잔여세($50M 계산분,
-FTC $150M 한도로 전액 상쇄) = 세금 $150M(30%) → 실수령 $350M, 코드 출력과 일치.
-
-**반응형**: Playwright로 360px/390px 폭에서 가로 스크롤 없음(`body.scrollWidth` ==
-`viewport width`) 확인, 카드 그리드가 1열로 정상 스택. 900px에서는 2열. 라이트/다크 모드
-스크린샷 둘 다 확인.
-
-**페이지 기본 요건**: `california-lottery-tax.html`/`biggest-lottery-jackpots-after-tax.html`을
-템플릿으로 GA4·Clarity 스니펫·canonical·og/twitter·BreadcrumbList/FAQPage/Organization/
-WebSite/SoftwareApplication/HowTo/WebPage(speakable) JSON-LD 전부 포함(7개 블록, `json.loads`로
-전수 파싱 검증). "정산 티켓" 공용 CSS 토큰(`--teal`/`--card`/다크모드 등)은 재사용하되 90여 개
-랜딩페이지가 쓰는 `apply-landing-ticket-style.js` 전파 대상에는 포함하지 않음(이 페이지는
-그 90여 개와 다른 전용 카드 그리드 레이아웃이 필요해 독립 `<style>` 유지 — 나중에 그 스크립트를
-돌려도 이 페이지가 실수로 덮어써지지 않게 스타일 블록 상단에 이유를 주석으로 남김).
-
-**연결**: `index.html`에 링크 2곳 추가 — ①결과 티켓 바로 아래(요청대로 "결과 영역 근처,
-과하게 눈에 띄지 않게" — 새 explore-card를 만들지 않고 조용한 텍스트 한 줄만 추가, 기존
-"국가별 비교" explore-card는 `goToCompareWithOppositeCountry()`로 다른 기능이라 대체하지
-않음) ②`related-guides-row`(영어 전용 링크 목록, 기존 관례대로 새 i18n 키 없이 영어 텍스트만).
-`sitemap.xml`·`sitemap.html`("In-Depth Guides" 섹션) 등재. `tests/broken_link_audit.js`
-142개 파일 전수 0 issues. `script.js`/`styles.css`는 안 건드려서 `build-min.js` 재빌드·
-캐시 버전업 불필요.
-
-**남은 8대 우선순위**: 2번(원본 데이터 허브)·4~6번(이미지 SEO/AI 검색 노출/SC 개선)·8번
-(백링크용 데이터 페이지)은 여전히 미착수 — 다음 세션은 임의로 시작하지 말고 확인부터.
-
-### 2026-08-18 이어서 — 원본 데이터 허브 페이지 신설 + 이미지 검색용 정적 차트 (홍보 8대 우선순위 2·4번)
-
-새 페이지 `lottery-tax-data-hub.html` — 기자·블로거가 인용할 "원본 자료" 페이지(우선순위
-2번)와 이미지 검색 SEO용 데이터 차트(4번)를 함께 처리. worktree 서브에이전트로 진행(이전
-시도가 API 세션 한도로 중간에 죽었었는데, 이번 worktree엔 그 흔적이 전혀 없어 완전히
-새로 시작 — `git status`/`git log`로 확인함).
-
-**데이터 출처(숫자 새로 안 지어냄)**: 주별 세율은 `script.js`의 `STATE_TAX_RATES`(2240번째
-줄, 50개 주+DC+AVG)를 그대로 가져옴. 국가별 세율은 `script.js`의 `TAX_MODEL`(1239~2233번째
-줄, 42개국 — kr/us/pk는 누진·다단계 구조라 `calcTakeHome()`에 개별 분기, 나머지 39개국은
-"단일세율 + FTC 있으면 min(미국원천징수,자국세액) 상계" 공통 패턴)에서 각 국가의 `rate`/
-`ftc_available` 필드를 grep으로 전수 추출해 사용. `COUNTRY_TAX_AUTHORITY`(13035번째 줄)에서
-영문 세무당국명도 그대로 가져옴 — 새로 조사하지 않음.
-
-**`mcp-server/tax-data.js` 동기화(중요 — 예상보다 훨씬 뒤처져 있었음)**: 파일 상단 주석엔
-"2026-08-06 동기화"라고만 적혀있어 이탈리아·폴란드·터키 3개국만 빠진 걸로 짐작했으나, 실제로
-대조해보니 2026-08-16~18에 추가된 **21개국 전체**(ca·tw·hk·uk·au·mx·fr·nz·ie·sg·za·my·de·nl·
-sv·no·da·fi·it·pl·tr)가 `FLAT_COUNTRY_MODEL`에 아예 없었음(그 시점엔 `la`까지가 마지막).
-`script.js`의 `calcTakeHome()` 국가별 분기를 직접 대조해 21개국 전부 "단일세율 + 선택적 FTC"
-공통 패턴을 그대로 따르는 것(kr/us/pk처럼 별도 분기 구조가 필요한 나라 없음)을 확인한 뒤
-`FLAT_COUNTRY_MODEL`에 21개 항목 추가, 헤더 주석 동기화 날짜를 2026-08-18로 갱신,
-`mcp-server/README.md`도 "21개국" → "42개국"으로 국가 목록·설명 갱신(`index.js`는
-`SUPPORTED_COUNTRIES`를 동적으로 읽어 enum에 반영하므로 별도 수정 불필요). 손계산 대조:
-`calculateTakeHome(800000000, code)` 결과가 이번 세션의 이탈리아/폴란드/터키 라운드
-인수인계에 이미 기록된 기대값(it: final=422.16, pl: final=512, tr: final=400, 단위 백만)과
-정확히 일치 확인 + 한국 $500M 시나리오를 손으로 재계산(누진세 8단계 공제액까지 직접 대입)해
-스크립트 출력과 일치 확인.
-
-**데이터 파일**: `data/state-lottery-tax-rates.{csv,json}`(51행)·
-`data/country-lottery-tax-rates.{csv,json}`(42행) — 재생성 스크립트
-`scripts/build-lottery-tax-data-hub.js`(재사용 스크립트로 저장, `mcp-server/tax-data.js`가
-바뀔 때마다 다시 돌리면 됨)로 생성, 손으로 옮겨 적지 않음. CC0 라이선스 + "ChamTax(chamtax.com)
-인용 허용" 문구를 JSON 파일 헤더와 페이지 본문 양쪽에 명시.
-
-**참고 시나리오**: $100M/$500M/$1B 잭팟(일시불 기준, 즉 실제 평가하는 지급액 자체 — 연금
-총액 아님) × 8개국(한국·미국 텍사스·미국 캘리포니아·베트남·중국·인도·터키·폴란드) —
-`calculateTakeHome()`로 직접 계산, 한국은 `script.js`의 폴백 환율(`EXCHANGE_RATE=1487.73`)
-사용.
-
-**이미지 검색 SEO용 정적 차트 2개**: 클라이언트 JS로 그리는 차트가 아니라 실제 SVG 파일로
-저장(`us-lottery-tax-rate-by-state-chart.svg`, `us-lottery-tax-by-country-500-million-chart.svg`)
-— Playwright 스크린샷 PNG 대신 순수 SVG를 택함(더 가볍고, 막대 옆 숫자 텍스트가 그대로 선택·
-색인 가능해서 이미지 SEO에 유리하다고 판단, 페이지 안에서도 실제 `<img src="...svg">`로 삽입).
-생성 스크립트 `scripts/build-data-hub-charts.js`(역시 재사용 목적으로 저장) — 첫 버전에
-스케일 버그(주별 세율이 이미 소수(0.11)인데 `maxRate`를 11로 잘못 잡아 막대가 전부 1/100
-길이로 찌그러짐)가 있었음, Playwright로 PNG 렌더링해 스크린샷으로 확인하다가 발견·수정.
-`dataviz` 스킬은 참고만 하고(단일 색상 크기 인코딩 막대그래프라 팔레트 검증기까지는 안 돌림)
-사이트 기존 색상 토큰(`--teal` 등)을 그대로 재사용.
-
-**페이지 구성**: `press-kit.html`을 구조 템플릿으로 사용(랜딩 티켓 스타일 재사용, 다만
-`noindex`는 빼서 실제로 색인되게 함 — press-kit은 스냅샷이라 의도적으로 검색 노출 제외지만
-이 페이지는 정반대로 검색 유입이 목적). JSON-LD는 `index.html`의 193번째 줄 근처 `Dataset`/
-`DataDownload` 패턴을 그대로 재사용(주별 Dataset 1개 + 국가별 Dataset 1개, 총 6개 JSON-LD
-블록 — `JSON.parse`로 전수 검증 통과), BreadcrumbList/Organization/WebSite/WebPage(speakable)도
-포함. Methodology 섹션에 "top marginal rate"(주별 표에 쓰는, 최고 구간 세율) vs "withholding
-rate"(국가별 표의 미국 쪽 수치, 원천징수율)를 명시적으로 구분 설명. **버그 1건 발견·수정**:
-공용 스타일 블록 안 주석에 실수로 리터럴 `</style>` 문자열을 그대로 적어(레포에 이미 문서화된
-"이 바이트열이 style 태그를 조기 종료시킨다" 함정을 직접 밟음) 전체 CSS가 페이지에 텍스트로
-그대로 노출되는 사고 — Playwright 스크린샷으로 발견, 문구를 "style 태그 닫기"로 바꿔 수정 후
-재확인.
-
-**QA**: `tests/broken_link_audit.js`(0/130, 신규 페이지 포함) 통과. Playwright로 라이트/다크
-모드·320px 폭(가로 스크롤 없음, 5열 국가표는 `<table>`의 `overflow-x:auto`로 개별 스크롤 —
-`.table-wrap`은 프라이즈 티어 카드형 레이아웃 전용이라 이번엔 의도적으로 안 씀, 과거 PR #251
-사고가 정확히 이 클래스를 일반 표에 오용한 사례였음) 확인. 콘솔 에러는 광고/애널리틱스 차단으로
-인한 벤치마크성 `ERR_CONNECTION_RESET` 5건뿐(다른 페이지들과 동일 패턴).
-
-**연결**: `sitemap.xml`·`sitemap.html`(In-Depth Guides 섹션) 등재. `index.html` 푸터
-(`.footer-links`)와 관련 가이드 블록(`.related-guides-row`) 양쪽에 링크 추가, `press-kit.html`
-기존 데이터셋 문단에도 "50개 주까지 포함한 전체 데이터셋" 링크 추가. 기존 `us-lottery-tax-data`
-GitHub 저장소·`mcp-server/` MCP 서버 링크도 페이지 안에서 안내(관련 기술 자산 연결).
-`script.js`/`styles.css`는 안 건드려서 `build-min.js` 재빌드·캐시 버전업 불필요.
-
-**⚠️ 다음 세션 참고**: `data/*.csv`·`data/*.json`은 `mcp-server/tax-data.js`가 바뀔 때만
-재생성 대상 — 세율이 바뀌면 `script.js` → `mcp-server/tax-data.js`(README에 명시된 관례) →
-`scripts/build-lottery-tax-data-hub.js` 재실행 → `data/*` 재생성 → 페이지 표/차트 갱신,
-순서로 진행할 것(이번에 한 번에 정리해둔 파이프라인 그대로 재사용).
-
-**같은 날 이어서 — 사용자가 GSC "실적(Performance)" 리포트 zip을 전달, 홍보 8대 우선순위
-6번(6~20위 페이지 개선) 실행**: `페이지.csv`(지난 3개월, 실질 데이터 26일치) 분석 결과 —
-전체 트래픽이 극히 적어(26일간 클릭 3~4건) 임프레션 1~2건짜리는 통계적으로 무의미, 임프레션
-5개 이상인 13개 페이지만 유효 신호로 취급. 그 중 **6~20위 구간(조금만 밀면 클릭 날 만한
-자리)** 5개(korea-resident-us-lottery-tax/china-resident-us-lottery-tax/lottery-prize-tiers/
-us-lottery-basics/korean_abroad_us_lottery_tax_ko)를 선정. **부수적으로 발견한 실제
-기술적 문제**: `chamtax.com/`과 `chamtax.com/index.html`이 GSC에 별도 URL로 잡혀 순위·
-임프레션 신호가 쪼개지고 있었음(9.4위/67 vs 5.6위/10) — `index.html` 자체의 canonical은
-이미 "/"였지만 나머지 137개 페이지의 헤더 로고·언어전환 링크가 전부 `href="index.html..."`
-(non-canonical)이라 신호를 계속 분산시키던 게 원인, 137개 파일 520곳을 `href="/..."`로
-통일해 해결(쿼리 파라미터 보존). `us-lottery-basics-zh.html`이 69위로 튄 것도 발견했으나
-임프레션 1건뿐이라 통계적 의미 없음으로 결론(콘텐츠 길이·canonical·noindex 다 정상 확인,
-데이터 더 쌓이면 재검토).
-
-**title/description 재작성**: 위 5개 페이지의 title이 Latin 환산 63~98자(한글/중국어라
-실제 SERP 폭은 훨씬 넓음)로 CJK SERP 잘림 한도(~30자)를 2~3배 초과, description도
-139~235자로 한도(~70~80자)를 크게 초과해있었음 — 핵심 키워드·의미는 유지하되 전부
-27~31자(title)/55~66자(description)로 축약해 SERP에서 안 잘리게 재작성(title/
-og:title/twitter:title, description/og:description/twitter:description 전부 동기화,
-각 파일이 원래 갖고 있던 og/twitter suffix 유무 컨벤션은 그대로 유지 — 사이트 전체가
-이 컨벤션에 일관되진 않았음, 이번엔 건드리지 않고 각 파일 기존 패턴만 보존).
-`broken_link_audit.js` 143개 파일 0 issues, 5개 파일 JSON-LD 전수 파싱 검증 통과.
-
-**⚠️ 다음 세션 참고**: (1) `lottery-prize-tiers.html`·`korean_abroad_us_lottery_tax_ko.html`은
-내부 링크 유입이 각 5곳뿐(다른 3개는 10~59곳) — 다음에 시간 나면 관련 페이지에서 이 둘로
-가는 내부링크를 몇 개 더 추가하면 좋음(이번 세션은 title/desc 축약까지만 하고 안 함).
-(2) 사용자가 보내준 GSC zip은 3개월 필터였지만 실제 유의미한 데이터는 26일치뿐이었음 —
-다음에 또 GSC 데이터를 받으면 "필터=3개월"이라는 라벨만 보고 데이터가 3개월치라고
-가정하지 말고 실제 날짜 범위(차트.csv의 첫/마지막 non-zero 날짜)부터 확인할 것.
-(3) GSC 상단에 "다른 사이트가 이 사이트로 이전 중" 배너가 있었는데 확인해보니
-`semilee123456-ui.github.io`(이 저장소의 GitHub Pages 기본 주소)에서 `chamtax.com`
-커스텀 도메인으로의 정상적인 주소 이전 신호였음 — 문제 아님, 다음 세션이 이 배너를 보고
-다시 놀라거나 재조사할 필요 없음.
-(4) **홍보 8대 우선순위 5번(AI 검색 노출 측정) — 확인 완료, 더 이상 재확인 불필요**:
-사용자가 GSC를 직접 확인해줌 — 이 사이트/속성엔 "Search Generative AI 성과" 리포트
-메뉴 자체가 아직 활성화·배포되지 않은 상태(구글이 순차 롤아웃 중이라 아직 이 속성엔
-안 옴). 다음 세션은 이 항목을 다시 찾아보라고 요청하지 말 것 — 나중에 구글이 이
-사이트에도 롤아웃하면 GSC 왼쪽 메뉴에 자연히 나타날 것이므로, 사용자가 먼저 언급하기
-전엔 이 세션이 먼저 재조사할 필요 없음.
-
-**같은 날 이어서 — 터키 라운드 제미나이 검수 회신 받음(세율/조약 검증·번역 품질 전부
-문제없음 확인), 검수가 지적한 대소문자(İ/I) 이슈는 검토 후 미실행으로 결론**: 제미나이가
-"터키어 로케일에서 `.toUpperCase()`/`.toLowerCase()`를 쓰면 İ/I 문제가 생길 수 있으니
-`.toLocaleUpperCase('tr-TR')` 등으로 바꿔라"고 제안 → `script.js`의 실제 사용처 9곳을
-전수 확인한 결과: **`flagEmojiFromCode()`(국기 이모지 코드포인트 계산, 5384번째 줄
-근처)와 언어 태그 파싱(126번째 줄) 2곳은 오히려 지금처럼 로케일 무관 plain
-`.toUpperCase()`/`.toLowerCase()`를 써야 맞음** — 여기에 `toLocaleUpperCase('tr-TR')`을
-적용하면 터키어 UI에서 "in"(인도) 같은 국가코드가 "İN"으로 바뀌어 코드포인트 계산이
-깨지는 실제 버그가 생김(제미나이 제안을 무비판적으로 적용했으면 여기서 새 버그가 났을
-것). 나머지 FAQ 검색·드롭다운 검색(7곳)은 이론적으로 개선 여지가 있으나 실제 콘텐츠에
-대문자 İ가 들어갈 케이스가 거의 없어 체감 효과가 사실상 0 — 사용자에게 판단을 맡긴 뒤
-"고쳐도 이득이 거의 없고 고치다 위 2곳과 헷갈릴 리스크만 있다"는 이유로 **미실행 결정**.
-다음 세션이 이 제안을 다시 받아도 위 2곳(`flagEmojiFromCode`/언어 태그 파싱)은 절대
-로케일 인식으로 바꾸지 말 것 — 재조사 불필요.
-
-**같은 날 이어서 — 파워볼 8/17 회차 반영 + Cloudflare 보안 헤더 설정 진행 중**: 사용자가
-공유한 스크린샷(usamega.com)으로 파워볼 8/17 회차(8,15,25,49,65 / 파워볼 22) 확인,
-`LATEST_DRAW`/`JACKPOT_DATA`(script.js)·`POWERBALL_DRAW_ARCHIVE`/
-`POWERBALL_JACKPOT_ARCHIVE`(odds-data.js) 동기화, `script.min.js` 재빌드·캐시버전업
-(`v20260818-5`)까지 완료(자세한 내용은 위 커밋 메시지 참고). 메가밀리언즈는 스크린샷의
-8/14 회차가 이미 최신값과 일치해 변경 없음.
-
-**Cloudflare Transform Rules로 보안 헤더 추가(사용자 진행 중, 코드 작업 아님)**: GitHub
-Pages가 커스텀 응답 헤더를 지원 안 해서(위 "현재 남아있는" 섹션 참고 없음, 과거 세션
-기록 — `X-Content-Type-Options`/`X-Frame-Options`/`Strict-Transport-Security` 전부
-미설정 상태였음) 앞단 Cloudflare 대시보드에서 추가하는 작업. **주의: `X-Frame-Options:
-SAMEORIGIN`을 사이트 전체에 걸면 `widget-embed.html`(오늘 만든 임베드 위젯, 다른
-사이트가 iframe으로 심는 용도)이 깨짐** — 그래서 규칙을 2개로 분리하도록 안내함:
-①"Security Headers (all pages)" — 조건 `Hostname eq chamtax.com AND not(URI Path eq
-"/widget-embed.html")`, 헤더 3개 다 추가. ②"Security Headers (widget page)" — 조건
-`URI Path eq "/widget-embed.html"`, HSTS·`X-Content-Type-Options` 2개만(X-Frame-Options
-제외). 사용자가 규칙 ①의 설정 화면(조건식·헤더 3개)을 스크린샷으로 보여줘서 정확함을
-확인해줌 — **다음 세션 확인할 것**: 규칙 ①은 Deploy했는지, 규칙 ②(위젯 전용, X-Frame-
-Options 제외)는 아직 만들었는지 사용자에게 물어볼 것(이 문서 작성 시점엔 규칙 ①
-Deploy 여부·규칙② 생성 여부 둘 다 미확인 상태).
-
 ### 2026-08-18 이어서 — hreflang/robots 기술 SEO 감사 (GSC/Bing API 접근 없이 정적 분석만, PR #265)
 
 사용자가 "홍보 채널 추가 말고 사이트 자체를 홍보 자산으로 강화"하는 방향의 대규모 아이디어
@@ -1811,3 +1573,36 @@ JSON-LD 2블록이 독일어 여는 인용부호 „ 다음에 ASCII `"`를 닫�
 **⚠️ 참고**: GitHub 저장소 자체의 Description 필드(저장소 설정, 파일 아님)도 여전히
 "21 countries, 26 languages"로 돼 있음 — 이건 파일 커밋으로 못 고치는 저장소 메타데이터라
 손 안 댐, 사용자가 원하면 GitHub 저장소 설정에서 직접 고치거나 다음 세션에 요청할 것.
+
+### 2026-08-18 이어서 — PR #248(로또 코멘트 정리 + CURRENT_YEAR 자동 롤오버) 검토 → close 후 재구현
+
+사용자가 "PR #248이 2026-08-17에 열려서 미머지 상태로 남아있다, 검토해서 머지하거나
+닫아야 할지 결정해달라"고 요청. `pull_request_read`로 확인한 결과 `mergeable_state:
+"dirty"`(GitHub이 직접 판정한 실제 충돌) — base가 하루 전 커밋(784755e)이라 그 사이
+main이 22개 주 페이지·hreflang/canonical 수정·데이터 허브·이탈리아/폴란드/터키 등
+신규 국가 3개(PR이 건드리는 정확히 그 `home-trust-line` "more" 객체에 `it`/`pl`/`tr`
+3개 언어 행이 새로 생김)만큼 앞서있어 그대로 merge하면 그 3개 언어가 하드코딩 2026인 채
+남거나 충돌났을 상황.
+
+**결정: merge 대신 close, 아이디어는 최신 main 기준으로 재구현**(커밋 `04bb2b1`):
+- `const CURRENT_YEAR = new Date().getFullYear()` 도입(세율 등 실제 데이터엔 절대 쓰지
+  말라는 경고 주석 포함, PR #248과 동일한 설계)
+- 홈 "OO년 세율" 신뢰 배지의 하드코딩 "2026"/방글라데시 벵골 숫자 "২০২৬"를
+  `${CURRENT_YEAR}`로 교체 — PR #248 시점엔 60곳이었는데 지금은 72곳(33개 언어 × 2개
+  변형, it/pl/tr 추가분 반영)
+- `JACKPOT_DATA`/`LATEST_DRAW` 위에 7/28~8/18 사이 쌓인 날짜별 갱신 로그(약 100줄, PR
+  #248이 겨냥한 것과 같은 블록이지만 그 사이 더 늘어나 있었음)를 간결한 운영 규칙
+  3~4줄로 정리 — 지난 이력은 git log로 추적 가능
+- PR #248이 만든 연간 롤오버 점검 Routine(`trig_01JYWdnPkNXjnxEC7XnkboHF`, 매년
+  1/15)은 코드 merge와 무관하게 계속 살아있음 — 그대로 유지, 다시 만들 필요 없음
+- PR #248에는 위 결정 경위를 설명하는 코멘트를 남기고 close 처리(재오픈 안 함)
+
+**검증**: `node --check script.js`, `console_error_audit.js`(224 configs 0건),
+`home_audit.js`(18개 0건), Playwright로 홈 신뢰 배지가 실제로 "2026 tax rates"로
+정상 렌더되는 것 확인. `script.min.js` 재빌드, `index.html` 캐시버스팅 갱신.
+
+**다음 세션 참고**: 이 저장소는 2026-08-18 하루 동안 최소 2개 세션이 동시에 `main`에
+직접 커밋해왔음(위 항목들의 PR #265/#267/#268/#273 전부 다른 세션 소행) — 오래 열려있는
+PR을 볼 때마다 "언제 열렸는지"와 `mergeable_state`를 반드시 직접 확인할 것, "코드는
+맞겠지"로 그냥 merge 버튼을 누르면 이번처럼 최근 3개 언어가 통째로 빠질 뻔한 사고가 날 수
+있음.
