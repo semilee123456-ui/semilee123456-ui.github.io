@@ -36,7 +36,8 @@ const FAQ_TG2 = {
       hi: 'हमारी सूची में न होने वाले देशों के लिए, आपके देश का कर कानून शामिल नहीं किया गया है — ऊपर का परिणाम केवल अमेरिका की 30% कटौती को दर्शाता है, और आप जहां वास्तव में रहते हैं वहां अतिरिक्त कर देना पड़ सकता है, इसलिए कृपया स्थानीय कर विशेषज्ञ या प्राधिकरण से जांच करें',
       fr: "Pour les pays qui ne figurent pas sur notre liste, la législation fiscale de votre pays n'est pas prise en compte — le résultat ci-dessus reflète uniquement la retenue de 30 % des États-Unis, et vous pourriez devoir des impôts supplémentaires là où vous résidez réellement, veuillez donc consulter un professionnel ou une autorité fiscale locale",
       tl: 'Para sa mga bansang wala sa aming listahan, hindi kasama ang batas buwis ng iyong bansa — ang resulta sa itaas ay sumasalamin lamang sa 30% na withholding ng US, at maaari kang may dagdag na buwis sa lugar na talagang tinitirhan mo, kaya mangyaring kumonsulta sa lokal na eksperto o awtoridad sa buwis',
-     pt: `Para países fora da nossa lista, a legislação tributária do seu país não foi considerada — o resultado acima reflete apenas a retenção de 30% dos EUA, e você pode dever impostos adicionais no país onde realmente reside, por isso consulte um profissional ou órgão fiscal local`, es: `Para países que no están en nuestra lista, la legislación fiscal de tu país no se ha tenido en cuenta — el resultado anterior refleja solo la retención del 30% de EE. UU., y es posible que debas pagar impuestos adicionales en el país donde realmente resides, así que consulta a un profesional o autoridad fiscal local`, uk: `Для країн, яких немає в нашому списку, податкове законодавство вашої країни не враховано — результат вище відображає лише утримання США у розмірі 30%, а у країні, де ви фактично проживаєте, може знадобитися сплатити додатковий податок, тож обов'язково уточніть у місцевого податкового фахівця чи органу`, tet: `Ba rai ne'ebé la iha ita-nia lista, lei impostu ó-nia rai la kalkula — rezultadu iha leten reflete de'it retensaun EUA nian 30%, no ó bele presiza selu impostu adisionál iha rai ne'ebé ó hela duni, favór verifika ho profisionál impostu ka autoridade impostu lokál`})
+     pt: `Para países fora da nossa lista, a legislação tributária do seu país não foi considerada — o resultado acima reflete apenas a retenção de 30% dos EUA, e você pode dever impostos adicionais no país onde realmente reside, por isso consulte um profissional ou órgão fiscal local`, es: `Para países que no están en nuestra lista, la legislación fiscal de tu país no se ha tenido en cuenta — el resultado anterior refleja solo la retención del 30% de EE. UU., y es posible que debas pagar impuestos adicionales en el país donde realmente resides, así que consulta a un profesional o autoridad fiscal local`, uk: `Для країн, яких немає в нашому списку, податкове законодавство вашої країни не враховано — результат вище відображає лише утримання США у розмірі 30%, а у країні, де ви фактично проживаєте, може знадобитися сплатити додатковий податок, тож обов'язково уточніть у місцевого податкового фахівця чи органу`, tet: `Ba rai ne'ebé la iha ita-nia lista, lei impostu ó-nia rai la kalkula — rezultadu iha leten reflete de'it retensaun EUA nian 30%, no ó bele presiza selu impostu adisionál iha rai ne'ebé ó hela duni, favór verifika ho profisionál impostu ka autoridade impostu lokál`,
+      de: `Für Länder, die nicht auf unserer Liste stehen, wird das Steuerrecht deines Landes nicht berücksichtigt — das Ergebnis oben spiegelt nur die 30%ige US-Quellensteuer wider, und du schuldest möglicherweise zusätzliche Steuern in deinem tatsächlichen Wohnsitzland, also wende dich an eine lokale Steuerfachperson oder Behörde`, nl: `Voor landen die niet op onze lijst staan, is de belastingwetgeving van jouw land niet meegenomen — het resultaat hierboven weerspiegelt alleen de 30% Amerikaanse bronbelasting, en je bent mogelijk extra belasting verschuldigd in het land waar je daadwerkelijk woont, raadpleeg dus een lokale belastingdeskundige of -autoriteit`, sv: `För länder som inte finns med i vår lista beaktas inte ditt hemlands skattelagstiftning — resultatet ovan speglar endast den amerikanska källskatten på 30%, och du kan vara skyldig ytterligare skatt i landet där du faktiskt bor, så kontrollera med en lokal skatteexpert eller myndighet`, no: `For land som ikke står på listen vår, er ikke hjemlandets skattelovgivning tatt med — resultatet over gjenspeiler kun den amerikanske kildeskatten på 30%, og du kan skylde ekstra skatt i landet der du faktisk bor, så sjekk med en lokal skatteekspert eller myndighet`, da: `For lande, der ikke er på vores liste, er dit hjemlands skattelovgivning ikke medregnet — resultatet ovenfor afspejler kun den amerikanske kildeskat på 30%, og du kan skylde yderligere skat i det land, hvor du faktisk bor, så tjek med en lokal skatteekspert eller myndighed`, fi: `Maille, jotka eivät ole listallamme, kotimaasi verolainsäädäntöä ei ole huomioitu — yllä oleva tulos kuvastaa vain Yhdysvaltain 30 %:n lähdeveroa, ja saatat olla velvollinen maksamaan lisäveroa maassa, jossa todella asut, joten tarkista asia paikalliselta veroasiantuntijalta tai -viranomaiselta`, it: `Per i paesi non presenti nel nostro elenco, la normativa fiscale del tuo paese non è stata considerata — il risultato sopra riflette solo la ritenuta USA del 30%, e potresti dovere ulteriori imposte nel paese in cui risiedi effettivamente, quindi verifica con un professionista o un'autorità fiscale locale`, pl: `W przypadku krajów spoza naszej listy prawo podatkowe Twojego kraju nie zostało uwzględnione — powyższy wynik odzwierciedla jedynie amerykańskie potrącenie u źródła w wysokości 30%, a w kraju, w którym faktycznie mieszkasz, może być należny dodatkowy podatek, dlatego skonsultuj się z lokalnym specjalistą lub urzędem podatkowym`, tr: `Listemizde yer almayan ülkeler için kendi ülkenizin vergi mevzuatı hesaba katılmamıştır — yukarıdaki sonuç yalnızca ABD'nin %30 stopajını yansıtır, gerçekte yaşadığınız ülkede ek vergi ödemeniz gerekebilir, bu yüzden yerel bir vergi uzmanına veya kuruma danışın`})
   },
   kr: {
     title: () => pickLang('한국에서도 또 내요?', 'Do I also pay in Korea?', '在韩国也要交税吗？', 'Có phải đóng thuế ở Hàn Quốc nữa không?', 'ต้องเสียภาษีในเกาหลีด้วยไหม?', 'Нужно ли платить налог ещё и в Корее?', buildAlsoPayMore('kr')),
@@ -168,6 +169,7 @@ const FAQ_INTRO_PREFIX_MORE = {
   tl: 'Tinipon namin ang mga madalas itanong ng mga taong naghanap at napunta rito',
 
   pt: `Perguntas frequentes de quem chegou até aqui pesquisando`, es: `Preguntas frecuentes de personas que llegaron buscando aquí`, uk: `Популярні запитання від людей, які знайшли нас через пошук`, tet: `Pergunta baibain husi ema ne'ebé peskuiza mai iha ne'e`,
+  de: `Häufige Fragen von Leuten, die über die Suche hierher gefunden haben`, nl: `Veelgestelde vragen van mensen die via een zoekopdracht hier terechtkwamen`, sv: `Vanliga frågor från personer som hittade hit via sökning`, no: `Vanlige spørsmål fra folk som fant hit via søk`, da: `Almindelige spørgsmål fra folk, der fandt hertil via søgning`, fi: `Yleisiä kysymyksiä hakukoneen kautta tänne löytäneiltä`, it: `Domande frequenti di chi è arrivato qui tramite una ricerca`, pl: `Częste pytania od osób, które trafiły tutaj przez wyszukiwanie`, tr: `Arama yaparak buraya gelen kişilerin sık sorduğu sorular`,
 };
 const FAQ_CONFIRMED_TEMPLATE_MORE = {
   km: (country, agency) => `បានផ្ទៀងផ្ទាត់ដោយផ្អែកលើប្រភព ${agency} របស់${country}`,
@@ -189,6 +191,7 @@ const FAQ_CONFIRMED_TEMPLATE_MORE = {
   tl: (country, agency) => `Nakumpirma batay sa mga mapagkukunan ng ${agency} ng ${country}`,
 
   pt: (country, agency) => `Confirmado com base nas fontes de ${agency} de ${country}`, es: (country, agency) => `Confirmado con base en fuentes de ${agency} de ${country}`, uk: (country, agency) => `Підтверджено на основі джерел ${agency} країни ${country}`, tet: (country, agency) => `Konfirma baseia iha fonte ${agency} husi ${country}`,
+  de: (country, agency) => `Bestätigt basierend auf ${agency}-Quellen aus ${country}`, nl: (country, agency) => `Bevestigd op basis van ${agency}-bronnen uit ${country}`, sv: (country, agency) => `Bekräftat baserat på ${agency}-källor från ${country}`, no: (country, agency) => `Bekreftet basert på ${agency}-kilder fra ${country}`, da: (country, agency) => `Bekræftet baseret på ${agency}-kilder fra ${country}`, fi: (country, agency) => `Vahvistettu ${country}n ${agency}-lähteiden perusteella`, it: (country, agency) => `Confermato in base alle fonti ${agency} di ${country}`, pl: (country, agency) => `Potwierdzone na podstawie źródeł ${agency} z ${country}`, tr: (country, agency) => `${country} ${agency} kaynaklarına dayanarak doğrulandı`,
 };
 function buildFaqPanelDescMore(countryCode, agencyEnglishName){
   const more = {};
@@ -349,3 +352,247 @@ const FAQ_PANEL_DESC = {
     tl: FAQ_INTRO_PREFIX_MORE.tl + ' · ⚠️ Napakabago pa lang ng batas ng Laos, kaya tantya ang mga figure na ito',
    pt: `Perguntas frequentes de quem chegou até aqui pesquisando · ⚠️ A legislação do Laos é muito recente, portanto os valores são estimativas`, es: `Preguntas frecuentes de personas que llegaron buscando aquí · ⚠️ La ley de Laos es muy reciente, por lo que las cifras son estimaciones`, uk: `Популярні запитання від людей, які знайшли нас через пошук · ⚠️ Закон Лаосу є дуже новим, тому цифри є орієнтовними`, tet: `Pergunta baibain husi ema ne'ebé peskuiza mai iha ne'e · ⚠️ Laos nia lei ne'e foun tebes, nune'e númeru sira ne'e estimativa`})
 };
+
+// 2026-08-19: 21개 신규 국가(2026-08-16~18 라운드로 추가된 나라들, 이 파일이 아직 못 따라간
+// 상태였음)의 FAQ_PANEL_DESC 항목 — 매 언어 문장을 손으로 다 쓰는 대신, 이미 있는 공용 템플릿
+// (buildFaqPanelDescMore)에 국가코드+영문 기관명만 넘겨서 자동 생성함. 한국어만 별도 짧은
+// 기관명 표기를 씀(기존 kr/us/cn 등과 같은 스타일).
+const NEW_COUNTRY_AGENCY_KO = { au:'호주 국세청(ATO)', ca:'캐나다 국세청(CRA)', de:'독일 소득세법(EStG)', da:'덴마크 국세청', fi:'핀란드 국세청(Vero)', fr:'프랑스 조세일반법(CGI)', hk:'홍콩 세무국(IRD)', ie:'아일랜드 국세청(Revenue)', it:'이탈리아 국세청', mx:'멕시코 소득세법(LISR)', my:'말레이시아 국세청(LHDN)', nl:'네덜란드 국세청', no:'노르웨이 국세청(Skatteetaten)', nz:'뉴질랜드 국세청(IRD)', pl:'폴란드 소득세법 근사치', sg:'싱가포르 국세청(IRAS)', sv:'스웨덴 국세청(Skatteverket)', tr:'터키 소득세법', tw:'대만 소득기본세액조례', uk:'영국 국세청(HMRC)', za:'남아공 소득세법' };
+const NEW_COUNTRY_AGENCY_EN = { au:'Australian Taxation Office', ca:'Canada Revenue Agency', de:'German Income Tax Act (EStG)', da:'Danish Tax Agency', fi:'Finnish Tax Administration', fr:'French General Tax Code (CGI)', hk:'Hong Kong Inland Revenue Department', ie:'Irish Revenue Commissioners', it:'Italian Revenue Agency', mx:'Mexican Income Tax Law (LISR)', my:'Malaysian Inland Revenue Board', nl:'Dutch Tax and Customs Administration', no:'Norwegian Tax Administration', nz:'New Zealand Inland Revenue', pl:'Polish flat-rate approximation', sg:'Singapore Inland Revenue Authority', sv:'Swedish Tax Agency', tr:'Turkish Income Tax Law', tw:'Taiwan Income Basic Tax Act', uk:'UK HM Revenue & Customs', za:'South African Income Tax Act' };
+Object.keys(NEW_COUNTRY_AGENCY_EN).forEach(code => {
+  const agencyEn = NEW_COUNTRY_AGENCY_EN[code];
+  const agencyKo = NEW_COUNTRY_AGENCY_KO[code];
+  FAQ_PANEL_DESC[code] = () => pickLang(
+    `검색하다 오신 분들이 자주 물어보는 질문 모았어요 · ${agencyKo} 기준으로 확인된 정보예요`,
+    `Common questions from people who searched their way here · Confirmed based on ${agencyEn} sources`,
+    `搜索到这里的朋友们经常问的问题 · 已根据${agencyEn}确认`,
+    `Tổng hợp các câu hỏi thường gặp từ người tìm kiếm đến đây · Đã xác nhận dựa trên nguồn của ${agencyEn}`,
+    `รวบรวมคำถามที่คนค้นหามาถึงที่นี่มักถาม · ยืนยันข้อมูลตามแหล่งข้อมูลของ${agencyEn}`,
+    `Часто задаваемые вопросы от тех, кто искал этот сайт · Подтверждено на основе источников ${agencyEn}`,
+    buildFaqPanelDescMore(code, agencyEn)
+  );
+});
+
+// 2026-08-19: 같은 21개 신규 국가의 FAQ_TG2(요약 카드 title/sub) 항목. title은 이미 있는 공용
+// 템플릿(script.js의 buildAlsoPayMore)으로 30개 언어까지 자동 커버되지만, sub는 나라마다 실제
+// 세율·FTC 여부가 달라서 나라별로 직접 씀 — 전부 script.js의 calcTakeHome() 각 나라 분기 주석
+// (2026-08-16~18 라운드에서 이미 조사됨)과 이번 세션에 직접 실행해서 검증한 계산 결과를
+// 근거로 함, 새로 조사한 내용 없음. 6개 핵심 언어(ko/en/zh/vi/th/ru)만 채우고 그 외 언어는
+// pickLang()이 자동으로 영어로 폴백함(more 없어도 안전 — script.js:2382 참고, 틀린 내용이
+// 뜨는 게 아니라 그냥 영어로 보임). 이 more(30개 언어) 채우기는 후속 작업으로 남겨둠.
+const NEW_COUNTRY_NAMES_POSITIONAL = {
+  au: { en:'Australia', zh:'澳大利亚', vi:'Úc', th:'ออสเตรเลีย', ru:'Австралии' },
+  ca: { en:'Canada', zh:'加拿大', vi:'Canada', th:'แคนาดา', ru:'Канаде' },
+  de: { en:'Germany', zh:'德国', vi:'Đức', th:'เยอรมนี', ru:'Германии' },
+  da: { en:'Denmark', zh:'丹麦', vi:'Đan Mạch', th:'เดนมาร์ก', ru:'Дании' },
+  fi: { en:'Finland', zh:'芬兰', vi:'Phần Lan', th:'ฟินแลนด์', ru:'Финляндии' },
+  fr: { en:'France', zh:'法国', vi:'Pháp', th:'ฝรั่งเศส', ru:'Франции' },
+  hk: { en:'Hong Kong', zh:'香港', vi:'Hồng Kông', th:'ฮ่องกง', ru:'Гонконге' },
+  ie: { en:'Ireland', zh:'爱尔兰', vi:'Ireland', th:'ไอร์แลนด์', ru:'Ирландии' },
+  it: { en:'Italy', zh:'意大利', vi:'Ý', th:'อิตาลี', ru:'Италии' },
+  mx: { en:'Mexico', zh:'墨西哥', vi:'Mexico', th:'เม็กซิโก', ru:'Мексике' },
+  my: { en:'Malaysia', zh:'马来西亚', vi:'Malaysia', th:'มาเลเซีย', ru:'Малайзии' },
+  nl: { en:'the Netherlands', zh:'荷兰', vi:'Hà Lan', th:'เนเธอร์แลนด์', ru:'Нидерландах' },
+  no: { en:'Norway', zh:'挪威', vi:'Na Uy', th:'นอร์เวย์', ru:'Норвегии' },
+  nz: { en:'New Zealand', zh:'新西兰', vi:'New Zealand', th:'นิวซีแลนด์', ru:'Новой Зеландии' },
+  pl: { en:'Poland', zh:'波兰', vi:'Ba Lan', th:'โปแลนด์', ru:'Польше' },
+  sg: { en:'Singapore', zh:'新加坡', vi:'Singapore', th:'สิงคโปร์', ru:'Сингапуре' },
+  sv: { en:'Sweden', zh:'瑞典', vi:'Thụy Điển', th:'สวีเดน', ru:'Швеции' },
+  tr: { en:'Turkey', zh:'土耳其', vi:'Thổ Nhĩ Kỳ', th:'ตุรกี', ru:'Турции' },
+  tw: { en:'Taiwan', zh:'台湾', vi:'Đài Loan', th:'ไต้หวัน', ru:'Тайване' },
+  uk: { en:'the UK', zh:'英国', vi:'Anh', th:'สหราชอาณาจักร', ru:'Великобритании' },
+  za: { en:'South Africa', zh:'南非', vi:'Nam Phi', th:'แอฟริกาใต้', ru:'Южной Африке' },
+};
+// tw/ru는 섬나라 관용구상 "на"를 쓰므로 아래 title 조립 시 예외 처리
+const RU_ON_ISLAND = { tw: true };
+
+// sub 텍스트 — { ko, en, zh, vi, th, ru }. "0%" 그룹(14개국)은 왜 0%인지 메커니즘이 나라마다
+// 달라서(과세대상 자체가 없음 vs FTC로 완전 상계) 뭉뚱그리지 않고 실제 근거를 그대로 반영.
+const NEW_COUNTRY_SUB = {
+  au: {
+    ko: '호주 국세청(ATO)이 도박·복권 당첨금을 애초에 과세 대상 소득으로 안 봐요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: "The ATO doesn't treat gambling or lottery winnings as taxable income at all — the US's 30% withholding is essentially the whole tax story",
+    zh: '澳大利亚税务局（ATO）根本不将博彩或彩票奖金视为应税所得——美国30%的预扣税基本就是全部税负',
+    vi: 'ATO không coi tiền thắng cờ bạc hay xổ số là thu nhập chịu thuế — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'ATO ไม่ถือว่าเงินรางวัลพนันหรือลอตเตอรีเป็นรายได้ที่ต้องเสียภาษีเลย — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'Налоговое управление Австралии вообще не считает выигрыш в азартных играх или лотерею налогооблагаемым доходом — удержание 30% в США фактически покрывает весь налог',
+  },
+  ca: {
+    ko: '캐나다 국세청(CRA)이 복권 당첨금을 우발이득(windfall)으로 봐서 비과세예요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: 'The CRA treats lottery winnings as a tax-free windfall — the US\'s 30% withholding is essentially the whole tax story',
+    zh: '加拿大税务局（CRA）将彩票奖金视为免税的意外之财——美国30%的预扣税基本就是全部税负',
+    vi: 'CRA coi tiền thắng xổ số là khoản lợi bất ngờ được miễn thuế — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'CRA ถือว่าเงินรางวัลลอตเตอรีเป็นลาภลอยที่ไม่ต้องเสียภาษี — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'Налоговое управление Канады считает лотерейный выигрыш необлагаемым непредвиденным доходом — удержание 30% в США фактически покрывает весь налог',
+  },
+  de: {
+    ko: '독일 소득세법(EStG) 제2·22조상 복권 소득은 7개 열거 소득 종류에 없어 과세 대상이 아니에요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: "Lottery winnings aren't among the 7 income categories taxed under Germany's Income Tax Act (EStG §2/§22) — the US's 30% withholding is essentially the whole tax story",
+    zh: '根据德国所得税法（EStG第2/22条），彩票收入不属于7类应税所得之一——美国30%的预扣税基本就是全部税负',
+    vi: 'Thu nhập từ xổ số không thuộc 7 loại thu nhập chịu thuế theo Luật Thuế Thu nhập Đức (EStG §2/§22) — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'รายได้จากลอตเตอรีไม่อยู่ใน 7 ประเภทรายได้ที่ต้องเสียภาษีตามกฎหมายภาษีเงินได้เยอรมนี (EStG §2/§22) — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'Лотерейный доход не входит в 7 категорий налогооблагаемого дохода по немецкому закону о подоходном налоге (EStG §2/§22) — удержание 30% в США фактически покрывает весь налог',
+  },
+  da: {
+    ko: '덴마크는 누진소득세(지방세 포함 최고 약 52%)로 과세하고, 미국에서 낸 30%를 세액공제로 빼줘도 약 27%p가 추가로 남아요',
+    en: "Denmark taxes it under progressive income tax (up to ~52% combined with local tax), and after crediting the 30% already paid to the US, roughly 27 more percentage points are still owed",
+    zh: '丹麦按累进所得税征税（含地方税最高约52%），即使抵免已在美国缴纳的30%，仍需额外缴纳约27个百分点',
+    vi: 'Đan Mạch đánh thuế theo thuế thu nhập lũy tiến (tối đa khoảng 52% gồm thuế địa phương), và sau khi khấu trừ 30% đã nộp ở Mỹ, vẫn còn nợ thêm khoảng 27 điểm phần trăm',
+    th: 'เดนมาร์กเก็บภาษีแบบก้าวหน้า (รวมภาษีท้องถิ่นสูงสุดประมาณ 52%) แม้จะหักภาษี 30% ที่จ่ายในสหรัฐฯ แล้ว ก็ยังต้องจ่ายเพิ่มอีกประมาณ 27 จุดเปอร์เซ็นต์',
+    ru: 'Дания облагает налогом по прогрессивной шкале (до ~52% с учётом местного налога), и даже после зачёта уже уплаченных в США 30% остаётся доплатить ещё около 27 процентных пунктов',
+  },
+  fi: {
+    ko: '핀란드는 국세+지방소득세로 과세하고, 미국에서 낸 30%를 세액공제로 빼줘도 약 16%p가 추가로 남아요',
+    en: 'Finland taxes it under national + municipal income tax, and after crediting the 30% already paid to the US, roughly 16 more percentage points are still owed',
+    zh: '芬兰按国家所得税加地方所得税征税，即使抵免已在美国缴纳的30%，仍需额外缴纳约16个百分点',
+    vi: 'Phần Lan đánh thuế theo thuế thu nhập quốc gia cộng thuế thu nhập địa phương, và sau khi khấu trừ 30% đã nộp ở Mỹ, vẫn còn nợ thêm khoảng 16 điểm phần trăm',
+    th: 'ฟินแลนด์เก็บภาษีเงินได้ระดับประเทศบวกระดับท้องถิ่น แม้จะหักภาษี 30% ที่จ่ายในสหรัฐฯ แล้ว ก็ยังต้องจ่ายเพิ่มอีกประมาณ 16 จุดเปอร์เซ็นต์',
+    ru: 'Финляндия облагает налогом по государственной и муниципальной ставке подоходного налога, и даже после зачёта уже уплаченных в США 30% остаётся доплатить ещё около 16 процентных пунктов',
+  },
+  fr: {
+    ko: '프랑스 조세일반법(CGI) 제92조상 순수 우연(hasard) 게임 당첨금은 과세 대상 소득이 아니에요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: "Under France's General Tax Code (CGI) Art. 92, winnings from pure games of chance aren't taxable income — the US's 30% withholding is essentially the whole tax story",
+    zh: '根据法国税务总法典（CGI）第92条，纯粹的偶然性博彩奖金不属于应税所得——美国30%的预扣税基本就是全部税负',
+    vi: 'Theo Bộ luật Thuế chung của Pháp (CGI) Điều 92, tiền thắng từ trò chơi may rủi thuần túy không phải thu nhập chịu thuế — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'ตามประมวลกฎหมายภาษีทั่วไปของฝรั่งเศส (CGI) มาตรา 92 เงินรางวัลจากเกมเสี่ยงโชคล้วนๆ ไม่ถือเป็นรายได้ที่ต้องเสียภาษี — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'Согласно ст. 92 Общего налогового кодекса Франции (CGI), выигрыш в чистых играх случая не облагается налогом — удержание 30% в США фактически покрывает весь налог',
+  },
+  hk: {
+    ko: '홍콩은 지역주의(territorial) 과세 원칙만 써서 일반 소득세 자체가 없어요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: "Hong Kong's territorial tax system has no general income tax at all — the US's 30% withholding is essentially the whole tax story",
+    zh: '香港实行地域来源征税原则，根本没有一般性所得税——美国30%的预扣税基本就是全部税负',
+    vi: 'Hệ thống thuế theo lãnh thổ của Hồng Kông không có thuế thu nhập tổng quát — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'ระบบภาษีตามอาณาเขตของฮ่องกงไม่มีภาษีเงินได้ทั่วไปเลย — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'В территориальной налоговой системе Гонконга вообще нет общего подоходного налога — удержание 30% в США фактически покрывает весь налог',
+  },
+  ie: {
+    ko: '아일랜드 국세청(Revenue) 근거법(TCA 1997 제613조 2항)상 복권 당첨금은 과세 대상이 아니에요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: "Under Irish Revenue's own statute (TCA 1997 s.613(2)), lottery winnings aren't taxable — the US's 30% withholding is essentially the whole tax story",
+    zh: '根据爱尔兰税务局法规（TCA 1997 第613(2)条），彩票奖金不属于应税所得——美国30%的预扣税基本就是全部税负',
+    vi: 'Theo luật của Revenue Ireland (TCA 1997 mục 613(2)), tiền thắng xổ số không chịu thuế — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'ตามกฎหมายของกรมสรรพากรไอร์แลนด์ (TCA 1997 มาตรา 613(2)) เงินรางวัลลอตเตอรีไม่ต้องเสียภาษี — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'Согласно закону налоговой службы Ирландии (TCA 1997 s.613(2)), лотерейный выигрыш не облагается налогом — удержание 30% в США фактически покрывает весь налог',
+  },
+  it: {
+    ko: '이탈리아는 지역별 부가세(IRPEF 부가세) 포함 과세하고(로마 기준 근사치), 미국에서 낸 30%를 빼줘도 약 17%p가 추가로 남아요',
+    en: "Italy taxes it including regional/municipal surtax (approximated using Rome as a reference), and after crediting the 30% already paid to the US, roughly 17 more percentage points are still owed",
+    zh: '意大利征税含地区附加税（以罗马为参考近似值），即使抵免已在美国缴纳的30%，仍需额外缴纳约17个百分点',
+    vi: 'Ý đánh thuế bao gồm phụ phí vùng/thành phố (ước tính lấy Roma làm chuẩn), và sau khi khấu trừ 30% đã nộp ở Mỹ, vẫn còn nợ thêm khoảng 17 điểm phần trăm',
+    th: 'อิตาลีเก็บภาษีรวมภาษีเพิ่มระดับภูมิภาค (ประมาณโดยอ้างอิงกรุงโรม) แม้จะหักภาษี 30% ที่จ่ายในสหรัฐฯ แล้ว ก็ยังต้องจ่ายเพิ่มอีกประมาณ 17 จุดเปอร์เซ็นต์',
+    ru: 'Италия облагает налогом с учётом региональной/муниципальной надбавки (оценка на примере Рима), и даже после зачёта уже уплаченных в США 30% остаётся доплатить ещё около 17 процентных пунктов',
+  },
+  mx: {
+    ko: '멕시코 소득세법(LISR)상 최고구간 35% 근사 적용, 미국에서 낸 30%를 세액공제로 빼줘도 약 5%p가 추가로 남아요',
+    en: "Mexico's Income Tax Law (LISR) applies its top bracket (~35%) as an approximation, and after crediting the 30% already paid to the US, roughly 5 more percentage points are still owed",
+    zh: '墨西哥所得税法（LISR）近似适用最高税率（约35%），即使抵免已在美国缴纳的30%，仍需额外缴纳约5个百分点',
+    vi: 'Luật Thuế Thu nhập Mexico (LISR) áp dụng gần đúng mức thuế cao nhất (~35%), và sau khi khấu trừ 30% đã nộp ở Mỹ, vẫn còn nợ thêm khoảng 5 điểm phần trăm',
+    th: 'กฎหมายภาษีเงินได้เม็กซิโก (LISR) ใช้อัตราขั้นสูงสุดโดยประมาณ (~35%) แม้จะหักภาษี 30% ที่จ่ายในสหรัฐฯ แล้ว ก็ยังต้องจ่ายเพิ่มอีกประมาณ 5 จุดเปอร์เซ็นต์',
+    ru: 'Закон о подоходном налоге Мексики (LISR) применяет верхнюю ставку (~35%) в качестве приближения, и даже после зачёта уже уплаченных в США 30% остаётся доплатить ещё около 5 процентных пунктов',
+  },
+  my: {
+    ko: '말레이시아 국세청(LHDN)이 복권·도박 당첨금을 애초에 과세 대상 소득으로 안 봐요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: "Malaysia's LHDN doesn't treat lottery or gambling winnings as taxable income at all — the US's 30% withholding is essentially the whole tax story",
+    zh: '马来西亚内陆税收局（LHDN）根本不将彩票或博彩奖金视为应税所得——美国30%的预扣税基本就是全部税负',
+    vi: 'LHDN của Malaysia không coi tiền thắng xổ số hay cờ bạc là thu nhập chịu thuế — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'LHDN ของมาเลเซียไม่ถือว่าเงินรางวัลลอตเตอรีหรือการพนันเป็นรายได้ที่ต้องเสียภาษีเลย — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'Налоговое управление Малайзии вообще не считает лотерейный или игорный выигрыш налогооблагаемым доходом — удержание 30% в США фактически покрывает весь налог',
+  },
+  nl: {
+    ko: '⚠️ 네덜란드는 세액공제(FTC) 자체를 안 해줘서, 자국세가 미국 30% 원천징수 위에 그대로 쌓여요(합산 약 38%p 추가)',
+    en: "⚠️ The Netherlands applies no Foreign Tax Credit at all — its own tax stacks fully on top of the US's 30% withholding (roughly 38 more percentage points)",
+    zh: '⚠️ 荷兰完全不给予外国税收抵免——本国税款完全叠加在美国30%预扣税之上（额外约38个百分点）',
+    vi: '⚠️ Hà Lan không áp dụng tín dụng thuế nước ngoài (FTC) — thuế trong nước cộng dồn hoàn toàn lên trên khoản khấu trừ 30% của Mỹ (thêm khoảng 38 điểm phần trăm)',
+    th: '⚠️ เนเธอร์แลนด์ไม่ให้เครดิตภาษีต่างประเทศ (FTC) เลย — ภาษีในประเทศจะซ้อนทับเต็มจำนวนบนการหักภาษี 30% ของสหรัฐฯ (เพิ่มอีกประมาณ 38 จุดเปอร์เซ็นต์)',
+    ru: '⚠️ Нидерланды вообще не предоставляют зачёт иностранного налога (FTC) — их собственный налог полностью накладывается поверх 30%-ного удержания США (ещё около 38 процентных пунктов)',
+  },
+  no: {
+    ko: '노르웨이 세율(22%)이 미국 원천징수(30%)보다 낮아서 세액공제로 완전히 상계돼요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: "Norway's flat rate (22%) is lower than the US withholding (30%), so the tax credit fully absorbs it — the US's 30% withholding is essentially the whole tax story",
+    zh: '挪威的固定税率（22%）低于美国预扣税（30%），因此税收抵免可完全抵消——美国30%的预扣税基本就是全部税负',
+    vi: 'Thuế suất cố định của Na Uy (22%) thấp hơn khấu trừ của Mỹ (30%), nên tín dụng thuế bù trừ hoàn toàn — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'อัตราภาษีคงที่ของนอร์เวย์ (22%) ต่ำกว่าการหักภาษีของสหรัฐฯ (30%) เครดิตภาษีจึงหักล้างได้หมด — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'Фиксированная ставка Норвегии (22%) ниже удержания США (30%), поэтому налоговый кредит полностью покрывает её — удержание 30% в США фактически покрывает весь налог',
+  },
+  nz: {
+    ko: '뉴질랜드 국세청(IRD)이 우발이득(windfall) 원칙으로 복권 당첨금을 비과세해요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: "New Zealand's IRD treats lottery winnings as a tax-free windfall — the US's 30% withholding is essentially the whole tax story",
+    zh: '新西兰税务局（IRD）依意外之财原则将彩票奖金免税——美国30%的预扣税基本就是全部税负',
+    vi: 'IRD của New Zealand miễn thuế cho tiền thắng xổ số theo nguyên tắc lợi bất ngờ — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'IRD ของนิวซีแลนด์ยกเว้นภาษีเงินรางวัลลอตเตอรีตามหลักลาภลอย — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'Налоговая служба Новой Зеландии освобождает лотерейный выигрыш от налога как непредвиденный доход — удержание 30% в США фактически покрывает весь налог',
+  },
+  pl: {
+    ko: '폴란드 소득세법상 최고구간 근사 적용, 미국에서 낸 30%를 세액공제로 빼줘도 약 6%p가 추가로 남아요',
+    en: "Poland's income tax applies its top bracket as an approximation, and after crediting the 30% already paid to the US, roughly 6 more percentage points are still owed",
+    zh: '波兰所得税近似适用最高税率，即使抵免已在美国缴纳的30%，仍需额外缴纳约6个百分点',
+    vi: 'Thuế thu nhập Ba Lan áp dụng gần đúng mức thuế cao nhất, và sau khi khấu trừ 30% đã nộp ở Mỹ, vẫn còn nợ thêm khoảng 6 điểm phần trăm',
+    th: 'ภาษีเงินได้โปแลนด์ใช้อัตราขั้นสูงสุดโดยประมาณ แม้จะหักภาษี 30% ที่จ่ายในสหรัฐฯ แล้ว ก็ยังต้องจ่ายเพิ่มอีกประมาณ 6 จุดเปอร์เซ็นต์',
+    ru: 'Польский подоходный налог применяет верхнюю ставку в качестве приближения, и даже после зачёта уже уплаченных в США 30% остаётся доплатить ещё около 6 процентных пунктов',
+  },
+  sg: {
+    ko: '싱가포르 국세청(IRAS)이 도박·복권 당첨금을 애초에 과세 대상 소득으로 안 봐요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: "Singapore's IRAS doesn't treat gambling or lottery winnings as taxable income at all — the US's 30% withholding is essentially the whole tax story",
+    zh: '新加坡国内税务局（IRAS）根本不将博彩或彩票奖金视为应税所得——美国30%的预扣税基本就是全部税负',
+    vi: 'IRAS của Singapore không coi tiền thắng cờ bạc hay xổ số là thu nhập chịu thuế — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'IRAS ของสิงคโปร์ไม่ถือว่าเงินรางวัลพนันหรือลอตเตอรีเป็นรายได้ที่ต้องเสียภาษีเลย — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'Налоговое управление Сингапура вообще не считает выигрыш в азартных играх или лотерею налогооблагаемым доходом — удержание 30% в США фактически покрывает весь налог',
+  },
+  sv: {
+    ko: '스웨덴 세율(순당첨금의 30%)이 미국 원천징수(30%)와 같아서 세액공제로 완전히 상계돼요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: "Sweden's rate (30% of the net win) happens to match the US withholding (30%), so the tax credit fully absorbs it — the US's 30% withholding is essentially the whole tax story",
+    zh: '瑞典税率（净中奖金额的30%）恰好与美国预扣税（30%）相同，因此税收抵免可完全抵消——美国30%的预扣税基本就是全部税负',
+    vi: 'Thuế suất Thụy Điển (30% số tiền thắng ròng) trùng khớp với khấu trừ của Mỹ (30%), nên tín dụng thuế bù trừ hoàn toàn — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'อัตราภาษีสวีเดน (30% ของเงินรางวัลสุทธิ) เท่ากับการหักภาษีของสหรัฐฯ (30%) พอดี เครดิตภาษีจึงหักล้างได้หมด — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'Ставка Швеции (30% от чистого выигрыша) совпадает с удержанием США (30%), поэтому налоговый кредит полностью покрывает её — удержание 30% в США фактически покрывает весь налог',
+  },
+  tr: {
+    ko: '터키는 미국과 조세조약이 있지만 이 소득엔 실제로 관계없다고 판단돼요 — 30% 원천징수 후 터키 자국세 상계 후에도 약 20%p가 추가로 남아요',
+    en: "Turkey has a US tax treaty, but it's found not to actually apply to this income — after the 30% US withholding and crediting Turkey's own tax, roughly 20 more percentage points are still owed",
+    zh: '土耳其与美国有税收协定，但经核实并不适用于此类收入——扣除美国30%预扣税并抵免土耳其本国税款后，仍需额外缴纳约20个百分点',
+    vi: 'Thổ Nhĩ Kỳ có hiệp định thuế với Mỹ, nhưng được xác định là không thực sự áp dụng cho loại thu nhập này — sau khi khấu trừ 30% của Mỹ và bù trừ thuế trong nước Thổ Nhĩ Kỳ, vẫn còn nợ thêm khoảng 20 điểm phần trăm',
+    th: 'ตุรกีมีสนธิสัญญาภาษีกับสหรัฐฯ แต่พบว่าไม่ได้ใช้กับรายได้ประเภทนี้จริง — หลังหักภาษี 30% ของสหรัฐฯ และเครดิตภาษีในประเทศตุรกีแล้ว ก็ยังต้องจ่ายเพิ่มอีกประมาณ 20 จุดเปอร์เซ็นต์',
+    ru: 'У Турции есть налоговое соглашение с США, но установлено, что оно фактически не применяется к этому доходу — после удержания 30% в США и зачёта турецкого налога остаётся доплатить ещё около 20 процентных пунктов',
+  },
+  tw: {
+    ko: '대만 소득기본세액조례(개인 AMT)상 세액이 미국 원천징수(30%) 한도 내에서 세액공제로 상계돼요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: "Under Taiwan's Income Basic Tax Act (personal AMT), the credit for the 30% already paid to the US fully absorbs the Taiwan tax — the US's 30% withholding is essentially the whole tax story",
+    zh: '根据台湾所得基本税额条例（个人最低税负制），已在美国缴纳的30%抵免额完全抵消台湾税额——美国30%的预扣税基本就是全部税负',
+    vi: 'Theo Đạo luật Thuế Cơ bản Thu nhập của Đài Loan (AMT cá nhân), khoản tín dụng cho 30% đã nộp ở Mỹ bù trừ hoàn toàn thuế Đài Loan — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'ตามกฎหมายภาษีขั้นต่ำของไต้หวัน (AMT ส่วนบุคคล) เครดิตภาษี 30% ที่จ่ายในสหรัฐฯ แล้วหักล้างภาษีไต้หวันได้หมด — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'По Закону об основном налоге на прибыль Тайваня (личный AMT) кредит за уже уплаченные в США 30% полностью покрывает тайваньский налог — удержание 30% в США фактически покрывает весь налог',
+  },
+  uk: {
+    ko: '영국 국세청(HMRC)이 도박·복권 당첨금을 애초에 과세 대상 소득으로 안 봐요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: "HMRC doesn't treat gambling or lottery winnings as taxable income at all — the US's 30% withholding is essentially the whole tax story",
+    zh: '英国税务海关总署（HMRC）根本不将博彩或彩票奖金视为应税所得——美国30%的预扣税基本就是全部税负',
+    vi: 'HMRC không coi tiền thắng cờ bạc hay xổ số là thu nhập chịu thuế — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'HMRC ไม่ถือว่าเงินรางวัลพนันหรือลอตเตอรีเป็นรายได้ที่ต้องเสียภาษีเลย — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'Налоговая и таможенная служба Великобритании вообще не считает выигрыш в азартных играх или лотерею налогооблагаемым доходом — удержание 30% в США фактически покрывает весь налог',
+  },
+  za: {
+    ko: '남아공 소득세법상 복권 당첨금은 "자본적 성격"으로 분류돼 과세 대상이 아니에요 — 미국 30% 원천징수가 사실상 세금의 전부예요',
+    en: "South Africa's Income Tax Act classifies lottery winnings as capital in nature, so they aren't taxable — the US's 30% withholding is essentially the whole tax story",
+    zh: '南非所得税法将彩票奖金归类为资本性质，因此不征税——美国30%的预扣税基本就是全部税负',
+    vi: 'Đạo luật Thuế Thu nhập Nam Phi phân loại tiền thắng xổ số là có tính chất vốn nên không chịu thuế — khoản khấu trừ 30% của Mỹ về cơ bản là toàn bộ câu chuyện thuế',
+    th: 'กฎหมายภาษีเงินได้แอฟริกาใต้จัดประเภทเงินรางวัลลอตเตอรีเป็นลักษณะทุน จึงไม่ต้องเสียภาษี — การหักภาษี 30% ของสหรัฐฯ ก็ถือเป็นภาษีทั้งหมดโดยพื้นฐาน',
+    ru: 'Закон о подоходном налоге ЮАР классифицирует лотерейный выигрыш как имеющий капитальный характер, поэтому он не облагается налогом — удержание 30% в США фактически покрывает весь налог',
+  },
+};
+
+Object.keys(NEW_COUNTRY_NAMES_POSITIONAL).forEach(code => {
+  const n = NEW_COUNTRY_NAMES_POSITIONAL[code];
+  const s = NEW_COUNTRY_SUB[code];
+  const ruPrep = RU_ON_ISLAND[code] ? `на ${n.ru}` : `в ${n.ru}`;
+  FAQ_TG2[code] = {
+    title: () => pickLang(
+      `${NEW_COUNTRY_AGENCY_KO[code].split(' ')[0]}에서도 또 내요?`,
+      `Do I also pay in ${n.en}?`,
+      `在${n.zh}也要交税吗？`,
+      `Có phải đóng thuế ở ${n.vi} nữa không?`,
+      `ต้องเสียภาษีใน${n.th}ด้วยไหม?`,
+      `Нужно ли платить налог ещё и ${ruPrep}?`,
+      buildAlsoPayMore(code)
+    ),
+    sub: () => pickLang(s.ko, s.en, s.zh, s.vi, s.th, s.ru),
+  };
+});
