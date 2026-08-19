@@ -13,7 +13,7 @@
   // "?lang=·localStorage 둘 다 없는 외부 직접 유입자는 무조건 한국어로 고정된다"는 엣지케이스를
   // 지적받아 브라우저 언어 감지를 3번째 우선순위로 추가함.
   window.__smLang = (function(){
-    var SUPPORTED = ['en','zh','vi','th','ru','km','ne','id','my','si','uz','mn','kk','ky','ur','bn','lo','ja','ar','hi','fr','tl','pt','es','uk','tet'];
+    var SUPPORTED = ['en','zh','vi','th','ru','km','ne','id','my','si','uz','mn','kk','ky','ur','bn','lo','ja','ar','hi','fr','tl','pt','es','uk','tet','de','nl','sv','no','da','fi','it','pl','tr'];
     try{
       var urlLang = new URLSearchParams(location.search).get('lang');
       if (urlLang === 'ko' || SUPPORTED.indexOf(urlLang) !== -1) return urlLang;
