@@ -586,6 +586,15 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
 
 ## 알려진 미해결 항목
 
+- **👤 Zenodo 연동 마무리 — 사용자가 브라우저에서 직접 해야 함, 세션이 대신 못 함.**
+  `us-lottery-tax-data` 저장소는 이미 준비 완료(`LICENSE`+`CITATION.cff` 푸시됨, 커밋
+  `05507cb`). 남은 건 (1) zenodo.org에 GitHub 계정으로 로그인, (2) GitHub 연동에서
+  `semilee123456-ui/us-lottery-tax-data` 토글 ON, (3) 그 저장소 GitHub "Releases →
+  Draft a new release"로 `v1.0.0` 태그 만들어 게시 — 이 순간 Zenodo가 자동으로 DOI
+  발급함. 세션이 못 하는 이유: OAuth 로그인은 브라우저가 필요하고, 이 세션의 GitHub
+  MCP 툴셋엔 release 생성 API 자체가 없음(list/get만 있음, 재확인 불필요). 사용자가
+  완료하면 다음 세션이 README.md/press-kit.html에 DOI 배지 추가하는 후속 작업 가능
+  (요청 시). 경위는 "작업 이력"의 42개국 감사+홍보 검토 항목 참고.
 - **⏰ index.html title/description에 넣은 "8/12 파워볼 $1.04B 당첨" 임시 SEO 문구
   (2026-08-14 추가) — 유효기간 있음.** 트래픽 급증 시점 검색 노출용으로 넣은 시의성
   문구라, 다음 대형 잭팟이 뜨거나 이 사건이 "최근"이 아니게 되면 빼거나 최신 사건으로
