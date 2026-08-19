@@ -1661,32 +1661,46 @@ const TAX_MODEL = {
     rate: 0
   },
   za_resident: {
-    // 남아프리카공화국은 캐나다·홍콩·영국·호주·프랑스(ca/hk/uk/au/fr_resident)와 같은
-    // "국내 과세표준 자체가 없음" 구조. 소득세법 제58호(Income Tax Act No. 58 of 1962)
-    // 아래에서 복권 당첨금은 "자본적 성격"(capital in nature) — 노력의 대가가 아니라
-    // 순수 우연에 의한 횡재(windfall) — 으로 분류되어 애초에 "총소득"(gross income)
-    // 범주에서 제외됨. 게다가 복권 당첨금은 자본이득세(CGT)에서도 별도로 면제되는 특례를
-    // 받아, 당첨 규모와 무관하게 소득세·CGT 어느 쪽으로도 세금이 발생하지 않음(2026-08-16
-    // 웹서치 확인). 이 원칙은 남아공 국내 복권(Lotto·PowerBall SA)이든 미국 복권 같은
-    // 해외 복권이든 완전히 동일하게 적용되는 구조적 배제임 — au_resident와 같은 이유로
-    // 세율이 낮은 게 아니라 과세표준 자체가 없다는 뜻. 유일한 예외는 도박을 "직업적으로"
-    // 주업으로 영위하는 경우(전업 도박사)로, 이때는 다른 소득과 같이 과세되지만 복권
-    // 한 장 사서 당첨된 일반적 경우엔 해당 없음(au/fr_resident의 "직업적 도박사/포커
-    // 플레이어" 예외와 같은 구조). (당첨금 자체와는 별개로, 당첨금을 예금 등에 투자해서
-    // 나중에 생기는 이자소득은 개인 일반세율로 과세되는 별도 원칙 — 남아공은 싱가포르와
-    // 달리 이자소득도 과세함 — landing page 참고. 미-남아공 조세조약은 1997년 체결되어
-    // 실제로 존재하지만, 이 조약의 소득유형별 조항이 복권 당첨금에 유리하게 적용되는지는
-    // 이번 라운드에서 조사하지 않음 — 계산 로직에는 영향 없음, landing page FAQ에서
-    // "조사되지 않음"으로 명시.)
-    rate: 0
+    // 2026-08-19 정정: 소득세법 제58호 Eighth Schedule 문단 47(주거용 부동산 CGT 안분
+    // 규정, 도박과 무관)을 잘못 인용했던 이전 코멘트를 SARS 공식 자료로 재확인 후 수정.
+    // 복권 당첨금의 자본이득세(CGT) 면제는 문단 47이 아니라 문단 60 "Gambling, games
+    // and competitions" — 그런데 문단 60(2)(b)가 자연인 면제를 "남아공 법률에 따라
+    // 허가되고 시행되는" 도박·게임·경연에만 한정함(원문: "unless that form of gambling,
+    // game or competition is authorised by, and conducted in terms of, the laws of the
+    // Republic"). SARS 자체 공식 자료(Comprehensive Guide to Capital Gains Tax, Issue 9,
+    // §12.9, sars.gov.za)가 이 조항의 취지를 직접 설명: "arise in respect of foreign
+    // gambling, games and competitions"는 면제 대상에서 제외되고, 실제 사례로 "United
+    // Kingdom Lotto winnings"가 CGT 과세 대상이라고 명시(남아공 국내 복권 수익은 내국
+    // 도박세·부가세로 이미 간접 과세되지만 해외 복권은 그렇지 않다는 논리). 즉 미국
+    // Powerball/Mega Millions처럼 미국 주법으로 허가된 복권은 "남아공 법률에 따른" 것이
+    // 아니므로 이 CGT 면제를 못 받음 — au/ca/hk/uk/fr_resident류의 "과세표준 자체가 없음"
+    // 구조가 아니라, cn/in/vn/mx_resident류처럼 "계산된 세액이 있고 FTC로 상계"되는 구조.
+    // rate는 CGT 실효세율: 40% 포함율(inclusion rate) × 최고 한계세율 45% = 최대 약
+    // 18%(자본이득세 R50,000 연간 공제·복권 티켓 원가는 잭팟 규모 대비 무시 가능해 생략).
+    // ⚠️ 소득세법 제6quat조(외국납부세액공제)가 이 CGT 채무에 실제로 적용되는지는 이번
+    // 라운드에서 직접 확인 못함(SARS 자료가 "소득에 포함된 외국세"를 공제 대상으로 규정,
+    // 남아공은 자본이득을 40% 포함율로 과세소득에 산입하는 구조라 원칙적으로는 적용될
+    // 가능성이 높다고 판단해 cn/in/vn과 같은 FTC 상계 방식을 적용함 — 미국 원천징수
+    // 30%가 이 18%보다 커서 FTC 적용 시 추가 납부액은 결국 0이 됨). 다만 세액이 0이라도
+    // "면세"가 아니라 "신고 후 세액공제로 0"이라는 차이가 있어 국세청(SARS) 신고 의무
+    // 자체는 있을 수 있음 — landing page 참고. 미-남아공 조세조약(1997년 체결)은 제21조
+    // "Other Income"에 거주지국 배타적 과세권을 명시하고, 미 재무부 공식 Technical
+    // Explanation(irs.gov/pub/irs-trty/safrtech.pdf)이 "income from gambling"을 이
+    // 조항 적용 사례로 직접 예시함 — UK/일본/프랑스와 같은 수준의 명시적 근거, 이 계산기가
+    // 다루는 국가 중 조약 문언상 가장 강한 환급 가능성 케이스 중 하나(다만 실제 미국
+    // 복권사업자가 원천징수 단계에서 조약 감면을 적용해줄지는 별개 문제 — landing page
+    // FAQ 참고). (당첨금을 예금 등에 투자해서 나중에 생기는 이자소득은 개인 일반세율로
+    // 과세되는 별도 원칙 — landing page 참고.)
+    rate: 0.18
   },
   my_resident: {
     // 말레이시아 LHDN(Lembaga Hasil Dalam Negeri, Inland Revenue Board)은 복권·도박 당첨금을
     // 상속·행운·우연으로 받는 것과 마찬가지로 "우발이득"(windfall)/자본적 이득으로 분류하고,
     // 소득세법 1967(Income Tax Act 1967)상 과세 대상 소득으로 보지 않음(TV·신문·온라인 경품 등도
     // 동일 취급, 2026-08-16 웹서치 확인) — 개인은 우발적인 복권·카지노 당첨금을 신고할 의무조차
-    // 없음. ca/hk/uk/au/fr/sg/za_resident와 같은 "국내 과세표준 자체가 없음" 구조(FTC 상계로
-    // 0이 되는 cn/in/vn/mx와는 다름) — 세율이 낮은 게 아니라 애초에 과세표준이 없다는 뜻. 이
+    // 없음. ca/hk/uk/au/fr/sg_resident와 같은 "국내 과세표준 자체가 없음" 구조(FTC 상계로
+    // 0이 되는 cn/in/vn/mx/za와는 다름 — za는 2026-08-19에 이 그룹에서 제외됨, za_resident
+    // 코멘트 참고) — 세율이 낮은 게 아니라 애초에 과세표준이 없다는 뜻. 이
     // 원칙은 말레이시아 국내 복권(Sports Toto·Magnum 4D·Da Ma Cai 등 숫자예측 복권)이든 미국
     // 복권 같은 해외 복권이든 완전히 동일하게 적용됨(싱가포르 IRAS·호주 ATO와 같은 "국내/해외
     // 구분 자체가 없는" 구조적 배제). 유일한 예외는 도박이 본업/사업으로 인정되는 경우(직업적
@@ -3042,10 +3056,12 @@ function calcTakeHome(amount, country, stateCode){
       basisSuffix: pickLang('아일랜드 거주자', 'Ireland resident', '爱尔兰居民', 'Cư dân Ireland', 'ผู้พำนักในไอร์แลนด์', 'Резидент Ирландии', buildCountryMore('ie'))
     };
   } else if (country === 'za') {
-    // 남아공: 소득세법 제58호 아래 복권 당첨금이 "자본적 성격"으로 분류되어 애초에
-    // 과세 대상 소득으로 보지 않아(za_resident.rate = 0) — ca/hk/uk/au/fr와 같은 이유
-    // (과세표준 자체가 없음)로 cn/in/vn과 같은 FTC 상계 코드 모양은 유지하되 계산된
-    // 남아공 세액 자체가 항상 0이라 ftcCreditWon/zaAdditionalTaxWon도 항상 0이 됨.
+    // 남아공: 2026-08-19 정정 — Eighth Schedule 문단 60(2)(b)상 CGT 면제가 "남아공
+    // 법률에 따라 허가된" 도박에만 적용돼 미국 복권은 대상이 아님(TAX_MODEL.za_resident
+    // 코멘트 참고) — cn/in/vn/mx와 같은 실제 FTC 상계 구조. za_resident.rate(18%,
+    // CGT 실효세율)가 미국 원천징수 30%보다 낮아 FTC로 완전히 상계되어 최종 추가
+    // 납부액은 0으로 계산됨(이전의 "과세표준 자체가 없음" 코멘트는 잘못된 법령 인용에
+    // 기반했던 것으로 확인돼 삭제).
     const wonAmount = amount * 100000000;
     const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
     const zaCalculatedTaxWon = wonAmount * TAX_MODEL.za_resident.rate;
@@ -3065,7 +3081,7 @@ function calcTakeHome(amount, country, stateCode){
     };
   } else if (country === 'my') {
     // 말레이시아: LHDN이 복권·도박 당첨금을 애초에 과세 대상 소득으로 보지 않아(my_resident.rate = 0,
-    // 소득세법 1967) — ca/hk/uk/au/fr/sg/za와 같은 이유(과세표준 자체가 없음)로 cn/in/vn/mx와
+    // 소득세법 1967) — ca/hk/uk/au/fr/sg와 같은 이유(과세표준 자체가 없음)로 cn/in/vn/mx/za와
     // 같은 FTC 상계 코드 모양은 유지하되 계산된 말레이시아 세액 자체가 항상 0이라
     // ftcCreditWon/myAdditionalTaxWon도 항상 0이 됨.
     const wonAmount = amount * 100000000;
@@ -13581,10 +13597,10 @@ const COUNTRY_TAX_AUTHORITY = {
       fr: "IRAS",
       tl: "IRAS"
     , pt: `IRAS`, es: `IRAS`, uk: `IRAS`, tet: `IRAS`, de: `IRAS`, nl: `IRAS`, sv: `IRAS`, no: 'IRAS', da: 'IRAS', fi: 'IRAS', it: "IRAS", pl: "IRAS", tr: 'IRAS'}),
-  // 남아공은 SARS(South African Revenue Service)의 소득세법 제58호 비과세 원칙(za_resident
-  // 주석 참고)의 명확한 근거라, 다른 0%-club 국가(uk의 HMRC/au의 ATO/fr의 DGFiP)와 같은
-  // 관례로 "SARS"를 그대로 표기함. "SARS"는 언어 불문 통용되는 약어라 번역하지 않고
-  // 21개 언어 전부 동일 문자열
+  // 남아공은 SARS(South African Revenue Service)가 CGT(za_resident 주석 참고, 2026-08-19
+  // 정정: 비과세가 아니라 FTC로 상계되는 실제 세액)의 근거 기관이라, 다른 국가(uk의 HMRC/
+  // au의 ATO/fr의 DGFiP)와 같은 관례로 "SARS"를 그대로 표기함. "SARS"는 언어 불문 통용되는
+  // 약어라 번역하지 않고 21개 언어 전부 동일 문자열
   za: () => pickLang('SARS', 'SARS', 'SARS', 'SARS', 'SARS', 'SARS', {
       km: "SARS",
       ne: "SARS",
