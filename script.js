@@ -608,6 +608,13 @@ document.addEventListener('click', (e) => {
   if (menu && menu.open && !menu.contains(e.target)) menu.open = false;
 });
 
+// 홈 화면 "OO년 세율" 신뢰 배지처럼 실제 세율 데이터를 담지 않는 순수 "올해" 라벨용 —
+// 매년 1월 사람이 고칠 필요 없이 방문 시점 기준으로 자동 계산됨. ⚠️ 세율 구간·공제액·법
+// 시행일 등 실제 숫자가 걸린 문구에는 절대 쓰지 말 것 — 그런 값은 실제로 그 해 발표된
+// 진짜 수치를 사람이 확인해서 넣어야 함(연도만 이걸로 바꿔치기하면 틀린 숫자에 새 연도
+// 라벨만 붙는 꼴이 됨). 매년 점검이 필요한 항목은 HANDOFF.md의 연간 롤오버 체크리스트 참고.
+const CURRENT_YEAR = new Date().getFullYear();
+
 let EXCHANGE_RATE = 1487.73; // 기본값(fallback). 중앙은행 고시 기반 기준환율(2026-07-17 확인 — 한국은행 기준금리 인상으로 원화 강세 반영) — 페이지 로드 시 실시간 환율로 자동 갱신을 시도함. 이 기본값은 주기적으로 수동 업데이트 필요
 let EXCHANGE_RATE_CNY = 6.77; // 기본값(fallback), USD/CNY (2026-07-17 확인). 중국 거주자 기준 결과에서 위안화 참고 환산용 — KRW와 마찬가지로 실시간 조회 시도, 실패하면 이 기본값 사용
 let EXCHANGE_RATE_INR = 87.0; // 기본값(fallback), USD/INR (2026-07-18 확인). 인도 거주자 기준 결과에서 루피 참고 환산용 — KRW와 마찬가지로 실시간 조회 시도, 실패하면 이 기본값 사용
@@ -5713,39 +5720,11 @@ function buildDrawScheduleMore(days){
 // 🎟️ 오늘 잭팟 수동 업데이트 존 — 추첨(파워볼 월/수/토, 메가밀리언즈 화/금) 다음날
 // amountUsd만 공식 사이트 보고 고치면 30초로 끝납니다.
 // ============================================================================
-// 2026-07-28 사용자가 채팅으로 공식 결과 직접 전달해서 갱신: 파워볼 $633M → $663M(7/29(수)
-// 추첨 기준 예고 잭팟, 현금가치 $290.4M — 이 객체엔 현금가치 필드가 없어서 amountUsd만 갱신,
-// 화면 표시는 CASH_VALUE_RATIO(58%) 추정치를 그대로 씀).
-// ⚠️ 메가밀리언즈 $800M는 7/28(화) 추첨 "예고" 잭팟액이었는데, 2026-07-29 세션 기준 이미 그
-// 추첨이 지나갔음. 사용자가 스크린샷(공식 사이트 결과 페이지)으로 7/28 당첨번호는 전달해줘서
-// LATEST_DRAW/아카이브는 갱신했지만, 같은 화면에 다음 추첨(7/31) 잭팟액이 "Pending"(집계 전)으로
-// 떠 있어서 새 금액 자체가 아직 공식 발표 전임 — 추측으로 덮어쓰지 않고 옛 값 그대로 둠. 다음
-// 세션/사용자가 "Pending"이 실제 금액으로 바뀐 뒤 갱신할 것.
-// 2026-07-29: 메가밀리언즈 잭팟이 당첨자가 나와서 5천만 달러로 리셋된 걸 사용자가 스크린샷
-// (USA Mega, Next Jackpot $50 Million · Fri Jul 31)으로 전달해서 갱신 — 이전 값(8억 달러)은
-// 당첨 전 마지막 회차 금액이라 리셋 이후로는 그대로 두면 실제보다 훨씬 부풀려진 잭팟을 보여주게 됨
 // cashUsd: 공식 사이트가 발표한 실제 일시불 현금가치(확인 가능하면 채움) — 없으면 화면 표시 시
-// CASH_VALUE_RATIO(58%) 추정치로 대체됨(getJackpotCashUsd() 참고). 공식 발표는 추첨 직전까지
-// 계속 갱신되니 "확인 필요" 없이 확실할 때만 채우고, 애매하면 비워서 추정치를 쓰게 둘 것.
-// 2026-08-04: 사용자가 usamega.com 스크린샷 전달(파워볼 8/3 회차 8,30,41,48,54+4 확인,
-// 메가밀리언즈는 7/31 회차 그대로) — 메가밀리언즈는 이미 $60M/$25.5M로 정확히 일치해서 안 바꿈.
-// 파워볼은 이 $748M/$325.1M이 8/3(월) 추첨용이었던 옛 값인데, 같은 스크린샷에 다음 추첨(8/5 수)
-// 잭팟이 아직 "Pending"으로 떠 있어서(공식 미발표) 추측으로 안 덮어쓰고 그대로 둠 — 다음
-// 세션/사용자가 "Pending"이 실제 금액으로 바뀐 뒤 갱신할 것.
-// 2026-08-12 이어서: 사용자가 공유한 스크린샷(usamega.com 요약)을 powerball.com 공식 페이지
-// WebFetch + megamillions.com 계열(DraftKings 기사, valottery.com 공식 주정부 페이지)
-// 교차검증 — 파워볼 8/10 회차(6,37,54,55,64+10, Power Play 3x)는 당첨자 없어 다음 추첨(8/12,
-// 오늘) 잭팟이 $1 Billion(현금가치 $433.1M)으로 증가. 메가밀리언즈 8/11 회차(1,20,30,46,68+17)도
-// 당첨자 없어 다음 추첨(8/14) 잭팟이 $90M(현금가치 valottery $38M · 스크린샷 $38.7M, 근소한
-// 차이는 판매량에 따른 흔한 오차로 판단해 더 정밀한 스크린샷 값 채택)으로 증가.
-// 2026-08-15 이어서: 사용자가 공유한 스크린샷(usamega.com)으로 메가밀리언즈 8/14 회차
-// (3,23,27,46,60+11) 확인 — WebSearch(DraftKings 기사) 교차검증, 당첨자 없어 다음 추첨(8/18)
-// 잭팟이 $100M(현금가치 $42.8M)으로 증가. 파워볼은 8/12 회차 이후 다음 추첨(8/15) 잭팟 $20M
-// (현금가치 $8.7M)으로 이미 정확히 반영돼 있어 변경 없음.
-// 2026-08-16 이어서: 사용자가 공유한 스크린샷(usamega.com)으로 파워볼 8/15 회차(5,8,27,29,63+13,
-// Power Play 2x — 배율은 이 사이트가 추적 안 하는 필드라 스코프 밖) 확인, 당첨자 없어 다음 추첨
-// (8/17) 잭팟이 $35M(현금가치 $15.2M)으로 증가. 메가밀리언즈는 스크린샷의 다음 추첨(8/18) 잭팟
-// $100M(현금가치 $42.8M)이 위 8/14 갱신값과 그대로 일치해 변경 없음.
+// CASH_VALUE_RATIO(58%) 추정치로 대체됨(getJackpotCashUsd() 참고).
+// ⚠️ 공식 사이트에 다음 추첨 잭팟이 "Pending"(집계 전)으로 떠 있으면 추측으로 덮어쓰지 말고
+// 옛 값 그대로 둘 것 — 실제 금액이 발표된 뒤에만 갱신. (지난 갱신 이력은 git log로 충분히
+// 추적 가능해서 날짜별 코멘트는 더 이상 여기 쌓지 않음 — 최신 반영 회차는 아래 LATEST_DRAW 참고.)
 const JACKPOT_DATA = {
   powerball:    { amountUsd: 48000000, cashUsd: 20800000 },
   megamillions: { amountUsd: 100000000, cashUsd: 42800000 },
@@ -5762,70 +5741,12 @@ const GAME_NAME_MORE = {
 // 🎱 최신 추첨 당첨번호 — 잭팟 확인할 때 공식 사이트(powerball.com/megamillions.com) 보고 같이 갱신.
 // 재미 요소 + 공유 유도용(사용자 피드백: "사이트가 너무 교과서 같다") — 세금 계산기 본질은 그대로 두고
 // 잭팟 카드 안에 양념처럼 추가한 것이라, 갱신을 깜빡해도 계산기 기능엔 영향 없음.
-// 2026-08-04 이어서: "네가 보고 혼자 할 수 있는 거 전부 해줘" 요청으로 WebSearch(뉴스 3곳)+
-// WebFetch(powerball.com 공식 페이지)로 교차검증 후 갱신. 자동 백필 루틴(커밋 fd78d6f)이
-// odds-data.js의 POWERBALL_DRAW_ARCHIVE에는 8/3 회차를 이미 넣어놨는데, 이 상수(LATEST_DRAW)와
-// POWERBALL_JACKPOT_ARCHIVE는 빠뜨린 채였음 — 위 "알려진 미해결 항목"에 이미 문서화된 "3개
-// 데이터 소스 중 하나만 빠지는" 패턴이 이번에도 그대로 재발한 것(자세한 배경은 그 섹션 참고).
-// 파워볼 8/1 → 8/3 회차(8,30,41,48,54 + 파워볼 4, Power Play 2x는 스코프 밖) — 당첨자 없어서
-// 다음 추첨(8/5) 잭팟이 $786M(현금가치 $341.6M)로 증가, 위 JACKPOT_DATA.powerball도 같이 갱신함.
-// 메가밀리언즈는 7/31 회차 그대로 최신(다음 추첨이 오늘 8/4 저녁이라 아직 결과 없음, WebSearch로
-// 8/4 추첨 예고 잭팟 $60M/현금 $25.5M 확인 — 기존 JACKPOT_DATA.megamillions와 이미 일치해서
-// 변경 없음). (같은 날 다른 세션이 독립적으로 같은 8/3 회차 번호를 3개 출처 교차검증으로도
-// 재확인함 — 이 항목과 세부 출처만 다를 뿐 결론 일치.)
-// 2026-08-05 이어서: 사용자가 공유한 스크린샷(파워볼/메가밀리언즈 요약 카드)을 계기로 메가밀리언즈
-// 8/4 추첨 결과를 확인 — WebSearch 요약이 파워볼 $786M와 메가밀리언즈를 한 문장에 섞어 잘못
-// 답해서(도구 자체의 취합 오류), 그 요약은 버리고 개별 소스 2곳(valottery.com 공식 주정부
-// 페이지 + DraftKings 기사)을 직접 WebFetch로 교차검증함 — 둘 다 14,21,51,55,65 / 메가볼 21로
-// 일치. 다음 추첨(8/7) 잭팟은 $70M, 현금가치는 사용자 스크린샷 $29.7M(29.7/70=0.424, 직전
-// 회차 25.5/60=0.425와 비율이 거의 같아 신뢰) 채택 — valottery는 $29.0M로 약간 낮게 표시했는데
-// 잭팟 예고액은 하루에도 판매량 따라 여러 번 갱신되는 값이라 흔한 오차로 판단.
-// 2026-08-06 이어서: 사용자가 공유한 스크린샷(파워볼 8/5 추첨 결과)을 powerball.com 공식
-// 페이지 WebFetch로 교차검증 — 14,20,59,60,61 / 파워볼 25로 일치. 당첨자 없어 다음 추첨(8/8)
-// 잭팟이 $856M(현금가치 $372.0M)로 증가, 위 JACKPOT_DATA.powerball도 같이 갱신함. 메가밀리언즈는
-// 그대로 최신(다음 추첨 8/7 아직 결과 없음).
-// 2026-08-07 이어서: 사용자가 공유한 스크린샷(usamega.com 요약, 파워볼/메가밀리언즈 둘 다 표시)
-// — 파워볼 8/5 회차는 이미 위 값과 정확히 일치(변경 없음, cashUsd $372.0M도 스크린샷 $370.7M와
-// 근소한 차이라 흔한 오차 범위로 판단해 유지). 메가밀리언즈 8/7 회차(17,20,32,54,57 / 메가볼 23)는
-// 처음 반영 — odds-data.js의 MEGAMILLIONS_DRAW_ARCHIVE에도 같이 추가함(draw_archive_
-// integrity_check.js 통과 확인, odds-data.js?v 캐시버스팅도 같이 올림). 당첨자 없어 다음
-// 추첨(8/11) 잭팟이 $80M(현금가치 $34.4M)로 증가, 위 JACKPOT_DATA.megamillions도 같이 갱신함.
-// 2026-08-10 이어서: 사용자가 공유한 스크린샷(usamega.com 요약)으로 파워볼 8/8 회차(5,9,35,54,63 /
-// 파워볼 7) 확인 — 직전 회차(8/5)까지 반영된 아카이브에 이어 새로 추가(odds-data.js의
-// POWERBALL_DRAW_ARCHIVE·POWERBALL_JACKPOT_ARCHIVE에도 같이 추가, 잭팟 $856M은 8/6 세션이 이미
-// 예고값으로 기록해둔 값 그대로 사용). 당첨자 없어 다음 추첨(8/10) 잭팟이 $905M(현금가치
-// $391.9M)로 증가, 위 JACKPOT_DATA.powerball도 같이 갱신함. 메가밀리언즈는 스크린샷에 같은 8/7
-// 회차·$80M 잭팟이 그대로 표시돼 있어 이미 일치, 변경 없음.
-// 2026-08-12 이어서: powerball.com 공식 페이지 WebFetch로 8/10 회차 확인, 메가밀리언즈는
-// DraftKings 기사로 8/11 회차 확인 — 위 JACKPOT_DATA 갱신과 같은 근거. odds-data.js의
-// POWERBALL_DRAW_ARCHIVE·POWERBALL_JACKPOT_ARCHIVE / MEGAMILLIONS_DRAW_ARCHIVE·
-// MEGAMILLIONS_JACKPOT_ARCHIVE에도 같이 추가함(draw_archive_integrity_check.js 통과 확인,
-// odds-data.js?v 캐시버스팅도 같이 올림).
-// 2026-08-14 이어서: 사용자가 공유한 스크린샷(파워볼 8/12 회차)을 powerball.com
-// draw-result 공식 페이지 + powerball.com 홈페이지 + lotteryusa.com 3곳 WebFetch로
-// 교차검증 — 4,26,66,67,69 + 파워볼 9, Power Play 2x로 3곳 전부 일치. 이 회차에서
-// 일리노이주 당첨자가 나와 잭팟 적중(당첨 전 예고액은 $1.04B) — 다음 추첨(8/15) 잭팟이
-// 표준 시작액 $20M(현금가치 $8.7M)로 리셋됨, powerball.com·lotteryusa.com 둘 다 일치.
-// 위 JACKPOT_DATA.powerball을 $20M/$8.7M로 갱신(잭팟이 줄어든 것은 당첨자 발생에 따른
-// 정상적인 리셋이지 오류 아님). odds-data.js의 POWERBALL_DRAW_ARCHIVE·
-// POWERBALL_JACKPOT_ARCHIVE에 8/12 회차 추가(JACKPOT_ARCHIVE 금액은 이 회차 추첨 전
-// 예고액이었던 $1000M — 이 배열의 기존 관례대로 회차 시점에 script.js가 추적하던 값을
-// 그대로 기록). 메가밀리언즈는 스크린샷의 8/11 회차·$90M/$38.7M 잭팟이 이미 위 값과
-// 정확히 일치해서 변경 없음(더블플레이 3,4,19,21,58+8은 odds-data.js 87행 주석대로
-// 이 아카이브 스코프 밖이라 반영 안 함).
-// 2026-08-16 이어서: 사용자가 공유한 스크린샷(usamega.com)으로 파워볼 8/15 회차(5,8,27,29,63 /
-// 파워볼 13, Power Play 2x·더블플레이 19,21,45,46,65+20은 기존 관례대로 스코프 밖) 확인 —
-// 당첨자 없어 다음 추첨(8/17) 잭팟이 $35M(현금가치 $15.2M)로 증가, 위 JACKPOT_DATA.powerball
-// 갱신. odds-data.js의 POWERBALL_DRAW_ARCHIVE에 8/15 회차 추가, POWERBALL_JACKPOT_ARCHIVE에도
-// 이 회차 추첨 전 예고액이었던 $20M(기존 관례대로) 그대로 기록. 메가밀리언즈는 스크린샷의
-// 8/14 회차·다음 추첨(8/18) $100M/$42.8M 잭팟이 이미 위 값과 정확히 일치해서 변경 없음.
-// 2026-08-18 이어서: 사용자가 공유한 스크린샷(usamega.com 요약, 파워볼/메가밀리언즈 둘 다 표시)
-// — 파워볼 8/17 회차(8,15,25,49,65 / 파워볼 22, Power Play 4x·더블플레이는 기존 관례대로
-// 스코프 밖) 확인. 당첨자 없어 다음 추첨(8/19) 잭팟이 $48M(현금가치 $20.8M)로 증가, 위
-// JACKPOT_DATA.powerball 갱신. odds-data.js의 POWERBALL_DRAW_ARCHIVE에 8/17 회차 추가,
-// POWERBALL_JACKPOT_ARCHIVE에도 이 회차 추첨 전 예고액이었던 $35M(기존 관례대로) 그대로
-// 기록. 메가밀리언즈는 스크린샷의 8/14 회차·다음 추첨(8/18) $100M/$42.8M 잭팟이 이미 위 값과
-// 정확히 일치해서 변경 없음(8/18 추첨은 스크린샷 시점 기준 아직 결과 안 나옴).
+// 회차 갱신 시 odds-data.js의 POWERBALL_DRAW_ARCHIVE/POWERBALL_JACKPOT_ARCHIVE,
+// MEGAMILLIONS_DRAW_ARCHIVE/MEGAMILLIONS_JACKPOT_ARCHIVE에도 같은 회차를 같이 추가할 것
+// (draw_archive_integrity_check.js로 검증 후 odds-data.js?v 캐시버스팅도 같이 올릴 것).
+// 신뢰도: 공식 사이트(powerball.com/megamillions.com) WebFetch > 사용자 스크린샷(usamega.com) >
+// WebSearch 뉴스 요약(여러 값을 한 문장에 섞어 잘못 취합하는 경우가 있어 개별 소스로 재검증
+// 권장). Power Play 배율·더블플레이 번호는 이 사이트가 추적 안 하는 필드라 스코프 밖.
 const LATEST_DRAW = {
   powerball:    { date: '2026-08-17', numbers: [8, 15, 25, 49, 65], special: 22 },
   megamillions: { date: '2026-08-14', numbers: [3, 23, 27, 46, 60], special: 11 },
@@ -14191,58 +14112,58 @@ function updateHomeCalc(usdOverride){
     // 세법 계산에 쓰인 것처럼 오해될 수 있어 kr에서만 환율 문구를 붙임
     trustLine.textContent = (country === 'kr')
       ? pickLang(
-          `${authorityText} 공식 자료 기반 · 2026년 세율 · 환율 ${rateStr}원 적용`,
-          `Based on ${authorityText} official data · 2026 tax rates · rate ${rateStr} KRW/USD`,
-          `基于${authorityText}官方数据 · 2026年税率 · 汇率${rateStr}韩元/美元`,
-          `Dựa trên dữ liệu chính thức của ${authorityText} · thuế suất 2026 · tỷ giá ${rateStr} KRW/USD`,
-          `อ้างอิงข้อมูลทางการจาก ${authorityText} · อัตราภาษีปี 2026 · อัตราแลกเปลี่ยน ${rateStr} วอน/ดอลลาร์`,
-          `На основе официальных данных ${authorityText} · налоговые ставки 2026 · курс ${rateStr} вон/долл.`,
+          `${authorityText} 공식 자료 기반 · ${CURRENT_YEAR}년 세율 · 환율 ${rateStr}원 적용`,
+          `Based on ${authorityText} official data · ${CURRENT_YEAR} tax rates · rate ${rateStr} KRW/USD`,
+          `基于${authorityText}官方数据 · ${CURRENT_YEAR}年税率 · 汇率${rateStr}韩元/美元`,
+          `Dựa trên dữ liệu chính thức của ${authorityText} · thuế suất ${CURRENT_YEAR} · tỷ giá ${rateStr} KRW/USD`,
+          `อ้างอิงข้อมูลทางการจาก ${authorityText} · อัตราภาษีปี ${CURRENT_YEAR} · อัตราแลกเปลี่ยน ${rateStr} วอน/ดอลลาร์`,
+          `На основе официальных данных ${authorityText} · налоговые ставки ${CURRENT_YEAR} · курс ${rateStr} вон/долл.`,
           {
-            ar: `استنادًا إلى بيانات ${authorityText} الرسمية · معدلات ضريبة 2026 · سعر الصرف ${rateStr} وون/دولار`,
-            bn: `${authorityText}-এর সরকারি তথ্যের ভিত্তিতে · ২০২৬ করহার · বিনিময় হার ${rateStr} ওন/ডলার`,
-            fr: `Basé sur les données officielles de ${authorityText} · taux d'imposition 2026 · taux de change ${rateStr} KRW/USD`,
-            hi: `${authorityText} के आधिकारिक डेटा पर आधारित · 2026 कर दरें · विनिमय दर ${rateStr} KRW/USD`,
-            id: `Berdasarkan data resmi ${authorityText} · tarif pajak 2026 · kurs ${rateStr} KRW/USD`,
-            ja: `${authorityText}の公式データに基づく · 2026年税率 · 為替レート${rateStr}ウォン/ドル`,
-            kk: `${authorityText} ресми деректері негізінде · 2026 салық мөлшерлемелері · айырбас бағамы ${rateStr} вон/долл.`,
-            km: `ផ្អែកលើទិន្នន័យផ្លូវការរបស់ ${authorityText} · អត្រាពន្ធឆ្នាំ 2026 · អត្រាប្តូរប្រាក់ ${rateStr} វ៉ុន/ដុល្លារ`,
-            ky: `${authorityText} расмий маалыматтарынын негизинде · 2026 салык коэффициенттери · алмашуу курсу ${rateStr} вон/доллар`,
-            lo: `ອີງໃສ່ຂໍ້ມູນທາງການຂອງ ${authorityText} · ອັດຕາພາສີປີ 2026 · ອັດຕາແລກປ່ຽນ ${rateStr} ວອນ/ໂດລາ`,
-            mn: `${authorityText}-ийн албан ёсны мэдээлэлд үндэслэсэн · 2026 оны татварын хувь · ханш ${rateStr} вон/доллар`,
-            my: `${authorityText} ၏ တရားဝင်အချက်အလက်ကို အခြေခံသည် · 2026 အခွန်နှုန်း · ငွေလဲနှုန်း ${rateStr} ဝမ်း/ဒေါ်လာ`,
-            ne: `${authorityText} को आधिकारिक डेटामा आधारित · 2026 कर दर · विनिमय दर ${rateStr} वोन/डलर`,
-            si: `${authorityText} හි නිල දත්ත මත පදනම්ව · 2026 බදු අනුපාත · විනිමය අනුපාතය ${rateStr} වොන්/ඩොලර්`,
-            tl: `Batay sa opisyal na datos ng ${authorityText} · 2026 tax rates · exchange rate ${rateStr} KRW/USD`,
-            ur: `${authorityText} کے سرکاری ڈیٹا پر مبنی · 2026 ٹیکس کی شرحیں · شرح مبادلہ ${rateStr} وون/ڈالر`,
-            uz: `${authorityText} rasmiy ma'lumotlariga asoslangan · 2026 soliq stavkalari · valyuta kursi ${rateStr} von/dollar`,
-           pt: `Baseado em dados oficiais de ${authorityText} · Alíquotas de 2026 · taxa ${rateStr} KRW/USD`, es: `Basado en datos oficiales de ${authorityText} · Tasas fiscales de 2026 · tipo de cambio ${rateStr} KRW/USD`, uk: `На основі офіційних даних ${authorityText} · Податкові ставки 2026 року · курс ${rateStr} KRW/USD`, tet: `Baseia iha dadus ofisiál ${authorityText} · Taxa impostu 2026 · taxa ${rateStr} KRW/USD`, de: `Basierend auf offiziellen Daten von ${authorityText} · Sätze 2026 · Kurs ${rateStr} KRW/USD`, nl: `Gebaseerd op officiële gegevens van ${authorityText} · tarieven 2026 · koers ${rateStr} KRW/USD`, sv: `Baserat på officiella uppgifter från ${authorityText} · satser 2026 · kurs ${rateStr} KRW/USD`, no: `Basert på offisielle opplysninger fra ${authorityText} · satser 2026 · kurs ${rateStr} KRW/USD`, da: `Baseret på officielle oplysninger fra ${authorityText} · satser 2026 · kurs ${rateStr} KRW/USD`, fi: `Perustuu ${authorityText}:n virallisiin tietoihin · kannat 2026 · kurssi ${rateStr} KRW/USD`, it: `Basato sui dati ufficiali di ${authorityText} · aliquota fiscale 2026 · tasso di cambio ${rateStr} KRW/USD`, pl: `Na podstawie oficjalnych danych ${authorityText} · stawka podatkowa 2026 · kurs wymiany ${rateStr} KRW/USD`, tr: `${authorityText} resmi verilerine dayalı · 2026 vergi oranı · ${rateStr} KRW/USD kuru`}
+            ar: `استنادًا إلى بيانات ${authorityText} الرسمية · معدلات ضريبة ${CURRENT_YEAR} · سعر الصرف ${rateStr} وون/دولار`,
+            bn: `${authorityText}-এর সরকারি তথ্যের ভিত্তিতে · ${CURRENT_YEAR} করহার · বিনিময় হার ${rateStr} ওন/ডলার`,
+            fr: `Basé sur les données officielles de ${authorityText} · taux d'imposition ${CURRENT_YEAR} · taux de change ${rateStr} KRW/USD`,
+            hi: `${authorityText} के आधिकारिक डेटा पर आधारित · ${CURRENT_YEAR} कर दरें · विनिमय दर ${rateStr} KRW/USD`,
+            id: `Berdasarkan data resmi ${authorityText} · tarif pajak ${CURRENT_YEAR} · kurs ${rateStr} KRW/USD`,
+            ja: `${authorityText}の公式データに基づく · ${CURRENT_YEAR}年税率 · 為替レート${rateStr}ウォン/ドル`,
+            kk: `${authorityText} ресми деректері негізінде · ${CURRENT_YEAR} салық мөлшерлемелері · айырбас бағамы ${rateStr} вон/долл.`,
+            km: `ផ្អែកលើទិន្នន័យផ្លូវការរបស់ ${authorityText} · អត្រាពន្ធឆ្នាំ ${CURRENT_YEAR} · អត្រាប្តូរប្រាក់ ${rateStr} វ៉ុន/ដុល្លារ`,
+            ky: `${authorityText} расмий маалыматтарынын негизинде · ${CURRENT_YEAR} салык коэффициенттери · алмашуу курсу ${rateStr} вон/доллар`,
+            lo: `ອີງໃສ່ຂໍ້ມູນທາງການຂອງ ${authorityText} · ອັດຕາພາສີປີ ${CURRENT_YEAR} · ອັດຕາແລກປ່ຽນ ${rateStr} ວອນ/ໂດລາ`,
+            mn: `${authorityText}-ийн албан ёсны мэдээлэлд үндэслэсэн · ${CURRENT_YEAR} оны татварын хувь · ханш ${rateStr} вон/доллар`,
+            my: `${authorityText} ၏ တရားဝင်အချက်အလက်ကို အခြေခံသည် · ${CURRENT_YEAR} အခွန်နှုန်း · ငွေလဲနှုန်း ${rateStr} ဝမ်း/ဒေါ်လာ`,
+            ne: `${authorityText} को आधिकारिक डेटामा आधारित · ${CURRENT_YEAR} कर दर · विनिमय दर ${rateStr} वोन/डलर`,
+            si: `${authorityText} හි නිල දත්ත මත පදනම්ව · ${CURRENT_YEAR} බදු අනුපාත · විනිමය අනුපාතය ${rateStr} වොන්/ඩොලර්`,
+            tl: `Batay sa opisyal na datos ng ${authorityText} · ${CURRENT_YEAR} tax rates · exchange rate ${rateStr} KRW/USD`,
+            ur: `${authorityText} کے سرکاری ڈیٹا پر مبنی · ${CURRENT_YEAR} ٹیکس کی شرحیں · شرح مبادلہ ${rateStr} وون/ڈالر`,
+            uz: `${authorityText} rasmiy ma'lumotlariga asoslangan · ${CURRENT_YEAR} soliq stavkalari · valyuta kursi ${rateStr} von/dollar`,
+           pt: `Baseado em dados oficiais de ${authorityText} · Alíquotas de ${CURRENT_YEAR} · taxa ${rateStr} KRW/USD`, es: `Basado en datos oficiales de ${authorityText} · Tasas fiscales de ${CURRENT_YEAR} · tipo de cambio ${rateStr} KRW/USD`, uk: `На основі офіційних даних ${authorityText} · Податкові ставки ${CURRENT_YEAR} року · курс ${rateStr} KRW/USD`, tet: `Baseia iha dadus ofisiál ${authorityText} · Taxa impostu ${CURRENT_YEAR} · taxa ${rateStr} KRW/USD`, de: `Basierend auf offiziellen Daten von ${authorityText} · Sätze ${CURRENT_YEAR} · Kurs ${rateStr} KRW/USD`, nl: `Gebaseerd op officiële gegevens van ${authorityText} · tarieven ${CURRENT_YEAR} · koers ${rateStr} KRW/USD`, sv: `Baserat på officiella uppgifter från ${authorityText} · satser ${CURRENT_YEAR} · kurs ${rateStr} KRW/USD`, no: `Basert på offisielle opplysninger fra ${authorityText} · satser ${CURRENT_YEAR} · kurs ${rateStr} KRW/USD`, da: `Baseret på officielle oplysninger fra ${authorityText} · satser ${CURRENT_YEAR} · kurs ${rateStr} KRW/USD`, fi: `Perustuu ${authorityText}:n virallisiin tietoihin · kannat ${CURRENT_YEAR} · kurssi ${rateStr} KRW/USD`, it: `Basato sui dati ufficiali di ${authorityText} · aliquota fiscale ${CURRENT_YEAR} · tasso di cambio ${rateStr} KRW/USD`, pl: `Na podstawie oficjalnych danych ${authorityText} · stawka podatkowa ${CURRENT_YEAR} · kurs wymiany ${rateStr} KRW/USD`, tr: `${authorityText} resmi verilerine dayalı · ${CURRENT_YEAR} vergi oranı · ${rateStr} KRW/USD kuru`}
         )
       : pickLang(
-          `${authorityText} 공식 자료 기반 · 2026년 세율 (화면 금액은 참고용 환산)`,
-          `Based on ${authorityText} official data · 2026 tax rates (amount shown is a reference conversion)`,
-          `基于${authorityText}官方数据 · 2026年税率（显示金额仅为参考换算值）`,
-          `Dựa trên dữ liệu chính thức của ${authorityText} · thuế suất 2026 (số tiền hiển thị chỉ là giá trị quy đổi tham khảo)`,
-          `อ้างอิงข้อมูลทางการจาก ${authorityText} · อัตราภาษีปี 2026 (จำนวนที่แสดงเป็นเพียงค่าแปลงเพื่อการอ้างอิง)`,
-          `На основе официальных данных ${authorityText} · налоговые ставки 2026 (показанная сумма — справочная конвертация)`,
+          `${authorityText} 공식 자료 기반 · ${CURRENT_YEAR}년 세율 (화면 금액은 참고용 환산)`,
+          `Based on ${authorityText} official data · ${CURRENT_YEAR} tax rates (amount shown is a reference conversion)`,
+          `基于${authorityText}官方数据 · ${CURRENT_YEAR}年税率（显示金额仅为参考换算值）`,
+          `Dựa trên dữ liệu chính thức của ${authorityText} · thuế suất ${CURRENT_YEAR} (số tiền hiển thị chỉ là giá trị quy đổi tham khảo)`,
+          `อ้างอิงข้อมูลทางการจาก ${authorityText} · อัตราภาษีปี ${CURRENT_YEAR} (จำนวนที่แสดงเป็นเพียงค่าแปลงเพื่อการอ้างอิง)`,
+          `На основе официальных данных ${authorityText} · налоговые ставки ${CURRENT_YEAR} (показанная сумма — справочная конвертация)`,
           {
-            ar: `استنادًا إلى بيانات ${authorityText} الرسمية · معدلات ضريبة 2026 (المبلغ المعروض هو تحويل مرجعي)`,
-            bn: `${authorityText}-এর সরকারি তথ্যের ভিত্তিতে · ২০২৬ করহার (দেখানো পরিমাণ একটি রেফারেন্স রূপান্তর)`,
-            fr: `Basé sur les données officielles de ${authorityText} · taux d'imposition 2026 (le montant affiché est une conversion de référence)`,
-            hi: `${authorityText} के आधिकारिक डेटा पर आधारित · 2026 कर दरें (दिखाई गई राशि एक संदर्भ रूपांतरण है)`,
-            id: `Berdasarkan data resmi ${authorityText} · tarif pajak 2026 (jumlah yang ditampilkan adalah konversi referensi)`,
-            ja: `${authorityText}の公式データに基づく · 2026年税率（表示金額は参考換算値）`,
-            kk: `${authorityText} ресми деректері негізінде · 2026 салық мөлшерлемелері (көрсетілген сома — анықтамалық айырбас)`,
-            km: `ផ្អែកលើទិន្នន័យផ្លូវការរបស់ ${authorityText} · អត្រាពន្ធឆ្នាំ 2026 (ចំនួនទឹកប្រាក់ដែលបង្ហាញគឺជាការប្តូរប្រាក់សម្រាប់យោង)`,
-            ky: `${authorityText} расмий маалыматтарынын негизинде · 2026 салык коэффициенттери (көрсөтүлгөн сумма — маалымдама конверсия)`,
-            lo: `ອີງໃສ່ຂໍ້ມູນທາງການຂອງ ${authorityText} · ອັດຕາພາສີປີ 2026 (ຈຳນວນທີ່ສະແດງແມ່ນການແປງເພື່ອອ້າງອີງ)`,
-            mn: `${authorityText}-ийн албан ёсны мэдээлэлд үндэслэсэн · 2026 оны татварын хувь (харагдаж буй дүн нь лавлагаа хөрвүүлэлт)`,
-            my: `${authorityText} ၏ တရားဝင်အချက်အလက်ကို အခြေခံသည် · 2026 အခွန်နှုန်း (ပြသထားသောပမာဏသည် ရည်ညွှန်းအတွက်သာလဲလှယ်ထားခြင်းဖြစ်သည်)`,
-            ne: `${authorityText} को आधिकारिक डेटामा आधारित · 2026 कर दर (देखाइएको रकम सन्दर्भका लागि गरिएको रूपान्तरण हो)`,
-            si: `${authorityText} හි නිල දත්ත මත පදනම්ව · 2026 බදු අනුපාත (පෙන්වා ඇති මුදල යොමු කිරීම සඳහා පරිවර්තනයකි)`,
-            tl: `Batay sa opisyal na datos ng ${authorityText} · 2026 tax rates (ang halagang ipinapakita ay reference conversion)`,
-            ur: `${authorityText} کے سرکاری ڈیٹا پر مبنی · 2026 ٹیکس کی شرحیں (دکھائی گئی رقم ایک حوالہ جاتی تبدیلی ہے)`,
-            uz: `${authorityText} rasmiy ma'lumotlariga asoslangan · 2026 soliq stavkalari (ko'rsatilgan summa ma'lumot uchun konvertatsiya)`,
-           pt: `Baseado em dados oficiais de ${authorityText} · Alíquotas de 2026 (o valor mostrado é uma conversão de referência)`, es: `Basado en datos oficiales de ${authorityText} · Tasas fiscales de 2026 (el monto mostrado es una conversión de referencia)`, uk: `На основі офіційних даних ${authorityText} · Податкові ставки 2026 року (показана сума є довідковою конвертацією)`, tet: `Baseia iha dadus ofisiál ${authorityText} · Taxa impostu 2026 (valór ne'ebé hatudu sá de'it konversaun referénsia)`, de: `Basierend auf offiziellen Daten von ${authorityText} · Sätze 2026 (angezeigter Wert ist eine Referenzumrechnung)`, nl: `Gebaseerd op officiële gegevens van ${authorityText} · tarieven 2026 (getoonde waarde is een referentieomrekening)`, sv: `Baserat på officiella uppgifter från ${authorityText} · satser 2026 (visat värde är en referensomräkning)`, no: `Basert på offisielle opplysninger fra ${authorityText} · satser 2026 (vist verdi er en referanseomregning)`, da: `Baseret på officielle oplysninger fra ${authorityText} · satser 2026 (vist værdi er en referenceomregning)`, fi: `Perustuu ${authorityText}:n virallisiin tietoihin · kannat 2026 (näytetty arvo on viitteellinen muunnos)`, it: `Basato sui dati ufficiali di ${authorityText} · aliquota fiscale 2026 (l'importo mostrato è una conversione di riferimento)`, pl: `Na podstawie oficjalnych danych ${authorityText} · stawka podatkowa 2026 (pokazana kwota to przeliczenie referencyjne)`, tr: `${authorityText} resmi verilerine dayalı · 2026 vergi oranı (gösterilen tutar referans amaçlı bir dönüşümdür)`}
+            ar: `استنادًا إلى بيانات ${authorityText} الرسمية · معدلات ضريبة ${CURRENT_YEAR} (المبلغ المعروض هو تحويل مرجعي)`,
+            bn: `${authorityText}-এর সরকারি তথ্যের ভিত্তিতে · ${CURRENT_YEAR} করহার (দেখানো পরিমাণ একটি রেফারেন্স রূপান্তর)`,
+            fr: `Basé sur les données officielles de ${authorityText} · taux d'imposition ${CURRENT_YEAR} (le montant affiché est une conversion de référence)`,
+            hi: `${authorityText} के आधिकारिक डेटा पर आधारित · ${CURRENT_YEAR} कर दरें (दिखाई गई राशि एक संदर्भ रूपांतरण है)`,
+            id: `Berdasarkan data resmi ${authorityText} · tarif pajak ${CURRENT_YEAR} (jumlah yang ditampilkan adalah konversi referensi)`,
+            ja: `${authorityText}の公式データに基づく · ${CURRENT_YEAR}年税率（表示金額は参考換算値）`,
+            kk: `${authorityText} ресми деректері негізінде · ${CURRENT_YEAR} салық мөлшерлемелері (көрсетілген сома — анықтамалық айырбас)`,
+            km: `ផ្អែកលើទិន្នន័យផ្លូវការរបស់ ${authorityText} · អត្រាពន្ធឆ្នាំ ${CURRENT_YEAR} (ចំនួនទឹកប្រាក់ដែលបង្ហាញគឺជាការប្តូរប្រាក់សម្រាប់យោង)`,
+            ky: `${authorityText} расмий маалыматтарынын негизинде · ${CURRENT_YEAR} салык коэффициенттери (көрсөтүлгөн сумма — маалымдама конверсия)`,
+            lo: `ອີງໃສ່ຂໍ້ມູນທາງການຂອງ ${authorityText} · ອັດຕາພາສີປີ ${CURRENT_YEAR} (ຈຳນວນທີ່ສະແດງແມ່ນການແປງເພື່ອອ້າງອີງ)`,
+            mn: `${authorityText}-ийн албан ёсны мэдээлэлд үндэслэсэн · ${CURRENT_YEAR} оны татварын хувь (харагдаж буй дүн нь лавлагаа хөрвүүлэлт)`,
+            my: `${authorityText} ၏ တရားဝင်အချက်အလက်ကို အခြေခံသည် · ${CURRENT_YEAR} အခွန်နှုန်း (ပြသထားသောပမာဏသည် ရည်ညွှန်းအတွက်သာလဲလှယ်ထားခြင်းဖြစ်သည်)`,
+            ne: `${authorityText} को आधिकारिक डेटामा आधारित · ${CURRENT_YEAR} कर दर (देखाइएको रकम सन्दर्भका लागि गरिएको रूपान्तरण हो)`,
+            si: `${authorityText} හි නිල දත්ත මත පදනම්ව · ${CURRENT_YEAR} බදු අනුපාත (පෙන්වා ඇති මුදල යොමු කිරීම සඳහා පරිවර්තනයකි)`,
+            tl: `Batay sa opisyal na datos ng ${authorityText} · ${CURRENT_YEAR} tax rates (ang halagang ipinapakita ay reference conversion)`,
+            ur: `${authorityText} کے سرکاری ڈیٹا پر مبنی · ${CURRENT_YEAR} ٹیکس کی شرحیں (دکھائی گئی رقم ایک حوالہ جاتی تبدیلی ہے)`,
+            uz: `${authorityText} rasmiy ma'lumotlariga asoslangan · ${CURRENT_YEAR} soliq stavkalari (ko'rsatilgan summa ma'lumot uchun konvertatsiya)`,
+           pt: `Baseado em dados oficiais de ${authorityText} · Alíquotas de ${CURRENT_YEAR} (o valor mostrado é uma conversão de referência)`, es: `Basado en datos oficiales de ${authorityText} · Tasas fiscales de ${CURRENT_YEAR} (el monto mostrado es una conversión de referencia)`, uk: `На основі офіційних даних ${authorityText} · Податкові ставки ${CURRENT_YEAR} року (показана сума є довідковою конвертацією)`, tet: `Baseia iha dadus ofisiál ${authorityText} · Taxa impostu ${CURRENT_YEAR} (valór ne'ebé hatudu sá de'it konversaun referénsia)`, de: `Basierend auf offiziellen Daten von ${authorityText} · Sätze ${CURRENT_YEAR} (angezeigter Wert ist eine Referenzumrechnung)`, nl: `Gebaseerd op officiële gegevens van ${authorityText} · tarieven ${CURRENT_YEAR} (getoonde waarde is een referentieomrekening)`, sv: `Baserat på officiella uppgifter från ${authorityText} · satser ${CURRENT_YEAR} (visat värde är en referensomräkning)`, no: `Basert på offisielle opplysninger fra ${authorityText} · satser ${CURRENT_YEAR} (vist verdi er en referanseomregning)`, da: `Baseret på officielle oplysninger fra ${authorityText} · satser ${CURRENT_YEAR} (vist værdi er en referenceomregning)`, fi: `Perustuu ${authorityText}:n virallisiin tietoihin · kannat ${CURRENT_YEAR} (näytetty arvo on viitteellinen muunnos)`, it: `Basato sui dati ufficiali di ${authorityText} · aliquota fiscale ${CURRENT_YEAR} (l'importo mostrato è una conversione di riferimento)`, pl: `Na podstawie oficjalnych danych ${authorityText} · stawka podatkowa ${CURRENT_YEAR} (pokazana kwota to przeliczenie referencyjne)`, tr: `${authorityText} resmi verilerine dayalı · ${CURRENT_YEAR} vergi oranı (gösterilen tutar referans amaçlı bir dönüşümdür)`}
         );
   }
 
