@@ -1227,10 +1227,10 @@ LotteryUSA만 노출됨) — "이미 1순위 노출된다"는 전제는 틀림. 
 
 ## 작업 이력 (날짜순, 세션마다 맨 아래에 새 항목 추가)
 
-이보다 오래된 세션 기록(~2026-08-18 원본 데이터 허브 페이지 라운드까지)은
+이보다 오래된 세션 기록(~2026-08-18 hreflang/robots 기술 SEO 감사 라운드까지)은
 `HANDOFF-ARCHIVE.md` 참고(특정 과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님).
-이 본문에는 최근 세션(hreflang/robots 기술 SEO 감사, us-lottery-tax-data 42개국 갱신,
-사이트 전체 국가·언어 표기 통일, PR #248 검토·재구현) 기록만 남겨둠 — 날짜별 항목이
+이 본문에는 최근 세션(us-lottery-tax-data 42개국 갱신, 사이트 전체 국가·언어 표기 통일,
+PR #248 검토·재구현, FAQ_TG2/odds-data.js 다국어 백필) 기록만 남겨둠 — 날짜별 항목이
 3~4개를 다시 넘어가면 가장 오래된 날짜부터 또 이 방식으로 정리할 것(같은 패턴 반복,
 `HANDOFF-ARCHIVE.md` 맨 뒤에 이어 붙이면 됨).
 
@@ -1437,48 +1437,6 @@ PR #251(lump-sum-vs-annuity 표 table-wrap 버그 수정), PR #252(문서 전용
 당첨번호 최신화 여부도 확인 — `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`(2026-08-15)·
 `MEGAMILLIONS_DRAW_ARCHIVE`(2026-08-14) 전부 실제 결과와 정확히 일치, 손댈 것 없었음.
 
-### 2026-08-18 이어서 — hreflang/robots 기술 SEO 감사 (GSC/Bing API 접근 없이 정적 분석만, PR #265)
-
-사용자가 "홍보 채널 추가 말고 사이트 자체를 홍보 자산으로 강화"하는 방향의 대규모 아이디어
-11개를 제시(색인 감사, 42개국 차별화, hreflang 감사, 잭팟 DB, 계산결과 공유 URL, AI 인용
-추적 등) → GSC/Bing Webmaster Tools는 로그인 세션 필요해 API 접근 불가 확인, 그래서 이번
-세션은 저장소 안에서 정적 분석만으로 가능한 두 항목(hreflang 감사, robots 메타 감사)만
-먼저 처리하기로 사용자와 합의.
-
-**발견 및 수정 1 — `index.html` hreflang/og:locale:alternate 9개 언어 누락(커밋
-`90e2947`)**: 독일어(de)·네덜란드어(nl)·스웨덴어(sv)·노르웨이어(no)·덴마크어(da)·
-핀란드어(fi)·이탈리아어(it)·폴란드어(pl)·터키어(tr) — 이 9개는 각자 신규 UI 언어 추가
-라운드 때 `script.js`의 `SUPPORTED_LANGS`/`i18n/*.json`에는 반영됐지만, 메인 페이지
-`index.html`의 `<link rel="alternate" hreflang>` 블록과 `og:locale:alternate` 메타에는
-누락된 채로 방치돼 있었음(각 언어 라운드 세션이 이 파일을 안 건드리는 패턴이라 계속
-누적된 것으로 보임). 두 블록 다 9개씩 추가, 이후 hreflang 37줄(ko+35개 언어+x-default)·
-og:locale:alternate 35줄이 `SUPPORTED_LANGS` 개수와 정확히 일치하는 것 확인. **다음
-새 UI 언어 추가 세션은 반드시 이 두 블록도 같이 갱신할 것** — 이번처럼 누적되지 않게.
-
-**서브에이전트 전수 감사 결과 — 나머지 129개 페이지는 깨끗함**: hreflang 5개 클러스터
-(총 67개 파일)의 상호 링크·x-default 일관성·중복 코드·hreflang 코드(zh vs zh-Hant 등)
-전수 확인, 끊어진 링크·비대칭 링크 0건. canonical도 전부 자기참조 정상(`contact.html`
-1건만 의도된 리다이렉트 스텁이라 예외). sitemap.xml 123개 URL = 색인 대상 파일 수와
-정확히 일치. 리다이렉트 체인도 없음(`contact.html`→`index.html#contact` 1홉으로 끝).
-
-**발견 및 수정 2 — robots 메타 `max-image-preview:large` 전체 누락(커밋
-`5490614`)**: 129개 페이지 중 노출용 robots 메타를 가진 페이지가 단 4개(404/contact/
-press-kit/widget-embed, 전부 의도된 noindex)뿐이었고 나머지는 전부 robots 메타 자체가
-없어서 Google 기본값(`max-image-preview:standard`, 2019년부터 적용)을 따르고 있었음 —
-이 사이트는 언어별 전용 og:image 78개까지 만들어놨는데 검색 결과에서는 작은 썸네일만
-허용되는 상태였던 것. viewport 메타 태그가 있고 robots 메타가 없는 123개 페이지 전부에
-`<meta name="robots" content="max-image-preview:large">`를 viewport 바로 다음 줄에
-추가(소유확인용 파일 2개는 viewport 자체가 없어 자동 스킵됨, 의도대로). 재사용 가능하도록
-`scripts/add-max-image-preview.js`로 스크립트화 — 새 국가/언어 랜딩페이지 라운드가 이
-태그 없이 추가되면 이 스크립트를 다시 돌려서 채우면 됨.
-
-**미착수(참고용, 재조사 금지)**: 사용자가 원래 제시한 11개 항목 중 ①⑩(GSC/Bing 실제 색인
-현황·AI 인용 추적)은 API/로그인 접근 없이는 검증 불가 — API 연결 방법을 다음에 사용자가
-물어보면 안내할 것. ②(42개국 페이지 콘텐츠 차별화, 세무 조사 필요)·⑤⑥⑦(잭팟
-DB·실시간 자동화)·③(계산결과 공유 URL, 정적 호스팅이라 빌드타임 프리렌더 방식 필요)·
-⑨(연간 Tax Reference PDF/CSV/JSON)는 전부 실제 리서치/엔지니어링 규모가 커서 이번
-세션에서 손 안 댐 — 다음에 이어서 할 때는 이 문서의 이 항목부터 참고.
-
 ### 2026-08-18 이어서 — us-lottery-tax-data 저장소를 21개국→42개국으로 갱신 (별도 저장소 발견)
 
 PR #265 머지 후 사용자가 "혼자 할 수 있는 것부터" 진행해달라고 요청 → 위 ⑨(연간 Tax
@@ -1606,3 +1564,51 @@ main이 22개 주 페이지·hreflang/canonical 수정·데이터 허브·이탈
 PR을 볼 때마다 "언제 열렸는지"와 `mergeable_state`를 반드시 직접 확인할 것, "코드는
 맞겠지"로 그냥 merge 버튼을 누르면 이번처럼 최근 3개 언어가 통째로 빠질 뻔한 사고가 날 수
 있음.
+
+### 2026-08-19 — FAQ_TG2/odds-data.js 다국어(30개 언어) 백필 (PR #278)
+
+이전 세션에서 PR #275(FAQ 탭 버그 수정)·#277(21개 신규 국가 FAQ 콘텐츠, 6개 핵심 언어만)이
+남긴 다국어 커버리지 공백 3곳을 순서대로 메움. 사용자가 "내가 도와야 하면 링크랑 자세히
+알려주면 내가 할게"라고 했지만 이번 3개 항목은 전부 자격증명 없이 세션 혼자 끝낼 수 있는
+번역/데이터 작업이라 사용자 개입 없이 완료.
+
+- **`faq-panel-data.js` — 21개 신규 국가**(au,ca,de,da,fi,fr,hk,ie,it,mx,my,nl,no,nz,pl,sg,
+  sv,tr,tw,uk,za): `FAQ_TG2[code].sub`가 ko/en/zh/vi/th/ru 6개 언어만 있고 `more`가 아예
+  없어서, 그 외 30개 언어 사용자에겐 `pickLang()`이 항상 영어로 폴백되고 있었음(버그는
+  아님, `script.js:2382`의 의도된 안전 폴백 — 하지만 커버리지 공백은 맞음). `NEW_COUNTRY_SUB`
+  각 항목에 30개 언어 `more` 객체를 추가하고, 이를 소비하는 `pickLang(s.ko, ..., s.ru,
+  s.more)` 호출도 7번째 인자를 추가하도록 같이 고침(둘 다 안 고치면 데이터만 있고 안 쓰임).
+- **`faq-panel-data.js` — 기존 21개 국가**(kr,us,cn,in,vn,id,ph,th,jp,ru,np,lk,uz,kz,kg,mm,
+  bd,pk,kh,mn,la): `sub`의 `more`는 26개 언어까지 있었지만, 이후 라운드에서 사이트에 추가된
+  9개 언어(de/nl/sv/no/da/fi/it/pl/tr)만 이 필드에서 누락 — title 쪽은 `buildAlsoPayMore()`
+  공용 템플릿을 써서 자동으로 커버됐지만 sub는 나라별 수기 문장이라 자동 커버가 안 됐던 것.
+- **`odds-data.js` `JACKPOT_HISTORY`**: 역대 최고액 기록 6건 중 5건의 `noteMore`에 같은 9개
+  언어가 누락, 가장 최근 항목(2026-08-12 파워볼 일리노이 8위 기록)은 `noteMore` 자체가
+  없어서 30개 언어 전부 새로 작성.
+
+**작업 방식**: 번역량이 많아(21개국×30언어 + 21개국×9언어 + 6건×9~30언어) 서브에이전트
+6개를 병렬로 나눠 순수 번역만 맡기고(파일 읽기/쓰기 금지, 텍스트만 반환), 결과를 메인
+세션이 직접 파일에 삽입하는 방식을 씀 — 삽입은 손으로 21곳씩 반복 편집하지 않고 Node
+스크립트로 일괄 처리(`, key: 'value'` 형태를 각 항목의 `more` 객체 닫는 `})` 직전에
+자동 삽입). 이 과정에서 두 가지 삽입 버그를 만들고 고침: ①국가 코드 `la`(라오스)가
+`FAQ_TG2`의 **마지막 항목**이라 닫는 괄호 뒤에 쉼표가 없어서(`}\n};` 패턴) 스크립트가
+엉뚱한 위치(`FAQ_PANEL_DESC` 생성 루프 안)에 삽입한 것을 못 찾고 지나침 — 이후 비슷한
+"컬렉션의 마지막 항목" 패턴을 스크립트로 일괄 편집할 땐 트레일링 콤마 유무를 먼저 확인할
+것. ②그 버그를 되돌리다가 `Object.keys(...).forEach(code => { ... })`를 닫는 `});`까지
+같이 지워버려 문법 오류가 남 — 삭제 편집 후엔 반드시 `node --check`로 확인할 것(이번엔
+확인해서 바로 잡음). 서브에이전트 1개는 세션 사용량 한도(`session limit`)로 중간에
+끊겼는데, 이미 만든 결과(pl/sg 2개국 완료분)는 살리고 나머지(sv/tr/tw/uk/za 5개국)만
+새 서브에이전트로 재요청해서 완료.
+
+**검증**: `node --check` 둘 다 통과, 21개국×30개 언어/21개국×9개 언어 커버리지를
+Node 스크립트로 직접 세어서 전부 30/30·9/9 확인. 회귀 테스트 전체(`broken_link_audit`,
+`i18n_coverage_audit`, `i18n_attr_lint`, `lang_leak_audit`, `fact_consistency_audit`,
+`console_error_audit`, `faq_audit`, `home_audit`, `audit_odds_compare`) `ISSUES: 0`.
+`faq-panel-data.js`/`odds-data.js`는 지연 로드 전용 파일이라 `script.min.js` 재빌드나
+캐시버스팅 버전 갱신 불필요(`CLAUDE.md` 참고).
+
+**다음 세션 참고 — 남은 작업**: 사용자가 "1번부터 5번까지 순서대로 다 해줘"라고 요청한
+5개 항목 중 1~3번(이 항목)은 완료. 4번(`faq-panel-data.js`/`odds-data.js` 밖에도 비슷한
+"국가/언어 라운드가 특정 데이터 파일을 놓친" 패턴이 더 있는지 재점검, 예: `mcp-server/`,
+`i18n-source/`, 기타 `*-data.js`)과 5번(이 파일 자체 정리, 이번 세션에서 이미 항목 1개를
+아카이브로 옮겨 4개→3개로 유지했지만 계속 챙길 것)은 다음 세션이 이어서 할 것.
