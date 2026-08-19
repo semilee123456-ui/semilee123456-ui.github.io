@@ -600,6 +600,10 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
 3. **유료 검색광고(Google Ads) 진행 여부 결정**: 예산 지출 결정이라 세션이 임의로
    진행 안 함 — 하기로 하면 다음 세션에 알려주면 됨(캠페인 자체 설정은 세션이 도울 수
    있음, 계정 생성·결제수단 등록만 사용자 몫).
+4. **무료 계산기/툴 디렉터리 3곳에 제출**: FlowPath(flowpath.cloud, Contact 페이지)·
+   ToolDirs(tooldirs.com/submit)·Tools Directory Online(toolsdirectoryonline.com/submit)
+   — 전부 실존 확인됨, 제출용 설명 카피는 아래 "알려진 미해결 항목"의 2026-08-19 후속
+   항목에 준비돼있음(복붙만 하면 됨). 세션은 브라우저 폼 제출 도구가 없어 대신 못 함.
 
 **이미 준비돼있고, 본인이 "몇 개월 뒤 다시 요청"하기로 보류한 것(2026-08-06/18 결정,
 지금 재개할 필요 없음, 요청하면 그때 진행):**
@@ -627,6 +631,22 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   — 목록 자체를 처음부터 다시 조사하지 말 것. Data.gov는 정부/기관 카탈로그를 하베스팅하는
   구조라 개인이 직접 제출 가능한 창구가 원래 거의 없다는 점도 참고(외부 AI 본인 답변에도
   이미 "아무 개인 사이트나 자동 등록되는 구조 아님"이라고 명시돼있음).
+- **✅ 2026-08-19 후속 — 계산기/데이터셋 무료 디렉터리 등록용 패킷 작성 + 3곳 실존
+  검증 완료(등록 자체는 미실행, 사용자 몫).** 위와 다른 요청: 사용자가 "점검/측정 말고
+  실제 노출 생기는 무료 홍보만"으로 범위를 좁혀 계산기/툴/데이터셋 디렉터리 제출을
+  재요청 → 이번엔 범위가 좁고 구체적이라 `WebSearch` 3회만 써서(서브에이전트 없이 직접)
+  검증: **FlowPath**(flowpath.cloud, 무료/계정불필요 툴 큐레이션, Contact 페이지로 URL+
+  설명 제출, 영업일 7일 내 검토 — ChamTax 계산기가 요건에 정확히 부합), **ToolDirs**
+  (tooldirs.com/submit), **Tools Directory Online**(toolsdirectoryonline.com/submit)
+  — 셋 다 전용 제출 창구 확인됨. "The Free Tools Directory"(외부 AI가 언급, 658+ 소스
+  집계 사이트, 실존은 확인됨)는 제출 폼을 못 찾음, 직접 방문 확인 필요. **세션이 못
+  하는 이유**: 브라우저 폼 제출 도구가 없어 실제 등록은 사용자가 해야 함. **제출용 카피
+  (채팅에 이미 전달)**: 계산기(`chamtax.com/`, "Free calculator: estimate your
+  after-tax take-home from a US Powerball or Mega Millions jackpot, for 50 US
+  states and 42 countries of residence.")와 데이터셋(`chamtax.com/lottery-tax-data-
+  hub.html`, CC0 언급) 각각 짧은/긴 설명 버전 — 다음 세션이 사용자에게 다시 요청받으면
+  이 카피를 그대로 쓰고 새로 작성할 필요 없음. **더 넓게(5~10곳 추가) 찾을지는 토큰
+  비용 대비 효과 불확실해서 사용자 판단 대기, 먼저 시작하지 말 것.**
 - **⏰ index.html title/description에 넣은 "8/12 파워볼 $1.04B 당첨" 임시 SEO 문구
   (2026-08-14 추가) — 유효기간 있음.** 트래픽 급증 시점 검색 노출용으로 넣은 시의성
   문구라, 다음 대형 잭팟이 뜨거나 이 사건이 "최근"이 아니게 되면 빼거나 최신 사건으로
