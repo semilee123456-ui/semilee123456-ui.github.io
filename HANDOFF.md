@@ -1607,8 +1607,23 @@ Node 스크립트로 직접 세어서 전부 30/30·9/9 확인. 회귀 테스트
 `faq-panel-data.js`/`odds-data.js`는 지연 로드 전용 파일이라 `script.min.js` 재빌드나
 캐시버스팅 버전 갱신 불필요(`CLAUDE.md` 참고).
 
-**다음 세션 참고 — 남은 작업**: 사용자가 "1번부터 5번까지 순서대로 다 해줘"라고 요청한
-5개 항목 중 1~3번(이 항목)은 완료. 4번(`faq-panel-data.js`/`odds-data.js` 밖에도 비슷한
-"국가/언어 라운드가 특정 데이터 파일을 놓친" 패턴이 더 있는지 재점검, 예: `mcp-server/`,
-`i18n-source/`, 기타 `*-data.js`)과 5번(이 파일 자체 정리, 이번 세션에서 이미 항목 1개를
-아카이브로 옮겨 4개→3개로 유지했지만 계속 챙길 것)은 다음 세션이 이어서 할 것.
+**이어서 4번 항목(저장소 전체 재점검) 수행**: 서브에이전트에게 `script.js`의 모든
+`_MORE` 테이블(48개)·`faq-panel-data.js`·`odds-data.js`·`i18n/*.json`(35개 파일 키
+동일성)·`mcp-server/tax-data.js`·`press-kit.html`·`index.html`·`widget-embed.html`·
+`data/country-lottery-tax-rates.*`·`og-share-worker/`까지 전수 재점검을 맡김 — 대부분
+깨끗했지만 **`sitemap.html`이 실제로 9개 신규 언어(de/nl/sv/no/da/fi/it/pl/tr) 라운드를
+전혀 못 따라간 것을 발견**(언어 감지 허용목록 `SUPPORTED`, 표시 텍스트 `SM_I18N`
+16개 하위 테이블, `og:locale` 매핑 `SM_LOCALE` 세 곳 다 26개 언어에서 멈춰 있었음 —
+이 9개 언어 사용자는 `sitemap.html`에서 항상 한국어로 폴백되고 있었음). `SUPPORTED`
+배열 추가(안전한 중간 커밋) → `SM_I18N`/`SM_LOCALE` 번역 채우기(`backHome`/
+`themeToggle`/`disclaimer`는 `i18n/{lang}.json`의 기존 번역 재사용, 나머지 13개
+키는 새로 번역) 순서로 2개 커밋으로 나눠 수정(PR #280, 머지 완료). 번역 중 서브에이전트가
+독일어/네덜란드어/스웨덴어/덴마크어 `h2Core`에 `&amp;` HTML 엔티티를 썼는데 이 값은
+`el.textContent`로 주입되는 자리라 그대로 두면 화면에 `&amp;` 글자가 그대로 노출됐을 것
+— 삽입 전에 `&`로 고쳐서 반영. Playwright로 9개 언어 전부 `?lang=` 접속해 실제 렌더링
+확인, 콘솔 에러 0건.
+
+**5개 항목 전부 완료** — 사용자가 "1번부터 5번까지 순서대로 다 해줘"라고 요청한 작업
+(FAQ_TG2 30개 언어 백필, 기존 국가 9개 언어 백필, odds-data.js 백필, 저장소 전체
+재점검, 이 문서 정리) 모두 끝남. 다음 세션이 참고할 특별한 미완료 후속 작업 없음
+— 평소처럼 세션 시작 시 `git fetch origin main`으로 동시 작업 세션 여부만 확인할 것.
