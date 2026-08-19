@@ -12302,7 +12302,7 @@ function updateFaqPanelDesc(){
   const el = document.getElementById('faq-panel-desc');
   if (!el) return;
   if (typeof FAQ_PANEL_DESC === 'undefined') return; // faq-panel-data.js 로드 전 — ensureFaqPanelDataLoaded() 완료 후 재호출됨
-  const entry = FAQ_PANEL_DESC[sharedCountry] || FAQ_PANEL_DESC.kr;
+  const entry = FAQ_PANEL_DESC[sharedCountry] || FAQ_PANEL_DESC.other;
   el.textContent = entry();
 }
 
@@ -12312,7 +12312,7 @@ function updateFaqTg2Card(){
   updateFaqPanelDesc();
   if (!titleEl || !subEl) return;
   if (typeof FAQ_TG2 === 'undefined') return; // faq-panel-data.js 로드 전 — ensureFaqPanelDataLoaded() 완료 후 재호출됨
-  const entry = FAQ_TG2[sharedCountry] || FAQ_TG2.kr;
+  const entry = FAQ_TG2[sharedCountry] || FAQ_TG2.other;
   titleEl.textContent = entry.title();
   subEl.innerHTML = entry.sub();
 }
