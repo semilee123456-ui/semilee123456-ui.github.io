@@ -16804,3 +16804,66 @@ main이 22개 주 페이지·hreflang/canonical 수정·데이터 허브·이탈
 PR을 볼 때마다 "언제 열렸는지"와 `mergeable_state`를 반드시 직접 확인할 것, "코드는
 맞겠지"로 그냥 merge 버튼을 누르면 이번처럼 최근 3개 언어가 통째로 빠질 뻔한 사고가 날 수
 있음.
+
+### 2026-08-19 — FAQ_TG2/odds-data.js 다국어(30개 언어) 백필 (PR #278)
+
+이전 세션에서 PR #275(FAQ 탭 버그 수정)·#277(21개 신규 국가 FAQ 콘텐츠, 6개 핵심 언어만)이
+남긴 다국어 커버리지 공백 3곳을 순서대로 메움. 사용자가 "내가 도와야 하면 링크랑 자세히
+알려주면 내가 할게"라고 했지만 이번 3개 항목은 전부 자격증명 없이 세션 혼자 끝낼 수 있는
+번역/데이터 작업이라 사용자 개입 없이 완료.
+
+- **`faq-panel-data.js` — 21개 신규 국가**(au,ca,de,da,fi,fr,hk,ie,it,mx,my,nl,no,nz,pl,sg,
+  sv,tr,tw,uk,za): `FAQ_TG2[code].sub`가 ko/en/zh/vi/th/ru 6개 언어만 있고 `more`가 아예
+  없어서, 그 외 30개 언어 사용자에겐 `pickLang()`이 항상 영어로 폴백되고 있었음(버그는
+  아님, `script.js:2382`의 의도된 안전 폴백 — 하지만 커버리지 공백은 맞음). `NEW_COUNTRY_SUB`
+  각 항목에 30개 언어 `more` 객체를 추가하고, 이를 소비하는 `pickLang(s.ko, ..., s.ru,
+  s.more)` 호출도 7번째 인자를 추가하도록 같이 고침(둘 다 안 고치면 데이터만 있고 안 쓰임).
+- **`faq-panel-data.js` — 기존 21개 국가**(kr,us,cn,in,vn,id,ph,th,jp,ru,np,lk,uz,kz,kg,mm,
+  bd,pk,kh,mn,la): `sub`의 `more`는 26개 언어까지 있었지만, 이후 라운드에서 사이트에 추가된
+  9개 언어(de/nl/sv/no/da/fi/it/pl/tr)만 이 필드에서 누락 — title 쪽은 `buildAlsoPayMore()`
+  공용 템플릿을 써서 자동으로 커버됐지만 sub는 나라별 수기 문장이라 자동 커버가 안 됐던 것.
+- **`odds-data.js` `JACKPOT_HISTORY`**: 역대 최고액 기록 6건 중 5건의 `noteMore`에 같은 9개
+  언어가 누락, 가장 최근 항목(2026-08-12 파워볼 일리노이 8위 기록)은 `noteMore` 자체가
+  없어서 30개 언어 전부 새로 작성.
+
+**작업 방식**: 번역량이 많아(21개국×30언어 + 21개국×9언어 + 6건×9~30언어) 서브에이전트
+6개를 병렬로 나눠 순수 번역만 맡기고(파일 읽기/쓰기 금지, 텍스트만 반환), 결과를 메인
+세션이 직접 파일에 삽입하는 방식을 씀 — 삽입은 손으로 21곳씩 반복 편집하지 않고 Node
+스크립트로 일괄 처리(`, key: 'value'` 형태를 각 항목의 `more` 객체 닫는 `})` 직전에
+자동 삽입). 이 과정에서 두 가지 삽입 버그를 만들고 고침: ①국가 코드 `la`(라오스)가
+`FAQ_TG2`의 **마지막 항목**이라 닫는 괄호 뒤에 쉼표가 없어서(`}\n};` 패턴) 스크립트가
+엉뚱한 위치(`FAQ_PANEL_DESC` 생성 루프 안)에 삽입한 것을 못 찾고 지나침 — 이후 비슷한
+"컬렉션의 마지막 항목" 패턴을 스크립트로 일괄 편집할 땐 트레일링 콤마 유무를 먼저 확인할
+것. ②그 버그를 되돌리다가 `Object.keys(...).forEach(code => { ... })`를 닫는 `});`까지
+같이 지워버려 문법 오류가 남 — 삭제 편집 후엔 반드시 `node --check`로 확인할 것(이번엔
+확인해서 바로 잡음). 서브에이전트 1개는 세션 사용량 한도(`session limit`)로 중간에
+끊겼는데, 이미 만든 결과(pl/sg 2개국 완료분)는 살리고 나머지(sv/tr/tw/uk/za 5개국)만
+새 서브에이전트로 재요청해서 완료.
+
+**검증**: `node --check` 둘 다 통과, 21개국×30개 언어/21개국×9개 언어 커버리지를
+Node 스크립트로 직접 세어서 전부 30/30·9/9 확인. 회귀 테스트 전체(`broken_link_audit`,
+`i18n_coverage_audit`, `i18n_attr_lint`, `lang_leak_audit`, `fact_consistency_audit`,
+`console_error_audit`, `faq_audit`, `home_audit`, `audit_odds_compare`) `ISSUES: 0`.
+`faq-panel-data.js`/`odds-data.js`는 지연 로드 전용 파일이라 `script.min.js` 재빌드나
+캐시버스팅 버전 갱신 불필요(`CLAUDE.md` 참고).
+
+**이어서 4번 항목(저장소 전체 재점검) 수행**: 서브에이전트에게 `script.js`의 모든
+`_MORE` 테이블(48개)·`faq-panel-data.js`·`odds-data.js`·`i18n/*.json`(35개 파일 키
+동일성)·`mcp-server/tax-data.js`·`press-kit.html`·`index.html`·`widget-embed.html`·
+`data/country-lottery-tax-rates.*`·`og-share-worker/`까지 전수 재점검을 맡김 — 대부분
+깨끗했지만 **`sitemap.html`이 실제로 9개 신규 언어(de/nl/sv/no/da/fi/it/pl/tr) 라운드를
+전혀 못 따라간 것을 발견**(언어 감지 허용목록 `SUPPORTED`, 표시 텍스트 `SM_I18N`
+16개 하위 테이블, `og:locale` 매핑 `SM_LOCALE` 세 곳 다 26개 언어에서 멈춰 있었음 —
+이 9개 언어 사용자는 `sitemap.html`에서 항상 한국어로 폴백되고 있었음). `SUPPORTED`
+배열 추가(안전한 중간 커밋) → `SM_I18N`/`SM_LOCALE` 번역 채우기(`backHome`/
+`themeToggle`/`disclaimer`는 `i18n/{lang}.json`의 기존 번역 재사용, 나머지 13개
+키는 새로 번역) 순서로 2개 커밋으로 나눠 수정(PR #280, 머지 완료). 번역 중 서브에이전트가
+독일어/네덜란드어/스웨덴어/덴마크어 `h2Core`에 `&amp;` HTML 엔티티를 썼는데 이 값은
+`el.textContent`로 주입되는 자리라 그대로 두면 화면에 `&amp;` 글자가 그대로 노출됐을 것
+— 삽입 전에 `&`로 고쳐서 반영. Playwright로 9개 언어 전부 `?lang=` 접속해 실제 렌더링
+확인, 콘솔 에러 0건.
+
+**5개 항목 전부 완료** — 사용자가 "1번부터 5번까지 순서대로 다 해줘"라고 요청한 작업
+(FAQ_TG2 30개 언어 백필, 기존 국가 9개 언어 백필, odds-data.js 백필, 저장소 전체
+재점검, 이 문서 정리) 모두 끝남. 다음 세션이 참고할 특별한 미완료 후속 작업 없음
+— 평소처럼 세션 시작 시 `git fetch origin main`으로 동시 작업 세션 여부만 확인할 것.
