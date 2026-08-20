@@ -17385,3 +17385,208 @@ updated-date 갱신. 회귀 테스트 전체 `ISSUES: 0` 확인 후 PR #296으�
 마지막 송금 섹션 잔여분) 전체가 완료됨.** 남은 할 일 없음 — 다음 세션은 새 요청
 없이는 특별히 이어갈 항목이 없는 상태.
 
+### (헤더 없이 남아있던 기록, 정리 세션이 제목 추가) 2026-08-17~08-20 — 동시세션 충돌 대응, 서치콘솔 SEO 카피 개편, Lump Sum vs Annuity 가이드 신설, PR #250~257 버그 수정 모음
+
+**⚠️ 다음 세션 참고 — 이 저장소에서 여러 세션이 동시에 활동 중일 수 있음**: 2026-08-18
+하루 동안 이 세션(`claude/handover-token-optimization-kf232u`)과 별개로 최소 1개의
+다른 세션(`claude/github-progress-check-3ya82j`)이 병행으로 `main`에 직접 PR을 올려
+머지함(#265/#267/#268 — hreflang/robots 감사, us-lottery-tax-data 42개국 갱신). 이
+세션이 최종 PR을 머지하려 할 때마다 `main`이 이미 앞서 있어 매번 다시 merge·충돌
+해결이 필요했음 — **PR을 머지하기 직전엔 항상 `git fetch origin main`으로 다시 한번
+확인**하고, 뒤쳐져 있으면 로컬에서 먼저 merge·검증(broken_link_audit 등)한 뒤 push할 것.
+
+사용자가 "깃허브 파일이랑 인수인계 읽고 토큰 최대한 적게 사용할 수 있게 해줘"라고 요청 —
+`CLAUDE.md`의 세션 자체 컨텍스트 절약 규칙과는 별개로, `HANDOFF.md`가 매 세션 전체를
+읽어야 하는 문서인 만큼 그 크기 자체를 줄이는 게 가장 직접적인 효과.
+
+`HANDOFF.md` 상단에 이미 명시된 자체 유지보수 규칙(**"작업 이력" 날짜별 항목이 3~4개를
+넘어가면 가장 오래된 것부터 `HANDOFF-ARCHIVE.md`로 원문 그대로 이동**)에 따라 점검한 결과,
+직전 덴마크 라운드가 이미 5→4개로 한 번 정리했지만 그 시점 기준 4개(네덜란드·스웨덴·
+노르웨이·덴마크)가 남아 경계값이었음. 가장 오래된 네덜란드 항목(123줄)을
+`HANDOFF-ARCHIVE.md` 맨 뒤로 요약·의역 없이 원문 그대로 이동하고, 본문에는 스웨덴·
+노르웨이·덴마크 3개만 남김(포인터 문구를 "~2026-08-17 네덜란드 라운드까지"로 갱신).
+`HANDOFF.md`가 1,637줄 → 1,514줄로 줄어듦(약 7.5%, 새 세션이 매번 읽는 분량 기준).
+
+`CLAUDE.md`의 "레포 특화 셋업"에 적힌 내용(스크립트 위치, Playwright `NODE_PATH` 설정 등)이
+실제 저장소 상태와 여전히 일치하는지도 확인(`scripts/fix-og-logo.js` 등 언급된 스크립트가
+모두 실존, 설명 코멘트도 최신) — 별도 수정 불필요.
+
+**이어서 사용자가 서치콘솔([실적] 탭) 스크린샷과 성능 데이터 엑셀(`PerformanceonSearch...xlsx`)을
+공유하며 SEO 개선을 요청** — 평균 노출 94회/클릭 3회/평균 순위 9.1위, 검색어는 구글 프라이버시
+임계값으로 대부분 가려짐(엑셀 원본도 `chamstax`/`美国 彩票` 2건뿐, UI 필터 문제 아님을 확인).
+대신 **가려지지 않는 페이지별·국가별 데이터가 훨씬 유용**했음:
+- 전체 노출의 69%(65/94)가 홈페이지(`chamtax.com/`) 하나에 집중 — 메타 태그 최적화는 홈페이지에
+  집중하면 됨.
+- 국가별로 보면 검색량이 가장 큰 **미국이 평균 순위 12.04위로 오히려 제일 안 좋고**, 검색량이
+  적은 한국(2.67위)·이탈리아(3.00위)는 이미 상위권 — "미국 시장에서 순위가 안 오르는 게
+  진짜 병목"이라는 결론.
+- 사용자가 이어서 제안한 개선안(스키마 마크업 추가, FAQ 섹션 추가, Core Web Vitals 점검) 중
+  **스키마 마크업(`WebSite`/`Organization`/`SoftwareApplication`/`Dataset`/`FAQPage` JSON-LD)과
+  FAQ 콘텐츠(`view-faq`, 다국어 `data-i18n` 적용된 검색 가능한 FAQ 패널)는 `index.html`에
+  이미 구현되어 있음을 코드로 확인** — 없는 게 아니라 이미 있었음, 중복 작업 방지.
+- 대신 실제로 발견한 버그: **`<title>`/`<meta name="description">`는 언어 전환마다 갱신되는데
+  `<meta property="og:title">`/`<meta property="og:description">`는 그 로직이 없어서 항상
+  `index.html`에 박힌 한국어 문구로 고정**돼있었음 — 영어로 보고 있어도 카카오톡/트위터 등
+  공유 미리보기 카드는 한국어로 뜨는 불일치. `script.js`에 `syncOgTags()`를 추가해
+  `applyTranslations()`/`go()` 두 호출 지점에서 함께 갱신하도록 수정, Playwright로
+  `?lang=en` 방문 시 `og:title`/`og:description`이 실제로 영어로 바뀌는 것 확인.
+  `home_audit`(0/18)·`console_error_audit`(0/196) 통과. `script.min.js?v=20260817-8`,
+  `sw.js CACHE_NAME v77`로 버전업.
+- **참고용으로 확인만 하고 손대지 않은 것**: `script.min.js`가 1.27MB(28개 언어 번역 전체
+  포함)로 꽤 큼 — Core Web Vitals(LCP)에 영향 줄 수 있는 후보지만, 코드 스플리팅은 스코프가
+  큰 별도 작업이라 이번 라운드에서 건드리지 않음. PageSpeed Insights 실측치는 이 샌드박스에서
+  외부 도구 직접 실행이 안 돼(라이트하우스 미설치, 실 URL 접근 불가) 사용자가 직접 확인 필요.
+- **사용자가 실제로 PSI 모바일 55점/FCP 18.9초/LCP 20.4초 스크린샷을 가져와서 "최근에도 몇 번
+  했는데 안 달라졌다"고 재문의** — `HANDOFF-ARCHIVE.md` 13690~13797행("2026-08-15 Lighthouse
+  FCP/LCP 22~25초 조사 종결")을 먼저 확인하고 재조사 없이 그 결론(PSI 모바일 랩 시뮬레이션
+  왜곡, 실사용자 문제 아님)을 그대로 적용 — 이번 리포트도 "실제 사용자 경험 확인 → 데이터
+  없음"이 똑같이 떠 있어 CrUX 필드 데이터 부재도 동일함을 확인. 사용자가 같은 URL로 데스크톱
+  탭을 재측정해서 **FCP 2.6초·LCP 3.8초로 정상 확인** — 2026-08-15 당시(데스크톱 63점/3.1초/
+  3.7초)와 같은 패턴 재현, 결론 유효함이 다시 검증됨. 코드 변경 없음(성능 최적화보다 SEO
+  카피 쪽이 레버리지 크다는 결론에 사용자도 동의).
+
+**이어서 영문 홈페이지 title/description 카피 실제 개편**: PSI 조사가 "코드보다 SEO 카피가
+레버리지 크다"로 결론 나자, `PAGE_TITLES.home.en`/`PAGE_DESCRIPTIONS.home.en`(`script.js`)을
+실제로 교체함 — 근거 없는 카피 변경 리스크 때문에 직접 정하지 않고 "혜택 중심"/"질문형" 두
+안을 만들어 `AskUserQuestion`으로 사용자에게 골라달라고 함, **"혜택 중심" 안 채택**:
+title `Powerball & Mega Millions Tax Calculator | ChamTax`, description `Free calculator
+for your real lottery take-home after tax. Covers US nonresident withholding and
+double-taxation for 38 countries — lump sum or annuity.`(비거주자 원천징수·38개국 이중과세·
+일시불-연금 비교라는 실제 차별점을 앞세움). Playwright로 `?lang=en` 방문 시 `<title>`/
+`meta[name=description]`/`og:title`/`og:description` 4곳 전부 새 문구로 일치하는 것 확인
+(위에서 고친 `syncOgTags()` 덕분에 og: 태그도 자동으로 같이 바뀜). `home_audit`(0/18)·
+`console_error_audit`(0/196) 통과. `script.min.js?v=20260817-9`, `sw.js CACHE_NAME v78`로
+버전업. **⚠️ 다음 세션이 확인할 것**: 몇 주 뒤 서치콘솔에서 미국 국가 탭 평균 순위가
+12.04위에서 내려가는지, CTR이 오르는지 추적 — 효과 없으면 다른 카피(질문형 안)로 A/B 성격
+전환도 고려.
+
+**서브페이지(`us-lottery-take-home.html` 등) 한국어 전용 문제는 증거 불충분으로 보류**:
+페이지 탭에서 `us-lottery-take-home.html`이 평균 순위 2.00위(매우 좋음)인데 클릭 0건인 걸
+발견 — 홈페이지(9.5위라 안 눌리는 게 당연)와 다른 패턴이라, "이 페이지가 영어 지원이 없어서
+(hreflang 없음, `<html lang="ko">` 고정) 영어권 노출에서 안 눌리는 것 아니냐"는 가설을
+세움. 검증하려고 사용자가 서치콘솔에서 이 페이지로 필터링한 국가 탭을 열어봤는데 **테이블이
+완전히 빔** — 검색어 목록이 프라이버시 임계값으로 가려졌던 것과 같은 이유로, 노출 6건짜리
+페이지+국가 조합은 세분화 자체가 숨겨지는 것으로 판단(가설을 서치콘솔 데이터로는 검증
+불가능). 사용자에게 "지금 보류 vs 증거 없이 바로 영어 지원 추가" 선택지를 물어서
+**"지금은 보류"로 결정** — 코드 변경 없음. **다음 세션 참고**: 홈페이지 카피 개편 효과로
+트래픽이 늘어난 뒤(위 항목 참고) 이 서브페이지들 노출도 같이 늘면 그때 같은 가설을 다시
+검증할 것 — 지금 이 페이지를 서치콘솔로 더 파도 표본이 작아 같은 벽(빈 테이블)에
+부딪힐 가능성이 높음.
+
+**이어서 심층 가이드 아티클 "Lump Sum vs. Annuity" 신설**: 사용자가 외부 AI(추정)로부터
+"E-E-A-T 강화용 심층 정보성 아티클/Reddit·Quora 아웃리치/CRO 공유기능" 3개 제안을 받아왔는데,
+코드·`HANDOFF.md` 대조 결과 **뒤 2개는 이미 반영됨**을 확인 — 공유 기능은 `navigator.share()`
+이미지 카드로 몇 차례 다듬어져 있고, Reddit/Quora는 "상시 모니터링+댓글"은 2026-08-05에
+이미 명시적으로 거절된 정책(스팸/어스트로터핑 우려)이고 대신 r/SideProject·r/IndieHackers·
+Show HN 1회성 게시 3개는 2026-08-06에 이미 초안까지 써서 `SendUserFile`로 전달 완료,
+2026-08-12부터 게시 가능 상태로 대기 중(오늘 8/17 기준 실제 게시 여부는 미확인 —
+다음 세션이 사용자에게 물어볼 것). **아티클만 진짜 신규 작업** — 여러 개 중 "Lump sum vs
+Annuity"부터 우선 작성하기로 사용자와 합의(`AskUserQuestion`). 새 파일
+`lump-sum-vs-annuity-lottery-tax.html` — 계산기 안 `renderAnnuityFromCash()`/
+`buildAnnuitySchedule()`(`CASH_VALUE_RATIO=0.58`, 30년 5% 등비수열 지급)를 그대로 가져와
+$500M 예시 표를 실제 공식으로 검산(Playwright로 `calcTakeHome(500,'us')`/직접 등비수열
+계산과 대조, 일치 확인). 핵심 메시지는 "세율은 일시불/연금 무관하게 동일, 총액과 시점만
+다르다" — 기존 주별 페이지(`california-lottery-tax.html`)를 원본으로 복사해 콘텐츠만
+교체하고 `scripts/apply-landing-ticket-style.js`로 스타일 블록을 최신 템플릿과 동기화,
+FAQPage(4문항, 페이지 본문과 1:1 일치)/SoftwareApplication 등 JSON-LD 포함. `sitemap.xml`·
+`sitemap.html`에 새 "In-Depth Guides" 섹션으로 등재, california/texas/new-york 3개 주
+페이지 `related-links`에 상호링크 추가(고아 페이지 방지). `broken_link_audit`(0/124) 통과,
+`script.js`/`styles.css`는 안 건드려서 `build-min.js` 재빌드·캐시 버전업 불필요.
+**⚠️ 다음 세션 메모**: 나머지 가이드 2개("1042-S 양식/환급 절차", "비거주자 당첨금 수령
+절차")는 아직 미착수 — 사용자가 원하면 이어서 작성. **GSC 색인 요청 — 2026-08-20 완료**:
+사용자가 Search Console [URL 검사]에서 `lump-sum-vs-annuity-lottery-tax.html`을 직접
+제출, "색인 생성 요청됨" 확인 스크린샷으로 검증됨 — 재요청 불필요.
+
+**⚠️ 다음 세션을 위한 메모**: (1) 인수인계 아카이브 정리는 일회성이 아니라 반복 유지보수임 —
+"작업 이력"에 4번째 항목이 쌓이면(현재 3개) 다시 가장 오래된 항목부터 `HANDOFF-ARCHIVE.md`로
+옮길 것. (2) PSI 모바일 55점/FCP·LCP 18~26초가 또 보고되면 재조사하지 말고 위 "재검증" 항목과
+`HANDOFF-ARCHIVE.md` 13690~13797행부터 확인. (3) `script.min.js` 번들 크기(1.27MB)는 참고만
+하고 이번 라운드에서 안 건드림 — 실제 PageSpeed 점수가 나쁘게 나오면(데스크톱 기준) 그때
+코드 스플리팅 검토. (4) 홈페이지 `FAQPage` JSON-LD가 한국어 고정인 점(다국어 FAQ 패널과 내용이
+일치하는지, 언어별로 동기화할 가치가 있는지)과 (5) `us-lottery-take-home.html` 등 한국어
+전용 서브페이지 영어 지원 여부(바로 위 항목)는 둘 다 이번 라운드에서 확인/보류만 하고
+미반영 — 트래픽이 더 쌓인 뒤 재검토.
+
+**PR #250 머지 완료 후 — 320px/다크모드/보안헤더 점검, 실제 버그 1건 발견·수정(PR #251)**:
+사용자가 외부 AI 제안으로 320px 뷰포트·다크모드·보안헤더 점검을 요청 — 이번엔 진짜 버그가
+하나 나옴. `lump-sum-vs-annuity-lottery-tax.html`의 $500M 예시 표를 `lottery-prize-tiers.html`
+전용으로 설계된 `.table-wrap`(배지+title/amt/odds/krw grid-template-areas, `<thead>` 시각적
+숨김)에 잘못 넣어서, 4열 일반 비교표인데 `class="amt"`가 붙은 두 열(Gross amount/Net)이 같은
+grid-area를 두고 겹쳐 렌더링되고 헤더 행 자체가 안 보이던 문제 — Playwright 320px 스크린샷으로
+실제 겹침 확인 후 `.table-wrap` 제거하고 다른 90여 개 페이지가 쓰는 일반 `<table>`로 되돌려
+수정. **PR #250이 이미 머지·클로즈된 상태라 같은 브랜치에 새 커밋을 푸시해도 자동으로 안
+올라감을 확인**(`git push origin main` 오타로 403 경험, 이후 브랜치를 `origin/main` 기준으로
+재구성해 새 PR #251 오픈) — 이 저장소에서 세션이 "머지된 PR 브랜치에 후속 커밋"을 다시 할 땐
+브랜치를 최신 main 기준으로 재구성(cherry-pick 또는 rebase)하고 새 PR을 열 것, 옛 PR이
+재사용되길 기대하지 말 것. PR #251도 머지 완료, GitHub Pages 캐시(`cache-control: max-age=600`)
+때문에 배포 후 실제 반영까지 몇 분 걸림을 확인(즉시 반영 아님 — 다음 세션이 "방금 머지했는데
+왜 반영이 안 되지" 헷갈리지 않도록 기록).
+
+다크모드는 가이드 2개 다 스크린샷으로 확인해 문제 없음. 보안 헤더(`X-Content-Type-Options`/
+`X-Frame-Options`/`Strict-Transport-Security`)는 `curl -I`로 실측 확인한 결과 전부 없음 —
+다만 GitHub Pages가 커스텀 응답 헤더를 지원하지 않아 저장소 코드로 고칠 수 있는 부분이 아님,
+사이트 앞단에 Cloudflare가 확인됨(`server: cloudflare`)이라 필요하면 Cloudflare 대시보드의
+Transform Rules로 추가해야 함(사용자 몫, 코드 작업 아님).
+
+**manifest.json도 이미 있음 재확인**: 사용자가 또 다른 외부 AI 제안(PWA manifest.json 설정)을
+가져왔는데 이미 루트에 존재하고 `index.html`에 링크도 이미 돼있어 손댈 것 없음 — 이걸로
+같은 세션에서 "이미 구현된 걸 다시 제안받은" 사례가 스키마 마크업·FAQ·공유기능·주별
+페이지·manifest.json까지 5번째. **다음 세션 참고**: 사용자가 외부 AI 제안을 가져오면 먼저
+코드부터 확인하고 답할 것(이번 세션 전체가 이 패턴의 반복이었음), 특히 "이미 있다"고 답할 때도
+정말 요청한 형태 그대로 있는지 실제로 열어서 확인할 것 — 이번 라운드처럼 "있긴 한데 잘못
+쓰여서 깨져있는" 경우도 있으므로 존재 여부만 grep으로 확인하고 넘어가지 말고, 가능하면
+Playwright로 실제 렌더링까지 봐야 안전함(이번 table-wrap 버그가 정확히 그 사례).
+
+**세션 마무리 — 전체 회귀 테스트 15종 재실행(전부 ISSUES:0) + Retina 캔버스 확인 + GA4 실측
+재확인**: PR #250~252 머지 후 최종 점검으로 `tests/*.js` 15개 전체를 로컬 서버에 대고 다시
+돌림 — home_audit(18)·broken_link_audit(125)·console_error_audit(196)·lang_leak_audit(124)·
+wrap_audit(168)·i18n_coverage_audit(786키)·i18n_attr_lint·faq_audit(18)·
+fact_consistency_audit(130)·nav_slider_audit·map_scroll_audit(10)·link_navigation_audit(8)·
+audit_odds_compare(40)·draw_archive_integrity_check(4개 아카이브)·full_overflow_sweep(27개
+언어×5폭×7화면=945개 조합) **전부 ISSUES:0**. (`full_overflow_sweep`는 처음에 100초
+타임아웃으로 실패했는데, 실제 버그가 아니라 이 샌드박스가 외부 리소스를 헤드리스 브라우저에서
+막아서 조합마다 재시도 지연이 쌓인 것 — 400초로 늘려 재실행하니 정상 통과. **다음 세션 참고**:
+이 테스트가 이 샌드박스에서 유독 오래 걸리면 버그로 의심하기 전에 타임아웃부터 늘려볼 것.)
+라이브 사이트(`curl`)로도 새 페이지 2개·홈 내부링크·og 태그·table-wrap 제거·버전 번호 전부
+재확인함.
+
+사용자가 캔버스 공유 이미지 레티나 대응 여부를 물어서 코드 확인 — `buildShareCard` 등 3개
+함수 전부 `SCALE=2` 고정 배율(2026-07-31 이미 한 번 통일된 이력 있음)로 이미 처리돼 있어
+추가 작업 불필요. `devicePixelRatio` 대신 고정 2배를 쓰는 이유(공유 이미지는 보는 사람 화면
+기준이라 고정 배율이 더 안전)도 확인해서 설명함.
+
+**GA4 실측 재확인(2026-08-15 계측 버그 수정 이후 첫 확인)**: 사용자가 애널리틱스
+[참여도]→[이벤트] 스크린샷 공유 — 지난 28일(7/20~8/16) 기준 `calculate_amount` 93명 중
+4명(4.3%), `share_result` 2명(2.15%), `save_result_image` 3명(3.23%). 수정 전(2026-08-15
+기록) 수치였던 "86명 중 3명(3.49%)"과 비교하면 거의 그대로라 "수정 효과 없었나?"로 보일 수
+있지만, **아직 공정한 비교가 아님** — 이 28일 창 중 26일이 수정(8/15 배포) 이전 데이터와
+섞여있어서임. **다음 세션이 할 일**: 사용자에게 날짜 필터를 "8월 15일~오늘"로 좁힌 이벤트
+보고서를 다시 요청해서, 슬라이더 조작까지 잡히기 시작했는지 순수하게 수정 이후 데이터로만
+재판단할 것 — 지금 수치로 "계측 수정이 효과 없었다"고 성급히 결론 내리지 말 것.
+
+**⚠️ 다음 세션 체크리스트 (시간순)**: (1) Reddit(r/SideProject·r/IndieHackers)·Show HN
+게시글 3개(2026-08-06 초안 완료, 2026-08-12부터 게시 가능) — **실제로 올렸는지 이 세션
+끝까지 확인 못 함, 다음 세션이 제일 먼저 물어볼 것**. (2) 며칠 뒤 — 위 GA4
+`calculate_amount` 재확인(날짜 필터 8/15~). (3) 2~3주 뒤 — 서치콘솔 [실적]→[국가] 탭
+미국 평균 순위(현재 12.04위) 변화, [색인 생성] 탭에서 새 페이지 12개(주별 10개+가이드 2개)
+색인 여부. 세 체크포인트 전부 사용자가 스크린샷 가져와야 확인 가능한 것들이라, 다음 세션이
+먼저 나서서 재조사할 필요는 없고 사용자가 가져온 데이터를 기다리면 됨.
+
+**이번 세션 전체 요약(PR 3개, 전부 main에 머지 완료)**: PR #250(og 태그 언어동기화 버그 수정
++ 홈페이지 영문 title/description 개편 + 가이드 2개 신설 + HANDOFF 아카이브 정리),
+PR #251(lump-sum-vs-annuity 표 table-wrap 버그 수정), PR #252(문서 전용). 코드 변경 없이
+"이미 구현되어 있음"만 확인하고 넘어간 항목(스키마 마크업·FAQ 패널·공유 기능·주별 페이지
+10개·manifest.json)도 다수 — 외부 AI가 반복해서 같은 제안을 가져왔던 게 원인, 앞으로도
+이 패턴 예상됨.
+
+**PR #255 (실버그 수정)**: 사용자가 폰에서 언어 드롭다운에 최근 언어들이 안 보인다고 지적 →
+`de/nl/sv/no/da`(및 동시 병합된 PR #254의 `fi`)가 `ADDITIONAL_LANGS`/`i18n/*.json`엔 있는데
+`#lang-toggle`·`#foreignerLangSelect` `<select>` 옵션엔 빠져있던 실제 버그 확인·수정. **다음
+세션 참고**: 새 UI 언어 추가 시 이 두 `<select>`도 체크리스트에 포함할 것(지금까지 최소 2번
+반복된 누락 패턴).
+
+**PR #257**: 사용자가 폰에서 사이트맵(`us-lottery-basics`/`in_korea` 26·27개 언어 목록)이
+어지럽다고 지적 → `ul.lang-grid`에 `display:flex`가 빠져서 칩 그리드가 그냥 세로 목록으로
+보이던 CSS 버그 발견·수정(`.lang-links`와 같은 칩 스타일 적용). 같은 요청에서 실제 복권
+당첨번호 최신화 여부도 확인 — `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`(2026-08-15)·
+`MEGAMILLIONS_DRAW_ARCHIVE`(2026-08-14) 전부 실제 결과와 정확히 일치, 손댈 것 없었음.
