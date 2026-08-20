@@ -669,66 +669,17 @@ resident" 등 실제 검색 결과에 `chamtax.com`은 전혀 안 나옴(TheLott
 
 ## 작업 이력 (날짜순, 세션마다 맨 아래에 새 항목 추가)
 
-이보다 오래된 세션 기록(~2026-08-20 제미나이 마케팅 제안 24개 검토+결과복사/검증일표시/
-오류신고 3개 구현까지)은 `HANDOFF-ARCHIVE.md` 참고(특정 과거 이슈의 배경이 필요할 때만
-검색, 매 세션 필독 아님). 이 본문에는 최근 세션("꾸며서 저장하기" 모달 스크롤 버그 수정,
-제미나이 마케팅 제안 2라운드(15개) 검토+WebApplication 스키마/UTM 태깅/llms.txt 정정,
-2라운드 나머지 저비용 구현 — changelog.html 신설/DataCatalog/잭팟페이지 국가링크/sitemap
-검색/EN 링크 번역버그 수정, 결과 버튼 줄(공유/저장/복사) 좁은 화면 글씨 겹침 수정) 기록만
-남겨둠 — 날짜별 항목이 3~4개를 다시 넘어가면 가장 오래된 날짜부터 또 이 방식으로 정리할
-것(같은 패턴 반복,
+이보다 오래된 세션 기록(~2026-08-20 "꾸며서 저장하기" 모달 스크롤 버그 수정까지)은
+`HANDOFF-ARCHIVE.md` 참고(특정 과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님).
+이 본문에는 최근 세션(제미나이 마케팅 제안 2라운드(15개) 검토+WebApplication 스키마/
+UTM 태깅/llms.txt 정정, 2라운드 나머지 저비용 구현 — changelog.html 신설/DataCatalog/
+잭팟페이지 국가링크/sitemap 검색/EN 링크 번역버그 수정, 무료 홍보 디렉터리 실사 검증,
+결과 버튼 줄(공유/저장/복사) 좁은 화면 글씨 겹침 수정) 기록만 남겨둠 — 날짜별 항목이
+3~4개를 다시 넘어가면 가장 오래된 날짜부터 또 이 방식으로 정리할 것(같은 패턴 반복,
 `HANDOFF-ARCHIVE.md` 맨 뒤에 이어 붙이면 됨. **참고**: 세션 로그를 쓸 때는 반드시
 `### YYYY-MM-DD ...` 헤더로 시작할 것 — 헤더 없이 이어붙인 기록은 "몇 개가 쌓였는지" 셀 수
 없어서 이 정리 규칙 자체가 무력화됨, 2026-08-20 정리 세션에서 실제로 헤더 없는 기록이
 방치돼있던 걸 발견해 뒤늦게 헤더를 붙여 아카이브함).
-
-
-### 2026-08-20 이어서 — "꾸며서 저장하기" 모달: 작은 뷰포트에서 카드 잘림+스크롤 불가 버그 수정
-
-사용자가 "100% 화면 배율로 두면 이렇게 잘려서 나온다"며 `.annotate-overlay`(펜/텍스트로
-꾸며서 이미지 저장·공유하는 모달) 스크린샷을 공유 — 수표 카드 아래쪽(금액·서명란·
-"참고용" 문구)이 안 보이고 스크롤도 안 되는 상태.
-
-**원인 분석**: `.annotate-overlay-panel`은 `display:flex; flex-direction:column;
-overflow-y:auto; max-height:calc(100vh - 32px)`로 이미 "패널 자체가 스크롤되게"
-설계돼 있었음. 그런데 그 안의 `.annotate-canvas-wrap`(카드 이미지를 담는 요소, 자체
-`overflow:hidden`)이 flex 자식 기본값(`flex-shrink:1`)을 그대로 물려받아서, 패널이
-`max-height`에 눌릴 때 실제로는 패널 전체가 스크롤되는 대신 이 wrap 혼자 찌그러들며
-`overflow:hidden`에 걸려 카드가 통째로 잘려나가는 쪽으로 레이아웃이 풀렸음(flex-shrink가
-overflow보다 먼저 적용되는 순서라, `scrollHeight === clientHeight`로 측정돼 "스크롤할
-게 없다"고 나오는 게 함정 — Playwright로 `getComputedStyle`·`scrollHeight` 비교하다
-발견).
-
-**재현·검증 방법**: `index.html`이 실제로는 `styles.min.css`를 로드하는데(로컬 sandbox엔
-`terser` devDependency가 없어 `build-min.js` 실행 불가, CI가 머지 시 자동 재빌드하는
-구조) Playwright `page.route()`로 `styles.min.css` 요청에 최신 `styles.css` 원문을
-그대로 응답시켜 로컬에서 실제 수정 효과를 검증함 — 뷰포트 1000×550으로 축소해 재현,
-수정 후 `panel.scrollHeight(643) > clientHeight(518)`로 실제 오버플로우 감지 확인 +
-마우스 휠로 `scrollTop`이 실제로 움직이는 것 확인 + 스크린샷으로 카드 전체가
-표시되는 것 확인.
-
-**수정**: `.annotate-canvas-wrap`에 `flex-shrink:0` 한 줄 추가 — wrap이 찌그러지는 대신
-패널 콘텐츠 총 높이가 `max-height`를 넘어서게 되고, 그러면 원래 의도했던 패널 자체의
-`overflow-y:auto` 스크롤이 정상적으로 걸림.
-
-**저장/공유 두 플로우 기능 검증**(사용자가 명시적으로 "확인해줘" 요청): 같은 550px
-뷰포트에서 (1) `saveHomeResultAsImage()` → 스크롤 → "이미지로 저장" 클릭 →
-`chamtax-result.png` 다운로드 정상 트리거 확인, (2) `shareResult()` → 스크롤 → "이 결과
-공유하기" 클릭 → (헤드리스 브라우저엔 `navigator.share` 파일 공유가 없어 폴백 경로인)
-클립보드 복사 + "✅ 복사 완료!" 피드백 텍스트까지 정상 확인. 둘 다 콘솔 에러 없음
-(광고/폰트 CDN 접속 차단으로 인한 `ERR_CONNECTION_RESET`만 있었는데, 이 세션 환경의
-네트워크 제약 때문이지 이 수정과 무관 — 매 세션 반복되는 sandbox 특성).
-
-**검증**: `fact_consistency_audit`(149개)·`drift_consistency_test`(29개국)·
-`broken_link_audit`(144개)·`console_error_audit`(224개) 전부 `ISSUES: 0`. `script.js`
-미변경, `styles.css`만 변경 — CI(`minify-assets.yml`)가 머지 후 `styles.min.css` 자동
-재빌드.
-
-**⚠️ 다음 세션 참고**: 이 "flex 자식이 부모의 overflow:auto 스크롤 의도를 가로채고
-자기가 찌그러지며 클리핑하는" 패턴은 다른 모달(`.tax-basis-overlay-panel`,
-`.select-sheet-panel` 등)에도 잠재적으로 있을 수 있음 — 다른 모달에서 비슷한 "작은
-화면에서 내용이 잘린다"는 제보가 또 들어오면 이 패턴부터 의심해볼 것(해당 자식
-요소에 `overflow:hidden`이 걸려있는지, `flex-shrink:0`이 빠져있는지 확인).
 
 ### 2026-08-20 이어서 — 제미나이 마케팅 제안 2라운드(15개) 검토 + 저비용 3개 구현
 
@@ -837,6 +788,40 @@ overflow보다 먼저 적용되는 순서라, `scrollHeight === clientHeight`로
   있는 부분은 끝남.
 - **AI Quick Facts 카드**(2라운드 #12): 트러스트 패널("왜 믿을 수 있나요?")과
   상당 부분 중복이라, 새로 만들 가치가 있는지 사용자 판단 필요.
+
+### 2026-08-20 이어서 — 무료 홍보 디렉터리/데이터셋 카탈로그 실사 검증 (제출은 계정가입 필요해 사용자 몫)
+
+사용자가 "점검/측정/분석 말고 실제로 사람을 데려오는 무료 홍보"를 요청하며 제미나이의
+15개 아이디어(디렉터리 등록/데이터셋 카탈로그/쇼케이스 등) 전달, "가입해서 커뮤니티
+활동"은 명시적으로 제외. 서브에이전트로 실제 방문 검증(WebFetch) 진행.
+
+**검증 결과 — 6곳 확정(전부 실재+2026년 현재 무료+관련성 높음)**:
+- 계산기용 3곳: **SaaSHub**(saashub.com/submit), **AlternativeTo**
+  (alternativeto.net/manage/new), **Indie Hackers Products**
+  (indiehackers.com/products, "Add Your Product")
+- 데이터셋용 3곳: **Hugging Face Datasets**(huggingface.co/new-dataset),
+  **Zenodo**(DOI 자동 발급), **Figshare**(개인 가입 가능, 20GB)
+
+**조사했지만 제외한 곳(이유)**: Uneed.best(2026-08-17부로 무료 신규접수 중단 확인)·
+BetaList(사실상 유료화, 무료는 대기만 2~4개월)·Futurepedia/There's An AI For That
+(AI 도구 전용이라 카테고리 부적합)·ToolDirs(재무 카테고리 자체가 없음)·
+**공공데이터포털**(data.go.kr — 직접 확인 결과 공공기관 전용 채널, 개인/민간 제공자
+등록 기능 없음, 명확히 부적합)·AWS Open Data Registry(AWS 리소스 호스팅이 전제조건이라
+비용 대비 실익 낮음)·data.world(접속 반복 차단돼 검증 불가)·Awesome Public Datasets
+(소규모 참조데이터 채택 여부 불확실).
+
+**이미 완료로 재확인**: Kaggle(기존 완료), Google Dataset Search(별도 제출 없이
+schema.org Dataset/DataCatalog 마크업만으로 자동 색인 — 2026-08-20 앞선 세션에서 이미
+반영됨).
+
+**제출용 카피 키트 작성**: 계산기/데이터셋 각각 한 줄·짧은 설명·중간 설명·태그·
+로고/OG이미지 링크를 정리해 `SendUserFile`로 전달함(사이트 코드와 무관한 홍보 카피라
+이 저장소엔 원문 안 남김).
+
+**⚠️ 다음 세션 참고 — 이 6곳은 전부 이메일 계정 가입이 전제조건이라 이 세션이 대신
+완결할 수 없음(인증 메일을 세션이 대신 받을 방법이 없음)** — 실제 제출·계정 생성은
+전적으로 사용자 몫. 다음 세션은 이 6곳을 다시 조사하지 말고, 사용자가 "제출 다 했다"
+또는 "이것도 검토해줘"라고 새로 가져오는 경우에만 대응할 것.
 
 ### 2026-08-20 이어서 — 결과 버튼 줄(공유/저장/복사) 좁은 화면에서 글씨 겹침·잘림 버그 수정
 
