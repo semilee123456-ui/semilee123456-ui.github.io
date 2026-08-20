@@ -16867,3 +16867,51 @@ Node 스크립트로 직접 세어서 전부 30/30·9/9 확인. 회귀 테스트
 (FAQ_TG2 30개 언어 백필, 기존 국가 9개 언어 백필, odds-data.js 백필, 저장소 전체
 재점검, 이 문서 정리) 모두 끝남. 다음 세션이 참고할 특별한 미완료 후속 작업 없음
 — 평소처럼 세션 시작 시 `git fetch origin main`으로 동시 작업 세션 여부만 확인할 것.
+
+### 2026-08-19 이어서 — 원격 브랜치 대정리(72개 삭제) + 메가밀리언즈 8/18 회차 갱신(PR #282)
+
+사용자가 "지금까지 한 거 전부 보고 읽어줘"라고 요청 → 이 세션은 코드 작업 없이 시작(git
+log·HANDOFF.md 최근 세션 요약만 보고함). 이어서 사용자가 GitHub 웹 UI 브랜치 목록 스크린샷을
+보여주며 "여기 필요없는 거 정리해야되는 거 아닐까?"라고 물어 브랜치 정리로 이어짐.
+
+**브랜치 감사**: `git branch -r`로 원격 브랜치 73개(main 제외) 확인 — 이 저장소가 **shallow
+clone**이라 오래된 브랜치와의 diff/merge-base가 `no merge base` 오류로 안 잡히는 문제가 있어
+`git fetch --unshallow`로 전체 히스토리를 먼저 받아옴(1회성, 이후 정상적으로 `--merged`
+판정 가능해짐 — 다음 세션이 브랜치 정리를 다시 할 때도 이 단계부터 필요할 수 있음 참고).
+`git branch -r --merged origin/main`으로 69개가 이미 `main`에 완전히 머지된 것 확인, 나머지
+3개(안 머지 상태)는 개별로 diff·코드 확인해서 전부 "내용이 이미 다른 경로로 main에 들어간
+중복"으로 판정(`claude/minimize-token-usage-7u9h24`는 방금 다른 세션이 PR #248을 close하고
+같은 기능을 다시 구현해 PR #276으로 머지한 것과 동일한 시도, `github-handover-docs-2g94p5`는
+"낚시 게임 개선"·"og.chamtax.com Worker 복원" 커밋인데 둘 다 `script.js`에 이미 존재,
+`github-token-optimization-rjcqmh`는 HANDOFF.md 6줄짜리 메모뿐). 총 72개를
+`AskUserQuestion`으로 확인 후 삭제 진행하기로 함.
+
+**⚠️ 이 세션(샌드박스)에는 원격 브랜치 삭제 권한이 없음이 세션 중 처음 확인됨**:
+`git push origin --delete`는 HTTP 403(이 세션의 git 자격증명은 지정된 작업 브랜치로만 push
+가능), GitHub MCP 도구 목록에도 브랜치 삭제 도구 자체가 없음(`create_branch`는 있지만
+delete 대응 도구 없음) — 삭제 대상 72개 목록을 파일로 정리해 `SendUserFile`로 전달하고,
+사용자가 자신의 Codespaces 터미널에서 직접 `git push origin --delete`/일괄 스크립트로
+삭제. **다음 세션 참고**: 이 세션 환경에서 원격 브랜치를 삭제해야 하는 요청을 받으면
+직접 시도로 시간 쓰지 말고, 바로 이 방식(목록 정리 → 사용자에게 전달 → 사용자가 자기
+환경에서 실행)으로 안내할 것 — 권한 자체가 없어서 재시도해도 안 됨. 사용자가 만든 일괄
+삭제 명령에서 브랜치 이름 하나(`github-handover-docs-2g94p5`)에 `claude/` 접두사를 빠뜨려
+실패했던 것도 이 세션이 목록을 전달할 때 접두사를 빠뜨린 오타였음 — 발견 즉시 정정해서
+전달, 최종적으로 72개 전부 삭제 확인(`git branch -r`로 재확인, `main`과 이 세션 작업
+브랜치만 남음).
+
+**같은 날 이어서 — 메가밀리언즈 8/18 회차 반영(PR #282)**: 사용자가 usamega.com
+스크린샷(메가밀리언즈 8/18·파워볼 8/17 회차, 각 게임 다음 잭팟 정보 포함)을 보내며
+"업뎃해줘"라고 요청 → 대조해보니 파워볼 8/17 회차(8,15,25,49,65/PB 22)와 다음 잭팟
+($48M/$20.8M)은 이미 최신값과 일치(다른 세션이 먼저 반영해둠), 메가밀리언즈만 8/14
+회차에서 멈춰있었고 다음 잭팟도 $100M(구값)으로 남아있어 이 부분만 갱신. `script.js`의
+`LATEST_DRAW`/`JACKPOT_DATA`, `odds-data.js`의 `MEGAMILLIONS_DRAW_ARCHIVE`/
+`MEGAMILLIONS_JACKPOT_ARCHIVE`에 8/18 회차(5,19,30,38,59/메가볼 12, 이 회차 잭팟
+$100M) 추가, `JACKPOT_DATA.megamillions`는 다음 잭팟 $113M/현금가 $48.3M로 갱신.
+`draw_archive_integrity_check.js`(4개 아카이브 전부 정렬·중복 없음)·`home_audit`(18)
+통과, Playwright로 홈 화면 위젯 렌더링 값 직접 확인. `script.min.js` 재빌드,
+`odds-data.js`/`script.min.js` 캐시버스팅 버전·`sw.js` CACHE_NAME(v85) 갱신.
+더블플레이 번호는 이 사이트가 원래 추적 안 하는 필드라 반영 안 함(스코프 밖, 기존
+관례 유지).
+
+**다음 세션이 참고할 특별한 미완료 후속 작업 없음** — 브랜치 정리·회차 갱신 둘 다
+`main`에 완전히 반영 완료.
