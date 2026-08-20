@@ -1209,13 +1209,15 @@
                토글, goToCompareWithOppositeCountry())와는 다른 기능이라 그 카드를 대체하지 않고
                별도 줄로 추가함 — 버튼/카드가 아니라 sim-note와 같은 조용한 텍스트 한 줄로 둬서
                결과 영역을 과하게 채우지 않음.
-               2026-08-20: 링크 대상(lottery-tax-by-country.html)이 여전히 영어 전용 페이지라
-               "영어로 이동함"을 명확히 알리는 "(EN)" 표시는 그대로 두되, 라벨 자체는 번역해서
-               "번역 안 된 버그"처럼 보이던 문제를 해결(사용자 스크린샷 지적) — 영어 UI에서는
-               이미 도착 페이지와 같은 언어라 "(EN)" 없이 원문 그대로 둠, 나머지 35개 언어만
-               "(EN)" 접미사를 붙임. -->
+               2026-08-20: 링크 대상(lottery-tax-by-country.html)이 영어 전용이라 "(EN)" 표시를
+               붙였던 것을, 5개 언어(한국어/중국어/베트남어/힌디어/일본어) 번역판을 추가하면서
+               정정 — href의 초기값은 한국어판(lottery-tax-by-country-ko.html, 이 페이지의 기본
+               언어와 일치)으로 바꾸고, updateCompareCountriesLink()(script.js)가
+               applyTranslations() 호출마다 currentLang에 맞는 번역판으로 href를 스왑함. 이
+               6개 언어를 뺀 나머지 30개 언어는 여전히 영어판으로 연결되고 "(EN)" 접미사도
+               그대로 유지(i18n-source/translations.json 참고, en/ko/zh/vi/hi/ja만 접미사 없음). -->
           <p style="text-align:center; margin:10px 0 0; font-size:var(--fs-small); color:var(--text-muted);">
-            <a href="lottery-tax-by-country.html" style="color:var(--teal); font-weight:700; text-decoration:none;">🌍 <span data-i18n="home.compareCountriesLink">8개국 나란히 비교하기 (EN)</span> →</a>
+            <a href="lottery-tax-by-country-ko.html" id="compareCountriesLink" style="color:var(--teal); font-weight:700; text-decoration:none;">🌍 <span data-i18n="home.compareCountriesLink">8개국 나란히 비교하기</span> →</a>
           </p>
 
           <details class="calc-detail-toggle" id="home-detail-toggle">

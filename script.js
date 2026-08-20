@@ -363,10 +363,23 @@ function resolveI18n(key){
 
 const RTL_LANGS = ['ar', 'ur']; // 아랍어·우르두어는 오른쪽에서 왼쪽으로 읽는 언어
 
+// 2026-08-20: "8개국 나란히 비교하기" 링크(lottery-tax-by-country*.html) — 이 비교 페이지는
+// 현재 6개 언어(en/ko/zh/vi/hi/ja)만 번역돼 있고 나머지 30개 언어는 여전히 영어판만 있음.
+// currentLang이 번역된 6개 중 하나면 그 언어판으로, 아니면 영어판(기본 파일, 접미사 없음)으로
+// href를 스왑함 — applyTranslations()가 언어 전환마다 호출하므로 매번 동기화됨.
+const COMPARE_COUNTRIES_PAGE_LANGS = ['en', 'ko', 'zh', 'vi', 'hi', 'ja'];
+function updateCompareCountriesLink(){
+  const a = document.getElementById('compareCountriesLink');
+  if (!a) return;
+  const suffix = COMPARE_COUNTRIES_PAGE_LANGS.includes(currentLang) && currentLang !== 'en' ? '-' + currentLang : '';
+  a.href = 'lottery-tax-by-country' + suffix + '.html';
+}
+
 function applyTranslations(){
   const toggleBtn = document.getElementById('lang-toggle');
   document.documentElement.lang = currentLang;
   document.documentElement.dir = RTL_LANGS.includes(currentLang) ? 'rtl' : 'ltr';
+  updateCompareCountriesLink();
   if (toggleBtn) toggleBtn.value = currentLang;
   syncTextSizeToggleIcon(); // 언어 전환 시 "가+/A+" 아이콘도 같이 맞춤(위 함수 정의부 참고)
 
