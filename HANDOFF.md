@@ -1348,8 +1348,9 @@ FAQPage(4문항, 페이지 본문과 1:1 일치)/SoftwareApplication 등 JSON-LD
 페이지 `related-links`에 상호링크 추가(고아 페이지 방지). `broken_link_audit`(0/124) 통과,
 `script.js`/`styles.css`는 안 건드려서 `build-min.js` 재빌드·캐시 버전업 불필요.
 **⚠️ 다음 세션 메모**: 나머지 가이드 2개("1042-S 양식/환급 절차", "비거주자 당첨금 수령
-절차")는 아직 미착수 — 사용자가 원하면 이어서 작성. 새 페이지도 방금 만들어져서 GSC
-색인 요청 필요(사용자가 직접, [URL 검사]에서 `lump-sum-vs-annuity-lottery-tax.html` 제출).
+절차")는 아직 미착수 — 사용자가 원하면 이어서 작성. **GSC 색인 요청 — 2026-08-20 완료**:
+사용자가 Search Console [URL 검사]에서 `lump-sum-vs-annuity-lottery-tax.html`을 직접
+제출, "색인 생성 요청됨" 확인 스크린샷으로 검증됨 — 재요청 불필요.
 
 **⚠️ 다음 세션을 위한 메모**: (1) 인수인계 아카이브 정리는 일회성이 아니라 반복 유지보수임 —
 "작업 이력"에 4번째 항목이 쌓이면(현재 3개) 다시 가장 오래된 항목부터 `HANDOFF-ARCHIVE.md`로
