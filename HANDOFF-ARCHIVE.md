@@ -17658,3 +17658,51 @@ WebApplication 타입은 2026-08-20 후속 세션에서 추가함)·계산 결�
 각주(#7, FAQ엔 이미 있음)·Methodology 독립 페이지(#10, 데이터허브 안 섹션으로는
 이미 있음) — 스코프가 더 크거나 판단이 필요한 항목들이라 사용자 확인 후 진행할 것.
 
+
+### 2026-08-20 이어서 — "꾸며서 저장하기" 모달: 작은 뷰포트에서 카드 잘림+스크롤 불가 버그 수정
+
+사용자가 "100% 화면 배율로 두면 이렇게 잘려서 나온다"며 `.annotate-overlay`(펜/텍스트로
+꾸며서 이미지 저장·공유하는 모달) 스크린샷을 공유 — 수표 카드 아래쪽(금액·서명란·
+"참고용" 문구)이 안 보이고 스크롤도 안 되는 상태.
+
+**원인 분석**: `.annotate-overlay-panel`은 `display:flex; flex-direction:column;
+overflow-y:auto; max-height:calc(100vh - 32px)`로 이미 "패널 자체가 스크롤되게"
+설계돼 있었음. 그런데 그 안의 `.annotate-canvas-wrap`(카드 이미지를 담는 요소, 자체
+`overflow:hidden`)이 flex 자식 기본값(`flex-shrink:1`)을 그대로 물려받아서, 패널이
+`max-height`에 눌릴 때 실제로는 패널 전체가 스크롤되는 대신 이 wrap 혼자 찌그러들며
+`overflow:hidden`에 걸려 카드가 통째로 잘려나가는 쪽으로 레이아웃이 풀렸음(flex-shrink가
+overflow보다 먼저 적용되는 순서라, `scrollHeight === clientHeight`로 측정돼 "스크롤할
+게 없다"고 나오는 게 함정 — Playwright로 `getComputedStyle`·`scrollHeight` 비교하다
+발견).
+
+**재현·검증 방법**: `index.html`이 실제로는 `styles.min.css`를 로드하는데(로컬 sandbox엔
+`terser` devDependency가 없어 `build-min.js` 실행 불가, CI가 머지 시 자동 재빌드하는
+구조) Playwright `page.route()`로 `styles.min.css` 요청에 최신 `styles.css` 원문을
+그대로 응답시켜 로컬에서 실제 수정 효과를 검증함 — 뷰포트 1000×550으로 축소해 재현,
+수정 후 `panel.scrollHeight(643) > clientHeight(518)`로 실제 오버플로우 감지 확인 +
+마우스 휠로 `scrollTop`이 실제로 움직이는 것 확인 + 스크린샷으로 카드 전체가
+표시되는 것 확인.
+
+**수정**: `.annotate-canvas-wrap`에 `flex-shrink:0` 한 줄 추가 — wrap이 찌그러지는 대신
+패널 콘텐츠 총 높이가 `max-height`를 넘어서게 되고, 그러면 원래 의도했던 패널 자체의
+`overflow-y:auto` 스크롤이 정상적으로 걸림.
+
+**저장/공유 두 플로우 기능 검증**(사용자가 명시적으로 "확인해줘" 요청): 같은 550px
+뷰포트에서 (1) `saveHomeResultAsImage()` → 스크롤 → "이미지로 저장" 클릭 →
+`chamtax-result.png` 다운로드 정상 트리거 확인, (2) `shareResult()` → 스크롤 → "이 결과
+공유하기" 클릭 → (헤드리스 브라우저엔 `navigator.share` 파일 공유가 없어 폴백 경로인)
+클립보드 복사 + "✅ 복사 완료!" 피드백 텍스트까지 정상 확인. 둘 다 콘솔 에러 없음
+(광고/폰트 CDN 접속 차단으로 인한 `ERR_CONNECTION_RESET`만 있었는데, 이 세션 환경의
+네트워크 제약 때문이지 이 수정과 무관 — 매 세션 반복되는 sandbox 특성).
+
+**검증**: `fact_consistency_audit`(149개)·`drift_consistency_test`(29개국)·
+`broken_link_audit`(144개)·`console_error_audit`(224개) 전부 `ISSUES: 0`. `script.js`
+미변경, `styles.css`만 변경 — CI(`minify-assets.yml`)가 머지 후 `styles.min.css` 자동
+재빌드.
+
+**⚠️ 다음 세션 참고**: 이 "flex 자식이 부모의 overflow:auto 스크롤 의도를 가로채고
+자기가 찌그러지며 클리핑하는" 패턴은 다른 모달(`.tax-basis-overlay-panel`,
+`.select-sheet-panel` 등)에도 잠재적으로 있을 수 있음 — 다른 모달에서 비슷한 "작은
+화면에서 내용이 잘린다"는 제보가 또 들어오면 이 패턴부터 의심해볼 것(해당 자식
+요소에 `overflow:hidden`이 걸려있는지, `flex-shrink:0`이 빠져있는지 확인).
+
