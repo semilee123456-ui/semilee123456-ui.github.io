@@ -17590,3 +17590,31 @@ PR #251(lump-sum-vs-annuity 표 table-wrap 버그 수정), PR #252(문서 전용
 보이던 CSS 버그 발견·수정(`.lang-links`와 같은 칩 스타일 적용). 같은 요청에서 실제 복권
 당첨번호 최신화 여부도 확인 — `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`(2026-08-15)·
 `MEGAMILLIONS_DRAW_ARCHIVE`(2026-08-14) 전부 실제 결과와 정확히 일치, 손댈 것 없었음.
+
+### 2026-08-20 이어서 — 홈페이지 "더 알아보기" 관련링크 블록 가독성 개선
+
+사용자가 홈페이지 하단 `.related-guides`("더 알아보기") 스크린샷을 보내며 "너무
+복잡하다, 더 편하게 볼 수 있는 방법 있을까"라고 요청. Playwright로 확인해보니 3번째
+행에 미국 주별 페이지 10개 + 범용 가이드 4개(Lump Sum, Nonresident Refund, Compare
+8 Countries, Data Hub)가 카테고리 구분 없이 한 덩어리로 뭉쳐 14개 링크가 벽처럼
+보이는 게 원인 — 앞의 두 행(빠른 계산 5개, 다국어 국가 가이드 6개)은 이미 주제별로
+나뉘어 있는데 3번째 행만 안 나뉘어 있었음.
+
+**수정**: `index.html`의 해당 3번째 `related-guides-row`를 두 개로 분리(주별 페이지
+10개 / 범용 가이드 4개) — 순수 구조 재배치라 새 번역 문자열 추가 없음(기존 영문
+링크 텍스트 그대로, 이 섹션 자체가 "각 나라 페이지는 그 나라 언어 그대로 표기"
+관례라 i18n 키 신설은 불필요하다고 판단). `styles.css`의 `.related-guides-links`
+행간 gap도 12px→16px로 살짝 넓힘. Playwright로 수정 전/후 스크린샷 비교해 실제로
+10개 주 목록이 두 줄로 깔끔하게 정렬되고 범용 가이드 4개가 별도 그룹으로 시각적
+분리되는 것 확인.
+
+**검증**: `fact_consistency_audit`(149개)·`drift_consistency_test`(29개국)·
+`broken_link_audit`(144개)·`console_error_audit`(224개) 전부 `ISSUES: 0`.
+`script.js` 미변경이라 `script.min.js` 재빌드 불필요, `styles.css`만 변경돼
+`styles.min.css`는 CI(`minify-assets.yml`)가 머지 후 자동 재빌드.
+
+**⚠️ 다음 세션 참고**: 이 섹션은 SEO 크롤 예산 목적(홈에서 1홉으로 핵심 랜딩페이지에
+닿게 하기 위함, `index.html` 3154번째 줄 근처 코멘트 참고)으로 존재 — 링크 개수
+자체를 줄이면 안 되고, 가독성만 개선할 것. 앞으로 이 블록에 링크가 더 추가되면 한
+행에 10개 넘어가지 않도록 주제별로 행을 나누는 습관 유지.
+
