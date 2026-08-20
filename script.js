@@ -12504,10 +12504,10 @@ function formatUsdMillionsNatural(amountMillions, lang){
   return '$' + Math.round(usd).toLocaleString('en-US');
 }
 
-async function shareResult(){
-  trackEvent('share_result');
-  // 2026-08-13: "정산 티켓" 컨셉 — 위 saveHomeResultAsImage()와 같은 패턴
-  fireConfettiBurst('🎉', document.querySelector('.result-hero'));
+// 2026-08-20: shareResult()의 문구 생성부를 분리 — copyResultText()(결과를 이미지 모달 없이
+// 바로 클립보드에 복사하는 가벼운 버튼)가 같은 26개 언어 문구를 새로 만들지 않고 재사용하기
+// 위함. 동작 변화 없음(순수 추출), shareResult()는 그대로 이 함수를 호출해 이어감.
+function buildResultShareText(){
   // 2026-08-03: 예전엔 !isAmountManuallyEdited(사용자가 금액을 직접 건드린 적 없음)면
   // shareGenericPromo()(금액 없는 사이트 소개 카드)로 빠졌는데, 사용자가 "금액 카드가 항상
   // 뜨게 해달라"고 요청함(기본값이라도 카드에 금액이 있는 게 아무 정보 없는 소개 카드보다
@@ -12578,6 +12578,15 @@ async function shareResult(){
   let shareUrl = shareUrlObj.toString();
   const shareTitle = pickLang('미국 복권 세금 계산기 - 참택스', 'US Lottery Tax Calculator - ChamTax', '美国彩票税金计算器 - ChamTax', 'Máy tính thuế xổ số Mỹ - ChamTax', 'เครื่องคำนวณภาษีลอตเตอรีสหรัฐฯ - ChamTax', 'Калькулятор налога на американскую лотерею - ChamTax', { ar:'حاسبة ضريبة اليانصيب الأمريكي - ChamTax', bn:'মার্কিন লটারি ট্যাক্স ক্যালকুলেটর - ChamTax', fr:"Calculateur d'impôt sur la loterie américaine - ChamTax", hi:'अमेरिकी लॉटरी टैक्स कैलकुलेटर - ChamTax', id:'Kalkulator Pajak Lotre AS - ChamTax', ja:'アメリカ宝くじ税金計算機 - ChamTax', kk:'АҚШ лотереясының салық калькуляторы - ChamTax', km:'ម៉ាស៊ីនគណនាពន្ធឆ្នោតអាមេរិក - ChamTax', ky:'АКШ лотереясынын салык калькулятору - ChamTax', lo:'ເຄື່ອງຄິດໄລ່ພາສີລອດເຕີຣີອາເມລິກາ - ChamTax', mn:'АНУ-ын лотерейн татварын тооцоолуур - ChamTax', my:'အမေရိကန်ထီအခွန် တွက်ချက်စက် - ChamTax', ne:'अमेरिकी लटरी कर क्यालकुलेटर - ChamTax', si:'ඇමරිකානු ලොතරැයි බදු ගණකය - ChamTax', tl:'US Lottery Tax Calculator - ChamTax', ur:'امریکی لاٹری ٹیکس کیلکولیٹر - ChamTax', uz:"AQSh lotereyasi soliq kalkulyatori - ChamTax" , pt: `Calculadora de Imposto sobre Loteria dos EUA - ChamTax`, es: `Calculadora de Impuestos de Lotería de EE. UU. - ChamTax`, uk: `Калькулятор лотерейного податку США - ChamTax`, tet: `Kalkuladora Impostu Lotaria EUA - ChamTax`, de: `US-Lotterie-Steuerrechner - ChamTax`, nl: `Belastingcalculator Amerikaanse loterij - ChamTax`, sv: `Amerikansk lotteriskattekalkylator - ChamTax`, no: 'Amerikansk lotteriskattekalkulator - ChamTax', da: 'Amerikansk lotteriskatteberegner - ChamTax', fi: 'Yhdysvaltain lotoveron laskuri - ChamTax', it: "Calcolatore delle tasse sulla lotteria USA - ChamTax", pl: "Kalkulator podatku od amerykańskiej loterii - ChamTax", tr: 'ABD Piyangosu Vergi Hesaplayıcısı - ChamTax'});
 
+  return { shareText, shareUrl, shareTitle, finalAmt, country };
+}
+
+async function shareResult(){
+  trackEvent('share_result');
+  // 2026-08-13: "정산 티켓" 컨셉 — 위 saveHomeResultAsImage()와 같은 패턴
+  fireConfettiBurst('🎉', document.querySelector('.result-hero'));
+  const { shareText, shareUrl, shareTitle, finalAmt, country } = buildResultShareText();
+
   // 라벨 어순을 홈 화면 결과 카드(result.label, "일시불 예상 실수령액")와 맞춤 — 예전엔
   // "예상 실수령액 (일시불 기준)"으로 어순이 달라서, 공유받은 사람이 화면과 다른 걸 보는 줄
   // 헷갈릴 수 있었음(2026-07-25 카피 검수 지적)
@@ -12607,6 +12616,56 @@ async function shareResult(){
     shareText: `${shareText} ${shareUrl}`,
     shareTextFallback: `${shareText} ${wrappedShareUrl}`,
   });
+}
+
+// 2026-08-20: shareResult()는 "꾸며서 저장하기" 이미지 모달을 거치는 무거운 흐름이라, 채팅 등에
+// 문장만 바로 붙여넣고 싶은 사람을 위한 가벼운 대안 — 이미지 모달 없이 buildResultShareText()의
+// 같은 문구를 즉시 클립보드에 복사만 함(공유 시트는 열지 않음, 항상 복사). 토스트 패턴은
+// shareRefundChecklist()와 동일하게 버튼 텍스트를 잠깐 바꿨다 되돌림.
+async function copyResultText(btnEl){
+  trackEvent('copy_result');
+  const { shareText, shareUrl } = buildResultShareText();
+  try {
+    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    if (btnEl) {
+      const original = btnEl.innerHTML;
+      btnEl.textContent = shareFallbackCopyToast();
+      btnEl.classList.add('copied');
+      setTimeout(() => { btnEl.innerHTML = original; btnEl.classList.remove('copied'); }, 2000);
+    }
+  } catch (e) {
+    window.prompt(pickLang(
+      '아래 내용을 길게 눌러 복사해서 공유해주세요',
+      'Press and hold to copy, then share it',
+      '长按下方内容复制后分享',
+      'Nhấn giữ để sao chép rồi chia sẻ',
+      'กดค้างเพื่อคัดลอกแล้วแชร์',
+      'Нажмите и удерживайте, чтобы скопировать и поделиться'
+    ), `${shareText} ${shareUrl}`);
+  }
+}
+
+// 2026-08-20: 결과 카드에서 바로 문의 폼(view-contact, 이미 있던 Formspree 연동)으로 이동시키되,
+// 계산 컨텍스트(국가/금액/실수령액)를 메시지 칸에 미리 채워서 사용자가 매번 다시 설명 안 해도
+// 되게 함 — 새 폼을 만들지 않고 기존 인프라를 그대로 재사용.
+function reportCalcIssue(){
+  trackEvent('report_calc_issue');
+  const { shareUrl, country, finalAmt } = buildResultShareText();
+  go('contact');
+  const msgEl = document.getElementById('contactMessage');
+  if (msgEl && !msgEl.value) {
+    const prefix = pickLang(
+      `[계산 결과] ${country} 기준 ${finalAmt} (${shareUrl})\n\n어떤 부분이 이상한지 알려주세요:\n`,
+      `[Calculation] ${finalAmt} as ${country} (${shareUrl})\n\nWhat looks off?:\n`,
+      `[计算结果] 按${country}计算 ${finalAmt}（${shareUrl}）\n\n哪里不对？:\n`,
+      `[Kết quả] Theo ${country} là ${finalAmt} (${shareUrl})\n\nCó gì không đúng?:\n`,
+      `[ผลลัพธ์] ตาม${country} คือ ${finalAmt} (${shareUrl})\n\nมีจุดไหนผิดปกติ?:\n`,
+      `[Результат] Как ${country}: ${finalAmt} (${shareUrl})\n\nЧто выглядит неправильно?:\n`
+    );
+    msgEl.value = prefix;
+    msgEl.focus();
+    msgEl.setSelectionRange(msgEl.value.length, msgEl.value.length);
+  }
 }
 
 async function shareRefundChecklist(){

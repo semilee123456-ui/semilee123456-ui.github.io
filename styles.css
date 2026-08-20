@@ -1329,7 +1329,16 @@
 
   .source-links{ text-align:center; font-size:var(--fs-small); color:var(--text-muted); margin:6px 0 0; }
   .source-links a{ color:var(--teal); font-weight:400; text-decoration:none; }
-  
+
+  /* 2026-08-20: 국가별 랜딩페이지 138개가 각자 인라인 <style>로 갖고 있던 .updated-date 뱃지를
+     index.html(공용 styles.css)에도 추가 — "왜 믿을 수 있나요?" 패널의 데이터 검증일 표시용.
+     랜딩페이지들과 동일한 시각 스타일(점선 테두리 알약 배지)로 통일. */
+  .updated-date{
+    display:block; text-align:center; font-family:var(--font-mono); font-size:var(--fs-small);
+    font-weight:600; color:var(--text-muted); background:var(--bg); border:1.5px dashed var(--border);
+    border-radius:999px; padding:4px 12px; margin:10px auto 0; max-width:fit-content;
+  }
+
 
   .phrase-box{ background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-top:10px; }
   .phrase-title{ font-size:var(--fs-h3); font-weight:700; color:var(--text-dark); margin:0 0 8px; }

@@ -158,12 +158,12 @@
      요청과 한 URL로 합쳐서 추가 요청 없이 확장 -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260815-3">
+<link rel="stylesheet" href="styles.min.css?v=20260820-1">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260820-1" defer></script>
+<script src="script.min.js?v=20260820-3" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1190,7 +1190,9 @@
                    그대로. -->
               <button type="button" class="share-btn" id="home-share-btn" onclick="shareResult()"><span class="btn-emoji" aria-hidden="true">📡</span> <span data-i18n="home.shareDreamBtn">이 결과 공유하기</span></button>
               <button type="button" class="share-btn" id="home-save-image-btn" onclick="saveHomeResultAsImage()"><span class="btn-emoji" aria-hidden="true">🎉</span> <span data-i18n="home.saveImageBtn">이미지로 저장</span></button>
+              <button type="button" class="share-btn" id="home-copy-result-btn" onclick="copyResultText(this)"><span class="btn-emoji" aria-hidden="true">📋</span> <span data-i18n="home.copyResultBtn">결과 복사</span></button>
             </div>
+            <p style="text-align:center; font-size:var(--fs-small); margin:10px 0 0;"><button type="button" class="inline-link-btn" onclick="reportCalcIssue()" data-i18n="home.reportIssueLink">이 계산이 이상한가요? 알려주세요</button></p>
           </div>
 
           <div class="ticket-torn-bottom" aria-hidden="true"></div>
@@ -1450,6 +1452,7 @@
             <a href="https://www.megamillions.com" target="_blank" rel="noopener noreferrer">Mega Millions</a> ·
             <a href="https://www.hometax.go.kr" target="_blank" rel="noopener noreferrer" data-i18n="home.ntsLink">국세청 홈택스</a>
           </p>
+          <p class="updated-date"><span data-i18n="home.taxDataVerifiedLabel">세율 데이터 최종 확인</span>: 2026-08-20</p>
         </div>
         </details>
 
