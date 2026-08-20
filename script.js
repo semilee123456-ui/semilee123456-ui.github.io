@@ -12645,6 +12645,29 @@ async function copyResultText(btnEl){
   }
 }
 
+// 2026-08-20: 결과 카드에서 바로 문의 폼(view-contact, 이미 있던 Formspree 연동)으로 이동시키되,
+// 계산 컨텍스트(국가/금액/실수령액)를 메시지 칸에 미리 채워서 사용자가 매번 다시 설명 안 해도
+// 되게 함 — 새 폼을 만들지 않고 기존 인프라를 그대로 재사용.
+function reportCalcIssue(){
+  trackEvent('report_calc_issue');
+  const { shareUrl, country, finalAmt } = buildResultShareText();
+  go('contact');
+  const msgEl = document.getElementById('contactMessage');
+  if (msgEl && !msgEl.value) {
+    const prefix = pickLang(
+      `[계산 결과] ${country} 기준 ${finalAmt} (${shareUrl})\n\n어떤 부분이 이상한지 알려주세요:\n`,
+      `[Calculation] ${finalAmt} as ${country} (${shareUrl})\n\nWhat looks off?:\n`,
+      `[计算结果] 按${country}计算 ${finalAmt}（${shareUrl}）\n\n哪里不对？:\n`,
+      `[Kết quả] Theo ${country} là ${finalAmt} (${shareUrl})\n\nCó gì không đúng?:\n`,
+      `[ผลลัพธ์] ตาม${country} คือ ${finalAmt} (${shareUrl})\n\nมีจุดไหนผิดปกติ?:\n`,
+      `[Результат] Как ${country}: ${finalAmt} (${shareUrl})\n\nЧто выглядит неправильно?:\n`
+    );
+    msgEl.value = prefix;
+    msgEl.focus();
+    msgEl.setSelectionRange(msgEl.value.length, msgEl.value.length);
+  }
+}
+
 async function shareRefundChecklist(){
   const shareText = pickLang(
     '나도 모르게 못 받은 돈이 있는지 체크리스트로 확인해봐요. 국세환급금만 매년 수천억 원대가 안 찾아가서 사라진대요 (5년 지나면 국고로 귀속). 참택스 FAQ에서 10분이면 확인 끝나요!',
