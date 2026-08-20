@@ -1,0 +1,35 @@
+name: Drift consistency check
+
+# script.js의 국가별 세율(TAX_MODEL)과 각 나라 랜딩페이지 본문의 세율 서술이 어긋나는지
+# 정적으로 확인. 2026-08-20 몽골 페이지 사례(script.js가 10%→40%로 정정된 뒤에도 랜딩페이지가
+# 낡은 서술로 몇 주간 방치됐던 것)를 계기로 추가한 안전망 — tests/drift_consistency_test.js
+# 상단 주석 참고. 브라우저 불필요, Node만 있으면 실행되는 순수 정적 분석이라 Playwright 설치
+# 없이 바로 돌림.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'script.js'
+      - '*-resident-us-lottery-tax.html'
+      - 'us-lottery-tax-for-*.html'
+  pull_request:
+    paths:
+      - 'script.js'
+      - '*-resident-us-lottery-tax.html'
+      - 'us-lottery-tax-for-*.html'
+  workflow_dispatch: {}   # Actions 탭에서 수동 실행 가능
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run drift consistency check
+        run: node tests/drift_consistency_test.js
