@@ -1067,6 +1067,17 @@ r/IndieHackers만 현재 승인됨). 채널 브레인스토밍은 여러 차례 
   디렉토리에 등록하면 됨. **주의**: `tax-data.js`는 `script.js`를 참조하는 게 아니라
   손으로 베껴온 것이라 두 파일이 자동으로 동기화되지 않음 — `script.js`의 세율이
   바뀌면 `mcp-server/tax-data.js`도 손으로 같이 고쳐야 함(README.md에도 명시).
+  **2026-08-20 후속 — glama.ai 등록 시도, 저장소 루트에 `glama.json` 추가**: 사용자가
+  glama.ai 가입 화면을 보내왔는데 "Add billing details" 등 유료 SaaS 계정 온보딩
+  흐름으로 보여 그 경로는 보류 권고. 대신 glama.ai가 공식 문서(glama.ai/mcp/faq,
+  glama.ai/mcp/schemas/server.json, glama.ai/blog/2025-07-08-what-is-glamajson)에서
+  설명하는 "저장소 루트에 `glama.json` 두면 자동 크롤링/색인 시 소유권 인식" 방식을
+  확인 — 스키마상 공식 검증 필드는 `$schema`+`maintainers`(GitHub 유저네임 배열)뿐이고
+  FAQ가 언급하는 "표시 이름/설명/카테고리/환경변수/빌드 스펙" 등은 소유권을 claim한
+  뒤 대시보드에서 설정하는 항목으로 보여(정확한 추가 필드명은 문서에 안 나와 있어
+  임의로 만들지 않음) `{"$schema": "...", "maintainers": ["semilee123456-ui"]}`만
+  넣음. 실제 색인/노출 여부는 glama.ai 쪽 크롤링 타이밍에 달려있어 이 세션이 확인
+  불가 — 다음 세션은 glama.ai/mcp/servers에서 저장소 검색해 등재 여부만 확인하면 됨.
 - **Dev.to 기술 글 초안 + 발행 스크립트 작성, `SendUserFile`로 전달**: Show HN과
   다른 각도(21개국 세금 로직 엔지니어링 딥다이브)로 작성, 위 Reddit/Show HN 초안과
   같은 이유로 저장소엔 원문 안 남김. 발행은 사용자의 Dev.to API 키가 필요해 이
