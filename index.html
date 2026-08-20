@@ -163,7 +163,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260820-3" defer></script>
+<script src="script.min.js?v=20260820-4" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -208,6 +208,12 @@
   "url": "https://github.com/semilee123456-ui/us-lottery-tax-data",
   "sameAs": "https://www.kaggle.com/datasets/chamtax/us-lottery-jackpot-tax-by-country",
   "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "image": {
+    "@type": "ImageObject",
+    "url": "https://chamtax.com/og-image-hook.png",
+    "width": 1200,
+    "height": 630
+  },
   "creator": {
     "@type": "Organization",
     "name": "참택스",
@@ -1202,11 +1208,14 @@
                연결하는 저자극 텍스트 링크. explore-section의 "국가별 비교" 카드(단일 상대국
                토글, goToCompareWithOppositeCountry())와는 다른 기능이라 그 카드를 대체하지 않고
                별도 줄로 추가함 — 버튼/카드가 아니라 sim-note와 같은 조용한 텍스트 한 줄로 둬서
-               결과 영역을 과하게 채우지 않음. 링크 대상(lottery-tax-by-country.html)이
-               영어 전용 페이지라 라벨도 새 i18n 키를 만들지 않고 영어 그대로 둠(다른 영어 전용
-               링크 — Lump Sum vs. Annuity Guide 등 — 와 같은 관례). -->
+               결과 영역을 과하게 채우지 않음.
+               2026-08-20: 링크 대상(lottery-tax-by-country.html)이 여전히 영어 전용 페이지라
+               "영어로 이동함"을 명확히 알리는 "(EN)" 표시는 그대로 두되, 라벨 자체는 번역해서
+               "번역 안 된 버그"처럼 보이던 문제를 해결(사용자 스크린샷 지적) — 영어 UI에서는
+               이미 도착 페이지와 같은 언어라 "(EN)" 없이 원문 그대로 둠, 나머지 35개 언어만
+               "(EN)" 접미사를 붙임. -->
           <p style="text-align:center; margin:10px 0 0; font-size:var(--fs-small); color:var(--text-muted);">
-            <a href="lottery-tax-by-country.html" style="color:var(--teal); font-weight:700; text-decoration:none;">🌍 See 8 countries side by side →</a>
+            <a href="lottery-tax-by-country.html" style="color:var(--teal); font-weight:700; text-decoration:none;">🌍 <span data-i18n="home.compareCountriesLink">8개국 나란히 비교하기 (EN)</span> →</a>
           </p>
 
           <details class="calc-detail-toggle" id="home-detail-toggle">

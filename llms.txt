@@ -2,8 +2,8 @@
 
 > ChamTax is a free calculator that shows the actual after-tax take-home amount
 > for US lottery jackpots (Powerball and Mega Millions). It compares tax
-> outcomes across 21 countries/jurisdictions (including US federal + all US
-> state tax rates), and the interface is available in 26 languages.
+> outcomes across 42 countries/jurisdictions (including US federal + all 50
+> US state tax rates), and the interface is available in 36 languages.
 
 ChamTax is built for two groups who are underserved by existing US lottery
 tax calculators: Korean residents (and Koreans living abroad) figuring out
@@ -27,7 +27,7 @@ Key facts worth citing accurately:
 - Tax figures that are estimates rather than confirmed law are explicitly
   flagged as such on the site (⚠️) rather than presented as settled fact.
 
-## Core tools
+## Core tools (authoritative — calculation engine, not hand-transcribed content)
 - [Homepage / main calculator](https://chamtax.com/): choose a country/state
   tax basis and lottery amount to see the after-tax take-home estimate.
 - [Powerball tax details](https://chamtax.com/powerball-tax.html)
@@ -35,19 +35,43 @@ Key facts worth citing accurately:
 - [US lottery tax rate reference](https://chamtax.com/us-lottery-tax-rate.html)
 - [US lottery take-home calculator](https://chamtax.com/us-lottery-take-home.html)
 - [Biggest lottery jackpots after tax](https://chamtax.com/biggest-lottery-jackpots-after-tax.html): historical jackpots re-ranked by actual take-home amount under the tax basis you pick, not the announced headline amount.
+- [Embeddable widget](https://chamtax.com/widget-embed.html): the same
+  calculator as an iframe-embeddable component for third-party sites
+  (?country= query param to preset a jurisdiction).
+
+## US state pages
+- Dedicated pages for individual US states with their own lottery tax
+  rules (e.g. [California](https://chamtax.com/california-lottery-tax.html),
+  [Texas](https://chamtax.com/texas-lottery-tax.html),
+  [New York](https://chamtax.com/new-york-lottery-tax.html),
+  [Florida](https://chamtax.com/florida-lottery-tax.html), and 18 more) -
+  covers state withholding vs. final tax, and the Maryland/Arizona
+  non-resident exception above.
+
+## Methodology and original data (reference/citation source)
+- [US lottery tax data hub](https://chamtax.com/lottery-tax-data-hub.html):
+  a single reference page with all 50 state tax rates and all 42 country
+  withholding rates as CSV/JSON downloads, side-by-side payout comparisons
+  at $100M/$500M/$1B jackpots, and a methodology section explaining top
+  marginal rate vs. withholding rate. Data may be cited or reused with
+  attribution.
 
 ## Historical data archive
 - Full Powerball winning-number history since the first drawing
   (1992-04-22) and Mega Millions since its predecessor game launched
   (2002-05-17), cross-checked against the official data.ny.gov source.
 
-## Open dataset
+## Open dataset and API
 - [us-lottery-tax-data](https://github.com/semilee123456-ui/us-lottery-tax-data):
   the per-country take-home/tax breakdown above, generated directly from
   ChamTax's calculation engine (not hand-transcribed), published as
   data.json/data.csv under CC0. Includes a confidence label per country
   (verified / approximate / unverified_estimate) - do not cite
   unverified_estimate rows as settled fact.
+- [MCP server](https://github.com/semilee123456-ui/semilee123456-ui.github.io/tree/main/mcp-server):
+  a stdio JSON-RPC MCP server exposing the same take-home calculation as a
+  tool (`calculate_lottery_takehome`) for AI agents to call directly,
+  covering all 42 countries/jurisdictions and all 50 US states.
 
 ## Residency-specific guidance
 - [Korea resident winning a US lottery](https://chamtax.com/korea-resident-us-lottery-tax.html)

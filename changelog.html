@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script>
+  try{ if(localStorage.getItem('theme')==='dark'){ document.documentElement.setAttribute('data-theme','dark'); } }catch(e){}
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9743479262743239" crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-K0S72CPYZM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-K0S72CPYZM');
+</script>
+<!-- Microsoft Clarity -->
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "y48efe1fv1");
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cellipse cx='6.1' cy='10.4' rx='2.7' ry='4' fill='%23FFFFFF' stroke='%23155445' stroke-width='1.7' transform='rotate(-24 6.1 10.4)'/%3E%3Cellipse cx='21.9' cy='10.4' rx='2.7' ry='4' fill='%23FFFFFF' stroke='%23155445' stroke-width='1.7' transform='rotate(24 21.9 10.4)'/%3E%3Ccircle cx='14' cy='15.6' r='9.7' fill='%23FFFFFF' stroke='%23155445' stroke-width='1.8'/%3E%3Cellipse cx='8.5' cy='17.5' rx='1.6' ry='1.05' fill='%23F0A98C' opacity='0.55'/%3E%3Cellipse cx='19.5' cy='17.5' rx='1.6' ry='1.05' fill='%23F0A98C' opacity='0.55'/%3E%3Ccircle cx='10.5' cy='14.4' r='1.7' fill='%23262420'/%3E%3Ccircle cx='11.05' cy='13.85' r='0.5' fill='%23fff'/%3E%3Ccircle cx='17.5' cy='14.4' r='1.7' fill='%23262420'/%3E%3Ccircle cx='18.05' cy='13.85' r='0.5' fill='%23fff'/%3E%3Cellipse cx='14' cy='17.75' rx='1.85' ry='1.3' fill='%23155445'/%3E%3Cpath d='M14 19.1v0.55M8.9 19.9c1.7 3.3 8.6 3.3 10.2 0' fill='none' stroke='%23155445' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#155445">
+<title>세율 데이터 변경 이력 (Changelog) | 참택스</title>
+<meta name="description" content="참택스가 계산에 쓰는 세율·환율 데이터가 언제, 왜 바뀌었는지 정리한 변경 이력입니다. 날짜·국가·변경 내용·근거를 투명하게 공개합니다.">
+<link rel="canonical" href="https://chamtax.com/changelog.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="참택스 ChamTax">
+<meta property="og:title" content="세율 데이터 변경 이력 | 참택스">
+<meta property="og:description" content="참택스가 계산에 쓰는 세율·환율 데이터가 언제, 왜 바뀌었는지 정리한 변경 이력입니다.">
+<meta property="og:url" content="https://chamtax.com/changelog.html">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:image" content="https://chamtax.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="세율 데이터 변경 이력 | 참택스">
+<meta name="twitter:description" content="참택스가 계산에 쓰는 세율·환율 데이터가 언제, 왜 바뀌었는지 정리한 변경 이력입니다.">
+<meta name="twitter:image" content="https://chamtax.com/og-image.png">
+<!-- 2026-08-20: 제미나이 마케팅 제안(2라운드 #9 "Tax Data Changelog") 반영. 이 페이지는 이 저장소의
+     전체 git 커밋 로그를 그대로 노출하는 게 아니라(내부 리팩터링·i18n 키 추가 같은 코드 변경까지
+     섞이면 오히려 신뢰도 파악에 방해), 실제 세율/환율/계산 로직 정정처럼 "계산 결과가 달라지는"
+     변경만 선별해 정리함 — 각 항목은 실제 git 커밋(날짜·해시)에서 가져온 사실이며 지어낸 항목
+     없음. 완전한 이력이 아니라 "선별된 주요 변경사항"이라고 명시함(과장 방지). 새 정정이 생기면
+     이 페이지 맨 위에 추가할 것 — 오래된 항목을 지우지 말고 계속 쌓을 것(변경 이력 자체가
+     신뢰 자산이라는 취지). -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "참택스",
+  "alternateName": "ChamTax",
+  "url": "https://chamtax.com/",
+  "logo": "https://chamtax.com/icon-512.png"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "세율 데이터 변경 이력",
+  "url": "https://chamtax.com/changelog.html",
+  "isPartOf": { "@type": "WebSite", "name": "참택스", "url": "https://chamtax.com/" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "참택스", "item": "https://chamtax.com/" },
+    { "@type": "ListItem", "position": 2, "name": "세율 데이터 변경 이력", "item": "https://chamtax.com/changelog.html" }
+  ]
+}
+</script>
+<link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" onload="this.onload=null; this.rel='stylesheet';">
+<noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"></noscript>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" onload="this.onload=null; this.rel='stylesheet';">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap"></noscript>
+<style>
+/* ============================================================================
+   참택스 랜딩페이지 "정산 티켓" 스타일 템플릿 (공용) — press-kit.html/sitemap.html과
+   동일한 슈퍼셋 CSS를 그대로 가져옴(scripts/apply-landing-ticket-style.js 대상은
+   아니지만 같은 디자인 언어 유지를 위해 수동으로 동기화, 이 파일 CSS를 고칠 땐 다른
+   *.html의 동일 블록도 같이 고려할 것).
+   ============================================================================ */
+  *{box-sizing:border-box;}
+  :root{
+    --teal:#155445; --teal-rgb:21,84,69;
+    --indigo:#35507A; --gold:#9C6F1E;
+    --bg:#F4F5F7; --card:#FFFFFF; --text-dark:#262420; --text-muted:#544E42; --border:#828C97;
+    --status-red:#C0392B; --status-amber:#946716; --status-green:#1F7A4D;
+    --fs-hero:32px; --fs-h1:clamp(22px,7vw,28px); --fs-h2:clamp(19px,5.5vw,22px); --fs-h3:20px;
+    --fs-body:18px; --fs-note:17px; --fs-small:16px;
+    --font-display:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    --font-mono:'IBM Plex Mono','SFMono-Regular','Menlo','Consolas','Liberation Mono',monospace;
+    --shadow-hard:4px 4px 0 var(--text-dark);
+    --shadow-hard-sm:3px 3px 0 var(--text-dark);
+    --shadow-hard-xs:2px 2px 0 var(--text-dark);
+  }
+  :root[data-theme="dark"]{
+    --teal:#3AA98A; --teal-rgb:58,169,138;
+    --indigo:#7C9BD1; --gold:#D6AC55;
+    --bg:#1E1A16; --card:#453E34; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#6E6558;
+    --status-red:#E2776C; --status-amber:#D6AC55; --status-green:#5FC993;
+  }
+  .theme-toggle{
+    width:38px; height:38px; min-height:38px; flex:0 0 auto; border-radius:50%;
+    border:none; background:var(--teal); box-shadow:0 3px 10px rgba(var(--teal-rgb),0.35);
+    font-size:16px; line-height:1; cursor:pointer; font-family:inherit;
+    display:inline-flex; align-items:center; justify-content:center; padding:0; margin-left:10px;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .theme-toggle:active{ transform:scale(0.94); }
+  body{ margin:0; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg); color:var(--text-dark); line-height:1.7; overflow-x:hidden; }
+  .wrap{ max-width:640px; margin:0 auto; padding:0 18px 56px; }
+  .nav{
+    display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:18px 0 14px; margin:0 0 6px; border-bottom:2px dashed var(--border);
+  }
+  .logo{
+    font-size:21px; font-weight:800; color:var(--text-dark); text-decoration:none;
+    display:inline-flex; align-items:center; gap:7px; font-family:var(--font-display);
+  }
+  .logo span{ color:var(--teal); }
+  .nav a.back{ font-size:var(--fs-small); color:var(--text-muted); text-decoration:none; font-weight:600; }
+  .nav a.back:hover{ color:var(--teal); text-decoration:underline; }
+  h1{ font-family:var(--font-display); font-size:var(--fs-h1); font-weight:700; line-height:1.35; margin:22px 0 10px; overflow-wrap:anywhere; }
+  .lead{ font-size:var(--fs-body); color:var(--text-muted); margin:0 0 18px; overflow-wrap:anywhere; }
+  .kicker{ font-family:var(--font-display); font-size:var(--fs-small); font-weight:700; color:var(--teal); text-transform:uppercase; letter-spacing:0.04em; margin:20px 0 4px; }
+  .note-box{
+    background:var(--card); border:1.5px solid var(--border); border-left:4px solid var(--teal);
+    border-radius:10px; padding:14px 16px; margin:18px 0; font-size:var(--fs-note);
+  }
+  h2{
+    font-family:var(--font-mono); font-size:var(--fs-h3); font-weight:800; color:var(--teal);
+    margin:34px 0 12px; padding-bottom:0; border-bottom:none;
+  }
+  .changelog-entry{
+    background:var(--card); border:1.5px solid var(--border); border-radius:14px;
+    padding:16px 18px; margin:0 0 12px;
+  }
+  .changelog-entry .country{ font-family:var(--font-display); font-weight:800; color:var(--text-dark); font-size:var(--fs-note); }
+  .changelog-entry p{ font-size:var(--fs-note); color:var(--text-muted); margin:6px 0 0; }
+  .badge{
+    display:inline-block; font-size:var(--fs-small); font-weight:700; padding:2px 9px;
+    border-radius:999px; white-space:nowrap; border:1px solid currentColor; margin-left:6px;
+  }
+  .badge-fix{ color:var(--status-red); }
+  .badge-new{ color:var(--status-green); }
+  .badge-update{ color:var(--status-amber); }
+  .cta-box{
+    background:var(--teal); border:2px solid var(--text-dark); border-radius:16px;
+    box-shadow:var(--shadow-hard-sm); padding:26px 22px; text-align:center; margin:34px 0;
+  }
+  .cta-box p{ color:var(--card); font-family:var(--font-display); font-size:var(--fs-h3); font-weight:700; margin:0 0 16px; }
+  .cta-box a{
+    display:inline-block; background:var(--card); color:var(--teal); font-weight:800; font-size:var(--fs-body);
+    padding:13px 28px; border-radius:10px; text-decoration:none; border:2px solid var(--text-dark);
+    box-shadow:var(--shadow-hard-xs);
+  }
+  .related-links{ display:flex; flex-direction:column; gap:10px; margin:18px 0 32px; }
+  .related-links a{ font-size:var(--fs-note); color:var(--teal); text-decoration:none; font-weight:600; padding:2px 0; border-bottom:1px dashed transparent; }
+  .related-links a:hover{ border-bottom-color:var(--teal); }
+  .disclaimer{ font-size:var(--fs-small); color:var(--text-muted); margin-top:36px; padding-top:18px; border-top:2px dashed var(--border); }
+  @media (max-width:380px){
+    .wrap{ padding:0 12px 44px; }
+    .nav{ padding:14px 0 12px; }
+    h1{ margin:18px 0 8px; }
+    .changelog-entry{ padding:14px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav">
+    <a class="logo" href="/"><svg width="24" height="24" viewBox="0 0 28 28" aria-hidden="true" style="flex:0 0 auto;">
+      <ellipse cx="6.1" cy="10.4" rx="2.7" ry="4" fill="var(--card)" stroke="var(--teal)" stroke-width="1.7" transform="rotate(-24 6.1 10.4)"/>
+      <ellipse cx="21.9" cy="10.4" rx="2.7" ry="4" fill="var(--card)" stroke="var(--teal)" stroke-width="1.7" transform="rotate(24 21.9 10.4)"/>
+      <circle cx="14" cy="15.6" r="9.7" fill="var(--card)" stroke="var(--teal)" stroke-width="1.8"/>
+      <ellipse cx="8.5" cy="17.5" rx="1.6" ry="1.05" fill="#F0A98C" opacity="0.55"/>
+      <ellipse cx="19.5" cy="17.5" rx="1.6" ry="1.05" fill="#F0A98C" opacity="0.55"/>
+      <circle cx="10.5" cy="14.4" r="1.7" fill="var(--text-dark)"/><circle cx="11.05" cy="13.85" r="0.5" fill="#fff"/>
+      <circle cx="17.5" cy="14.4" r="1.7" fill="var(--text-dark)"/><circle cx="18.05" cy="13.85" r="0.5" fill="#fff"/>
+      <ellipse cx="14" cy="17.75" rx="1.85" ry="1.3" fill="var(--teal)"/>
+      <path d="M14 19.1v0.55M8.9 19.9c1.7 3.3 8.6 3.3 10.2 0" fill="none" stroke="var(--teal)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg><span>참택스</span></a>
+    <span style="display:flex; align-items:center;">
+      <a class="back" href="/">← 계산기로</a>
+      <button type="button" id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" aria-label="다크모드 전환">🌙</button>
+    </span>
+  </div>
+
+  <p class="kicker">Changelog</p>
+  <h1>세율 데이터가 언제, 왜 바뀌었나요?</h1>
+  <p class="lead">참택스는 42개국 세율·환율·계산 로직을 계속 리서치하며 갱신합니다. 실제 계산 결과에 영향을 주는 변경만 아래에 선별해서 정리했어요 — 전체 코드 변경 이력이 아니라 "숫자가 바뀐 변경"만 모았습니다.</p>
+
+  <div class="note-box">이 페이지는 <a href="https://github.com/semilee123456-ui/semilee123456-ui.github.io" style="color:var(--teal); font-weight:700;">공개 저장소</a>의 실제 커밋을 근거로 작성됐고, 계속 최신 항목이 맨 위에 추가됩니다. 오래된 항목은 지우지 않고 계속 쌓아요.</div>
+
+  <h2>2026-08-20</h2>
+  <div class="changelog-entry">
+    <span class="country">🇻🇳 베트남</span><span class="badge badge-fix">정정</span>
+    <p>복권 당첨금 해외 송금 시 목적코드를 "불명확함, 은행에 문의" 수준으로만 안내하던 걸, 실제 외환 규정(Nghị định 70/2014/NĐ-CP)과 은행이 요구하는 증빙서류(당첨 증명서·IRS Form 1042-S 등) 안내로 구체화.</p>
+  </div>
+  <div class="changelog-entry">
+    <span class="country">🇮🇩 🇺🇿 🇰🇬 🇲🇲 인도네시아·우즈베키스탄·키르기스스탄·미얀마</span><span class="badge badge-fix">정정</span>
+    <p>외국납부세액공제(FTC)가 없거나 불확실한 4개국의 계산 로직을 실제 법령/조약 상태에 맞게 수정.</p>
+  </div>
+  <div class="changelog-entry">
+    <span class="country">🇲🇳 몽골</span><span class="badge badge-fix">정정</span>
+    <p>랜딩페이지에 남아있던 낡은 세율 서술을 계산기가 이미 쓰고 있던 실제 세율(40%)에 맞게 정정 — 자동 드리프트 감지 테스트를 이 계기로 신설.</p>
+  </div>
+  <div class="changelog-entry">
+    <span class="country">🇹🇭 태국</span><span class="badge badge-fix">정정</span>
+    <p>"공식 근거를 못 찾아 최고세율(35%)로 추정 계산"이라는 계산기 내부 근거가 랜딩페이지 어디에도 명시돼 있지 않던 걸 quick-answer/FAQ 3곳에 "35%" 문구로 명시.</p>
+  </div>
+  <div class="changelog-entry">
+    <span class="country">🇸🇬 🇲🇾 🇳🇱 🇮🇪 싱가포르·말레이시아·네덜란드·아일랜드</span><span class="badge badge-update">보강</span>
+    <p>송금/자금출처 신고 기준을 각국 1차 출처(STRO·BNM·FIU-Nederland·FIU Ireland)로 재검증해 반영, 현금신고 규정과 전신송금 규정을 명확히 구분.</p>
+  </div>
+  <div class="changelog-entry">
+    <span class="country">🎟️ 파워볼</span><span class="badge badge-update">데이터</span>
+    <p>8/19(수) 추첨 결과 백필(10·21·58·61·64 / 파워볼 17). 정기 로또 점검 세션에서 반영.</p>
+  </div>
+
+  <h2>2026-08-19</h2>
+  <div class="changelog-entry">
+    <span class="country">🇿🇦 남아프리카공화국</span><span class="badge badge-fix">정정</span>
+    <p>"복권 당첨금 비과세"로 서술돼 있던 걸 실제로는 자본이득세(CGT) 대상이고 미국 원천징수분과 외국납부세액공제(FTC)로 상계된다는 사실로 정정 (사용자 팩트체크 요청 반영).</p>
+  </div>
+
+  <h2>2026-08-06 ~ 2026-08-18</h2>
+  <div class="changelog-entry">
+    <span class="country">🇦🇺 🇳🇱 🇩🇪 호주·네덜란드·독일</span><span class="badge badge-update">보강</span>
+    <p>랜딩페이지에 남아있던 낡은 참고 환율(호주 1.535 등)을 실제 환율 기준으로 갱신.</p>
+  </div>
+  <div class="changelog-entry">
+    <span class="country">🇹🇷 🇵🇱 🇮🇪 🇸🇬 🇲🇾 🇿🇦 튀르키예·폴란드·아일랜드·싱가포르·말레이시아·남아공 외</span><span class="badge badge-new">신규</span>
+    <p>42개국 체제 완성까지 순차적으로 신규 지원 국가 추가 (통화 실지원 포함).</p>
+  </div>
+
+  <p class="section-note" style="font-size:var(--fs-small); color:var(--text-muted);">이 목록은 완전한 커밋 로그가 아니라 선별된 주요 변경사항입니다 — 더 세세한 이력은 <a href="https://github.com/semilee123456-ui/semilee123456-ui.github.io/commits/main/script.js" style="color:var(--teal);">GitHub 커밋 이력</a>에서 직접 확인할 수 있어요.</p>
+
+  <div class="cta-box">
+    <p>지금 최신 세율로 바로 계산해보기</p>
+    <a href="/">계산기 열기 →</a>
+  </div>
+
+  <div class="related-links">
+    <a href="lottery-tax-data-hub.html">→ 42개국 세율 원본 데이터 (CSV/JSON)</a>
+    <a href="press-kit.html">→ 기자용 자료 (Press Kit)</a>
+    <a href="/#contact">→ 오류 제보하기</a>
+    <a href="sitemap.html">→ 전체 페이지 목록</a>
+  </div>
+
+  <p class="disclaimer">참택스는 정보 제공 목적의 시뮬레이터이며, 세무 자문이 아닙니다. 실제 세금은 개인 상황에 따라 다를 수 있으니 중요한 결정 전에는 전문가와 상담하세요.</p>
+</div>
+<script>
+  function syncThemeToggleIcon(){
+    var btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+  }
+  function toggleTheme(){
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) { document.documentElement.removeAttribute('data-theme'); try{ localStorage.setItem('theme','light'); }catch(e){} }
+    else { document.documentElement.setAttribute('data-theme','dark'); try{ localStorage.setItem('theme','dark'); }catch(e){} }
+    syncThemeToggleIcon();
+  }
+  document.addEventListener('DOMContentLoaded', syncThemeToggleIcon);
+</script>
+</body>
+</html>
