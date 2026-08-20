@@ -530,6 +530,19 @@
     .table-wrap tr{ grid-template-columns:26px 1fr auto; padding:10px 12px; column-gap:8px; }
     .table-wrap tr::before{ width:24px; height:24px; font-size:12px; }
   }
+
+  /* 2026-08-20: 사이트 내부 검색(제미나이 2라운드 #9) — 별도 검색 엔진/라이브러리 없이,
+     이미 전체 페이지 목록을 갖고 있는 이 사이트맵을 실시간 필터링만 하는 가장 저렴한 방식.
+     "Korea"라고 치면 국가 li만, "$500M"라고 치면 잭팟 li만 남는 식(JS 참고). */
+  #sm-search-wrap{ position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0; margin:0 0 8px; }
+  #sm-search-input{
+    width:100%; box-sizing:border-box; font-family:inherit; font-size:var(--fs-body);
+    padding:12px 16px; border-radius:12px; border:1.5px solid var(--border); background:var(--card);
+    color:var(--text-dark);
+  }
+  #sm-search-input:focus{ outline:2px solid var(--teal); outline-offset:1px; }
+  #sm-search-empty{ display:none; color:var(--text-muted); font-size:var(--fs-note); margin:0 0 24px; }
+  .sm-h2-hidden{ display:none; }
 </style>
 </head>
 <body>
@@ -555,6 +568,11 @@
 
   <h1 id="sm-h1">사이트맵</h1>
   <p class="lead" id="sm-lead">참택스에 있는 전체 페이지 목록이에요. 계산기 안에서 드롭다운으로도 갈 수 있지만, 여기서 한 번에 찾는 게 더 빠를 수도 있어요.</p>
+
+  <div id="sm-search-wrap">
+    <input type="search" id="sm-search-input" placeholder="검색: 나라 이름, 언어, 주(state) 등...">
+  </div>
+  <p id="sm-search-empty">검색 결과가 없어요. 다른 나라 이름이나 언어로 다시 검색해보세요.</p>
 
   <h2 id="sm-h2-core">계산기 &amp; 핵심 도구</h2>
     <ul>
@@ -752,6 +770,8 @@
   // common.backHome/a11y.themeToggle/footer.copy 3개 키는 계산기(index.html)의 기존
   // i18n-source/translations.json 번역을 그대로 재사용(새로 번역 안 함, 문구도 통일).
   var SM_I18N = {
+    searchPlaceholder: {en:"Search: country, language, state...",zh:"搜索：国家、语言、州等...",vi:"Tìm kiếm: quốc gia, ngôn ngữ, bang...",th:"ค้นหา: ประเทศ ภาษา รัฐ...",ru:"Поиск: страна, язык, штат...",km:"ស្វែងរក៖ ប្រទេស ភាសា រដ្ឋ...",ne:"खोज्नुहोस्: देश, भाषा, राज्य...",id:"Cari: negara, bahasa, negara bagian...",my:"ရှာဖွေရန်: နိုင်ငံ၊ ဘာသာစကား၊ ပြည်နယ်...",si:"සොයන්න: රට, භාෂාව, ප්‍රාන්තය...",uz:"Qidirish: davlat, til, shtat...",mn:"Хайх: улс, хэл, муж...",kk:"Іздеу: ел, тіл, штат...",ky:"Издөө: өлкө, тил, штат...",ur:"تلاش کریں: ملک، زبان، ریاست...",bn:"খুঁজুন: দেশ, ভাষা, রাজ্য...",lo:"ຄົ້ນຫາ: ປະເທດ, ພາສາ, ລັດ...",ja:"検索：国、言語、州など...",ar:"ابحث: الدولة، اللغة، الولاية...",hi:"खोजें: देश, भाषा, राज्य...",fr:"Rechercher : pays, langue, État...",tl:"Maghanap: bansa, wika, estado...",pt:"Buscar: país, idioma, estado...",es:"Buscar: país, idioma, estado...",uk:"Пошук: країна, мова, штат...",tet:"Buka: nasaun, lian, estadu...",de:"Suche: Land, Sprache, Bundesstaat...",nl:"Zoeken: land, taal, staat...",sv:"Sök: land, språk, delstat...",no:"Søk: land, språk, delstat...",da:"Søg: land, sprog, delstat...",fi:"Haku: maa, kieli, osavaltio...",it:"Cerca: paese, lingua, stato...",pl:"Szukaj: kraj, język, stan...",tr:"Ara: ülke, dil, eyalet..."},
+    searchEmpty: {en:"No matching pages. Try a different country or language name.",zh:"没有匹配的页面。请换个国家或语言名称试试。",vi:"Không tìm thấy trang phù hợp. Hãy thử tên quốc gia hoặc ngôn ngữ khác.",th:"ไม่พบหน้าที่ตรงกัน ลองใช้ชื่อประเทศหรือภาษาอื่น",ru:"Совпадений не найдено. Попробуйте другое название страны или языка.",km:"រកមិនឃើញទំព័រដែលត្រូវគ្នា។ សូមសាកល្បងឈ្មោះប្រទេស ឬភាសាផ្សេង។",ne:"मिल्दो पृष्ठ भेटिएन। अर्को देश वा भाषाको नाम प्रयोग गरी हेर्नुहोस्।",id:"Tidak ada halaman yang cocok. Coba nama negara atau bahasa lain.",my:"ကိုက်ညီသော စာမျက်နှာ မရှိပါ။ အခြားနိုင်ငံ သို့မဟုတ် ဘာသာစကားအမည်ဖြင့် ထပ်ကြိုးစားပါ။",si:"ගැලපෙන පිටු නැත. වෙනත් රටක් හෝ භාෂාවක් උත්සාහ කරන්න.",uz:"Mos sahifa topilmadi. Boshqa davlat yoki til nomini sinab ko'ring.",mn:"Тохирох хуудас олдсонгүй. Өөр улс эсвэл хэлний нэрээр оролдоно уу.",kk:"Сәйкес бет табылмады. Басқа ел немесе тіл атауын байқап көріңіз.",ky:"Дал келген барак табылган жок. Башка өлкө же тил атын байкап көрүңүз.",ur:"کوئی مماثل صفحہ نہیں ملا۔ کسی اور ملک یا زبان کا نام آزمائیں۔",bn:"কোনো মিল পাওয়া যায়নি। অন্য দেশ বা ভাষার নাম দিয়ে চেষ্টা করুন।",lo:"ບໍ່ພົບໜ້າທີ່ກົງກັນ. ລອງໃຊ້ຊື່ປະເທດ ຫຼືພາສາອື່ນ.",ja:"該当するページがありません。別の国や言語名で試してください。",ar:"لا توجد صفحات مطابقة. جرّب اسم دولة أو لغة أخرى.",hi:"कोई मिलान पेज नहीं मिला। किसी अन्य देश या भाषा का नाम आज़माएँ।",fr:"Aucune page correspondante. Essayez un autre nom de pays ou de langue.",tl:"Walang tugmang pahina. Subukan ang ibang bansa o wika.",pt:"Nenhuma página encontrada. Tente outro país ou idioma.",es:"No se encontraron páginas. Prueba con otro país o idioma.",uk:"Немає відповідних сторінок. Спробуйте іншу назву країни або мови.",tet:"La iha pájina ne'ebé kaben. Koko naran nasaun ka lian seluk.",de:"Keine passenden Seiten gefunden. Versuche ein anderes Land oder eine andere Sprache.",nl:"Geen overeenkomende pagina's. Probeer een ander land of een andere taal.",sv:"Inga matchande sidor. Prova ett annat land eller språk.",no:"Ingen treff. Prøv et annet land eller språk.",da:"Ingen matchende sider. Prøv et andet land eller sprog.",fi:"Ei osumia. Kokeile toista maata tai kieltä.",it:"Nessuna pagina trovata. Prova un altro paese o lingua.",pl:"Brak pasujących stron. Spróbuj innej nazwy kraju lub języka.",tr:"Eşleşen sayfa yok. Başka bir ülke veya dil adı deneyin."},
     backHome: {en:"← Back to Home",zh:"← 返回首页",vi:"← Về trang chủ",th:"← กลับหน้าแรก",ru:"← На главную",km:"← ត្រឡប់ទៅទំព័រដើម",ne:"← गृहपृष्ठमा फर्कनुहोस्",id:"← Kembali ke Beranda",my:"← ပင်မစာမျက်နှာသို့ပြန်သွားရန်",si:"← මුල් පිටුවට ආපසු",uz:"← Bosh sahifaga qaytish",mn:"← Нүүр хуудас руу буцах",kk:"← Басты бетке оралу",ky:"← Башкы бетке кайтуу",ur:"← ہوم پیج پر واپس جائیں",bn:"← হোমপেজে ফিরুন",lo:"← ກັບໄປໜ້າຫຼັກ",ja:"← ホームに戻る",ar:"← العودة إلى الصفحة الرئيسية",hi:"← होम पेज पर वापस जाएँ",fr:"← Retour à l'accueil",tl:"← Bumalik sa Home",pt:"← Voltar ao início",es:"← Volver al inicio",uk:"← На головну",tet:"← Fila ba Uma",de:"← Zurück zur Startseite",nl:"← Terug naar home",sv:"← Tillbaka till startsidan",no:"← Tilbake til forsiden",da:"← Tilbage til forsiden",fi:"← Takaisin etusivulle",it:"← Torna alla home",pl:"← Powrót do strony głównej",tr:"← Ana Sayfaya Dön"},
     themeToggle: {en:"Toggle dark mode",zh:"切换深色模式",vi:"Chuyển đổi chế độ tối",th:"สลับโหมดมืด",ru:"Переключить тёмную тему",km:"ប្តូររបៀបងងឹត",ne:"डार्क मोड टगल गर्नुहोस्",id:"Alihkan mode gelap",my:"မှောင်မိုက်မုဒ် ပြောင်းရန်",si:"අඳුරු මාදිලිය මාරු කරන්න",uz:"Qorong'i rejimni almashtirish",mn:"Харанхуй горимыг сэлгэх",kk:"Қараңғы режимді ауыстыру",ky:"Караңгы режимди которуу",ur:"ڈارک موڈ آن/آف کریں",bn:"ডার্ক মোড টগল করুন",lo:"ສະຫຼັບໂໝດມືດ",ja:"ダークモード切り替え",ar:"تبديل الوضع الداكن",hi:"डार्क मोड टॉगल करें",fr:"Basculer le mode sombre",tl:"Palitan ang dark mode",pt:"Alternar modo escuro",es:"Alternar modo oscuro",uk:"Увімкнути/вимкнути темний режим",tet:"Muda moduk metan",de:"Dunkelmodus umschalten",nl:"Donkere modus schakelen",sv:"Växla mörkt läge",no:"Bytt til mørk modus",da:"Skift til mørk tilstand",fi:"Vaihda tummaan tilaan",it:"Attiva/disattiva modalità scura",pl:"Przełącz tryb ciemny",tr:"Karanlık modu değiştir"},
     disclaimer: {en:"This site is an informational simulator and does not act as an agent or broker for lottery purchases.",zh:"本网站是信息提供性质的模拟计算工具，不代理或中介彩票购买。",vi:"Trang này là công cụ mô phỏng thông tin và không đóng vai trò đại lý hay môi giới mua vé số.",th:"เว็บไซต์นี้เป็นเครื่องมือจำลองข้อมูลและไม่ทำหน้าที่เป็นตัวแทนหรือนายหน้าซื้อลอตเตอรี",ru:"Этот сайт — информационный симулятор и не выступает агентом или посредником при покупке лотерейных билетов.",km:"គេហទំព័រនេះជាឧបករណ៍ក្លែងធ្វើសម្រាប់ផ្តល់ព័ត៌មាន ហើយមិនធ្វើជាភ្នាក់ងារ ឬអន្តរការីសម្រាប់ការទិញឆ្នោតទេ។",ne:"यो साइट जानकारीमूलक सिमुलेटर हो र लटरी खरिदका लागि एजेन्ट वा मध्यस्थकर्ताको रूपमा काम गर्दैन।",id:"Situs ini adalah simulator informasi dan tidak bertindak sebagai agen atau perantara pembelian lotre.",my:"ဤဝက်ဘ်ဆိုက်သည်အချက်အလက်ပေးသောအတုအတွက်ဖြစ်ပြီး ထီဝယ်ယူမှုအတွက်ကိုယ်စားလှယ်သို့မဟုတ်ကြားဖြတ်အဖြစ်မလုပ်ဆောင်ပါ။",si:"මෙම වෙබ් අඩවිය තොරතුරු සැපයීමේ අනුකරණයක් වන අතර ලොතරැයි මිලදී ගැනීම් සඳහා නියෝජිතයෙකු හෝ තැරැව්කරුවෙකු ලෙස ක්‍රියා නොකරයි.",uz:"Ushbu sayt ma'lumot beruvchi simulyator bo'lib, lotereya sotib olish uchun agent yoki vositachi sifatida ishlamaydi.",mn:"Энэ сайт нь мэдээллийн симулятор бөгөөд лотерейн худалдан авалтад агент эсвэл зуучлагч болж ажилладаггүй.",kk:"Осы сайт ақпараттық симулятор болып табылады және лотерея сатып алуларына агент немесе делдал ретінде әрекет етпейді.",ky:"Бул сайт маалыматтык симулятор болуп саналат жана лотерея сатып алууларына агент же ортомчу катары иш алып барбайт.",ur:"یہ سائٹ ایک معلوماتی سیمولیٹر ہے اور لاٹری خریداری کے لیے ایجنٹ یا بروکر کے طور پر کام نہیں کرتی۔",bn:"এই সাইট একটি তথ্যমূলক সিমুলেটর এবং লটারি ক্রয়ের এজেন্ট বা মধ্যস্থতাকারী হিসেবে কাজ করে না।",lo:"ເວັບໄຊນີ້ແມ່ນເຄື່ອງມືຈຳລອງເພື່ອໃຫ້ຂໍ້ມູນ ແລະບໍ່ໄດ້ເຮັດໜ້າທີ່ເປັນຕົວແທນ ຫຼືຄ້າຄົນກາງສຳລັບການຊື້ຫວຍ.",ja:"当サイトは情報提供を目的としたシミュレーションツールであり、宝くじ購入の代行や仲介は行いません。",ar:"هذا الموقع محاكاة إعلامية ولا يعمل كوكيل أو وسيط لشراء اليانصيب.",hi:"यह साइट एक सूचनात्मक सिमुलेटर है और लॉटरी खरीद के लिए एजेंट या मध्यस्थ के रूप में कार्य नहीं करती।",fr:"Ce site est un simulateur informatif et n'agit pas en tant qu'agent ou courtier pour l'achat de billets de loterie.",tl:"Ang site na ito ay informational simulator lamang at hindi kumikilos bilang agent o broker para sa pagbili ng lottery.",pt:"Este site é um simulador informativo e não atua como agente ou intermediário para compra de loterias.",es:"Este sitio es un simulador informativo y no actúa como agente ni intermediario para la compra de loterías.",uk:"Цей сайт є інформаційним симулятором і не виступає агентом або посередником при купівлі лотерей.",tet:"Sítio ne'e mak simuladór informativu no la atua nu'udar ajente ka intermediáriu ba kompra lotaria.",de:"Diese Website ist ein reiner Informationssimulator und fungiert nicht als Agent oder Vermittler für den Lotteriekauf.",nl:"Deze site is een informatieve simulator en treedt niet op als agent of bemiddelaar bij de aankoop van loten.",sv:"Denna sida är en informationssimulator och agerar inte som ombud eller mäklare för lotteriköp.",no:"Denne siden er en informasjonssimulator og opptrer ikke som agent eller megler for lotterikjøp.",da:"Denne side er en informationssimulator og fungerer ikke som agent eller mægler for lotterikøb.",fi:"Tämä sivusto on tiedotuksellinen simulaattori eikä toimi lottolippujen ostoagenttina tai välittäjänä.",it:"Questo sito è un simulatore informativo e non agisce come agente o intermediario per l'acquisto di biglietti della lotteria.",pl:"Ta strona jest symulatorem informacyjnym i nie działa jako agent ani pośrednik zakupu losów loteryjnych.",tr:"Bu site bilgi amaçlı bir simülatördür ve piyango satın alımları için acente veya aracı olarak hareket etmez."},
@@ -786,6 +806,8 @@
     set('sm-back', SM_I18N.backHome[lang]);
     set('sm-h1', SM_I18N.h1[lang]);
     set('sm-lead', SM_I18N.lead[lang]);
+    setAttr('sm-search-input', 'placeholder', SM_I18N.searchPlaceholder[lang]);
+    set('sm-search-empty', SM_I18N.searchEmpty[lang]);
     set('sm-h2-core', SM_I18N.h2Core[lang]);
     set('sm-h2-country', SM_I18N.h2Country[lang]);
     set('sm-note-country', SM_I18N.noteCountry[lang]);
@@ -800,6 +822,50 @@
     if (themeBtn) themeBtn.setAttribute('aria-label', SM_I18N.themeToggle[lang]);
   }
   document.addEventListener('DOMContentLoaded', applySitemapTranslations);
+
+  // 2026-08-20: 사이트 내부 검색 — 이미 있는 <ul><li><a> 목록을 그대로 두고 li 텍스트로만
+  // 필터링(별도 색인/라이브러리 없음). 섹션의 li가 전부 숨겨지면 그 h2/section-note도
+  // 같이 숨겨서 빈 제목만 남지 않게 함.
+  function setupSitemapSearch(){
+    var input = document.getElementById('sm-search-input');
+    var emptyMsg = document.getElementById('sm-search-empty');
+    if (!input) return;
+    var allLis = Array.prototype.slice.call(document.querySelectorAll('.wrap > ul li, .wrap ul li'));
+    var headings = Array.prototype.slice.call(document.querySelectorAll('.wrap > h2'));
+    function filter(){
+      var q = input.value.trim().toLowerCase();
+      var anyVisible = false;
+      allLis.forEach(function(li){
+        var match = !q || li.textContent.toLowerCase().indexOf(q) !== -1;
+        li.style.display = match ? '' : 'none';
+        if (match) anyVisible = true;
+      });
+      headings.forEach(function(h2){
+        var ul = h2.nextElementSibling;
+        while (ul && ul.tagName !== 'UL' && ul.tagName !== 'P') ul = ul.nextElementSibling;
+        var sectionHasVisible = true;
+        if (q) {
+          sectionHasVisible = false;
+          var node = h2.nextElementSibling;
+          while (node && node.tagName !== 'H2') {
+            if (node.tagName === 'UL') {
+              var lis = node.querySelectorAll('li');
+              for (var i = 0; i < lis.length; i++) { if (lis[i].style.display !== 'none') { sectionHasVisible = true; break; } }
+            }
+            node = node.nextElementSibling;
+          }
+        }
+        h2.classList.toggle('sm-h2-hidden', !sectionHasVisible);
+        var noteEl = h2.nextElementSibling;
+        if (noteEl && noteEl.classList && noteEl.classList.contains('section-note')) {
+          noteEl.classList.toggle('sm-h2-hidden', !sectionHasVisible);
+        }
+      });
+      if (emptyMsg) emptyMsg.style.display = (q && !anyVisible) ? 'block' : 'none';
+    }
+    input.addEventListener('input', filter);
+  }
+  document.addEventListener('DOMContentLoaded', setupSitemapSearch);
 </script>
 </body>
 </html>
