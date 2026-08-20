@@ -2818,9 +2818,16 @@
   .annotate-color-swatch.is-active{ border-color:var(--text-dark); box-shadow:0 0 0 2px var(--card), 0 0 0 4px var(--text-dark); }
   /* line-height:0으로 base 캔버스 아래 생기는 인라인 여백을 없애서 wrap 높이가 캔버스 실제
      비율(width:100% + height:auto)로만 결정되게 하고, overlay 캔버스는 그 위에 정확히 겹침 */
+  /* 2026-08-20: 이 wrap이 .annotate-overlay-panel(overflow-y:auto인 flex column)의 자식이라
+     기본 flex-shrink:1 상태였음 — 패널 높이가 max-height(뷰포트 기준)에 눌릴 때, 원래 의도대로
+     패널 전체가 스크롤되는 대신 이 wrap 혼자 찌그러들며 overflow:hidden에 걸려 카드 아래쪽
+     (금액·서명란 등)이 통째로 잘려나가고 스크롤도 안 되는 버그였음(뷰폭이 낮은 창에서 "100%
+     줌으로 보면 카드가 잘려서 나온다"는 사용자 스크린샷으로 발견). flex-shrink:0으로 이 wrap의
+     실제 높이를 보존시키면, 패널 콘텐츠 총 높이가 max-height를 넘을 때 wrap이 찌그러지는 대신
+     패널 자체의 overflow-y:auto 스크롤이 정상적으로 걸림. */
   .annotate-canvas-wrap{
     position:relative; width:100%; touch-action:none; border-radius:10px; overflow:hidden;
-    border:1px solid var(--border); line-height:0; background:var(--card);
+    border:1px solid var(--border); line-height:0; background:var(--card); flex-shrink:0;
   }
   #annotateBaseCanvas{ display:block; width:100%; height:auto; }
   #annotateOverlayCanvas{ position:absolute; inset:0; width:100%; height:100%; }
