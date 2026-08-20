@@ -1293,8 +1293,20 @@ const TAX_MODEL = {
   id_resident: {
     // 인도네시아 정부령(Peraturan Pemerintah) 132/2000 + 소득세법(PPh) 제4조 2항: 복권 당첨금(hadiah undian)은
     // 공제·누진 구간 없이 25% 단일 최종세율(final tax)이 총액에 적용됨.
-    lottery_final_tax_rate: 0.25
-    // 인도네시아-미국 조세조약(DTA)에 따라 FTC로 미국 원천징수분을 인도네시아 세액 한도 내에서 상계 가능.
+    lottery_final_tax_rate: 0.25,
+    // ⚠️ 2026-08-20 정정: 이전 버전은 "인니-미국 조세조약(DTA)에 따라 FTC 상계 가능"이라고 가정했으나,
+    // 전담 조사 결과 이 가정은 근거가 약한 것으로 확인됨. 인도네시아의 일반 외국납부세액공제(FTC)
+    // 조항인 제24조(PMK 192/2018로 시행)는 복수 출처(Pajakku, jstax, Ortax 포럼)에서 일반 누진과세
+    // (제17조) 소득을 전제로 하고, 복권 당첨금처럼 제4조 2항 최종세(final tax) 대상 소득은 이
+    // 국내법상 공제 절차에서 제외되는 것으로 확인됨. 1990년 발효된 인니-미국 조세조약 자체에
+    // 별도의 "이중과세 조정" 조항(제23조)이 있어 국내법의 이 제한과 무관하게 독자적으로 적용될
+    // 여지가 이론적으로는 있으나, 이를 확인해줄 만한 인니 세무 실무 해설(DDTC, Pratama Institute,
+    // PwC 인니 등)을 조사에서 찾지 못했고, 실무상 조약 기반 공제도 제24조의 절차를 거치는 것으로
+    // 보여 이 제한을 그대로 적용받을 가능성이 높음. 결론: 미국 원천징수(30%)와 인니 25% 최종세가
+    // 상계 없이 그대로 이중 부과(합산 55%)될 위험이 현실적으로 있는 것으로 판단, 더 안전한
+    // 가정(FTC 없음)으로 계산함. 확정된 법률 해석이 아니며, 인니 국세청(DGT) 유권해석이나 구체적
+    // 판례가 나오면 재검토 필요.
+    ftc_available: false
   },
   ph_resident: {
     // 필리핀은 자국(PCSO) 복권 당첨금에만 20% 분리과세(final tax)가 적용되고, 해외(미국 등) 복권
@@ -1388,7 +1400,17 @@ const TAX_MODEL = {
   uz_resident: {
     // 우즈베키스탄 세법(Tax Code of the Republic of Uzbekistan) 개인소득세 — 상금·복권 당첨금을
     // 포함한 모든 개인소득에 단일 12% 세율 적용(2023년부터 시행).
-    flat_rate: 0.12
+    flat_rate: 0.12,
+    // ⚠️ 2026-08-20 확인: 우즈베키스탄에 적용되는 미국측 조세조약은 신규 체결 없이 옛 1973년
+    // 미-소(USSR) 조약이 그대로 승계 적용 중(IRS/Orbitax 확인). 조약 원문을 직접 대조한 결과
+    // 로열티·지재권 양도차익·상속증여재산·기술용역소득 등 열거된 항목만 좁게 규정하는 구조로,
+    // "기타소득" 조항이나 일반적 "이중과세 조정"(FTC) 조항 자체가 없음(제11조 상호합의절차만
+    // 존재) — 복권·도박 당첨금은 이 조약이 다루는 어떤 항목에도 해당 안 됨. PwC 우즈베키스탄
+    // 안내자료도 "조세조약(DTT) 체결국에 한해 그 조약이 정한 방식으로 해외세액 공제"라고 설명해
+    // 국내법상 별도의 일방적 공제 수단도 없는 것으로 파악됨. 즉 이 특정 소득 항목에는 FTC 적용
+    // 근거가 없다고 판단, 미국 원천징수와 우즈베키스탄 세금이 상계 없이 그대로 이중 부과되는
+    // 것으로 계산함. 확정된 법률 해석은 아님.
+    ftc_available: false
   },
   kz_resident: {
     // 카자흐스탄 2026-01-01 시행 신세법(법률 214-VIII, 2025-07-18) 제379조 "당첨금 형태의 소득"
@@ -1400,18 +1422,36 @@ const TAX_MODEL = {
   kg_resident: {
     // 키르기스스탄 세법(Tax Code of the Kyrgyz Republic, 2022) — 당첨금(выигрыш)을 포함한 개인소득에
     // 단일 10% 세율 적용. 해외 지급이라 원천징수 기관이 없어 본인이 직접 신고.
-    flat_rate: 0.10
+    flat_rate: 0.10,
+    // ⚠️ 2026-08-20 확인: 우즈베키스탄과 마찬가지로 키르기스스탄에 적용되는 미국측 조세조약도
+    // 신규 체결 없이 옛 1973년 미-소(USSR) 조약 그대로 승계 적용 중 — 열거된 항목만 좁게 규정하고
+    // "기타소득"/일반 FTC 조항이 없어 복권 당첨금은 조약상 구제 대상이 아님. 국내법상 별도의
+    // 일방적 외국납부세액공제 제도가 있는지는 조사에서 확인해줄 자료를 찾지 못함(우즈베키스탄과
+    // 달리 명시적으로 부인하는 자료도 없음 — 진짜 불확실). 조약 경로는 확실히 막혀있고 국내법
+    // 경로는 근거가 없어 확인이 안 되는 상태이므로, 더 안전한 가정(FTC 없음)으로 계산함. 확정된
+    // 법률 해석 아님 — 국내법상 공제 근거가 실제로 있다면 재검토 필요.
+    ftc_available: false
   },
   mm_resident: {
     // 미얀마 소득세법(Income Tax Law 1974, 개정) — 해외 복권 당첨금은 자국 국영복권 전용 규정과
     // 무관하게 "기타 소득"(Income from Other Sources)으로 분류돼 누진세율 적용. 최고구간 25%
     // (7천만 짯 초과) — 잭팟 규모는 항상 이 구간을 초과.
-    top_bracket_rate: 0.25
+    top_bracket_rate: 0.25,
+    // ⚠️ 2026-08-20 확인: 미얀마는 미국과 발효 중인 조세조약이 아예 없음(ICAEW/VDB Loi 기준 미얀마
+    // 발효 조약 목록은 영국·싱가포르·말레이시아·태국·베트남·인도·한국·라오스뿐, 미국 미포함).
+    // 미얀마 세무 실무 해설(QHRM)도 "일반 세법상 일방적 외국납부세액공제 조항이 없고, 구제는
+    // 오직 조약을 통해서만 가능(재량적)"이라고 명시 — 조약이 없으니 구제 수단 자체가 없음.
+    // 미국 원천징수(30%)와 미얀마 세금이 상계 없이 그대로 이중 부과되는 것으로 계산함.
+    ftc_available: false
   },
   bd_resident: {
     // 방글라데시 소득세법(Income Tax Act 2023) — 복권·경품 등 당첨소득은 "기타 소득"(Income from
     // Other Sources)으로 분류돼 공제 없이 25% 단일세율 적용.
     flat_rate: 0.25
+    // 2026-08-20 확인: 미-방글라데시 조세조약은 2004년 서명, 2006년 8월 발효(표준적인 포괄 조약).
+    // 방글라데시 소득세법 2023도 DTAA에 연계해 해외 원천소득에 대한 해외납부세액공제를 인정(방글라데시
+    // 세액 한도 내) — 인도네시아의 최종세(final tax) 배제 같은 카테고리 제한 근거는 찾지 못함.
+    // FTC 적용 근거가 비교적 뚜렷해 기존 계산(FTC 상계) 유지.
   },
   pk_resident: {
     // ⚠️ 파키스탄 소득세법(Income Tax Ordinance 2001) 제156조는 복권 등 당첨금에 20%(신고자)~40%
@@ -2533,12 +2573,11 @@ function calcTakeHome(amount, country, stateCode){
     };
   } else if (country === 'id') {
     // 인도네시아 정부령(PP) 132/2000 + 소득세법(PPh) 제4조 2항: 복권 당첨금(hadiah undian) 25% 단일 최종세율.
+    // ⚠️ FTC 상계 없음 — 상세 근거는 TAX_MODEL.id_resident 주석 참고(제24조가 최종세 소득을 배제하는
+    // 것으로 파악되고, 조약 독자 적용 여지는 확인 못 해 더 안전한 가정으로 전액 이중과세로 계산).
     const wonAmount = amount * 100000000;
     const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
-    const idCalculatedTaxWon = wonAmount * TAX_MODEL.id_resident.lottery_final_tax_rate;
-    const ftcCreditWon = Math.min(usWithholdingWon, idCalculatedTaxWon); // FTC 공제액(DTA 기준, 한도 내 상계)
-    const idAdditionalTaxWon = Math.max(idCalculatedTaxWon - ftcCreditWon, 0);
-
+    const idAdditionalTaxWon = wonAmount * TAX_MODEL.id_resident.lottery_final_tax_rate; // FTC 없음 — 원천징수와 별개로 전액 추가
     const afterUS = amount - (usWithholdingWon / 100000000);
     const final = afterUS - (idAdditionalTaxWon / 100000000);
     const idEffectivePct = wonAmount > 0 ? (idAdditionalTaxWon / wonAmount * 100) : 0;
@@ -2546,8 +2585,8 @@ function calcTakeHome(amount, country, stateCode){
     return {
       afterUS, final,
       label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
-      label2: pickLang('인도네시아 추가 납부 (FTC 적용)', 'Indonesia additional tax (FTC applied)', '印尼追加缴税（已抵免FTC）', 'Thuế bổ sung tại Indonesia (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของอินโดนีเซีย (ใช้ FTC แล้ว)', 'Дополнительный налог в Индонезии (с учётом FTC)', buildAdditionalTaxMore('id')),
-      val2: idAdditionalTaxWon > 0 ? '-' + idEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      label2: pickLang('인도네시아 추가 납부 (FTC 미적용 ⚠️)', 'Indonesia additional tax (no FTC ⚠️)', '印尼追加缴税（不适用FTC⚠️）', 'Thuế bổ sung tại Indonesia (không áp dụng FTC ⚠️)', 'ภาษีเพิ่มเติมของอินโดนีเซีย (ไม่ใช้ FTC ⚠️)', 'Дополнительный налог в Индонезии (без FTC ⚠️)', buildAdditionalTaxMore('id', null, 'noftc')),
+      val2: idAdditionalTaxWon > 0 ? '-' + idEffectivePct.toFixed(1) + '%' : pickLang('0원', '₩0', '0元', '0 KRW', '0 วอน', '0 вон', ZERO_PLAIN_MORE),
       basisSuffix: pickLang('인도네시아 거주자', 'Indonesia resident', '印尼居民', 'Cư dân Indonesia', 'ผู้พำนักในอินโดนีเซีย', 'Резидент Индонезии', buildCountryMore('id'))
     };
   } else if (country === 'ph') {
@@ -2673,19 +2712,19 @@ function calcTakeHome(amount, country, stateCode){
     };
   } else if (country === 'uz') {
     // 우즈베키스탄: 모든 개인소득에 단일 12% 세율.
+    // ⚠️ FTC 상계 없음 — 미-소(USSR) 1973년 조약이 열거항목만 좁게 다뤄 복권소득 미포함, 국내법상
+    // 일방적 공제도 근거 없음(상세: TAX_MODEL.uz_resident 주석).
     const wonAmount = amount * 100000000;
     const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
-    const uzCalculatedTaxWon = wonAmount * TAX_MODEL.uz_resident.flat_rate;
-    const ftcCreditWon = Math.min(usWithholdingWon, uzCalculatedTaxWon);
-    const uzAdditionalTaxWon = Math.max(uzCalculatedTaxWon - ftcCreditWon, 0);
+    const uzAdditionalTaxWon = wonAmount * TAX_MODEL.uz_resident.flat_rate; // FTC 없음 — 원천징수와 별개로 전액 추가
     const afterUS = amount - (usWithholdingWon / 100000000);
     const final = afterUS - (uzAdditionalTaxWon / 100000000);
     const uzEffectivePct = wonAmount > 0 ? (uzAdditionalTaxWon / wonAmount * 100) : 0;
     return {
       afterUS, final,
       label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
-      label2: pickLang('우즈베키스탄 추가 납부 (FTC 적용)', 'Uzbekistan additional tax (FTC applied)', '乌兹别克斯坦追加缴税（已抵免FTC）', 'Thuế bổ sung tại Uzbekistan (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของอุซเบกิสถาน (ใช้ FTC แล้ว)', 'Дополнительный налог в Узбекистане (с учётом FTC)', buildAdditionalTaxMore('uz')),
-      val2: uzAdditionalTaxWon > 0 ? '-' + uzEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      label2: pickLang('우즈베키스탄 추가 납부 (FTC 미적용 ⚠️)', 'Uzbekistan additional tax (no FTC ⚠️)', '乌兹别克斯坦追加缴税（不适用FTC⚠️）', 'Thuế bổ sung tại Uzbekistan (không áp dụng FTC ⚠️)', 'ภาษีเพิ่มเติมของอุซเบกิสถาน (ไม่ใช้ FTC ⚠️)', 'Дополнительный налог в Узбекистане (без FTC ⚠️)', buildAdditionalTaxMore('uz', null, 'noftc')),
+      val2: uzAdditionalTaxWon > 0 ? '-' + uzEffectivePct.toFixed(1) + '%' : pickLang('0원', '₩0', '0元', '0 KRW', '0 วอน', '0 вон', ZERO_PLAIN_MORE),
       basisSuffix: pickLang('우즈베키스탄 거주자', 'Uzbekistan resident', '乌兹别克斯坦居民', 'Cư dân Uzbekistan', 'ผู้พำนักในอุซเบกิสถาน', 'Резидент Узбекистана', buildCountryMore('uz'))
     };
   } else if (country === 'kz') {
@@ -2707,36 +2746,36 @@ function calcTakeHome(amount, country, stateCode){
     };
   } else if (country === 'kg') {
     // 키르기스스탄: 당첨금 포함 모든 개인소득에 단일 10% 세율.
+    // ⚠️ FTC 상계 없음 — 미-소(USSR) 1973년 조약이 열거항목만 좁게 다뤄 복권소득 미포함, 국내법상
+    // 일방적 공제 근거는 조사에서 확인 못 함(상세: TAX_MODEL.kg_resident 주석).
     const wonAmount = amount * 100000000;
     const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
-    const kgCalculatedTaxWon = wonAmount * TAX_MODEL.kg_resident.flat_rate;
-    const ftcCreditWon = Math.min(usWithholdingWon, kgCalculatedTaxWon);
-    const kgAdditionalTaxWon = Math.max(kgCalculatedTaxWon - ftcCreditWon, 0);
+    const kgAdditionalTaxWon = wonAmount * TAX_MODEL.kg_resident.flat_rate; // FTC 없음 — 원천징수와 별개로 전액 추가
     const afterUS = amount - (usWithholdingWon / 100000000);
     const final = afterUS - (kgAdditionalTaxWon / 100000000);
     const kgEffectivePct = wonAmount > 0 ? (kgAdditionalTaxWon / wonAmount * 100) : 0;
     return {
       afterUS, final,
       label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
-      label2: pickLang('키르기스스탄 추가 납부 (FTC 적용)', 'Kyrgyzstan additional tax (FTC applied)', '吉尔吉斯斯坦追加缴税（已抵免FTC）', 'Thuế bổ sung tại Kyrgyzstan (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของคีร์กีซสถาน (ใช้ FTC แล้ว)', 'Дополнительный налог в Кыргызстане (с учётом FTC)', buildAdditionalTaxMore('kg')),
-      val2: kgAdditionalTaxWon > 0 ? '-' + kgEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      label2: pickLang('키르기스스탄 추가 납부 (FTC 미적용 ⚠️)', 'Kyrgyzstan additional tax (no FTC ⚠️)', '吉尔吉斯斯坦追加缴税（不适用FTC⚠️）', 'Thuế bổ sung tại Kyrgyzstan (không áp dụng FTC ⚠️)', 'ภาษีเพิ่มเติมของคีร์กีซสถาน (ไม่ใช้ FTC ⚠️)', 'Дополнительный налог в Кыргызстане (без FTC ⚠️)', buildAdditionalTaxMore('kg', null, 'noftc')),
+      val2: kgAdditionalTaxWon > 0 ? '-' + kgEffectivePct.toFixed(1) + '%' : pickLang('0원', '₩0', '0元', '0 KRW', '0 วอน', '0 вон', ZERO_PLAIN_MORE),
       basisSuffix: pickLang('키르기스스탄 거주자', 'Kyrgyzstan resident', '吉尔吉斯斯坦居民', 'Cư dân Kyrgyzstan', 'ผู้พำนักในคีร์กีซสถาน', 'Резидент Кыргызстана', buildCountryMore('kg'))
     };
   } else if (country === 'mm') {
     // 미얀마: 해외 복권 당첨금은 "기타 소득"으로 분류돼 누진세율(최고 25%) 적용.
+    // ⚠️ FTC 상계 없음 — 미국과 발효 중인 조세조약 자체가 없어 구제 수단이 없음(상세:
+    // TAX_MODEL.mm_resident 주석).
     const wonAmount = amount * 100000000;
     const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
-    const mmCalculatedTaxWon = wonAmount * TAX_MODEL.mm_resident.top_bracket_rate;
-    const ftcCreditWon = Math.min(usWithholdingWon, mmCalculatedTaxWon);
-    const mmAdditionalTaxWon = Math.max(mmCalculatedTaxWon - ftcCreditWon, 0);
+    const mmAdditionalTaxWon = wonAmount * TAX_MODEL.mm_resident.top_bracket_rate; // FTC 없음 — 원천징수와 별개로 전액 추가
     const afterUS = amount - (usWithholdingWon / 100000000);
     const final = afterUS - (mmAdditionalTaxWon / 100000000);
     const mmEffectivePct = wonAmount > 0 ? (mmAdditionalTaxWon / wonAmount * 100) : 0;
     return {
       afterUS, final,
       label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
-      label2: pickLang('미얀마 추가 납부 (FTC 적용, 근사치)', 'Myanmar additional tax (FTC applied, approximate)', '缅甸追加缴税（已抵免FTC，估算值）', 'Thuế bổ sung tại Myanmar (đã áp dụng FTC, ước tính)', 'ภาษีเพิ่มเติมของเมียนมา (ใช้ FTC แล้ว, ค่าประมาณ)', 'Дополнительный налог в Мьянме (с учётом FTC, приблизительно)', buildAdditionalTaxMore('mm', 'approx')),
-      val2: mmAdditionalTaxWon > 0 ? '-' + mmEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      label2: pickLang('미얀마 추가 납부 (FTC 미적용, 근사치 ⚠️)', 'Myanmar additional tax (no FTC, approximate ⚠️)', '缅甸追加缴税（不适用FTC，估算值⚠️）', 'Thuế bổ sung tại Myanmar (không áp dụng FTC, ước tính ⚠️)', 'ภาษีเพิ่มเติมของเมียนมา (ไม่ใช้ FTC, ค่าประมาณ ⚠️)', 'Дополнительный налог в Мьянме (без FTC, приблизительно ⚠️)', buildAdditionalTaxMore('mm', 'approx', 'noftc')),
+      val2: mmAdditionalTaxWon > 0 ? '-' + mmEffectivePct.toFixed(1) + '%' : pickLang('0원', '₩0', '0元', '0 KRW', '0 วอน', '0 вон', ZERO_PLAIN_MORE),
       basisSuffix: pickLang('미얀마 거주자', 'Myanmar resident', '缅甸居民', 'Cư dân Myanmar', 'ผู้พำนักในเมียนมา', 'Резидент Мьянмы', buildCountryMore('mm', 'approx'))
     };
   } else if (country === 'bd') {
@@ -14939,10 +14978,35 @@ const ADDITIONAL_TAX_UNCLEAR_PHRASE_MORE = {
   pt: n => `Imposto adicional em ${n} (nenhuma base clara encontrada ⚠️)`, es: n => `Impuesto adicional en ${n} (sin base clara encontrada ⚠️)`, uk: n => `Додатковий податок у країні ${n} (чіткої бази не знайдено ⚠️)`, tet: n => `Impostu adisionál iha ${n} (la bele hetan base moos ⚠️)`, de: n => `Zusätzliche Steuer in ${n} (keine klare Grundlage gefunden ⚠️)`, nl: n => `Extra belasting in ${n} (geen duidelijke grondslag gevonden ⚠️)`, sv: n => `Extra skatt i ${n} (ingen tydlig grund funnen ⚠️)`, no: n => `Ekstra skatt i ${n} (uklart grunnlag ⚠️)`, da: n => `Ekstra skat i ${n} (uklart grundlag ⚠️)`, fi: n => `Lisävero maassa ${n} (peruste epäselvä ⚠️)`, it: n => `Imposta aggiuntiva in ${n} (nessuna base chiara trovata ⚠️)`, pl: n => `Dodatkowy podatek w kraju ${n} (brak jasnej podstawy ⚠️)`, tr: n => `${n} ek vergisi (net esas bulunamadı ⚠️)`,
 };
 
+// ru/nl/la_resident처럼 FTC 상계 근거가 없어 미국 원천징수와 자국세가 그대로 이중부과되는 나라용 변형
+// ("FTC 없음"이지 ADDITIONAL_TAX_UNCLEAR_PHRASE_MORE의 "근거 자체가 불명확"과는 다른 의미 — 세율 근거는
+// 확실해도 FTC 상계만 안 된다는 뜻이라 별도 템플릿으로 분리)
+const ADDITIONAL_TAX_NO_FTC_PHRASE_MORE = {
+  ar: n => `ضريبة إضافية في ${n} (بدون FTC ⚠️)`,
+  bn: n => `${n} অতিরিক্ত কর (FTC নেই ⚠️)`,
+  fr: n => `Taxe supplémentaire en ${n} (sans FTC ⚠️)`,
+  hi: n => `${n} में अतिरिक्त कर (कोई FTC नहीं ⚠️)`,
+  id: n => `Pajak tambahan di ${n} (tanpa FTC ⚠️)`,
+  ja: n => `${n}での追加納税（FTCなし ⚠️）`,
+  kk: n => `${n}-де қосымша салық (FTC жоқ ⚠️)`,
+  km: n => `ពន្ធបន្ថែមនៅ${n} (គ្មាន FTC ⚠️)`,
+  ky: n => `${n}да кошумча салык (FTC жок ⚠️)`,
+  lo: n => `ພາສີເພີ່ມເຕີມໃນ${n} (ບໍ່ມີ FTC ⚠️)`,
+  mn: n => `${n}-д нэмэлт татвар (FTC байхгүй ⚠️)`,
+  my: n => `${n}တွင်ထပ်ဆောင်းအခွန် (FTC မရှိ ⚠️)`,
+  ne: n => `${n}मा थप कर (FTC छैन ⚠️)`,
+  si: n => `${n} හි අමතර බද්ද (FTC නැත ⚠️)`,
+  tl: n => `Karagdagang buwis sa ${n} (walang FTC ⚠️)`,
+  ur: n => `${n} میں اضافی ٹیکس (کوئی FTC نہیں ⚠️)`,
+  uz: n => `${n}da qo'shimcha soliq (FTC yo'q ⚠️)`,
+
+  pt: n => `Imposto adicional em ${n} (sem FTC ⚠️)`, es: n => `Impuesto adicional en ${n} (sin FTC ⚠️)`, uk: n => `Додатковий податок у країні ${n} (без FTC ⚠️)`, tet: n => `Impostu adisionál iha ${n} (la iha FTC ⚠️)`, de: n => `Zusätzliche Steuer in ${n} (ohne FTC ⚠️)`, nl: n => `Extra belasting in ${n} (zonder FTC ⚠️)`, sv: n => `Extra skatt i ${n} (utan FTC ⚠️)`, no: n => `Ekstra skatt i ${n} (uten FTC ⚠️)`, da: n => `Ekstra skat i ${n} (uden FTC ⚠️)`, fi: n => `Lisävero maassa ${n} (ilman FTC:tä ⚠️)`, it: n => `Imposta aggiuntiva in ${n} (senza FTC ⚠️)`, pl: n => `Dodatkowy podatek w kraju ${n} (bez FTC ⚠️)`, tr: n => `${n} ek vergisi (FTC yok ⚠️)`,
+};
+
 // 나라 코드(+선택적으로 qualifier)로 label2("{나라} 추가 납부 (FTC 적용...)") 17개 언어 more 객체를 만듦
 function buildAdditionalTaxMore(code, qualifier, unclear){
   const more = {};
-  const template = unclear ? ADDITIONAL_TAX_UNCLEAR_PHRASE_MORE : ADDITIONAL_TAX_PHRASE_MORE;
+  const template = unclear === 'noftc' ? ADDITIONAL_TAX_NO_FTC_PHRASE_MORE : unclear ? ADDITIONAL_TAX_UNCLEAR_PHRASE_MORE : ADDITIONAL_TAX_PHRASE_MORE;
   Object.keys(template).forEach(lang => {
     const name = COUNTRY_NAMES_MORE[lang][code];
     let phrase = template[lang](name);
@@ -14996,6 +15060,11 @@ function buildAlsoPayMore(code, qualifier){
 const ZERO_OFFSET_MORE ={ ar:'0 وون (تمت مقاصته بائتمان ضريبي)', bn:'০ ওন (কর ক্রেডিট দ্বারা অফসেট)', fr:"0 KRW (compensé par le crédit d'impôt)", hi:'₩0 (कर क्रेडिट द्वारा समायोजित)', id:'₩0 (dikompensasi kredit pajak)', ja:'0ウォン（税額控除で相殺）', kk:'0 вон (салық несиесімен есептелді)', km:'0 វ៉ុន (ទូទាត់ដោយឥណទានពន្ធ)', ky:'0 вон (салык кредити менен эсептелди)', lo:'0 ວອນ (ຫັກລ້າງດ້ວຍເຄຣດິດພາສີ)', mn:'0 вон (татварын хөнгөлөлтөөр нөхөгдсөн)', my:'၀ ဝမ်း (အခွန်ခရက်ဒစ်ဖြင့်ခုနှိမ်)', ne:'₩0 (कर क्रेडिटले अफसेट)', si:'0 වොන් (බදු ණයට වන්දි)', tl:'₩0 (na-offset ng tax credit)', ur:'0 وون (ٹیکس کریڈٹ سے پورا)', uz:'0 von (soliq krediti bilan qoplandi)' ,
   pt: `₩0 (compensado por crédito tributário)`, es: `₩0 (compensado por crédito fiscal)`, uk: `₩0 (зараховано за рахунок податкового кредиту)`, tet: `₩0 (compensa husi crédito impostu)`, de: `₩0 (durch Steuergutschrift ausgeglichen)`, nl: `₩0 (verrekend via belastingkrediet)`, sv: `₩0 (kvittat mot skattekredit)`, no: '₩0 (motregnet mot skattefradrag)', da: '₩0 (modregnet mod skattefradrag)', fi: '₩0 (kuitattu verohyvityksellä)', it: "₩0 (compensato dal credito d'imposta)", pl: "₩0 (skompensowane ulgą podatkową)", tr: '₩0 (vergi kredisiyle mahsup edildi)',
 };
+
+// ru/nl/la/uz/kg/mm_resident처럼 FTC 상계가 아예 없는 나라의 val2가 0이 되는 경우(세율 0 등 예외적 케이스)용 —
+// "세액공제로 상계"라고 하면 거짓 설명이 되므로 그냥 "₩0" 플레인 표기만. nl/la/ru가 각자 하드코딩하던
+// 동일 객체를 여기로 통합(4번째 나라부터 또 복붙하면 번역 오탈자 위험만 커짐).
+const ZERO_PLAIN_MORE = { km:'0 វ៉ុន', ne:'₩0', id:'₩0', my:'၀ ဝမ်း', si:'0 වොන්', uz:'0 von', mn:'0 вон', kk:'0 вон', ky:'0 вон', ur:'0 وون', bn:'০ ওন', lo:'0 ວອນ', ja:'0ウォン', ar:'0 وون', hi:'₩0', fr:'0 KRW', tl:'₩0', pt: `₩0`, es: `₩0`, uk: `₩0`, tet: `₩0`, de: `₩0`, nl: `₩0`, sv: `₩0`, no: '₩0', da: '₩0', fi: '₩0', it: "₩0", pl: "₩0", tr: '₩0' };
 
 // "0원 (근거 불명확 ⚠️)" — ZERO_OFFSET_MORE와 짝을 이루는, FTC 상계가 아니라 근거 자체가
 // 불명확해서 0원인 캄보디아 케이스용 (val2 표시, buildAdditionalTaxMore의 unclear 버전과 같은 문구)
