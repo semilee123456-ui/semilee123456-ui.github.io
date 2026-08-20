@@ -17706,3 +17706,59 @@ overflow보다 먼저 적용되는 순서라, `scrollHeight === clientHeight`로
 화면에서 내용이 잘린다"는 제보가 또 들어오면 이 패턴부터 의심해볼 것(해당 자식
 요소에 `overflow:hidden`이 걸려있는지, `flex-shrink:0`이 빠져있는지 확인).
 
+
+### 2026-08-20 이어서 — 제미나이 마케팅 제안 2라운드(15개) 검토 + 저비용 3개 구현
+
+1라운드(24개 — 첫 8개 메시지+이어진 16개 메시지, 아래에서 "1라운드"라고 지칭하면
+그 16개 메시지 쪽 번호를 말함, 5/6/4번이 여기 나옴)를 처리한 뒤 사용자가 제미나이의
+새 제안 15개를 추가로 전달(위젯 네트워크·도구 모음 페이지·결과 이미지 자동생성·
+실시간 잭팟 페이지·잭팟 금액별 SEO 페이지·당첨금 DB·기자용 자료·원본 데이터
+레퍼런스 페이지·내부 검색·UTM 태깅·공유문구 현지화·AI 팩트카드·llms.txt 구조·
+브랜드 검색·위젯 네트워크) — 이걸 "2라운드"로 지칭. "토큰 작은 것부터"로 재차
+요청 — 먼저 기존 자산과 겹치는지 확인(재조사 없이 실제 파일 존재로 판단):
+- **2라운드 #3(다운로드/복사/공유 3종) 이미 완료**: "이미지로 저장"/"결과 공유"/"결과 복사"
+  3개 버튼이 이미 다 있음(결과 복사는 직전 세션에서 추가).
+- **2라운드 #5(잭팟 금액별 SEO)·#6(당첨금 DB)·#8(원본 데이터 레퍼런스 페이지)도 이미 상당 부분 커버**:
+  `lottery-jackpot-amount.html`(금액별), `biggest-jackpot-payouts.html`/
+  `biggest-lottery-jackpots-after-tax.html`(당첨금 DB류), `lottery-tax-data-hub.html`
+  (50개 주+42개국+methodology, 이미 "레퍼런스 페이지") 전부 기존 존재 확인.
+- **2라운드 #11(공유문구 현지화) 이미 완료**: `buildResultShareText()`가 이미 26개+ 언어로
+  국가명까지 현지화된 공유문구를 생성함(직전 세션에서 리팩터한 함수).
+- **2라운드 #14(브랜드 검색 방어) 이미 완료**: 1라운드 감사에서 확인됨(재확인 안 함).
+
+실제로 구현한 저비용 3개(괄호 안은 몇 라운드 몇 번인지 — 세 라운드 모두 번호가
+1부터 다시 시작해서 겹치므로 반드시 라운드까지 같이 표기할 것):
+1. **Schema.org `WebApplication` 타입 보강(1라운드 #5/#6 일부)**: `index.html`의
+   `SoftwareApplication` JSON-LD를 `["SoftwareApplication", "WebApplication"]`
+   다중 타입 배열로 확장 — 필드 추가 없이 타입만 보강(JSON-LD 다중 타입은 표준
+   지원 패턴). PR #305.
+2. **`llms.txt` 정정+구조 보강(2라운드 #13)**: "21개국/26개 언어"로 낡아있던 걸 실제
+   "42개국/36개 언어"로 정정(AI가 이 파일을 인용원으로 읽으므로 방치하면 잘못된
+   정보를 퍼뜨릴 위험이 있었음 — 실제 버그). Core tools에 위젯 임베드 링크 추가,
+   "US state pages"(22개 주 페이지)·"Methodology and original data"(데이터허브)·
+   "Open dataset and API"(MCP 서버 추가) 섹션 신설 — 제미나이가 제안한 카테고리
+   (계산기/국가데이터/주데이터/방법론/원본데이터/API-MCP)로 재구성.
+3. **공유 URL에 UTM 파라미터 자동 부착(2라운드 #10)**: `buildResultShareText(utmSource)`가
+   `utm_source`(share/copy) + `utm_medium=calculator` + `utm_campaign=result_share`를
+   공유 URL에 붙임 — GA4가 자동 인식하는 표준 파라미터라 별도 GA 설정 불필요.
+   문의 폼 프리필용(`reportCalcIssue()`)은 외부에 공유되는 링크가 아니라서
+   태깅 안 함.
+
+**검증**: JSON-LD 5블록 `JSON.parse` 통과, `broken_link_audit`(144)·
+`fact_consistency_audit`(149)·`console_error_audit`(224)·`home_audit`(18) 전부
+`ISSUES: 0`. Playwright로 결과 복사 시 URL에 `utm_source=copy&utm_medium=calculator`
+실제로 붙는 것 확인. `script.min.js?v=20260820-4`, `sw.js` CACHE_NAME v90.
+
+**⚠️ 다음 세션 참고 — 아직 미착수인 2라운드 제안 (스코프 큰 순, 번호는 전부 2라운드
+기준)**: 위젯 네트워크(2라운드 #1/#15, 같은 아이디어의 반복 제안 — 코딩보다 실제
+외부 사이트 유치가 핵심이라 홍보/영업 문제에 가까움)·"무료 도구 모음" 허브
+페이지(2라운드 #2, 새 페이지지만 순수 링크 모음이라 저비용으로 가능 — 다음 후보)·
+실시간 잭팟 전용 SEO 페이지(2라운드 #4, "Powerball Jackpot Today" 류, 새 페이지+
+실시간 데이터 바인딩 필요, 단 `lottery-jackpot-amount.html`이 이미 부분적으로
+같은 역할 — 2026-08-20 후속 세션에서 국가별 퀵링크 보강함)·AI용 Quick Facts
+카드(2라운드 #12, 트러스트 패널과 일부 중복이라 설계 판단 필요)·REST API(1라운드
+#4, GitHub Pages 정적 호스팅이라 별도 서버 인프라 결정부터 필요, 사용자 판단
+대기) — 이 3개만 남음. "무료 도구 모음"(#2)·"기자용 자료 강화"(#7)·"내부
+검색"(#9)은 각각 sitemap.html/press-kit.html이 이미 충분히 커버하거나
+2026-08-20 후속 세션에서 처리 완료.
+
