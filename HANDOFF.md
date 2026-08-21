@@ -433,6 +433,15 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
 
 ## 알려진 미해결 항목
 
+- **`GEMINI-REVIEW-uncertain-countries-2026-08-21.md` — 몽골·캄보디아·태국·스리랑카·
+  미얀마·필리핀 6개국 세금 사실관계 제미나이 교차검증 아직 결과 안 옴.** 사용자가 검수
+  결과를 가져오면 `script.js`/`mcp-server/tax-data.js`/각 랜딩페이지/
+  `data/country-lottery-tax-rates.json`의 `confidence` 필드까지 같이 갱신할 것 — 결과
+  받기 전엔 임의로 estimate→verified 올리지 말 것.
+- **`us-lottery-tax-data`(별도 GitHub 저장소, Kaggle/Hugging Face에도 배포)에 2026-08-21에
+  이 저장소에서 고친 것과 같은 FTC 데이터 버그(인도네시아/우즈베키스탄/키르기스스탄/
+  미얀마)가 있을 가능성 높음** — 이 세션은 저장소 스코프 밖이라 손 못 댐, 다음 세션이
+  `add_repo`로 추가해 확인·수정할 것(사용자에게도 알림).
 - **새 당첨 회차가 나올 때마다 반드시 확인할 3곳(자동 Routine이 이미 처리하지만, 수동으로
   다룰 때를 위한 체크리스트)**:
   1. `LATEST_DRAW.powerball`/`LATEST_DRAW.megamillions`(date/numbers/special) — 홈 화면
@@ -669,50 +678,17 @@ resident" 등 실제 검색 결과에 `chamtax.com`은 전혀 안 나옴(TheLott
 
 ## 작업 이력 (날짜순, 세션마다 맨 아래에 새 항목 추가)
 
-이보다 오래된 세션 기록(~2026-08-20 무료 홍보 디렉터리/데이터셋 카탈로그 실사 검증까지)은
+이보다 오래된 세션 기록(~2026-08-20 결과 버튼 줄 좁은 화면 글씨 겹침 수정까지)은
 `HANDOFF-ARCHIVE.md` 참고(특정 과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독
-아님). 이 본문에는 최근 세션(결과 버튼 줄(공유/저장/복사) 좁은 화면 글씨 겹침 수정,
-국가별 세금 비교 페이지 36개 언어 전체 다국어화, index.html 시의성 SEO 문구 evergreen화)
+아님). 이 본문에는 최근 세션(국가별 세금 비교 페이지 36개 언어 전체 다국어화,
+index.html 시의성 SEO 문구 evergreen화, 확신도 낮은 6개국 세금 사실관계 제미나이
+교차검증 요청 + id/uz/kg/mm FTC 데이터 동기화 버그 수정)
 기록만 남겨둠 — 날짜별 항목이 3~4개를 다시 넘어가면 가장 오래된 날짜부터 또 이
 방식으로 정리할 것(같은 패턴 반복,
 `HANDOFF-ARCHIVE.md` 맨 뒤에 이어 붙이면 됨. **참고**: 세션 로그를 쓸 때는 반드시
 `### YYYY-MM-DD ...` 헤더로 시작할 것 — 헤더 없이 이어붙인 기록은 "몇 개가 쌓였는지" 셀 수
 없어서 이 정리 규칙 자체가 무력화됨, 2026-08-20 정리 세션에서 실제로 헤더 없는 기록이
 방치돼있던 걸 발견해 뒤늦게 헤더를 붙여 아카이브함).
-
-### 2026-08-20 이어서 — 결과 버튼 줄(공유/저장/복사) 좁은 화면에서 글씨 겹침·잘림 버그 수정
-
-사용자가 홈 화면 결과 버튼 3개("이 결과 공유하기"/"이미지로 저장"/"결과 복사")가
-가로로 나란히 있는 줄(`.home-result-btn-row`) 스크린샷을 공유 — 라벨이 서로 겹치거나
-중간에 잘려 보이는 상태("공유하기"의 "기"가 안 보이고, "이미지로"가 다른 요소와 겹침).
-
-**원인**: 이 줄은 원래 "공유하기"+"이미지로 저장" 텍스트 버튼 2개(+TTS 아이콘 44px
-고정) 기준으로 설계·튜닝됐던 레이아웃(360px 이하에서만 장식용 이모지를 숨기는 미디어
-쿼리 등, 2026-08-13 커밋 코멘트에 상세 기록됨). 그런데 최근 세션(제미나이 제안 #14)에서
-"결과 복사" 버튼이 추가되며 텍스트 버튼이 2개→3개로 늘었는데, 이 레이아웃 튜닝은
-그대로 남아있었음 — `min-width:0`인 `flex:1` 버튼 3개가 좁은 화면에서 한도 끝도 없이
-줄어들다 라벨끼리 겹치거나 잘리는 회귀가 발생. Playwright로 320~600px 스윕 재현
-(390~480px 구간에서 가장 심하게 겹침 확인).
-
-**수정**: `.home-result-btn-row .share-btn`에 `min-width:128px` 지정 + 부모 줄에
-`flex-wrap:wrap` 추가 — 버튼이 그 폭 아래로는 줄어들지 않고, 대신 화면이 좁으면
-버튼 "단위"로 다음 줄에 통째로 넘어가게 함(버튼 안 텍스트가 아니라 버튼 자체가
-줄바꿈되니 겹침·잘림이 구조적으로 불가능해짐). 이모지 숨김 임계값도 버튼 2개→3개
-기준에 맞춰 360px→480px로 상향(안 그러면 min-width+wrap으로 겹침은 없어져도 불필요한
-줄바꿈만 늘어남).
-
-**검증**: Playwright로 320/360/390/414/480/600/900px 전부 스크린샷+`labelScrollWidth ≤
-btnWidth` DOM 체크(모든 버튼에서 텍스트 오버플로우 없음 확인) — 좁은 화면은 버튼이
-세로로 깔끔하게 쌓이고, 900px 데스크톱은 원래 의도했던 한 줄 배치 유지. 회귀 테스트
-전체(`fact_consistency_audit` 150개·`drift_consistency_test` 29개국·`broken_link_audit`
-145개·`console_error_audit` 224개) `ISSUES: 0`. `script.js` 미변경, `styles.css`만
-변경 — CI가 머지 후 `styles.min.css` 자동 재빌드.
-
-**⚠️ 다음 세션 참고**: 이 저장소는 "버튼/카드를 N개→N+1개로 늘릴 때 기존 좁은-화면
-레이아웃 튜닝(미디어 쿼리 임계값, min-width 등)을 안 건드리고 그대로 두는" 패턴의
-회귀가 반복되고 있음(직전 "꾸며서 저장하기" 모달 스크롤 버그도 유사 계열) — 앞으로
-기존 flex 줄에 요소를 추가하는 작업이 있으면 그 즉시 320~480px 폭에서 실측
-스크린샷을 찍어볼 것, 나중에 사용자 제보로 발견하지 말고 먼저 확인하는 습관 필요.
 
 ### 2026-08-20 이어서 — 국가별 세금 비교 페이지(lottery-tax-by-country.html) 6개 언어 다국어화
 
@@ -872,3 +848,62 @@ uz/uk/sv/no/da/fi/tet 25개)를 순차적으로 병렬 서브에이전트 배치
 styles.css 아님).
 
 **"알려진 미해결 항목"에서 이 항목 제거함** — 완전히 해결됨, 재조사 불필요.
+
+### 2026-08-21 이어서 — 확신도 낮은 6개국 세금 사실관계 제미나이 교차검증 요청 + id/uz/kg/mm FTC 데이터 동기화 버그 발견·수정
+
+사용자가 "터키 사례처럼 이색적인 국가별 세법 구조 롱테일 콘텐츠를 더 만들자"고 제안 —
+조사해보니 이 전략은 이미 터키 하나가 아니라 네덜란드(Kansspelbelasting)·러시아(조약
+정지)·파키스탄(슈퍼택스)·라오스(조약 없음) 등 여러 나라에서 법조문·조약 조항까지
+인용해 이미 실행돼 있었음(41개국+영어권 8개, 전 국가 랜딩페이지 존재 확인). "새 국가
+찾기"보다 아직 `confidence: estimate/approximate`로 남아있는 6개국(몽골·캄보디아·
+태국·스리랑카·미얀마·필리핀 — 제미나이 교차검증을 받은 적 없는 나라들)을 터키급으로
+승격시키자고 제안, 사용자 승인 받아 진행.
+
+**과정에서 발견한 실제 버그(원래 계획엔 없었음)**: `data/country-lottery-tax-rates.json`
+(공개 데이터셋, Kaggle/Hugging Face/GitHub `us-lottery-tax-data`에 배포)과 `script.js`의
+`TAX_MODEL`을 교차 대조하다가, **인도네시아·우즈베키스탄·키르기스스탄·미얀마 4개국이
+실제로는 FTC(외국납부세액공제)가 안 되는데(2026-08-20 세션이 이미 `script.js`에서
+정정해둠) 데이터셋엔 "FTC applied"로 남아있는** 걸 발견 — take-home %가 실제보다
+12~25%p 높게 표시되고 있었음. 근본 원인 추적 결과 `mcp-server/tax-data.js`(MCP 서버가
+쓰는 손동기화 사본, "Last synced: 2026-08-18")가 2026-08-20 정정을 놓쳤고, 이 파일에서
+`data/*.json|csv`를 생성하는 `scripts/build-lottery-tax-data-hub.js` 자체에도 별도
+하드코딩된 `COUNTRY_META` 사본이 있어 총 3곳이 동시에 낡아있었음 — **`calculate_lottery_takehome`
+MCP 툴 자체도 이 4개국에서 틀린 답을 내고 있었음**.
+
+**수정**: `mcp-server/tax-data.js`·`scripts/build-lottery-tax-data-hub.js`의 `COUNTRY_META`
+둘 다 `ftcAvailable:false`로 정정 + 근거 코멘트 추가, 빌드 스크립트 재실행으로
+`data/country-lottery-tax-rates.{json,csv}` 재생성(id 30→55%, uz 30→42%, kg 30→40%,
+mm 30→55% 총세율로 정정), `lottery-tax-data-hub.html`의 렌더링된 표도 직접 패치,
+빌드 스크립트의 하드코딩된 `TODAY` 상수(여태 2026-08-18로 박혀있었음)도 오늘 날짜로
+갱신. **재발 방지**: `tests/mcp_sync_check.js` 신설 — `script.js` TAX_MODEL과
+`mcp-server/tax-data.js` FLAT_COUNTRY_MODEL 간 세율/FTC 불일치를 잡는 정적 테스트(단,
+소수 리터럴이 아닌 수식 세율(인도 등)이나 세율 필드 자체가 없는 무과세 국가는 커버
+못 함 — 41개국 중 약 16개국만 체크, 저비용 스모크 테스트로 설계).
+
+**제미나이 검수 요청 파일 작성**: `GEMINI-REVIEW-uncertain-countries-2026-08-21.md` —
+6개국(몽골·캄보디아·태국·스리랑카·미얀마·필리핀) 세금 사실관계만 다룸(신규 번역 없어서
+번역 품질 섹션은 없음). 우선순위: 태국(FTC 여부 자체가 불확실) > 스리랑카(2025년 신설
+15% 송금우대세율이 복권에도 적용되는지) > 몽골 > 필리핀 > 캄보디아 > 미얀마(이미 확신도
+높은 편, 참고용). **아직 제미나이 교차검증 결과를 받지 못한 상태** — 다음 세션이 사용자
+로부터 검수 결과를 받으면 그에 따라 `script.js`/`mcp-server/tax-data.js`/랜딩페이지/
+`data/country-lottery-tax-rates.json`의 `confidence` 필드까지 갱신할 것(이번엔 세율
+자체를 estimate→verified로 올리지 않음 — 제미나이 확인 전에 임의로 신뢰도를 올리는 건
+근거 없는 자기확신이라 판단).
+
+**검증**: `node --check` (script.js/mcp-server/tax-data.js/scripts/build-lottery-tax-data-hub.js),
+`tests/mcp_sync_check.js`(15개국 ISSUES:0)·`drift_consistency_test`(29개국 ISSUES:0)·
+`fact_consistency_audit`(185개 파일 ISSUES:0) 전부 통과. `mcp-server/tax-data.js`가
+수치 계산 함수라 `calculateTakeHome(500000000, 'mm')` 등 4개국 직접 호출로도 재확인.
+
+**⚠️ 다음 세션 참고**:
+- `us-lottery-tax-data`(별도 GitHub 저장소, Kaggle/Hugging Face에도 같은 데이터 배포)에도
+  같은 FTC 버그가 있을 가능성이 높음 — 이 세션은 저장소 접근 범위 밖이라(이 세션은
+  `semilee123456-ui.github.io`로 스코프 고정) 손대지 못함. 사용자에게 알림, 원하면
+  다음 세션에서 `add_repo`로 추가해 같이 고칠 것.
+- `data/*.json|csv`는 **`scripts/build-lottery-tax-data-hub.js`로만 재생성할 것**(수동
+  편집 금지) — 이 스크립트가 `mcp-server/tax-data.js`를 유일한 소스로 삼고, 그 안의
+  `COUNTRY_META`도 별도 손동기화 대상이라는 걸 잊지 말 것(주석에 이미 명시돼 있었는데
+  이번에 3곳 다 낡아있었던 전례).
+- `TAX_MODEL`(script.js)을 고치는 세션은 반드시 같은 배치에서 `mcp-server/tax-data.js`도
+  같이 고치고 `tests/mcp_sync_check.js`를 돌릴 것 — 이 파일은 자동 동기화가 아니라서
+  또 놓칠 수 있음.
