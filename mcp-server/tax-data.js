@@ -6,12 +6,18 @@
 // Node context — it intentionally drops the 30+-language label strings, keeping
 // only the math and a short English note per country. If the rates in script.js
 // change, this file needs to be updated to match by hand; it is NOT auto-generated
-// and there is no build step wiring the two together. Last synced with script.js: 2026-08-18
+// and there is no build step wiring the two together. Last synced with script.js: 2026-08-21
 // (added the 21 countries introduced between 2026-08-16 and 2026-08-18: ca, tw, hk, uk,
 // au, mx, fr, nz, ie, sg, za, my, de, nl, sv, no, da, fi, it, pl, tr — all of them fit the
 // existing generic flat-rate + optional-FTC shape below, none needed bracket logic like
 // kr/pk, so they were folded straight into FLAT_COUNTRY_MODEL rather than given their own
-// branches).
+// branches. 2026-08-21: picked up a 2026-08-20 script.js correction this file had missed —
+// id/uz/kg/mm all had `ftcAvailable: true` here while script.js's TAX_MODEL had already
+// been corrected to `ftc_available: false` for all four (Indonesia's Art.24 domestic
+// credit excludes this final-tax category; Uzbekistan/Kyrgyzstan's 1973 US-USSR treaty
+// has no general FTC article; Myanmar has no US treaty at all) — this silently made the
+// MCP tool's answers wrong for those 4 countries until this fix. See
+// data/country-lottery-tax-rates.json for the downstream dataset fix this also required).
 //
 // Every "additional country tax" branch below assumes the amount you pass in is
 // the actual payout you're evaluating (e.g. lump-sum cash value), not an announced
@@ -107,17 +113,17 @@ const FLAT_COUNTRY_MODEL = {
   cn: { rate: 0.20, ftcAvailable: true, note: 'China: incidental income tax, flat rate.' },
   in: { rate: 0.30 * 1.25 * 1.04, ftcAvailable: true, note: 'India: 30% base + 25% surcharge + 4% cess, no deductions (Sec 115BB).' },
   vn: { rate: 0.10, ftcAvailable: true, note: 'Vietnam: prize income tax, flat rate; FTC via domestic law, not a tax treaty (US-VN treaty not yet in force).' },
-  id: { rate: 0.25, ftcAvailable: true, note: 'Indonesia: lottery winnings final tax, flat rate.' },
+  id: { rate: 0.25, ftcAvailable: false, note: 'Indonesia: lottery winnings final tax, flat rate; no FTC (Art. 24 domestic credit procedure excludes this Art. 4(2) final-tax category, and no treaty-based relief confirmed) — stacks in full.' },
   ph: { rate: 0.35, ftcAvailable: true, note: 'Philippines: approximated at the top progressive bracket (foreign lottery winnings do not get the 20% local-lottery final tax rate).' },
   th: { rate: 0.35, ftcAvailable: true, note: '⚠️ Thailand: no clear official guidance found for foreign lottery winnings; approximated at the top personal income tax bracket.' },
   jp: { rate: 0.55945 * 0.5, ftcAvailable: true, note: 'Japan: foreign lottery winnings are "temporary income" (ichiji shotoku) with 1/2 inclusion, approximated at the top effective rate.' },
   ru: { rate: 0.22, ftcAvailable: false, note: '⚠️ Russia: FTC believed unavailable — the US-Russia tax treaty\'s double-taxation article has been suspended since 2023.' },
   np: { rate: 0.25, ftcAvailable: true, note: 'Nepal: "windfall gain" flat final tax (lottery, gifts, prizes).' },
   lk: { rate: 0.36, ftcAvailable: true, note: '⚠️ Sri Lanka: approximated at the top progressive bracket; a possible 15% preferential rate for remitted foreign income has unclear applicability to lottery winnings.' },
-  uz: { rate: 0.12, ftcAvailable: true, note: 'Uzbekistan: flat rate on all personal income.' },
+  uz: { rate: 0.12, ftcAvailable: false, note: 'Uzbekistan: flat rate on all personal income; no FTC (US-Uzbekistan relations still run on the 1973 US-USSR treaty, which has no general "other income" or double-tax-relief article covering lottery winnings) — stacks in full.' },
   kz: { rate: 0.10, ftcAvailable: true, note: 'Kazakhstan: flat rate on "winnings"-category income for residents.' },
-  kg: { rate: 0.10, ftcAvailable: true, note: 'Kyrgyzstan: flat rate on personal income including winnings.' },
-  mm: { rate: 0.25, ftcAvailable: true, note: 'Myanmar: approximated at the top bracket for "income from other sources".' },
+  kg: { rate: 0.10, ftcAvailable: false, note: 'Kyrgyzstan: flat rate on personal income including winnings; no FTC (same 1973 US-USSR treaty as Uzbekistan, no general foreign-tax-credit article; no unilateral domestic relief found) — stacks in full.' },
+  mm: { rate: 0.25, ftcAvailable: false, note: 'Myanmar: approximated at the top bracket for "income from other sources"; no FTC (no US-Myanmar tax treaty in force) — stacks in full.' },
   bd: { rate: 0.25, ftcAvailable: true, note: 'Bangladesh: flat rate on "income from other sources" (prizes).' },
   kh: { rate: 0, ftcAvailable: true, note: '⚠️ Cambodia: no clear legal basis found for taxing personal lottery/prize income — treated as 0 pending verification, NOT a confirmed exemption.' },
   mn: { rate: 0.40, ftcAvailable: true, note: '⚠️ Mongolia: approximated at 40% per PwC Worldwide Tax Summaries ("Lotteries (net)"); not independently verified against primary legislation.' },
