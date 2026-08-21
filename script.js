@@ -363,11 +363,12 @@ function resolveI18n(key){
 
 const RTL_LANGS = ['ar', 'ur']; // 아랍어·우르두어는 오른쪽에서 왼쪽으로 읽는 언어
 
-// 2026-08-20: "8개국 나란히 비교하기" 링크(lottery-tax-by-country*.html) — 이 비교 페이지는
-// 현재 6개 언어(en/ko/zh/vi/hi/ja)만 번역돼 있고 나머지 30개 언어는 여전히 영어판만 있음.
-// currentLang이 번역된 6개 중 하나면 그 언어판으로, 아니면 영어판(기본 파일, 접미사 없음)으로
-// href를 스왑함 — applyTranslations()가 언어 전환마다 호출하므로 매번 동기화됨.
-const COMPARE_COUNTRIES_PAGE_LANGS = ['en', 'ko', 'zh', 'vi', 'hi', 'ja'];
+// 2026-08-20: "8개국 나란히 비교하기" 링크(lottery-tax-by-country*.html) — 처음엔 6개 언어만
+// 번역돼 있었으나(en/ko/zh/vi/hi/ja) 이후 이 세션에서 이 사이트가 지원하는 35개 i18n 언어
+// 전부(+한국어) 번역판을 추가해 36개 언어 전부 커버됨. currentLang에 맞는 언어판으로 href를
+// 스왑함 — applyTranslations()가 언어 전환마다 호출하므로 매번 동기화됨. 영어만 접미사 없는
+// 기본 파일(lottery-tax-by-country.html)이고 나머지는 전부 "-{lang}" 접미사.
+const COMPARE_COUNTRIES_PAGE_LANGS = ['ar','bn','da','de','en','es','fi','fr','hi','id','it','ja','kk','km','ko','ky','lo','mn','my','ne','nl','no','pl','pt','ru','si','sv','tet','th','tl','tr','uk','ur','uz','vi','zh'];
 function updateCompareCountriesLink(){
   const a = document.getElementById('compareCountriesLink');
   if (!a) return;

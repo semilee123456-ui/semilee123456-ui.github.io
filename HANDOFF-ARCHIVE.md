@@ -17762,3 +17762,57 @@ overflow보다 먼저 적용되는 순서라, `scrollHeight === clientHeight`로
 검색"(#9)은 각각 sitemap.html/press-kit.html이 이미 충분히 커버하거나
 2026-08-20 후속 세션에서 처리 완료.
 
+
+### 2026-08-20 이어서 — 제미나이 2라운드 나머지 저비용 항목 전부 구현 + EN 링크 번역 버그 수정
+
+사용자가 "네가 혼자 할 수 있는 거 빠짐없이 전부 해줘"라고 요청 — 인프라 결정이
+필요한 것(REST API)과 실제 외부 사이트 유치가 핵심인 것(위젯 네트워크)만 빼고,
+순수 코딩으로 끝낼 수 있는 나머지 전부 진행.
+
+**사용자 제보 버그 먼저 수정**: 홈 화면 "See 8 countries side by side →" 링크가
+한국어 UI에서도 영어로 남아있어 번역 누락처럼 보인다는 스크린샷 지적. 대상 페이지
+(`lottery-tax-by-country.html`)가 여전히 영어 전용이라 완전 번역 대신, 라벨은
+번역하되 "(EN)" 접미사로 클릭 시 영어 페이지로 이동함을 안내(영어 UI에서는
+"(EN)" 생략) — 새 i18n 키 `home.compareCountriesLink` 35개 언어 번역.
+
+**2라운드 나머지 구현**:
+- **changelog.html 신설**(#9): 실제 세율/환율/계산로직 정정만 선별해 날짜순
+  정리(전체 git 로그가 아니라 "숫자가 바뀐 변경"만, 각 항목은 실제 커밋
+  날짜·해시로 검증). sitemap.html/sitemap.xml/press-kit.html에서 링크 연결.
+- **Schema.org 보강**: `DataCatalog`(lottery-tax-data-hub.html, 기존 Dataset
+  2개를 감싸는 카탈로그)·`ImageObject`(index.html Dataset 블록) — 1라운드 #5
+  잔여 항목.
+- **잭팟 페이지 국가별 퀵링크**: `lottery-jackpot-amount.html`(+en/+zh)에 "나라
+  마다 실수령액이 얼마나 다른지" 5개 링크(한국/영국/일본/호주/캘리포니아 +
+  42개국 데이터허브) 추가, 낡은 업데이트 날짜(08-03) 정정.
+- **sitemap.html 실시간 검색**: 145개 페이지 전부에 검색바를 넣는 대신, 이미
+  전체 목록을 가진 sitemap.html을 실시간 필터링 가능하게 만듦(별도 검색엔진/
+  색인 없이 기존 `<li>` 텍스트 필터링, 매칭 없는 섹션은 헤딩까지 자동 숨김).
+  새 SM_I18N 키 2개(이 파일 전용 자체 i18n 객체, build-i18n.js 안 씀) 35개
+  언어 번역.
+
+**재확인 후 스킵한 항목**("이미 있음"으로 판단, 새로 안 만듦):
+- "무료 도구 모음 페이지"(#2) — sitemap.html의 "계산기 & 핵심 도구" 섹션이
+  이미 같은 역할.
+- "기자용 자료 강화"(#7) — press-kit.html이 이미 fact-grid/국가별 테이블/
+  인용 가이드/브랜드 자산까지 충분히 갖춤.
+
+**동시 세션**: 이 세션 진행 중 다른 세션들이 PR #306(annotate 모달 스크롤
+수정)·#308(HANDOFF.md 대규모 정리, 1,626→849줄)을 병행 머지 — 매번
+`git fetch origin main` 후 merge·충돌 해결·재검증 후 push.
+
+**검증**: 매 PR마다 JSON-LD 검증 + `broken_link_audit`(145)·
+`fact_consistency_audit`(150)·`i18n_coverage_audit`·`i18n_attr_lint`·
+`console_error_audit`(224)·`home_audit`(18) `ISSUES: 0` 확인, Playwright로
+실제 클릭/검색/렌더링 결과까지 검증 후 머지(PR #309~311).
+
+**⚠️ 다음 세션 참고 — 진짜 남은 것은 3개뿐**:
+- **REST API**(1라운드 #4): GitHub Pages 정적 호스팅이라 별도 서버(Cloudflare
+  Worker 등) 구축 여부부터 사용자 결정 필요 — 이 세션이 임의로 인프라를 늘리지
+  않음.
+- **위젯 네트워크**(2라운드 #1/#15): `widget-embed.html`은 이미 완성돼 있음,
+  남은 건 실제로 다른 사이트가 갖다 쓰게 만드는 홍보/영업 문제라 코딩으로 할 수
+  있는 부분은 끝남.
+- **AI Quick Facts 카드**(2라운드 #12): 트러스트 패널("왜 믿을 수 있나요?")과
+  상당 부분 중복이라, 새로 만들 가치가 있는지 사용자 판단 필요.
+
