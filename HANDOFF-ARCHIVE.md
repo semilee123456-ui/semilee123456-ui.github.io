@@ -17816,3 +17816,38 @@ overflow보다 먼저 적용되는 순서라, `scrollHeight === clientHeight`로
 - **AI Quick Facts 카드**(2라운드 #12): 트러스트 패널("왜 믿을 수 있나요?")과
   상당 부분 중복이라, 새로 만들 가치가 있는지 사용자 판단 필요.
 
+
+### 2026-08-20 이어서 — 무료 홍보 디렉터리/데이터셋 카탈로그 실사 검증 (제출은 계정가입 필요해 사용자 몫)
+
+사용자가 "점검/측정/분석 말고 실제로 사람을 데려오는 무료 홍보"를 요청하며 제미나이의
+15개 아이디어(디렉터리 등록/데이터셋 카탈로그/쇼케이스 등) 전달, "가입해서 커뮤니티
+활동"은 명시적으로 제외. 서브에이전트로 실제 방문 검증(WebFetch) 진행.
+
+**검증 결과 — 6곳 확정(전부 실재+2026년 현재 무료+관련성 높음)**:
+- 계산기용 3곳: **SaaSHub**(saashub.com/submit), **AlternativeTo**
+  (alternativeto.net/manage/new), **Indie Hackers Products**
+  (indiehackers.com/products, "Add Your Product")
+- 데이터셋용 3곳: **Hugging Face Datasets**(huggingface.co/new-dataset),
+  **Zenodo**(DOI 자동 발급), **Figshare**(개인 가입 가능, 20GB)
+
+**조사했지만 제외한 곳(이유)**: Uneed.best(2026-08-17부로 무료 신규접수 중단 확인)·
+BetaList(사실상 유료화, 무료는 대기만 2~4개월)·Futurepedia/There's An AI For That
+(AI 도구 전용이라 카테고리 부적합)·ToolDirs(재무 카테고리 자체가 없음)·
+**공공데이터포털**(data.go.kr — 직접 확인 결과 공공기관 전용 채널, 개인/민간 제공자
+등록 기능 없음, 명확히 부적합)·AWS Open Data Registry(AWS 리소스 호스팅이 전제조건이라
+비용 대비 실익 낮음)·data.world(접속 반복 차단돼 검증 불가)·Awesome Public Datasets
+(소규모 참조데이터 채택 여부 불확실).
+
+**이미 완료로 재확인**: Kaggle(기존 완료), Google Dataset Search(별도 제출 없이
+schema.org Dataset/DataCatalog 마크업만으로 자동 색인 — 2026-08-20 앞선 세션에서 이미
+반영됨).
+
+**제출용 카피 키트 작성**: 계산기/데이터셋 각각 한 줄·짧은 설명·중간 설명·태그·
+로고/OG이미지 링크를 정리해 `SendUserFile`로 전달함(사이트 코드와 무관한 홍보 카피라
+이 저장소엔 원문 안 남김).
+
+**⚠️ 다음 세션 참고 — 이 6곳은 전부 이메일 계정 가입이 전제조건이라 이 세션이 대신
+완결할 수 없음(인증 메일을 세션이 대신 받을 방법이 없음)** — 실제 제출·계정 생성은
+전적으로 사용자 몫. 다음 세션은 이 6곳을 다시 조사하지 말고, 사용자가 "제출 다 했다"
+또는 "이것도 검토해줘"라고 새로 가져오는 경우에만 대응할 것.
+
