@@ -433,10 +433,6 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
 
 ## 알려진 미해결 항목
 
-- **`us-lottery-tax-data`(별도 GitHub 저장소, Kaggle/Hugging Face에도 배포)에 2026-08-21에
-  이 저장소에서 고친 것과 같은 FTC 데이터 버그(인도네시아/우즈베키스탄/키르기스스탄/
-  미얀마)가 있을 가능성 높음** — 이 세션은 저장소 스코프 밖이라 손 못 댐, 다음 세션이
-  `add_repo`로 추가해 확인·수정할 것(사용자에게도 알림).
 - **새 당첨 회차가 나올 때마다 반드시 확인할 3곳(자동 Routine이 이미 처리하지만, 수동으로
   다룰 때를 위한 체크리스트)**:
   1. `LATEST_DRAW.powerball`/`LATEST_DRAW.megamillions`(date/numbers/special) — 홈 화면
@@ -911,3 +907,17 @@ mm 30→55% 총세율로 정정), `lottery-tax-data-hub.html`의 렌더링된 �
 설계돼 있어 실무적 방어막은 충분하다고 판단. **이 6개국 건은 여기서 종결** — 다음
 세션이 임의로 재조사·재검토 시작하지 말 것(실제로 새로운 검증 가능한 1차 근거를
 사용자가 가져오는 경우에만 예외).
+
+**2026-08-21 후속 3차 — `us-lottery-tax-data` 외부 저장소도 같은 FTC 버그 확인·수정**:
+사용자가 "홈페이지 전체로 봤을 때 더 할일 있냐"고 물어 이 저장소 목록에 남겨뒀던
+외부 저장소 확인을 제안, 사용자 승인 받아 `add_repo`로 추가 후 확인. **예상대로 같은
+FTC 버그(인도네시아/우즈베키스탄/키르기스스탄/미얀마, `data.json`/`data.csv` 둘 다
+"FTC applied"로 표기, take-home이 실제보다 12~25%p 높게 표시)가 그대로 있었음.**
+main 저장소에서 이미 정정된 `data/country-lottery-tax-rates.json`과 전체 41개국 교차
+대조해서 이 4개국 외 다른 drift는 없음을 확인한 뒤, `data.json`/`data.csv`/`README.md`
+("3개국→7개국" 카운트 정정)/`CITATION.cff`(1.0.0→1.0.1, 인용 버전 정정) 수정, 이
+저장소에는 PR/브랜치 관례가 없어(단일 커밋 히스토리, 직접 push 확인) `main`에 바로
+push함(https://github.com/semilee123456-ui/us-lottery-tax-data 커밋 `dc24943`).
+**이걸로 이 세션이 시작한 FTC 데이터 동기화 버그 건은 3곳(script.js가 원본, 그리고
+그 파생물인 이 사이트의 `data/*.json|csv`+`lottery-tax-data-hub.html`, 그리고 이
+외부 저장소) 전부 완결.**
