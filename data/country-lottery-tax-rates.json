@@ -1,7 +1,7 @@
 {
   "source": "https://chamtax.com/lottery-tax-data-hub.html",
   "license": "CC0-1.0 (public domain) — attribution to ChamTax (chamtax.com) appreciated but not required",
-  "lastUpdated": "2026-08-18",
+  "lastUpdated": "2026-08-21",
   "methodology": "US federal withholding on lottery/gambling winnings for non-resident aliens is a flat 30% (IRC §871(a)). effective_total_tax_pct_at_500m_usd is the combined US + home-country effective rate computed by ChamTax’s calculation engine for a $500,000,000 lump-sum payout (chosen because it is large enough that every country’s top-bracket/flat-rate approximation applies), after any Foreign Tax Credit the country’s law/treaty allows. confidence: \"verified\" = primary statute/treaty/official guidance found; \"approximate\" = reasonable secondary-source estimate, some structural simplification; \"estimate\" = best-effort, no authoritative primary source found — see chamtax.com’s per-country landing pages for full citations.",
   "unit": "percent (except country_code, country_name, tax_authority, confidence, tax_structure_notes)",
   "rows": [
@@ -60,10 +60,10 @@
       "name": "Indonesia",
       "authority": "Directorate General of Taxes/IRS",
       "confidence": "verified",
-      "structure": "Flat 25% final tax on lottery winnings, FTC applied",
+      "structure": "Flat 25% final tax on lottery winnings, no FTC (domestic final-tax credit procedure under Art. 24 excludes this Art. 4(2) final-tax category; treaty-based relief unconfirmed) — stacks in full on top of US withholding",
       "usWithholdingPct": 30,
-      "effectiveTotalTaxPct500M": 30,
-      "takeHomePct500M": 70
+      "effectiveTotalTaxPct500M": 55,
+      "takeHomePct500M": 45
     },
     {
       "code": "ph",
@@ -130,10 +130,10 @@
       "name": "Uzbekistan",
       "authority": "State Tax Committee/IRS",
       "confidence": "verified",
-      "structure": "Flat 12% on all personal income, FTC applied",
+      "structure": "Flat 12% on all personal income, no FTC (US-Uzbekistan relations still run on the 1973 US-USSR treaty, with no general \"other income\" or double-tax-relief article covering lottery winnings) — stacks in full on top of US withholding",
       "usWithholdingPct": 30,
-      "effectiveTotalTaxPct500M": 30,
-      "takeHomePct500M": 70
+      "effectiveTotalTaxPct500M": 42,
+      "takeHomePct500M": 58
     },
     {
       "code": "kz",
@@ -150,20 +150,20 @@
       "name": "Kyrgyzstan",
       "authority": "State Tax Service/IRS",
       "confidence": "verified",
-      "structure": "Flat 10% on personal income including winnings, FTC applied",
+      "structure": "Flat 10% on personal income including winnings, no FTC (same 1973 US-USSR treaty as Uzbekistan, no general foreign-tax-credit article; no unilateral domestic relief found) — stacks in full on top of US withholding",
       "usWithholdingPct": 30,
-      "effectiveTotalTaxPct500M": 30,
-      "takeHomePct500M": 70
+      "effectiveTotalTaxPct500M": 40,
+      "takeHomePct500M": 60
     },
     {
       "code": "mm",
       "name": "Myanmar",
       "authority": "Internal Revenue Department (IRD)/IRS",
       "confidence": "approximate",
-      "structure": "Approximated at the top bracket (25%) for \"income from other sources\", FTC applied",
+      "structure": "Approximated at the top bracket (25%) for \"income from other sources\", no FTC (no US-Myanmar tax treaty in force) — stacks in full on top of US withholding",
       "usWithholdingPct": 30,
-      "effectiveTotalTaxPct500M": 30,
-      "takeHomePct500M": 70
+      "effectiveTotalTaxPct500M": 55,
+      "takeHomePct500M": 45
     },
     {
       "code": "bd",

@@ -28,7 +28,7 @@ const ROOT = path.join(__dirname, '..');
 const DATA_DIR = path.join(ROOT, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-const TODAY = '2026-08-18';
+const TODAY = '2026-08-21';
 
 // ---------------------------------------------------------------------------
 // 1. State table (51 = 50 states + DC, from STATE_TAX_RATES; AVG excluded from
@@ -62,16 +62,16 @@ const COUNTRY_META = {
   jp: { name: 'Japan', authority: 'National Tax Agency (NTA)/IRS', confidence: 'verified', structure: '"Temporary income" with 1/2 inclusion, taxed at top marginal rate (≈27.97% effective), FTC applied' },
   in: { name: 'India', authority: 'Income Tax Department/IRS', confidence: 'verified', structure: 'Flat 30% + 25% surcharge + 4% cess (≈39% effective), no deductions, FTC applied' },
   vn: { name: 'Vietnam', authority: 'General Department of Taxation/IRS', confidence: 'verified', structure: 'Flat 10% prize-income tax, FTC applied under domestic law (no US-Vietnam treaty in force)' },
-  id: { name: 'Indonesia', authority: 'Directorate General of Taxes/IRS', confidence: 'verified', structure: 'Flat 25% final tax on lottery winnings, FTC applied' },
+  id: { name: 'Indonesia', authority: 'Directorate General of Taxes/IRS', confidence: 'verified', structure: 'Flat 25% final tax on lottery winnings, no FTC (domestic final-tax credit procedure under Art. 24 excludes this Art. 4(2) final-tax category; treaty-based relief unconfirmed) — stacks in full on top of US withholding' },
   ph: { name: 'Philippines', authority: 'Bureau of Internal Revenue/IRS', confidence: 'approximate', structure: 'Approximated at the top progressive bracket (35%) since foreign winnings do not get the 20% domestic-lottery final tax rate; FTC applied' },
   th: { name: 'Thailand', authority: 'Estimate based on Revenue Department data/IRS', confidence: 'estimate', structure: '⚠️ No clear official guidance found for foreign lottery winnings; approximated at the top personal income tax bracket (35%)' },
   ru: { name: 'Russia', authority: 'Federal Tax Service (FNS)/IRS', confidence: 'verified', structure: 'Flat top progressive rate (22%); FTC believed unavailable since the US-Russia tax treaty’s double-taxation article has been suspended since 2023' },
   np: { name: 'Nepal', authority: 'Inland Revenue Department (IRD)/IRS', confidence: 'verified', structure: 'Flat 25% "windfall gain" final tax, FTC applied under domestic law' },
   lk: { name: 'Sri Lanka', authority: 'Inland Revenue Department (IRD)/IRS', confidence: 'approximate', structure: 'Approximated at the top progressive bracket (36%); a possible 15% preferential rate for remitted foreign income has unclear applicability to lottery winnings' },
-  uz: { name: 'Uzbekistan', authority: 'State Tax Committee/IRS', confidence: 'verified', structure: 'Flat 12% on all personal income, FTC applied' },
+  uz: { name: 'Uzbekistan', authority: 'State Tax Committee/IRS', confidence: 'verified', structure: 'Flat 12% on all personal income, no FTC (US-Uzbekistan relations still run on the 1973 US-USSR treaty, with no general "other income" or double-tax-relief article covering lottery winnings) — stacks in full on top of US withholding' },
   kz: { name: 'Kazakhstan', authority: 'Committee of State Revenues/IRS', confidence: 'verified', structure: 'Flat 10% on "winnings"-category income, FTC applied' },
-  kg: { name: 'Kyrgyzstan', authority: 'State Tax Service/IRS', confidence: 'verified', structure: 'Flat 10% on personal income including winnings, FTC applied' },
-  mm: { name: 'Myanmar', authority: 'Internal Revenue Department (IRD)/IRS', confidence: 'approximate', structure: 'Approximated at the top bracket (25%) for "income from other sources", FTC applied' },
+  kg: { name: 'Kyrgyzstan', authority: 'State Tax Service/IRS', confidence: 'verified', structure: 'Flat 10% on personal income including winnings, no FTC (same 1973 US-USSR treaty as Uzbekistan, no general foreign-tax-credit article; no unilateral domestic relief found) — stacks in full on top of US withholding' },
+  mm: { name: 'Myanmar', authority: 'Internal Revenue Department (IRD)/IRS', confidence: 'approximate', structure: 'Approximated at the top bracket (25%) for "income from other sources", no FTC (no US-Myanmar tax treaty in force) — stacks in full on top of US withholding' },
   bd: { name: 'Bangladesh', authority: 'National Board of Revenue (NBR)/IRS', confidence: 'verified', structure: 'Flat 25% on "income from other sources" (prizes), FTC applied' },
   pk: { name: 'Pakistan', authority: 'Estimate based on FBR data/IRS', confidence: 'estimate', structure: '⚠️ Base 35% + 8% super tax + 10% surcharge on the base; FTC offsets only the base-rate component, not super tax/surcharge' },
   kh: { name: 'Cambodia', authority: 'Estimate based on GDT data/IRS', confidence: 'estimate', structure: '⚠️ No clear legal basis found for taxing personal lottery/prize income — treated as 0% pending verification, NOT a confirmed exemption' },

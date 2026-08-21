@@ -1,7 +1,7 @@
 {
   "source": "https://chamtax.com/lottery-tax-data-hub.html",
   "license": "CC0-1.0 (public domain) — attribution to ChamTax (chamtax.com) appreciated but not required",
-  "lastUpdated": "2026-08-18",
+  "lastUpdated": "2026-08-21",
   "methodology": "Top marginal individual state income tax rate, applied as a flat approximation on the assumption that a jackpot-size prize always falls in the top bracket. Not a withholding rate — see the page for the withholding-vs-top-rate distinction.",
   "unit": "percent",
   "rows": [
