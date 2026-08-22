@@ -932,3 +932,24 @@ sitemap.html 건과 달리 "실수로 색을 안 넣은 버그"가 아니라 **�
 `drift_consistency_test`/`mcp_sync_check`/`i18n_coverage_audit`/`i18n_attr_lint`/
 `draw_archive_integrity_check`) + Playwright 10개 전부 `ISSUES: 0`. `script.min.js`
 재생성, `index.html` 캐시버스팅 버전 20260822-1→20260822-2 갱신.
+
+### 2026-08-22 이어서 — 메가밀리언즈 8/21(금) 추첨 결과 반영 (사용자 공유 스크린샷 기준)
+
+사용자가 usamega.com 스크린샷 공유(파워볼 8/19 결과·메가밀리언즈 8/21 결과·양쪽 다음
+잭팟액 포함) — 파워볼 8/19(10,21,58,61,64/17)는 이미 반영돼 있었으나, 메가밀리언즈
+8/21(1,25,34,48,57/메가볼 24, 당첨자 없음)이 누락돼 있던 걸 발견해 반영.
+
+**수정**: `script.js`의 `LATEST_DRAW.megamillions`(날짜/번호), `JACKPOT_DATA.megamillions`
+(다음 추첨 8/25 잭팟 $130M/현금가치 $55.5M, $113M에서 롤오버), 지연로딩 캐시버스팅
+문자열(`odds-data.js?v=20260821`→`20260822`) 갱신. `odds-data.js`의
+`MEGAMILLIONS_DRAW_ARCHIVE`/`MEGAMILLIONS_JACKPOT_ARCHIVE`(4번째 필드는 8/21 자체
+잭팟 $113M)에도 새 회차 추가 — 기존 `scripts/backfill-lottery.js` 패턴을 참고한 1회성
+node 스크립트로 배열을 안전하게(날짜 역행 방지 검증 포함) 파싱·추가함. **실수 한 번**:
+첫 시도에서 `JSON.stringify`로 재작성하며 `const NAME = [` 사이 공백이 사라져
+(`=[`) `tests/draw_archive_integrity_check.js`의 정규식(`const NAME = (\[.*?\]);`,
+공백 필수)이 배열을 못 찾는 회귀가 남았음 — 재검증 중 바로 발견해 공백 복원.
+
+**검증**: `draw_archive_integrity_check`(4개 아카이브 정렬/중복 없음 확인, 메가밀리언즈
+마지막 날짜 2026-08-21로 갱신 확인), 정적 테스트 5개 + Playwright 10개 전부
+`ISSUES: 0`. Playwright로 홈 화면 `#draw-balls-megamillions` 직접 렌더링해 "1,25,34,
+48,57 + 24" 정상 표시·콘솔 에러 없음 확인.
