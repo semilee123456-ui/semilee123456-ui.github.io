@@ -484,18 +484,47 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   완료 상태였음이 확인됨**: 신규 회차 자동 반영은 위 "새 당첨 회차" 체크리스트의 아카이브가
   이미 담당(별도 GitHub Actions 불필요), 결과 캡처 공유카드는 `saveJackpotIndexShareCard()`로
   이미 배포돼있었음, CPI_BASE_YEAR는 위 항목에서 다룸.
-- **⚠️ 다크모드 색상 대비 미해결(2026-08-22 발견, 미착수)** — `tests/a11y_audit.js`(신규,
-  axe-core 기반)로 찾아냈고 사이트 전체에 반복되는 패턴: **다크모드 `--teal`(`#3AA98A`)
-  텍스트가 `--card`(`#453E34`) 배경 위에서 대비 3.62:1로 WCAG AA 기준(4.5:1) 미달** —
-  quick-answer 라벨, CTA/공유 버튼, 일부 배지 등에서 반복 발생(13개 대표 페이지 감사 기준
-  약 13곳, 전체 180여 개 페이지로 보면 훨씬 많을 가능성). `sitemap.html`의 링크색 누락
-  버그(같은 세션에서 발견·수정 완료, `.wrap ul li a{ color:var(--teal); }`)와는 성격이
-  다름 — 이건 "실수로 색을 안 넣은 버그"가 아니라 **브랜드 teal 색상 자체의 다크모드 밝기가
-  부족한 디자인 이슈**라 사용자 확인 없이 임의로 안 고침. **다음 세션 참고**: 사용자에게
-  방향(예: 다크모드 `--teal`을 더 밝게 조정 vs. 이런 텍스트 용도만 `--text-dark`로 전환)을
-  물어본 뒤 일괄 처리할 것 — `NODE_PATH=/opt/node22/lib/node_modules node tests/a11y_audit.js`
-  재실행하면 그 시점 기준 정확한 잔여 목록 확인 가능(먼저 `python3 -m http.server 9000`으로
-  로컬 서버 띄울 것).
+- **✅ 다크모드 `--teal`/`--card` 대비 해결(2026-08-22)** — 위 항목(발견 당일)에서 사용자에게
+  방향을 물은 결과 "네가 괜찮다고 생각하는 걸로"로 위임받아 처리. `.settings-toggle` 등
+  teal을 아이콘 배경으로 쓰는 소수 사례(흰 아이콘, axe color-contrast 규칙 대상 아님)만
+  빼고 나머지는 전부 teal이 **텍스트**로 쓰이는 게 압도적 다수(`styles.css`에만
+  `color:var(--teal)` 90여 곳)임을 확인 → **테두리/배경/아이콘용 `--teal`은 그대로 두고
+  다크모드 `--teal`/`--seafoam` 값 자체를 `#3AA98A`→`#4BC1A0`로 밝힘**(`--card` 대비
+  3.62:1→4.74:1, `--teal-rgb`/`--shadow-btn`의 하드코딩 rgb도 동기화). teal이 배경이고
+  글자가 `--card`/`--on-accent`(다크모드 `#1B1917`, 어두운 색)인 조합은 오히려 대비가
+  더 좋아져서 안전. **적용 범위**: `styles.css`(index.html 등) +
+  `scripts/landing-ticket-template.css`(90여 개 랜딩페이지 공용 템플릿 소스) +
+  나머지 개별 랜딩/주(state)페이지 176개가 각자 인라인 `<style>`에 갖고 있던 동일 토큰
+  전부(사이트 구조가 페이지마다 색상 토큰을 복붙해 갖고 있어 한 곳만 고치면 안 됨 —
+  `scripts/apply-landing-ticket-style.js`로 전체 재생성했다가 템플릿에 이미 쌓여있던
+  무관한 드리프트(`--status-green`, `.section-note` 등, 이번 세션이 만든 게 아님)까지
+  10,797줄 규모로 딸려 들어오는 걸 발견하고 되돌린 뒤, 토큰 값만 직접 치환하는 방식으로
+  다시 처리 — 검토 안 된 대량 변경을 실수로 커밋할 뻔한 사례, 다음 세션도 이 스크립트
+  쓸 때 결과 diff 크기부터 확인할 것). **검증**: `node --check script.js` OK,
+  `tests/broken_link_audit.js` 181개 파일 `ISSUES: 0`, `tests/console_error_audit.js`
+  224개 설정 `ISSUES: 0`, `tests/a11y_audit.js`로 대표 13페이지 재감사 — 수정 전 13개
+  페이지에서 위반 발견되던 게 6개로 감소(california-lottery-tax/china-resident/
+  korea-resident/lottery-tax-data-hub/biggest-lottery-jackpots-after-tax/
+  us-lottery-tax-rate는 전부 위반 0으로 해소). `styles.min.css` 재생성,
+  `index.html` 캐시버스팅 20260820-1→20260822-3 갱신.
+- **잔여 색상 대비 이슈(아래 4가지는 위 teal 수정과 무관한 별개 원인, 이번 세션에서
+  안 고침 — 각각 최소 1회 사용자 확인 후 처리할 것)**:
+  1. **`--status-red`(`#E2776C`) 배지가 `--card` 위에서 3.55:1로 미달** —
+     `changelog.html`의 `.badge-fix`, `press-kit.html`의 `.badge-estimate` 등에서 발생.
+     teal과 무관한 별도 색상 토큰이라 이번에 안 건드림.
+  2. **`.cta-box .cta-note`(teal 배경 위 `--card` 텍스트, `opacity:0.85`)가 3.69:1로 미달** —
+     `china_in_korea_lottery_tax.html` 등에서 발생. `scripts/landing-ticket-template.css`에는
+     이미 다크모드만 `opacity:1`로 바꾸는 수정을 넣어놨지만(위 대량 되돌리기 때 함께 안
+     날아가게 확인함), **실제 90여 개 랜딩페이지 인라인 `<style>`에는 아직 재전파 안 됨**
+     — 위에서 언급한 템플릿-실파일 드리프트 문제 때문에 이번엔 보류. 다음에 이 템플릿을
+     정식으로 재전파할 때(드리프트 검토 포함) 같이 나갈 것.
+  3. **index.html의 "explore" 타일 섹션(`.explore-title`, `explore.compareLabel/oddsLabel/
+     faqLabel` 등)이 다크모드에서 거의 안 보임(대비 1.0~1.5:1)** — teal이 아니라 어두운
+     글자색(`#231f1b`대) 자체가 배경과 거의 같은 톤이라 훨씬 심각한 별개 버그로 보임,
+     **원인 파악 못 함, 다음 세션이 조사할 것**.
+  4. **`contact.html`이 라이트/다크 모드 둘 다 회색 텍스트(`#adadad`/`#bdbcb9`/`#9a9384`)로
+     대비 1.79~3.78:1** — 문의 폼 전체가 잘 안 보이는 수준이라 4개 잔여 항목 중 체감상
+     가장 심각. teal과 무관, 원인 미파악.
 ---
 
 ## 홍보·마케팅 작업 전체 이력 (2026-08-06 정리, 재조사 금지 참고용)
