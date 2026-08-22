@@ -593,6 +593,23 @@
     syncThemeToggleIcon();
   }
   document.addEventListener('DOMContentLoaded', syncThemeToggleIcon);
+
+  // 2026-08-22: 이 페이지의 <table>은 CSS로 overflow-x:auto를 줘서 가로 스크롤되는데,
+  // 정작 그 스크롤 영역 자체가 키보드 포커스를 못 받는 접근성 버그(axe-core
+  // scrollable-region-focusable)가 있었음 — 실제로 가로 스크롤이 발생하는 표에만
+  // tabindex+캡션 기반 aria-label을 붙여 키보드로도 스크롤할 수 있게 함
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('table').forEach(function(t){
+      if (t.scrollWidth > t.clientWidth && !t.hasAttribute('tabindex')) {
+        t.setAttribute('tabindex', '0');
+        var caption = t.querySelector('caption');
+        var heading = t.previousElementSibling;
+        var label = caption ? caption.textContent : (heading && /^H[1-4]$/.test(heading.tagName) ? heading.textContent : '데이터 표');
+        t.setAttribute('role', 'group');
+        t.setAttribute('aria-label', label.trim() + ' (가로 스크롤 가능)');
+      }
+    });
+  });
 </script>
 </body>
 </html>

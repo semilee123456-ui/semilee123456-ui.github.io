@@ -14499,6 +14499,12 @@ ${resultLabel} tutarınız yaklaşık ${summaryFinal} olacaktır.`,
   takeBar.style.width = takeHomePct + '%';
   document.getElementById('result-visual-take-pct').textContent = takeHomePct + '%';
   document.getElementById('result-visual-tax-pct').textContent = taxImpactPct + '%';
+  // 2026-08-22: role="img"인데 aria-label이 계속 빈 문자열이던 접근성 버그(axe-core
+  // role-img-alt 위반) — 막대가 나타내는 실수령/세금 비율을 스크린리더에도 전달
+  document.getElementById('result-visual-bar').setAttribute('aria-label', pickLang(
+    `실수령 ${takeHomePct}%, 세금 ${taxImpactPct}%`,
+    `Take-home ${takeHomePct}%, tax ${taxImpactPct}%`
+  ));
 
   // 일시불 대신 연금(annuity)으로 받으면? — 확률체감 탭 잭팟 드로어와 공용 함수 사용
   // (renderAnnuityFromCash, refreshJackpotDrawerIfOpen 근처 정의 참고)
