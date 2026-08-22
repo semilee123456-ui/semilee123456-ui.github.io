@@ -414,6 +414,16 @@
       "usWithholdingPct": 30,
       "effectiveTotalTaxPct500M": 50,
       "takeHomePct500M": 50
+    },
+    {
+      "code": "br",
+      "name": "Brazil",
+      "authority": "Receita Federal do Brasil/IRS",
+      "confidence": "verified",
+      "structure": "A foreign lottery win escapes the domestic 30% lottery withholding (Lei 4.506/64 Art. 14) and is instead taxed via carnê-leão at the top progressive IRPF bracket (27.5%); FTC applies via documented US-Brazil reciprocity (Ato Declaratório SRF 28/2000, per IN SRF 208/2002 Art. 16) and fully absorbs the lower Brazilian rate, residual 0",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
     }
   ]
 }

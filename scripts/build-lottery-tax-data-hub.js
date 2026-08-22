@@ -98,6 +98,7 @@ const COUNTRY_META = {
   it: { name: 'Italy', authority: 'Agenzia delle Entrate/IRS', confidence: 'verified', structure: 'Top progressive IRPEF bracket + regional/municipal surtax (≈47.23% combined); FTC leaves a residual of ≈17pp' },
   pl: { name: 'Poland', authority: 'Krajowa Administracja Skarbowa/IRS', confidence: 'verified', structure: 'General progressive tax (12%/32%) + 4% solidarity levy above PLN 1M, approximated at 36% combined; FTC leaves a residual of ≈6pp' },
   tr: { name: 'Turkey', authority: 'Gelir İdaresi Başkanlığı/IRS', confidence: 'verified', structure: '⚠️ Taxed under inheritance/transfer tax law (VİVK), flat 20%, not income tax — outside the income tax treaty’s scope, no FTC, stacks in full' },
+  br: { name: 'Brazil', authority: 'Receita Federal do Brasil/IRS', confidence: 'verified', structure: 'A foreign lottery win escapes the domestic 30% lottery withholding (Lei 4.506/64 Art. 14) and is instead taxed via carnê-leão at the top progressive IRPF bracket (27.5%); FTC applies via documented US-Brazil reciprocity (Ato Declaratório SRF 28/2000, per IN SRF 208/2002 Art. 16) and fully absorbs the lower Brazilian rate, residual 0' },
 };
 
 const COUNTRY_ROWS = SUPPORTED_COUNTRIES
