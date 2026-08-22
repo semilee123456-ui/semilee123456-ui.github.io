@@ -18338,3 +18338,78 @@ fetch 실패 시에만 쓰이는 안전망이라 화면 오류는 없었지만, 
 말고, 커밋/PR 직전에 항상 `git fetch origin main` + `pull_request_read`로 자기 PR이
 아직 유효한지(closed/superseded 안 됐는지) 먼저 확인할 것.
 
+
+### 2026-08-22 이어서 — 브라질을 30번째 세율 지원국으로 추가 (기존 언어 재사용, 새 통화 BRL)
+
+이전 세션(2026-08-16, `HANDOFF-ARCHIVE.md`)에서 세율 조사(카르네-레앙+누진세율 최고 27.5%,
+국내 Caixa 복권 30% 분리과세는 해외 복권엔 미적용)까지는 끝냈지만 **"미-브라질 조세조약이
+없는데 외국납부세액공제(FTC)가 되는가"**가 미해결로 남아 착수 자체를 다음 세션으로 미뤄뒀던
+건 — 이번 세션이 그 질문을 1차 자료로 확정하고 실제 구현까지 완료함.
+
+**FTC 미해결 질문 해결**: 브라질 국내법(IN SRF 208/2002 제16조)은 해외납부세액 공제에
+"조세조약 또는 공식 증빙된 상호주의"를 요구하는데, 미-브라질 조세조약은 실제로 없음(수십 년
+협상에도 비준된 적 없음, TIEA·FATCA IGA·사회보장 총액산정협정만 존재). 그런데 헤세이타
+페데랄(옛 SRF)이 **Ato Declaratório SRF nº 28, de 26 de abril de 2000**을 통해 미국과의
+상호주의를 이미 공식 선언해뒀다는 걸 확인(legisweb.com.br·contabeis.com.br·브라질 세무
+로펌 해설 "Brasil × EUA sem tratado de bitributação: os fallbacks legais" 등 교차 확인,
+IN 208/2002 원문 자체는 normas.receita.fazenda.gov.br 접속 오류로 직접 열람 못하고 2차
+자료로 대체) — 이 행정청 선언 하나로 조약 없이도 IN 208/2002의 상호주의 요건이 충족됨.
+2024년 브라질 보디빌더 하몬 지누(Ramon Dino)의 미스터 올림피아(미국) 상금 관련 언론
+보도에서 브라질 세무 변호사가 이 메커니즘이 실무에서 실제로 작동한다고 확인한 것도 교차
+검증으로 확보(pleno.news). 결론: FTC 적용됨, 브라질 세율(27.5%)이 미국 원천징수(30%)보다
+낮아 공제가 전액 상쇄해 잔여세액 0(no_resident·cn_resident와 같은 산식 구조) — `nl_resident`
+같은 "FTC 완전 불가, 이중과세 그대로" 케이스로 보수적으로 구현할 필요가 없어졌음. 다만
+행정청 선언(법률·조약 아님)이라는 점에서 이론상 철회 가능성이 있다는 불확실성은 주석에
+⚠️로 명시(`TAX_MODEL.br_resident` 참고).
+
+**구현 범위**(브랜치 `claude/brazil-country-2026-08-22`, PR 본문 참고):
+- `script.js`: `TAX_MODEL.br_resident`(rate 0.275, ftc_available true) + `calcTakeHome()`의
+  `country === 'br'` 분기(no/da/fi와 같은 FTC 상한부 공제 패턴) + `COUNTRY_TAX_PROFILES`·
+  `SUPPORTED_TAX_COUNTRIES`·`COUNTRY_TAX_AUTHORITY['br']`(Receita Federal do Brasil) +
+  `COUNTRY_NAMES_MORE` 30개 언어 행 전부에 `br:` 국가명 추가(1회성 스크립트로 처리,
+  `/tmp/.../scratchpad/add-br-names.js`에 재사용 가능한 패턴 남겨둠 — 다음에 언어 재사용
+  라운드가 또 오면 같은 방식 재활용 가능).
+- 통화: 브라질은 언어(포르투갈어)는 이미 지원 중이지만 통화(BRL, 헤알)는 진짜 신규라
+  `EXCHANGE_RATE_BRL`(폴백 5.1729, Frankfurter 실측)·`CURRENCY_RATE_CONFIG`·
+  `CURRENCY_DISPLAY_META.BRL`(🇧🇷 R$)·`REAL_ABROAD_CURRENCY['br']='BRL'` 추가 — SEK/NOK/
+  DKK/PLN/TRY와 같은 패턴, Frankfurter/open.er-api 둘 다 라이브로 지원 확인함.
+- `index.html` 국가 선택기 3곳(언어 콤보 select `br|pt`, 비교탭 select `br`, 토글 버튼
+  `data-country="br"`) + 통화 select 2곳에 BRL, `input.optBrazil` i18n 키(포르투갈어 등
+  30개 언어 번역 후 `node scripts/build-i18n.js` 재생성) — `pt|pt`는 아직 아무도 안 써서
+  충돌 없이 `br|pt` 그대로 사용(멕시코의 `mx|es`와 같은 패턴).
+- `brazil-resident-us-lottery-tax.html` 신설(포르투갈어 랜딩페이지, 다른 `*-resident-us-
+  lottery-tax.html`과 같은 "정산 티켓" 인라인 스타일 — `scripts/apply-landing-ticket-style.js`로
+  적용). 관련 링크는 EU 클러스터(de/nl/sv/no/da/fi/it/pl/tr, 9개 파일이 서로 상호링크하는
+  체인)에 억지로 끼워넣지 않고, 브리핑 지시대로 **멕시코 페이지와 양방향 상호링크만** 추가
+  (멕시코 쪽에도 브라질 링크 1줄 추가) — 지리적으로 가장 가까운 라틴아메리카 국가가 자연스러운
+  짝이라 판단(mx 페이지 자체가 애초에 EU 클러스터 체인에도 안 끼어있었음, 선례 확인 후 결정).
+- `mcp-server/tax-data.js` `FLAT_COUNTRY_MODEL.br` + `scripts/build-lottery-tax-data-hub.js`
+  `COUNTRY_META.br` 동기화(HANDOFF의 신규 규칙 — `TAX_MODEL` 변경 시 두 손동기화 사본도 같이
+  갱신 안 하면 `tests/mcp_sync_check.js`가 못 잡는 사각지대가 생김, 실제로 `br`은 `rate:`
+  필드가 이 테스트의 정규식 목록(`flat_rate`/`top_bracket_rate`/...)에 안 걸려서(no/da/fi/
+  it/pl/tr도 마찬가지) 자동 검증 사각지대이므로 수동 교차검증을 대신 함:
+  `mcp-server/tax-data.js`의 `calculateTakeHome(800000000,'br')`를 직접 실행해 `script.js`
+  `calcTakeHome(800,'br')` Playwright 결과와 동일한지 대조 확인).
+  `node scripts/build-lottery-tax-data-hub.js`로 `data/country-lottery-tax-rates.{csv,json}`
+  재생성, `lottery-tax-data-hub.html`에 Brazil 행 추가 + 그 페이지 자체의 "42countries"
+  →"43countries" 문구 갱신(이 페이지는 `SUPPORTED_COUNTRIES` 기준 라이브 카운트를 표기하는
+  성격이라 즉시 갱신).
+- `sitemap.xml`/`sitemap.html`에 신규 항목 추가(`sitemap.html`의 "거주 국가별..." 섹션
+  헤더 카운트도 42→43개국으로 갱신).
+
+**의도적으로 손 안 댄 것**: 사이트 전체 44개 파일(랜딩페이지 대부분)에 흩어진 "42countries"
+배지 문구는 이번 라운드에서 갱신하지 않음 — `git log`로 확인해보니 이 문구는 국가 추가할 때마다
+매번 건드리는 게 아니라 여러 라운드가 쌓인 뒤 별도 "사이트 전체 통일" 커밋(예:
+`e66770d 사이트 전체에 남아있던 21/22개국·26개 언어 오래된 표기를 42개국·35개 언어로 통일`)
+으로 주기적으로 일괄 처리하는 관례임을 확인 — `lottery-tax-data-hub.html`·`sitemap.html`처럼
+내가 직접 만지는 페이지만 즉시 갱신하고, 나머지 44개 파일은 다음 그런 일괄 스윕 세션의 몫으로
+남겨둠. **다음 세션 참고**: 이 스윕이 오래 밀리면 그 사이 브라질 포함 추가국이 여럿 쌓일 수
+있으니, 스윕할 때 최종 카운트를 `grep -c "_resident:" script.js` 등으로 다시 세어서 확인할 것.
+
+**테스트**: `mcp_sync_check`(15개국, 0 issues)·`i18n_coverage_audit`(795 keys, 0)·
+`console_error_audit`(224 configs, 0)·`home_audit`(18, 0)·`broken_link_audit`(181 files, 0
+— 랜딩페이지 추가 후 180→181)·`lang_leak_audit`(140 configs, 0) 전부 통과. Playwright로
+`calcTakeHome(800,'br')`·`?lang=pt&country=br` 로드·`brazil-resident-us-lottery-tax.html`
+직접 로드까지 라이브로 실행해 "undefined" 없음·콘솔 에러 없음·토글 버튼 포르투갈어 텍스트
+정상("BR Base do Brasil") 확인. 2단계 커밋 후 각각 push, PR은 아직 안 열었으면 이 세션
+마지막에 오픈.
