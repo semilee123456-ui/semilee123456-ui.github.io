@@ -18338,3 +18338,166 @@ fetch 실패 시에만 쓰이는 안전망이라 화면 오류는 없었지만, 
 말고, 커밋/PR 직전에 항상 `git fetch origin main` + `pull_request_read`로 자기 PR이
 아직 유효한지(closed/superseded 안 됐는지) 먼저 확인할 것.
 
+
+### 2026-08-22 이어서 — 브라질을 30번째 세율 지원국으로 추가 (기존 언어 재사용, 새 통화 BRL)
+
+이전 세션(2026-08-16, `HANDOFF-ARCHIVE.md`)에서 세율 조사(카르네-레앙+누진세율 최고 27.5%,
+국내 Caixa 복권 30% 분리과세는 해외 복권엔 미적용)까지는 끝냈지만 **"미-브라질 조세조약이
+없는데 외국납부세액공제(FTC)가 되는가"**가 미해결로 남아 착수 자체를 다음 세션으로 미뤄뒀던
+건 — 이번 세션이 그 질문을 1차 자료로 확정하고 실제 구현까지 완료함.
+
+**FTC 미해결 질문 해결**: 브라질 국내법(IN SRF 208/2002 제16조)은 해외납부세액 공제에
+"조세조약 또는 공식 증빙된 상호주의"를 요구하는데, 미-브라질 조세조약은 실제로 없음(수십 년
+협상에도 비준된 적 없음, TIEA·FATCA IGA·사회보장 총액산정협정만 존재). 그런데 헤세이타
+페데랄(옛 SRF)이 **Ato Declaratório SRF nº 28, de 26 de abril de 2000**을 통해 미국과의
+상호주의를 이미 공식 선언해뒀다는 걸 확인(legisweb.com.br·contabeis.com.br·브라질 세무
+로펌 해설 "Brasil × EUA sem tratado de bitributação: os fallbacks legais" 등 교차 확인,
+IN 208/2002 원문 자체는 normas.receita.fazenda.gov.br 접속 오류로 직접 열람 못하고 2차
+자료로 대체) — 이 행정청 선언 하나로 조약 없이도 IN 208/2002의 상호주의 요건이 충족됨.
+2024년 브라질 보디빌더 하몬 지누(Ramon Dino)의 미스터 올림피아(미국) 상금 관련 언론
+보도에서 브라질 세무 변호사가 이 메커니즘이 실무에서 실제로 작동한다고 확인한 것도 교차
+검증으로 확보(pleno.news). 결론: FTC 적용됨, 브라질 세율(27.5%)이 미국 원천징수(30%)보다
+낮아 공제가 전액 상쇄해 잔여세액 0(no_resident·cn_resident와 같은 산식 구조) — `nl_resident`
+같은 "FTC 완전 불가, 이중과세 그대로" 케이스로 보수적으로 구현할 필요가 없어졌음. 다만
+행정청 선언(법률·조약 아님)이라는 점에서 이론상 철회 가능성이 있다는 불확실성은 주석에
+⚠️로 명시(`TAX_MODEL.br_resident` 참고).
+
+**구현 범위**(브랜치 `claude/brazil-country-2026-08-22`, PR 본문 참고):
+- `script.js`: `TAX_MODEL.br_resident`(rate 0.275, ftc_available true) + `calcTakeHome()`의
+  `country === 'br'` 분기(no/da/fi와 같은 FTC 상한부 공제 패턴) + `COUNTRY_TAX_PROFILES`·
+  `SUPPORTED_TAX_COUNTRIES`·`COUNTRY_TAX_AUTHORITY['br']`(Receita Federal do Brasil) +
+  `COUNTRY_NAMES_MORE` 30개 언어 행 전부에 `br:` 국가명 추가(1회성 스크립트로 처리,
+  `/tmp/.../scratchpad/add-br-names.js`에 재사용 가능한 패턴 남겨둠 — 다음에 언어 재사용
+  라운드가 또 오면 같은 방식 재활용 가능).
+- 통화: 브라질은 언어(포르투갈어)는 이미 지원 중이지만 통화(BRL, 헤알)는 진짜 신규라
+  `EXCHANGE_RATE_BRL`(폴백 5.1729, Frankfurter 실측)·`CURRENCY_RATE_CONFIG`·
+  `CURRENCY_DISPLAY_META.BRL`(🇧🇷 R$)·`REAL_ABROAD_CURRENCY['br']='BRL'` 추가 — SEK/NOK/
+  DKK/PLN/TRY와 같은 패턴, Frankfurter/open.er-api 둘 다 라이브로 지원 확인함.
+- `index.html` 국가 선택기 3곳(언어 콤보 select `br|pt`, 비교탭 select `br`, 토글 버튼
+  `data-country="br"`) + 통화 select 2곳에 BRL, `input.optBrazil` i18n 키(포르투갈어 등
+  30개 언어 번역 후 `node scripts/build-i18n.js` 재생성) — `pt|pt`는 아직 아무도 안 써서
+  충돌 없이 `br|pt` 그대로 사용(멕시코의 `mx|es`와 같은 패턴).
+- `brazil-resident-us-lottery-tax.html` 신설(포르투갈어 랜딩페이지, 다른 `*-resident-us-
+  lottery-tax.html`과 같은 "정산 티켓" 인라인 스타일 — `scripts/apply-landing-ticket-style.js`로
+  적용). 관련 링크는 EU 클러스터(de/nl/sv/no/da/fi/it/pl/tr, 9개 파일이 서로 상호링크하는
+  체인)에 억지로 끼워넣지 않고, 브리핑 지시대로 **멕시코 페이지와 양방향 상호링크만** 추가
+  (멕시코 쪽에도 브라질 링크 1줄 추가) — 지리적으로 가장 가까운 라틴아메리카 국가가 자연스러운
+  짝이라 판단(mx 페이지 자체가 애초에 EU 클러스터 체인에도 안 끼어있었음, 선례 확인 후 결정).
+- `mcp-server/tax-data.js` `FLAT_COUNTRY_MODEL.br` + `scripts/build-lottery-tax-data-hub.js`
+  `COUNTRY_META.br` 동기화(HANDOFF의 신규 규칙 — `TAX_MODEL` 변경 시 두 손동기화 사본도 같이
+  갱신 안 하면 `tests/mcp_sync_check.js`가 못 잡는 사각지대가 생김, 실제로 `br`은 `rate:`
+  필드가 이 테스트의 정규식 목록(`flat_rate`/`top_bracket_rate`/...)에 안 걸려서(no/da/fi/
+  it/pl/tr도 마찬가지) 자동 검증 사각지대이므로 수동 교차검증을 대신 함:
+  `mcp-server/tax-data.js`의 `calculateTakeHome(800000000,'br')`를 직접 실행해 `script.js`
+  `calcTakeHome(800,'br')` Playwright 결과와 동일한지 대조 확인).
+  `node scripts/build-lottery-tax-data-hub.js`로 `data/country-lottery-tax-rates.{csv,json}`
+  재생성, `lottery-tax-data-hub.html`에 Brazil 행 추가 + 그 페이지 자체의 "42countries"
+  →"43countries" 문구 갱신(이 페이지는 `SUPPORTED_COUNTRIES` 기준 라이브 카운트를 표기하는
+  성격이라 즉시 갱신).
+- `sitemap.xml`/`sitemap.html`에 신규 항목 추가(`sitemap.html`의 "거주 국가별..." 섹션
+  헤더 카운트도 42→43개국으로 갱신).
+
+**의도적으로 손 안 댄 것**: 사이트 전체 44개 파일(랜딩페이지 대부분)에 흩어진 "42countries"
+배지 문구는 이번 라운드에서 갱신하지 않음 — `git log`로 확인해보니 이 문구는 국가 추가할 때마다
+매번 건드리는 게 아니라 여러 라운드가 쌓인 뒤 별도 "사이트 전체 통일" 커밋(예:
+`e66770d 사이트 전체에 남아있던 21/22개국·26개 언어 오래된 표기를 42개국·35개 언어로 통일`)
+으로 주기적으로 일괄 처리하는 관례임을 확인 — `lottery-tax-data-hub.html`·`sitemap.html`처럼
+내가 직접 만지는 페이지만 즉시 갱신하고, 나머지 44개 파일은 다음 그런 일괄 스윕 세션의 몫으로
+남겨둠. **다음 세션 참고**: 이 스윕이 오래 밀리면 그 사이 브라질 포함 추가국이 여럿 쌓일 수
+있으니, 스윕할 때 최종 카운트를 `grep -c "_resident:" script.js` 등으로 다시 세어서 확인할 것.
+
+**테스트**: `mcp_sync_check`(15개국, 0 issues)·`i18n_coverage_audit`(795 keys, 0)·
+`console_error_audit`(224 configs, 0)·`home_audit`(18, 0)·`broken_link_audit`(181 files, 0
+— 랜딩페이지 추가 후 180→181)·`lang_leak_audit`(140 configs, 0) 전부 통과. Playwright로
+`calcTakeHome(800,'br')`·`?lang=pt&country=br` 로드·`brazil-resident-us-lottery-tax.html`
+직접 로드까지 라이브로 실행해 "undefined" 없음·콘솔 에러 없음·토글 버튼 포르투갈어 텍스트
+정상("BR Base do Brasil") 확인. 2단계 커밋 후 각각 push, PR은 아직 안 열었으면 이 세션
+마지막에 오픈.
+
+### 2026-08-22 이어서 — "실시간 잭팟 위젯" 백로그 항목 재검토, 코드 변경 없이 종결
+
+이전 세션에서 세운 원래 작업 목록의 마지막 항목("실시간 잭팟 위젯")을 착수 전에 실제
+코드/인프라 상태부터 확인 — 결과 이미 충분히 구현·자동화돼있어 새로 만들 게 없다고 판단,
+코드는 건드리지 않고 이 기록만 남김(다음 세션이 또 같은 걸 재조사/재구현하지 않도록):
+
+- **홈 화면 실시간 표시**: `JACKPOT_DATA`(script.js)가 `#jp-powerball`/`#jp-mega` 카운트업
+  카드에 자동 반영됨(`getJackpotKRW()`/`getJackpotCashUsd()` 경유, "알려진 미해결 항목"
+  섹션 442번째 줄 근처 설명과 동일 메커니즘) — 이미 "실시간"임.
+- **데이터 최신화 자동화**: 매일 06:00 UTC Routine(`trig_01JtYWzvDEx9FRrzFsswuSzH`, "ChamTax
+  로또 데이터 점검")이 WebSearch로 `JACKPOT_DATA`/`LATEST_DRAW` 최신 발표 잭팟액을 반영하고
+  약 89개 랜딩페이지 예시 금액까지 스팟체크함 — 이미 존재.
+- **당첨번호 백필**: `.github/workflows/lottery-backfill.yml`이 완전 무료·무세션 자동화로
+  당첨 번호(금액 아님)를 채움 — 이미 존재.
+- **API로 잭팟 금액 자체를 실시간으로 끌어오는 방식**: `HANDOFF-ARCHIVE.md`(2026-08-04)에
+  이미 시도 후 폐기 기록 있음 — `data.ny.gov`/`powerball.com`이 403 반환, 잭팟 "금액"용
+  구조화 API 자체가 없어 WebSearch 판단 방식으로 대체한 게 현재 구조.
+- **`widget-embed.html`은 별개 항목**(외부 블로그용 세율 계산 티저 iframe, 방문자가 잭팟
+  금액을 직접 입력하는 방식)이라 이번 항목과 무관 — 확인만 하고 그대로 둠. 이 위젯에 실시간
+  잭팟 값을 자동 주입하는 건 검토했으나, 이 파일은 script.js와 완전히 분리된 정적 파일이라
+  `JACKPOT_DATA`를 직접 읽지 못해 별도 동기화 경로(JSON export 등)를 새로 만들어야 하고,
+  이는 곧 다섯 번째 수동 동기화 지점이 늘어나는 것 + 이 파일을 커버하는 회귀 테스트가 아직
+  없어 드리프트를 못 잡음 — 위젯 자체 주석(102~106번째 줄)에도 "정밀 계산/실시간 복제 안 함,
+  고정 참고치만 보여주는 티저용"이라고 의도적으로 명시돼있어, 그 설계 의도와도 배치됨. 실제
+  수요(임베드하는 외부 블로그 쪽에서 요청)가 생기기 전엔 착수 안 함.
+
+### 2026-08-22 이어서 — GSC 색인 상태 스크린샷 점검, "수동 색인 요청 안 함" 방침 확정 (코드 변경 없음)
+
+사용자가 GSC(Google Search Console) 화면을 여러 장 캡처해서 같이 점검함(로그인 필요한
+대시보드라 사용자 스크린샷으로만 진단 가능, 이 세션 도구로는 직접 조회 불가):
+
+- **"페이지" 색인 현황**: 전체 193개 중 165개 색인됨(약 85%), 28개 안 됨 — 리디렉션
+  포함 페이지 11개(정상, 원래 대상 아님)·404 1개·"크롤링됨-현재 색인이 생성되지 않음"
+  16개·중복 콘텐츠 관련 0개. 전체적으로 건강한 상태로 확인.
+- **404 1건(`us-lottery-basics-da.html`)**: 조사해보니 8/20에 이미 다른 세션이
+  커밋(`61da4c9`)으로 고쳐놓은 상태(`us-lottery-basics-en.html`로 가는 noindex 리다이렉트
+  페이지, 실측 `HTTP 200` 확인) — GSC 화면이 그 이후로 재크롤링을 안 해서 아직 404로
+  표시될 뿐, 실제 문제 없음. 사용자가 "수정 결과 확인" 버튼으로 재크롤링 요청함.
+- **"크롤링됨-현재 색인이 생성되지 않음" 16건**: 목록 확인 결과 두 그룹 — (1)
+  `index.html?lang=XX`/`?amount=XXX` 같은 쿼리스트링 변형 8개(canonical이 항상 "/"를
+  가리키게 설계돼 있어 의도된 정상 동작, 이미 다른 세션의 카자흐어/테툼어 케이스에서도
+  같은 결론), (2) 핀란드·폴란드·노르웨이·튀르키예·이탈리아·덴마크 등 최근 며칠 새 추가된
+  신규 국가 페이지 + 허브 페이지(`lottery-tax-data-hub.html`, `lottery-tax-by-country.html`)
+  6~8개 — 전부 파일 존재·`sitemap.xml` 등재 확인됨, 최근 크롤링 날짜가 8/18~19로 그냥
+  "아직 색인 결정 전"인 정상적인 지연.
+- **`sitemap.xml` 재제출**: 마지막으로 읽은 날짜가 3주 가까이 정체(2026-07-27)돼있어
+  최신 페이지(115개+)를 구글이 아직 모르는 상태였음 — 사용자가 GSC "Sitemaps" 화면에서
+  재제출 완료.
+
+**⚠️ 방침 확정 — 다음 세션 참고**: 사용자가 "위 16건에 대해 개별 URL마다 '색인 생성
+요청'을 수동으로 누르지 않고, sitemap 재제출 효과와 시간 경과로 자연스럽게 처리되길
+기다리겠다"고 명시적으로 결정함. **다음 세션이 이 GSC 스크린샷을 다시 보게 되더라도
+"색인 생성 요청을 눌러보시라"고 다시 제안하지 말 것** — 이미 논의하고 사용자가 명시적으로
+거절한 선택지임. 대신 시간이 더 지나도(예: 몇 주 뒤) 같은 URL들이 여전히 이 상태면 그때는
+정말 구조적 문제(콘텐츠 얇음·내부링크 부족 등)가 아닌지 재검토할 것.
+
+### 2026-08-22 이어서 — GA4 태그 정상 작동 실측 확인 + Organic Search가 주력 채널로 역전됨 (코드 변경 없음)
+
+앞선 GA4 "태그 관리" 화면에서 옛 측정 ID(`G-52R7SSXXNB`, 티스토리 블로그 "uridanbi" 소속,
+2026-08-06에 이미 폐기됨 — 위 아카이브 참고)가 "긴급·48시간 무감지"로 표시된 걸 사용자가
+캡처해서 "이거 참택스 아니야?"라고 재확인 요청 → 그 태그의 "도메인 구성" 화면까지 같이
+보며, chamtax.com이 "내 도메인"에 남아있는 건 8/6 마이그레이션 이전의 잔재 설정일 뿐
+실제 연결은 끊겼음을 재확인(저장소 전체 grep으로 `G-52R7SSXXNB` 잔존 0건 재확인).
+
+이어서 실제 라이브 태그(`G-K0S72CPYZM`, "ChamTax" 속성)가 진짜 작동하는지 사용자가 GA4
+화면으로 직접 확인:
+
+- **실시간 개요 0명**은 캡처 당시 우연히 아무도 없었을 뿐(3개월 클릭 3회 수준 신생
+  사이트라 흔한 상황) — 태그 고장의 증거 아님. "새 탭으로 직접 방문 후 실시간 화면에서
+  확인" 자가진단 방법 안내함.
+- **트래픽 획득 리포트 첫 캡처가 전부 0**이었던 원인은 태그 문제가 아니라 **날짜 필터가
+  "7월 28일~29일"(한 달 전, 하루짜리)로 고정돼있던 것** — 최근 기간(8/15~22)으로 바꾸자
+  실데이터 확인됨: 세션 54회·참여율 61%·세션당 평균 41초.
+- **채널 구성이 역전됨**: Organic Search가 36세션(66.7%, 참여율 75%)로 주력 채널이 됨 —
+  `HANDOFF-ARCHIVE.md`(2026-08-06)에 기록된 "Direct 81% 압도, Organic Search 14.66%뿐"
+  상태에서 완전히 뒤집힌 것. 신규 "AI Assistant" 채널 1세션도 관측(ChatGPT/Perplexity류
+  AI 챗봇 경유 유입으로 추정, GA4의 비교적 최근 채널 분류).
+
+**결론**: GA4 계측 정상 작동 확인, 코드 변경 사항 없음. Organic Search 역전은 그동안
+쌓아온 랜딩페이지들의 SEO 효과가 실제로 나타나기 시작한 것으로 해석되는 긍정적 신호 —
+다음 세션이 GA4 트래픽을 다시 점검할 때 이 역전 추세가 계속 유지/강화되는지 참고할 것.
+
+**⚠️ 다음 세션 참고(위 32개 통화 환율 폴백값 갱신 세션 관련)**: 환율 폴백값은 한동안
+"알려진 미해결 항목"에 정식 등재된 게 아니라 수동 점검에 의존했었음 — **→ 아래
+2026-08-22 이어서 세션에서 `MAINTENANCE.md` 연례 체크리스트로 정식 등재함, 이 우려는
+해소됨.**
+
