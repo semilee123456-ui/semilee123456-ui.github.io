@@ -223,7 +223,7 @@
     --shadow-hard-xs:2px 2px 0 var(--text-dark);
   }
   :root[data-theme="dark"]{
-    --teal:#3AA98A; --teal-rgb:58,169,138;
+    --teal:#4BC1A0; --teal-rgb:75,193,160;
     --indigo:#7C9BD1; --gold:#D6AC55;
     --bg:#1E1A16; --card:#453E34; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#6E6558;
     --status-red:#E2776C; --status-amber:#D6AC55; --status-green:#5FC993;
@@ -479,6 +479,10 @@
   }
   .cta-box a:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--text-dark); }
   .cta-box .cta-note{ color:var(--card); opacity:0.85; font-size:var(--fs-small); font-weight:400; margin:12px 0 0; }
+  /* 2026-08-22: opacity:0.85가 --card 위에서 대비를 3.69:1까지 깎아 WCAG AA(4.5:1) 미달로
+     만듦(다크모드 --teal 밝기 조정 후에도 남음) — 다크모드만 불투명하게 해서 해결
+     (라이트모드는 opacity:0.85로도 이미 통과라 그대로 둠). */
+  :root[data-theme="dark"] .cta-box .cta-note{ opacity:1; }
 
   .share-btn{
     display:block; width:100%; background:var(--card); border:1.5px solid var(--border); color:var(--teal);

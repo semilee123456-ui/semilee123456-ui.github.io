@@ -110,7 +110,13 @@
      버튼(toggleTheme(), script.js)으로만 켜짐 — 켠 상태는 localStorage에 저장되어 다음
      방문에도 유지됨. 기본값은 항상 라이트모드 */
   :root[data-theme="dark"]{
-      --navy:#EDE8DA; --teal:#3AA98A; --seafoam:#3AA98A; --mint:#4CC2A0; --indigo:#7C9BD1; --gold:#D6AC55;
+      /* 2026-08-22: --teal(구 #3AA98A)를 텍스트로 --card(#453E34) 위에 쓰면 대비 3.62:1로
+         WCAG AA 4.5:1 미달(tests/a11y_audit.js가 검출) — 브랜드 톤 유지한 채 밝기만 올려
+         --card 대비 4.74:1로 통과시킴(--seafoam은 다크모드에서 항상 --teal과 동일값이라
+         같이 조정, --teal-rgb·아래 --shadow-btn의 하드코딩 rgb도 같이 맞춤). 카드 위 텍스트가
+         아닌 아이콘 배경(예: .settings-toggle)은 축소 여지 있으나 axe color-contrast 규칙
+         대상이 아니라 이번 조정 범위 밖. */
+      --navy:#EDE8DA; --teal:#4BC1A0; --seafoam:#4BC1A0; --mint:#4CC2A0; --indigo:#7C9BD1; --gold:#D6AC55;
       /* 2026-07-31: --card(#39332B)가 --bg(#1E1A16) 대비 1.39:1로 거의 구분이 안 되고,
          --border도 --card 대비 1.10:1로 카드 안에서조차 경계가 안 보임(가독성·가시성 검수 지적) —
          카드를 한 단계 밝게, 보더를 더 밝게 올려 --bg 대비 3.02:1, --card 대비 1.84:1로 개선
@@ -119,14 +125,14 @@
       --grad-soft: linear-gradient(150deg, #1E2622 0%, #201E1A 55%, #201E1A 100%);
       --grad-amber: linear-gradient(150deg, #2A2318 0%, #201E1A 100%);
       --shadow-card: 0 2px 12px rgba(0,0,0,0.4);
-      --shadow-btn: 0 6px 14px rgba(58,169,138,0.28);
+      --shadow-btn: 0 6px 14px rgba(75,193,160,0.28);
       --status-red:#E2776C;
       --status-red-rgb: 226,119,108;
       --status-amber:#D6AC55;
       --on-accent:#1B1917;
       --ink-rgb: 237,232,218;
       --navyblue-rgb: 124,155,209;
-      --teal-rgb: 58,169,138;
+      --teal-rgb: 75,193,160;
       --body-bg:#1E1A16;
       --select-bg:#2A2723;
       --chip-bg:#2E2B26;
