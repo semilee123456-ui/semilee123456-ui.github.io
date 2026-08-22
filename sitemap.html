@@ -175,6 +175,13 @@
 
   .wrap{ max-width:640px; margin:0 auto; padding:0 18px 56px; }
 
+  /* 2026-08-22: 이 목록의 <a>는 지금까지 color를 따로 안 정해줘서 브라우저 기본 링크색
+     (#0000ee)을 그대로 썼는데, 다크모드 배경(--bg:#1E1A16)과 대비가 1.83:1(WCAG AA
+     4.5:1 미달)로 거의 안 보이는 수준이었음(axe-core color-contrast, tests/a11y_audit.js
+     로 발견) — 라이트모드에서는 우연히 대비가 충분해서 안 보이던 문제 */
+  .wrap ul li a{ color:var(--teal); text-decoration:none; }
+  .wrap ul li a:hover{ text-decoration:underline; }
+
   /* ---- 헤더: 절취선 대신(내비게이션이 극좁은 화면에서 원 노치 때문에 잘리는 걸
      피하려고 원형 펀치 대신) 두꺼운 점선 구분선으로 "티켓 스텁"을 표현 ---- */
   .nav{
@@ -906,6 +913,11 @@
       if (emptyMsg) emptyMsg.style.display = (q && !anyVisible) ? 'block' : 'none';
     }
     input.addEventListener('input', filter);
+
+    // 2026-08-22: 브라우저 검색창 통합(opensearch.xml)에서 이 페이지로 ?q=검색어 형태로
+    // 넘어올 수 있어서, 쿼리파라미터가 있으면 검색창에 채우고 바로 필터링까지 실행
+    var q = new URLSearchParams(location.search).get('q');
+    if (q) { input.value = q; filter(); }
   }
   document.addEventListener('DOMContentLoaded', setupSitemapSearch);
 </script>

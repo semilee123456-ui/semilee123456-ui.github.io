@@ -3740,7 +3740,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260821';
+    script.src = 'odds-data.js?v=20260822';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -5910,7 +5910,7 @@ function buildDrawScheduleMore(days){
 // 추적 가능해서 날짜별 코멘트는 더 이상 여기 쌓지 않음 — 최신 반영 회차는 아래 LATEST_DRAW 참고.)
 const JACKPOT_DATA = {
   powerball:    { amountUsd: 68000000, cashUsd: 29500000 },
-  megamillions: { amountUsd: 113000000, cashUsd: 48300000 },
+  megamillions: { amountUsd: 130000000, cashUsd: 55500000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
@@ -5933,11 +5933,13 @@ const GAME_NAME_MORE = {
 // 2026-08-20 정기 점검: 8/19(수) 추첨 10,21,58,61,64 / 파워볼 17, 당첨자 없음
 // (WebSearch로 공식 결과 교차 확인). 다음 추첨(8/22 토) 잭팟은 사용자가 공유한
 // 실시간 스크린샷 기준 $68M(현금가치 $29.5M)로 갱신 — 당첨자 없어 $48M(8/19
-// 자체 잭팟)에서 롤오버로 증가한 값. 메가밀리언즈는 다음 추첨(8/21 금)이 아직
-// 진행 전이라 변경 없음.
+// 자체 잭팟)에서 롤오버로 증가한 값.
+// 2026-08-22 이어서: 8/21(금) 메가밀리언즈 추첨 1,25,34,48,57 / 메가볼 24, 당첨자
+// 없음(사용자 공유 스크린샷 usamega.com 기준). 다음 추첨(8/25 화) 잭팟 $130M
+// (현금가치 $55.5M)로 갱신 — $113M(8/21 자체 잭팟)에서 롤오버로 증가한 값.
 const LATEST_DRAW = {
   powerball:    { date: '2026-08-19', numbers: [10, 21, 58, 61, 64], special: 17 },
-  megamillions: { date: '2026-08-18', numbers: [5, 19, 30, 38, 59], special: 12 },
+  megamillions: { date: '2026-08-21', numbers: [1, 25, 34, 48, 57], special: 24 },
 };
 
 
@@ -14632,6 +14634,12 @@ ${resultLabel} tutarınız yaklaşık ${summaryFinal} olacaktır.`,
   takeBar.style.width = takeHomePct + '%';
   document.getElementById('result-visual-take-pct').textContent = takeHomePct + '%';
   document.getElementById('result-visual-tax-pct').textContent = taxImpactPct + '%';
+  // 2026-08-22: role="img"인데 aria-label이 계속 빈 문자열이던 접근성 버그(axe-core
+  // role-img-alt 위반) — 막대가 나타내는 실수령/세금 비율을 스크린리더에도 전달
+  document.getElementById('result-visual-bar').setAttribute('aria-label', pickLang(
+    `실수령 ${takeHomePct}%, 세금 ${taxImpactPct}%`,
+    `Take-home ${takeHomePct}%, tax ${taxImpactPct}%`
+  ));
 
   // 일시불 대신 연금(annuity)으로 받으면? — 확률체감 탭 잭팟 드로어와 공용 함수 사용
   // (renderAnnuityFromCash, refreshJackpotDrawerIfOpen 근처 정의 참고)
