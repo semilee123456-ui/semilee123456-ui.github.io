@@ -159,7 +159,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260822-1" defer></script>
+<script src="script.min.js?v=20260822-2" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -672,6 +672,7 @@
                   <option value="it|it">IT · Italiano</option>
                   <option value="pl|pl">PL · Polski</option>
                   <option value="tr|tr">TR · Türkçe</option>
+                  <option value="br|pt">BR · Português</option>
                 </select>
                 <button type="button" class="intro-lang-go-btn" onclick="goRealAbroadFromSelect('realAbroadSelect')" data-i18n="intro.goBtn">이동</button>
               </div>
@@ -844,6 +845,7 @@
                     <option value="it">IT</option>
                     <option value="pl">PL</option>
                     <option value="tr">TR</option>
+                    <option value="br">BR</option>
                     <option value="other">OTHER</option>
                   </select>
                   <button type="button" class="amount-currency-select select-sheet-trigger" id="homeCountrySelectTrigger" tabindex="-1" aria-hidden="true" onclick="openSelectSheet('homeCountrySelect')"><span class="select-sheet-trigger-label">KR</span></button>
@@ -887,6 +889,7 @@
                     <option value="DKK">🇩🇰 DKK</option>
                     <option value="PLN">🇵🇱 PLN</option>
                     <option value="TRY">🇹🇷 TRY</option>
+                    <option value="BRL">🇧🇷 BRL</option>
                   </select>
                   <button type="button" class="amount-currency-select select-sheet-trigger" id="homeCurrencySelectTrigger" tabindex="-1" aria-hidden="true" onclick="openSelectSheet('homeCurrencySelect')"><span class="select-sheet-trigger-label">🇰🇷 KRW</span></button>
                 </span>
@@ -1012,6 +1015,7 @@
                   <button type="button" class="country-toggle-btn" data-country="it" onclick="setHomeCountry('it')"><span class="flag-badge">IT</span> <span data-i18n="input.optItaly">이탈리아 기준</span></button>
                   <button type="button" class="country-toggle-btn" data-country="pl" onclick="setHomeCountry('pl')"><span class="flag-badge">PL</span> <span data-i18n="input.optPoland">폴란드 기준</span></button>
                   <button type="button" class="country-toggle-btn" data-country="tr" onclick="setHomeCountry('tr')"><span class="flag-badge">TR</span> <span data-i18n="input.optTurkey">터키 기준</span></button>
+                  <button type="button" class="country-toggle-btn" data-country="br" onclick="setHomeCountry('br')"><span class="flag-badge">BR</span> <span data-i18n="input.optBrazil">브라질 기준</span></button>
                   <button type="button" class="country-toggle-btn" data-country="other" onclick="setHomeCountry('other')"><span class="flag-badge">🌐</span> <span data-i18n="input.optOther">기타 국가 (미국 30% 기준)</span></button>
                 </div>
                 <!-- ⚠️ 아이콘이 태국·러시아·파키스탄·캄보디아·몽골·라오스 버튼에 붙어있는데, 그
@@ -1523,6 +1527,7 @@
                 <option value="DKK">🇩🇰 DKK</option>
                 <option value="PLN">🇵🇱 PLN</option>
                 <option value="TRY">🇹🇷 TRY</option>
+                <option value="BRL">🇧🇷 BRL</option>
               </select>
               <button type="button" class="amount-currency-select select-sheet-trigger" id="compareCurrencySelectTrigger" tabindex="-1" aria-hidden="true" onclick="openSelectSheet('compareCurrencySelect')"><span class="select-sheet-trigger-label">🇰🇷 KRW</span></button>
             </span>

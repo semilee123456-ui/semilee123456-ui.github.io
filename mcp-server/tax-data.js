@@ -6,8 +6,13 @@
 // Node context — it intentionally drops the 30+-language label strings, keeping
 // only the math and a short English note per country. If the rates in script.js
 // change, this file needs to be updated to match by hand; it is NOT auto-generated
-// and there is no build step wiring the two together. Last synced with script.js: 2026-08-21
-// (added the 21 countries introduced between 2026-08-16 and 2026-08-18: ca, tw, hk, uk,
+// and there is no build step wiring the two together. Last synced with script.js: 2026-08-22
+// (added br: Brazil, 30th supported country — a foreign lottery win escapes the domestic
+// 30% lottery withholding regime and is taxed via carnê-leão at the top IRPF bracket
+// (27.5%), with the US foreign tax credit available via Ato Declaratório SRF 28/2000's
+// documented reciprocity; since 27.5% < the 30% US withholding, the credit fully absorbs
+// it. See TAX_MODEL.br_resident in script.js for full sourcing.)
+// Previously (added the 21 countries introduced between 2026-08-16 and 2026-08-18: ca, tw, hk, uk,
 // au, mx, fr, nz, ie, sg, za, my, de, nl, sv, no, da, fi, it, pl, tr — all of them fit the
 // existing generic flat-rate + optional-FTC shape below, none needed bracket logic like
 // kr/pk, so they were folded straight into FLAT_COUNTRY_MODEL rather than given their own
@@ -150,6 +155,7 @@ const FLAT_COUNTRY_MODEL = {
   it: { rate: 0.4723, ftcAvailable: true, note: 'Italy: a foreign lottery win is "redditi diversi" under TUIR Art. 67(1)(d), taxed at the top progressive IRPEF bracket plus regional/municipal surtax (~47.23% combined, using Lazio/Rome 2026 rates as a reference); Art. 165 ordinary foreign tax credit absorbs the 30% US withholding, leaving a residual of ~17.23pp.' },
   pl: { rate: 0.36, ftcAvailable: true, note: 'Poland: the 10-15% preferential PIT rate on gambling winnings (Art. 30.1.2) is limited to games organized in Poland/EU/EEA, so a US lottery win falls into general progressive income tax (12%/32%) plus the "solidarity levy" (4% above PLN 1M), approximated at 36% combined; the 1974 US-Poland treaty has no modern "Other Income" article, and the proportional foreign tax credit leaves a residual of ~6pp.' },
   tr: { rate: 0.20, ftcAvailable: false, note: '⚠️ Turkey: lottery/prize winnings are taxed under the Inheritance and Transfer Tax Law (VİVK) Art. 16 at a flat 20%, not under the income tax law (GVK) — since VİVK sits outside the scope of the US-Turkey income tax treaty (Art. 2) and VİVK\'s own domestic foreign tax credit (Art. 20) only covers foreign inheritance/gift tax, there is no credit against the US withholding; it stacks in full.' },
+  br: { rate: 0.275, ftcAvailable: true, note: 'Brazil: a foreign (US) lottery win is not covered by the domestic-lottery 30% withholding regime (Lei 4.506/64 Art. 14, which only applies to Brazilian-run lotteries) and instead is reported as ordinary foreign-source income via carnê-leão, taxed at the top progressive IRPF bracket (27.5%); IN SRF 208/2002 Art. 16 conditions the foreign tax credit on a treaty or documented reciprocity — there is no US-Brazil income tax treaty, but Receita Federal formally recognized reciprocity with the US in Ato Declaratório SRF nº 28/2000 (still cited as operative, incl. in a 2024 press case on a Brazilian athlete\'s US prize money), so the credit applies. Since Brazil\'s rate (27.5%) is below the US withholding (30%), the credit fully absorbs it, leaving a residual of 0.' },
 };
 
 const SUPPORTED_COUNTRIES = ['kr', 'us', 'pk', 'other', ...Object.keys(FLAT_COUNTRY_MODEL)];
