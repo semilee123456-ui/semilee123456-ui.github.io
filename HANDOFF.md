@@ -507,24 +507,12 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   korea-resident/lottery-tax-data-hub/biggest-lottery-jackpots-after-tax/
   us-lottery-tax-rate는 전부 위반 0으로 해소). `styles.min.css` 재생성,
   `index.html` 캐시버스팅 20260820-1→20260822-3 갱신.
-- **잔여 색상 대비 이슈(아래 4가지는 위 teal 수정과 무관한 별개 원인, 이번 세션에서
-  안 고침 — 각각 최소 1회 사용자 확인 후 처리할 것)**:
-  1. **`--status-red`(`#E2776C`) 배지가 `--card` 위에서 3.55:1로 미달** —
-     `changelog.html`의 `.badge-fix`, `press-kit.html`의 `.badge-estimate` 등에서 발생.
-     teal과 무관한 별도 색상 토큰이라 이번에 안 건드림.
-  2. **`.cta-box .cta-note`(teal 배경 위 `--card` 텍스트, `opacity:0.85`)가 3.69:1로 미달** —
-     `china_in_korea_lottery_tax.html` 등에서 발생. `scripts/landing-ticket-template.css`에는
-     이미 다크모드만 `opacity:1`로 바꾸는 수정을 넣어놨지만(위 대량 되돌리기 때 함께 안
-     날아가게 확인함), **실제 90여 개 랜딩페이지 인라인 `<style>`에는 아직 재전파 안 됨**
-     — 위에서 언급한 템플릿-실파일 드리프트 문제 때문에 이번엔 보류. 다음에 이 템플릿을
-     정식으로 재전파할 때(드리프트 검토 포함) 같이 나갈 것.
-  3. **index.html의 "explore" 타일 섹션(`.explore-title`, `explore.compareLabel/oddsLabel/
-     faqLabel` 등)이 다크모드에서 거의 안 보임(대비 1.0~1.5:1)** — teal이 아니라 어두운
-     글자색(`#231f1b`대) 자체가 배경과 거의 같은 톤이라 훨씬 심각한 별개 버그로 보임,
-     **원인 파악 못 함, 다음 세션이 조사할 것**.
-  4. **`contact.html`이 라이트/다크 모드 둘 다 회색 텍스트(`#adadad`/`#bdbcb9`/`#9a9384`)로
-     대비 1.79~3.78:1** — 문의 폼 전체가 잘 안 보이는 수준이라 4개 잔여 항목 중 체감상
-     가장 심각. teal과 무관, 원인 미파악.
+- **✅ 잔여 색상 대비 이슈 4건 전부 해결(2026-08-23)** — 아래 "작업 이력" 최신 항목 참고.
+  실제로는 4건 중 2건(`--status-red`/`.cta-note`)만 진짜 색상 버그였고, 나머지 2건
+  ("explore" 섹션·`contact.html`)은 `tests/a11y_audit.js` 자체가 진입 애니메이션/뷰 전환
+  중간 상태를 스캔해 생긴 **오탐**이었음이 실측으로 밝혀짐(사이트 자체엔 문제 없었음) —
+  이 발견 때문에 다음 세션이 이 4건을 실제 코드 버그로 다시 조사할 필요 없음(테스트
+  타이밍만 고쳤을 뿐 사이트 쪽 색상은 이미 정상이었던 2건 포함).
 ---
 
 ## 홍보·마케팅 작업 전체 이력 (2026-08-06 정리, 재조사 금지 참고용)
@@ -731,7 +719,7 @@ resident" 등 실제 검색 결과에 `chamtax.com`은 전혀 안 나옴(TheLott
 
 ## 작업 이력 (날짜순, 세션마다 맨 아래에 새 항목 추가)
 
-이보다 오래된 세션 기록(~2026-08-22 GA4 태그 확인까지 전부)은
+이보다 오래된 세션 기록(~2026-08-22 petscan-ai 벤치마킹 세션까지 전부)은
 `HANDOFF-ARCHIVE.md` 참고(특정 과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님).
 아래는 그 세션들의 결론만 압축한 것 — 전부 완결된 건이라 다음 세션이 재조사할 필요 없음.
 날짜별 항목이 3~4개 넘게 다시 쌓이면 가장 오래된 것부터 같은 방식으로
@@ -758,72 +746,13 @@ resident" 등 실제 검색 결과에 `chamtax.com`은 전혀 안 나옴(TheLott
   작업을 몇 분 먼저 끝내고 머지해놔서, 로컬 변경분과 `git diff origin/main`으로 동일함을
   확인한 뒤 stash+`git merge --ff-only`로 조용히 정리(중복 PR 안 만듦) — "커밋/병합 직전
   `git fetch origin main` + diff 대조" 습관이 실전에서 유효함을 재확인.
-
-### 2026-08-22 이어서 — petscan-ai(사용자의 다른 프로젝트) 벤치마킹, 이식 가능한 5개
-항목 도입 + 다크모드 접근성 버그 3건 발견·수정
-
-사용자가 "펫스캔에서 한 것들 보고 참택스에도 도움되겠다 싶은 거 전부 가져와줘"라고
-요청 — `petscan-ai` 저장소(완전히 무관한 다른 팀 프로젝트, 특수동물 AI 스캐너)를
-`add_repo`로 추가해 클론 후 서브에이전트로 비교 조사. **참택스의 기존 제약(GitHub
-Pages 정적 호스팅 전용, 서버 없음, 단일 페이지 i18n 구조 유지)을 지키는 선에서
-이식 가능한 것만 선별** — Cloudflare Functions/Workers 백엔드나 언어별 실제 디렉터리
-분리(멀티페이지 i18n) 같은, 이미 기각된 아키텍처가 필요한 건 전부 제외.
-
-**이식한 5개**:
-1. **`llms-full.txt`**(860KB, 7065줄) — 기존 `llms.txt`(요약)와 별개로 사이트 핵심
-   콘텐츠 본문 전체를 하나로 모은 파일, AI 검색엔진/RAG가 페이지를 하나하나 안 크롤링
-   해도 한 번에 참조 가능. 35개 언어 중 번역본 중복은 전부 제외하고 실제 내용이
-   고유한 102개 페이지(미국 주별 22개, 국가 거주자 32개, 한국 거주 외국인 국적별 26개,
-   미국 외 거주자 8개, 핵심 계산기 12개, 기본 페이지 2개)만 포함. `scripts/
-   generate-llms-full.js`로 생성(정규식 기반 텍스트 추출, 새 의존성 없음) — 페이지
-   내용이 크게 바뀌면 재실행할 것.
-2. **`feed.xml`/`feed.json`**(RSS 2.0 + JSON Feed 1.1) — 참택스엔 없던 피드. petscan은
-   블로그 글 기반이지만 참택스는 블로그가 없어서 기존 `changelog.html`(날짜별 세율
-   변경 이력)을 소스로 재사용 — `scripts/generate-feed.js`가 `<h2>날짜</h2>` +
-   `.changelog-entry` 구조를 파싱해서 생성. `index.html`/`changelog.html` `<head>`에
-   `<link rel="alternate">` 추가. changelog.html에 새 날짜 항목 추가할 때마다 재실행할 것.
-3. **`MAINTENANCE.md`** — petscan-ai 동명 파일 벤치마킹, "자주 안 건드려서 낡는 항목"
-   연례 점검 체크리스트(도메인 갱신, 미 연방/50개 주 세율, 42개국 세율·조세조약, 환율
-   폴백값, `CPI_BASE_YEAR`, 웹마스터 도구 소유 확인, robots.txt AI 크롤러 허용목록,
-   sitemap.xml 정합성, AdSense/GA4 정책, CDN 고정 버전, llms/feed 파일). 매년 1월 1일
-   01:00 UTC에 새 세션을 띄우는 Routine(`trig_01Qp5GWvpfhcdGCRvNqajSuG`, 새 세션마다
-   생성 — GitHub MCP 도구 없이 뜰 수 있어 PR 못 올리면 브랜치 push까지만 하고 사용자에게
-   병합 요청하도록 지시해둠)도 함께 등록.
-4. **`tests/a11y_audit.js`**(axe-core 기반 WCAG 2.1 AA 자동 감사, 라이트/다크 모드 둘 다
-   검사) — `package.json`엔 추가 안 함(파일 상단에 "script.js/styles.css minify 용도
-   외 의존성 추가 금지"라고 명시돼 있어서), 대신 axe-core 4.10.2 미니파이 번들을
-   `tests/vendor/axe.min.js`+라이선스 파일로 직접 커밋해 vendoring. 13개 대표 템플릿
-   페이지 x 2모드로 감사.
-5. **`opensearch.xml`** — 브라우저 검색창 통합, `sitemap.html?q={searchTerms}`로 연결.
-   `sitemap.html`의 기존 검색 로직에 `?q=` 쿼리파라미터 프리필+자동실행 추가.
-
-**a11y_audit.js가 실제로 찾아낸 버그 3건, 전부 수정**:
-- `#result-visual-bar`(role="img")의 `aria-label`이 계산 후에도 계속 빈 문자열이던
-  버그(`script.js` `updateHomeCalc()`) — 실수령/세금 비율을 스크린리더에도 전달하도록
-  `pickLang`으로 동적 설정.
-- `lottery-tax-data-hub.html`의 가로 스크롤 표(`overflow-x:auto`)가 키보드로 스크롤
-  불가능하던 문제 — 실제로 스크롤이 발생하는 표에만 `tabindex="0"`+`role="group"`+
-  캡션 기반 `aria-label`을 동적으로 부여하는 스크립트 추가.
-- `sitemap.html`의 목록 `<a>`가 `color`를 아예 지정 안 해서 브라우저 기본 링크색
-  (`#0000ee`)을 그대로 쓰고 있었음 — 다크모드 배경과 대비 1.83:1(WCAG AA 4.5:1 미달)로
-  거의 안 보이는 수준이었으나 라이트모드에서는 우연히 괜찮아 보여서 안 걸렸던 버그.
-  `.wrap ul li a{ color:var(--teal); }` 한 줄로 84개 위반 노드 전부 해소.
-
-**⚠️ 다음 세션 참고 — 아직 안 고친 색상 대비 문제, 사용자 확인 후 진행할 것**:
-남은 다크모드 색상 대비 위반(약 12곳, `index.html`/여러 국가·한국거주 페이지/
-`lottery-tax-data-hub.html`/`biggest-lottery-jackpots-after-tax.html`/`changelog.html`/
-`contact.html`/`press-kit.html`)은 전부 같은 근본 원인 — **다크모드 `--teal`
-(`#3AA98A`) 텍스트가 `--card`(`#453E34`) 배경 위에서 대비 3.62:1로 WCAG AA 4.5:1
-기준에 못 미침**(quick-answer 라벨, CTA/공유 버튼, 일부 배지 등에서 반복). 이건
-sitemap.html 건과 달리 "실수로 색을 안 넣은 버그"가 아니라 **브랜드 teal 색상 자체의
-다크모드 밝기 조정이 필요한 디자인 판단**이라 이 세션에서 임의로 안 건드림 — 사용자가
-방향(예: 다크모드 teal을 더 밝게, 또는 이런 텍스트만 `--text-dark`로 전환) 정하면
-다음에 일괄 처리할 것. `tests/a11y_audit.js` 재실행하면 정확한 잔여 목록 확인 가능.
-
-**검증**: `node --check script.js`, 정적 테스트 6개(`fact_consistency_audit`/
-`drift_consistency_test`/`mcp_sync_check`/`i18n_coverage_audit`/`i18n_attr_lint`/
-`draw_archive_integrity_check`) + Playwright 10개 전부 `ISSUES: 0`. `script.min.js`
-재생성, `index.html` 캐시버스팅 버전 20260822-1→20260822-2 갱신.
+- **petscan-ai 벤치마킹 이식 5개 + 다크모드 접근성 버그 3건 수정(2026-08-22)**:
+  `llms-full.txt`/`feed.xml`+`feed.json`/`MAINTENANCE.md`(연례 점검 Routine 포함)/
+  `tests/a11y_audit.js`(axe-core vendoring)/`opensearch.xml` 이식 완료. a11y 감사가
+  잡아낸 버그 3건(결과 바 aria-label 빈 값, 데이터 허브 표 키보드 스크롤 불가,
+  sitemap.html 링크 기본색 대비 미달) 전부 수정. 남은 다크모드 `--teal`/`--card` 대비
+  미달(~12곳)은 디자인 판단이 필요해 보류 → "알려진 미해결 항목"에 등재 후 아래
+  2026-08-22 GSC/teal 세션에서 해소 완료.
 
 ### 2026-08-22 이어서 — 메가밀리언즈 8/21(금) 추첨 결과 반영 (사용자 공유 스크린샷 기준)
 
@@ -923,3 +852,53 @@ Cloudflare 크롤러 로그 검증 2개뿐이라고 판단.
 "explore" 섹션 근본 원인 미상, `contact.html` 회색 텍스트 근본 원인 미상.
 
 PR #336(GSC 기록)·#337(teal 수정) 둘 다 `main`에 머지 완료.
+
+### 2026-08-23 이어서 — "알려진 미해결 항목"에 남아있던 잔여 색상 대비 4건 전부 해결(2건은 진짜 버그, 2건은 테스트 오탐으로 판명)
+
+사용자가 "전체적으로 버그·QA 기본적인 것 다 점검해달라"고 요청 — 서브에이전트에게 위임한
+1차 시도가 세션 한도로 중간에 끊겨(status-red/cta-note까지만 처리, 커밋 전) 이어받아 마무리.
+
+**진짜 색상 버그 2건 수정**:
+1. **`--status-red`(다크모드 `#E2776C`)가 `--card` 위에서 3.55:1 미달** → `#FC9186`로 밝혀
+   4.5:1 이상 확보(`styles.css`/`scripts/landing-ticket-template.css`/170여 개 랜딩페이지
+   인라인 사본 전부 동일 토큰 교체 — teal 수정 때와 같은 "토큰 값만 sed로 치환, 템플릿
+   재전파 스크립트는 안 씀" 방식이라 드리프트 위험 없음).
+2. **`.cta-box .cta-note`(테일 배경 위 `--card` 텍스트, `opacity:0.85`)가 3.69:1 미달** →
+   `scripts/landing-ticket-template.css`엔 이미 있던 다크모드 `opacity:1` 수정을 실제
+   90여 개 랜딩페이지 인라인 `<style>`에 동일하게 전파.
+3. **(위 두 개를 고치는 과정에서 새로 발견)** 다크모드 `.share-btn`(공유/결과복사 버튼)의
+   `rgba(var(--teal-rgb),0.08)` 배경이 텍스트(`--teal`)와 같은 계열 색이라 `--card` 단독
+   대비(4.74:1)보다 낮은 4.17:1로 떨어져 있었음 — 알파를 0.02로 낮춰 4.59:1로 회복
+   (`index.html#home-copy-result-btn`에서 `tests/a11y_audit.js`가 검출).
+4. **다크모드 `--gold`(`#9C6F1E`→`#9A6D1C`)** — `.ticket-jackpot-ribbon` 등 흰 글자 배경으로
+   쓰이는 곳이 4.462:1로 미달이라 아주 살짝 어둡게(육안 차이 거의 없음) 조정.
+
+**나머지 2건("explore" 섹션·`contact.html`)은 사이트 버그가 아니라 `tests/a11y_audit.js`
+자체의 스캔 타이밍 문제였음이 실측으로 밝혀짐** — 실사용자는 원래도 정상으로 봤을 화면을
+테스트가 애니메이션/뷰 전환 중간 프레임에서 스캔해 존재하지 않는 색을 잡아낸 오탐:
+- `page.goto()` 이후 `page.addStyleTag()`로 모든 CSS 애니메이션/트랜지션 duration을
+  0.001ms로 얼리는 기존 방식이, `contact.html`(→`index.html#contact` 클라이언트 리다이렉트)
+  처럼 얼리기 전에 이미 실제 0.5s 트랜지션이 시작돼버리는 페이지에서 무력했음(CSS는 이미
+  진행 중인 트랜지션의 duration을 나중에 줄여도 소급 적용 안 함) → `page.addInitScript()`로
+  교체해 어떤 페이지 스크립트보다도 먼저(리다이렉트로 이어지는 새 문서에도 동일하게) 얼리게 함.
+  단, `addInitScript` 콜백이 `document.documentElement`가 아직 없는 시점에 실행돼
+  `appendChild`가 조용히 실패하는 경우가 실제로 있었음(index.html의 `.explore-section`이
+  하필 이 케이스에 걸려 있어서 5프레임 재시도로도 못 잡던 잔여 opacity 0.668이 남아있었음) —
+  `document.documentElement` 없으면 `MutationObserver`로 생성을 기다렸다 주입하도록 방어.
+- `.view.on`(SPA 뷰 전환)이 실제로 최종 뷰로 자리잡을 때까지, 그리고 `.reveal-up`(스크롤
+  등장 요소)이 강제 완료된 뒤 최소 한 프레임 이상 지날 때까지 각각 폴링하도록 보강(`.view`가
+  아예 없는 정적 랜딩페이지는 즉시 통과). 재실행 8회 연속 `ISSUES: 0` 확인(이전엔 실행마다
+  결과가 들쭉날쭉했음).
+
+**검증**: `node --check script.js` OK, 정적 테스트 8개(`fact_consistency_audit`/
+`drift_consistency_test`/`mcp_sync_check`/`i18n_coverage_audit`/`i18n_attr_lint`/
+`draw_archive_integrity_check`/`broken_link_audit`/`wrap_audit`) + Playwright 8개
+(`a11y_audit`×4회 연속/`lang_leak_audit`/`home_audit`/`console_error_audit`/`faq_audit`/
+`audit_odds_compare`/`link_navigation_audit`/`map_scroll_audit`/`nav_slider_audit`) 전부
+`ISSUES: 0`. `styles.min.css` 재생성, `index.html` 캐시버스팅 20260822-3→20260823-1 갱신.
+`script.js`는 안 건드려서 `script.min.js` 재생성 불필요(해시 동일 확인).
+
+**다음 세션 참고**: `tests/a11y_audit.js`가 이제 애니메이션/라우팅 타이밍에 훨씬 강해졌지만,
+혹시 또 재현 안 되는 위반이 나오면 먼저 "진짜 색상 문제인지 vs 스캔 타이밍 문제인지"부터
+같은 스캔을 3~4회 재실행해 재현성으로 구분할 것 — 안정적으로 재현되면 진짜 버그, 실행마다
+바뀌면 타이밍 문제일 확률이 높음(이번 세션에서 실제로 그렇게 구분함).

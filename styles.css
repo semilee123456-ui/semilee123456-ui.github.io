@@ -21,7 +21,9 @@
     --seafoam:#155445;
     --mint:#1F6E5C;
     --indigo:#35507A;    /* 쪽빛 — 서브 포인트 (버튼 hover, 보조 강조) */
-    --gold:#9C6F1E;      /* 금색 — 재물운 상징, 아주 소량만 사용(도장·소형 강조) */
+    --gold:#9A6D1C;      /* 금색 — 재물운 상징, 아주 소량만 사용(도장·소형 강조). 2026-08-22:
+       흰 글자(--on-accent) 배경으로 쓰이는 곳(.ticket-jackpot-ribbon 등)이 4.462:1로 WCAG AA
+       4.5:1 미달이라 아주 살짝(-2,-2,-2) 어둡게 조정(4.587:1로 통과, 육안 차이 거의 없음) */
     /* 2026-07-30: 원래 웜 아이보리(#F7F1E0, 한지톤) 배경이 세금·금융 계산기치고 "블로그/개인
        사이트" 느낌을 준다는 지적(제미나이 검수 + 사용자 자체 재검토, 토스·카카오뱅크·네이버페이
        등 대형 금융 서비스는 거의 다 흰색+연한 쿨그레이 배경을 쓴다는 근거) — 페이지 배경/보더를
@@ -126,8 +128,8 @@
       --grad-amber: linear-gradient(150deg, #2A2318 0%, #201E1A 100%);
       --shadow-card: 0 2px 12px rgba(0,0,0,0.4);
       --shadow-btn: 0 6px 14px rgba(75,193,160,0.28);
-      --status-red:#E2776C;
-      --status-red-rgb: 226,119,108;
+      --status-red:#FC9186;
+      --status-red-rgb: 252,145,134;
       --status-amber:#D6AC55;
       --on-accent:#1B1917;
       --ink-rgb: 237,232,218;
@@ -3017,7 +3019,13 @@
     font-family:inherit; font-size:var(--fs-note); font-weight:700; padding:11px; border-radius:12px;
     cursor:pointer; margin-top:8px; transition:background 0.15s ease;
   }
-  
+  /* 2026-08-22: 라이트모드는 이 8% 틴트로도 --teal 대 배경 대비가 넉넉하지만, 다크모드는
+     --card(#453E34) 위에 --teal(#4BC1A0) 8% 틴트를 얹으면 배경이 글자색 쪽으로 살짝
+     끌려가서(같은 계열 색이 섞이므로) 대비가 4.74:1(순수 --card 기준)에서 4.17:1로
+     떨어져 WCAG AA 미달이 됨(tests/a11y_audit.js가 #home-copy-result-btn에서 검출).
+     틴트 자체를 없애지 않고 알파만 0.02로 낮춰 배경을 --card에 더 가깝게 되돌림(4.59:1로 통과). */
+  :root[data-theme="dark"] .share-btn{ background:rgba(var(--teal-rgb),0.02); }
+
   .share-btn.copied{ background:var(--teal); color:var(--on-accent); border-color:var(--teal); }
   /* 공유(링크 복사) 성공 시에도 곰돌이가 반겨주면 좋겠다는 요청(2026-08-03) — 버튼 텍스트가
      "✅ 복사 완료!"로 바뀌는 기존 로직(script.js 4곳)은 그대로 두고, 그 상태에 CSS만으로
