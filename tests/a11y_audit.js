@@ -43,11 +43,78 @@ async function auditPage(context, urlPath, theme) {
   const page = await context.newPage();
   const issues = [];
   try {
+    // 진입 애니메이션(milestonePop 등 @keyframes, .view.on의 view-fade-in, .reveal-up의
+    // IntersectionObserver 스크롤 등장 등)이 진행되는 도중 스캔하면 opacity가 아직 최종값에
+    // 도달하기 전 중간값이라 axe color-contrast가 실제로는 애니메이션이 끝나면 정상인 요소를
+    // 오탐함(2026-08-22 세션이 index.html `#home-milestone`에서, 2026-08-23 세션이
+    // contact.html에서 각각 실측 확인). `page.goto()` 이후에 `page.addStyleTag()`로 얼리면
+    // contact.html처럼 리다이렉트(location.replace)를 거치는 페이지에서 이미 리다이렉트 전
+    // 문서가 IntersectionObserver를 먼저 발동시켜(레이스) 얼리기 전에 실제 0.5s 트랜지션이
+    // 시작돼버리는 경우가 있고, CSS는 이미 진행 중인 트랜지션의 duration을 나중에 줄여도
+    // 소급 적용을 안 해서 그 트랜지션은 얼리기 전 속도 그대로 끝까지 감(2026-08-23 실측
+    // 확인). `page.addInitScript()`는 매 네비게이션(리다이렉트로 이어지는 새 문서 포함)의
+    // 어떤 페이지 스크립트보다도 먼저 실행되는 것이 보장되므로, 이 레이스 자체가 성립 안 함 —
+    // Percy/Cypress 등에서 쓰는 표준 "스냅샷 전 애니메이션 무력화" 기법과 동일한 목적.
+    await page.addInitScript(() => {
+      const inject = () => {
+        const style = document.createElement('style');
+        style.textContent = `*, *::before, *::after{
+          animation-duration: 0.001ms !important; animation-delay: 0.001ms !important;
+          transition-duration: 0.001ms !important; transition-delay: 0.001ms !important;
+        }`;
+        (document.head || document.documentElement).appendChild(style);
+      };
+      // addInitScript는 페이지의 어떤 스크립트보다도 먼저 실행되도록 보장되지만, 그만큼
+      // 너무 일찍(파서가 아직 <html>도 안 만든 시점) 실행될 수도 있어서 document.documentElement가
+      // null이라 appendChild가 조용히(?) 던지는 걸 실측으로 확인함(2026-08-23) — 그 결과
+      // 이 스타일 자체가 통째로 안 들어가서 explore-section의 실제 트랜지션(0.5s)이 그대로
+      // 살아있었고, 그게 위 5프레임 settle로도 못 잡던 잔여 opacity(0.668)의 진짜 원인이었음.
+      // documentElement가 아직 없으면 MutationObserver로 <html>이 생기는 순간을 기다렸다 주입.
+      if (document.documentElement) inject();
+      else new MutationObserver((_, obs) => {
+        if (document.documentElement) { inject(); obs.disconnect(); }
+      }).observe(document, { childList: true });
+    });
     await page.goto(BASE + urlPath, { waitUntil: 'domcontentloaded', timeout: 15000 });
+    // contact.html처럼 클라이언트 리다이렉트를 거쳐 index.html 해시 라우팅(.view/.view.on
+    // 구조)으로 넘어가는 페이지는 domcontentloaded 시점에 아직 라우터가 최종 뷰로 전환
+    // 완료하기 전일 수 있음 — `.view.on`이 실제로 나타나고 그 opacity가 최종값(1, 위 얼리기로
+    // 이제 즉시 도달함)에 이를 때까지 폴링. 이 SPA 라우팅 구조가 아예 없는 나머지 정적
+    // 랜딩페이지(주별/국가별 페이지 등)에서는 `.view` 자체가 없으니 즉시 통과.
+    await page.waitForFunction(
+      () => {
+        if (!document.querySelector('.view')) return true;
+        const view = document.querySelector('.view.on');
+        return !!view && getComputedStyle(view).opacity === '1';
+      },
+      { timeout: 5000 }
+    );
     if (theme === 'dark') {
       await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
       await page.waitForTimeout(200);
     }
+    // 스크롤 등장 애니메이션(.reveal-up, script.js의 setupRevealAnimation())은 IntersectionObserver가
+    // 스크롤로 뷰포트에 들어와야 opacity:0→1로 바뀌는데, 이 감사는 스크롤을 전혀 안 하므로
+    // 뷰포트 밖 섹션은 항상 opacity:0 상태로 스캔됨 — axe color-contrast가 이 반투명 텍스트를
+    // "대비 거의 없음(1.0~1.5:1)"으로 오탐하는 걸 2026-08-22 세션이 index.html "explore" 섹션에서
+    // 실측으로 확인함(실제 사용자는 스크롤하면 정상 대비로 보임, 사이트 버그 아님). 실제 사용자가
+    // 결국 보게 될 최종 상태(다 스크롤된 상태)를 스캔하도록 애니메이션을 완료 상태로 강제 적용.
+    // 위 얼리기(addInitScript)로 대부분의 애니메이션은 즉시 최종 프레임으로 스냅되지만,
+    // #home-milestone처럼 페이지 로드 후 계산 결과에 따라 나중에(비동기 초기화 체인 중)
+    // display:none→block으로 바뀌면서 그제서야 트랜지션이 "시작"되는 요소는, 그 시작 시점과
+    // 이 스캔 시점이 정확히 같은 프레임이면 브라우저가 아직 애니메이션 시작 프레임(중간값)
+    // 그대로일 수 있음(2026-08-23 실측 — 재실행마다 위반이 나왔다 안 나왔다 하는 걸 확인).
+    // requestAnimationFrame을 몇 차례 왕복시켜 이런 "뒤늦게 시작되는" 애니메이션도 최소
+    // 한 프레임 이상 지나 최종 프레임에 안착하게 함 — 동시에 .reveal-up도 매 프레임 다시
+    // 강제해서, setupRevealAnimation()이 우리보다 늦게 호출돼 새로 뷰포트 밖 섹션에
+    // .reveal-up을 붙이는 경우(explore 섹션 등)까지 놓치지 않게 함.
+    await page.evaluate(async () => {
+      const settle = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      for (let i = 0; i < 5; i++) {
+        document.querySelectorAll('.reveal-up').forEach((el) => el.classList.add('is-in'));
+        await settle();
+      }
+    });
     await page.addScriptTag({ path: AXE_PATH });
     const results = await page.evaluate(
       (tags) => window.axe.run(document, { runOnly: { type: 'tag', values: tags } }),
