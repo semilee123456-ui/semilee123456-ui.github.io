@@ -18589,3 +18589,37 @@ node 스크립트로 배열을 안전하게(날짜 역행 방지 검증 포함) 
 `ISSUES: 0`. Playwright로 홈 화면 `#draw-balls-megamillions` 직접 렌더링해 "1,25,34,
 48,57 + 24" 정상 표시·콘솔 에러 없음 확인.
 
+
+### 2026-08-22 이어서 — 사이트 전체 "42countries"→"43countries" 표기 스윕 완료, main에 머지
+
+브라질 추가(43번째 세율 지원국) 세션이 의도적으로 보류해뒀던 사이트 전역 스윕("알려진
+미해결 항목"에 있던 항목, 위 petscan-ai 세션 이후 다시 확인해보니 여전히 미착수 상태였음)을
+서브에이전트에게 위임해 처리.
+
+**변경 범위**: 80개 파일에서 "42개국/42 countries" 라이브 카운트를 43으로 갱신 —
+`index.html`(meta/OG/JSON-LD 4곳), `press-kit.html`(4곳), `widget-embed.html`(주석),
+`lottery-tax-by-country.html` + 언어별 변형 35개(원래 "26 languages, 42 countries"처럼
+언어 수까지 같이 낡아있던 걸 실제 언어 수 36으로도 같이 정정), `sitemap.html`의 다국어
+`desc:`/`h2Country:` 객체(35개 언어, 크메르·네팔·미얀마·벵골어는 그 언어의 네이티브
+숫자 표기까지 43으로 변환), `changelog.html`(리드 문구 + 신규 2026-08-22 브라질 항목
+추가, 기존 changelog 항목과 동일한 HTML 구조 준수).
+
+**의도적으로 안 고친 곳**(라이브 카운트가 아니라 과거 시점 서술/정확한 데이터 개수라서):
+`changelog.html`의 "42개국 체제 완성까지..." (2026-08-06~08-18 항목, 그 시점 서술),
+`sitemap.html`의 "50 States & 42 Countries"(데이터셋 CSV가 `us`/`other`를 제외하고
+생성돼 실제로 지금도 정확히 42행), `lottery-tax-data-hub.html`의 CSV 행수·차트 캡션
+(같은 이유로 42가 맞음) — "서술형 배지=43, 데이터셋 정확 수치=42" 구분이 이 저장소
+관례임을 `HANDOFF-ARCHIVE.md`로 확인.
+
+**머지 시 발견**: 스윕 작업 중 다른 세션이 `main`에 4개 커밋(petscan-ai 벤치마킹으로
+`tests/a11y_audit.js`/`feed.xml`/`llms-full.txt`/`opensearch.xml` 등 신규 추가 +
+메가밀리언즈 8/21 결과 반영 + HANDOFF 미해결 항목 정리)을 먼저 push해놔서, `git fetch
+origin main` + `git merge origin/main`으로 먼저 합친 뒤(자동 병합, 충돌 없음) 스윕
+변경사항을 그 위에 커밋 — 이 저장소 규칙(6번 항목: 병합 직전 항상 fetch)을 그대로
+따름. 병합 후 `node --check script.js` + 정적 테스트(`broken_link_audit`/
+`fact_consistency_audit`/`draw_archive_integrity_check`/`mcp_sync_check`) + Playwright
+(`home_audit`/`console_error_audit`) 전부 `ISSUES: 0` 재확인. **`tests/a11y_audit.js`가
+잡아내는 다크모드 색상 대비 이슈는 이번 스윕과 무관한 사전 존재 이슈**(petscan-ai
+세션이 이미 "알려진 미해결 항목"에 등재해둠) — 재조사·재수정 안 함.
+
+병합된 브랜치(`claude/compress-handover-file-jgzjey`)를 PR로 올려 `main`에 머지 완료.

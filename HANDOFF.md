@@ -719,7 +719,7 @@ resident" 등 실제 검색 결과에 `chamtax.com`은 전혀 안 나옴(TheLott
 
 ## 작업 이력 (날짜순, 세션마다 맨 아래에 새 항목 추가)
 
-이보다 오래된 세션 기록(~2026-08-22 메가밀리언즈 8/21 결과 반영 세션까지 전부)은
+이보다 오래된 세션 기록(~2026-08-22 43개국 표기 스윕 세션까지 전부)은
 `HANDOFF-ARCHIVE.md` 참고(특정 과거 이슈의 배경이 필요할 때만 검색, 매 세션 필독 아님).
 아래는 그 세션들의 결론만 압축한 것 — 전부 완결된 건이라 다음 세션이 재조사할 필요 없음.
 날짜별 항목이 3~4개 넘게 다시 쌓이면 가장 오래된 것부터 같은 방식으로
@@ -753,40 +753,6 @@ resident" 등 실제 검색 결과에 `chamtax.com`은 전혀 안 나옴(TheLott
   sitemap.html 링크 기본색 대비 미달) 전부 수정. 남은 다크모드 `--teal`/`--card` 대비
   미달(~12곳)은 디자인 판단이 필요해 보류 → "알려진 미해결 항목"에 등재 후 아래
   2026-08-22 GSC/teal 세션에서 해소 완료.
-
-### 2026-08-22 이어서 — 사이트 전체 "42countries"→"43countries" 표기 스윕 완료, main에 머지
-
-브라질 추가(43번째 세율 지원국) 세션이 의도적으로 보류해뒀던 사이트 전역 스윕("알려진
-미해결 항목"에 있던 항목, 위 petscan-ai 세션 이후 다시 확인해보니 여전히 미착수 상태였음)을
-서브에이전트에게 위임해 처리.
-
-**변경 범위**: 80개 파일에서 "42개국/42 countries" 라이브 카운트를 43으로 갱신 —
-`index.html`(meta/OG/JSON-LD 4곳), `press-kit.html`(4곳), `widget-embed.html`(주석),
-`lottery-tax-by-country.html` + 언어별 변형 35개(원래 "26 languages, 42 countries"처럼
-언어 수까지 같이 낡아있던 걸 실제 언어 수 36으로도 같이 정정), `sitemap.html`의 다국어
-`desc:`/`h2Country:` 객체(35개 언어, 크메르·네팔·미얀마·벵골어는 그 언어의 네이티브
-숫자 표기까지 43으로 변환), `changelog.html`(리드 문구 + 신규 2026-08-22 브라질 항목
-추가, 기존 changelog 항목과 동일한 HTML 구조 준수).
-
-**의도적으로 안 고친 곳**(라이브 카운트가 아니라 과거 시점 서술/정확한 데이터 개수라서):
-`changelog.html`의 "42개국 체제 완성까지..." (2026-08-06~08-18 항목, 그 시점 서술),
-`sitemap.html`의 "50 States & 42 Countries"(데이터셋 CSV가 `us`/`other`를 제외하고
-생성돼 실제로 지금도 정확히 42행), `lottery-tax-data-hub.html`의 CSV 행수·차트 캡션
-(같은 이유로 42가 맞음) — "서술형 배지=43, 데이터셋 정확 수치=42" 구분이 이 저장소
-관례임을 `HANDOFF-ARCHIVE.md`로 확인.
-
-**머지 시 발견**: 스윕 작업 중 다른 세션이 `main`에 4개 커밋(petscan-ai 벤치마킹으로
-`tests/a11y_audit.js`/`feed.xml`/`llms-full.txt`/`opensearch.xml` 등 신규 추가 +
-메가밀리언즈 8/21 결과 반영 + HANDOFF 미해결 항목 정리)을 먼저 push해놔서, `git fetch
-origin main` + `git merge origin/main`으로 먼저 합친 뒤(자동 병합, 충돌 없음) 스윕
-변경사항을 그 위에 커밋 — 이 저장소 규칙(6번 항목: 병합 직전 항상 fetch)을 그대로
-따름. 병합 후 `node --check script.js` + 정적 테스트(`broken_link_audit`/
-`fact_consistency_audit`/`draw_archive_integrity_check`/`mcp_sync_check`) + Playwright
-(`home_audit`/`console_error_audit`) 전부 `ISSUES: 0` 재확인. **`tests/a11y_audit.js`가
-잡아내는 다크모드 색상 대비 이슈는 이번 스윕과 무관한 사전 존재 이슈**(petscan-ai
-세션이 이미 "알려진 미해결 항목"에 등재해둠) — 재조사·재수정 안 함.
-
-병합된 브랜치(`claude/compress-handover-file-jgzjey`)를 PR로 올려 `main`에 머지 완료.
 
 ### 2026-08-22 이어서 — GSC 실측 트래픽 확인 + 다크모드 `--teal` 색상 대비 수정, main에 머지
 
@@ -918,3 +884,25 @@ writeText`를 가로채서 실제로 URL이 붙는지 3개 함수 전부 확인(
 쪽 문제를 해결한 게 아님) — 아이메시지 사용자가 다시 이 문제를 지적하면 `url:` 필드를
 `navigator.share()`에 별도로 넘기는 방식(이 저장소에 아직 전례 없음, `text`에 안 섞고
 분리하면 중복 카드 없이 링크만 깔끔하게 붙을 가능성)을 검토해볼 것.
+
+### 2026-08-23 이어서 — 파워볼 8/22(토) 추첨 결과 반영 (사용자 공유 스크린샷 기준)
+
+사용자가 usamega.com 스크린샷 공유(메가밀리언즈 8/21 결과·파워볼 8/22 결과·양쪽 다음
+잭팟액 포함) — 메가밀리언즈 8/21은 이미 반영돼 있었으나, 파워볼 8/22(13,31,54,57,65/
+파워볼 23, Power Play 3x, 당첨자 없음)가 누락돼 있던 걸 발견해 반영.
+
+**수정**: `script.js`의 `LATEST_DRAW.powerball`(날짜/번호), `JACKPOT_DATA.powerball`
+(다음 추첨 8/24 잭팟 $81M/현금가치 $34.8M, $68M에서 롤오버), 지연로딩 캐시버스팅
+문자열(`odds-data.js?v=20260822`→`20260823`) 갱신. `odds-data.js`의
+`POWERBALL_DRAW_ARCHIVE`/`POWERBALL_JACKPOT_ARCHIVE`(4번째 필드는 8/22 자체 잭팟
+$68M)에도 새 회차 추가 — `scripts/backfill-lottery.js`의 배열 읽기/쓰기 로직(공백
+포함 `"= "` 포맷 보존, 날짜 역행/중복 방지 검증)을 그대로 본뜬 1회성 스크립트로 처리해
+지난 메가밀리언즈 갱신 때 겪었던 공백 유실 회귀를 이번엔 처음부터 방지함. Power
+Play(3x)·더블플레이(4,18,29,47,53/16)는 이 사이트가 추적 안 하는 필드라 스코프 밖.
+
+**검증**: `draw_archive_integrity_check`(4개 아카이브 정렬/중복 없음, 파워볼 마지막
+날짜 2026-08-22로 갱신 확인), 정적 테스트 2개(`fact_consistency_audit`/
+`broken_link_audit`) + Playwright 2개(`home_audit`/`console_error_audit`) 전부
+`ISSUES: 0`. 홈 화면 `#draw-balls-powerball` DOM 텍스트를 직접 읽어 "13,31,54,57,65+23"
+정상 반영 확인. `script.min.js` 재생성, `index.html` 캐시버스팅 20260823-2→20260823-3
+갱신(`styles.css`는 안 건드려서 `styles.min.css` 재생성 불필요).

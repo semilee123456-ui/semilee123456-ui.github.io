@@ -3740,7 +3740,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260822';
+    script.src = 'odds-data.js?v=20260823';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -5909,7 +5909,7 @@ function buildDrawScheduleMore(days){
 // 옛 값 그대로 둘 것 — 실제 금액이 발표된 뒤에만 갱신. (지난 갱신 이력은 git log로 충분히
 // 추적 가능해서 날짜별 코멘트는 더 이상 여기 쌓지 않음 — 최신 반영 회차는 아래 LATEST_DRAW 참고.)
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 68000000, cashUsd: 29500000 },
+  powerball:    { amountUsd: 81000000, cashUsd: 34800000 },
   megamillions: { amountUsd: 130000000, cashUsd: 55500000 },
 };
 
@@ -5937,8 +5937,12 @@ const GAME_NAME_MORE = {
 // 2026-08-22 이어서: 8/21(금) 메가밀리언즈 추첨 1,25,34,48,57 / 메가볼 24, 당첨자
 // 없음(사용자 공유 스크린샷 usamega.com 기준). 다음 추첨(8/25 화) 잭팟 $130M
 // (현금가치 $55.5M)로 갱신 — $113M(8/21 자체 잭팟)에서 롤오버로 증가한 값.
+// 2026-08-23 이어서: 8/22(토) 파워볼 추첨 13,31,54,57,65 / 파워볼 23, Power
+// Play 3x, 당첨자 없음(사용자 공유 스크린샷 usamega.com 기준). 다음 추첨(8/24 월)
+// 잭팟 $81M(현금가치 $34.8M)로 갱신 — $68M(8/22 자체 잭팟)에서 롤오버로 증가한
+// 값. 더블플레이(4,18,29,47,53/16)는 이 사이트가 추적 안 하는 필드라 반영 안 함.
 const LATEST_DRAW = {
-  powerball:    { date: '2026-08-19', numbers: [10, 21, 58, 61, 64], special: 17 },
+  powerball:    { date: '2026-08-22', numbers: [13, 31, 54, 57, 65], special: 23 },
   megamillions: { date: '2026-08-21', numbers: [1, 25, 34, 48, 57], special: 24 },
 };
 
