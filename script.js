@@ -12863,14 +12863,25 @@ async function shareRefundChecklist(){
      pt: `Encontre dinheiro que você não sabia que tinha — checklist`, es: `Encuentra dinero que no sabías que tenías: lista de verificación`, uk: `Знайдіть гроші, про які ви не знали — чекліст`, tet: `Buka osan ne'ebé ó la hatene katak ó iha — lista verifikasaun`, de: `Finde Geld, von dem du nicht wusstest, dass du es hast — Checkliste`, nl: `Vind geld waarvan je niet wist dat je het had — checklist`, sv: `Hitta pengar du inte visste att du hade — checklista`, no: 'Finn penger du ikke visste du hadde — sjekkliste', da: 'Find penge, du ikke vidste du havde — tjekliste', fi: 'Löydä rahaa, jota et tiennyt sinulla olevan — tarkistuslista', it: "Checklist per trovare denaro che non sapevi di avere", pl: "Lista kontrolna do znajdowania pieniędzy, o których nie wiedziałeś", tr: 'Sahip olduğunuzu bilmediğiniz parayı bulma kontrol listesi'}
   );
 
-  // 2026-08-05: 링크(사이트 URL)를 텍스트에서 뺌 — 아이메시지 등에서 텍스트+링크가 있으면
+  // 2026-08-05: 링크(사이트 URL)를 텍스트에서 뺐었음 — 아이메시지 등에서 텍스트+링크가 있으면
   // OS가 자동으로 별도의 링크 미리보기 카드를 또 붙여서 메시지가 여러 덩이로 쪼개져 보인다는
-  // 지적(스크린샷 확인, shareLatestDraw() 주석도 참고). 이 공유는 원래 이미지 없이 텍스트만
-  // 보내는 방식이라 링크를 빼면 카카오톡 등에서 쓰던 동적 카드(wrapWithOgShareCard)도 이제
-  // 필요 없어짐 — 순수 텍스트만 공유.
+  // 지적 때문(스크린샷 확인, shareLatestDraw() 주석도 참고).
+  // 2026-08-23: 사용자가 카카오톡 공유 스크린샷을 보여주며 정정 요청 — 카카오톡은 아이메시지와
+  // 달리 링크가 아예 없으면 미리보기 카드를 만들 수 없어서(카드/링크 둘 다 없는 순수 텍스트
+  // 말풍선만 남음) 받은 사람이 눌러볼 게 없는 문제가 실사용자 스크린샷으로 확인됨 — 이 사이트의
+  // 주 사용자층(한국어 UI, 카카오톡이 주력 공유 채널)에겐 아이메시지의 "말풍선 2개로 쪼개짐"
+  // 정도보다 카카오톡의 "누를 게 없음"이 훨씬 나쁜 트레이드오프라 판단해 링크를 되살림 —
+  // copyResultText()/reportCalcIssue()와 같은 방식으로 텍스트 끝에 그대로 붙임(별도 동적
+  // OG 카드로 감쌀 만한 특정 금액이 이 공유엔 없어서 wrapWithOgShareCard는 안 씀 — 사이트
+  // 기본 OG 카드로 충분함). FAQ 탭으로 바로 열리게 해시(#faq)를 붙임(다른 페이지의
+  // "index.html#faq" 딥링크와 같은 기존 패턴).
+  const shareUrlObj = new URL(location.origin + location.pathname + location.search);
+  shareUrlObj.hash = 'faq';
+  const shareUrl = shareUrlObj.toString();
+  const shareTextWithUrl = `${shareText} ${shareUrl}`;
   if (navigator.share && !isDesktopPointerEnv()) {
     try {
-      await navigator.share({ title: shareTitle, text: shareText });
+      await navigator.share({ title: shareTitle, text: shareTextWithUrl });
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return;
@@ -12878,7 +12889,7 @@ async function shareRefundChecklist(){
   }
 
   try {
-    await navigator.clipboard.writeText(shareText);
+    await navigator.clipboard.writeText(shareTextWithUrl);
     if (btn) {
       const original = btn.textContent;
       btn.textContent = shareFallbackCopyToast();
@@ -12894,7 +12905,7 @@ async function shareRefundChecklist(){
       'กดค้างเพื่อคัดลอกแล้วแชร์',
       'Нажмите и удерживайте, чтобы скопировать, затем поделитесь',
       PRESS_HOLD_COPY_MORE
-    ), shareText);
+    ), shareTextWithUrl);
   }
 }
 
@@ -12960,10 +12971,16 @@ async function shareUsUnclaimedMoneyChecklist(){
      pt: `Encontre dinheiro que você não sabia que tinha — checklist`, es: `Encuentra dinero que no sabías que tenías: lista de verificación`, uk: `Знайдіть гроші, про які ви не знали — чекліст`, tet: `Buka osan ne'ebé ó la hatene katak ó iha — lista verifikasaun`, de: `Finde Geld, von dem du nicht wusstest, dass du es hast — Checkliste`, nl: `Vind geld waarvan je niet wist dat je het had — checklist`, sv: `Hitta pengar du inte visste att du hade — checklista`, no: 'Finn penger du ikke visste du hadde — sjekkliste', da: 'Find penge, du ikke vidste du havde — tjekliste', fi: 'Löydä rahaa, jota et tiennyt sinulla olevan — tarkistuslista', it: "Checklist per trovare denaro che non sapevi di avere", pl: "Lista kontrolna do znajdowania pieniędzy, o których nie wiedziałeś", tr: 'Sahip olduğunuzu bilmediğiniz parayı bulma kontrol listesi'}
   );
 
-  // 2026-08-05: shareRefundChecklist()와 같은 이유로 링크 제거 — 위 주석 참고
+  // 2026-08-05: shareRefundChecklist()와 같은 이유로 링크 제거했었으나, 2026-08-23에 그
+  // 함수와 같은 이유로 되살림(카카오톡 등은 링크가 없으면 미리보기 카드를 못 만듦) — 위
+  // shareRefundChecklist() 주석 참고, 같은 방식 그대로 적용.
+  const shareUrlObj = new URL(location.origin + location.pathname + location.search);
+  shareUrlObj.hash = 'faq';
+  const shareUrl = shareUrlObj.toString();
+  const shareTextWithUrl = `${shareText} ${shareUrl}`;
   if (navigator.share && !isDesktopPointerEnv()) {
     try {
-      await navigator.share({ title: shareTitle, text: shareText });
+      await navigator.share({ title: shareTitle, text: shareTextWithUrl });
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return;
@@ -12971,7 +12988,7 @@ async function shareUsUnclaimedMoneyChecklist(){
   }
 
   try {
-    await navigator.clipboard.writeText(shareText);
+    await navigator.clipboard.writeText(shareTextWithUrl);
     if (btn) {
       const original = btn.textContent;
       btn.textContent = shareFallbackCopyToast();
@@ -12987,7 +13004,7 @@ async function shareUsUnclaimedMoneyChecklist(){
       'กดค้างเพื่อคัดลอกแล้วแชร์',
       'Нажмите и удерживайте, чтобы скопировать, затем поделитесь',
       PRESS_HOLD_COPY_MORE
-    ), shareText);
+    ), shareTextWithUrl);
   }
 }
 
@@ -13051,10 +13068,16 @@ async function shareInUnclaimedMoneyChecklist(){
      pt: `Encontre dinheiro que você não sabia que tinha — checklist`, es: `Encuentra dinero que no sabías que tenías: lista de verificación`, uk: `Знайдіть гроші, про які ви не знали — чекліст`, tet: `Buka osan ne'ebé ó la hatene katak ó iha — lista verifikasaun`, de: `Finde Geld, von dem du nicht wusstest, dass du es hast — Checkliste`, nl: `Vind geld waarvan je niet wist dat je het had — checklist`, sv: `Hitta pengar du inte visste att du hade — checklista`, no: 'Finn penger du ikke visste du hadde — sjekkliste', da: 'Find penge, du ikke vidste du havde — tjekliste', fi: 'Löydä rahaa, jota et tiennyt sinulla olevan — tarkistuslista', it: "Checklist per trovare denaro che non sapevi di avere", pl: "Lista kontrolna do znajdowania pieniędzy, o których nie wiedziałeś", tr: 'Sahip olduğunuzu bilmediğiniz parayı bulma kontrol listesi'}
   );
 
-  // 2026-08-05: shareRefundChecklist()와 같은 이유로 링크 제거 — 위 주석 참고
+  // 2026-08-05: shareRefundChecklist()와 같은 이유로 링크 제거했었으나, 2026-08-23에 그
+  // 함수와 같은 이유로 되살림(카카오톡 등은 링크가 없으면 미리보기 카드를 못 만듦) — 위
+  // shareRefundChecklist() 주석 참고, 같은 방식 그대로 적용.
+  const shareUrlObj = new URL(location.origin + location.pathname + location.search);
+  shareUrlObj.hash = 'faq';
+  const shareUrl = shareUrlObj.toString();
+  const shareTextWithUrl = `${shareText} ${shareUrl}`;
   if (navigator.share && !isDesktopPointerEnv()) {
     try {
-      await navigator.share({ title: shareTitle, text: shareText });
+      await navigator.share({ title: shareTitle, text: shareTextWithUrl });
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return;
@@ -13062,7 +13085,7 @@ async function shareInUnclaimedMoneyChecklist(){
   }
 
   try {
-    await navigator.clipboard.writeText(shareText);
+    await navigator.clipboard.writeText(shareTextWithUrl);
     if (btn) {
       const original = btn.textContent;
       btn.textContent = shareFallbackCopyToast();
@@ -13078,7 +13101,7 @@ async function shareInUnclaimedMoneyChecklist(){
       'กดค้างเพื่อคัดลอกแล้วแชร์',
       'Нажмите и удерживайте, чтобы скопировать, затем поделитесь',
       PRESS_HOLD_COPY_MORE
-    ), shareText);
+    ), shareTextWithUrl);
   }
 }
 
