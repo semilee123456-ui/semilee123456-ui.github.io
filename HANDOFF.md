@@ -507,24 +507,12 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   korea-resident/lottery-tax-data-hub/biggest-lottery-jackpots-after-tax/
   us-lottery-tax-rate는 전부 위반 0으로 해소). `styles.min.css` 재생성,
   `index.html` 캐시버스팅 20260820-1→20260822-3 갱신.
-- **잔여 색상 대비 이슈(아래 4가지는 위 teal 수정과 무관한 별개 원인, 이번 세션에서
-  안 고침 — 각각 최소 1회 사용자 확인 후 처리할 것)**:
-  1. **`--status-red`(`#E2776C`) 배지가 `--card` 위에서 3.55:1로 미달** —
-     `changelog.html`의 `.badge-fix`, `press-kit.html`의 `.badge-estimate` 등에서 발생.
-     teal과 무관한 별도 색상 토큰이라 이번에 안 건드림.
-  2. **`.cta-box .cta-note`(teal 배경 위 `--card` 텍스트, `opacity:0.85`)가 3.69:1로 미달** —
-     `china_in_korea_lottery_tax.html` 등에서 발생. `scripts/landing-ticket-template.css`에는
-     이미 다크모드만 `opacity:1`로 바꾸는 수정을 넣어놨지만(위 대량 되돌리기 때 함께 안
-     날아가게 확인함), **실제 90여 개 랜딩페이지 인라인 `<style>`에는 아직 재전파 안 됨**
-     — 위에서 언급한 템플릿-실파일 드리프트 문제 때문에 이번엔 보류. 다음에 이 템플릿을
-     정식으로 재전파할 때(드리프트 검토 포함) 같이 나갈 것.
-  3. **index.html의 "explore" 타일 섹션(`.explore-title`, `explore.compareLabel/oddsLabel/
-     faqLabel` 등)이 다크모드에서 거의 안 보임(대비 1.0~1.5:1)** — teal이 아니라 어두운
-     글자색(`#231f1b`대) 자체가 배경과 거의 같은 톤이라 훨씬 심각한 별개 버그로 보임,
-     **원인 파악 못 함, 다음 세션이 조사할 것**.
-  4. **`contact.html`이 라이트/다크 모드 둘 다 회색 텍스트(`#adadad`/`#bdbcb9`/`#9a9384`)로
-     대비 1.79~3.78:1** — 문의 폼 전체가 잘 안 보이는 수준이라 4개 잔여 항목 중 체감상
-     가장 심각. teal과 무관, 원인 미파악.
+- **✅ 잔여 색상 대비 이슈 4건 전부 해결(2026-08-23)** — 아래 "작업 이력" 최신 항목 참고.
+  실제로는 4건 중 2건(`--status-red`/`.cta-note`)만 진짜 색상 버그였고, 나머지 2건
+  ("explore" 섹션·`contact.html`)은 `tests/a11y_audit.js` 자체가 진입 애니메이션/뷰 전환
+  중간 상태를 스캔해 생긴 **오탐**이었음이 실측으로 밝혀짐(사이트 자체엔 문제 없었음) —
+  이 발견 때문에 다음 세션이 이 4건을 실제 코드 버그로 다시 조사할 필요 없음(테스트
+  타이밍만 고쳤을 뿐 사이트 쪽 색상은 이미 정상이었던 2건 포함).
 ---
 
 ## 홍보·마케팅 작업 전체 이력 (2026-08-06 정리, 재조사 금지 참고용)
@@ -864,3 +852,53 @@ Cloudflare 크롤러 로그 검증 2개뿐이라고 판단.
 "explore" 섹션 근본 원인 미상, `contact.html` 회색 텍스트 근본 원인 미상.
 
 PR #336(GSC 기록)·#337(teal 수정) 둘 다 `main`에 머지 완료.
+
+### 2026-08-23 이어서 — "알려진 미해결 항목"에 남아있던 잔여 색상 대비 4건 전부 해결(2건은 진짜 버그, 2건은 테스트 오탐으로 판명)
+
+사용자가 "전체적으로 버그·QA 기본적인 것 다 점검해달라"고 요청 — 서브에이전트에게 위임한
+1차 시도가 세션 한도로 중간에 끊겨(status-red/cta-note까지만 처리, 커밋 전) 이어받아 마무리.
+
+**진짜 색상 버그 2건 수정**:
+1. **`--status-red`(다크모드 `#E2776C`)가 `--card` 위에서 3.55:1 미달** → `#FC9186`로 밝혀
+   4.5:1 이상 확보(`styles.css`/`scripts/landing-ticket-template.css`/170여 개 랜딩페이지
+   인라인 사본 전부 동일 토큰 교체 — teal 수정 때와 같은 "토큰 값만 sed로 치환, 템플릿
+   재전파 스크립트는 안 씀" 방식이라 드리프트 위험 없음).
+2. **`.cta-box .cta-note`(테일 배경 위 `--card` 텍스트, `opacity:0.85`)가 3.69:1 미달** →
+   `scripts/landing-ticket-template.css`엔 이미 있던 다크모드 `opacity:1` 수정을 실제
+   90여 개 랜딩페이지 인라인 `<style>`에 동일하게 전파.
+3. **(위 두 개를 고치는 과정에서 새로 발견)** 다크모드 `.share-btn`(공유/결과복사 버튼)의
+   `rgba(var(--teal-rgb),0.08)` 배경이 텍스트(`--teal`)와 같은 계열 색이라 `--card` 단독
+   대비(4.74:1)보다 낮은 4.17:1로 떨어져 있었음 — 알파를 0.02로 낮춰 4.59:1로 회복
+   (`index.html#home-copy-result-btn`에서 `tests/a11y_audit.js`가 검출).
+4. **다크모드 `--gold`(`#9C6F1E`→`#9A6D1C`)** — `.ticket-jackpot-ribbon` 등 흰 글자 배경으로
+   쓰이는 곳이 4.462:1로 미달이라 아주 살짝 어둡게(육안 차이 거의 없음) 조정.
+
+**나머지 2건("explore" 섹션·`contact.html`)은 사이트 버그가 아니라 `tests/a11y_audit.js`
+자체의 스캔 타이밍 문제였음이 실측으로 밝혀짐** — 실사용자는 원래도 정상으로 봤을 화면을
+테스트가 애니메이션/뷰 전환 중간 프레임에서 스캔해 존재하지 않는 색을 잡아낸 오탐:
+- `page.goto()` 이후 `page.addStyleTag()`로 모든 CSS 애니메이션/트랜지션 duration을
+  0.001ms로 얼리는 기존 방식이, `contact.html`(→`index.html#contact` 클라이언트 리다이렉트)
+  처럼 얼리기 전에 이미 실제 0.5s 트랜지션이 시작돼버리는 페이지에서 무력했음(CSS는 이미
+  진행 중인 트랜지션의 duration을 나중에 줄여도 소급 적용 안 함) → `page.addInitScript()`로
+  교체해 어떤 페이지 스크립트보다도 먼저(리다이렉트로 이어지는 새 문서에도 동일하게) 얼리게 함.
+  단, `addInitScript` 콜백이 `document.documentElement`가 아직 없는 시점에 실행돼
+  `appendChild`가 조용히 실패하는 경우가 실제로 있었음(index.html의 `.explore-section`이
+  하필 이 케이스에 걸려 있어서 5프레임 재시도로도 못 잡던 잔여 opacity 0.668이 남아있었음) —
+  `document.documentElement` 없으면 `MutationObserver`로 생성을 기다렸다 주입하도록 방어.
+- `.view.on`(SPA 뷰 전환)이 실제로 최종 뷰로 자리잡을 때까지, 그리고 `.reveal-up`(스크롤
+  등장 요소)이 강제 완료된 뒤 최소 한 프레임 이상 지날 때까지 각각 폴링하도록 보강(`.view`가
+  아예 없는 정적 랜딩페이지는 즉시 통과). 재실행 8회 연속 `ISSUES: 0` 확인(이전엔 실행마다
+  결과가 들쭉날쭉했음).
+
+**검증**: `node --check script.js` OK, 정적 테스트 8개(`fact_consistency_audit`/
+`drift_consistency_test`/`mcp_sync_check`/`i18n_coverage_audit`/`i18n_attr_lint`/
+`draw_archive_integrity_check`/`broken_link_audit`/`wrap_audit`) + Playwright 8개
+(`a11y_audit`×4회 연속/`lang_leak_audit`/`home_audit`/`console_error_audit`/`faq_audit`/
+`audit_odds_compare`/`link_navigation_audit`/`map_scroll_audit`/`nav_slider_audit`) 전부
+`ISSUES: 0`. `styles.min.css` 재생성, `index.html` 캐시버스팅 20260822-3→20260823-1 갱신.
+`script.js`는 안 건드려서 `script.min.js` 재생성 불필요(해시 동일 확인).
+
+**다음 세션 참고**: `tests/a11y_audit.js`가 이제 애니메이션/라우팅 타이밍에 훨씬 강해졌지만,
+혹시 또 재현 안 되는 위반이 나오면 먼저 "진짜 색상 문제인지 vs 스캔 타이밍 문제인지"부터
+같은 스캔을 3~4회 재실행해 재현성으로 구분할 것 — 안정적으로 재현되면 진짜 버그, 실행마다
+바뀌면 타이밍 문제일 확률이 높음(이번 세션에서 실제로 그렇게 구분함).
