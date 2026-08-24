@@ -1851,3 +1851,20 @@ origin/main에 이미 동등하거나 더 나은 내용이 있어서 실질적 �
 Speakable/HowTo/Organization JSON-LD 등, 위 "홍보·마케팅 작업 전체 이력" 참고) 더 파봐도
 비슷한 여지가 크지 않을 가능성 높음 — 다음에 이 질문이 다시 나오면 이 항목부터 "이미 확인함"
 으로 넘기고 새로운 각도를 찾을 것.
+
+### 2026-08-24 이어서 — "사이트 전체 점검" 요청으로 회귀 테스트 15개 전수 재실행
+
+사용자가 "사이트 전체 점검해야될 거 다시 점검해줘"로 요청 → `tests/` 디렉터리의 15개
+스크립트를 전부(이번 세션에서 이미 개별적으로 여러 번 돌렸던 것들 포함) 처음부터 다시
+순서대로 실행. **전부 `ISSUES: 0`**: `broken_link_audit`(143)·`fact_consistency_audit`(148)·
+`draw_archive_integrity_check`(4개 아카이브)·`i18n_attr_lint`·`i18n_coverage_audit`(790
+키)·`console_error_audit`(224)·`home_audit`(18)·`audit_odds_compare`(40)·`faq_audit`(18)·
+`lang_leak_audit`(140)·`link_navigation_audit`(8)·`map_scroll_audit`(10)·`nav_slider_audit`·
+`wrap_audit`(168)·`full_overflow_sweep`(27개 언어×5개 폭×7개 화면=945개 조합, 가장 무거운
+테스트라 백그라운드로 실행). 이번 세션에서 고친 전 영역(42개국 랜딩페이지, 홈 화면 UI,
+로또 데이터, Dataset 구조화 데이터)이 이 시점 기준 전부 정상.
+
+**다음 세션 참고**: 이 스위트 전체를 다시 돌릴 필요는 특정 변경 후에만(레이아웃/CSS 구조
+변경, i18n 키 대량 추가, 국가 페이지 다수 동시 수정 등) — 위 "새 국가 SEO 랜딩페이지
+체크리스트" 7번 항목대로 국가 페이지 하나만 고쳤으면 `broken_link_audit`+
+`fact_consistency_audit`+`console_error_audit` 3개만으로 충분.
