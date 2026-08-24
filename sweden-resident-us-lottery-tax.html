@@ -104,10 +104,10 @@
     },
     {
       "@type": "Question",
-      "name": "Hur för jag hem min amerikanska lotterivinst till mitt svenska bankkonto?",
+      "name": "Kommer banken eller Skatteverket att veta att jag överför vinsten till ett svenskt konto?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Det finns ingen valutakontroll i Sverige eller övriga EU — en engångsöverföring på flera hundra tusen dollar från utlandet är i sig inget problem. Det som gäller är bankens skyldigheter enligt lagen om åtgärder mot penningtvätt och finansiering av terrorism, med Finansinspektionen (FI) som tillsynsmyndighet och en eventuell rapport till Finanspolisen (finansunderrättelseenheten inom Polismyndigheten) om transaktionen bedöms som ovanlig för din profil. Konkret kan banken be dig styrka varifrån pengarna kommer innan de sätts in — din dokumentation från vinstanspråket och det amerikanska källskatteintyget (IRS-formulär 1042-S) är precis det underlag som används. Det är en rutinkontroll, inget hinder, men bra att förbereda innan du initierar överföringen."
+        "text": "Troligen ja, men det handlar om en rutinmässig kontroll mot penningtvätt, inte en skattefråga. Sverige tillämpar EU:s regelverk mot penningtvätt direkt, och banken kan be om dokumentation som styrker pengarnas ursprung vid stora internationella överföringar — till exempel den amerikanska utbetalarens formulär 1042-S. Detta utlöser inte automatiskt någon extra skatt; kontrollera eventuella specifika krav med din bank i förväg om beloppet är ovanligt stort."
       }
     }
   ]
@@ -213,7 +213,7 @@
   *{box-sizing:border-box;}
   :root{
     --teal:#155445; --teal-rgb:21,84,69;
-    --indigo:#35507A; --gold:#9C6F1E;
+    --indigo:#35507A; --gold:#9A6D1C;
     --bg:#F4F5F7; --card:#FFFFFF; --text-dark:#262420; --text-muted:#544E42; --border:#828C97;
     --status-red:#C0392B; --status-amber:#946716; --status-green:#1F7A4D;
     /* 2026-08-14 UI 통일 패스: 이전 버전은 이 주석 바로 아래 원래 있던 "index.html의 styles.css
@@ -231,10 +231,10 @@
     --shadow-hard-xs:2px 2px 0 var(--text-dark);
   }
   :root[data-theme="dark"]{
-    --teal:#3AA98A; --teal-rgb:58,169,138;
+    --teal:#4BC1A0; --teal-rgb:75,193,160;
     --indigo:#7C9BD1; --gold:#D6AC55;
     --bg:#1E1A16; --card:#453E34; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#6E6558;
-    --status-red:#E2776C; --status-amber:#D6AC55; --status-green:#5FC993;
+    --status-red:#FC9186; --status-amber:#D6AC55; --status-green:#5FC993;
   }
   /* 2026-08-14 UI 통일 패스: 원래 여기 이 아이콘 원형 버튼도 다른 카드류와 같은 "하드 4px류"
      테두리+오프셋 그림자를 썼는데, 실제 계산기 헤더에서 유일하게 항상 보이는 원형 아이콘
@@ -487,6 +487,10 @@
   }
   .cta-box a:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--text-dark); }
   .cta-box .cta-note{ color:var(--card); opacity:0.85; font-size:var(--fs-small); font-weight:400; margin:12px 0 0; }
+  /* 2026-08-22: opacity:0.85가 --card 위에서 대비를 3.69:1까지 깎아 WCAG AA(4.5:1) 미달로
+     만듦(다크모드 --teal 밝기 조정 후에도 남음) — 다크모드만 불투명하게 해서 해결
+     (라이트모드는 opacity:0.85로도 이미 통과라 그대로 둠). */
+  :root[data-theme="dark"] .cta-box .cta-note{ opacity:1; }
 
   .share-btn{
     display:block; width:100%; background:var(--card); border:1.5px solid var(--border); color:var(--teal);
@@ -631,7 +635,7 @@
 
   <h1>Hur mycket skatt betalar du i Sverige på en Powerball- eller Mega Millions-vinst?</h1>
   <p class="lead"><b>ChamTax</b> är en gratis kalkylator som visar det faktiska belopp du får ut efter skatt från en Powerball- eller Mega Millions-jackpott. Så här beskattas en amerikansk lotterivinst om du är skattemässigt bosatt i Sverige — en amerikansk källskatt på 30% som i praktiken alltid dras, och en svensk kapitalinkomstskatt på 30% som i praktiken alltid blir 0 kronor efter skattekredit.</p>
-  <p class="updated-date">Senast uppdaterad: 2026-08-19</p>
+  <p class="updated-date">Senast uppdaterad: 2026-08-20</p>
 
   <button type="button" class="share-btn" id="pageShareBtn" onclick="sharePage()">📤 Dela den här sidan</button>
 
@@ -664,9 +668,8 @@
     <p>Ger du senare bort en del av vinsten till familjemedlemmar behöver du inte oroa dig för gåvoskatt: Sverige avskaffade både arvsskatten och gåvoskatten helt från och med den 1 januari 2005. Gåvor mellan privatpersoner — oavsett belopp eller släktskap — medför i dagsläget ingen svensk skatt alls. Det gäller inte vinsten i sig, utan bara det senare steget att föra den vidare till någon annan.</p>
   </div>
 
-  <h2>Föra hem vinsten till Sverige: Finansinspektionen, Finanspolisen och penningtvättslagen</h2>
-  <p>Att ta emot en engångsöverföring på flera hundra tusen dollar från utlandet stöter inte på några valutarestriktioner — Sverige har, liksom övriga EU, ingen formell gräns för inkommande kapital från utlandet. Det som gäller i stället är din banks skyldigheter enligt lagen (2017:630) om åtgärder mot penningtvätt och finansiering av terrorism, där <b>Finansinspektionen (FI)</b> är tillsynsmyndighet för bankerna; bedömer banken transaktionen som ovanlig utifrån din kundprofil är den skyldig att rapportera det till <b>Finanspolisen</b>, den svenska finansunderrättelseenheten inom Polismyndigheten.</p>
-  <p class="section-note">I praktiken innebär det att banken kan be dig styrka varifrån pengarna kommer innan överföringen sätts in på kontot — din dokumentation från vinstanspråket och det amerikanska källskatteintyget (IRS-formulär 1042-S) är precis den typen av underlag som används för det. Det är en rutinkontroll, inte ett hinder, men bra att räkna med innan du initierar överföringen.</p>
+  <h2>Vad händer när du överför vinsten till ett svenskt bankkonto?</h2>
+  <p>Att överföra en stor vinst från USA till ett bankkonto i Sverige utlöser inte i sig någon ytterligare skatt utöver det som beskrivs ovan. Stora internationella banköverföringar kan ändå bli föremål för rutinmässig kontroll från banken och Finansinspektionen, som en del av det allmänna arbetet mot penningtvätt. Sverige är EU-medlem och tillämpar därför EU:s regelverk mot penningtvätt (AMLD) direkt, genomfört bland annat genom penningtvättslagen. Det kan därför vara klokt att spara dokumentation om vinsten — till exempel den amerikanska utbetalarens formulär 1042-S om källskatteavdrag — ifall banken frågar om pengarnas ursprung. Är beloppet ovanligt stort bör du kontrollera eventuella specifika krav direkt med din egen bank innan du gör överföringen.</p>
 
   <div class="cta-box">
     <p>Se ditt exakta nettobelopp som bosatt i Sverige</p>
@@ -691,8 +694,8 @@
     <p>Skattesatsen och skattebasen (30% kapitalinkomst enligt Inkomstskattelagen 42 kap. 25 §, med undantag för lotterier anordnade inom EU/EES) är väl dokumenterade via Skatteverkets egen vägledning. Kreditmekanismen bygger på den allmänna avräkningslagen (1986:468), som inte räknar upp inkomsttyper utan gäller brett för utländsk skatt på inkomst som även beskattas i Sverige — men vi har inte kunnat bekräfta med en primärkälla, paragraf för paragraf, att just amerikansk källskatt på spelvinster tekniskt räknas som en avräkningsbar utländsk skatt i detta specifika fall, även om den allmänna principen talar för det. Vissa sekundärkällor nämner också att avräkning inte alltid sker till fullo 100%. Bekräfta därför alltid din egen situation med Skatteverket eller en skatterådgivare innan du deklarerar en verklig vinst.</p>
   </details>
   <details class="faq-item">
-    <summary>Hur för jag hem min amerikanska lotterivinst till mitt svenska bankkonto?</summary>
-    <p>Det finns ingen valutakontroll i Sverige eller övriga EU — en engångsöverföring på flera hundra tusen dollar från utlandet är i sig inget problem. Det som gäller är bankens skyldigheter enligt lagen om åtgärder mot penningtvätt och finansiering av terrorism, med Finansinspektionen (FI) som tillsynsmyndighet och en eventuell rapport till Finanspolisen (finansunderrättelseenheten inom Polismyndigheten) om transaktionen bedöms som ovanlig för din profil. Konkret kan banken be dig styrka varifrån pengarna kommer innan de sätts in — din dokumentation från vinstanspråket och det amerikanska källskatteintyget (IRS-formulär 1042-S) är precis det underlag som används. Det är en rutinkontroll, inget hinder, men bra att förbereda innan du initierar överföringen.</p>
+    <summary>Kommer banken eller Skatteverket att veta att jag överför vinsten till ett svenskt konto?</summary>
+    <p>Troligen ja, men det handlar om en rutinmässig kontroll mot penningtvätt, inte en skattefråga. Sverige tillämpar EU:s regelverk mot penningtvätt direkt, och banken kan be om dokumentation som styrker pengarnas ursprung vid stora internationella överföringar — till exempel den amerikanska utbetalarens formulär 1042-S. Detta utlöser inte automatiskt någon extra skatt; kontrollera eventuella specifika krav med din bank i förväg om beloppet är ovanligt stort.</p>
   </details>
 
   <div class="related-links">
