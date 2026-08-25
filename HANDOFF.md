@@ -1868,3 +1868,16 @@ Speakable/HowTo/Organization JSON-LD 등, 위 "홍보·마케팅 작업 전체 �
 변경, i18n 키 대량 추가, 국가 페이지 다수 동시 수정 등) — 위 "새 국가 SEO 랜딩페이지
 체크리스트" 7번 항목대로 국가 페이지 하나만 고쳤으면 `broken_link_audit`+
 `fact_consistency_audit`+`console_error_audit` 3개만으로 충분.
+
+### 2026-08-24 이어서 — 파워볼 8/24 회차 백필
+
+사용자가 usamega.com 스크린샷(메가밀리언즈 8/21은 이미 반영돼있었음, 파워볼 8/24만 신규)
+전달. 스크린샷엔 8/24 회차 자체의 잭팟 금액이 없고 "다음(8/26) 예고 잭팟 $96M"만 있어서
+WebSearch+WebFetch(draftkings network)로 8/24 실제 잭팟 확인 → $81M, 번호 [3,16,33,38,68]
+PB2 — 스크린샷과 정확히 일치, 교차검증 완료. `POWERBALL_DRAW_ARCHIVE`/
+`POWERBALL_JACKPOT_ARCHIVE`에 추가, `LATEST_DRAW.powerball`/`JACKPOT_DATA.powerball`(다음
+예고 잭팟 $96M/현금 $41.2M) 동기화. `script.min.js` 재빌드, 캐시버스팅(`odds-data.js?v=
+20260824-1`, `script.min.js?v=20260824-1`, `sw.js` CACHE_NAME v87) 전부 갱신. 검증:
+`draw_archive_integrity_check`·`broken_link_audit`·`console_error_audit`·
+`audit_odds_compare` 전부 `ISSUES: 0`, Playwright로 홈 위젯 실제 렌더링 확인. 커밋
+`775b32e`.
