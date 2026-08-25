@@ -3577,7 +3577,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260819-2';
+    script.src = 'odds-data.js?v=20260824-1';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -5742,7 +5742,7 @@ function buildDrawScheduleMore(days){
 // 옛 값 그대로 둘 것 — 실제 금액이 발표된 뒤에만 갱신. (지난 갱신 이력은 git log로 충분히
 // 추적 가능해서 날짜별 코멘트는 더 이상 여기 쌓지 않음 — 최신 반영 회차는 아래 LATEST_DRAW 참고.)
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 81000000, cashUsd: 34800000 },
+  powerball:    { amountUsd: 96000000, cashUsd: 41200000 },
   megamillions: { amountUsd: 130000000, cashUsd: 55500000 },
 };
 
@@ -5764,7 +5764,7 @@ const GAME_NAME_MORE = {
 // WebSearch 뉴스 요약(여러 값을 한 문장에 섞어 잘못 취합하는 경우가 있어 개별 소스로 재검증
 // 권장). Power Play 배율·더블플레이 번호는 이 사이트가 추적 안 하는 필드라 스코프 밖.
 const LATEST_DRAW = {
-  powerball:    { date: '2026-08-22', numbers: [13, 31, 54, 57, 65], special: 23 },
+  powerball:    { date: '2026-08-24', numbers: [3, 16, 33, 38, 68], special: 2 },
   megamillions: { date: '2026-08-21', numbers: [1, 25, 34, 48, 57], special: 24 },
 };
 
