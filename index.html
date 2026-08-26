@@ -163,7 +163,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260824-1" defer></script>
+<script src="script.min.js?v=20260824-2" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1408,7 +1408,7 @@
           </div>
         </details>
 
-        <div class="ad-slot" style="margin-top:48px;" data-i18n="common.adSlot">광고 영역 (Google AdSense)</div>
+        <div class="ad-slot" style="margin-top:48px;" id="ad-slot-home"><ins class="adsbygoogle" id="adsbygoogle-home" style="display:block" data-ad-client="ca-pub-9743479262743239" data-ad-slot="1724115903" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
 
         <details class="more-details-toggle">
         <summary class="section-divider-toggle section-divider-toggle-plain" data-i18n="home.trustToggle">✓ 왜 믿을 수 있나요?</summary>
@@ -1684,7 +1684,7 @@
           <div id="otherLanguagesList" class="other-lang-list"></div>
         </details>
 
-        <div class="ad-slot" data-i18n="common.adSlot">광고 영역 (Google AdSense)</div>
+        <div class="ad-slot" id="ad-slot-compare"><ins class="adsbygoogle" id="adsbygoogle-compare" style="display:block" data-ad-client="ca-pub-9743479262743239" data-ad-slot="1724115903" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
 
         <p class="hint" data-i18n-html="compare.oddsHint">궁금하면 <b>확률체감</b> 메뉴도 눌러보세요 → 이것도 꽤 재밌어요</p>
         <p class="disclaimer" data-i18n="compare.disclaimer">IRS·국세청 가이드를 참고해서 만들었어요 (실제 당첨되는 일이 있으시길!)</p>
@@ -2827,7 +2827,7 @@
           </details>
         </div>
 
-        <div class="ad-slot" data-i18n="common.adSlot">광고 영역 (Google AdSense)</div>
+        <div class="ad-slot" id="ad-slot-faq"><ins class="adsbygoogle" id="adsbygoogle-faq" style="display:block" data-ad-client="ca-pub-9743479262743239" data-ad-slot="1724115903" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
 
         <details class="more-details-toggle">
         <summary class="section-divider-toggle section-divider-toggle-lg" data-i18n="faq.moreTitle">📚 더 자세히 알아보기 (용어·구매절차·지급방식 등)</summary>
@@ -3148,7 +3148,7 @@
             <p id="contactErrorMsg" class="contact-status-msg contact-status-error" data-i18n="contact.error">전송에 실패했어요, 잠시 후 다시 시도해주세요.</p>
           </form>
         </div>
-        <div class="ad-slot" data-i18n="common.adSlot">광고 영역 (Google AdSense)</div>
+        <div class="ad-slot" id="ad-slot-contact"><ins class="adsbygoogle" id="adsbygoogle-contact" style="display:block" data-ad-client="ca-pub-9743479262743239" data-ad-slot="1724115903" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
       </div>
 
       <!-- 2026-08-06: 검색엔진 크롤 예산이 부족한 초기 단계라, 홈(가장 크롤 우선순위가 높은
