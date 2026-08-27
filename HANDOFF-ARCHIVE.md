@@ -18720,3 +18720,39 @@ PR #336(GSC 기록)·#337(teal 수정) 둘 다 `main`에 머지 완료.
 
 PR #339(위 색상 대비 4건 수정 커밋들 포함) `main`에 머지 완료(CI `drift-check` 통과 확인).
 
+
+### 2026-08-23 이어서 — 환급금 체크리스트 공유(카카오톡 등)에 링크 없어서 미리보기 카드 안 뜨던 문제 수정
+
+사용자가 카카오톡 공유 스크린샷 2장을 보여줌 — 참택스 FAQ의 "건강보험·연금 환급금" 체크리스트를
+"이거 친구한테 공유하기" 버튼으로 공유하면 글씨만 있는 말풍선만 뜨고(링크도 카드도 없음),
+비교로 보여준 사용자의 다른 프로젝트(petscan-ai) 공유는 제목·설명·도메인이 있는 정상적인
+링크 미리보기 카드로 뜨는 걸 대조. "공유하면 링크도 없고 글씨만 나오는 거 불편해"라는 지적.
+
+**원인**: `shareRefundChecklist()`(+ 미국판 `shareUsUnclaimedMoneyChecklist()`/인도판
+`shareInUnclaimedMoneyChecklist()`, 셋 다 같은 구조) 3곳 전부 2026-08-05에 "아이메시지에서
+텍스트+링크를 같이 보내면 OS가 링크 미리보기 카드를 별도로 붙여서 말풍선이 2개로 쪼개져
+보인다"는 지적으로 링크(사이트 URL) 자체를 텍스트에서 완전히 뺀 상태였음 — 그런데 카카오톡은
+아이메시지와 반대로 **링크가 아예 없으면 미리보기 카드 자체를 못 만듦**(카드도 링크도 없는
+순수 텍스트만 남음), 그리고 이 사이트 주 사용자층(한국어 UI, 카카오톡이 주력 공유 채널)에겐
+아이메시지의 "말풍선 2개" 정도보다 카카오톡의 "누를 게 아예 없음"이 훨씬 나쁜 트레이드오프.
+
+**수정**: 3개 함수 전부에 링크를 되살림 — `copyResultText()`/`reportCalcIssue()`가 이미 쓰던
+"텍스트 끝에 `${shareUrl}` 그대로 붙이기" 패턴을 재사용(새 메커니즘 도입 안 함). 특정 계산
+금액이 있는 공유가 아니라서 `wrapWithOgShareCard()`(동적 OG 이미지 카드)는 안 씀 — 그냥
+사이트 기본 OG 카드로 충분하다고 판단. 딥링크는 다른 페이지들이 이미 쓰는 `index.html#faq`
+해시 패턴을 그대로 재사용해서 FAQ 탭으로 바로 열리게 함. Playwright로 `navigator.clipboard.
+writeText`를 가로채서 실제로 URL이 붙는지 3개 함수 전부 확인(한국어/영어 두 텍스트 다 확인).
+
+**검증**: `node --check script.js`, 정적 테스트 6개(`fact_consistency_audit`/
+`drift_consistency_test`/`mcp_sync_check`/`i18n_coverage_audit`/`i18n_attr_lint`/
+`draw_archive_integrity_check`/`broken_link_audit`) + Playwright 4개(`home_audit`/
+`console_error_audit`/`faq_audit`/`a11y_audit`×2회) 전부 `ISSUES: 0`. `script.min.js`
+재생성(`styles.css`는 안 건드려서 `styles.min.css`는 바이트까지 동일 확인, 재커밋 안 함),
+`index.html` 캐시버스팅 `script.min.js` 20260822-3→20260823-2 갱신.
+
+**다음 세션 참고**: 아이메시지의 "말풍선 2개로 쪼개짐" 문제 자체는 아직 남아있음(이번 세션은
+"카카오톡에 링크가 아예 없는 것"이 더 나쁘다고 판단해 트레이드오프를 되돌렸을 뿐, 아이메시지
+쪽 문제를 해결한 게 아님) — 아이메시지 사용자가 다시 이 문제를 지적하면 `url:` 필드를
+`navigator.share()`에 별도로 넘기는 방식(이 저장소에 아직 전례 없음, `text`에 안 섞고
+분리하면 중복 카드 없이 링크만 깔끔하게 붙을 가능성)을 검토해볼 것.
+
