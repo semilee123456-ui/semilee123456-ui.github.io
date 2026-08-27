@@ -47,3 +47,23 @@ For open-ended exploration, multi-file audits, or "look over X and tell me what'
 wrong" style requests, prefer spawning a subagent over doing the whole
 search/read/compare loop in the main session — the intermediate output stays in
 the subagent's context and only the summary comes back.
+
+**But a subagent isn't free just because it doesn't bloat the main session's
+context** — each one still burns real tokens against the account's overall usage,
+and a WebSearch-heavy research+write task (e.g. "research this country's remittance
+law and add a section") has measured at 60k-140k tokens per spawn in this repo
+(2026-08-19 session, 20-country audit rollout). Spawning one subagent per 2-3
+countries/files added up to ~1.5-2M tokens in subagent calls alone in a single
+session. When the user has flagged token budget as tight:
+- **Batch bigger, not smaller** — one subagent covering 5-6 similar items beats
+  three subagents covering 2 each; the per-spawn overhead (re-reading the reference
+  pattern, re-establishing context) is paid every time regardless of batch size.
+- **Skip the subagent entirely for small, mechanical edits** you can just do
+  directly (a one-line date bump, adding a missing link, a config tweak) — spinning
+  up a WebSearch-capable agent for something with no research component wastes the
+  budget it's meant to protect.
+- **Don't re-verify what a previous batch already established** — if the pattern
+  (which CSS classes, where to place a new section, how to keep FAQ/JSON-LD in
+  sync) is already nailed down from an earlier batch this session, say so directly
+  in the next prompt instead of having each new subagent re-discover it by reading
+  the reference file itself.

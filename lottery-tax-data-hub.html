@@ -73,6 +73,9 @@
   "description": "Top marginal state income tax rate applied to a jackpot-size US Powerball/Mega Millions win, for all 50 US states plus Washington D.C., including states with no tax on lottery winnings.",
   "url": "https://chamtax.com/lottery-tax-data-hub.html",
   "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "keywords": ["lottery tax", "Powerball tax", "Mega Millions tax", "state income tax", "US state tax rates", "open data", "CC0"],
+  "dateModified": "2026-08-18",
+  "variableMeasured": ["state", "top marginal state income tax rate", "lottery winnings tax exemption"],
   "creator": {
     "@type": "Organization",
     "name": "참택스",
@@ -99,8 +102,11 @@
   "name": "US Lottery Jackpot Take-Home Tax by Country",
   "description": "How much of a US Powerball/Mega Millions jackpot a winner actually keeps, broken down by 43 countries of residence, including US non-resident withholding and each country's own tax treatment after any Foreign Tax Credit — generated directly from the ChamTax calculation engine.",
   "url": "https://chamtax.com/lottery-tax-data-hub.html",
-  "sameAs": "https://github.com/semilee123456-ui/us-lottery-tax-data",
+  "sameAs": ["https://github.com/semilee123456-ui/us-lottery-tax-data", "https://www.kaggle.com/datasets/chamtax/us-lottery-jackpot-tax-by-country"],
   "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "keywords": ["lottery tax", "Powerball tax", "Mega Millions tax", "nonresident alien withholding", "foreign tax credit", "international tax", "open data", "CC0"],
+  "dateModified": "2026-08-18",
+  "variableMeasured": ["country of residence", "US nonresident withholding rate", "home country tax rate", "foreign tax credit applicability", "confidence level"],
   "creator": {
     "@type": "Organization",
     "name": "참택스",
@@ -567,6 +573,7 @@
   <p>Related technical assets from the same project:</p>
   <ul>
     <li><a href="https://github.com/semilee123456-ui/us-lottery-tax-data" style="color:var(--teal); font-weight:700;">github.com/semilee123456-ui/us-lottery-tax-data</a> — the standalone open-data repository this dataset is also mirrored to.</li>
+    <li><a href="https://www.kaggle.com/datasets/chamtax/us-lottery-jackpot-tax-by-country" style="color:var(--teal); font-weight:700;">Kaggle dataset</a> — the same data, versioned, for users who prefer Kaggle's notebook/API tooling.</li>
     <li><a href="https://github.com/semilee123456-ui/semilee123456-ui.github.io/tree/main/mcp-server" style="color:var(--teal); font-weight:700;">mcp-server/</a> — a local <a href="https://modelcontextprotocol.io" style="color:var(--teal);">MCP</a> server exposing the same take-home calculation as a tool an AI agent can call directly, for all 50 states + DC and 43 countries.</li>
     <li><a href="press-kit.html" style="color:var(--teal); font-weight:700;">Press kit</a> — brand assets and a quick-reference summary table for journalists.</li>
   </ul>

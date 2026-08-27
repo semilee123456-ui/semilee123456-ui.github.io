@@ -3678,6 +3678,25 @@ function scrollIntoViewBelowNav(el){
   window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
 }
 
+// 2026-08-24: AdSense 유닛 4개(홈/비교/도움말/문의) 삽입. 이 앱은 SPA라 .view 전체가 항상
+// DOM에 있고 비활성 탭은 display:none으로만 숨겨짐(styles.css) — Google이 준 표준 삽입
+// 스니펫처럼 모든 .ad-slot을 페이지 로드 시점에 한꺼번에 push하면, 아직 안 열어본 탭은
+// 폭 0인 숨겨진 컨테이너에 광고를 요청하게 되어 콘솔 경고("No slot size for
+// availableWidth=0")가 나고 그 탭을 나중에 열어도 광고가 안 채워짐. 그래서 각 광고는
+// 해당 탭이 실제로 화면에 켜질 때(go() 호출 시점)만, 탭당 딱 한 번만 push함.
+const _pushedAdSlots = new Set();
+function pushAdSlot(id){
+  if (_pushedAdSlots.has(id)) return;
+  const el = document.getElementById(id);
+  if (!el) return;
+  _pushedAdSlots.add(id);
+  try { (window.adsbygoogle = window.adsbygoogle || []).push({}); }
+  catch (e) { console.error('[adsbygoogle]', e); }
+}
+// 홈은 go('home')을 거치지 않고 처음부터 켜져 있는 기본 탭(index.html의 view-home에
+// class="view on")이라, 위 go() 안의 push는 트리거 안 됨 — 최초 로드 시 별도로 한 번 push
+document.addEventListener('DOMContentLoaded', () => pushAdSlot('adsbygoogle-home'));
+
 function go(view){
   document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
   document.getElementById('view-' + view).classList.add('on');
@@ -3688,6 +3707,10 @@ function go(view){
   applyCurrentViewTitle(view);
   applyCurrentViewDescription(view);
   syncOgTags();
+
+  // 광고 유닛이 있는 탭(홈/비교/도움말/문의)만 해당 — pushAdSlot()이 탭당 한 번만 실행되게 막아줌
+  const AD_SLOT_BY_VIEW = { home: 'adsbygoogle-home', compare: 'adsbygoogle-compare', faq: 'adsbygoogle-faq', contact: 'adsbygoogle-contact' };
+  if (AD_SLOT_BY_VIEW[view]) pushAdSlot(AD_SLOT_BY_VIEW[view]);
 
   // 홈 ↔ 국가비교 이동 시, 어느 쪽에서 왔든 상관없이 항상 공용 상태(sharedAmountUsd/sharedCountry/EXCHANGE_RATE)를
   // 기준으로 화면을 다시 그려서 입력값·환율이 끊기지 않게 함
@@ -3740,7 +3763,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260823';
+    script.src = 'odds-data.js?v=20260827-1';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -5909,7 +5932,7 @@ function buildDrawScheduleMore(days){
 // 옛 값 그대로 둘 것 — 실제 금액이 발표된 뒤에만 갱신. (지난 갱신 이력은 git log로 충분히
 // 추적 가능해서 날짜별 코멘트는 더 이상 여기 쌓지 않음 — 최신 반영 회차는 아래 LATEST_DRAW 참고.)
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 81000000, cashUsd: 34800000 },
+  powerball:    { amountUsd: 96000000, cashUsd: 41200000 },
   megamillions: { amountUsd: 130000000, cashUsd: 55500000 },
 };
 
@@ -5942,7 +5965,7 @@ const GAME_NAME_MORE = {
 // 잭팟 $81M(현금가치 $34.8M)로 갱신 — $68M(8/22 자체 잭팟)에서 롤오버로 증가한
 // 값. 더블플레이(4,18,29,47,53/16)는 이 사이트가 추적 안 하는 필드라 반영 안 함.
 const LATEST_DRAW = {
-  powerball:    { date: '2026-08-22', numbers: [13, 31, 54, 57, 65], special: 23 },
+  powerball:    { date: '2026-08-24', numbers: [3, 16, 33, 38, 68], special: 2 },
   megamillions: { date: '2026-08-21', numbers: [1, 25, 34, 48, 57], special: 24 },
 };
 
