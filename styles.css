@@ -3197,26 +3197,6 @@
      "미완성 자리표시자" 느낌이 남지 않도록 함. 여백만 유지. */
   .ad-slot{ text-align:center; margin:20px 0; min-height:1px; }
 
-  /* 2026-08-06 추가: 홈에서 1홉 만에 닿는 핵심 랜딩페이지 링크 모음(index.html 주석 참고) —
-     footer보다 한 톤 더 옅게 둬서 계산기 UI에 시각적으로 끼어들지 않게 함 */
-  .related-guides{ border-top:1px solid var(--border); margin-top:24px; padding-top:16px; }
-  .related-guides-title{ font-size:var(--fs-note); color:var(--text-muted); text-align:center; margin:0 0 12px; }
-  .related-guides-links{ display:flex; flex-direction:column; align-items:center; gap:18px; }
-  .related-guides-row{ display:flex; justify-content:center; gap:8px; flex-wrap:wrap; }
-  /* 2026-08-19: 링크 20여 개가 밑줄만 있는 텍스트로 죽 나열돼있어서 시각적으로 빽빽해 보인다는
-     피드백 — 링크 텍스트/개수는 그대로 두고(SEO 내부링크 목적, 위 주석 참고) 각 링크를 옅은
-     칩(pill) 스타일로 바꾸고 그룹(행) 사이 간격을 넓혀서 3개 카테고리로 나뉘어 있다는 게
-     눈에 보이게만 함. 새 번역 문구는 추가 안 함(순수 CSS). */
-  .related-guides-links a{
-    font-size:var(--fs-small); color:var(--text-muted); text-decoration:none;
-    background:var(--card); border:1px solid var(--border); border-radius:999px;
-    padding:5px 12px; transition:border-color 0.15s ease, color 0.15s ease;
-  }
-  .related-guides-links a:hover{ color:var(--teal); border-color:var(--teal); text-decoration:none; }
-  .related-guides-links a.related-guides-all{
-    color:var(--teal); font-weight:700; background:none; border:none; padding:4px 0; margin-top:2px;
-  }
-
   .site-footer{ border-top:1px solid var(--border); margin-top:24px; padding-top:18px; }
   .footer-links{ display:flex; justify-content:center; gap:8px 10px; margin-bottom:10px; flex-wrap:wrap; }
   .footer-links button, .footer-links a{ background:none; border:none; font-family:inherit; font-size:var(--fs-small); color:var(--teal); cursor:pointer; padding:0; text-decoration:none; }
@@ -3491,7 +3471,7 @@
 
     /* 화면 전용 크롬: 상단 nav(로고/탭/설정), 하단 sticky 결과 배지,
        광고 영역, 공지 배너, 잭팟 퀵필 스파클 이펙트 — 종이에는 의미 없는 인터랙션 요소들 */
-    .nav, .site-footer, .related-guides, #sticky-result-badge, .ad-slot,
+    .nav, .site-footer, #sticky-result-badge, .ad-slot,
     .site-notice, .quickfill-spark, .milestone-burst{
       display:none !important;
     }
