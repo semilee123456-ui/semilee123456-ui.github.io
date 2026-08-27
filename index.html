@@ -157,12 +157,12 @@
      요청과 한 URL로 합쳐서 추가 요청 없이 확장 -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260827-3">
+<link rel="stylesheet" href="styles.min.css?v=20260827-4">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260827-3" defer></script>
+<script src="script.min.js?v=20260827-4" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -2060,86 +2060,11 @@
           <div id="odds-prize-tiers"></div>
         </details>
 
-        <details class="panel odds-accordion">
-          <summary class="panel-title-toggle" data-i18n="odds.lightningTitle">⚡ 오늘의 번개 번호 뽑기</summary>
-          <p class="panel-desc" data-i18n="odds.lightningDesc">오늘 당신이 번개에 맞을 그 기운으로, 재미 삼아 번호 6개를 뽑아드려요</p>
-          <div class="lightning-game-toggle" role="group">
-            <button type="button" class="lightning-game-btn active" id="lightning-game-pb" onclick="setLightningGame('powerball')" data-i18n="odds.lightningPbBtn">🔴 파워볼</button>
-            <button type="button" class="lightning-game-btn" id="lightning-game-mega" onclick="setLightningGame('megamillions')" data-i18n="odds.lightningMegaBtn">🟡 메가밀리언즈</button>
-          </div>
-          <!-- 2026-08-03: 사용자 요청으로 "낚시로 뽑기" 모드 신설 — 그냥 뽑기(기존, 기본값)와 낚시
-               미니게임(신규) 중 고를 수 있게 함. 기존 lightning-quick-mode는 그대로 두고 그 옆에
-               낚시 모드를 통째로 추가하는 방식이라, 기본값(그냥 뽑기)을 쓰는 사람에게는 회귀
-               위험이 없음. -->
-          <div class="lightning-mode-toggle" role="group">
-            <button type="button" class="lightning-mode-btn active" id="lightning-mode-quick" onclick="setLightningMode('quick')" data-i18n="odds.lightningModeQuickBtn">⚡ 바로 뽑기</button>
-            <button type="button" class="lightning-mode-btn" id="lightning-mode-fishing" onclick="setLightningMode('fishing')" data-i18n="odds.lightningModeFishingBtn">🎣 낚시로 뽑기</button>
-          </div>
-          <div id="lightning-quick-mode">
-            <div class="lightning-result" id="lightning-result">
-              <span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball">?</span><span class="lightning-ball pb" id="lightning-special-ball">?</span>
-            </div>
-            <p class="sr-only" id="lightning-result-announcer" role="status" aria-live="polite"></p>
-            <button class="cta-btn" id="lightning-draw-btn" onclick="drawLightningNumbers()" data-i18n="odds.drawBtn">⚡⚡⚡ 번호 뽑아보기</button>
-            <p class="foot-note" style="margin-top:10px; text-align:center;" id="lightning-draw-note">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
-          </div>
-          <div id="lightning-fishing-mode" style="display:none;">
-            <p class="panel-desc" data-i18n="odds.fishingHint">🎣 낚싯대를 던져서 번호를 하나씩 낚아보세요</p>
-            <!-- 2026-08-05: "번거롭다"는 피드백으로 캐스팅→입질탭→릴감기 3단계 반사신경 게임을
-                 폐기하고, 낚싯대(#fishing-rod-wrap)를 직접 드래그해서 헤엄치는 물고기
-                 (#fishing-target-fish)에 맞춘 뒤 손을 떼면 낚는 방식으로 교체함(script.js의
-                 fishingDragStart/fishingAttemptCatch 등 참고). 연못에 tabindex를 줘서 포커스가
-                 가능하게 하고 aria-label은 JS가 언어 전환 시마다 odds.fishingHint 번역을 그대로
-                 재사용해서 채움(새 번역 문구 추가 없이 키보드 접근성 확보, updateFishingAriaLabel
-                 참고) — 화살표로 낚싯대 이동, Enter/Space로 낚시 시도 가능. -->
-            <div class="fishing-game-frame">
-              <div class="fishing-pond" id="fishing-pond" tabindex="0">
-                <span class="fishing-sun"></span>
-                <span class="fishing-cloud fishing-cloud-1"></span>
-                <span class="fishing-cloud fishing-cloud-2"></span>
-                <div class="fishing-rod-wrap" id="fishing-rod-wrap">
-                  <span class="fishing-rod" id="fishing-rod">🎣</span>
-                  <span class="fishing-line" id="fishing-line"></span>
-                  <span class="fishing-hook-wrap">
-                    <span class="fishing-hook" id="fishing-hook">🪝</span>
-                    <span class="fishing-caught-fish" id="fishing-caught-fish">🐟</span>
-                  </span>
-                </div>
-                <!-- 2026-08-05: 실제 조작(연못을 눌러서 드래그)이 안내 문구 어디에도 없어
-                     "버튼 눌러도 반응 없다"는 신고로 추가된 순수 시각적 힌트 — 아이콘만 쓰므로
-                     26개 언어 번역 불필요(script.js의 castFishingLine/fishingDragStart 참고). -->
-                <span class="fishing-drag-hint" id="fishing-drag-hint" aria-hidden="true">👆</span>
-                <div class="fishing-water">
-                  <span class="fishing-wave"></span><span class="fishing-wave"></span><span class="fishing-wave"></span>
-                  <span class="fishing-idle-fish fishing-idle-fish-1">🐟</span>
-                  <span class="fishing-idle-fish fishing-idle-fish-2">🐠</span>
-                  <span class="fishing-idle-fish fishing-idle-fish-3">🐡</span>
-                  <!-- 2026-08-05: 실제로 낚을 수 있는 물고기를 1마리에서 최대 3마리(동시 등장)로
-                       늘림 — 슬롯 3개를 미리 마련해두고 script.js의 fishingFish 배열이 필요한
-                       만큼만 보여줌(FISHING_MAX_FISH 참고). 서로 다른 높이(bottom)에 둬서 겹쳐
-                       보이지 않게 함(fishingSpawnFishSlot이 매번 위치를 다시 계산) -->
-                  <span class="fishing-target-fish fishing-target-fish-0" id="fishing-target-fish-0" style="display:none;">🐟</span>
-                  <span class="fishing-target-fish fishing-target-fish-1" id="fishing-target-fish-1" style="display:none;">🐟</span>
-                  <span class="fishing-target-fish fishing-target-fish-2" id="fishing-target-fish-2" style="display:none;">🐟</span>
-                  <span class="fishing-bubble fishing-bubble-1"></span>
-                  <span class="fishing-bubble fishing-bubble-2"></span>
-                  <span class="fishing-bubble fishing-bubble-3"></span>
-                  <span class="fishing-splash" id="fishing-splash"></span>
-                </div>
-                <span class="fishing-grass fishing-grass-l">🌿</span>
-                <span class="fishing-grass fishing-grass-r">🌿</span>
-              </div>
-              <div class="lightning-result" id="fishing-result">
-                <span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball fishing-slot">?</span><span class="lightning-ball pb fishing-slot" id="fishing-special-ball">?</span>
-              </div>
-              <p class="sr-only" id="fishing-result-announcer" role="status" aria-live="polite"></p>
-              <button class="cta-btn" id="fishing-cast-btn" onclick="castFishingLine()" data-i18n="odds.fishingCastBtn">🎣 낚싯대 던지기</button>
-              <button type="button" class="share-btn" id="fishing-share-btn" style="display:none;" onclick="shareFishingCatch()" data-i18n="odds.fishingShareBtn">🎣 이 번호로 결과 공유하기</button>
-              <p class="fishing-status-msg" id="fishing-status-msg" aria-live="polite"></p>
-            </div>
-            <p class="foot-note" style="margin-top:10px; text-align:center;" id="fishing-draw-note">이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉</p>
-          </div>
-        </details>
+        <!-- 2026-08-27: "⚡ 오늘의 번개 번호 뽑기"(바로 뽑기 + 낚시 미니게임) 통째로 삭제 —
+             사용자 판단: 참택스의 핵심(세후 실수령액 계산)과 무관하고, 번호 추천/생성 기능이
+             들어가면 "복권 번호 생성 사이트"처럼 보여 신뢰성 측면에서 얻는 게 없다고 결론.
+             관련 JS(drawLightningNumbers/setLightningGame/setLightningMode/castFishingLine 등
+             fishing* 함수 전체, LIGHTNING_GAMES)·CSS(.lightning-*/.fishing-*)도 함께 제거함. -->
 
         <p class="disclaimer" data-i18n="odds.disclaimer">확률 수치는 공식 발표 자료 기준이에요. 원화 환산은 참고용 환율 적용이라 실제와 다를 수 있어요.</p>
       </div>

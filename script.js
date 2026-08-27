@@ -474,7 +474,6 @@ function applyTranslations(){
   updateDateLookupUi();
   renderLatestDraw();
   renderPrizeTiers();
-  updateLightningGameUi();
   updateMyNumbersUi();
   renderNumberFrequencyStats();
   adjustNavIconVisibility();
@@ -4850,57 +4849,8 @@ function filterFaq(){
   document.getElementById('faqNoResult').style.display = (visibleCount === 0) ? 'block' : 'none';
 }
 
-// 파워볼(흰 공 1~69 + 파워볼 1~26)/메가밀리언즈(흰 공 1~70 + 메가볼 1~24, 2025-04-08부터 적용된
-// 현행 규칙 — 이전엔 메가볼이 1~25였음) 번호 범위와 잭팟 당첨 확률을 한 곳에 모아둠
-const LIGHTNING_GAMES = {
-  powerball: {
-    mainMax: 69, specialMax: 26, specialClass: 'pb',
-    oddsText: () => pickLang('이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉', 'Your odds with these numbers are still 1 in 292 million — just for fun 😉', '用这些号码中奖的概率依然是1/2.92亿，纯属娱乐哦 😉', 'Xác suất trúng với những số này vẫn là 1/292 triệu — chỉ để vui thôi 😉', 'โอกาสถูกรางวัลด้วยเลขเหล่านี้ก็ยังคงเป็น 1 ใน 292 ล้าน — แค่สนุกๆ นะ 😉', 'Шанс выиграть с этими числами всё равно 1 к 292 миллионам — просто для развлечения 😉', {
-      ar: 'احتمالات فوزك بهذه الأرقام لا تزال 1 من 292 مليون — فقط للمتعة 😉',
-      bn: 'এই সংখ্যাগুলো দিয়ে জেতার সম্ভাবনা এখনও 292 মিলিয়নে 1 — নিছক মজার জন্য 😉',
-      fr: 'Vos chances avec ces numéros restent de 1 sur 292 millions — juste pour le plaisir 😉',
-      hi: 'इन नंबरों के साथ भी आपकी जीतने की संभावना अब भी 292 मिलियन में से 1 है — बस मज़े के लिए 😉',
-      id: 'Peluang Anda dengan angka-angka ini tetap 1 banding 292 juta — cuma buat seru-seruan 😉',
-      ja: 'この番号でも当選確率は依然として2億9200万分の1です — お楽しみとしてどうぞ 😉',
-      kk: 'Осы сандармен де жеңу мүмкіндігі әлі де 292 миллионнан 1 — жай ғана көңіл көтеру үшін 😉',
-      km: 'ឱកាសឈ្នះជាមួយលេខទាំងនេះនៅតែជា 1 ក្នុង 292 លាន — គ្រាន់តែសប្បាយប៉ុណ្ណោះ 😉',
-      ky: 'Бул сандар менен утуш мүмкүнчүлүгү дагы эле 292 миллионго 1 — жөн гана көңүл ачуу үчүн 😉',
-      lo: 'ໂອກາດຖືກລາງວັນດ້ວຍເລກເຫຼົ່ານີ້ຍັງເປັນ 1 ໃນ 292 ລ້ານ — ພຽງແຕ່ສະໜຸກສະໜານເທົ່ານັ້ນ 😉',
-      mn: 'Эдгээр тоотой хожих магадлал өдий хэвээрээ 292 сая тутамд 1 байна — зөвхөн зугаа цэнгэлийн төлөө 😉',
-      my: 'ဒီဂဏန်းတွေနဲ့ ပေါက်နိုင်ခြေက 292 သန်းမှာ 1 ဆက်လက်ရှိနေဆဲပါ — ပျော်စရာအတွက်ပဲ 😉',
-      ne: 'यी नम्बरहरूसँग पनि जित्ने सम्भावना अझै 292 मिलियनमा 1 छ — रमाइलोका लागि मात्र 😉',
-      si: 'මෙම අංක සමඟ ජයග්‍රහණයේ අවස්ථාව තවමත් මිලියන 292න් 1කි — විනෝදය සඳහා පමණි 😉',
-      tl: 'Ang tsansa mo sa mga numerong ito ay 1 sa 292 milyon pa rin — para lang sa saya 😉',
-      ur: 'ان نمبروں کے ساتھ بھی جیتنے کے امکانات اب بھی 292 ملین میں سے 1 ہیں — محض تفریح کے لیے 😉',
-      uz: "Bu raqamlar bilan ham yutish imkoniyati hali ham 292 milliondan 1 — shunchaki qiziqarli bo'lsin uchun 😉",
-     pt: `Suas chances com estes números ainda são de 1 em 292 milhões — apenas por diversão 😉`, es: `Tus probabilidades con estos números siguen siendo de 1 en 292 millones: ¡solo por diversión! 😉`, uk: `Ваші шанси з цими номерами все одно становлять 1 з 292 мільйонів — просто для розваги 😉`, tet: `Ó-nia probabilidade ho númeru sira ne'e sei 1 iha 292 millaun — ba de'it haksolok 😉`, de: `Deine Chancen mit diesen Zahlen liegen weiterhin bei 1 zu 292 Millionen — nur zum Spaß 😉`, nl: `Uw kans met deze getallen blijft 1 op 292 miljoen — gewoon voor de lol 😉`, sv: `Dina chanser med dessa siffror är fortfarande 1 på 292 miljoner — bara på skoj 😉`, no: 'Sjansene dine med disse tallene er fortsatt 1 til 292 millioner — bare for gøy 😉', da: 'Dine chancer med disse tal er stadig 1 til 292 millioner — kun for sjov 😉', fi: 'Mahdollisuutesi näillä numeroilla ovat silti 1/292 miljoonaa — vain hauskuuden vuoksi 😉', it: "Le tue probabilità con questi numeri restano di 1 su 292 milioni — solo per divertimento 😉", pl: "Twoje szanse z tymi liczbami to nadal 1 do 292 milionów — tylko dla zabawy 😉", tr: 'Bu sayılarla olasılığınız hâlâ 292 milyonda 1 — sadece eğlence için 😉'})
-  },
-  megamillions: {
-    mainMax: 70, specialMax: 24, specialClass: 'mega',
-    oddsText: () => pickLang('이 번호로 당첨될 확률은 여전히 1/2억 9,000만이지만, 재미로만 봐주세요 😉', 'Your odds with these numbers are still 1 in 290 million — just for fun 😉', '用这些号码中奖的概率依然是1/2.9亿，纯属娱乐哦 😉', 'Xác suất trúng với những số này vẫn là 1/290 triệu — chỉ để vui thôi 😉', 'โอกาสถูกรางวัลด้วยเลขเหล่านี้ก็ยังคงเป็น 1 ใน 290 ล้าน — แค่สนุกๆ นะ 😉', 'Шанс выиграть с этими числами всё равно 1 к 290 миллионам — просто для развлечения 😉', {
-      ar: 'احتمالات فوزك بهذه الأرقام لا تزال 1 من 290 مليون — فقط للمتعة 😉',
-      bn: 'এই সংখ্যাগুলো দিয়ে জেতার সম্ভাবনা এখনও 290 মিলিয়নে 1 — নিছক মজার জন্য 😉',
-      fr: 'Vos chances avec ces numéros restent de 1 sur 290 millions — juste pour le plaisir 😉',
-      hi: 'इन नंबरों के साथ भी आपकी जीतने की संभावना अब भी 290 मिलियन में से 1 है — बस मज़े के लिए 😉',
-      id: 'Peluang Anda dengan angka-angka ini tetap 1 banding 290 juta — cuma buat seru-seruan 😉',
-      ja: 'この番号でも当選確率は依然として2億9000万分の1です — お楽しみとしてどうぞ 😉',
-      kk: 'Осы сандармен де жеңу мүмкіндігі әлі де 290 миллионнан 1 — жай ғана көңіл көтеру үшін 😉',
-      km: 'ឱកាសឈ្នះជាមួយលេខទាំងនេះនៅតែជា 1 ក្នុង 290 លាន — គ្រាន់តែសប្បាយប៉ុណ្ណោះ 😉',
-      ky: 'Бул сандар менен утуш мүмкүнчүлүгү дагы эле 290 миллионго 1 — жөн гана көңүл ачуу үчүн 😉',
-      lo: 'ໂອກາດຖືກລາງວັນດ້ວຍເລກເຫຼົ່ານີ້ຍັງເປັນ 1 ໃນ 290 ລ້ານ — ພຽງແຕ່ສະໜຸກສະໜານເທົ່ານັ້ນ 😉',
-      mn: 'Эдгээр тоотой хожих магадлал өдий хэвээрээ 290 сая тутамд 1 байна — зөвхөн зугаа цэнгэлийн төлөө 😉',
-      my: 'ဒီဂဏန်းတွေနဲ့ ပေါက်နိုင်ခြေက 290 သန်းမှာ 1 ဆက်လက်ရှိနေဆဲပါ — ပျော်စရာအတွက်ပဲ 😉',
-      ne: 'यी नम्बरहरूसँग पनि जित्ने सम्भावना अझै 290 मिलियनमा 1 छ — रमाइलोका लागि मात्र 😉',
-      si: 'මෙම අංක සමඟ ජයග්‍රහණයේ අවස්ථාව තවමත් මිලියන 290න් 1කි — විනෝදය සඳහා පමණි 😉',
-      tl: 'Ang tsansa mo sa mga numerong ito ay 1 sa 290 milyon pa rin — para lang sa saya 😉',
-      ur: 'ان نمبروں کے ساتھ بھی جیتنے کے امکانات اب بھی 290 ملین میں سے 1 ہیں — محض تفریح کے لیے 😉',
-      uz: "Bu raqamlar bilan ham yutish imkoniyati hali ham 290 milliondan 1 — shunchaki qiziqarli bo'lsin uchun 😉",
-     pt: `Suas chances com estes números ainda são de 1 em 290 milhões — apenas por diversão 😉`, es: `Tus probabilidades con estos números siguen siendo de 1 en 290 millones: ¡solo por diversión! 😉`, uk: `Ваші шанси з цими номерами все одно становлять 1 з 290 мільйонів — просто для розваги 😉`, tet: `Ó-nia probabilidade ho númeru sira ne'e sei 1 iha 290 millaun — ba de'it haksolok 😉`, de: `Deine Chancen mit diesen Zahlen liegen weiterhin bei 1 zu 290 Millionen — nur zum Spaß 😉`, nl: `Uw kans met deze getallen blijft 1 op 290 miljoen — gewoon voor de lol 😉`, sv: `Dina chanser med dessa siffror är fortfarande 1 på 290 miljoner — bara på skoj 😉`, no: 'Sjansene dine med disse tallene er fortsatt 1 til 290 millioner — bare for gøy 😉', da: 'Dine chancer med disse tal er stadig 1 til 290 millioner — kun for sjov 😉', fi: 'Mahdollisuutesi näillä numeroilla ovat silti 1/290 miljoonaa — vain hauskuuden vuoksi 😉', it: "Le tue probabilità con questi numeri restano di 1 su 290 milioni — solo per divertimento 😉", pl: "Twoje szanse z tymi liczbami to nadal 1 do 290 milionów — tylko dla zabawy 😉", tr: 'Bu sayılarla olasılığınız hâlâ 290 milyonda 1 — sadece eğlence için 😉'})
-  }
-};
-
 // 등수별 당첨 확률표 — 공식 상금 구조 기준 고정값(잭팟 크기와 무관하게 항상 동일, 조합론으로
-// 검증한 값). 메가밀리언즈는 2025-04-08 개정 규칙(LIGHTNING_GAMES 주석 참고)으로 잭팟 제외 모든
+// 검증한 값). 메가밀리언즈는 2025-04-08 개정 규칙으로 잭팟 제외 모든
 // 등수에 2~10배 무작위 배수가 티켓마다 필수 적용됨(파워볼 Power Play처럼 선택이 아님) — 아래
 // 금액은 배수 적용 전 기본값. 각 항목은 [ko, en, zh, vi, th, ru] 튜플 — 새로 추가하는 콘텐츠라
 // 기존 5개 등수(odds.match5 등, 22개 언어 완역 보유)와 달리 6개 핵심 언어만 우선 지원함
@@ -5064,31 +5014,41 @@ const ABOUT_PREFIX_MORE = {
 
   pt: `Cerca de `, es: `Aproximadamente `, uk: `Близько `, tet: `Maizumenus `, de: `Etwa `, nl: `Ongeveer `, sv: `Cirka `, no: 'Cirka ', da: 'Cirka ', fi: 'Noin ', it: "Circa ", pl: "Około ", tr: 'Yaklaşık ',
 };
+function renderPrizeTierCard(t){
+  const matchLabel = pickLang(...t.match);
+  const explainHtml = t.explain ? `<p class="prize-explain">${pickLang(...SPECIAL_MISSED_LABEL[currentOddsGame])}</p>` : '';
+  // 2026-08-01: 예전엔 이 금액이 SMALL_KRW_LABEL(USD 금액별로 미리 계산해둔 원화 문자열
+  // 하드코딩 표)이었음 — 실시간 환율도 안 쓰고 선택한 통화(sharedInputCurrency)도 전혀 안 봐서,
+  // IDR/JPY 등을 골라도 이 표만 항상 원화로 나오던 버그(사용자 지적). 사이트 다른 곳과 같은
+  // formatEokKrwInDisplayCurrency()로 교체 — 상금 종류가 10가지뿐이라 표를 미리 만들 필요
+  // 없이 그때그때 계산해도 비용 문제 없음
+  const krwLabel = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE)
+    + formatEokKrwInDisplayCurrency(t.usd * EXCHANGE_RATE / 100000000, sharedInputCurrency);
+  return `<div class="prize-card">
+    <div class="prize-left">
+      <p class="prize-match">${matchLabel}</p>
+      ${explainHtml}
+    </div>
+    <div class="prize-right">
+      <p class="prize-amt">${krwLabel} <span class="prize-usd">($${t.usd.toLocaleString('en-US')})</span></p>
+      <p class="prize-odds">1 / ${formatOddsDenominator(t.oddsNum)} <span class="prize-pct">(${t.pct})</span></p>
+    </div>
+  </div>`;
+}
+
+// 2026-08-27: 사용자 판단(외부 UX 검수 반영) — 등수 9개를 한꺼번에 다 펼쳐 보여주면 이 아코디언을
+// 일부러 열어본 사람한테도 과하다고 봐서, 잭팟 다음으로 큰 상금(1번째 항목, Match 5)만 바로
+// 보이게 하고 나머지 8개는 한 번 더 접어서 "나머지 등수 보기"로 뺌 — 데이터/계산 로직은 그대로,
+// 표시 방식만 2단계로 나눔.
 function renderPrizeTiers(){
   const container = document.getElementById('odds-prize-tiers');
   if (!container) return;
   const tiers = PRIZE_TIERS[currentOddsGame];
-  container.innerHTML = tiers.map(t => {
-    const matchLabel = pickLang(...t.match);
-    const explainHtml = t.explain ? `<p class="prize-explain">${pickLang(...SPECIAL_MISSED_LABEL[currentOddsGame])}</p>` : '';
-    // 2026-08-01: 예전엔 이 금액이 SMALL_KRW_LABEL(USD 금액별로 미리 계산해둔 원화 문자열
-    // 하드코딩 표)이었음 — 실시간 환율도 안 쓰고 선택한 통화(sharedInputCurrency)도 전혀 안 봐서,
-    // IDR/JPY 등을 골라도 이 표만 항상 원화로 나오던 버그(사용자 지적). 사이트 다른 곳과 같은
-    // formatEokKrwInDisplayCurrency()로 교체 — 상금 종류가 10가지뿐이라 표를 미리 만들 필요
-    // 없이 그때그때 계산해도 비용 문제 없음
-    const krwLabel = pickLang('약 ', 'About ', '约', 'Khoảng ', 'ประมาณ ', 'Около ', ABOUT_PREFIX_MORE)
-      + formatEokKrwInDisplayCurrency(t.usd * EXCHANGE_RATE / 100000000, sharedInputCurrency);
-    return `<div class="prize-card">
-      <div class="prize-left">
-        <p class="prize-match">${matchLabel}</p>
-        ${explainHtml}
-      </div>
-      <div class="prize-right">
-        <p class="prize-amt">${krwLabel} <span class="prize-usd">($${t.usd.toLocaleString('en-US')})</span></p>
-        <p class="prize-odds">1 / ${formatOddsDenominator(t.oddsNum)} <span class="prize-pct">(${t.pct})</span></p>
-      </div>
-    </div>`;
-  }).join('');
+  const [topTier, ...restTiers] = tiers;
+  const restHtml = restTiers.map(renderPrizeTierCard).join('');
+  const moreLabel = pickLang('나머지 등수 보기', 'Show remaining prize tiers', '查看其他奖级', 'Xem các mức giải còn lại', 'ดูรางวัลระดับอื่นๆ', 'Показать остальные уровни призов');
+  container.innerHTML = renderPrizeTierCard(topTier)
+    + `<details class="jh-more" style="margin-top:8px;"><summary class="jh-more-summary">${moreLabel} (${restTiers.length})</summary>${restHtml}</details>`;
 
   const howtoEl = document.getElementById('howto-text');
   if (howtoEl) {
@@ -5119,686 +5079,6 @@ function setOddsGame(game){
     updateHomeCalc(defaultUsd);
     updateCalc(defaultUsd);
   }
-}
-
-let currentLightningGame = 'powerball';
-// 2026-08-03: "낚시로 뽑기" 모드 신설 — 그냥 뽑기(quick, 기존 기본값)와 낚시 미니게임(fishing,
-// 신규) 중 어느 걸 보여줄지. 서로 독립된 상태를 유지해서, 낚시 도중 그냥 뽑기로 갔다가 다시
-// 돌아와도 진행 상황이 그대로 남아있음.
-let currentLightningMode = 'quick';
-let fishingCaughtValues = [];   // 이번 판에서 지금까지 낚은 값들(순서대로, 5개+특별번호 1개)
-let fishingCaughtGoldenFlags = []; // fishingCaughtValues와 같은 순서로, 각 번호가 "황금 물고기"였는지(공유 카드 배지용)
-let fishingSessionValues = null; // 이번 판 전체 6개 값 — 캐스팅마다 하나씩 공개
-// 2026-08-05: "번거롭다"(캐스팅 대기 → 순간 탭 → 꾹 눌러 게이지 채우기 3단계 타이밍 게임)는
-// 사용자 피드백으로, 반사신경 게임을 전면 폐기하고 "낚싯대를 직접 드래그해서 헤엄치는 물고기
-// 위치에 맞춘 뒤 손을 떼면 낚는" 위치 맞추기 방식으로 재구성함(제한시간 없음 — 서두를 필요가
-// 없어서 실수해도 부담이 적음). 상태는 idle(시작 전/한 판 종료)과 aiming(드래그로 낚을 수 있는
-// 중) 2개뿐.
-// 2026-08-05 추가: "실제로 잡을 수 있는 물고기가 더 많으면 좋겠다"는 요청으로 동시에 낚을 수
-// 있는 물고기를 1마리→최대 3마리로 늘림(FISHING_MAX_FISH) — 슬롯(인덱스)별로 독립된 위치·방향
-// 상태를 배열로 관리하고, 하나를 낚아도 게임 전체를 멈추지 않고 그 슬롯만 짧게 비웠다가 다시
-// 채움(다른 물고기는 그동안 계속 헤엄침) — 그래서 더 이상 전역 "caught" 잠금 상태가 필요 없어짐.
-let fishingState = 'idle';
-let fishingRodXPct = 50;      // 낚싯대(찌)의 현재 가로 위치(연못 폭 대비 %)
-const FISHING_MAX_FISH = 3;   // 동시에 헤엄치며 낚을 수 있는 물고기 최대 마리 수
-let fishingFish = [
-  { active: false, xPct: 50, dir: 1, golden: false, size: 'medium', hooked: false },
-  { active: false, xPct: 50, dir: 1, golden: false, size: 'medium', hooked: false },
-  { active: false, xPct: 50, dir: 1, golden: false, size: 'medium', hooked: false },
-];
-let fishingTargetSpeedPct = 16; // 물고기 초당 이동 속도(연못 폭 대비 %) — 서두르지 않아도 따라잡을 수 있는 여유로운 속도
-let fishingSwimRafId = null;
-let fishingSwimLastTs = null;
-let fishingDragActive = false;
-const FISHING_TARGET_MIN_PCT = 10;
-const FISHING_TARGET_MAX_PCT = 90;
-const FISHING_CATCH_TOLERANCE_PCT = 9; // 찌와 물고기 위치가 이 범위(%) 안이면 성공 — 손 떨림 등을 감안해 넉넉히
-const FISHING_NEXT_FISH_DELAY_MS = 500; // 낚은 슬롯이 다시 채워지기까지의 짧은 축하 연출 시간
-// 2026-08-06 추가: 잃어버렸던 세션에서 설계했던 "황금 물고기" 강화안을 인수인계 기록을 바탕으로
-// 재구현 — 속도/판정은 그대로 두고 등장 확률·시각 연출만 다른 4가지 변주(황금 물고기, 6번째
-// 보너스볼 강조, 입질 지연 연출, 크기별 판정폭+자석 스냅)를 기존 상태 머신에 얹음.
-const FISHING_GOLDEN_CHANCE = 0.18; // 물고기 한 마리가 "황금"으로 스폰될 확률(약 15~20%)
-// 크기별 판정 폭(tolerance)·표시 배율(scale)·자석 스냅 여부 — large는 넉넉하게, small은 좁은 대신
-// 낚싯대를 가까이 가져가면 끌려오는 자석 효과로 보완함(아래 fishingSwimLoop 참고)
-const FISHING_SIZE_CONFIG = {
-  large:  { tolerance: 13, scale: 1.3,  snap: false },
-  medium: { tolerance: FISHING_CATCH_TOLERANCE_PCT, scale: 1, snap: false },
-  small:  { tolerance: 6,  scale: 0.72, snap: true },
-};
-const FISHING_SIZE_WEIGHTS = [['large', 0.25], ['medium', 0.5], ['small', 0.25]];
-const FISHING_SLOT_BASE_FONT_PX = [20, 18, 16]; // 슬롯별 기본 폰트 크기(styles.css .fishing-target-fish-0/1/2와 동일) — 크기 배율의 기준값
-function fishingPickSizeTier(){
-  let r = Math.random();
-  for (const [tier, weight] of FISHING_SIZE_WEIGHTS) { if (r < weight) return tier; r -= weight; }
-  return 'medium';
-}
-const FISHING_SNAP_RANGE_PCT = 8;          // 이 거리(%) 안에 찌가 들어오면 작은 물고기가 끌려오기 시작함
-const FISHING_SNAP_PULL_PCT_PER_SEC = 40;  // 자석 효과로 끌려오는 속도(%/초)
-const FISHING_BITE_DELAY_MS = 800; // 성공 판정 직후 번호를 바로 공개하지 않고 "입질" 연출을 잠깐 보여주는 시간
-let fishingBiting = false; // 입질 연출 재생 중엔 다른 낚시 시도를 잠깐 막음(애니메이션 겹침 방지)
-function fishingVibrate(pattern){ try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
-
-// 언어 전환 시에도 재사용해야 해서, 이미 뽑아둔 번호는 그대로 두고 문구·토글 상태만 새로 그림
-function updateLightningGameUi(){
-  const pbBtn = document.getElementById('lightning-game-pb');
-  const megaBtn = document.getElementById('lightning-game-mega');
-  const noteEl = document.getElementById('lightning-draw-note');
-  if (!pbBtn || !megaBtn || !noteEl) return;
-  pbBtn.classList.toggle('active', currentLightningGame === 'powerball');
-  megaBtn.classList.toggle('active', currentLightningGame === 'megamillions');
-  const oddsText = LIGHTNING_GAMES[currentLightningGame].oddsText();
-  noteEl.textContent = oddsText;
-  const fishingNoteEl = document.getElementById('fishing-draw-note');
-  if (fishingNoteEl) fishingNoteEl.textContent = oddsText;
-  // 2026-08-05: 연못(#fishing-pond)이 키보드 포커스를 받을 수 있게 됐는데, 이 조작법 설명을
-  // 위해 새 번역 문구를 26개 언어로 추가하는 대신 이미 번역돼있는 상단 안내(odds.fishingHint)를
-  // aria-label로 재사용함 — 언어 전환마다 이 함수가 다시 불리므로 여기서 같이 갱신
-  const pond = document.getElementById('fishing-pond');
-  if (pond) pond.setAttribute('aria-label', resolveI18n('odds.fishingHint') || '🎣 낚싯대를 던져서 번호를 하나씩 낚아보세요');
-}
-
-// 게임을 바꾸면 특별볼(파워볼/메가볼) 색상 표시와 숫자 범위가 달라지므로, 이미 뽑아둔 번호는
-// 새 게임 기준으로는 의미가 없어져서 "?"로 리셋함 — 낚시 모드도 같은 이유로 판을 새로 시작함
-function setLightningGame(game){
-  if (game === currentLightningGame) return;
-  currentLightningGame = game;
-  const specialClass = LIGHTNING_GAMES[game].specialClass;
-  const specialBall = document.getElementById('lightning-special-ball');
-  specialBall.classList.remove('pb', 'mega');
-  specialBall.classList.add(specialClass);
-  document.querySelectorAll('#lightning-result .lightning-ball').forEach(b => {
-    b.textContent = '?';
-    b.classList.remove('drawn');
-  });
-  const fishingSpecialBall = document.getElementById('fishing-special-ball');
-  if (fishingSpecialBall) {
-    fishingSpecialBall.classList.remove('pb', 'mega');
-    fishingSpecialBall.classList.add(specialClass);
-  }
-  resetFishingRound();
-  updateLightningGameUi();
-}
-
-// 그냥 뽑기 ↔ 낚시로 뽑기 화면 전환 — 패널만 바꿔치기하고 서로의 진행 상태는 건드리지 않음
-function setLightningMode(mode){
-  if (mode === currentLightningMode) return;
-  currentLightningMode = mode;
-  const quickBtn = document.getElementById('lightning-mode-quick');
-  const fishingBtn = document.getElementById('lightning-mode-fishing');
-  const quickPanel = document.getElementById('lightning-quick-mode');
-  const fishingPanel = document.getElementById('lightning-fishing-mode');
-  if (quickBtn) quickBtn.classList.toggle('active', mode === 'quick');
-  if (fishingBtn) fishingBtn.classList.toggle('active', mode === 'fishing');
-  if (quickPanel) quickPanel.style.display = mode === 'quick' ? '' : 'none';
-  if (fishingPanel) fishingPanel.style.display = mode === 'fishing' ? '' : 'none';
-}
-
-// "🎣 낚싯대 던지기" 기본 라벨 — data-i18n으로 이미 번역되어 화면에 떠있는 값을 그대로 다시
-// 읽어옴(getStateLabel()과 같은 관례: 한국어면 정적 HTML 값 그대로, 아니면 resolveI18n으로
-// 현재 언어 값을 가져오고 못 찾으면 한국어 문자열로 폴백)
-function fishingCastBtnDefaultLabel(){
-  return resolveI18n('odds.fishingCastBtn') || '🎣 낚싯대 던지기';
-}
-
-// 낚시 판을 처음 상태로 되돌림 — 게임(파워볼/메가밀리언즈)을 바꾸거나, 6마리를 전부 낚은 뒤
-// 다시 시작할 때 호출됨
-function resetFishingRound(){
-  fishingCaughtValues = [];
-  fishingCaughtGoldenFlags = [];
-  fishingSessionValues = null;
-  fishingState = 'idle';
-  fishingBiting = false;
-  fishingDragActive = false;
-  stopFishingSwimLoop();
-  const pond = document.getElementById('fishing-pond');
-  if (pond) pond.classList.remove('is-aiming', 'is-dragging');
-  const dragHint = document.getElementById('fishing-drag-hint');
-  if (dragHint) dragHint.classList.remove('show');
-  const rodWrap = document.getElementById('fishing-rod-wrap');
-  if (rodWrap) rodWrap.classList.remove('biting');
-  fishingSetRodX(50);
-  for (let i = 0; i < FISHING_MAX_FISH; i++) { fishingFish[i].hooked = false; fishingHideFishSlot(i); }
-  const msgEl = document.getElementById('fishing-status-msg');
-  if (msgEl) msgEl.classList.remove('show');
-  document.querySelectorAll('#fishing-result .lightning-ball').forEach(b => {
-    b.textContent = '?';
-    b.classList.remove('drawn', 'bonus-pop');
-  });
-  const resultEl = document.getElementById('fishing-result');
-  if (resultEl) resultEl.classList.remove('celebrate');
-  const btn = document.getElementById('fishing-cast-btn');
-  if (btn) { btn.disabled = false; btn.textContent = fishingCastBtnDefaultLabel(); }
-  const shareBtn = document.getElementById('fishing-share-btn');
-  if (shareBtn) shareBtn.style.display = 'none';
-}
-
-// 2026-08-05: 낚싯대를 드래그해서 헤엄치는 물고기 위치에 맞춘 뒤 손을 떼면 낚는 방식(위
-// state 변수 선언부 주석 참고). 버튼(#fishing-cast-btn)은 이제 판을 "시작/재시작"하는 역할만
-// 하고, 실제 조작은 연못(#fishing-pond)에서 포인터 드래그로 이뤄짐 — initFishingDragEvents()가
-// pointerdown/move/up을 연못에 직접 바인딩함.
-function castFishingLine(){
-  if (fishingState !== 'idle') return; // 진행 중엔 버튼이 disabled라 클릭 자체가 안 들어옴
-
-  if (fishingCaughtValues.length >= 6) resetFishingRound();
-
-  const config = LIGHTNING_GAMES[currentLightningGame];
-  if (!fishingSessionValues) {
-    const nums = new Set();
-    while (nums.size < 5) nums.add(Math.floor(Math.random() * config.mainMax) + 1);
-    fishingSessionValues = [...nums].sort((a, b) => a - b);
-    fishingSessionValues.push(Math.floor(Math.random() * config.specialMax) + 1);
-  }
-
-  const pond = document.getElementById('fishing-pond');
-  const btn = document.getElementById('fishing-cast-btn');
-  if (btn) btn.disabled = true;
-  if (pond) pond.classList.add('is-aiming');
-  // 2026-08-05: 판이 시작되면 "여기를 누르고 밀어서 낚으세요"를 알려주는 손가락 힌트를 보여줌 —
-  // fishingDragStart()에서 사용자가 실제로 연못을 처음 눌러보는 순간 바로 지움(아래 참고).
-  const dragHint = document.getElementById('fishing-drag-hint');
-  if (dragHint) dragHint.classList.add('show');
-  fishingState = 'aiming';
-  fishingSpawnInitialFish();
-  startFishingSwimLoop();
-}
-
-// 새 물고기 한 마리를 슬롯 i에 무작위 위치·방향·모양으로 등장시킴(판 시작, 그리고 각 슬롯이
-// 성공 후 다시 채워질 때 호출) — 낚싯대(찌) 위치는 건드리지 않아서 연속으로 자연스럽게 이어짐
-function fishingSpawnFishSlot(i){
-  const f = fishingFish[i];
-  f.active = true;
-  f.hooked = false;
-  f.xPct = FISHING_TARGET_MIN_PCT + Math.random() * (FISHING_TARGET_MAX_PCT - FISHING_TARGET_MIN_PCT);
-  f.dir = Math.random() < 0.5 ? 1 : -1;
-  f.golden = Math.random() < FISHING_GOLDEN_CHANCE;
-  f.size = fishingPickSizeTier();
-  const el = document.getElementById('fishing-target-fish-' + i);
-  if (el) {
-    el.textContent = ['🐟', '🐠', '🐡'][Math.floor(Math.random() * 3)];
-    el.style.display = '';
-    el.style.left = f.xPct + '%';
-    el.style.transform = `translateX(-50%) scaleX(${f.dir})`;
-    el.style.fontSize = Math.round(FISHING_SLOT_BASE_FONT_PX[i] * FISHING_SIZE_CONFIG[f.size].scale) + 'px';
-    el.classList.toggle('golden', f.golden);
-  }
-}
-
-function fishingHideFishSlot(i){
-  fishingFish[i].active = false;
-  fishingFish[i].hooked = false;
-  const el = document.getElementById('fishing-target-fish-' + i);
-  if (el) { el.style.display = 'none'; el.classList.remove('golden'); }
-}
-
-// 판 시작 시, 남은 번호 수만큼(최대 FISHING_MAX_FISH) 슬롯을 채움 — 새 판은 항상 6개가 남아있는
-// 상태라 사실상 매번 3마리 전부 등장함
-function fishingSpawnInitialFish(){
-  const count = Math.min(FISHING_MAX_FISH, 6 - fishingCaughtValues.length);
-  for (let i = 0; i < FISHING_MAX_FISH; i++) {
-    if (i < count) fishingSpawnFishSlot(i); else fishingHideFishSlot(i);
-  }
-}
-
-// 활성 상태인 물고기들이 각자 연못 양쪽 경계 사이를 계속 왕복하게 하는 rAF 루프 — 경과시간
-// (dtSec) 기준이라 기기 성능과 무관하게 항상 같은 속도로 움직임(예전 fishingReelLoop와 같은 패턴)
-function fishingSwimLoop(ts){
-  if (fishingState !== 'aiming') { fishingSwimRafId = null; fishingSwimLastTs = null; return; }
-  if (fishingSwimLastTs == null) fishingSwimLastTs = ts;
-  const dtSec = Math.min(0.1, (ts - fishingSwimLastTs) / 1000);
-  fishingSwimLastTs = ts;
-  for (let i = 0; i < FISHING_MAX_FISH; i++) {
-    const f = fishingFish[i];
-    if (!f.active || f.hooked) continue; // 입질 연출 중인 물고기는 그 자리에 멈춰서 "걸렸다" 느낌을 줌
-    f.xPct += f.dir * fishingTargetSpeedPct * dtSec;
-    if (f.xPct <= FISHING_TARGET_MIN_PCT) { f.xPct = FISHING_TARGET_MIN_PCT; f.dir = 1; }
-    else if (f.xPct >= FISHING_TARGET_MAX_PCT) { f.xPct = FISHING_TARGET_MAX_PCT; f.dir = -1; }
-    // 2026-08-06 추가: 작은 물고기는 판정 폭이 좁은 대신, 드래그 중인 찌가 가까이 오면 살짝
-    // 끌려오는 "자석" 효과를 줘서 좁은 히트박스를 체감상 보완함(FISHING_SIZE_CONFIG.small.snap)
-    if (fishingDragActive && FISHING_SIZE_CONFIG[f.size].snap) {
-      const dist = fishingRodXPct - f.xPct;
-      if (Math.abs(dist) < FISHING_SNAP_RANGE_PCT) {
-        const pull = Math.sign(dist) * Math.min(Math.abs(dist), FISHING_SNAP_PULL_PCT_PER_SEC * dtSec);
-        f.xPct = Math.max(FISHING_TARGET_MIN_PCT, Math.min(FISHING_TARGET_MAX_PCT, f.xPct + pull));
-      }
-    }
-    const el = document.getElementById('fishing-target-fish-' + i);
-    if (el) { el.style.left = f.xPct + '%'; el.style.transform = `translateX(-50%) scaleX(${f.dir})`; }
-  }
-  fishingSwimRafId = requestAnimationFrame(fishingSwimLoop);
-}
-
-function startFishingSwimLoop(){
-  fishingSwimLastTs = null;
-  if (fishingSwimRafId == null) fishingSwimRafId = requestAnimationFrame(fishingSwimLoop);
-}
-
-function stopFishingSwimLoop(){
-  if (fishingSwimRafId != null) { cancelAnimationFrame(fishingSwimRafId); fishingSwimRafId = null; }
-  fishingSwimLastTs = null;
-}
-
-// 낚싯대(찌)를 pct(0~100, 연못 폭 대비) 위치로 옮김 — 양 끝 여백(4~96%)을 둬서 풀 장식 뒤로
-// 완전히 숨어버리지 않게 함
-function fishingSetRodX(pct){
-  fishingRodXPct = Math.max(4, Math.min(96, pct));
-  const rodWrap = document.getElementById('fishing-rod-wrap');
-  if (rodWrap) rodWrap.style.left = fishingRodXPct + '%';
-}
-
-// 포인터의 화면 좌표(clientX)를 연못 요소 기준 0~100 퍼센트로 환산
-function fishingPointerToPct(clientX){
-  const pond = document.getElementById('fishing-pond');
-  if (!pond) return fishingRodXPct;
-  const rect = pond.getBoundingClientRect();
-  if (!rect.width) return fishingRodXPct;
-  return ((clientX - rect.left) / rect.width) * 100;
-}
-
-// 2026-08-05: 연못 전체를 드래그 영역으로 씀(찌의 작은 이모지만 잡게 하면 시니어 타겟에게
-// 손끝 정밀도 부담이 큼) — pointerdown 즉시 그 지점으로 찌가 순간이동하고, 그대로 손가락을
-// 따라 움직이다가 손을 떼는 순간(pointerup) 물고기와 겹쳐있는지 판정함. 드래그 없이 그냥
-// 탭만 해도(이미 찌가 물고기 근처에 있을 때) 같은 pointerdown→pointerup 흐름으로 동작함.
-function fishingDragStart(e){
-  if (fishingState !== 'aiming') return;
-  fishingDragActive = true;
-  const pond = document.getElementById('fishing-pond');
-  if (pond) {
-    pond.classList.add('is-dragging');
-    if (pond.setPointerCapture && e.pointerId != null) { try { pond.setPointerCapture(e.pointerId); } catch (err) {} }
-  }
-  // 사용자가 연못을 직접 눌러본 순간 = 조작법을 찾은 것이므로 손가락 힌트를 바로 치움
-  const dragHint = document.getElementById('fishing-drag-hint');
-  if (dragHint) dragHint.classList.remove('show');
-  fishingSetRodX(fishingPointerToPct(e.clientX));
-}
-
-function fishingDragMove(e){
-  if (!fishingDragActive) return;
-  fishingSetRodX(fishingPointerToPct(e.clientX));
-}
-
-function fishingDragEnd(){
-  if (!fishingDragActive) return;
-  fishingDragActive = false;
-  const pond = document.getElementById('fishing-pond');
-  if (pond) pond.classList.remove('is-dragging');
-  fishingAttemptCatch();
-}
-
-function initFishingDragEvents(){
-  const pond = document.getElementById('fishing-pond');
-  if (!pond) return;
-  pond.addEventListener('pointerdown', fishingDragStart);
-  pond.addEventListener('pointermove', fishingDragMove);
-  pond.addEventListener('pointerup', fishingDragEnd);
-  pond.addEventListener('pointercancel', fishingDragEnd);
-}
-document.addEventListener('DOMContentLoaded', initFishingDragEvents);
-
-// 2026-08-05: 포인터 드래그가 안 되는 환경(키보드 사용자)을 위한 최소한의 대체 조작 —
-// 연못에 포커스가 있을 때만 동작해서 페이지 스크롤과 충돌하지 않음(연못에 tabindex="0" 추가,
-// index.html 참고). 화살표로 찌를 옮기고 Enter/Space로 지금 위치에서 낚시 시도.
-function initFishingKeyboardControls(){
-  const pond = document.getElementById('fishing-pond');
-  if (!pond) return;
-  pond.addEventListener('keydown', (e) => {
-    if (fishingState !== 'aiming') return;
-    if (e.key === 'ArrowLeft') { fishingSetRodX(fishingRodXPct - 5); e.preventDefault(); }
-    else if (e.key === 'ArrowRight') { fishingSetRodX(fishingRodXPct + 5); e.preventDefault(); }
-    else if (e.key === ' ' || e.key === 'Enter') { fishingAttemptCatch(); e.preventDefault(); }
-  });
-}
-document.addEventListener('DOMContentLoaded', initFishingKeyboardControls);
-
-// 찌와 물고기들 위치를 비교해 가장 가까운 물고기를 찾고 성공/실패를 판정 — 여러 마리가 동시에
-// 헤엄치므로 그중 제일 가까운 것 하나만 대상으로 삼음. 제한시간이 없어서 몇 번을 실패해도
-// 불이익 없이 바로 다시 시도 가능
-function fishingAttemptCatch(){
-  if (fishingState !== 'aiming' || fishingBiting) return;
-  let bestIndex = -1;
-  let bestDist = Infinity;
-  for (let i = 0; i < FISHING_MAX_FISH; i++) {
-    const f = fishingFish[i];
-    if (!f.active) continue;
-    const dist = Math.abs(fishingRodXPct - f.xPct);
-    if (dist < bestDist) { bestDist = dist; bestIndex = i; }
-  }
-  // 2026-08-06: 판정 폭을 물고기 크기별로 다르게 씀(large는 넉넉하게, small은 좁게) — 위
-  // FISHING_SIZE_CONFIG 선언부 주석 참고
-  const tolerance = bestIndex !== -1 ? FISHING_SIZE_CONFIG[fishingFish[bestIndex].size].tolerance : FISHING_CATCH_TOLERANCE_PCT;
-  if (bestIndex !== -1 && bestDist <= tolerance) fishingStartBite(bestIndex);
-  else fishingMissed(bestIndex);
-}
-
-// 2026-08-06 추가: 성공 판정이 나도 번호를 바로 공개하지 않고, 낚싯대가 2~3번 까딱거리는 "입질"
-// 연출을 짧게 보여준 뒤(styles.css .fishing-rod-wrap.biting) 공개함 — 실제 낚시의 손맛을 흉내냄.
-// 그동안 이 물고기는 fishingSwimLoop에서 멈춰있고(hooked), 다른 물고기들은 계속 헤엄침.
-function fishingStartBite(slotIndex){
-  fishingBiting = true;
-  fishingFish[slotIndex].hooked = true;
-  const rodWrap = document.getElementById('fishing-rod-wrap');
-  if (rodWrap) { rodWrap.classList.remove('biting'); void rodWrap.offsetWidth; rodWrap.classList.add('biting'); }
-  fishingVibrate([30, 30, 30]);
-  setTimeout(() => {
-    fishingBiting = false;
-    if (rodWrap) rodWrap.classList.remove('biting');
-    fishingCaughtSuccess(slotIndex);
-  }, FISHING_BITE_DELAY_MS);
-}
-
-// 위치가 안 맞아서 놓쳤을 때 — 판 진행 상태(이미 낚은 번호)는 그대로 두고 안내 문구만 보여줌,
-// 물고기들은 계속 헤엄치는 중이라 바로 다시 시도 가능(재도전에 불이익 없음). 제일 가까웠던
-// 물고기가 있으면(연못에 물고기가 하나라도 있었다면) 그 물고기만 살짝 흔들어 "아깝다" 피드백
-function fishingMissed(nearestIndex){
-  fishingVibrate(15);
-  showFishingEscapedMessage();
-  if (nearestIndex != null && nearestIndex >= 0) {
-    const el = document.getElementById('fishing-target-fish-' + nearestIndex);
-    if (el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
-  }
-}
-
-function showFishingEscapedMessage(){
-  const msgEl = document.getElementById('fishing-status-msg');
-  if (!msgEl) return;
-  msgEl.textContent = pickLang('🐟 놓쳤어요! 다시 던져보세요', '🐟 It got away! Try casting again', '🐟 跑掉了！再试一次吧', '🐟 Nó chạy mất rồi! Thử thả câu lại nhé', '🐟 มันหนีไปแล้ว! ลองโยนเบ็ดอีกครั้ง', '🐟 Сорвалась! Попробуйте забросить ещё раз', FISHING_ESCAPED_MSG_MORE);
-  msgEl.classList.remove('show');
-  void msgEl.offsetWidth;
-  msgEl.classList.add('show');
-}
-
-// 위치가 맞아서 성공했을 때 — 번호 한 개를 확정·공개하고, 낚인 슬롯만 잠깐 비웠다가(다른
-// 물고기들은 그동안 계속 헤엄침) 아직 남은 번호가 있으면 짧은 축하 연출 후 그 슬롯만 다시
-// 채움(찌 위치는 그대로 유지 — 계속 이어지는 흐름을 위해 초기화 안 함)
-function fishingCaughtSuccess(slotIndex){
-  const caughtValueIndex = fishingCaughtValues.length;
-  const value = fishingSessionValues[caughtValueIndex];
-  const isGolden = fishingFish[slotIndex].golden;
-  const isBonus = caughtValueIndex === 5; // 6번째(특별번호) — 파워볼/메가볼처럼 이번 판의 마무리 번호
-  const slots = document.querySelectorAll('#fishing-result .lightning-ball');
-  const slotEl = slots[caughtValueIndex];
-  fishingCaughtValues.push(value);
-  fishingCaughtGoldenFlags.push(isGolden);
-  if (slotEl) {
-    slotEl.textContent = value;
-    void slotEl.offsetWidth;
-    slotEl.classList.add('drawn');
-    slotEl.classList.toggle('bonus-pop', isBonus);
-  }
-  const announcer = document.getElementById('fishing-result-announcer');
-  if (announcer) {
-    const prefix = pickLang('낚은 번호: ', 'Caught numbers: ', '钓到的号码：', 'Số đã câu được: ', 'เลขที่ตกได้: ', 'Пойманные числа: ', FISHING_CAUGHT_PREFIX_MORE);
-    announcer.textContent = prefix + fishingCaughtValues.join(', ');
-  }
-  // 2026-08-06: 6번째(보너스) 번호는 더 강하고 겹겹이 이어지는 패턴으로, 황금 물고기는 살짝 더
-  // 통통 튀는 패턴으로 구분함 — 나머지는 기존 패턴 그대로
-  fishingVibrate(isBonus ? [30, 50, 30, 50, 30, 50, 90] : (isGolden ? [25, 15, 25, 15, 60] : [20, 40, 30, 40, 50]));
-
-  const splash = document.getElementById('fishing-splash');
-  if (splash) {
-    splash.style.left = fishingRodXPct + '%';
-    splash.classList.remove('play', 'big');
-    void splash.offsetWidth;
-    splash.classList.toggle('big', isBonus || isGolden); // 보너스·황금 캐치는 물결도 한층 더 크게
-    splash.classList.add('play');
-  }
-  const caughtFishEl = document.getElementById('fishing-caught-fish');
-  const caughtFishSourceEl = document.getElementById('fishing-target-fish-' + slotIndex);
-  if (caughtFishEl && caughtFishSourceEl) {
-    caughtFishEl.textContent = caughtFishSourceEl.textContent;
-    caughtFishEl.classList.remove('play', 'golden');
-    void caughtFishEl.offsetWidth;
-    caughtFishEl.classList.toggle('golden', isGolden);
-    caughtFishEl.classList.add('play');
-  }
-  fishingHideFishSlot(slotIndex);
-
-  const btn = document.getElementById('fishing-cast-btn');
-  if (fishingCaughtValues.length >= 6) {
-    fishingState = 'idle';
-    stopFishingSwimLoop();
-    for (let i = 0; i < FISHING_MAX_FISH; i++) fishingHideFishSlot(i);
-    const pond = document.getElementById('fishing-pond');
-    if (pond) pond.classList.remove('is-aiming');
-    const resultEl = document.getElementById('fishing-result');
-    if (resultEl) { void resultEl.offsetWidth; resultEl.classList.add('celebrate'); }
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = pickLang('🎣 처음부터 다시 낚시하기', '🎣 Fish again from scratch', '🎣 重新钓一次', '🎣 Câu lại từ đầu', '🎣 ตกปลาใหม่อีกครั้ง', '🎣 Порыбачить заново', FISHING_RESTART_MORE);
-    }
-    const shareBtn = document.getElementById('fishing-share-btn');
-    if (shareBtn) shareBtn.style.display = '';
-  } else {
-    // 다른 슬롯의 물고기들은 이 동안에도 계속 헤엄침(fishingState는 계속 'aiming' 유지) —
-    // 아직 남은 번호보다 지금 보이는 물고기 수가 적을 때만 이 슬롯을 다시 채움(막바지엔 자연스럽게
-    // 1~2마리로 줄어듦, 위 state 선언부 주석 참고)
-    setTimeout(() => {
-      if (fishingState !== 'aiming') return;
-      const stillNeeded = 6 - fishingCaughtValues.length;
-      const currentlyVisible = fishingFish.filter(f => f.active).length;
-      if (currentlyVisible < Math.min(FISHING_MAX_FISH, stillNeeded)) fishingSpawnFishSlot(slotIndex);
-    }, FISHING_NEXT_FISH_DELAY_MS);
-  }
-}
-
-// 2-letter flagCode(COUNTRY_TAX_PROFILES)를 실제 국기 이모지로 변환 — 캔버스 카드 자체에는
-// 안 씀(다른 이모지 폰트 의존 문제 재발 방지, .flag-badge와 같은 텍스트 배지 방식 유지),
-// 공유 텍스트(shareText)에만 사용 — SNS 게시글에서는 실제 국기 이모지가 자연스러움.
-function flagEmojiFromCode(code){
-  if (!code || code.length !== 2) return '🌐';
-  return String.fromCodePoint(...[...code.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
-}
-
-// 2026-08-06: 낚시 게임(번호 6개 뽑기)을 다 마치면, 그 번호가 "이번 주 실제 잭팟"에 당첨됐다고
-// 가정했을 때 사용자가 선택해둔 국가(sharedCountry) 기준 실수령액을 계산해 공유 카드로 만들어줌.
-// 실제 당첨 여부와 무관한 가정 시뮬레이션이라는 걸 카드 자체(참고용 시뮬레이션 문구, buildShareCard
-// 공통 disclaimer)와 공유 문구 어투로 분명히 함 — 순위판/서버 없이 "국가 대결" 분위기만 SNS
-// 공유 문구의 도발적 캡션으로 유도(사용자 요청 배경은 HANDOFF.md "낚시 게임 공유 카드" 참고).
-async function shareFishingCatch(){
-  if (fishingCaughtValues.length < 6) return;
-  const game = currentLightningGame;
-  const config = LIGHTNING_GAMES[game];
-  const gameLabel = pickLang(
-    game === 'powerball' ? '파워볼' : '메가밀리언즈',
-    game === 'powerball' ? 'Powerball' : 'Mega Millions',
-    game === 'powerball' ? '强力球' : '超级百万',
-    game === 'powerball' ? 'Powerball' : 'Mega Millions',
-    game === 'powerball' ? 'พาวเวอร์บอล' : 'เมกะมิลเลียน',
-    game === 'powerball' ? 'Powerball' : 'Mega Millions',
-    GAME_NAME_MORE[game]
-  );
-  const cashUsd = getJackpotCashUsd(game);
-  const cashKrw = cashUsd * EXCHANGE_RATE;
-  const stateCode = sharedCountry === 'us' ? (sharedState || 'AVG') : null;
-  const result = calcTakeHome(cashKrw / 100000000, sharedCountry, stateCode);
-  const finalUsd = result.final * 100000000 / EXCHANGE_RATE;
-  const jackpotM = Math.round(cashUsd / 1000000);
-  const finalM = (finalUsd / 1000000).toFixed(1);
-  const profile = COUNTRY_TAX_PROFILES.find(p => p.code === sharedCountry);
-  const flagCode = profile ? profile.flagCode : '??';
-  const flagEmoji = flagEmojiFromCode(flagCode);
-  const basisSuffix = result.basisSuffix;
-
-  const numbers = fishingCaughtValues.slice(0, 5);
-  const special = fishingCaughtValues[5];
-  const specialColor = config.specialClass === 'pb' ? '#262420' : '#946716';
-  const goldenFlags = fishingCaughtGoldenFlags.slice(0, 5);
-  const specialGolden = !!fishingCaughtGoldenFlags[5];
-
-  const thisJackpotLabel = pickLang('이번 잭팟', 'This jackpot', '本期奖金', 'Jackpot kỳ này', 'แจ็คพอตงวดนี้', 'Этот джекпот', {
-    ar: 'هذا الجاكبوت', bn: 'এই জ্যাকপট', fr: 'Ce jackpot', hi: 'यह जैकपॉट', id: 'Jackpot ini',
-    ja: '今回のジャックポット', kk: 'Осы джекпот', km: 'ជេកផតនេះ', ky: 'Ушул джекпот', lo: 'ແຈັກພອດຄັ້ງນີ້',
-    mn: 'Энэ жекпот', my: 'ဒီဂျက်ပေါ့', ne: 'यो ज्याकपोट', si: 'මෙම ජැක්පොට්', tl: 'Ang jackpot na ito',
-    ur: 'یہ جیک پاٹ', uz: 'Ushbu jekpot',
-    pt: 'Este prêmio', es: 'Este acumulado', uk: 'Цей джекпот', tet: "Jackpot ida ne'e", de: `Dieser Jackpot`, nl: `Deze jackpot`, sv: `Denna jackpott`, no: 'Denne jackpotten', da: 'Denne jackpot', fi: 'Tämä päävoitto', it: "Questo jackpot", pl: "Ten jackpot", tr: 'Bu büyük ikramiye',
-  });
-
-  // 2026-08-07: 여기 있던 "🎣 " 접두사가 캔버스에 raw 이모지로 그려져서 기기별 이모지 폰트에
-  // 따라 텍스트 옆에 깨지거나 겹쳐 보이는 문제가 있었음(🐻 로고에서 이미 겪고 고친 것과 같은
-  // 이모지 폰트 의존 문제 — drawLogoMark()/drawBearMascotIcon() 주석 참고) — 이 라벨은
-  // 다른 카드(label: gameLabel, 위 shareLatestDraw() 참고)처럼 이모지 없이 텍스트만 그림.
-  const label = `${gameLabel} · ${flagCode}`;
-  const bigText = `$${finalM}M`;
-  const subText = `${thisJackpotLabel} $${jackpotM}M → ${basisSuffix}`;
-  const footerText = document.querySelector('[data-i18n="hero.tag"]')?.textContent || 'ChamTax';
-
-  const canvas = buildShareCard({
-    label, bigText, subText, footerText,
-    balls: { numbers, special, specialColor, goldenFlags, specialGolden },
-  });
-
-  const shareTitle = `${flagEmoji} ${gameLabel}`;
-  const numbersText = numbers.join('-');
-  const shareText = pickLang(
-    `🎣 ${flagEmoji} ${basisSuffix} 기준, 낚시로 뽑은 번호(${numbersText}+${special})가 이번 ${gameLabel} 잭팟($${jackpotM}M)에 당첨됐다면 실수령액은 $${finalM}M! 이거 넘을 수 있어? chamtax.com`,
-    `🎣 ${flagEmoji} As a ${basisSuffix}, if my fished numbers (${numbersText}+${special}) won this ${gameLabel} jackpot ($${jackpotM}M), I'd take home $${finalM}M! Beat that? chamtax.com`,
-    `🎣 ${flagEmoji} 作为${basisSuffix}，如果我钓到的号码（${numbersText}+${special}）中了本期${gameLabel}奖金（$${jackpotM}M），到手实拿$${finalM}M！你能超过我吗？chamtax.com`,
-    `🎣 ${flagEmoji} Là ${basisSuffix}, nếu số tôi câu được (${numbersText}+${special}) trúng jackpot ${gameLabel} này ($${jackpotM}M), tôi sẽ nhận về $${finalM}M! Vượt qua được không? chamtax.com`,
-    `🎣 ${flagEmoji} ในฐานะ${basisSuffix} ถ้าเลขที่ตกได้ (${numbersText}+${special}) ถูกแจ็คพอต ${gameLabel} นี้ ($${jackpotM}M) ฉันจะได้เงินจริง $${finalM}M! เอาชนะได้ไหม? chamtax.com`,
-    `🎣 ${flagEmoji} Как ${basisSuffix}, если бы мои выловленные числа (${numbersText}+${special}) выиграли этот джекпот ${gameLabel} ($${jackpotM}M), я бы получил $${finalM}M на руки! Сможешь побить? chamtax.com`,
-    {
-      ar: `🎣 ${flagEmoji} بصفتي ${basisSuffix}، لو فازت أرقامي المصطادة (${numbersText}+${special}) بجاكبوت ${gameLabel} هذا ($${jackpotM}M)، لحصلت على $${finalM}M! هل يمكنك التفوق؟ chamtax.com`,
-      bn: `🎣 ${flagEmoji} ${basisSuffix} হিসেবে, আমার ধরা সংখ্যা (${numbersText}+${special}) এই ${gameLabel} জ্যাকপটে ($${jackpotM}M) জিতলে আমি হাতে পেতাম $${finalM}M! এটা ছাড়িয়ে যেতে পারবে? chamtax.com`,
-      fr: `🎣 ${flagEmoji} En tant que ${basisSuffix}, si mes numéros pêchés (${numbersText}+${special}) avaient gagné ce jackpot ${gameLabel} ($${jackpotM}M), j'aurais touché $${finalM}M ! Tu peux battre ça ? chamtax.com`,
-      hi: `🎣 ${flagEmoji} ${basisSuffix} के तौर पर, अगर मेरे पकड़े नंबर (${numbersText}+${special}) इस ${gameLabel} जैकपॉट ($${jackpotM}M) में जीत जाते, तो मुझे $${finalM}M मिलते! इसे हरा सकते हो? chamtax.com`,
-      id: `🎣 ${flagEmoji} Sebagai ${basisSuffix}, kalau nomor hasil mancing saya (${numbersText}+${special}) menang jackpot ${gameLabel} ini ($${jackpotM}M), saya bakal bawa pulang $${finalM}M! Bisa kalahkan? chamtax.com`,
-      ja: `🎣 ${flagEmoji} ${basisSuffix}として、釣った番号(${numbersText}+${special})が今回の${gameLabel}ジャックポット($${jackpotM}M)に当たったら、手取りは$${finalM}M！これ超えられる？chamtax.com`,
-      kk: `🎣 ${flagEmoji} ${basisSuffix} ретінде, аулаған сандарым (${numbersText}+${special}) осы ${gameLabel} джекпотында ($${jackpotM}M) ұтса, қолыма $${finalM}M тиер еді! Мұны жеңе аласың ба? chamtax.com`,
-      km: `🎣 ${flagEmoji} ក្នុងនាម${basisSuffix} ប្រសិនបើលេខដែលបានចាប់ (${numbersText}+${special}) ឈ្នះជេកផត ${gameLabel} នេះ ($${jackpotM}M) ខ្ញុំនឹងទទួលបាន $${finalM}M! អាចយកឈ្នះនេះបានទេ? chamtax.com`,
-      ky: `🎣 ${flagEmoji} ${basisSuffix} катары, кармаган сандарым (${numbersText}+${special}) ушул ${gameLabel} джекпотун ($${jackpotM}M) утса, колума $${finalM}M тиймек! Мунусын жеңе аласыңбы? chamtax.com`,
-      lo: `🎣 ${flagEmoji} ໃນນາມ${basisSuffix} ຖ້າເລກທີ່ຕົກໄດ້ (${numbersText}+${special}) ຖືກແຈັກພອດ ${gameLabel} ນີ້ ($${jackpotM}M) ຂ້ອຍຈະໄດ້ຮັບ $${finalM}M! ເອົາຊະນະໄດ້ບໍ່? chamtax.com`,
-      mn: `🎣 ${flagEmoji} ${basisSuffix} байдлаар, барьсан дугаарууд (${numbersText}+${special}) энэ ${gameLabel} жекпотыг ($${jackpotM}M) хожвол гартаа $${finalM}M авах байсан! Үүнийг давж чадах уу? chamtax.com`,
-      my: `🎣 ${flagEmoji} ${basisSuffix} အနေနဲ့၊ ဖမ်းရသောနံပါတ်များ (${numbersText}+${special}) ဒီ ${gameLabel} ဂျက်ပေါ့ ($${jackpotM}M) ကို နိုင်ခဲ့ရင် $${finalM}M ရရှိမှာပါ! ဒါကိုကျော်နိုင်မလား? chamtax.com`,
-      ne: `🎣 ${flagEmoji} ${basisSuffix} को रूपमा, समातिएका नम्बरहरू (${numbersText}+${special}) यो ${gameLabel} ज्याकपोट ($${jackpotM}M) जितेको भए मैले $${finalM}M पाउने थिएँ! यो जित्न सक्छौ? chamtax.com`,
-      si: `🎣 ${flagEmoji} ${basisSuffix} ලෙස, අල්ලාගත් අංක (${numbersText}+${special}) මෙම ${gameLabel} ජැක්පොට් ($${jackpotM}M) දිනුවේ නම් මට $${finalM}M ලැබෙනු ඇත! මෙය පරාජය කළ හැකිද? chamtax.com`,
-      tl: `🎣 ${flagEmoji} Bilang ${basisSuffix}, kung ang nahuli kong numero (${numbersText}+${special}) ay nanalo sa ${gameLabel} jackpot na ito ($${jackpotM}M), $${finalM}M ang madadala ko! Kaya mo bang talunin ito? chamtax.com`,
-      ur: `🎣 ${flagEmoji} ${basisSuffix} کے طور پر، اگر میرے پکڑے نمبر (${numbersText}+${special}) اس ${gameLabel} جیک پاٹ ($${jackpotM}M) میں جیت جاتے تو مجھے $${finalM}M ملتے! اسے شکست دے سکتے ہو؟ chamtax.com`,
-      uz: `🎣 ${flagEmoji} ${basisSuffix} sifatida, tutgan raqamlarim (${numbersText}+${special}) shu ${gameLabel} jekpotini ($${jackpotM}M) yutganida, qo'limga $${finalM}M tegar edi! Buni yenga olasanmi? chamtax.com`,
-      pt: `🎣 ${flagEmoji} Como ${basisSuffix}, se meus números pescados (${numbersText}+${special}) tivessem ganhado este prêmio do ${gameLabel} ($${jackpotM}M), eu levaria $${finalM}M! Consegue superar isso? chamtax.com`,
-      es: `🎣 ${flagEmoji} Como ${basisSuffix}, si mis números pescados (${numbersText}+${special}) hubieran ganado este acumulado de ${gameLabel} ($${jackpotM}M), me llevaría $${finalM}M! ¿Puedes superarlo? chamtax.com`,
-      uk: `🎣 ${flagEmoji} Як ${basisSuffix}, якби мої виловлені числа (${numbersText}+${special}) виграли цей джекпот ${gameLabel} ($${jackpotM}M), я б отримав $${finalM}M на руки! Зможеш побити це? chamtax.com`,
-      tet: `🎣 ${flagEmoji} Nu'udar ${basisSuffix}, se números ne'ebé hau kaer (${numbersText}+${special}) manán jackpot ${gameLabel} ida ne'e ($${jackpotM}M), hau sei simu $${finalM}M! Ita bele vense ida ne'e? chamtax.com`, de: `🎣 ${flagEmoji} Als ${basisSuffix} hätten meine geangelten Zahlen (${numbersText}+${special}), wenn sie diesen ${gameLabel}-Jackpot ($${jackpotM}M) gewonnen hätten, mir $${finalM}M eingebracht! Kannst du das toppen? chamtax.com`, nl: `🎣 ${flagEmoji} Als ${basisSuffix} zouden mijn gevangen getallen (${numbersText}+${special}), als ze deze ${gameLabel}-jackpot ($${jackpotM}M) hadden gewonnen, mij $${finalM}M hebben opgeleverd! Kun jij dat overtreffen? chamtax.com`, sv: `🎣 ${flagEmoji} Som ${basisSuffix} skulle mina fångade nummer (${numbersText}+${special}), om de hade vunnit denna ${gameLabel}-jackpott ($${jackpotM}M), ha gett mig $${finalM}M! Kan du slå det? chamtax.com`, no: `🎣 ${flagEmoji} Som ${basisSuffix} ville mine fangede tall (${numbersText}+${special}), hvis de hadde vunnet denne ${gameLabel}-jackpotten ($${jackpotM}M), gitt meg $${finalM}M! Kan du slå det? chamtax.com`, da: `🎣 ${flagEmoji} Som ${basisSuffix} ville mine fangede tal (${numbersText}+${special}), hvis de havde vundet denne ${gameLabel}-jackpot ($${jackpotM}M), have givet mig $${finalM}M! Kan du slå det? chamtax.com`, fi: `🎣 ${flagEmoji} ${basisSuffix}na kalastamani numerot (${numbersText}+${special}) olisivat, jos ne olisivat voittaneet tämän ${gameLabel}-päävoiton ($${jackpotM}M), tuoneet minulle $${finalM}M! Voitko voittaa tämän? chamtax.com`, it: `🎣 ${flagEmoji} Come ${basisSuffix}, se i miei numeri pescati (${numbersText}+${special}) avessero vinto questo jackpot ${gameLabel} ($${jackpotM}M), avrei incassato $${finalM}M! Riesci a battermi? chamtax.com`, pl: `🎣 ${flagEmoji} Jako ${basisSuffix}, gdyby moje wylosowane liczby (${numbersText}+${special}) wygrały ten jackpot ${gameLabel} ($${jackpotM}M), zgarnąłbym $${finalM}M! Pobijesz mnie? chamtax.com`, tr: `🎣 ${flagEmoji} ${basisSuffix} olarak, çektiğim sayılar (${numbersText}+${special}) bu ${gameLabel} büyük ikramiyesini ($${jackpotM}M) kazansaydı, $${finalM}M kazanmış olurdum! Beni geçebilir misin? chamtax.com`,
-    }
-  );
-
-  openAnnotateOverlay(canvas, `chamtax-fishing-${game}.png`, {
-    mode: 'share',
-    shareTitle,
-    shareText,
-  });
-}
-
-const DRAWING_BTN_MORE = {
-  km: 'កំពុងទាញ... ⚡', ne: 'तान्दै... ⚡', id: 'Mengundi... ⚡', my: 'ဆွဲနေသည်... ⚡', si: 'ඇද ගනිමින්... ⚡',
-  uz: "Tortilmoqda... ⚡", mn: 'Сугалж байна... ⚡', kk: 'Жеребе тартылуда... ⚡', ky: 'Жеребе тартылууда... ⚡',
-  ur: 'نکالا جا رہا ہے... ⚡', bn: 'টানা হচ্ছে... ⚡', lo: 'ກຳລັງດຶງ... ⚡', ja: '抽選中... ⚡',
-  ar: 'جارِ السحب... ⚡', hi: 'निकाला जा रहा है... ⚡', fr: 'Tirage en cours... ⚡', tl: 'Kinukuha... ⚡'
-,
-  pt: `Sorteando... ⚡`, es: `Sorteando... ⚡`, uk: `Розіграш... ⚡`, tet: `Sorteiu hela... ⚡`, de: `Wird gezogen... ⚡`, nl: `Wordt getrokken... ⚡`, sv: `Dras... ⚡`, no: 'Trekkes... ⚡', da: 'Trækkes... ⚡', fi: 'Arvotaan... ⚡', it: "Estrazione in corso... ⚡", pl: "Losowanie w toku... ⚡", tr: 'Sayılar çekiliyor... ⚡',
-};
-
-const DRAWN_ANNOUNCE_PREFIX_MORE = {
-  km: 'លេខដែលបានទាញ៖ ', ne: 'तानिएका नम्बरहरू: ', id: 'Nomor yang diundi: ', my: 'ဆွဲထားသောနံပါတ်များ- ', si: 'ඇද ගත් අංක: ',
-  uz: 'Tortilgan raqamlar: ', mn: 'Сугалсан дугаарууд: ', kk: 'Тартылған сандар: ', ky: 'Тартылган сандар: ',
-  ur: 'نکالے گئے نمبر: ', bn: 'টানা নম্বর: ', lo: 'ເລກທີ່ດຶງໄດ້: ', ja: '抽選された番号: ',
-  ar: 'الأرقام المسحوبة: ', hi: 'निकाले गए नंबर: ', fr: 'Numéros tirés : ', tl: 'Mga numerong nakuha: '
-,
-  pt: `Números sorteados: `, es: `Números sorteados: `, uk: `Виграшні номери: `, tet: `Númeru ne'ebé sai: `, de: `Gezogene Zahlen: `, nl: `Getrokken getallen: `, sv: `Dragna nummer: `, no: 'Trukne tall: ', da: 'Trukne tal: ', fi: 'Arvotut numerot: ', it: "Numeri estratti: ", pl: "Wylosowane liczby: ", tr: 'Çekilen sayılar: ',
-};
-
-// 6마리(번호 6개) 전부 낚은 뒤, 버튼을 다시 누르면 새 판을 시작하도록 안내하는 문구
-const FISHING_RESTART_MORE = {
-  km: 'នេសាទម្ដងទៀត 🎣', ne: 'फेरि माछा मार्नुहोस् 🎣', id: 'Mancing lagi dari awal 🎣', my: 'ထပ်မံငါးဖမ်းမည် 🎣',
-  si: 'නැවත මාළු අල්ලන්න 🎣', uz: "Qaytadan boshlash 🎣", mn: 'Дахин загасчлах 🎣', kk: 'Қайтадан балық аулау 🎣',
-  ky: 'Кайра балык уулоо 🎣', ur: 'دوبارہ مچھلی پکڑیں 🎣', bn: 'আবার মাছ ধরুন 🎣', lo: 'ຕົກປາໃໝ່ 🎣',
-  ja: 'もう一度釣りをする 🎣', ar: 'اصطد من جديد 🎣', hi: 'फिर से मछली पकड़ें 🎣', fr: 'Repêcher depuis le début 🎣',
-  tl: 'Mangisda ulit 🎣'
-,
-  pt: `Pescar de novo 🎣`, es: `Pescar de nuevo 🎣`, uk: `Ловити знову 🎣`, tet: `Kaer isin fali 🎣`, de: `Erneut angeln 🎣`, nl: `Opnieuw vissen 🎣`, sv: `Fiska igen 🎣`, no: 'Fisk igjen 🎣', da: 'Fisk igen 🎣', fi: 'Kalasta uudelleen 🎣', it: "Ripesca dall'inizio 🎣", pl: "Złów od nowa 🎣", tr: 'Baştan tekrar çek 🎣',
-};
-
-// 물고기를 한 마리 낚을 때마다 스크린리더에 알려주는 문구의 접두사(DRAWN_ANNOUNCE_PREFIX_MORE와
-// 같은 역할이지만 "뽑았다"가 아니라 "낚았다"는 낚시 모드 전용 동사를 씀)
-const FISHING_CAUGHT_PREFIX_MORE = {
-  km: 'លេខដែលបានចាប់: ', ne: 'समातिएका नम्बरहरू: ', id: 'Nomor yang ditangkap: ', my: 'ဖမ်းရသောနံပါတ်များ- ',
-  si: 'අල්ලාගත් අංක: ', uz: 'Tutilgan raqamlar: ', mn: 'Барьсан дугаарууд: ', kk: 'Ұсталған сандар: ',
-  ky: 'Кармалган сандар: ', ur: 'پکڑے گئے نمبر: ', bn: 'ধরা সংখ্যা: ', lo: 'ເລກທີ່ຕົກໄດ້: ', ja: '釣った番号: ',
-  ar: 'الأرقام المصطادة: ', hi: 'पकड़े गए नंबर: ', fr: 'Numéros attrapés : ', tl: 'Nahuling numero: '
-,
-  pt: `Números pescados: `, es: `Números pescados: `, uk: `Спіймані числа: `, tet: `Númeru ne'ebé kaer: `, de: `Geangelte Zahlen: `, nl: `Gevangen getallen: `, sv: `Fångade nummer: `, no: 'Fangede tall: ', da: 'Fangede tal: ', fi: 'Kalastetut numerot: ', it: "Numeri pescati: ", pl: "Złowione liczby: ", tr: 'Çekilen sayılar: ',
-};
-
-// 위치가 안 맞아서 놓쳤을 때(물고기가 도망감) 뜨는 문구
-const FISHING_ESCAPED_MSG_MORE = {
-  km: '🐟 វារត់គេចផុតហើយ! សាកល្បងបោះសំណាញ់ម្តងទៀត', ne: '🐟 भाग्यो! फेरि फ्याँक्नुहोस्', id: '🐟 Lolos! Coba lempar lagi',
-  my: '🐟 လွတ်သွားပြီ! နောက်တစ်ခါထပ်ပစ်ကြည့်ပါ', si: '🐟 ගිලිහුණා! නැවත උත්සාහ කරන්න', uz: "🐟 Qochib ketdi! Yana urinib ko'ring",
-  mn: '🐟 Алдчихлаа! Дахин хая шидээрэй', kk: '🐟 Жалт беріп кетті! Тағы қайталап көріңіз', ky: '🐟 Качып кетти! Дагы аракет кылыңыз',
-  ur: '🐟 نکل گئی! دوبارہ کوشش کریں', bn: '🐟 পালিয়ে গেছে! আবার চেষ্টা করুন', lo: '🐟 ມັນຫນີໄປແລ້ວ! ລອງໂຍນອີກຄັ້ງ',
-  ja: '🐟 逃げられた！もう一度挑戦しよう', ar: '🐟 هربت! حاول مرة أخرى', hi: '🐟 भाग गई! फिर से कोशिश करें',
-  fr: "🐟 Elle s'est échappée ! Réessayez", tl: '🐟 Nakatakas! Subukan ulit'
-,
-  pt: `🐟 Escapou! Tente de novo`, es: `🐟 ¡Se escapó! Inténtalo de nuevo`, uk: `🐟 Втекла! Спробуйте ще раз`, tet: `🐟 Halai ona! Tenta fali`, de: `🐟 Entkommen! Versuch's noch mal`, nl: `🐟 Ontsnapt! Probeer het nog eens`, sv: `🐟 Kom undan! Försök igen`, no: '🐟 Slapp unna! Prøv igjen', da: '🐟 Slap væk! Prøv igen', fi: '🐟 Pääsi karkuun! Yritä uudelleen', it: "🐟 È scappato! Riprova", pl: "🐟 Uciekła! Spróbuj ponownie", tr: '🐟 Kaçtı! Tekrar dene',
-};
-
-let lightningDrawInProgress = false;
-
-// 그냥 즉시 결과를 보여주면 "게임"이라기보다 결과 표시에 가까워서, 실제 추첨 방송처럼 공 하나씩
-// 순서대로(간격을 두고) 숫자가 빠르게 돌다가 멈추는 연출을 넣음 — 마지막 공이 멈추면 살짝
-// 통통 튀는 축하 효과 + (지원 기기에 한해) 짧은 진동 피드백을 더해 손맛을 살림
-function drawLightningNumbers(){
-  if (lightningDrawInProgress) return;
-  lightningDrawInProgress = true;
-
-  const config = LIGHTNING_GAMES[currentLightningGame];
-  const nums = new Set();
-  while (nums.size < 5) nums.add(Math.floor(Math.random() * config.mainMax) + 1);
-  const finalValues = [...nums].sort((a,b) => a-b);
-  finalValues.push(Math.floor(Math.random() * config.specialMax) + 1);
-
-  const btn = document.getElementById('lightning-draw-btn');
-  const resultEl = document.getElementById('lightning-result');
-  const balls = document.querySelectorAll('#lightning-result .lightning-ball');
-  const originalBtnText = btn.textContent;
-  const vibrate = (pattern) => { try{ if (navigator.vibrate) navigator.vibrate(pattern); }catch(e){} };
-
-  btn.disabled = true;
-  btn.textContent = pickLang('뽑는 중... ⚡', 'Drawing... ⚡', '抽取中... ⚡', 'Đang rút... ⚡', 'กำลังสุ่ม... ⚡', 'Розыгрыш... ⚡', DRAWING_BTN_MORE);
-  resultEl.classList.remove('celebrate');
-  balls.forEach(ball => { ball.textContent = '?'; ball.classList.remove('drawn', 'spinning'); });
-
-  const STAGGER_MS = 150, SPIN_MS = 650, TICK_MS = 45;
-  balls.forEach((ball, i) => {
-    const maxForBall = i < 5 ? config.mainMax : config.specialMax;
-    const startDelay = i * STAGGER_MS;
-    let spinTimer = null;
-    setTimeout(() => {
-      ball.classList.add('spinning');
-      spinTimer = setInterval(() => {
-        ball.textContent = Math.floor(Math.random() * maxForBall) + 1;
-      }, TICK_MS);
-    }, startDelay);
-    setTimeout(() => {
-      clearInterval(spinTimer);
-      ball.classList.remove('spinning');
-      ball.textContent = finalValues[i];
-      void ball.offsetWidth;
-      ball.classList.add('drawn');
-      vibrate(12);
-      if (i === balls.length - 1) {
-        void resultEl.offsetWidth;
-        resultEl.classList.add('celebrate');
-        vibrate([15, 40, 25]);
-        const announcer = document.getElementById('lightning-result-announcer');
-        if (announcer) {
-          const prefix = pickLang('뽑힌 번호: ', 'Drawn numbers: ', '抽出的号码：', 'Số đã rút: ', 'เลขที่ออก: ', 'Выпавшие числа: ', DRAWN_ANNOUNCE_PREFIX_MORE);
-          announcer.textContent = prefix + finalValues.join(', ');
-        }
-        btn.disabled = false;
-        btn.textContent = originalBtnText;
-        lightningDrawInProgress = false;
-      }
-    }, startDelay + SPIN_MS);
-  });
 }
 
 function updateDrawCountdown(){
@@ -6212,32 +5492,6 @@ function drawShareBall(ctx, cx, cy, r, num, bg, fg, border){
   ctx.restore();
 }
 
-// 2026-08-06 추가: 낚시 게임에서 "황금 물고기"로 낚은 번호에 붙는 작은 별 배지 — 위 flagEmojiFromCode
-// 주석과 같은 이유(이모지 폰트 의존 문제 재발 방지)로 텍스트/이모지 대신 path로 직접 그림
-function drawShareBallGoldBadge(ctx, cx, cy, r){
-  const bx = cx + r * 0.68, by = cy - r * 0.68, outerR = r * 0.32, innerR = outerR * 0.45;
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(bx, by, outerR + 3, 0, Math.PI * 2);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fill();
-  ctx.beginPath();
-  const spikes = 5;
-  let rot = -Math.PI / 2;
-  const step = Math.PI / spikes;
-  ctx.moveTo(bx + Math.cos(rot) * outerR, by + Math.sin(rot) * outerR);
-  for (let i = 0; i < spikes; i++) {
-    rot += step;
-    ctx.lineTo(bx + Math.cos(rot) * innerR, by + Math.sin(rot) * innerR);
-    rot += step;
-    ctx.lineTo(bx + Math.cos(rot) * outerR, by + Math.sin(rot) * outerR);
-  }
-  ctx.closePath();
-  ctx.fillStyle = '#D9A62E';
-  ctx.fill();
-  ctx.restore();
-}
-
 // label/bigText/balls/subText 블록을 실제로 그리거나(draw:true) 높이만 재고(draw:false) 마침.
 // buildShareCard가 그리기 전에 draw:false로 한 번 태워서 전체 블록 높이를 알아낸 뒤, 그 높이를
 // 콘텐츠 영역 한가운데로 옮겨서(centerY) draw:true로 다시 태우는 방식 — 옵션 필드 조합(bigText만/
@@ -6282,11 +5536,9 @@ function layoutShareContent(ctx, { label, bigText, subText, balls }, { anchorX, 
       const step = isRTL ? -gap : gap;
       balls.numbers.forEach((n, idx) => {
         drawShareBall(ctx, bx, by, r, n, '#FFFFFF', '#262420', '#E3E6EA');
-        if (balls.goldenFlags && balls.goldenFlags[idx]) drawShareBallGoldBadge(ctx, bx, by, r);
         bx += step;
       });
       drawShareBall(ctx, bx, by, r, balls.special, balls.specialColor, '#FFFFFF', balls.specialColor);
-      if (balls.specialGolden) drawShareBallGoldBadge(ctx, bx, by, r);
     }
     y = by + r + 36;
   }
@@ -8058,7 +7310,7 @@ function mnToneLine(score){
   return pickLang(...MN_TONE_TIERS[idx]);
 }
 
-// 언어 전환 시에도 다시 불러 정적 문구를 새로 그림 (updateLightningGameUi()와 같은 자리에서 호출)
+// 언어 전환 시에도 다시 불러 정적 문구를 새로 그림
 function updateMyNumbersUi(){
   const titleEl = document.getElementById('mn-section-title');
   const descEl = document.getElementById('mn-section-desc');
@@ -11069,7 +10321,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 반드시 같은 값을 명시적으로 넘겨서 어느 쪽이 나중에 불려도 항상 같은 기본값으로 맞춰지게 함
   const defaultStartUsd = getJackpotCashUsd('powerball');
   updateHomeCalc(defaultStartUsd); updateCalc(defaultStartUsd);
-  initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateLightningGameUi(); updateMyNumbersUi(); setupStickyResultBadge(); setupHomeFinalAmtTiles(); renderFilingDday(); setupStickyResultBadgeCollisionWatch(); adjustNavIconVisibility();
+  initJackpotCardAmt(); updateDrawCountdown(); syncRateInputsDisplay(); setupRevealAnimation(); renderLatestDraw(); renderPrizeTiers(); fetchLiveExchangeRate(); updateMyNumbersUi(); setupStickyResultBadge(); setupHomeFinalAmtTiles(); renderFilingDday(); setupStickyResultBadgeCollisionWatch(); adjustNavIconVisibility();
 });
 
 // 다른 페이지(korea-resident-us-lottery-tax.html 등)에서 "index.html#faq"처럼 해시가 붙은 링크로
