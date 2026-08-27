@@ -3763,7 +3763,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260827-1';
+    script.src = 'odds-data.js?v=20260827-2';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -5932,8 +5932,8 @@ function buildDrawScheduleMore(days){
 // 옛 값 그대로 둘 것 — 실제 금액이 발표된 뒤에만 갱신. (지난 갱신 이력은 git log로 충분히
 // 추적 가능해서 날짜별 코멘트는 더 이상 여기 쌓지 않음 — 최신 반영 회차는 아래 LATEST_DRAW 참고.)
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 96000000, cashUsd: 41200000 },
-  megamillions: { amountUsd: 130000000, cashUsd: 55500000 },
+  powerball:    { amountUsd: 119000000, cashUsd: 51100000 },
+  megamillions: { amountUsd: 145000000, cashUsd: 61900000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
@@ -5965,8 +5965,8 @@ const GAME_NAME_MORE = {
 // 잭팟 $81M(현금가치 $34.8M)로 갱신 — $68M(8/22 자체 잭팟)에서 롤오버로 증가한
 // 값. 더블플레이(4,18,29,47,53/16)는 이 사이트가 추적 안 하는 필드라 반영 안 함.
 const LATEST_DRAW = {
-  powerball:    { date: '2026-08-24', numbers: [3, 16, 33, 38, 68], special: 2 },
-  megamillions: { date: '2026-08-21', numbers: [1, 25, 34, 48, 57], special: 24 },
+  powerball:    { date: '2026-08-26', numbers: [12, 32, 45, 50, 58], special: 2 },
+  megamillions: { date: '2026-08-25', numbers: [7, 10, 47, 48, 50], special: 14 },
 };
 
 
