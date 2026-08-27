@@ -1568,7 +1568,6 @@
   html[lang="en"] .calc-detail-summary,
   html[lang="en"] .panel-title,
   html[lang="en"] .panel-desc,
-  html[lang="en"] .explore-label,
   html[lang="en"] .dream-option,
   html[lang="en"] .panel-accordion-title,
   html[lang="en"] .section-divider-toggle,
@@ -1577,7 +1576,6 @@
   html[lang="en"] .share-btn{
     line-height:1.8;
   }
-  html[lang="en"] .explore-sub{ line-height:1.6; }
   html[lang="en"] .feature-sub{ line-height:1.7; }
   .result-hero-amt{
     position:relative; font-size:40px; font-size:clamp(30px, 11.5vw, 58px); font-weight:800; margin:0;
@@ -2264,30 +2262,6 @@
   /* FAQ 화면에서 검색창+카테고리 칩(도구 영역)과 그 아래 질문 아코디언 목록(콘텐츠 영역)이
      같은 톤으로 바로 붙어서 어디부터 FAQ 목록인지 애매하다는 지적 — 라벨 없이 얇은 구분선만 추가 */
   .faq-list-divider{ border-top:1px dashed var(--border); margin:18px 0 4px; }
-  .explore-section{ margin-top:20px; }
-  .explore-title{ font-size:var(--fs-note); font-weight:700; color:var(--text-dark); margin:0 0 10px; text-align:center; }
-  .explore-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
-  .explore-card{
-    /* min-width:0이 없으면 그리드 트랙이 내용(긴 번역 텍스트)만큼 억지로 넓어지는 "그리드 blowout"
-       현상이 생겨, 카자흐어·키르기스어처럼 라벨이 긴 언어에서 카드가 화면 밖으로 삐져나갔음.
-       그런데 그것만으로는 부족했음 — align-items:center(기본값 stretch 대신)를 쓰면 자식
-       span(.explore-label/.explore-sub)이 카드 너비에 맞춰 늘어나지 않고 "내용 그대로의 폭"으로
-       스스로 크기를 정해버려서, overflow-wrap:break-word가 있어도 실제로 줄바꿈시킬 너비 제약이
-      아예 없는 셈이 됨 — 그 결과 우즈베크어·몽골어·키르기스어·프랑스어 등 긴 라벨에서 카드
-       자체보다 글자가 넓어져 삐져나갔음(2026-07-27 발견). align-items:stretch로 바꿔 자식이
-       카드 너비를 그대로 상속하게 하면 text-align:center는 그대로 유지하면서 줄바꿈이 정상 작동함 */
-    display:flex; flex-direction:column; align-items:stretch; gap:4px; min-width:0;
-    background:var(--card); border:1.5px solid var(--border); border-radius:12px; padding:14px 10px;
-    cursor:pointer; font-family:inherit; text-align:center;
-    transition:border-color 0.15s ease, transform 0.1s ease;
-  }
-  .explore-card:active{ transform:scale(0.97); }
-  @media (hover: hover) {
-    .explore-card:hover{ border-color:var(--teal); }
-  }
-  .explore-icon{ font-size:22px; }
-  .explore-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-dark); overflow-wrap:break-word; }
-  .explore-sub{ font-size:16px; color:var(--text-muted); line-height:1.3; overflow-wrap:break-word; }
   .more-details-toggle{ margin-top:16px; }
   .jp-panel-content{ padding-top:14px; margin-top:14px; border-top:1px solid var(--border); }
   .jp-card{ background:var(--bg); border:none; }
@@ -3498,7 +3472,6 @@
     #view-home > .hero,
     #view-home #introPersonaAccordion,
     #view-home .input-card,
-    #view-home .explore-section,
     #view-home details.more-details-toggle,
     #view-home details.fun-toggle,
     #view-home .share-btn{

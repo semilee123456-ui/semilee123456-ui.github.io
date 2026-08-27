@@ -1075,14 +1075,6 @@ function syncHomeFromShared(){
   filterFaq();
 }
 
-// ⚠️ [향후 국가 확장 시 필독] "반대 국가로 전환"은 국가가 딱 2개(kr/us)일 때만 성립하는
-// 토글 로직. 3번째 국가(예: 베트남)가 추가되면 "반대"라는 개념 자체가 없어지므로,
-// 이 버튼은 토글이 아니라 선택 UI(예: 국가 목록에서 고르기)로 다시 설계해야 함.
-function goToCompareWithOppositeCountry(){
-  sharedCountry = (sharedCountry === 'us') ? 'kr' : 'us';
-  go('compare');
-}
-
 function syncCompareFromShared(){
   const millions = sharedAmountUsd / 1000000;
   // 2026-07-28 후속 세션: 홈 화면 3탭과 같은 sharedInputCurrency 통화 선택기를 이 탭도 공유하므로
@@ -10638,7 +10630,7 @@ let crossTabSearchIndex = null;
 function buildCrossTabSearchIndex(){
   const idx = [];
   const selector = [
-    '#view-home h1', '#view-home h2', '#view-home .panel-title', '#view-home .explore-label', '#view-home .trust-name',
+    '#view-home h1', '#view-home h2', '#view-home .panel-title', '#view-home .trust-name',
     '#view-compare h2', '#view-compare .panel-title',
     '#view-odds h2', '#view-odds .panel-title', '#view-odds .feature-title', '#view-odds summary',
   ].join(', ');

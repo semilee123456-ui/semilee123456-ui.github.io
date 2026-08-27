@@ -157,12 +157,12 @@
      요청과 한 URL로 합쳐서 추가 요청 없이 확장 -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260827-2">
+<link rel="stylesheet" href="styles.min.css?v=20260827-3">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260827-2" defer></script>
+<script src="script.min.js?v=20260827-3" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1340,26 +1340,12 @@
             <p class="sim-note" data-i18n="home.citationNote">📎 인용·보도 시 출처를 'ChamTax(chamtax.com)'으로 표기해 주세요.</p>
           </details>
 
-        <div class="explore-section">
-          <p class="explore-title" data-i18n="explore.title">🧭 이것도 궁금하지 않으세요?</p>
-          <div class="explore-grid">
-            <button class="explore-card" onclick="goToCompareWithOppositeCountry()">
-              <span class="explore-icon">🌍</span>
-              <span class="explore-label" data-i18n="explore.compareLabel">국가별 비교</span>
-              <span class="explore-sub" data-i18n="explore.compareSub">국가별로 뭐가 유리한지 비교해요</span>
-            </button>
-            <button class="explore-card" onclick="go('odds')">
-              <span class="explore-icon">🎲</span>
-              <span class="explore-label" data-i18n="explore.oddsLabel">확률 체감</span>
-              <span class="explore-sub" data-i18n="explore.oddsSub">1등 확률, 감이 딱 와요</span>
-            </button>
-            <button class="explore-card" onclick="go('faq')">
-              <span class="explore-icon">❓</span>
-              <span class="explore-label" data-i18n="explore.faqLabel">자주 묻는 질문</span>
-              <span class="explore-sub" data-i18n="explore.faqSub">세금부터 환급까지 한 번에 확인해요</span>
-            </button>
-          </div>
-        </div>
+        <!-- 2026-08-27: "🧭 이것도 궁금하지 않으세요?" 3카드(국가별 비교/확률 체감/자주 묻는
+             질문)를 지움 — 상단 nav의 Compare/Odds/FAQ 탭과 완전히 같은 목적지라 항상 화면에
+             보이는 채로 중복이었음(외부 UX 검수 2건이 독립적으로 같은 지적). "국가별 비교" 카드
+             전용이었던 goToCompareWithOppositeCountry()(반대 국가로 자동 전환)도 다른 호출자가
+             없어서 script.js에서 같이 지움. -->
+
 
         <details class="more-details-toggle">
         <summary class="section-divider-toggle"><span class="jp-summary-title" data-i18n="home.jackpotToggle">🎟️ 최근 잭팟 확인하기</span></summary>
