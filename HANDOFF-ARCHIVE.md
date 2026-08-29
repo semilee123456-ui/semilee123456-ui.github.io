@@ -18756,3 +18756,26 @@ writeText`를 가로채서 실제로 URL이 붙는지 3개 함수 전부 확인(
 `navigator.share()`에 별도로 넘기는 방식(이 저장소에 아직 전례 없음, `text`에 안 섞고
 분리하면 중복 카드 없이 링크만 깔끔하게 붙을 가능성)을 검토해볼 것.
 
+
+### 2026-08-23 이어서 — 파워볼 8/22(토) 추첨 결과 반영 (사용자 공유 스크린샷 기준)
+
+사용자가 usamega.com 스크린샷 공유(메가밀리언즈 8/21 결과·파워볼 8/22 결과·양쪽 다음
+잭팟액 포함) — 메가밀리언즈 8/21은 이미 반영돼 있었으나, 파워볼 8/22(13,31,54,57,65/
+파워볼 23, Power Play 3x, 당첨자 없음)가 누락돼 있던 걸 발견해 반영.
+
+**수정**: `script.js`의 `LATEST_DRAW.powerball`(날짜/번호), `JACKPOT_DATA.powerball`
+(다음 추첨 8/24 잭팟 $81M/현금가치 $34.8M, $68M에서 롤오버), 지연로딩 캐시버스팅
+문자열(`odds-data.js?v=20260822`→`20260823`) 갱신. `odds-data.js`의
+`POWERBALL_DRAW_ARCHIVE`/`POWERBALL_JACKPOT_ARCHIVE`(4번째 필드는 8/22 자체 잭팟
+$68M)에도 새 회차 추가 — `scripts/backfill-lottery.js`의 배열 읽기/쓰기 로직(공백
+포함 `"= "` 포맷 보존, 날짜 역행/중복 방지 검증)을 그대로 본뜬 1회성 스크립트로 처리해
+지난 메가밀리언즈 갱신 때 겪었던 공백 유실 회귀를 이번엔 처음부터 방지함. Power
+Play(3x)·더블플레이(4,18,29,47,53/16)는 이 사이트가 추적 안 하는 필드라 스코프 밖.
+
+**검증**: `draw_archive_integrity_check`(4개 아카이브 정렬/중복 없음, 파워볼 마지막
+날짜 2026-08-22로 갱신 확인), 정적 테스트 2개(`fact_consistency_audit`/
+`broken_link_audit`) + Playwright 2개(`home_audit`/`console_error_audit`) 전부
+`ISSUES: 0`. 홈 화면 `#draw-balls-powerball` DOM 텍스트를 직접 읽어 "13,31,54,57,65+23"
+정상 반영 확인. `script.min.js` 재생성, `index.html` 캐시버스팅 20260823-2→20260823-3
+갱신(`styles.css`는 안 건드려서 `styles.min.css` 재생성 불필요).
+
