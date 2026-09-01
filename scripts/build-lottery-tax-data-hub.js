@@ -28,7 +28,7 @@ const ROOT = path.join(__dirname, '..');
 const DATA_DIR = path.join(ROOT, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-const TODAY = '2026-08-21';
+const TODAY = '2026-09-01';
 
 // ---------------------------------------------------------------------------
 // 1. State table (51 = 50 states + DC, from STATE_TAX_RATES; AVG excluded from
@@ -99,6 +99,14 @@ const COUNTRY_META = {
   pl: { name: 'Poland', authority: 'Krajowa Administracja Skarbowa/IRS', confidence: 'verified', structure: 'General progressive tax (12%/32%) + 4% solidarity levy above PLN 1M, approximated at 36% combined; FTC leaves a residual of ≈6pp' },
   tr: { name: 'Turkey', authority: 'Gelir İdaresi Başkanlığı/IRS', confidence: 'verified', structure: '⚠️ Taxed under inheritance/transfer tax law (VİVK), flat 20%, not income tax — outside the income tax treaty’s scope, no FTC, stacks in full' },
   br: { name: 'Brazil', authority: 'Receita Federal do Brasil/IRS', confidence: 'verified', structure: 'A foreign lottery win escapes the domestic 30% lottery withholding (Lei 4.506/64 Art. 14) and is instead taxed via carnê-leão at the top progressive IRPF bracket (27.5%); FTC applies via documented US-Brazil reciprocity (Ato Declaratório SRF 28/2000, per IN SRF 208/2002 Art. 16) and fully absorbs the lower Brazilian rate, residual 0' },
+  es: { name: 'Spain', authority: 'Agencia Tributaria/IRS', confidence: 'verified', structure: 'Taxed as a "ganancia patrimonial no derivada de una transmisión" in the general tax base at progressive rates (Ley 35/2006 Art. 33), approximated at the national top marginal rate (47%); US-Spain treaty Art. 24(1)(a) ordinary FTC leaves a residual of ≈17pp' },
+  ch: { name: 'Switzerland', authority: 'Cantonal tax authorities (Zürich reference)/IRS', confidence: 'verified', structure: '⚠️ US-CH treaty Art. 21(3) explicitly excludes gambling/lottery winnings from its Other Income article, and neither treaty relief nor the unilateral DA-1 credit covers gambling — no FTC. Approximated at Zürich\'s 2026 top marginal rate (39.1%), stacks in full on top of US withholding' },
+  ae: { name: 'United Arab Emirates', authority: 'PwC Worldwide Tax Summaries/IRS', confidence: 'verified', structure: 'No personal/individual income tax regime exists — no domestic tax base at all' },
+  sa: { name: 'Saudi Arabia', authority: 'ZATCA/PwC Worldwide Tax Summaries/IRS', confidence: 'verified', structure: 'No personal/individual income tax regime exists — no domestic tax base (Zakat is a separate annual wealth levy, out of scope for a one-time payout)' },
+  eg: { name: 'Egypt', authority: 'Egyptian Tax Authority/IRS', confidence: 'verified', structure: 'Taxed as ordinary worldwide income under Law 91/2005, approximated at the top marginal PIT rate (27.5%); US-Egypt treaty Art. 25(2) ordinary FTC fully absorbs it, residual 0' },
+  il: { name: 'Israel', authority: 'Israel Tax Authority/IRS', confidence: 'verified', structure: 'Income Tax Ordinance Sec. 2A taxes gambling/lottery/prize gains at a flat 35%; US-Israel treaty Art. 26(3) ordinary FTC leaves a residual of ≈5pp' },
+  ua: { name: 'Ukraine', authority: 'State Tax Service of Ukraine/PwC/IRS', confidence: 'verified', structure: '⚠️ Personal income tax (18%) + military levy (5%); the US-Ukraine treaty FTC covers only the 18% PIT (fully absorbed by the 30% US withholding), while the 5% levy has no credit and always stacks — net residual ≈5pp' },
+  ng: { name: 'Nigeria', authority: 'Estimate based on Nigeria Tax Act 2025/IRS', confidence: 'estimate', structure: '⚠️ No US-Nigeria tax treaty, but Nigeria Tax Act 2025 Sec. 119 grants a unilateral FTC; approximated at the new top marginal PIT rate (25%), which the FTC fully absorbs — this reasoning chain (that lottery withholding regs don\'t apply to a foreign payer) is not confirmed by a direct ruling' },
 };
 
 const COUNTRY_ROWS = SUPPORTED_COUNTRIES

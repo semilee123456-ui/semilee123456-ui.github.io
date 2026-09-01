@@ -1,7 +1,7 @@
 {
   "source": "https://chamtax.com/lottery-tax-data-hub.html",
   "license": "CC0-1.0 (public domain) — attribution to ChamTax (chamtax.com) appreciated but not required",
-  "lastUpdated": "2026-08-21",
+  "lastUpdated": "2026-09-01",
   "methodology": "US federal withholding on lottery/gambling winnings for non-resident aliens is a flat 30% (IRC §871(a)). effective_total_tax_pct_at_500m_usd is the combined US + home-country effective rate computed by ChamTax’s calculation engine for a $500,000,000 lump-sum payout (chosen because it is large enough that every country’s top-bracket/flat-rate approximation applies), after any Foreign Tax Credit the country’s law/treaty allows. confidence: \"verified\" = primary statute/treaty/official guidance found; \"approximate\" = reasonable secondary-source estimate, some structural simplification; \"estimate\" = best-effort, no authoritative primary source found — see chamtax.com’s per-country landing pages for full citations.",
   "unit": "percent (except country_code, country_name, tax_authority, confidence, tax_structure_notes)",
   "rows": [
@@ -421,6 +421,86 @@
       "authority": "Receita Federal do Brasil/IRS",
       "confidence": "verified",
       "structure": "A foreign lottery win escapes the domestic 30% lottery withholding (Lei 4.506/64 Art. 14) and is instead taxed via carnê-leão at the top progressive IRPF bracket (27.5%); FTC applies via documented US-Brazil reciprocity (Ato Declaratório SRF 28/2000, per IN SRF 208/2002 Art. 16) and fully absorbs the lower Brazilian rate, residual 0",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "es",
+      "name": "Spain",
+      "authority": "Agencia Tributaria/IRS",
+      "confidence": "verified",
+      "structure": "Taxed as a \"ganancia patrimonial no derivada de una transmisión\" in the general tax base at progressive rates (Ley 35/2006 Art. 33), approximated at the national top marginal rate (47%); US-Spain treaty Art. 24(1)(a) ordinary FTC leaves a residual of ≈17pp",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 47,
+      "takeHomePct500M": 53
+    },
+    {
+      "code": "ch",
+      "name": "Switzerland",
+      "authority": "Cantonal tax authorities (Zürich reference)/IRS",
+      "confidence": "verified",
+      "structure": "⚠️ US-CH treaty Art. 21(3) explicitly excludes gambling/lottery winnings from its Other Income article, and neither treaty relief nor the unilateral DA-1 credit covers gambling — no FTC. Approximated at Zürich's 2026 top marginal rate (39.1%), stacks in full on top of US withholding",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 69.1,
+      "takeHomePct500M": 30.9
+    },
+    {
+      "code": "ae",
+      "name": "United Arab Emirates",
+      "authority": "PwC Worldwide Tax Summaries/IRS",
+      "confidence": "verified",
+      "structure": "No personal/individual income tax regime exists — no domestic tax base at all",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "sa",
+      "name": "Saudi Arabia",
+      "authority": "ZATCA/PwC Worldwide Tax Summaries/IRS",
+      "confidence": "verified",
+      "structure": "No personal/individual income tax regime exists — no domestic tax base (Zakat is a separate annual wealth levy, out of scope for a one-time payout)",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "eg",
+      "name": "Egypt",
+      "authority": "Egyptian Tax Authority/IRS",
+      "confidence": "verified",
+      "structure": "Taxed as ordinary worldwide income under Law 91/2005, approximated at the top marginal PIT rate (27.5%); US-Egypt treaty Art. 25(2) ordinary FTC fully absorbs it, residual 0",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 30,
+      "takeHomePct500M": 70
+    },
+    {
+      "code": "il",
+      "name": "Israel",
+      "authority": "Israel Tax Authority/IRS",
+      "confidence": "verified",
+      "structure": "Income Tax Ordinance Sec. 2A taxes gambling/lottery/prize gains at a flat 35%; US-Israel treaty Art. 26(3) ordinary FTC leaves a residual of ≈5pp",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 35,
+      "takeHomePct500M": 65
+    },
+    {
+      "code": "ua",
+      "name": "Ukraine",
+      "authority": "State Tax Service of Ukraine/PwC/IRS",
+      "confidence": "verified",
+      "structure": "⚠️ Personal income tax (18%) + military levy (5%); the US-Ukraine treaty FTC covers only the 18% PIT (fully absorbed by the 30% US withholding), while the 5% levy has no credit and always stacks — net residual ≈5pp",
+      "usWithholdingPct": 30,
+      "effectiveTotalTaxPct500M": 35,
+      "takeHomePct500M": 65
+    },
+    {
+      "code": "ng",
+      "name": "Nigeria",
+      "authority": "Estimate based on Nigeria Tax Act 2025/IRS",
+      "confidence": "estimate",
+      "structure": "⚠️ No US-Nigeria tax treaty, but Nigeria Tax Act 2025 Sec. 119 grants a unilateral FTC; approximated at the new top marginal PIT rate (25%), which the FTC fully absorbs — this reasoning chain (that lottery withholding regs don't apply to a foreign payer) is not confirmed by a direct ruling",
       "usWithholdingPct": 30,
       "effectiveTotalTaxPct500M": 30,
       "takeHomePct500M": 70
