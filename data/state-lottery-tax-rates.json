@@ -1,7 +1,7 @@
 {
   "source": "https://chamtax.com/lottery-tax-data-hub.html",
   "license": "CC0-1.0 (public domain) — attribution to ChamTax (chamtax.com) appreciated but not required",
-  "lastUpdated": "2026-08-21",
+  "lastUpdated": "2026-09-01",
   "methodology": "Top marginal individual state income tax rate, applied as a flat approximation on the assumption that a jackpot-size prize always falls in the top bracket. Not a withholding rate — see the page for the withholding-vs-top-rate distinction.",
   "unit": "percent",
   "rows": [
@@ -22,7 +22,7 @@
     {
       "code": "AR",
       "name": "Arkansas",
-      "ratePct": 3.9,
+      "ratePct": 3.7,
       "exempt": false,
       "noIncomeTax": false
     },
@@ -78,7 +78,7 @@
     {
       "code": "GA",
       "name": "Georgia",
-      "ratePct": 5.39,
+      "ratePct": 5.19,
       "exempt": false,
       "noIncomeTax": false
     },
@@ -288,7 +288,7 @@
     {
       "code": "SC",
       "name": "South Carolina",
-      "ratePct": 6.2,
+      "ratePct": 5.21,
       "exempt": false,
       "noIncomeTax": false
     },
