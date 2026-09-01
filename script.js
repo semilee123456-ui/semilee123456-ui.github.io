@@ -2379,6 +2379,111 @@ const TAX_MODEL = {
     //   브라질 세무사(contador) 확인 권장(다른 나라들과 같은 수준의 권고).
     rate: 0.275,
     ftc_available: true
+  },
+  es_resident: {
+    // 스페인 — 미국 파워볼·메가밀리언즈 같은 해외 복권 당첨금은 스페인 자국 복권(ONCE·SELAE 등,
+    // Ley 13/2011 제7조 우대과세 — 4만유로까지 면세, 초과분 20%)의 특혜 대상이 아님. 이 우대는
+    // 법률이 명시한 스페인·EU/EEA 인가 사업자 복권에만 적용되고, 미국 복권은 해당 없음(idealista,
+    // Bet Hero 등 복수 스페인 세무 매체가 "US Powerball/Mega Millions get no favourable lottery
+    // treatment"라고 명시적으로 확인, 2026-08-31 확인).
+    // - 소득 분류: 소득세법(Ley 35/2006, IRPF) 제33조의 "재산 증감"(ganancia patrimonial) 중
+    //   "자산 양도에서 발생하지 않는 증감"(ganancia patrimonial no derivada de una transmisión —
+    //   복권·경품·무상취득 등)은 제46조에 따라 저축과세표준(base del ahorro, 19~28%)이 아니라
+    //   일반과세표준(base general)에 합산돼 누진세율 적용됨. 국세청(Agencia Tributaria) 공식
+    //   매뉴얼("Ganancias y pérdidas patrimoniales que integran la base imponible general")이
+    //   "게임·콘테스트·추첨 등에서 얻은 상금"을 이 일반과세표준 항목의 예시로 명시(2026-08-31
+    //   직접 확인) — 즉 스페인 언론 일부가 "19~28%"라고 단순화해 보도하는 것은 부정확하고,
+    //   실제로는 일반과세표준의 최고한계세율(국가+자치주 합산 최고 47%, 대다수 자치주가 채택한
+    //   공통 스케일 기준 — 마드리드 45%, 카탈루냐·발렌시아 등 일부 자치주는 이보다 높아 최고
+    //   약 50~54%까지 편차)이 적용됨. 잭팟 규모 당첨금은 이 최고구간을 항상 초과하므로 이
+    //   계산기는 자치주 편차를 반영하지 않고 전국 공통 최고한계세율 47%를 근사치로 사용(다른
+    //   나라들의 "잭팟 규모엔 저율 구간 문턱이 무의미" 원칙과 동일, 다만 자치주에 따라 실제
+    //   세율이 이보다 최대 약 7%p 높거나 2%p 낮을 수 있음을 병기).
+    // - FTC(외국납부세액공제) 가능 여부: 미-스페인 소득세조약(1990년 서명, 2013년 의정서로 개정,
+    //   2019-11-27 발효)의 제24조("이중과세 구제") 1항 (a)호를 irs.gov/pub/irs-trty/spain.pdf
+    //   원문 직접 대조 확인(2026-08-31) — "스페인 거주자가 조약에 따라 미국에서 과세될 수 있는
+    //   소득을 얻는 경우, 스페인은 미국에서 실제 납부한 소득세액을 공제로 허용하되, 그 공제는
+    //   공제 전 세액 중 미국원천소득에 대응하는 부분을 초과할 수 없다"는 통상적 세액공제(ordinary
+    //   credit, 한도부) 방식 — mx/in/da/fi/it/pl과 같은 "세액 계산→FTC 상한부 공제" 구조.
+    //   ⚠️ 다만 같은 조약 제23조("기타소득") 1항은 "다른 조문이 다루지 않는 거주자의 소득은
+    //   그 거주지국(스페인)에서만 과세"라고 규정 — 원문 직접 대조 결과 이탈리아·덴마크·핀란드
+    //   조약과 완전히 동일한 구조의 "기타소득 거주지국 전속과세" 조항이며, 이 조약엔 (스위스
+    //   조약의 제21조 3항 같은) 도박·복권 명시적 제외 문구가 없어 문언상 복권 당첨금도 이
+    //   조항의 적용을 받을 여지가 있음 — 즉 조약상으로는 미국이 애초에 원천징수할 권리가 없고
+    //   사후 Form 1040-NR로 환급받는 구조일 수 있다는 이론적 특이점이 da/fi/it와 동일하게 존재.
+    //   다만 이는 계산기 숫자를 바꾸지 않음 — 미국 복권위원회는 지급 시점에 조약 면제를 실시간
+    //   심사해주지 않아 30% 원천징수가 그대로 발생하고, 그 다음 스페인이 그 원천징수액을
+    //   제24조 1항(a)의 통상 세액공제로 상계해주는 실무 흐름은 그대로 유지됨.
+    rate: 0.47,
+    ftc_available: true
+  },
+  ch_resident: {
+    // 스위스 — 미-스위스 소득세조약(1996년 서명, 2009년 의정서로 개정)을 irs.gov/pub/irs-trty/
+    // swiss.pdf 원문 직접 대조(2026-08-31)한 결과, 이 계산기가 다룬 다른 어떤 나라보다도 명시적인
+    // 근거를 확인함 — 제21조("기타소득") 3항이 "본 조의 규정은 어느 체약국이든 도박(wagering),
+    // 갬블링(gambling) 또는 복권(lottery) 당첨금에 과세하는 소득에는 적용되지 않는다"고 명문으로
+    // 복권·도박 소득을 이 조항의 적용범위에서 통째로 제외함 — 스페인·독일·이탈리아·덴마크·
+    // 핀란드 조약들이 가진 "기타소득=거주지국 전속과세" 조항이 복권에도 적용되는지 여부가
+    // 불확실했던 것과 정반대로, 스위스 조약은 원문 자체가 이 불확실성을 원천 차단하는 구조.
+    // 즉 이 조약의 어떤 조문도 복권 당첨금에 대한 과세권 배분을 다루지 않으므로, 미국의 30%
+    // 비거주자 원천징수권(국내법 IRC 871(a))이 조약상 아무런 제약 없이 그대로 유효함.
+    // - FTC(세액공제) 불가 판단: 제23조("이중과세 구제") 1항 (a)호는 "조약 규정에 따라 미국에서
+    //   과세될 수 있는 소득"에 대해서만 스위스의 구제(원칙 면제 방식, 배당 등 일부는 (b)~(d)호로
+    //   별도 세액공제 방식)를 규정 — 그런데 위에서 확인했듯 복권 당첨금은 애초에 "조약 규정에
+    //   따라 과세권이 배분되는 소득"이 아니라 조약의 소득 배분 조문 전체의 사각지대에 있으므로,
+    //   제23조 1항(a)의 구제 요건 자체가 성립하지 않음(조약 자체가 관여하지 않는 소득이기 때문).
+    //   ②조약과 무관한 스위스 국내법상 일방적 구제 수단("파우샬레 슈토이어안레히눙"/pauschale
+    //   Steueranrechnung, 정식으로는 2020년 개정 후 "외국원천세액공제 신청"(DA-1))도 확인한 결과,
+    //   moneyland.ch·taxolution.ch 등 복수 스위스 세무 자문 자료가 이 제도의 적용 범위를
+    //   "배당·이자·사용료"(dividends, interest, royalties) 세 항목에 한정한다고 일관되게 설명
+    //   (2026-08-31 확인) — 복권·상금 같은 기타소득은 이 제도의 대상이 아님. 즉 조약 경로와
+    //   국내법 경로 모두 막혀있어, 미국 원천징수(30%) 위에 스위스 소득세가 공제 없이 그대로
+    //   추가되는 nl/tr/la_resident와 같은 "FTC 전혀 없음, 전액 이중과세" 구조로 확정.
+    // - 세율: 스위스 연방소득세법(DBG) 제24조 i.bis호에 따라 국내 복권(스위스로토·유로밀리언스
+    //   등 "대형 게임")은 100만 스위스프랑까지 비과세이지만, moneyland.ch·bucher-tax.ch 등
+    //   복수 스위스 세무 매체가 "해외 게임에서 얻은 당첨금은 종류·금액에 관계없이 전액 과세
+    //   대상"이라고 명시(2026-08-31 확인) — 미국 복권은 이 100만프랑 면제 문턱 자체가 적용되지
+    //   않아 전액이 그대로 소득세 과세표준에 산입됨(다른 나라들의 "면제 문턱이 잭팟 규모엔
+    //   무의미"보다 한 단계 더 확실한 케이스 — 문턱 자체가 없음).
+    //   스위스는 연방세·주(칸톤)세·게메인데(기초자치단체)세 3중 구조로 세율이 26개 칸톤마다
+    //   크게 달라(2026년 기준 최고한계세율 추크 21.9%~제네바 43.24%, KPMG 스위스 2026 자료) —
+    //   이 계산기는 이번 배치의 기본 언어로 채택한 독일어권 최대 도시 취리히(연방 11.5%+취리히
+    //   칸톤세+취리히시 승수 119% 합산 최고한계세율 39.10%, KPMG 2026, taxolution.ch 교차확인)를
+    //   대표값으로 사용 — 실제 거주 칸톤에 따라 이보다 상당히 낮거나(추크 등) 다소 높을(제네바
+    //   등) 수 있음을 병기.
+    rate: 0.391,
+    ftc_available: false
+  },
+  ae_resident: {
+    // 아랍에미리트(UAE) — 개인소득세 자체가 존재하지 않음. PwC Worldwide Tax Summaries의 UAE
+    // 편("Individual - Taxes on personal income", 2026-03-12 최종 검토 명시)이 "UAE currently
+    // does not levy a personal income tax"라고 공식 확인(2026-08-31 확인) — 급여·사업·투자소득은
+    // 물론 복권 같은 우발소득에도 적용될 별도의 개인소득세 항목 자체가 UAE 세법 체계에 없음.
+    // 연방 차원에서도, 7개 토후국(에미리트) 어디에도 개인 대상 소득세를 부과하는 법령이 없음
+    // (2023년 도입된 법인세 9%·부가가치세 5%는 모두 사업자·법인 대상이며 개인 복권 당첨금과는
+    // 무관). 미-UAE 간 포괄적 소득세 조약 자체가 없다는 사실은 있으나(이 문제는 애초에 UAE측
+    // 과세가 존재하지 않아 이중과세 조정의 필요 자체가 없으므로 무의미) — 결과적으로 UAE
+    // 거주자는 미국의 30% 비거주자 원천징수만 부담하고 그 위에 UAE가 추가로 과세하는 부분은
+    // 전혀 없음(ca/hk_resident처럼 "과세표준 자체가 없어서 0"인 구조와 동일한 유형이지만, 그
+    // 나라들은 복권만 특정해 비과세인 것과 달리 UAE는 개인소득 전반에 걸쳐 과세 제도 자체가
+    // 없다는 점이 다름 — 더 근본적인 0%).
+    rate: 0
+  },
+  sa_resident: {
+    // 사우디아라비아 — UAE와 마찬가지로 개인소득세 제도 자체가 없음. PwC Worldwide Tax
+    // Summaries 사우디아라비아 편이 "no personal income tax"를 명시하고, 사우디 국세청 격인
+    // ZATCA(Zakat, Tax and Customs Authority — 2021년 자카트청·관세청·소득세청이 통합돼 출범한
+    // 통합 조세당국)도 개인을 대상으로 한 소득세 신고·징수 제도를 운영하지 않음(2026-08-31,
+    // PwC·businesslink.sa·countrytaxcalc.com 등 복수 자료 교차 확인) — 사우디 국적자·외국인
+    // 거주자 모두 급여·복권 당첨금 등 개인소득에 별도의 소득세를 내지 않음.
+    // ⚠️ 참고(계산에는 미반영): 사우디·GCC 국적자는 소득세가 아니라 완전히 별개 세목인
+    // 자카트(Zakat, 이슬람 의무 희사— 현금·투자자산 등 "자캇 대상 자산"에 매년 2.5% 부과되는
+    // 부(富)에 대한 연례 과세)를 낼 의무가 있으나, 이는 "당첨금이라는 소득 자체에 대한 일회성
+    // 과세"가 아니라 그 돈을 보유한 이후 매년 반복되는 일반 재산세 성격의 제도라, 이 계산기가
+    // 다른 나라들에서도 다루지 않는 범주(예: 스위스의 연례 부유세도 이 계산기 계산에 미반영)와
+    // 같은 이유로 여기서도 반영하지 않음 — 사우디 거주자는 미국의 30% 비거주자 원천징수만
+    // 부담하고, 그 위에 사우디가 이 당첨금 자체에 추가로 부과하는 소득세는 없음.
+    rate: 0
   }
 };
 
@@ -3485,6 +3590,87 @@ function calcTakeHome(amount, country, stateCode){
       val2: brAdditionalTaxWon > 0 ? '-' + brEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
       basisSuffix: pickLang('브라질 거주자', 'Brazil resident', '巴西居民', 'Cư dân Brazil', 'ผู้พำนักในบราซิล', 'Резидент Бразилии', buildCountryMore('br'))
     };
+  } else if (country === 'es') {
+    // 스페인: 해외 복권 당첨금은 자산 양도에서 발생하지 않는 재산 증감으로 일반과세표준에 합산돼
+    // 누진세율(전국 공통 스케일 기준 최고 47%, 자치주에 따라 45~54% 편차)이 적용되지만, 미-스페인
+    // 조세조약 제24조 1항(a)의 통상 세액공제(한도부)로 미국 원천징수(30%)를 공제받을 수 있음 —
+    // 스페인 세율(47%)이 미국 원천징수보다 높아 da/fi/it/pl과 같은 구조로 실제 잔여세액(≈17%p)이
+    // 남음(상세 근거·불확실성 표시는 TAX_MODEL.es_resident 주석 참고 — 조약 제23조 "기타소득"의
+    // 거주지국 전속과세 문언이 이론상 원천징수 자체를 환급 대상으로 만들 수 있다는 da/fi/it와
+    // 같은 특이점 포함).
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const esCalculatedTaxWon = wonAmount * TAX_MODEL.es_resident.rate;
+    const ftcCreditWon = Math.min(usWithholdingWon, esCalculatedTaxWon); // FTC 공제액(미-스페인 조약 제24조 1항(a), 한도 내 상계)
+    const esAdditionalTaxWon = Math.max(esCalculatedTaxWon - ftcCreditWon, 0);
+
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (esAdditionalTaxWon / 100000000);
+    const esEffectivePct = wonAmount > 0 ? (esAdditionalTaxWon / wonAmount * 100) : 0;
+
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('스페인 추가 납부 (FTC 적용)', 'Spain additional tax (FTC applied)', '西班牙追加缴税（已抵免FTC）', 'Thuế bổ sung tại Tây Ban Nha (đã áp dụng FTC)', 'ภาษีเพิ่มเติมของสเปน (ใช้ FTC แล้ว)', 'Дополнительный налог в Испании (с учётом FTC)', buildAdditionalTaxMore('es')),
+      val2: esAdditionalTaxWon > 0 ? '-' + esEffectivePct.toFixed(1) + '%' : pickLang('0원 (세액공제로 상계)', '₩0 (offset by tax credit)', '0元（已被税收抵免抵消）', '0 KRW (đã bù trừ bằng tín dụng thuế)', '0 วอน (หักล้างด้วยเครดิตภาษีแล้ว)', '0 вон (зачтено налоговым кредитом)', ZERO_OFFSET_MORE),
+      basisSuffix: pickLang('스페인 거주자', 'Spain resident', '西班牙居民', 'Cư dân Tây Ban Nha', 'ผู้พำนักในสเปน', 'Резидент Испании', buildCountryMore('es'))
+    };
+  } else if (country === 'ch') {
+    // 스위스: 미-스위스 조세조약 제21조 3항이 도박·복권 당첨금을 "기타소득" 조항 적용범위에서
+    // 명문으로 제외해 조약상 과세권 배분 자체가 다뤄지지 않고, 미국의 30% 원천징수권이 조약의
+    // 아무런 제약 없이 그대로 유효함. 제23조의 조약상 구제(원칙 면제/일부 세액공제)도 "조약
+    // 규정에 따라 과세될 수 있는 소득"에만 적용돼 이 소득엔 해당 없고, 스위스 국내법상 일방적
+    // 구제 수단(파우샬레 슈토이어안레히눙/DA-1)도 배당·이자·사용료에만 한정돼 복권엔 적용 안
+    // 됨 — nl/tr/la와 같은 "FTC 전혀 없음, 미국 원천징수 위에 전액 그대로 추가" 구조(상세 근거는
+    // TAX_MODEL.ch_resident 주석 참고).
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const chAdditionalTaxWon = wonAmount * TAX_MODEL.ch_resident.rate; // FTC 없음 — 원천징수와 별개로 전액 추가
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS - (chAdditionalTaxWon / 100000000);
+    const chEffectivePct = wonAmount > 0 ? (chAdditionalTaxWon / wonAmount * 100) : 0;
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('스위스 추가 납부 (FTC 미적용 ⚠️)', 'Switzerland additional tax (no FTC ⚠️)', '瑞士追加缴税（不适用FTC⚠️）', 'Thuế bổ sung tại Thụy Sĩ (không áp dụng FTC ⚠️)', 'ภาษีเพิ่มเติมของสวิตเซอร์แลนด์ (ไม่ใช้ FTC ⚠️)', 'Дополнительный налог в Швейцарии (без FTC ⚠️)', buildAdditionalTaxMore('ch', null, 'noftc')),
+      val2: chAdditionalTaxWon > 0 ? '-' + chEffectivePct.toFixed(1) + '%' : pickLang('0원', '₩0', '0元', '0 KRW', '0 วอน', '0 вон', ZERO_PLAIN_MORE),
+      basisSuffix: pickLang('스위스 거주자', 'Switzerland resident', '瑞士居民', 'Cư dân Thụy Sĩ', 'ผู้พำนักในสวิตเซอร์แลนด์', 'Резидент Швейцарии', buildCountryMore('ch'))
+    };
+  } else if (country === 'ae') {
+    // 아랍에미리트(UAE): PwC Worldwide Tax Summaries가 확인하듯 개인소득세 제도 자체가 없어(UAE
+    // 세법 체계에 복권 당첨금을 포함한 개인소득 전반에 부과할 소득세 항목이 없음), 미국의 30%
+    // 원천징수 위에 UAE가 추가로 부과하는 세금이 전혀 없음 — ca/hk_resident와 같은 "과세표준
+    // 자체가 없어서 0"이지만, 그 나라들처럼 복권만 특정해 비과세인 게 아니라 개인소득세 제도
+    // 자체가 없다는 더 근본적인 이유(TAX_MODEL.ae_resident 주석 참고). 확정된 사실이라 캄보디아
+    // (kh_resident)류의 "근거 불명확 ⚠️"이 아니라 단정적으로 "자국 소득세 없음"으로 표기.
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS; // UAE 추가 세금 없음(rate = 0)
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('아랍에미리트 추가 납부 (자국 소득세 없음)', 'UAE additional tax (no domestic income tax)', '阿联酋追加缴税（无本国所得税）', 'Thuế bổ sung tại UAE (không có thuế thu nhập trong nước)', 'ภาษีเพิ่มเติมของสหรัฐอาหรับเอมิเรตส์ (ไม่มีภาษีเงินได้ในประเทศ)', 'Дополнительный налог в ОАЭ (нет внутреннего подоходного налога)', buildAdditionalTaxMore('ae', null, 'noincometax')),
+      val2: pickLang('0원 (자국 소득세 자체가 없음)', '₩0 (no domestic income tax)', '0元（无本国所得税）', '0 KRW (không có thuế thu nhập trong nước)', '0 วอน (ไม่มีภาษีเงินได้ในประเทศ)', '0 вон (нет подоходного налога в стране)', ZERO_NO_INCOME_TAX_MORE),
+      basisSuffix: pickLang('아랍에미리트 거주자', 'UAE resident', '阿联酋居民', 'Cư dân UAE', 'ผู้พำนักในสหรัฐอาหรับเอมิเรตส์', 'Резидент ОАЭ', buildCountryMore('ae'))
+    };
+  } else if (country === 'sa') {
+    // 사우디아라비아: UAE와 마찬가지로 개인소득세 제도 자체가 없음(ZATCA 관할, PwC Worldwide Tax
+    // Summaries 확인 — TAX_MODEL.sa_resident 주석 참고). 자카트(자산 대상 연례 종교적 부유세)는
+    // 당첨금이라는 소득 자체에 대한 세금이 아니라 그 이후 보유 자산에 매년 반복 부과되는 별개
+    // 제도라 이 계산기(일회성 당첨 시점 세금만 계산)의 범위 밖 — 미국의 30% 원천징수 위에
+    // 사우디가 이 당첨금 자체에 추가로 부과하는 소득세는 없음.
+    const wonAmount = amount * 100000000;
+    const usWithholdingWon = wonAmount * TAX_MODEL.nonresident.us_withholding;
+    const afterUS = amount - (usWithholdingWon / 100000000);
+    const final = afterUS; // 사우디 추가 세금 없음(rate = 0)
+    return {
+      afterUS, final,
+      label1: pickLang('미국 연방세 (비거주자)', 'US Federal Tax (nonresident)', '美国联邦税（非居民）', 'Thuế liên bang Mỹ (không cư trú)', 'ภาษีกลางสหรัฐฯ (ผู้ไม่มีถิ่นพำนัก)', 'Федеральный налог США (нерезидент)', US_FED_TAX_NONRESIDENT_MORE), val1: '-' + (TAX_MODEL.nonresident.us_withholding * 100) + '%',
+      label2: pickLang('사우디아라비아 추가 납부 (자국 소득세 없음)', 'Saudi Arabia additional tax (no domestic income tax)', '沙特阿拉伯追加缴税（无本国所得税）', 'Thuế bổ sung tại Ả Rập Xê Út (không có thuế thu nhập trong nước)', 'ภาษีเพิ่มเติมของซาอุดีอาระเบีย (ไม่มีภาษีเงินได้ในประเทศ)', 'Дополнительный налог в Саудовской Аравии (нет внутреннего подоходного налога)', buildAdditionalTaxMore('sa', null, 'noincometax')),
+      val2: pickLang('0원 (자국 소득세 자체가 없음)', '₩0 (no domestic income tax)', '0元（无本国所得税）', '0 KRW (không có thuế thu nhập trong nước)', '0 วอน (ไม่มีภาษีเงินได้ในประเทศ)', '0 вон (нет подоходного налога в стране)', ZERO_NO_INCOME_TAX_MORE),
+      basisSuffix: pickLang('사우디아라비아 거주자', 'Saudi Arabia resident', '沙特阿拉伯居民', 'Cư dân Ả Rập Xê Út', 'ผู้พำนักในซาอุดีอาระเบีย', 'Резидент Саудовской Аравии', buildCountryMore('sa'))
+    };
   } else if (country === 'other') {
     // "기타 국가" — COUNTRY_TAX_PROFILES 목록에 없는 나라 방문자를 위한 안전망(2026-07-28,
     // 사용자 요청). 자국 세법을 조사하지 않고도 확정적으로 말할 수 있는 건 미국 IRS의 비거주자
@@ -3754,7 +3940,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20260901-2';
+    script.src = 'odds-data.js?v=20260901-3';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -5204,7 +5390,7 @@ function buildDrawScheduleMore(days){
 // 옛 값 그대로 둘 것 — 실제 금액이 발표된 뒤에만 갱신. (지난 갱신 이력은 git log로 충분히
 // 추적 가능해서 날짜별 코멘트는 더 이상 여기 쌓지 않음 — 최신 반영 회차는 아래 LATEST_DRAW 참고.)
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 131000000, cashUsd: 56800000 },
+  powerball:    { amountUsd: 146000000, cashUsd: 63300000 },
   megamillions: { amountUsd: 160000000, cashUsd: 68900000 },
 };
 
@@ -5243,7 +5429,7 @@ const GAME_NAME_MORE = {
 // 사이트가 추적 안 하는 필드라 반영 안 함. 메가밀리언즈는 스크린샷의 8/28 결과·
 // 다음 추첨(9/1) 잭팟 $160M이 이미 반영돼 있어 변경 없음.
 const LATEST_DRAW = {
-  powerball:    { date: '2026-08-29', numbers: [18, 56, 62, 65, 67], special: 18 },
+  powerball:    { date: '2026-08-31', numbers: [11, 17, 25, 37, 49], special: 10 },
   megamillions: { date: '2026-08-28', numbers: [8, 17, 29, 42, 55], special: 2 },
 };
 
@@ -14350,33 +14536,33 @@ function updateCalc(usdOverride){
 // 이어서 호주 추가, 이어서 멕시코 추가, 이어서 프랑스 추가, 이어서 싱가포르 추가, 이어서
 // 말레이시아 추가) × 17개 언어 나라 이름표를 만들어 pickLang()의 7번째 more 인자로 채움
 const COUNTRY_NAMES_MORE = {
-  ar: { kr:'كوريا', us:'الولايات المتحدة', vn:'فيتنام', cn:'الصين', in:'الهند', id:'إندونيسيا', ph:'الفلبين', th:'تايلاند', jp:'اليابان', ru:'روسيا', np:'نيبال', lk:'سريلانكا', uz:'أوزبكستان', kz:'كازاخستان', kg:'قيرغيزستان', mm:'ميانمار', bd:'بنغلاديش', pk:'باكستان', kh:'كمبوديا', mn:'منغوليا', la:'لاوس' , ca:'كندا' , tw:'تايوان', hk:'هونغ كونغ' , uk:'المملكة المتحدة' , au:'أستراليا'  , mx:'المكسيك'  , fr:'فرنسا' , nz:'نيوزيلندا', ie:'أيرلندا', sg:'سنغافورة', za:'جنوب أفريقيا', my:'ماليزيا', de:'ألمانيا', nl:'هولندا', sv:'السويد', no:"النرويج" , da:'الدنمارك' , fi:'فنلندا' , it:"إيطاليا", pl:"بولندا", tr:"تركيا" , br:"البرازيل" },
-  bn: { kr:'কোরিয়া', us:'যুক্তরাষ্ট্র', vn:'ভিয়েতনাম', cn:'চীন', in:'ভারত', id:'ইন্দোনেশিয়া', ph:'ফিলিপাইন', th:'থাইল্যান্ড', jp:'জাপান', ru:'রাশিয়া', np:'নেপাল', lk:'শ্রীলঙ্কা', uz:'উজবেকিস্তান', kz:'কাজাখস্তান', kg:'কিরগিজস্তান', mm:'মিয়ানমার', bd:'বাংলাদেশ', pk:'পাকিস্তান', kh:'কম্বোডিয়া', mn:'মঙ্গোলিয়া', la:'লাওস' , ca:'কানাডা' , tw:'তাইওয়ান', hk:'হংকং' , uk:'যুক্তরাজ্য' , au:'অস্ট্রেলিয়া'  , mx:'মেক্সিকো'  , fr:'ফ্রান্স' , nz:'নিউজিল্যান্ড', ie:'আয়ারল্যান্ড', sg:'সিঙ্গাপুর', za:'দক্ষিণ আফ্রিকা', my:'মালয়েশিয়া', de:'জার্মানি', nl:'নেদারল্যান্ডস', sv:'সুইডেন', no:"নরওয়ে" , da:'ডেনমার্ক' , fi:'ফিনল্যান্ড' , it:"ইতালি", pl:"পোল্যান্ড", tr:"তুরস্ক" , br:"ব্রাজিল" },
-  fr: { kr:'Corée', us:'États-Unis', vn:'Vietnam', cn:'Chine', in:'Inde', id:'Indonésie', ph:'Philippines', th:'Thaïlande', jp:'Japon', ru:'Russie', np:'Népal', lk:'Sri Lanka', uz:'Ouzbékistan', kz:'Kazakhstan', kg:'Kirghizistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodge', mn:'Mongolie', la:'Laos' , ca:'Canada' , tw:'Taïwan', hk:'Hong Kong' , uk:'Royaume-Uni' , au:'Australie'  , mx:'Mexique'  , fr:'France' , nz:'Nouvelle-Zélande', ie:'Irlande', sg:'Singapour', za:'Afrique du Sud', my:'Malaisie', de:'Allemagne', nl:'Pays-Bas', sv:'Suède', no:"Norvège" , da:'Danemark' , fi:'Finlande' , it:"Italie", pl:"Pologne", tr:"Turquie" , br:"Brésil" },
-  hi: { kr:'कोरिया', us:'अमेरिका', vn:'वियतनाम', cn:'चीन', in:'भारत', id:'इंडोनेशिया', ph:'फिलीपींस', th:'थाईलैंड', jp:'जापान', ru:'रूस', np:'नेपाल', lk:'श्रीलंका', uz:'उज़्बेकिस्तान', kz:'कज़ाकिस्तान', kg:'किर्गिज़स्तान', mm:'म्यांमार', bd:'बांग्लादेश', pk:'पाकिस्तान', kh:'कंबोडिया', mn:'मंगोलिया', la:'लाओस' , ca:'कनाडा' , tw:'ताइवान', hk:'हांगकांग' , uk:'यूनाइटेड किंगडम' , au:'ऑस्ट्रेलिया'  , mx:'मेक्सिको'  , fr:'फ़्रांस' , nz:'न्यूज़ीलैंड', ie:'आयरलैंड', sg:'सिंगापुर', za:'दक्षिण अफ़्रीका', my:'मलेशिया', de:'जर्मनी', nl:'नीदरलैंड', sv:'स्वीडन', no:"नॉर्वे" , da:'डेनमार्क' , fi:'फ़िनलैंड' , it:"इटली", pl:"पोलैंड", tr:"तुर्की" , br:"ब्राज़ील" },
-  id: { kr:'Korea', us:'Amerika Serikat', vn:'Vietnam', cn:'Tiongkok', in:'India', id:'Indonesia', ph:'Filipina', th:'Thailand', jp:'Jepang', ru:'Rusia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakhstan', kg:'Kirgistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kamboja', mn:'Mongolia', la:'Laos' , ca:'Kanada' , tw:'Taiwan', hk:'Hong Kong' , uk:'Britania Raya' , au:'Australia'  , mx:'Meksiko'  , fr:'Prancis' , nz:'Selandia Baru', ie:'Irlandia', sg:'Singapura', za:'Afrika Selatan', my:'Malaysia', de:'Jerman', nl:'Belanda', sv:'Swedia', no:"Norwegia" , da:'Denmark' , fi:'Finlandia' , it:"Italia", pl:"Polandia", tr:"Turki" , br:"Brasil" },
-  ja: { kr:'韓国', us:'アメリカ', vn:'ベトナム', cn:'中国', in:'インド', id:'インドネシア', ph:'フィリピン', th:'タイ', jp:'日本', ru:'ロシア', np:'ネパール', lk:'スリランカ', uz:'ウズベキスタン', kz:'カザフスタン', kg:'キルギス', mm:'ミャンマー', bd:'バングラデシュ', pk:'パキスタン', kh:'カンボジア', mn:'モンゴル', la:'ラオス' , ca:'カナダ' , tw:'台湾', hk:'香港' , uk:'イギリス' , au:'オーストラリア'  , mx:'メキシコ'  , fr:'フランス' , nz:'ニュージーランド', ie:'アイルランド', sg:'シンガポール', za:'南アフリカ', my:'マレーシア', de:'ドイツ', nl:'オランダ', sv:'スウェーデン', no:"ノルウェー" , da:'デンマーク' , fi:'フィンランド' , it:"イタリア", pl:"ポーランド", tr:"トルコ" , br:"ブラジル" },
-  kk: { kr:'Корея', us:'АҚШ', vn:'Вьетнам', cn:'Қытай', in:'Үндістан', id:'Индонезия', ph:'Филиппин', th:'Тайланд', jp:'Жапония', ru:'Ресей', np:'Непал', lk:'Шри-Ланка', uz:'Өзбекстан', kz:'Қазақстан', kg:'Қырғызстан', mm:'Мьянма', bd:'Бангладеш', pk:'Пәкістан', kh:'Камбоджа', mn:'Моңғолия', la:'Лаос' , ca:'Канада' , tw:'Тайвань', hk:'Гонконг' , uk:'Ұлыбритания' , au:'Австралия'  , mx:'Мексика'  , fr:'Франция' , nz:'Жаңа Зеландия', ie:'Ирландия', sg:'Сингапур', za:'Оңтүстік Африка', my:'Малайзия', de:'Германия', nl:'Нидерланды', sv:'Швеция', no:"Норвегия" , da:'Дания' , fi:'Финляндия' , it:"Италия", pl:"Польша", tr:"Түркия" , br:"Бразилия" },
-  km: { kr:'កូរ៉េ', us:'សហរដ្ឋអាមេរិក', vn:'វៀតណាម', cn:'ចិន', in:'ឥណ្ឌា', id:'ឥណ្ឌូនេស៊ី', ph:'ហ្វីលីពីន', th:'ថៃ', jp:'ជប៉ុន', ru:'រុស្ស៊ី', np:'នេប៉ាល់', lk:'ស្រីលង្កា', uz:'អ៊ូសបេគីស្ថាន', kz:'កាហ្សាក់ស្ថាន', kg:'គារហ្គីស្ថាន', mm:'មីយ៉ាន់ម៉ា', bd:'បង់ក្លាដែស', pk:'ប៉ាគីស្ថាន', kh:'កម្ពុជា', mn:'ម៉ុងហ្គោលី', la:'ឡាវ' , ca:'កាណាដា' , tw:'តៃវ៉ាន់', hk:'ហុងកុង' , uk:'ចក្រភពអង់គ្លេស' , au:'អូស្ត្រាលី'  , mx:'ម៉ិកស៊ិក'  , fr:'បារាំង' , nz:'នូវែលសេឡង់', ie:'អៀកឡង់', sg:'សិង្ហបុរី', za:'អាហ្វ្រិកខាងត្បូង', my:'ម៉ាឡេស៊ី', de:'អាល្លឺម៉ង់', nl:'ហូឡង់', sv:'ស៊ុយអែត', no:"ន័រវេស" , da:'ដាណឺម៉ាក់' , fi:'ហ្វាំងឡង់' , it:"អ៊ីតាលី", pl:"ប៉ូឡូញ", tr:"តួកគី" , br:"ប្រេស៊ីល" },
-  ky: { kr:'Корея', us:'АКШ', vn:'Вьетнам', cn:'Кытай', in:'Индия', id:'Индонезия', ph:'Филиппин', th:'Тайланд', jp:'Япония', ru:'Орусия', np:'Непал', lk:'Шри-Ланка', uz:'Өзбекстан', kz:'Казакстан', kg:'Кыргызстан', mm:'Мьянма', bd:'Бангладеш', pk:'Пакистан', kh:'Камбоджа', mn:'Монголия', la:'Лаос' , ca:'Канада' , tw:'Тайвань', hk:'Гонконг' , uk:'Улуу Британия' , au:'Австралия'  , mx:'Мексика'  , fr:'Франция' , nz:'Жаңы Зеландия', ie:'Ирландия', sg:'Сингапур', za:'Түштүк Африка', my:'Малайзия', de:'Германия', nl:'Нидерланды', sv:'Швеция', no:"Норвегия" , da:'Дания' , fi:'Финляндия' , it:"Италия", pl:"Польша", tr:"Түркия" , br:"Бразилия" },
-  lo: { kr:'ເກົາຫຼີ', us:'ສະຫະລັດ', vn:'ຫວຽດນາມ', cn:'ຈີນ', in:'ອິນເດຍ', id:'ອິນໂດເນເຊຍ', ph:'ຟີລິບປິນ', th:'ໄທ', jp:'ຍີ່ປຸ່ນ', ru:'ລັດເຊຍ', np:'ເນປານ', lk:'ສີລັງກາ', uz:'ອຸສເບກິສະຖານ', kz:'ຄາຊັກສະຖານ', kg:'ຄີກີສະຖານ', mm:'ມຽນມາ', bd:'ບັງກະລາເທດ', pk:'ປາກີສະຖານ', kh:'ກຳປູເຈຍ', mn:'ມົງໂກເລຍ', la:'ລາວ' , ca:'ການາດາ' , tw:'ໄຕ້ຫວັນ', hk:'ຮົງກົງ' , uk:'ອັງກິດ' , au:'ອົດສະຕາລີ'  , mx:'ເມັກຊິໂກ'  , fr:'ຝຣັ່ງ' , nz:'ນິວຊີແລນ', ie:'ໄອແລນ', sg:'ສິງກະໂປ', za:'ອາຟຣິກາໃຕ້', my:'ມາເລເຊຍ', de:'ເຢຍລະມັນ', nl:'ເນເທີແລນ', sv:'ສະວີເດັນ', no:"ນໍເວ" , da:'ເດັນມາກ' , fi:'ຟິນແລນ' , it:"ອີຕາລີ", pl:"ໂປແລນ", tr:"ຕວກກີ" , br:"ບຣາຊິນ" },
-  mn: { kr:'Солонгос', us:'АНУ', vn:'Вьетнам', cn:'Хятад', in:'Энэтхэг', id:'Индонез', ph:'Филиппин', th:'Тайланд', jp:'Япон', ru:'Орос', np:'Балба', lk:'Шри Ланка', uz:'Узбекистан', kz:'Казахстан', kg:'Киргизстан', mm:'Мьянмар', bd:'Бангладеш', pk:'Пакистан', kh:'Камбож', mn:'Монгол', la:'Лаос' , ca:'Канад' , tw:'Тайвань', hk:'Хонг Конг' , uk:'Их Британи' , au:'Австрали'  , mx:'Мексик'  , fr:'Франц' , nz:'Шинэ Зеланд', ie:'Ирланд', sg:'Сингапур', za:'Өмнөд Африк', my:'Малайз', de:'Герман', nl:'Нидерланд', sv:'Швед', no:"Норвеги" , da:'Дани' , fi:'Финлянд' , it:"Итали", pl:"Польш", tr:"Турк" , br:"Бразил" },
-  my: { kr:'ကိုရီးယား', us:'အမေရိကန်ပြည်ထောင်စု', vn:'ဗီယက်နမ်', cn:'တရုတ်', in:'အိန္ဒိယ', id:'အင်ဒိုနီးရှား', ph:'ဖိလစ်ပိုင်', th:'ထိုင်း', jp:'ဂျပန်', ru:'ရုရှား', np:'နီပေါ', lk:'သီရိလင်္ကာ', uz:'ဥဇဗက်ကစ္စတန်', kz:'ကာဇက်စတန်', kg:'ကာဂျစ္စတန်', mm:'မြန်မာ', bd:'ဘင်္ဂလားဒေ့ရှ်', pk:'ပါကစ္စတန်', kh:'ကမ္ဘောဒီးယား', mn:'မွန်ဂိုလီးယား', la:'လာအို' , ca:'ကနေဒါ' , tw:'ထိုင်ဝမ်', hk:'ဟောင်ကောင်' , uk:'ယူနိုက်တက်ကင်းဒမ်း' , au:'သြစတြေးလျ'  , mx:'မက်ဆီကို'  , fr:'ပြင်သစ်' , nz:'နယူးဇီလန်', ie:'အိုင်ယာလန်', sg:'စင်္ကာပူ', za:'တောင်အာဖရိက', my:'မလေးရှား', de:'ဂျာမနီ', nl:'နယ်သာလန်', sv:'ဆွီဒင်', no:"နော်ဝေ" , da:'ဒိန်းမတ်' , fi:'ဖင်လန်' , it:"အီတလီ", pl:"ပိုလန်", tr:"တူရကီ" , br:"ဘရာဇီး" },
-  ne: { kr:'कोरिया', us:'अमेरिका', vn:'भियतनाम', cn:'चीन', in:'भारत', id:'इन्डोनेसिया', ph:'फिलिपिन्स', th:'थाइल्यान्ड', jp:'जापान', ru:'रुस', np:'नेपाल', lk:'श्रीलंका', uz:'उज्बेकिस्तान', kz:'कजाकिस्तान', kg:'किर्गिस्तान', mm:'म्यानमार', bd:'बंगलादेश', pk:'पाकिस्तान', kh:'कम्बोडिया', mn:'मंगोलिया', la:'लाओस' , ca:'क्यानाडा' , tw:'ताइवान', hk:'हङकङ' , uk:'संयुक्त अधिराज्य' , au:'अष्ट्रेलिया'  , mx:'मेक्सिको'  , fr:'फ्रान्स' , nz:'न्युजिल्यान्ड', ie:'आयरल्यान्ड', sg:'सिंगापुर', za:'दक्षिण अफ्रिका', my:'मलेसिया', de:'जर्मनी', nl:'नेदरल्यान्ड्स', sv:'स्विडेन', no:"नर्वे" , da:'डेनमार्क' , fi:'फिनल्यान्ड' , it:"इटाली", pl:"पोल्यान्ड", tr:"टर्की" , br:"ब्राजिल" },
-  si: { kr:'කොරියාව', us:'ඇමරිකා එක්සත් ජනපදය', vn:'වියට්නාමය', cn:'චීනය', in:'ඉන්දියාව', id:'ඉන්දුනීසියාව', ph:'පිලිපීනය', th:'තායිලන්තය', jp:'ජපානය', ru:'රුසියාව', np:'නේපාලය', lk:'ශ්‍රී ලංකාව', uz:'උස්බෙකිස්තානය', kz:'කසකස්තානය', kg:'කිර්ගිස්තානය', mm:'මියන්මාරය', bd:'බංග්ලාදේශය', pk:'පකිස්තානය', kh:'කාම්බෝජය', mn:'මොංගෝලියාව', la:'ලාඕසය' , ca:'කැනඩාව' , tw:'තායිවානය', hk:'හොංකොං' , uk:'එක්සත් රාජධානිය' , au:'ඕස්ට්‍රේලියාව'  , mx:'මෙක්සිකෝව'  , fr:'ප්‍රංශය' , nz:'නවසීලන්තය', ie:'අයර්ලන්තය', sg:'සිංගප්පූරුව', za:'දකුණු අප්‍රිකාව', my:'මැලේසියාව', de:'ජර්මනිය', nl:'නෙදර්ලන්තය', sv:'ස්වීඩනය', no:"නෝර්වේ" , da:'ඩෙන්මාර්කය' , fi:'ෆින්ලන්තය' , it:"ඉතාලිය", pl:"පෝලන්තය", tr:"තුර්කිය" , br:"බ්‍රසීලය" },
-  tl: { kr:'Korea', us:'Estados Unidos', vn:'Vietnam', cn:'Tsina', in:'India', id:'Indonesia', ph:'Pilipinas', th:'Thailand', jp:'Japan', ru:'Russia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakhstan', kg:'Kyrgyzstan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodia', mn:'Mongolia', la:'Laos' , ca:'Canada' , tw:'Taiwan', hk:'Hong Kong' , uk:'United Kingdom' , au:'Australia'  , mx:'Mexico'  , fr:'France' , nz:'New Zealand', ie:'Ireland', sg:'Singapore', za:'South Africa', my:'Malaysia', de:'Germany', nl:'Netherlands', sv:'Sweden', no:"Norway" , da:'Denmark' , fi:'Finland' , it:"Italy", pl:"Poland", tr:"Turkey" , br:"Brazil" },
-  ur: { kr:'کوریا', us:'امریکہ', vn:'ویتنام', cn:'چین', in:'بھارت', id:'انڈونیشیا', ph:'فلپائن', th:'تھائی لینڈ', jp:'جاپان', ru:'روس', np:'نیپال', lk:'سری لنکا', uz:'ازبکستان', kz:'قازقستان', kg:'کرغزستان', mm:'میانمار', bd:'بنگلہ دیش', pk:'پاکستان', kh:'کمبوڈیا', mn:'منگولیا', la:'لاؤس' , ca:'کینیڈا' , tw:'تائیوان', hk:'ہانگ کانگ' , uk:'برطانیہ' , au:'آسٹریلیا'  , mx:'میکسیکو'  , fr:'فرانس' , nz:'نیوزی لینڈ', ie:'آئرلینڈ', sg:'سنگاپور', za:'جنوبی افریقہ', my:'ملائیشیا', de:'جرمنی', nl:'نیدرلینڈز', sv:'سویڈن', no:"ناروے" , da:'ڈنمارک' , fi:'فن لینڈ' , it:"اٹلی", pl:"پولینڈ", tr:"ترکی" , br:"برازیل" },
-  uz: { kr:'Koreya', us:'AQSH', vn:'Vetnam', cn:'Xitoy', in:'Hindiston', id:'Indoneziya', ph:'Filippin', th:'Tailand', jp:'Yaponiya', ru:'Rossiya', np:'Nepal', lk:'Shri-Lanka', uz:'Oʻzbekiston', kz:'Qozogʻiston', kg:'Qirgʻiziston', mm:'Myanma', bd:'Bangladesh', pk:'Pokiston', kh:'Kambodja', mn:'Mongoliya', la:'Laos' , ca:'Kanada' , tw:'Tayvan', hk:'Gonkong' , uk:'Buyuk Britaniya' , au:'Avstraliya'  , mx:'Meksika'  , fr:'Fransiya' , nz:'Yangi Zelandiya', ie:'Irlandiya', sg:'Singapur', za:'Janubiy Afrika', my:'Malayziya', de:'Germaniya', nl:'Niderlandiya', sv:'Shvetsiya', no:"Norvegiya" , da:'Daniya' , fi:'Finlyandiya' , it:"Italiya", pl:"Polsha", tr:"Turkiya" , br:"Braziliya" },
-  pt: { kr:'Coreia', us:'Estados Unidos', vn:'Vietnã', cn:'China', in:'Índia', id:'Indonésia', ph:'Filipinas', th:'Tailândia', jp:'Japão', ru:'Rússia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbequistão', kz:'Cazaquistão', kg:'Quirguistão', mm:'Mianmar', bd:'Bangladesh', pk:'Paquistão', kh:'Camboja', mn:'Mongólia', la:'Laos' , ca:'Canadá' , tw:'Taiwan', hk:'Hong Kong' , uk:'Reino Unido' , au:'Austrália'  , mx:'México'  , fr:'França' , nz:'Nova Zelândia', ie:'Irlanda', sg:'Singapura', za:'África do Sul', my:'Malásia', de:'Alemanha', nl:'Países Baixos', sv:'Suécia', no:"Noruega" , da:'Dinamarca' , fi:'Finlândia' , it:"Itália", pl:"Polónia", tr:"Turquia" , br:"Brasil" },
-  es: { kr:'Corea', us:'Estados Unidos', vn:'Vietnam', cn:'China', in:'India', id:'Indonesia', ph:'Filipinas', th:'Tailandia', jp:'Japón', ru:'Rusia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistán', kz:'Kazajistán', kg:'Kirguistán', mm:'Myanmar', bd:'Bangladés', pk:'Pakistán', kh:'Camboya', mn:'Mongolia', la:'Laos' , ca:'Canadá' , tw:'Taiwán', hk:'Hong Kong' , uk:'Reino Unido' , au:'Australia'  , mx:'México'  , fr:'Francia' , nz:'Nueva Zelanda', ie:'Irlanda', sg:'Singapur', za:'Sudáfrica', my:'Malasia', de:'Alemania', nl:'Países Bajos', sv:'Suecia', no:"Noruega" , da:'Dinamarca' , fi:'Finlandia' , it:"Italia", pl:"Polonia", tr:"Turquía" , br:"Brasil" },
-  uk: { kr:'Корея', us:'США', vn:"В'єтнам", cn:'Китай', in:'Індія', id:'Індонезія', ph:'Філіппіни', th:'Таїланд', jp:'Японія', ru:'Росія', np:'Непал', lk:'Шрі-Ланка', uz:'Узбекистан', kz:'Казахстан', kg:'Киргизстан', mm:"М'янма", bd:'Бангладеш', pk:'Пакистан', kh:'Камбоджа', mn:'Монголія', la:'Лаос' , ca:'Канада' , tw:'Тайвань', hk:'Гонконг' , uk:'Велика Британія' , au:'Австралія'  , mx:'Мексика'  , fr:'Франція' , nz:'Нова Зеландія', ie:'Ірландія', sg:'Сінгапур', za:'Південна Африка', my:'Малайзія', de:'Німеччина', nl:'Нідерланди', sv:'Швеція', no:"Норвегія" , da:'Данія' , fi:'Фінляндія' , it:"Італія", pl:"Польща", tr:"Туреччина" , br:"Бразилія" },
-  tet: { kr:'Korea', us:'EUA', vn:'Vietname', cn:'China', in:'Índia', id:'Indonésia', ph:'Filipinas', th:'Tailándia', jp:'Japaun', ru:'Rúsia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbequistão', kz:'Cazaquistão', kg:'Quirguizistão', mm:'Mianmar', bd:'Bangladesh', pk:'Paquistão', kh:'Camboja', mn:'Mongólia', la:'Laos' , ca:'Kanadá' , tw:'Taiwan', hk:'Hong Kong' , uk:'Reinu Unidu' , au:'Australia'  , mx:'Meksiku'  , fr:'Fransa' , nz:'Nova Zelándia', ie:'Irlanda', sg:'Singapura', za:'Áfrika Súl', my:'Malaysia', de:'Alemaña', nl:'Holanda', sv:'Suésia', no:"Noruega" , da:'Dinamarka' , fi:'Finlándia' , it:'Itália', pl:"Polónia" , tr:"Turkia" , br:"Brazíl" },
-  de: { kr:'Korea', us:'USA', vn:'Vietnam', cn:'China', in:'Indien', id:'Indonesien', ph:'Philippinen', th:'Thailand', jp:'Japan', ru:'Russland', np:'Nepal', lk:'Sri Lanka', uz:'Usbekistan', kz:'Kasachstan', kg:'Kirgistan', mm:'Myanmar', bd:'Bangladesch', pk:'Pakistan', kh:'Kambodscha', mn:'Mongolei', la:'Laos' , ca:'Kanada' , tw:'Taiwan', hk:'Hongkong' , uk:'Vereinigtes Königreich' , au:'Australien'  , mx:'Mexiko'  , fr:'Frankreich' , nz:'Neuseeland', ie:'Irland', sg:'Singapur', za:'Südafrika', my:'Malaysia', de:'Deutschland', nl:'Niederlande', sv:'Schweden', no:"Norwegen" , da:'Dänemark' , fi:'Finnland' , it:"Italien", pl:"Polen", tr:"Türkei" , br:"Brasilien" },
-  nl: { kr:'Korea', us:'Verenigde Staten', vn:'Vietnam', cn:'China', in:'India', id:'Indonesië', ph:'Filipijnen', th:'Thailand', jp:'Japan', ru:'Rusland', np:'Nepal', lk:'Sri Lanka', uz:'Oezbekistan', kz:'Kazachstan', kg:'Kirgizië', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodja', mn:'Mongolië', la:'Laos' , ca:'Canada' , tw:'Taiwan', hk:'Hongkong' , uk:'Verenigd Koninkrijk' , au:'Australië'  , mx:'Mexico'  , fr:'Frankrijk' , nz:'Nieuw-Zeeland', ie:'Ierland', sg:'Singapore', za:'Zuid-Afrika', my:'Maleisië', de:'Duitsland', nl:'Nederland', sv:'Zweden', no:"Noorwegen" , da:'Denemarken' , fi:'Finland' , it:"Italië", pl:"Polen", tr:"Turkije" , br:"Brazilië" }, sv: { kr:'Korea', us:'USA', vn:'Vietnam', cn:'Kina', in:'Indien', id:'Indonesien', ph:'Filippinerna', th:'Thailand', jp:'Japan', ru:'Ryssland', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakstan', kg:'Kirgizistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kambodja', mn:'Mongoliet', la:'Laos' , ca:'Kanada' , tw:'Taiwan', hk:'Hongkong' , uk:'Storbritannien' , au:'Australien'  , mx:'Mexiko'  , fr:'Frankrike' , nz:'Nya Zeeland', ie:'Irland', sg:'Singapore', za:'Sydafrika', my:'Malaysia', de:'Tyskland', nl:'Nederländerna', sv:'Sverige', no:"Norge" , da:'Danmark' , fi:'Finland' , it:"Italien", pl:"Polen", tr:"Turkiet" , br:"Brasilien" }, no: { kr:'Korea', us:'USA', vn:'Vietnam', cn:'Kina', in:'India', id:'Indonesia', ph:'Filippinene', th:'Thailand', jp:'Japan', ru:'Russland', np:'Nepal', lk:'Sri Lanka', uz:'Usbekistan', kz:'Kasakhstan', kg:'Kirgisistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kambodsja', mn:'Mongolia', la:'Laos' , ca:'Canada' , tw:'Taiwan', hk:'Hongkong' , uk:'Storbritannia' , au:'Australia'  , mx:'Mexico'  , fr:'Frankrike' , nz:'New Zealand', ie:'Irland', sg:'Singapore', za:'Sør-Afrika', my:'Malaysia', de:'Tyskland', nl:'Nederland', sv:'Sverige', no:'Norge' , da:'Danmark' , fi:'Finland' , it:"Italia", pl:"Polen", tr:"Tyrkia" , br:"Brasil" },
-  da: { kr:'Korea', us:'USA', vn:'Vietnam', cn:'Kina', in:'Indien', id:'Indonesien', ph:'Filippinerne', th:'Thailand', jp:'Japan', ru:'Rusland', np:'Nepal', lk:'Sri Lanka', uz:'Usbekistan', kz:'Kasakhstan', kg:'Kirgisistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodja', mn:'Mongoliet', la:'Laos', ca:'Canada', tw:'Taiwan', hk:'Hongkong', uk:'Storbritannien', au:'Australien', mx:'Mexico', fr:'Frankrig', nz:'New Zealand', ie:'Irland', sg:'Singapore', za:'Sydafrika', my:'Malaysia', de:'Tyskland', nl:'Nederlandene', sv:'Sverige', no:'Norge', da:'Danmark' , fi:'Finland' , it:"Italien", pl:"Polen", tr:"Tyrkiet" , br:"Brasilien" },  fi: { kr:'Korea', us:'Yhdysvallat', vn:'Vietnam', cn:'Kiina', in:'Intia', id:'Indonesia', ph:'Filippiinit', th:'Thaimaa', jp:'Japani', ru:'Venäjä', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakstan', kg:'Kirgisia', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kambodža', mn:'Mongolia', la:'Laos', ca:'Kanada', tw:'Taiwan', hk:'Hongkong', uk:'Yhdistynyt kuningaskunta', au:'Australia', mx:'Meksiko', fr:'Ranska', nz:'Uusi-Seelanti', ie:'Irlanti', sg:'Singapore', za:'Etelä-Afrikka', my:'Malesia', de:'Saksa', nl:'Alankomaat', sv:'Ruotsi', no:'Norja', da:'Tanska', fi:'Suomi' , it:"Italia", pl:"Puola", tr:"Turkki" , br:"Brasilia" },
-  it: { kr:"Corea", us:"Stati Uniti", vn:"Vietnam", cn:"Cina", in:"India", id:"Indonesia", ph:"Filippine", th:"Thailandia", jp:"Giappone", ru:"Russia", np:"Nepal", lk:"Sri Lanka", uz:"Uzbekistan", kz:"Kazakistan", kg:"Kirghizistan", mm:"Myanmar", bd:"Bangladesh", pk:"Pakistan", kh:"Cambogia", mn:"Mongolia", la:"Laos", ca:"Canada", tw:"Taiwan", hk:"Hong Kong", uk:"Regno Unito", au:"Australia", mx:"Messico", fr:"Francia", nz:"Nuova Zelanda", ie:"Irlanda", sg:"Singapore", za:"Sudafrica", my:"Malesia", de:"Germania", nl:"Paesi Bassi", sv:"Svezia", no:"Norvegia", da:"Danimarca", fi:"Finlandia", it:"Italia", pl:"Polonia" , tr:"Turchia" , br:"Brasile" },
-  pl: { kr:"Korea Południowa", us:"Stany Zjednoczone", vn:"Wietnam", cn:"Chiny", in:"Indie", id:"Indonezja", ph:"Filipiny", th:"Tajlandia", jp:"Japonia", ru:"Rosja", np:"Nepal", lk:"Sri Lanka", uz:"Uzbekistan", kz:"Kazachstan", kg:"Kirgistan", mm:"Mjanma", bd:"Bangladesz", pk:"Pakistan", kh:"Kambodża", mn:"Mongolia", la:"Laos", ca:"Kanada", tw:"Tajwan", hk:"Hongkong", uk:"Wielka Brytania", au:"Australia", mx:"Meksyk", fr:"Francja", nz:"Nowa Zelandia", ie:"Irlandia", sg:"Singapur", za:"Republika Południowej Afryki", my:"Malezja", de:"Niemcy", nl:"Holandia", sv:"Szwecja", no:"Norwegia", da:"Dania", fi:"Finlandia", it:"Włochy", pl:"Polska" , tr:"Turcja" , br:"Brazylia" },
-  tr: { kr:"Güney Kore", us:"ABD", vn:"Vietnam", cn:"Çin", in:"Hindistan", id:"Endonezya", ph:"Filipinler", th:"Tayland", jp:"Japonya", ru:"Rusya", np:"Nepal", lk:"Sri Lanka", uz:"Özbekistan", kz:"Kazakistan", kg:"Kırgızistan", mm:"Myanmar", bd:"Bangladeş", pk:"Pakistan", kh:"Kamboçya", mn:"Moğolistan", la:"Laos", ca:"Kanada", tw:"Tayvan", hk:"Hong Kong", uk:"Birleşik Krallık", au:"Avustralya", mx:"Meksika", fr:"Fransa", nz:"Yeni Zelanda", ie:"İrlanda", sg:"Singapur", za:"Güney Afrika", my:"Malezya", de:"Almanya", nl:"Hollanda", sv:"İsveç", no:"Norveç", da:"Danimarka", fi:"Finlandiya", it:"İtalya", pl:"Polonya", tr:"Türkiye" , br:"Brezilya" },
+  ar: { kr:'كوريا', us:'الولايات المتحدة', vn:'فيتنام', cn:'الصين', in:'الهند', id:'إندونيسيا', ph:'الفلبين', th:'تايلاند', jp:'اليابان', ru:'روسيا', np:'نيبال', lk:'سريلانكا', uz:'أوزبكستان', kz:'كازاخستان', kg:'قيرغيزستان', mm:'ميانمار', bd:'بنغلاديش', pk:'باكستان', kh:'كمبوديا', mn:'منغوليا', la:'لاوس' , ca:'كندا' , tw:'تايوان', hk:'هونغ كونغ' , uk:'المملكة المتحدة' , au:'أستراليا'  , mx:'المكسيك'  , fr:'فرنسا' , nz:'نيوزيلندا', ie:'أيرلندا', sg:'سنغافورة', za:'جنوب أفريقيا', my:'ماليزيا', de:'ألمانيا', nl:'هولندا', sv:'السويد', no:"النرويج" , da:'الدنمارك' , fi:'فنلندا' , it:"إيطاليا", pl:"بولندا", tr:"تركيا" , br:"البرازيل", es:'إسبانيا', ch:'سويسرا', ae:'الإمارات العربية المتحدة', sa:'السعودية' },
+  bn: { kr:'কোরিয়া', us:'যুক্তরাষ্ট্র', vn:'ভিয়েতনাম', cn:'চীন', in:'ভারত', id:'ইন্দোনেশিয়া', ph:'ফিলিপাইন', th:'থাইল্যান্ড', jp:'জাপান', ru:'রাশিয়া', np:'নেপাল', lk:'শ্রীলঙ্কা', uz:'উজবেকিস্তান', kz:'কাজাখস্তান', kg:'কিরগিজস্তান', mm:'মিয়ানমার', bd:'বাংলাদেশ', pk:'পাকিস্তান', kh:'কম্বোডিয়া', mn:'মঙ্গোলিয়া', la:'লাওস' , ca:'কানাডা' , tw:'তাইওয়ান', hk:'হংকং' , uk:'যুক্তরাজ্য' , au:'অস্ট্রেলিয়া'  , mx:'মেক্সিকো'  , fr:'ফ্রান্স' , nz:'নিউজিল্যান্ড', ie:'আয়ারল্যান্ড', sg:'সিঙ্গাপুর', za:'দক্ষিণ আফ্রিকা', my:'মালয়েশিয়া', de:'জার্মানি', nl:'নেদারল্যান্ডস', sv:'সুইডেন', no:"নরওয়ে" , da:'ডেনমার্ক' , fi:'ফিনল্যান্ড' , it:"ইতালি", pl:"পোল্যান্ড", tr:"তুরস্ক" , br:"ব্রাজিল", es:'স্পেন', ch:'সুইজারল্যান্ড', ae:'সংযুক্ত আরব আমিরাত', sa:'সৌদি আরব' },
+  fr: { kr:'Corée', us:'États-Unis', vn:'Vietnam', cn:'Chine', in:'Inde', id:'Indonésie', ph:'Philippines', th:'Thaïlande', jp:'Japon', ru:'Russie', np:'Népal', lk:'Sri Lanka', uz:'Ouzbékistan', kz:'Kazakhstan', kg:'Kirghizistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodge', mn:'Mongolie', la:'Laos' , ca:'Canada' , tw:'Taïwan', hk:'Hong Kong' , uk:'Royaume-Uni' , au:'Australie'  , mx:'Mexique'  , fr:'France' , nz:'Nouvelle-Zélande', ie:'Irlande', sg:'Singapour', za:'Afrique du Sud', my:'Malaisie', de:'Allemagne', nl:'Pays-Bas', sv:'Suède', no:"Norvège" , da:'Danemark' , fi:'Finlande' , it:"Italie", pl:"Pologne", tr:"Turquie" , br:"Brésil", es:'Espagne', ch:'Suisse', ae:'Émirats arabes unis', sa:'Arabie saoudite' },
+  hi: { kr:'कोरिया', us:'अमेरिका', vn:'वियतनाम', cn:'चीन', in:'भारत', id:'इंडोनेशिया', ph:'फिलीपींस', th:'थाईलैंड', jp:'जापान', ru:'रूस', np:'नेपाल', lk:'श्रीलंका', uz:'उज़्बेकिस्तान', kz:'कज़ाकिस्तान', kg:'किर्गिज़स्तान', mm:'म्यांमार', bd:'बांग्लादेश', pk:'पाकिस्तान', kh:'कंबोडिया', mn:'मंगोलिया', la:'लाओस' , ca:'कनाडा' , tw:'ताइवान', hk:'हांगकांग' , uk:'यूनाइटेड किंगडम' , au:'ऑस्ट्रेलिया'  , mx:'मेक्सिको'  , fr:'फ़्रांस' , nz:'न्यूज़ीलैंड', ie:'आयरलैंड', sg:'सिंगापुर', za:'दक्षिण अफ़्रीका', my:'मलेशिया', de:'जर्मनी', nl:'नीदरलैंड', sv:'स्वीडन', no:"नॉर्वे" , da:'डेनमार्क' , fi:'फ़िनलैंड' , it:"इटली", pl:"पोलैंड", tr:"तुर्की" , br:"ब्राज़ील", es:'स्पेन', ch:'स्विट्ज़रलैंड', ae:'संयुक्त अरब अमीरात', sa:'सऊदी अरब' },
+  id: { kr:'Korea', us:'Amerika Serikat', vn:'Vietnam', cn:'Tiongkok', in:'India', id:'Indonesia', ph:'Filipina', th:'Thailand', jp:'Jepang', ru:'Rusia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakhstan', kg:'Kirgistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kamboja', mn:'Mongolia', la:'Laos' , ca:'Kanada' , tw:'Taiwan', hk:'Hong Kong' , uk:'Britania Raya' , au:'Australia'  , mx:'Meksiko'  , fr:'Prancis' , nz:'Selandia Baru', ie:'Irlandia', sg:'Singapura', za:'Afrika Selatan', my:'Malaysia', de:'Jerman', nl:'Belanda', sv:'Swedia', no:"Norwegia" , da:'Denmark' , fi:'Finlandia' , it:"Italia", pl:"Polandia", tr:"Turki" , br:"Brasil", es:'Spanyol', ch:'Swiss', ae:'Uni Emirat Arab', sa:'Arab Saudi' },
+  ja: { kr:'韓国', us:'アメリカ', vn:'ベトナム', cn:'中国', in:'インド', id:'インドネシア', ph:'フィリピン', th:'タイ', jp:'日本', ru:'ロシア', np:'ネパール', lk:'スリランカ', uz:'ウズベキスタン', kz:'カザフスタン', kg:'キルギス', mm:'ミャンマー', bd:'バングラデシュ', pk:'パキスタン', kh:'カンボジア', mn:'モンゴル', la:'ラオス' , ca:'カナダ' , tw:'台湾', hk:'香港' , uk:'イギリス' , au:'オーストラリア'  , mx:'メキシコ'  , fr:'フランス' , nz:'ニュージーランド', ie:'アイルランド', sg:'シンガポール', za:'南アフリカ', my:'マレーシア', de:'ドイツ', nl:'オランダ', sv:'スウェーデン', no:"ノルウェー" , da:'デンマーク' , fi:'フィンランド' , it:"イタリア", pl:"ポーランド", tr:"トルコ" , br:"ブラジル", es:'スペイン', ch:'スイス', ae:'アラブ首長国連邦', sa:'サウジアラビア' },
+  kk: { kr:'Корея', us:'АҚШ', vn:'Вьетнам', cn:'Қытай', in:'Үндістан', id:'Индонезия', ph:'Филиппин', th:'Тайланд', jp:'Жапония', ru:'Ресей', np:'Непал', lk:'Шри-Ланка', uz:'Өзбекстан', kz:'Қазақстан', kg:'Қырғызстан', mm:'Мьянма', bd:'Бангладеш', pk:'Пәкістан', kh:'Камбоджа', mn:'Моңғолия', la:'Лаос' , ca:'Канада' , tw:'Тайвань', hk:'Гонконг' , uk:'Ұлыбритания' , au:'Австралия'  , mx:'Мексика'  , fr:'Франция' , nz:'Жаңа Зеландия', ie:'Ирландия', sg:'Сингапур', za:'Оңтүстік Африка', my:'Малайзия', de:'Германия', nl:'Нидерланды', sv:'Швеция', no:"Норвегия" , da:'Дания' , fi:'Финляндия' , it:"Италия", pl:"Польша", tr:"Түркия" , br:"Бразилия", es:'Испания', ch:'Швейцария', ae:'Біріккен Араб Әмірліктері', sa:'Сауд Арабиясы' },
+  km: { kr:'កូរ៉េ', us:'សហរដ្ឋអាមេរិក', vn:'វៀតណាម', cn:'ចិន', in:'ឥណ្ឌា', id:'ឥណ្ឌូនេស៊ី', ph:'ហ្វីលីពីន', th:'ថៃ', jp:'ជប៉ុន', ru:'រុស្ស៊ី', np:'នេប៉ាល់', lk:'ស្រីលង្កា', uz:'អ៊ូសបេគីស្ថាន', kz:'កាហ្សាក់ស្ថាន', kg:'គារហ្គីស្ថាន', mm:'មីយ៉ាន់ម៉ា', bd:'បង់ក្លាដែស', pk:'ប៉ាគីស្ថាន', kh:'កម្ពុជា', mn:'ម៉ុងហ្គោលី', la:'ឡាវ' , ca:'កាណាដា' , tw:'តៃវ៉ាន់', hk:'ហុងកុង' , uk:'ចក្រភពអង់គ្លេស' , au:'អូស្ត្រាលី'  , mx:'ម៉ិកស៊ិក'  , fr:'បារាំង' , nz:'នូវែលសេឡង់', ie:'អៀកឡង់', sg:'សិង្ហបុរី', za:'អាហ្វ្រិកខាងត្បូង', my:'ម៉ាឡេស៊ី', de:'អាល្លឺម៉ង់', nl:'ហូឡង់', sv:'ស៊ុយអែត', no:"ន័រវេស" , da:'ដាណឺម៉ាក់' , fi:'ហ្វាំងឡង់' , it:"អ៊ីតាលី", pl:"ប៉ូឡូញ", tr:"តួកគី" , br:"ប្រេស៊ីល", es:'អេស្ប៉ាញ', ch:'ស្វីស', ae:'អារ៉ាប់រួម', sa:'អារ៉ាប៊ីសាអូឌីត' },
+  ky: { kr:'Корея', us:'АКШ', vn:'Вьетнам', cn:'Кытай', in:'Индия', id:'Индонезия', ph:'Филиппин', th:'Тайланд', jp:'Япония', ru:'Орусия', np:'Непал', lk:'Шри-Ланка', uz:'Өзбекстан', kz:'Казакстан', kg:'Кыргызстан', mm:'Мьянма', bd:'Бангладеш', pk:'Пакистан', kh:'Камбоджа', mn:'Монголия', la:'Лаос' , ca:'Канада' , tw:'Тайвань', hk:'Гонконг' , uk:'Улуу Британия' , au:'Австралия'  , mx:'Мексика'  , fr:'Франция' , nz:'Жаңы Зеландия', ie:'Ирландия', sg:'Сингапур', za:'Түштүк Африка', my:'Малайзия', de:'Германия', nl:'Нидерланды', sv:'Швеция', no:"Норвегия" , da:'Дания' , fi:'Финляндия' , it:"Италия", pl:"Польша", tr:"Түркия" , br:"Бразилия", es:'Испания', ch:'Швейцария', ae:'Бириккен Араб Эмираттары', sa:'Сауд Арабиясы' },
+  lo: { kr:'ເກົາຫຼີ', us:'ສະຫະລັດ', vn:'ຫວຽດນາມ', cn:'ຈີນ', in:'ອິນເດຍ', id:'ອິນໂດເນເຊຍ', ph:'ຟີລິບປິນ', th:'ໄທ', jp:'ຍີ່ປຸ່ນ', ru:'ລັດເຊຍ', np:'ເນປານ', lk:'ສີລັງກາ', uz:'ອຸສເບກິສະຖານ', kz:'ຄາຊັກສະຖານ', kg:'ຄີກີສະຖານ', mm:'ມຽນມາ', bd:'ບັງກະລາເທດ', pk:'ປາກີສະຖານ', kh:'ກຳປູເຈຍ', mn:'ມົງໂກເລຍ', la:'ລາວ' , ca:'ການາດາ' , tw:'ໄຕ້ຫວັນ', hk:'ຮົງກົງ' , uk:'ອັງກິດ' , au:'ອົດສະຕາລີ'  , mx:'ເມັກຊິໂກ'  , fr:'ຝຣັ່ງ' , nz:'ນິວຊີແລນ', ie:'ໄອແລນ', sg:'ສິງກະໂປ', za:'ອາຟຣິກາໃຕ້', my:'ມາເລເຊຍ', de:'ເຢຍລະມັນ', nl:'ເນເທີແລນ', sv:'ສະວີເດັນ', no:"ນໍເວ" , da:'ເດັນມາກ' , fi:'ຟິນແລນ' , it:"ອີຕາລີ", pl:"ໂປແລນ", tr:"ຕວກກີ" , br:"ບຣາຊິນ", es:'ສະເປນ', ch:'ສະວິດເຊີແລນ', ae:'ສະຫະລັດອາຣັບເອມິເຣດ', sa:'ຊາອຸດີອາຣະເບຍ' },
+  mn: { kr:'Солонгос', us:'АНУ', vn:'Вьетнам', cn:'Хятад', in:'Энэтхэг', id:'Индонез', ph:'Филиппин', th:'Тайланд', jp:'Япон', ru:'Орос', np:'Балба', lk:'Шри Ланка', uz:'Узбекистан', kz:'Казахстан', kg:'Киргизстан', mm:'Мьянмар', bd:'Бангладеш', pk:'Пакистан', kh:'Камбож', mn:'Монгол', la:'Лаос' , ca:'Канад' , tw:'Тайвань', hk:'Хонг Конг' , uk:'Их Британи' , au:'Австрали'  , mx:'Мексик'  , fr:'Франц' , nz:'Шинэ Зеланд', ie:'Ирланд', sg:'Сингапур', za:'Өмнөд Африк', my:'Малайз', de:'Герман', nl:'Нидерланд', sv:'Швед', no:"Норвеги" , da:'Дани' , fi:'Финлянд' , it:"Итали", pl:"Польш", tr:"Турк" , br:"Бразил", es:'Испани', ch:'Швейцарь', ae:'Арабын Нэгдсэн Эмират Улс', sa:'Саудын Араб' },
+  my: { kr:'ကိုရီးယား', us:'အမေရိကန်ပြည်ထောင်စု', vn:'ဗီယက်နမ်', cn:'တရုတ်', in:'အိန္ဒိယ', id:'အင်ဒိုနီးရှား', ph:'ဖိလစ်ပိုင်', th:'ထိုင်း', jp:'ဂျပန်', ru:'ရုရှား', np:'နီပေါ', lk:'သီရိလင်္ကာ', uz:'ဥဇဗက်ကစ္စတန်', kz:'ကာဇက်စတန်', kg:'ကာဂျစ္စတန်', mm:'မြန်မာ', bd:'ဘင်္ဂလားဒေ့ရှ်', pk:'ပါကစ္စတန်', kh:'ကမ္ဘောဒီးယား', mn:'မွန်ဂိုလီးယား', la:'လာအို' , ca:'ကနေဒါ' , tw:'ထိုင်ဝမ်', hk:'ဟောင်ကောင်' , uk:'ယူနိုက်တက်ကင်းဒမ်း' , au:'သြစတြေးလျ'  , mx:'မက်ဆီကို'  , fr:'ပြင်သစ်' , nz:'နယူးဇီလန်', ie:'အိုင်ယာလန်', sg:'စင်္ကာပူ', za:'တောင်အာဖရိက', my:'မလေးရှား', de:'ဂျာမနီ', nl:'နယ်သာလန်', sv:'ဆွီဒင်', no:"နော်ဝေ" , da:'ဒိန်းမတ်' , fi:'ဖင်လန်' , it:"အီတလီ", pl:"ပိုလန်", tr:"တူရကီ" , br:"ဘရာဇီး", es:'စပိန်', ch:'ဆွစ်ဇာလန်', ae:'ယူအေအီး', sa:'ဆော်ဒီအာရေဗီးယား' },
+  ne: { kr:'कोरिया', us:'अमेरिका', vn:'भियतनाम', cn:'चीन', in:'भारत', id:'इन्डोनेसिया', ph:'फिलिपिन्स', th:'थाइल्यान्ड', jp:'जापान', ru:'रुस', np:'नेपाल', lk:'श्रीलंका', uz:'उज्बेकिस्तान', kz:'कजाकिस्तान', kg:'किर्गिस्तान', mm:'म्यानमार', bd:'बंगलादेश', pk:'पाकिस्तान', kh:'कम्बोडिया', mn:'मंगोलिया', la:'लाओस' , ca:'क्यानाडा' , tw:'ताइवान', hk:'हङकङ' , uk:'संयुक्त अधिराज्य' , au:'अष्ट्रेलिया'  , mx:'मेक्सिको'  , fr:'फ्रान्स' , nz:'न्युजिल्यान्ड', ie:'आयरल्यान्ड', sg:'सिंगापुर', za:'दक्षिण अफ्रिका', my:'मलेसिया', de:'जर्मनी', nl:'नेदरल्यान्ड्स', sv:'स्विडेन', no:"नर्वे" , da:'डेनमार्क' , fi:'फिनल्यान्ड' , it:"इटाली", pl:"पोल्यान्ड", tr:"टर्की" , br:"ब्राजिल", es:'स्पेन', ch:'स्विट्जरल्यान्ड', ae:'संयुक्त अरब इमिरेट्स', sa:'साउदी अरब' },
+  si: { kr:'කොරියාව', us:'ඇමරිකා එක්සත් ජනපදය', vn:'වියට්නාමය', cn:'චීනය', in:'ඉන්දියාව', id:'ඉන්දුනීසියාව', ph:'පිලිපීනය', th:'තායිලන්තය', jp:'ජපානය', ru:'රුසියාව', np:'නේපාලය', lk:'ශ්‍රී ලංකාව', uz:'උස්බෙකිස්තානය', kz:'කසකස්තානය', kg:'කිර්ගිස්තානය', mm:'මියන්මාරය', bd:'බංග්ලාදේශය', pk:'පකිස්තානය', kh:'කාම්බෝජය', mn:'මොංගෝලියාව', la:'ලාඕසය' , ca:'කැනඩාව' , tw:'තායිවානය', hk:'හොංකොං' , uk:'එක්සත් රාජධානිය' , au:'ඕස්ට්‍රේලියාව'  , mx:'මෙක්සිකෝව'  , fr:'ප්‍රංශය' , nz:'නවසීලන්තය', ie:'අයර්ලන්තය', sg:'සිංගප්පූරුව', za:'දකුණු අප්‍රිකාව', my:'මැලේසියාව', de:'ජර්මනිය', nl:'නෙදර්ලන්තය', sv:'ස්වීඩනය', no:"නෝර්වේ" , da:'ඩෙන්මාර්කය' , fi:'ෆින්ලන්තය' , it:"ඉතාලිය", pl:"පෝලන්තය", tr:"තුර්කිය" , br:"බ්‍රසීලය", es:'ස්පාඤ්ඤය', ch:'ස්විට්සර්ලන්තය', ae:'එක්සත් අරාබි එමීර් රාජ්‍යය', sa:'සවුදි අරාබිය' },
+  tl: { kr:'Korea', us:'Estados Unidos', vn:'Vietnam', cn:'Tsina', in:'India', id:'Indonesia', ph:'Pilipinas', th:'Thailand', jp:'Japan', ru:'Russia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakhstan', kg:'Kyrgyzstan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodia', mn:'Mongolia', la:'Laos' , ca:'Canada' , tw:'Taiwan', hk:'Hong Kong' , uk:'United Kingdom' , au:'Australia'  , mx:'Mexico'  , fr:'France' , nz:'New Zealand', ie:'Ireland', sg:'Singapore', za:'South Africa', my:'Malaysia', de:'Germany', nl:'Netherlands', sv:'Sweden', no:"Norway" , da:'Denmark' , fi:'Finland' , it:"Italy", pl:"Poland", tr:"Turkey" , br:"Brazil", es:'Espanya', ch:'Switzerland', ae:'United Arab Emirates', sa:'Saudi Arabia' },
+  ur: { kr:'کوریا', us:'امریکہ', vn:'ویتنام', cn:'چین', in:'بھارت', id:'انڈونیشیا', ph:'فلپائن', th:'تھائی لینڈ', jp:'جاپان', ru:'روس', np:'نیپال', lk:'سری لنکا', uz:'ازبکستان', kz:'قازقستان', kg:'کرغزستان', mm:'میانمار', bd:'بنگلہ دیش', pk:'پاکستان', kh:'کمبوڈیا', mn:'منگولیا', la:'لاؤس' , ca:'کینیڈا' , tw:'تائیوان', hk:'ہانگ کانگ' , uk:'برطانیہ' , au:'آسٹریلیا'  , mx:'میکسیکو'  , fr:'فرانس' , nz:'نیوزی لینڈ', ie:'آئرلینڈ', sg:'سنگاپور', za:'جنوبی افریقہ', my:'ملائیشیا', de:'جرمنی', nl:'نیدرلینڈز', sv:'سویڈن', no:"ناروے" , da:'ڈنمارک' , fi:'فن لینڈ' , it:"اٹلی", pl:"پولینڈ", tr:"ترکی" , br:"برازیل", es:'اسپین', ch:'سوئٹزرلینڈ', ae:'متحدہ عرب امارات', sa:'سعودی عرب' },
+  uz: { kr:'Koreya', us:'AQSH', vn:'Vetnam', cn:'Xitoy', in:'Hindiston', id:'Indoneziya', ph:'Filippin', th:'Tailand', jp:'Yaponiya', ru:'Rossiya', np:'Nepal', lk:'Shri-Lanka', uz:'Oʻzbekiston', kz:'Qozogʻiston', kg:'Qirgʻiziston', mm:'Myanma', bd:'Bangladesh', pk:'Pokiston', kh:'Kambodja', mn:'Mongoliya', la:'Laos' , ca:'Kanada' , tw:'Tayvan', hk:'Gonkong' , uk:'Buyuk Britaniya' , au:'Avstraliya'  , mx:'Meksika'  , fr:'Fransiya' , nz:'Yangi Zelandiya', ie:'Irlandiya', sg:'Singapur', za:'Janubiy Afrika', my:'Malayziya', de:'Germaniya', nl:'Niderlandiya', sv:'Shvetsiya', no:"Norvegiya" , da:'Daniya' , fi:'Finlyandiya' , it:"Italiya", pl:"Polsha", tr:"Turkiya" , br:"Braziliya", es:'Ispaniya', ch:'Shveytsariya', ae:'Birlashgan Arab Amirliklari', sa:'Saudiya Arabistoni' },
+  pt: { kr:'Coreia', us:'Estados Unidos', vn:'Vietnã', cn:'China', in:'Índia', id:'Indonésia', ph:'Filipinas', th:'Tailândia', jp:'Japão', ru:'Rússia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbequistão', kz:'Cazaquistão', kg:'Quirguistão', mm:'Mianmar', bd:'Bangladesh', pk:'Paquistão', kh:'Camboja', mn:'Mongólia', la:'Laos' , ca:'Canadá' , tw:'Taiwan', hk:'Hong Kong' , uk:'Reino Unido' , au:'Austrália'  , mx:'México'  , fr:'França' , nz:'Nova Zelândia', ie:'Irlanda', sg:'Singapura', za:'África do Sul', my:'Malásia', de:'Alemanha', nl:'Países Baixos', sv:'Suécia', no:"Noruega" , da:'Dinamarca' , fi:'Finlândia' , it:"Itália", pl:"Polónia", tr:"Turquia" , br:"Brasil", es:'Espanha', ch:'Suíça', ae:'Emirados Árabes Unidos', sa:'Arábia Saudita' },
+  es: { kr:'Corea', us:'Estados Unidos', vn:'Vietnam', cn:'China', in:'India', id:'Indonesia', ph:'Filipinas', th:'Tailandia', jp:'Japón', ru:'Rusia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistán', kz:'Kazajistán', kg:'Kirguistán', mm:'Myanmar', bd:'Bangladés', pk:'Pakistán', kh:'Camboya', mn:'Mongolia', la:'Laos' , ca:'Canadá' , tw:'Taiwán', hk:'Hong Kong' , uk:'Reino Unido' , au:'Australia'  , mx:'México'  , fr:'Francia' , nz:'Nueva Zelanda', ie:'Irlanda', sg:'Singapur', za:'Sudáfrica', my:'Malasia', de:'Alemania', nl:'Países Bajos', sv:'Suecia', no:"Noruega" , da:'Dinamarca' , fi:'Finlandia' , it:"Italia", pl:"Polonia", tr:"Turquía" , br:"Brasil", es:'España', ch:'Suiza', ae:'Emiratos Árabes Unidos', sa:'Arabia Saudita' },
+  uk: { kr:'Корея', us:'США', vn:"В'єтнам", cn:'Китай', in:'Індія', id:'Індонезія', ph:'Філіппіни', th:'Таїланд', jp:'Японія', ru:'Росія', np:'Непал', lk:'Шрі-Ланка', uz:'Узбекистан', kz:'Казахстан', kg:'Киргизстан', mm:"М'янма", bd:'Бангладеш', pk:'Пакистан', kh:'Камбоджа', mn:'Монголія', la:'Лаос' , ca:'Канада' , tw:'Тайвань', hk:'Гонконг' , uk:'Велика Британія' , au:'Австралія'  , mx:'Мексика'  , fr:'Франція' , nz:'Нова Зеландія', ie:'Ірландія', sg:'Сінгапур', za:'Південна Африка', my:'Малайзія', de:'Німеччина', nl:'Нідерланди', sv:'Швеція', no:"Норвегія" , da:'Данія' , fi:'Фінляндія' , it:"Італія", pl:"Польща", tr:"Туреччина" , br:"Бразилія", es:'Іспанія', ch:'Швейцарія', ae:'Об’єднані Арабські Емірати', sa:'Саудівська Аравія' },
+  tet: { kr:'Korea', us:'EUA', vn:'Vietname', cn:'China', in:'Índia', id:'Indonésia', ph:'Filipinas', th:'Tailándia', jp:'Japaun', ru:'Rúsia', np:'Nepal', lk:'Sri Lanka', uz:'Uzbequistão', kz:'Cazaquistão', kg:'Quirguizistão', mm:'Mianmar', bd:'Bangladesh', pk:'Paquistão', kh:'Camboja', mn:'Mongólia', la:'Laos' , ca:'Kanadá' , tw:'Taiwan', hk:'Hong Kong' , uk:'Reinu Unidu' , au:'Australia'  , mx:'Meksiku'  , fr:'Fransa' , nz:'Nova Zelándia', ie:'Irlanda', sg:'Singapura', za:'Áfrika Súl', my:'Malaysia', de:'Alemaña', nl:'Holanda', sv:'Suésia', no:"Noruega" , da:'Dinamarka' , fi:'Finlándia' , it:'Itália', pl:"Polónia" , tr:"Turkia" , br:"Brazíl", es:'Espanha', ch:'Suisa', ae:'Emiradus Árabe Unidu', sa:'Arábia Saudita' },
+  de: { kr:'Korea', us:'USA', vn:'Vietnam', cn:'China', in:'Indien', id:'Indonesien', ph:'Philippinen', th:'Thailand', jp:'Japan', ru:'Russland', np:'Nepal', lk:'Sri Lanka', uz:'Usbekistan', kz:'Kasachstan', kg:'Kirgistan', mm:'Myanmar', bd:'Bangladesch', pk:'Pakistan', kh:'Kambodscha', mn:'Mongolei', la:'Laos' , ca:'Kanada' , tw:'Taiwan', hk:'Hongkong' , uk:'Vereinigtes Königreich' , au:'Australien'  , mx:'Mexiko'  , fr:'Frankreich' , nz:'Neuseeland', ie:'Irland', sg:'Singapur', za:'Südafrika', my:'Malaysia', de:'Deutschland', nl:'Niederlande', sv:'Schweden', no:"Norwegen" , da:'Dänemark' , fi:'Finnland' , it:"Italien", pl:"Polen", tr:"Türkei" , br:"Brasilien", es:'Spanien', ch:'Schweiz', ae:'Vereinigte Arabische Emirate', sa:'Saudi-Arabien' },
+  nl: { kr:'Korea', us:'Verenigde Staten', vn:'Vietnam', cn:'China', in:'India', id:'Indonesië', ph:'Filipijnen', th:'Thailand', jp:'Japan', ru:'Rusland', np:'Nepal', lk:'Sri Lanka', uz:'Oezbekistan', kz:'Kazachstan', kg:'Kirgizië', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodja', mn:'Mongolië', la:'Laos' , ca:'Canada' , tw:'Taiwan', hk:'Hongkong' , uk:'Verenigd Koninkrijk' , au:'Australië'  , mx:'Mexico'  , fr:'Frankrijk' , nz:'Nieuw-Zeeland', ie:'Ierland', sg:'Singapore', za:'Zuid-Afrika', my:'Maleisië', de:'Duitsland', nl:'Nederland', sv:'Zweden', no:"Noorwegen" , da:'Denemarken' , fi:'Finland' , it:"Italië", pl:"Polen", tr:"Turkije" , br:"Brazilië", es:'Spanje', ch:'Zwitserland', ae:'Verenigde Arabische Emiraten', sa:'Saoedi-Arabië' }, sv: { kr:'Korea', us:'USA', vn:'Vietnam', cn:'Kina', in:'Indien', id:'Indonesien', ph:'Filippinerna', th:'Thailand', jp:'Japan', ru:'Ryssland', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakstan', kg:'Kirgizistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kambodja', mn:'Mongoliet', la:'Laos' , ca:'Kanada' , tw:'Taiwan', hk:'Hongkong' , uk:'Storbritannien' , au:'Australien'  , mx:'Mexiko'  , fr:'Frankrike' , nz:'Nya Zeeland', ie:'Irland', sg:'Singapore', za:'Sydafrika', my:'Malaysia', de:'Tyskland', nl:'Nederländerna', sv:'Sverige', no:"Norge" , da:'Danmark' , fi:'Finland' , it:"Italien", pl:"Polen", tr:"Turkiet" , br:"Brasilien", es:'Spanien', ch:'Schweiz', ae:'Förenade Arabemiraten', sa:'Saudiarabien' }, no: { kr:'Korea', us:'USA', vn:'Vietnam', cn:'Kina', in:'India', id:'Indonesia', ph:'Filippinene', th:'Thailand', jp:'Japan', ru:'Russland', np:'Nepal', lk:'Sri Lanka', uz:'Usbekistan', kz:'Kasakhstan', kg:'Kirgisistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kambodsja', mn:'Mongolia', la:'Laos' , ca:'Canada' , tw:'Taiwan', hk:'Hongkong' , uk:'Storbritannia' , au:'Australia'  , mx:'Mexico'  , fr:'Frankrike' , nz:'New Zealand', ie:'Irland', sg:'Singapore', za:'Sør-Afrika', my:'Malaysia', de:'Tyskland', nl:'Nederland', sv:'Sverige', no:'Norge' , da:'Danmark' , fi:'Finland' , it:"Italia", pl:"Polen", tr:"Tyrkia" , br:"Brasil", es:'Spania', ch:'Sveits', ae:'De forente arabiske emirater', sa:'Saudi-Arabia' },
+  da: { kr:'Korea', us:'USA', vn:'Vietnam', cn:'Kina', in:'Indien', id:'Indonesien', ph:'Filippinerne', th:'Thailand', jp:'Japan', ru:'Rusland', np:'Nepal', lk:'Sri Lanka', uz:'Usbekistan', kz:'Kasakhstan', kg:'Kirgisistan', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Cambodja', mn:'Mongoliet', la:'Laos', ca:'Canada', tw:'Taiwan', hk:'Hongkong', uk:'Storbritannien', au:'Australien', mx:'Mexico', fr:'Frankrig', nz:'New Zealand', ie:'Irland', sg:'Singapore', za:'Sydafrika', my:'Malaysia', de:'Tyskland', nl:'Nederlandene', sv:'Sverige', no:'Norge', da:'Danmark' , fi:'Finland' , it:"Italien", pl:"Polen", tr:"Tyrkiet" , br:"Brasilien", es:'Spanien', ch:'Schweiz', ae:'De Forenede Arabiske Emirater', sa:'Saudi-Arabien' },  fi: { kr:'Korea', us:'Yhdysvallat', vn:'Vietnam', cn:'Kiina', in:'Intia', id:'Indonesia', ph:'Filippiinit', th:'Thaimaa', jp:'Japani', ru:'Venäjä', np:'Nepal', lk:'Sri Lanka', uz:'Uzbekistan', kz:'Kazakstan', kg:'Kirgisia', mm:'Myanmar', bd:'Bangladesh', pk:'Pakistan', kh:'Kambodža', mn:'Mongolia', la:'Laos', ca:'Kanada', tw:'Taiwan', hk:'Hongkong', uk:'Yhdistynyt kuningaskunta', au:'Australia', mx:'Meksiko', fr:'Ranska', nz:'Uusi-Seelanti', ie:'Irlanti', sg:'Singapore', za:'Etelä-Afrikka', my:'Malesia', de:'Saksa', nl:'Alankomaat', sv:'Ruotsi', no:'Norja', da:'Tanska', fi:'Suomi' , it:"Italia", pl:"Puola", tr:"Turkki" , br:"Brasilia", es:'Espanja', ch:'Sveitsi', ae:'Yhdistyneet arabiemiirikunnat', sa:'Saudi-Arabia' },
+  it: { kr:"Corea", us:"Stati Uniti", vn:"Vietnam", cn:"Cina", in:"India", id:"Indonesia", ph:"Filippine", th:"Thailandia", jp:"Giappone", ru:"Russia", np:"Nepal", lk:"Sri Lanka", uz:"Uzbekistan", kz:"Kazakistan", kg:"Kirghizistan", mm:"Myanmar", bd:"Bangladesh", pk:"Pakistan", kh:"Cambogia", mn:"Mongolia", la:"Laos", ca:"Canada", tw:"Taiwan", hk:"Hong Kong", uk:"Regno Unito", au:"Australia", mx:"Messico", fr:"Francia", nz:"Nuova Zelanda", ie:"Irlanda", sg:"Singapore", za:"Sudafrica", my:"Malesia", de:"Germania", nl:"Paesi Bassi", sv:"Svezia", no:"Norvegia", da:"Danimarca", fi:"Finlandia", it:"Italia", pl:"Polonia" , tr:"Turchia" , br:"Brasile", es:'Spagna', ch:'Svizzera', ae:'Emirati Arabi Uniti', sa:'Arabia Saudita' },
+  pl: { kr:"Korea Południowa", us:"Stany Zjednoczone", vn:"Wietnam", cn:"Chiny", in:"Indie", id:"Indonezja", ph:"Filipiny", th:"Tajlandia", jp:"Japonia", ru:"Rosja", np:"Nepal", lk:"Sri Lanka", uz:"Uzbekistan", kz:"Kazachstan", kg:"Kirgistan", mm:"Mjanma", bd:"Bangladesz", pk:"Pakistan", kh:"Kambodża", mn:"Mongolia", la:"Laos", ca:"Kanada", tw:"Tajwan", hk:"Hongkong", uk:"Wielka Brytania", au:"Australia", mx:"Meksyk", fr:"Francja", nz:"Nowa Zelandia", ie:"Irlandia", sg:"Singapur", za:"Republika Południowej Afryki", my:"Malezja", de:"Niemcy", nl:"Holandia", sv:"Szwecja", no:"Norwegia", da:"Dania", fi:"Finlandia", it:"Włochy", pl:"Polska" , tr:"Turcja" , br:"Brazylia", es:'Hiszpania', ch:'Szwajcaria', ae:'Zjednoczone Emiraty Arabskie', sa:'Arabia Saudyjska' },
+  tr: { kr:"Güney Kore", us:"ABD", vn:"Vietnam", cn:"Çin", in:"Hindistan", id:"Endonezya", ph:"Filipinler", th:"Tayland", jp:"Japonya", ru:"Rusya", np:"Nepal", lk:"Sri Lanka", uz:"Özbekistan", kz:"Kazakistan", kg:"Kırgızistan", mm:"Myanmar", bd:"Bangladeş", pk:"Pakistan", kh:"Kamboçya", mn:"Moğolistan", la:"Laos", ca:"Kanada", tw:"Tayvan", hk:"Hong Kong", uk:"Birleşik Krallık", au:"Avustralya", mx:"Meksika", fr:"Fransa", nz:"Yeni Zelanda", ie:"İrlanda", sg:"Singapur", za:"Güney Afrika", my:"Malezya", de:"Almanya", nl:"Hollanda", sv:"İsveç", no:"Norveç", da:"Danimarka", fi:"Finlandiya", it:"İtalya", pl:"Polonya", tr:"Türkiye" , br:"Brezilya", es:'İspanya', ch:'İsviçre', ae:'Birleşik Arap Emirlikleri', sa:'Suudi Arabistan' },
 };
 
 // 언어별 "~ 거주자" 관용구 템플릿 — 위 COUNTRY_NAMES_MORE의 나라 이름을 채워서 완성
@@ -14530,10 +14716,34 @@ const ADDITIONAL_TAX_NO_FTC_PHRASE_MORE = {
   pt: n => `Imposto adicional em ${n} (sem FTC ⚠️)`, es: n => `Impuesto adicional en ${n} (sin FTC ⚠️)`, uk: n => `Додатковий податок у країні ${n} (без FTC ⚠️)`, tet: n => `Impostu adisionál iha ${n} (la iha FTC ⚠️)`, de: n => `Zusätzliche Steuer in ${n} (ohne FTC ⚠️)`, nl: n => `Extra belasting in ${n} (zonder FTC ⚠️)`, sv: n => `Extra skatt i ${n} (utan FTC ⚠️)`, no: n => `Ekstra skatt i ${n} (uten FTC ⚠️)`, da: n => `Ekstra skat i ${n} (uden FTC ⚠️)`, fi: n => `Lisävero maassa ${n} (ilman FTC:tä ⚠️)`, it: n => `Imposta aggiuntiva in ${n} (senza FTC ⚠️)`, pl: n => `Dodatkowy podatek w kraju ${n} (bez FTC ⚠️)`, tr: n => `${n} ek vergisi (FTC yok ⚠️)`,
 };
 
+// ae/sa_resident처럼 나라 자체에 개인소득세 제도가 없어(확정된 사실, "근거 불명확"이 아님) 추가
+// 세금이 원천적으로 발생하지 않는 나라용 변형 — ⚠️ 표시 없이 "자국 소득세 없음"으로 단정 표기
+const ADDITIONAL_TAX_NO_INCOME_TAX_PHRASE_MORE = {
+  ar: n => `ضريبة إضافية في ${n} (لا توجد ضريبة دخل محلية)`,
+  bn: n => `${n} অতিরিক্ত কর (দেশীয় আয়কর নেই)`,
+  fr: n => `Taxe supplémentaire en ${n} (pas d'impôt sur le revenu local)`,
+  hi: n => `${n} में अतिरिक्त कर (कोई घरेलू आयकर नहीं)`,
+  id: n => `Pajak tambahan di ${n} (tidak ada pajak penghasilan domestik)`,
+  ja: n => `${n}での追加納税（自国の所得税なし）`,
+  kk: n => `${n}-де қосымша салық (ішкі табыс салығы жоқ)`,
+  km: n => `ពន្ធបន្ថែមនៅ${n} (គ្មានពន្ធលើប្រាក់ចំណូលក្នុងស្រុក)`,
+  ky: n => `${n}да кошумча салык (ички киреше салыгы жок)`,
+  lo: n => `ພາສີເພີ່ມເຕີມໃນ${n} (ບໍ່ມີພາສີລາຍໄດ້ພາຍໃນ)`,
+  mn: n => `${n}-д нэмэлт татвар (дотоодын орлогын албан татвар байхгүй)`,
+  my: n => `${n}တွင်ထပ်ဆောင်းအခွန် (ပြည်တွင်းဝင်ငွေခွန်မရှိ)`,
+  ne: n => `${n}मा थप कर (कुनै घरेलु आयकर छैन)`,
+  si: n => `${n} හි අමතර බද්ද (දේශීය ආදායම් බද්දක් නැත)`,
+  tl: n => `Karagdagang buwis sa ${n} (walang domestic na buwis sa kita)`,
+  ur: n => `${n} میں اضافی ٹیکس (کوئی مقامی انکم ٹیکس نہیں)`,
+  uz: n => `${n}da qo'shimcha soliq (ichki daromad solig'i yo'q)`,
+
+  pt: n => `Imposto adicional em ${n} (sem imposto de renda local)`, es: n => `Impuesto adicional en ${n} (sin impuesto sobre la renta local)`, uk: n => `Додатковий податок у країні ${n} (немає внутрішнього податку на прибуток)`, tet: n => `Impostu adisionál iha ${n} (la iha impostu rendimentu lokál)`, de: n => `Zusätzliche Steuer in ${n} (keine inländische Einkommensteuer)`, nl: n => `Extra belasting in ${n} (geen binnenlandse inkomstenbelasting)`, sv: n => `Extra skatt i ${n} (ingen inhemsk inkomstskatt)`, no: n => `Ekstra skatt i ${n} (ingen innenlandsk inntektsskatt)`, da: n => `Ekstra skat i ${n} (ingen indenlandsk indkomstskat)`, fi: n => `Lisävero maassa ${n} (ei kotimaista tuloveroa)`, it: n => `Imposta aggiuntiva in ${n} (nessuna imposta sul reddito locale)`, pl: n => `Dodatkowy podatek w kraju ${n} (brak krajowego podatku dochodowego)`, tr: n => `${n} ek vergisi (yerel gelir vergisi yok)`,
+};
+
 // 나라 코드(+선택적으로 qualifier)로 label2("{나라} 추가 납부 (FTC 적용...)") 17개 언어 more 객체를 만듦
 function buildAdditionalTaxMore(code, qualifier, unclear){
   const more = {};
-  const template = unclear === 'noftc' ? ADDITIONAL_TAX_NO_FTC_PHRASE_MORE : unclear ? ADDITIONAL_TAX_UNCLEAR_PHRASE_MORE : ADDITIONAL_TAX_PHRASE_MORE;
+  const template = unclear === 'noftc' ? ADDITIONAL_TAX_NO_FTC_PHRASE_MORE : unclear === 'noincometax' ? ADDITIONAL_TAX_NO_INCOME_TAX_PHRASE_MORE : unclear ? ADDITIONAL_TAX_UNCLEAR_PHRASE_MORE : ADDITIONAL_TAX_PHRASE_MORE;
   Object.keys(template).forEach(lang => {
     const name = COUNTRY_NAMES_MORE[lang][code];
     let phrase = template[lang](name);
@@ -14597,6 +14807,13 @@ const ZERO_PLAIN_MORE = { km:'0 វ៉ុន', ne:'₩0', id:'₩0', my:'၀ ဝ
 // 불명확해서 0원인 캄보디아 케이스용 (val2 표시, buildAdditionalTaxMore의 unclear 버전과 같은 문구)
 const ZERO_UNCLEAR_MORE = { ar:'0 وون (الأساس غير واضح ⚠️)', bn:'০ ওন (ভিত্তি অস্পষ্ট ⚠️)', fr:'0 KRW (base incertaine ⚠️)', hi:'₩0 (आधार अस्पष्ट ⚠️)', id:'₩0 (dasar tidak jelas ⚠️)', ja:'0ウォン（根拠不明確 ⚠️）', kk:'0 вон (негізі анық емес ⚠️)', km:'0 វ៉ុន (មូលដ្ឋានមិនច្បាស់ ⚠️)', ky:'0 вон (негизи так эмес ⚠️)', lo:'0 ວອນ (ພື້ນຖານບໍ່ຈະແຈ້ງ ⚠️)', mn:'0 вон (үндэслэл тодорхойгүй ⚠️)', my:'၀ ဝမ်း (အခြေခံမရှင်းလင်း ⚠️)', ne:'₩0 (आधार अस्पष्ट ⚠️)', si:'0 වොන් (පදනම අපැහැදිලියි ⚠️)', tl:'₩0 (hindi malinaw ang basehan ⚠️)', ur:'0 وون (بنیاد غیر واضح ⚠️)', uz:"0 von (asos noaniq ⚠️)" ,
   pt: `₩0 (nenhuma base clara encontrada ⚠️)`, es: `₩0 (sin base clara encontrada ⚠️)`, uk: `₩0 (чіткої бази не знайдено ⚠️)`, tet: `₩0 (la bele hetan base moos ⚠️)`, de: `₩0 (keine klare Grundlage gefunden ⚠️)`, nl: `₩0 (geen duidelijke grondslag gevonden ⚠️)`, sv: `₩0 (ingen tydlig grund funnen ⚠️)`, no: '₩0 (intet klart grunnlag funnet ⚠️)', da: '₩0 (intet klart grundlag fundet ⚠️)', fi: '₩0 (selkeää perustetta ei löytynyt ⚠️)', it: "₩0 (base non chiara ⚠️)", pl: "₩0 (podstawa niejasna ⚠️)", tr: '₩0 (esas net değil ⚠️)',
+};
+
+// "0원 (자국 소득세 자체가 없음)" — ae/sa_resident처럼 세액공제로 상계된 게 아니라 애초에 그 나라에
+// 개인소득세 제도 자체가 없어서 0인 확정된 케이스용(⚠️ 불확실 표시 없음 — ZERO_UNCLEAR_MORE와 달리
+// 확정된 사실이라 단정적으로 표기)
+const ZERO_NO_INCOME_TAX_MORE = { ar:'0 وون (لا توجد ضريبة دخل محلية)', bn:'০ ওন (দেশীয় আয়কর নেই)', fr:"0 KRW (pas d'impôt sur le revenu local)", hi:'₩0 (कोई घरेलू आयकर नहीं)', id:'₩0 (tidak ada pajak penghasilan domestik)', ja:'0ウォン（自国の所得税なし）', kk:'0 вон (ішкі табыс салығы жоқ)', km:'0 វ៉ុន (គ្មានពន្ធលើប្រាក់ចំណូលក្នុងស្រុក)', ky:'0 вон (ички киреше салыгы жок)', lo:'0 ວອນ (ບໍ່ມີພາສີລາຍໄດ້ພາຍໃນ)', mn:'0 вон (дотоодын орлогын албан татвар байхгүй)', my:'၀ ဝမ်း (ပြည်တွင်းဝင်ငွေခွန်မရှိ)', ne:'₩0 (कुनै घरेलु आयकर छैन)', si:'0 වොන් (දේශීය ආදායම් බද්දක් නැත)', tl:'₩0 (walang domestic na buwis sa kita)', ur:'0 وون (کوئی مقامی انکم ٹیکس نہیں)', uz:"0 von (ichki daromad solig'i yo'q)" ,
+  pt: `₩0 (sem imposto de renda local)`, es: `₩0 (sin impuesto sobre la renta local)`, uk: `₩0 (немає внутрішнього податку на прибуток)`, tet: `₩0 (la iha impostu rendimentu lokál)`, de: `₩0 (keine inländische Einkommensteuer)`, nl: `₩0 (geen binnenlandse inkomstenbelasting)`, sv: `₩0 (ingen inhemsk inkomstskatt)`, no: '₩0 (ingen innenlandsk inntektsskatt)', da: '₩0 (ingen indenlandsk indkomstskat)', fi: '₩0 (ei kotimaista tuloveroa)', it: "₩0 (nessuna imposta sul reddito locale)", pl: "₩0 (brak krajowego podatku dochodowego)", tr: '₩0 (yerel gelir vergisi yok)',
 };
 
 // 공유 카드/토스트 등에서 여러 함수(shareLatestDraw/shareDreamResult/shareResult/
@@ -14739,6 +14956,10 @@ const COUNTRY_TAX_PROFILES = [
   { code: 'pl', flagCode: 'PL', label: '폴란드 거주자 (실제 폴란드 거주 기준)', labelEn: 'Poland resident (living in Poland)', labelZh: '波兰居民（实际住在波兰）', labelVi: 'Cư dân Ba Lan (sống thực tế tại Ba Lan)', labelTh: 'ผู้พำนักในโปแลนด์ (อาศัยอยู่จริงในโปแลนด์)', labelRu: 'Резидент Польши (проживающий в Польше)', implemented: true, needsState: false, detailPage: 'poland-resident-us-lottery-tax.html', detailLabel: 'Polski →', more: buildCountryMore('pl') },
   { code: 'tr', flagCode: 'TR', label: '터키 거주자 (실제 터키 거주 기준)', labelEn: 'Turkey resident (living in Turkey)', labelZh: '土耳其居民（实际住在土耳其）', labelVi: 'Cư dân Thổ Nhĩ Kỳ (sống thực tế tại Thổ Nhĩ Kỳ)', labelTh: 'ผู้พำนักในตุรกี (อาศัยอยู่จริงในตุรกี)', labelRu: 'Резидент Турции (проживающий в Турции)', implemented: true, needsState: false, detailPage: 'turkey-resident-us-lottery-tax.html', detailLabel: 'Türkçe →', more: buildCountryMore('tr') },
   { code: 'br', flagCode: 'BR', label: '브라질 거주자 (실제 브라질 거주 기준)', labelEn: 'Brazil resident (living in Brazil)', labelZh: '巴西居民（实际住在巴西）', labelVi: 'Cư dân Brazil (sống thực tế tại Brazil)', labelTh: 'ผู้พำนักในบราซิล (อาศัยอยู่จริงในบราซิล)', labelRu: 'Резидент Бразилии (проживающий в Бразилии)', implemented: true, needsState: false, detailPage: 'brazil-resident-us-lottery-tax.html', detailLabel: 'Português →', more: buildCountryMore('br') },
+  { code: 'es', flagCode: 'ES', label: '스페인 거주자 (실제 스페인 거주 기준)', labelEn: 'Spain resident (living in Spain)', labelZh: '西班牙居民（实际住在西班牙）', labelVi: 'Cư dân Tây Ban Nha (sống thực tế tại Tây Ban Nha)', labelTh: 'ผู้พำนักในสเปน (อาศัยอยู่จริงในสเปน)', labelRu: 'Резидент Испании (проживающий в Испании)', implemented: true, needsState: false, detailPage: 'spain-resident-us-lottery-tax.html', detailLabel: 'Español →', more: buildCountryMore('es') },
+  { code: 'ch', flagCode: 'CH', label: '스위스 거주자 (실제 스위스 거주 기준, FTC 미적용 ⚠️)', labelEn: 'Switzerland resident (living in Switzerland, no FTC ⚠️)', labelZh: '瑞士居民（实际住在瑞士，不适用FTC⚠️）', labelVi: 'Cư dân Thụy Sĩ (sống thực tế tại Thụy Sĩ, không áp dụng FTC ⚠️)', labelTh: 'ผู้พำนักในสวิตเซอร์แลนด์ (อาศัยอยู่จริงในสวิตเซอร์แลนด์, ไม่ใช้ FTC ⚠️)', labelRu: 'Резидент Швейцарии (проживающий в Швейцарии, без FTC ⚠️)', implemented: true, needsState: false, detailPage: 'switzerland-resident-us-lottery-tax.html', detailLabel: 'Deutsch →', more: buildCountryMore('ch') },
+  { code: 'ae', flagCode: 'AE', label: '아랍에미리트 거주자 (실제 아랍에미리트 거주 기준, 자국 소득세 없음)', labelEn: 'UAE resident (living in the UAE, no domestic income tax)', labelZh: '阿联酋居民（实际住在阿联酋，无本国所得税）', labelVi: 'Cư dân UAE (sống thực tế tại UAE, không có thuế thu nhập trong nước)', labelTh: 'ผู้พำนักในสหรัฐอาหรับเอมิเรตส์ (อาศัยอยู่จริงในสหรัฐอาหรับเอมิเรตส์, ไม่มีภาษีเงินได้ในประเทศ)', labelRu: 'Резидент ОАЭ (проживающий в ОАЭ, нет внутреннего подоходного налога)', implemented: true, needsState: false, detailPage: 'united-arab-emirates-resident-us-lottery-tax.html', detailLabel: 'العربية →', more: buildCountryMore('ae') },
+  { code: 'sa', flagCode: 'SA', label: '사우디아라비아 거주자 (실제 사우디아라비아 거주 기준, 자국 소득세 없음)', labelEn: 'Saudi Arabia resident (living in Saudi Arabia, no domestic income tax)', labelZh: '沙特阿拉伯居民（实际住在沙特阿拉伯，无本国所得税）', labelVi: 'Cư dân Ả Rập Xê Út (sống thực tế tại Ả Rập Xê Út, không có thuế thu nhập trong nước)', labelTh: 'ผู้พำนักในซาอุดีอาระเบีย (อาศัยอยู่จริงในซาอุดีอาระเบีย, ไม่มีภาษีเงินได้ในประเทศ)', labelRu: 'Резидент Саудовской Аравии (проживающий в Саудовской Аравии, нет внутреннего подоходного налога)', implemented: true, needsState: false, detailPage: 'saudi-arabia-resident-us-lottery-tax.html', detailLabel: 'العربية →', more: buildCountryMore('sa') },
 ];
 
 // 나라별 비교 카드가 텍스트/숫자로만 나열돼서 폰에서 심심하다는 피드백 — 카드를 탭하면 이
