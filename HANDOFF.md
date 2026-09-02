@@ -855,44 +855,8 @@ resident" 등 실제 검색 결과에 `chamtax.com`은 전혀 안 나옴(TheLott
   미달(~12곳)은 디자인 판단이 필요해 보류 → "알려진 미해결 항목"에 등재 후 아래
   2026-08-22 GSC/teal 세션에서 해소 완료.
 
-*(이보다 오래된 세션 기록은 `HANDOFF-ARCHIVE.md` 참고 — 방금 2026-08-27 이어서/2026-09-01
-두 항목을 그대로 옮겼음)*
-
-### 2026-09-02 — 파워볼 8/29(토) 추첨 결과 반영(PR #352, 머지 완료)
-
-사용자가 공유한 usamega.com "Past Results" 스크린샷 2장(메가밀리언즈 8/28까지, 파워볼
-8/29까지) 기준 로또 데이터 정기 갱신. 메가밀리언즈는 8/28 결과·다음 추첨(9/1) 잭팟
-$160M이 직전 세션(커밋 `a9a6850`)에서 이미 반영돼 있어 변경 없음 — 스크린샷과 대조만
-하고 코드는 안 건드림. 파워볼만 갱신 필요:
-
-- `LATEST_DRAW.powerball`을 8/26→8/29(18,56,62,65,67 / 파워볼 18, Power Play 2x, 당첨자
-  없음)로 갱신.
-- `JACKPOT_DATA.powerball`을 공식 사이트(powerball.com, WebFetch로 직접 확인) 기준 다음
-  추첨(8/31 월) $131M/현금가치 $56.8M로 갱신 — 갱신 전 값 $119M은 8/29 추첨 자체
-  잭팟이었으므로 `POWERBALL_JACKPOT_ARCHIVE`에 그대로 보존(신뢰도 순서: 공식 사이트
-  WebFetch > 사용자 스크린샷 > WebSearch 뉴스 요약 원칙 그대로 따름). 더블플레이
-  (16,27,57,58,59/7)는 이 사이트가 추적 안 하는 필드라 스코프 밖.
-- `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`/`POWERBALL_JACKPOT_ARCHIVE`에 8/29 회차 추가,
-  `script.js`의 지연로딩 캐시버스팅 문자열(`odds-data.js?v=20260829-1`→`20260901-1`) 및
-  `index.html`의 `script.min.js?v` 동반 갱신, `sw.js` `CACHE_NAME` v96→v97 갱신.
-  `npm install`(devDependencies가 로컬에 없어 처음 한 번 설치) 후 `node
-  scripts/build-min.js`로 `script.min.js` 재생성(`styles.css`는 안 건드려서
-  `styles.min.css` 재생성 불필요, 바이트까지 동일 확인, 재커밋 안 함).
-
-**검증**: `draw_archive_integrity_check`(파워볼 아카이브 last date 2026-08-29 확인, 4개
-아카이브 전부 정렬/중복 없음)·`fact_consistency_audit`·`broken_link_audit`(181개 파일)
-전부 `ISSUES: 0`, `console_error_audit`(224 설정)·`home_audit` 전부 `ISSUES: 0`.
-Playwright로 홈 화면 `#draw-balls-powerball`/`#jp-powerball` DOM을 직접 읽어
-"18,56,62,65,67+18" / "$131M" 반영 확인.
-
-**머지**: `claude/lotto-data-update-kp21gj` 브랜치에서 PR #352 생성 후 즉시 머지
-완료(main에 병합됨, `9efe51b`). 이 세션에서 별도로 만든 후속 작업은 없음 — 다음 세션이
-이어받을 미완료 항목 없음(다음 회차가 나오면 위 "새 당첨 회차가 나올 때마다 반드시 확인할
-3곳" 체크리스트를 그대로 반복하면 됨).
-
-**참고**: 이 세션이 머지된 직후 다른 병행 세션이 파워볼 8/31(월) 결과까지 이어서 반영함
-(위 2026-09-01 항목 4번 참고, 커밋 시각상 이 세션보다 나중) — 이 항목의 파워볼 8/29
-데이터는 그 세션에서 자연스럽게 다음 회차로 갱신됨, 별도 조치 불필요.
+*(이보다 오래된 세션 기록은 `HANDOFF-ARCHIVE.md` 참고 — 방금 2026-08-27 이어서/2026-09-01/
+2026-09-02(파워볼 8/29 반영) 세 항목을 그대로 옮겼음)*
 
 ### 2026-09-02 이어서 — 잭팟 데이터 실제 자동화(GitHub Action) + 랜딩페이지 "책 느낌" 탈피 리디자인
 
@@ -1052,3 +1016,32 @@ site-layout-design-refresh-3himm8` 브랜치에서 작업 후 `main`으로 fast-
 
 **커밋**: `81e8b6c`, `claude/site-layout-design-refresh-3himm8`에서 `main`으로
 fast-forward 머지·푸시 완료.
+
+### 2026-09-02 이어서 3 — HANDOFF.md 재압축(2026-08-23 파워볼 결과 세션 아카이브 이동) + 메가밀리언즈 8/28(금) 결과 반영(PR #350, 머지 완료)
+
+**HANDOFF.md 재압축**: 세션 시작 시점에 "작업 이력" 섹션 날짜별 항목이 4개(2026-08-23·
+08-24·08-27·08-27 이어서)로 쌓여있어, 파일 자체 규칙("3~4개 넘으면 가장 오래된 것부터
+이동")대로 가장 오래된 항목(2026-08-23 파워볼 8/22 추첨 결과 반영)을 `HANDOFF-ARCHIVE.md`로
+원문 그대로 이동, 포인터 문구 갱신(961→938줄).
+
+**메가밀리언즈 8/28 결과 반영**: 사용자 공유 usamega.com 스크린샷 기준 정기 갱신.
+`LATEST_DRAW.megamillions`를 8/25→8/28(8,17,29,42,55/2)로 갱신, `JACKPOT_DATA.megamillions`를
+다음 추첨(9/1) 기준 $160M/현금가치 $68.9M로 갱신(갱신 전 값 $145M은 8/28 추첨 자체 잭팟이었
+으므로 `MEGAMILLIONS_JACKPOT_ARCHIVE`에 그대로 보존 — 위 2026-09-02 파워볼 8/29 항목과 같은
+패턴). `odds-data.js`의 `MEGAMILLIONS_DRAW_ARCHIVE`/`MEGAMILLIONS_JACKPOT_ARCHIVE`에 8/28
+회차 추가, `script.js`의 지연로딩 캐시버스팅 문자열(`odds-data.js?v=20260827-2`→
+`20260829-1`) 및 `index.html`의 `script.min.js?v` 동반 갱신, `sw.js` `CACHE_NAME` v95→v96
+갱신, `node scripts/build-min.js`로 `script.min.js` 재생성(`styles.css`는 안 건드려서
+`styles.min.css` 재생성 불필요, 바이트까지 동일 확인). 파워볼은 스크린샷의 8/26 결과·8/29
+다음 잭팟 $119M이 이미 반영돼 있어 변경 없음.
+
+**검증**: `draw_archive_integrity_check`(4개 아카이브 전부 정렬/중복 없음)·
+`fact_consistency_audit`·`broken_link_audit` 전부 `ISSUES: 0`, Playwright
+`home_audit`·`console_error_audit` 전부 `ISSUES: 0`. 홈 화면 `#draw-balls-megamillions`/
+`#jp-mega` DOM을 직접 읽어 "8,17,29,42,55+2" / "$160,000,000" 반영 확인.
+
+**머지**: `claude/handover-compression-mvp5xz` 브랜치에서 PR #350 생성 후 즉시 머지 완료
+(`main`에 병합됨, `54a5906`). 세션 도중 `origin/main`이 다른 병행 세션들 커밋 20여 개만큼
+앞서 나간 걸 발견해(파워볼 8/29·8/31 갱신, 잭팟 자동화 GitHub Action 신설, 랜딩페이지
+리디자인 2건 등 — 전부 위 다른 2026-09-02 항목들에 각자 기록됨) 로컬 브랜치를
+`origin/main`으로 재기준한 뒤 이 항목을 추가함. 이 세션에서 별도로 만든 후속 작업은 없음.
