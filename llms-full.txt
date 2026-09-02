@@ -1196,7 +1196,7 @@ URL: https://chamtax.com/lottery-tax-data-hub.html
 
 Open dataset: US Powerball/Mega Millions lottery tax rates for all 50 states + DC and 51 countries of residence, with reference take-home scenarios. Free CSV/JSON download, citable, updated 2026-09-01.
 
-# US Lottery Jackpot Tax Rates — Full Dataset for 50 States & 43 Countries
+# US Lottery Jackpot Tax Rates — Full Dataset for 50 States & 50 Countries
 
 ChamTax's calculator computes the after-tax take-home amount of a US Powerball or Mega Millions jackpot for all 50 states + DC and 51 countries of residence. This page publishes that same underlying rate table as an open, downloadable dataset — for journalists, researchers, and anyone who wants to cite a real number instead of the pre-tax announced jackpot. This dataset may be cited or reused with attribution to ChamTax (chamtax.com).
 
@@ -1269,7 +1269,7 @@ Wyoming | WY | 0% | No state income tax
 
 All figures for a US non-resident alien: a flat 30% federal withholding (IRC §871(a)) applies first, then each country's own tax treatment of the winnings — after any Foreign Tax Credit (FTC) the country's law or a tax treaty allows. "Effective total tax" and "take-home %" below are computed at a $500,000,000 lump-sum payout (see Reference scenarios for $100M/$500M/$1B side by side).
 
-8 representative countries at a $500M lump-sum jackpot. Full 42-row table below.
+8 representative countries at a $500M lump-sum jackpot. Full 50-row table below.
 
 Country | Tax authority | Total tax | Take-home | Confidence
 South Korea | National Tax Service (NTS)/IRS | 46.49% | 53.51% | verified

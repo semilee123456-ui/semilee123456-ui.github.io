@@ -18989,3 +18989,146 @@ hreflang(자기 자신만 가리킴, x-default 없음)만 39개 파일에 추가
 data-hub.js` 전부 통과, `tests/draw_archive_integrity_check.js` `ISSUES: 0`, 8개국
 `calculateTakeHome()` 결과가 script.js `calcTakeHome()`과 정확히 일치함을 직접 실행해
 대조, 51개국 코드 중복 없음 확인, 모든 신규 HTML 페이지 JSON-LD 검증 통과.
+
+### 2026-09-02 — 파워볼 8/29(토) 추첨 결과 반영(PR #352, 머지 완료)
+
+사용자가 공유한 usamega.com "Past Results" 스크린샷 2장(메가밀리언즈 8/28까지, 파워볼
+8/29까지) 기준 로또 데이터 정기 갱신. 메가밀리언즈는 8/28 결과·다음 추첨(9/1) 잭팟
+$160M이 직전 세션(커밋 `a9a6850`)에서 이미 반영돼 있어 변경 없음 — 스크린샷과 대조만
+하고 코드는 안 건드림. 파워볼만 갱신 필요:
+
+- `LATEST_DRAW.powerball`을 8/26→8/29(18,56,62,65,67 / 파워볼 18, Power Play 2x, 당첨자
+  없음)로 갱신.
+- `JACKPOT_DATA.powerball`을 공식 사이트(powerball.com, WebFetch로 직접 확인) 기준 다음
+  추첨(8/31 월) $131M/현금가치 $56.8M로 갱신 — 갱신 전 값 $119M은 8/29 추첨 자체
+  잭팟이었으므로 `POWERBALL_JACKPOT_ARCHIVE`에 그대로 보존(신뢰도 순서: 공식 사이트
+  WebFetch > 사용자 스크린샷 > WebSearch 뉴스 요약 원칙 그대로 따름). 더블플레이
+  (16,27,57,58,59/7)는 이 사이트가 추적 안 하는 필드라 스코프 밖.
+- `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`/`POWERBALL_JACKPOT_ARCHIVE`에 8/29 회차 추가,
+  `script.js`의 지연로딩 캐시버스팅 문자열(`odds-data.js?v=20260829-1`→`20260901-1`) 및
+  `index.html`의 `script.min.js?v` 동반 갱신, `sw.js` `CACHE_NAME` v96→v97 갱신.
+  `npm install`(devDependencies가 로컬에 없어 처음 한 번 설치) 후 `node
+  scripts/build-min.js`로 `script.min.js` 재생성(`styles.css`는 안 건드려서
+  `styles.min.css` 재생성 불필요, 바이트까지 동일 확인, 재커밋 안 함).
+
+**검증**: `draw_archive_integrity_check`(파워볼 아카이브 last date 2026-08-29 확인, 4개
+아카이브 전부 정렬/중복 없음)·`fact_consistency_audit`·`broken_link_audit`(181개 파일)
+전부 `ISSUES: 0`, `console_error_audit`(224 설정)·`home_audit` 전부 `ISSUES: 0`.
+Playwright로 홈 화면 `#draw-balls-powerball`/`#jp-powerball` DOM을 직접 읽어
+"18,56,62,65,67+18" / "$131M" 반영 확인.
+
+**머지**: `claude/lotto-data-update-kp21gj` 브랜치에서 PR #352 생성 후 즉시 머지
+완료(main에 병합됨, `9efe51b`). 이 세션에서 별도로 만든 후속 작업은 없음 — 다음 세션이
+이어받을 미완료 항목 없음(다음 회차가 나오면 위 "새 당첨 회차가 나올 때마다 반드시 확인할
+3곳" 체크리스트를 그대로 반복하면 됨).
+
+**참고**: 이 세션이 머지된 직후 다른 병행 세션이 파워볼 8/31(월) 결과까지 이어서 반영함
+(위 2026-09-01 항목 4번 참고, 커밋 시각상 이 세션보다 나중) — 이 항목의 파워볼 8/29
+데이터는 그 세션에서 자연스럽게 다음 회차로 갱신됨, 별도 조치 불필요.
+
+
+### 2026-09-02 이어서 — 잭팟 데이터 실제 자동화(GitHub Action) + 랜딩페이지 "책 느낌" 탈피 리디자인
+
+사용자가 "잭팟 금액이 왜 실시간으로 안 바뀌냐"고 물어서 조사해보니, 이 데이터를 갱신하는
+수단이 **이미 있었지만 알고 보니 고장나 있었음**(아래 참고) — 그래서 코드로 직접 돌아가는
+결정론적 자동화를 새로 만듦. 별개로 사용자가 "사이트 전체 레이아웃을 깔끔하게, 책 같은
+느낌에서 벗어나고 싶다"고 요청해서 랜딩페이지 공용 템플릿도 다시 손봄. 둘 다 `main`에
+머지·푸시 완료(`bfcc4ce`), 잭팟 자동화는 머지 직후 실제 GitHub Actions에서 수동 실행
+(`workflow_dispatch`)으로 1회 검증까지 끝냄.
+
+**1) 잭팟 자동 갱신(신규 GitHub Action)**
+- `scripts/lottery-sources.js`: 공식 API가 따로 없어서, 파워볼은 `powerball.com` 홈페이지의
+  서버렌더링 HTML에 이미 박혀있는 값(`Estimated Jackpot`/`Cash Value`/최근 당첨번호)을
+  정규식으로 파싱, 메가밀리언즈는 그 사이트가 자기 홈페이지에서 클라이언트 쪽에 부르는 내부
+  ASMX 엔드포인트(`/cmspages/utilservice.asmx/GetLatestDrawData`)를 그대로 POST 호출해서
+  구조화 JSON(현재/다음 잭팟, 당첨번호 전부 포함)을 받음. robots.txt 둘 다 일반 크롤링
+  전면 허용 확인함. 모든 필드에 방어적 검증(범위·중복·날짜역행 등)을 둬서 사이트 구조가
+  바뀌면 추측 없이 그냥 실패함.
+- `scripts/update-jackpot-data.js`: 위 소스로 새 회차를 감지하면 `script.js`의
+  `JACKPOT_DATA`/`LATEST_DRAW`, `odds-data.js`의 `POWERBALL_JACKPOT_ARCHIVE`/
+  `MEGAMILLIONS_JACKPOT_ARCHIVE`(파워볼은 "덮어쓰기 직전 값"을 그 회차의 실제 잭팟으로 롤오버,
+  메가밀리언즈는 API의 `CurrentPrizePool`을 직접 씀)를 갱신하고, `script.js`/`index.html`의
+  캐시버스팅 버전(`?v=`)도 같이 올림. 당첨번호 원장(`*_DRAW_ARCHIVE`)은 기존
+  `lottery-backfill.yml`이 이미 매일 담당하고 있어서 안 건드림(역할 분리).
+- `.github/workflows/jackpot-update.yml`: 매일 23:00 UTC(08:00 KST, 기존 백필 잡보다 1시간
+  뒤) 자동 실행 + `workflow_dispatch` 수동 실행 가능. `script.min.js` 재생성은 안 함 —
+  `script.js`가 바뀌면 기존 `minify-assets.yml`이 그 push를 보고 알아서 재생성하므로 역할을
+  또 겹치지 않게 함.
+- **실제 검증**: 로컬에서 라이브 사이트 대상 "변경 없음" 케이스와 가짜 데이터로 "새 회차
+  감지+롤오버" 케이스 둘 다 테스트 통과 확인 후, `main` 머지 직후 GitHub Actions에서
+  `workflow_dispatch`로 실제 1회 실행 — **성공**, 마침 메가밀리언즈 9/1(화) 회차가 방금 열려
+  있어서 실제로 `LATEST_DRAW.megamillions`/`JACKPOT_DATA.megamillions`/
+  `MEGAMILLIONS_JACKPOT_ARCHIVE`를 정확히 갱신하고 커밋까지 자동으로 끝냄(`f71c70f`,
+  `chore: auto-update jackpot data`) — 뒤이어 `minify-assets.yml`도 정상 트리거됨. 실사용
+  데이터로 첫 실행부터 제대로 작동 확인.
+- **⚠️ 알아낸 것 — 기존 "ChamTax 로또 데이터 점검 (매일)" Routine(`trig_01JtYWzvDEx9FRrzFsswuSzH`,
+  매일 06:00 UTC)이 정확히 같은 일을 하고 있었는데, 확인해보니 최근 여러 번 연속으로
+  **`FAILED`**였음 — 원인은 코드/로직 문제가 아니라 **계정 주간 사용량 한도 초과**
+  ("You've hit your weekly limit · resets Sep 4, 9pm UTC", `get_session`으로 실패 세션
+  직접 확인). 같은 이유로 세율표·법령 최신성/캐시버스팅 동기화/환율 폴백/저장소 위생 등
+  **다른 주간·월간 Routine 여러 개도 최근 연속 FAILED** — 개별 버그가 아니라 계정 한도
+  문제이므로 각각 따로 디버깅할 필요는 없음(한도는 매주 리셋됨). 다만 Routine이 이렇게
+  많이 동시에 도는 게(현재 `list_triggers`로 15개 내외 확인) 주간 한도를 스스로 깎아먹는
+  구조라는 뜻이라, 사용자가 원하면 개수를 줄이는 것도 고려해볼 만함(이번 세션에서 판단해서
+  건드리진 않음).
+  이번 신규 GitHub Action은 LLM 세션이 아니라 그냥 Node 스크립트라 **이 계정 사용량과
+  완전히 무관하게** 돈다는 게 핵심 장점 — 그래서 잭팟 데이터 갱신용으로는 이 Routine을
+  **비활성화함**(삭제는 안 함, `enabled:false`만 — 재활성화하고 싶으면 `update_trigger`로
+  다시 켜면 됨). **단, 이 Routine의 4번째 항목("89개 랜딩페이지의 잭팟 예시 문구가 실제
+  잭팟과 심하게 어긋나면 그 문구만 교체")은 새 GitHub Action의 스코프 밖**(그건 본문 텍스트
+  편집이라 LLM 판단이 필요한 일이라 일부러 자동화 범위에서 뺐음) — 지금은 이 항목을 담당하는
+  자동화가 없으므로, 랜딩페이지 예시 금액이 눈에 띄게 낡아 보이면 사람/세션이 가끔 훑어봐야 함.
+
+**2) 랜딩페이지 "책 느낌" 탈피 리디자인 (147개 파일, `scripts/landing-ticket-template.css`
+  공용 템플릿 하나만 고치고 `scripts/apply-landing-ticket-style.js`로 재전파)**
+- h2마다 있던 전체 폭 점선 밑줄(책 챕터 구분선처럼 보임) → 짧은 색상 액센트 바로 교체.
+  **번호 배지는 시도했다가 뺌** — `us-lottery-basics-*.html`류는 이미 본문에 "1. The US
+  lottery..." 식으로 직접 번호를 매겨놔서 CSS 번호까지 붙이면 이중 넘버링이 됨(스크린샷으로
+  실제 발견).
+- `example-box`/`note-box`/`warn-box`에 옅은 색 배경 틴트 추가, 카드 모서리 라운드 소폭 확대,
+  `.wrap` 640→680px.
+- **시도했다가 되돌린 것 두 가지**(둘 다 `tests/a11y_audit.js`로 실제 WCAG 위반 검출):
+  표 짝수행 배경 틴트(일부 표의 `.badge-approx` 등 amber 텍스트가 흰 배경 기준으로도 명암비
+  여유가 거의 없어서 살짝만 틴트해도 4.5:1 밑으로 떨어짐), `gray-zone-box` 배경 틴트(같은
+  이유 — 라벨 텍스트가 `--status-amber`). 둘 다 배경은 원래대로 되돌리고 테두리 스타일만
+  바꿔서 구분함.
+- **작업 중 발견한 진짜 버그**: 일괄 적용 대상을 폰트 마커(`family=Space+Grotesk`) grep으로
+  골랐는데, `lottery-tax-by-country-*.html`(36개 언어 비교 페이지, 카드형 그리드 레이아웃의
+  완전히 다른 자체 스타일)이 잘못 걸려서 한 번은 스타일 없는 맨 텍스트로 깨진 채 저장됨 —
+  스크린샷으로 발견해서 `git show HEAD:파일 > 파일`로 원상복구하고 이번 전파 대상에서 제외.
+  또한 `sitemap.html`/`404.html`의 클래스 없는 `<ul><li><a>` 링크 목록이 공용 템플릿엔 없고
+  그 페이지들만의 개별 스타일에만 있던 규칙(`color:var(--teal)`)에 의존하고 있어서, 전파
+  과정에서 그 규칙이 사라지고 브라우저 기본 파란 링크색으로 떨어져 다크모드 명암비 위반이
+  났음(이것도 a11y_audit로 검출) — `.wrap ul li a{color:var(--teal)}`를 공용 템플릿에
+  정식으로 추가해서 앞으로의 재전파에도 안 사라지게 함.
+- **검증**: `tests/a11y_audit.js`(13개 대표 템플릿 × 라이트/다크, 최종 위반 0개),
+  `tests/broken_link_audit.js`(189개 파일, 0건), 데스크톱/모바일/RTL(히브리어)/표
+  많은 페이지/배지 많은 페이지 스크린샷 직접 확인.
+- 메인 계산기 화면(`index.html`)은 원래 카드형 앱 UI라 처음엔 안 건드렸는데, 사용자가
+  "이것도 손봐달라"고 추가 요청해서 이어서 확인함 — 홈/비교/확률체감/FAQ 화면은 실제로 이미
+  괜찮았고, **개인정보처리방침·면책조항 패널(`.legal-section`)만 진짜 "책스러웠음**"(굵은
+  번호 제목 + 회색 문단만 반복, 색·박스 전혀 없음 — 사이트 전체에서 가장 문서스러운 화면).
+  `.legal-h`에 랜딩페이지 h2와 같은 색상 액센트 바만 추가(법률 문서라 색 배경 박스 같은 장식은
+  과해 보여서 안 씀). 겸사겸사 좁은 화면(340px)에서 제목이 2줄로 꺾일 때 액센트 바가 두 줄
+  사이 이음매에 걸쳐 보이던 문제를 발견해서 `align-items:center`→`flex-start`로 이 바와
+  랜딩페이지 h2 바 둘 다 같이 고침.
+- **이 과정에서 발견한 진짜 버그**: `jackpot-update.yml`이 커밋한 `script.js`가 바뀌었는데도
+  `script.min.js`가 재생성 안 되고 있었음 — GitHub Actions는 **기본 `GITHUB_TOKEN`으로 한
+  워크플로가 push하면 그걸로 다른 워크플로(`minify-assets.yml`)가 또 트리거되는 걸 기본적으로
+  막음**(무한 루프 방지, 잘 알려진 제약인데 이번에 실제로 처음 걸림 — 첫 실행 커밋 `f71c70f`
+  이후 `script.min.js`가 그대로 남아있던 걸 확인). `jackpot-update.yml`이 `minify-assets.yml`에
+  기대지 말고 **자체적으로 `build:min`을 돌리도록 수정**함. `lottery-backfill.yml`은
+  `odds-data.js`만 건드리고 그 파일은 minify 대상이 아니라서 이 문제 없음.
+- `styles.css`/`script.js`가 바뀐 김에 `sw.js`의 `CACHE_NAME`(v97→v98)과 `index.html`의
+  `styles.min.css?v=` 캐시버스팅 버전도 같이 올림.
+- **검증**: 위 4개 회귀 테스트 스위트 재실행 전부 0건, 라이트/다크·340px 좁은 화면 스크린샷
+  확인. `main` 머지 후 `jackpot-update.yml`을 다시 한번 `workflow_dispatch`로 수동 실행해서
+  고친 버전이 실제로도 정상 동작하는지 확인함(이번엔 잭팟 데이터 변경 없음 케이스라
+  `build:min` 단계 자체가 스킵돼야 정상).
+
+**커밋**: `14ee538`(잭팟 자동화) → `bfcc4ce`(랜딩페이지 리디자인) → `30f40f1`(이 인수인계
+기록) → `3d1175e`(계산기 법률 패널 + minify 체인 버그 수정), 전부 `claude/
+site-layout-design-refresh-3himm8` 브랜치에서 작업 후 `main`으로 fast-forward 머지·푸시.
+자동화가 만든 첫 실데이터 커밋은 `f71c70f`(`3d1175e` 이전이라 그 커밋의 `script.min.js`
+갱신 누락분도 `3d1175e`가 같이 흡수해서 고침).
+
