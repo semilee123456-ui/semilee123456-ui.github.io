@@ -79,7 +79,7 @@ const rss = `<?xml version="1.0" encoding="UTF-8"?>
   <title>참택스(ChamTax) 세율 데이터 변경 이력</title>
   <link>${CHANGELOG_URL}</link>
   <atom:link href="${SITE}/feed.xml" rel="self" type="application/rss+xml"/>
-  <description>참택스가 42개국 세율·환율·계산 로직을 갱신할 때마다 실제 계산 결과에 영향을 준 변경만 선별해 정리한 이력</description>
+  <description>참택스가 51개국 세율·환율·계산 로직을 갱신할 때마다 실제 계산 결과에 영향을 준 변경만 선별해 정리한 이력</description>
   <language>ko-kr</language>
   <lastBuildDate>${toRfc822(items[0].isoDate)}</lastBuildDate>
 ${rssItems}
@@ -92,7 +92,7 @@ const jsonFeed = {
   title: '참택스(ChamTax) 세율 데이터 변경 이력',
   home_page_url: CHANGELOG_URL,
   feed_url: `${SITE}/feed.json`,
-  description: '참택스가 42개국 세율·환율·계산 로직을 갱신할 때마다 실제 계산 결과에 영향을 준 변경만 선별해 정리한 이력',
+  description: '참택스가 51개국 세율·환율·계산 로직을 갱신할 때마다 실제 계산 결과에 영향을 준 변경만 선별해 정리한 이력',
   language: 'ko',
   items: items.map((it) => ({
     id: `chamtax-changelog-${it.isoDate}-${it.title.replace(/[^a-zA-Z0-9가-힣]+/g, '-')}`,

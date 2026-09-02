@@ -3,9 +3,16 @@
   "title": "참택스(ChamTax) 세율 데이터 변경 이력",
   "home_page_url": "https://chamtax.com/changelog.html",
   "feed_url": "https://chamtax.com/feed.json",
-  "description": "참택스가 42개국 세율·환율·계산 로직을 갱신할 때마다 실제 계산 결과에 영향을 준 변경만 선별해 정리한 이력",
+  "description": "참택스가 51개국 세율·환율·계산 로직을 갱신할 때마다 실제 계산 결과에 영향을 준 변경만 선별해 정리한 이력",
   "language": "ko",
   "items": [
+    {
+      "id": "chamtax-changelog-2026-08-22--신규-브라질",
+      "url": "https://chamtax.com/changelog.html",
+      "title": "[신규] 🇧🇷 브라질",
+      "content_text": "43번째 세율 지원국으로 브라질 추가. 미-브라질 조세조약은 없지만 헤세이타 페데랄의 행정청 선언(Ato Declaratório SRF nº 28/2000)으로 상호주의가 인정돼 외국납부세액공제(FTC)가 적용되고, 브라질 세율(27.5%)이 미국 원천징수(30%)보다 낮아 잔여세액은 0.",
+      "date_published": "2026-08-22T03:00:00.000Z"
+    },
     {
       "id": "chamtax-changelog-2026-08-20--정정-베트남",
       "url": "https://chamtax.com/changelog.html",

@@ -4,9 +4,16 @@
   <title>참택스(ChamTax) 세율 데이터 변경 이력</title>
   <link>https://chamtax.com/changelog.html</link>
   <atom:link href="https://chamtax.com/feed.xml" rel="self" type="application/rss+xml"/>
-  <description>참택스가 42개국 세율·환율·계산 로직을 갱신할 때마다 실제 계산 결과에 영향을 준 변경만 선별해 정리한 이력</description>
+  <description>참택스가 51개국 세율·환율·계산 로직을 갱신할 때마다 실제 계산 결과에 영향을 준 변경만 선별해 정리한 이력</description>
   <language>ko-kr</language>
-  <lastBuildDate>Thu, 20 Aug 2026 03:00:00 GMT</lastBuildDate>
+  <lastBuildDate>Sat, 22 Aug 2026 03:00:00 GMT</lastBuildDate>
+  <item>
+    <title>[신규] 🇧🇷 브라질</title>
+    <link>https://chamtax.com/changelog.html</link>
+    <guid isPermaLink="false">chamtax-changelog-2026-08-22--신규-브라질</guid>
+    <pubDate>Sat, 22 Aug 2026 03:00:00 GMT</pubDate>
+    <description>43번째 세율 지원국으로 브라질 추가. 미-브라질 조세조약은 없지만 헤세이타 페데랄의 행정청 선언(Ato Declaratório SRF nº 28/2000)으로 상호주의가 인정돼 외국납부세액공제(FTC)가 적용되고, 브라질 세율(27.5%)이 미국 원천징수(30%)보다 낮아 잔여세액은 0.</description>
+  </item>
   <item>
     <title>[정정] 🇻🇳 베트남</title>
     <link>https://chamtax.com/changelog.html</link>
