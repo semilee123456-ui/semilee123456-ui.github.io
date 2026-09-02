@@ -162,7 +162,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260901-4" defer></script>
+<script src="script.min.js?v=20260902-1" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -806,7 +806,7 @@
                 <label for="homeCountrySelect" class="amount-currency-label" data-i18n="home.countryLabel">국가</label>
                 <span class="select-sheet-wrap">
                   <select id="homeCountrySelect" class="amount-currency-select select-sheet-native" onchange="setHomeCountry(this.value)" data-i18n-aria-label="a11y.selectCountry" aria-label="국가 선택">
-                    <option value="kr" selected>KR</option>
+                    <option value="kr">KR</option>
                     <option value="us">US</option>
                     <option value="cn">CN</option>
                     <option value="jp">JP</option>
@@ -849,17 +849,17 @@
                     <option value="pl">PL</option>
                     <option value="tr">TR</option>
                     <option value="br">BR</option>
-                    <option value="other">OTHER</option>
+                    <option value="other" selected>OTHER</option>
                   </select>
-                  <button type="button" class="amount-currency-select select-sheet-trigger" id="homeCountrySelectTrigger" tabindex="-1" aria-hidden="true" onclick="openSelectSheet('homeCountrySelect')"><span class="select-sheet-trigger-label">KR</span></button>
+                  <button type="button" class="amount-currency-select select-sheet-trigger" id="homeCountrySelectTrigger" tabindex="-1" aria-hidden="true" onclick="openSelectSheet('homeCountrySelect')"><span class="select-sheet-trigger-label">OTHER</span></button>
                 </span>
               </div>
               <div class="amount-currency-pair">
                 <label for="homeCurrencySelect" class="amount-currency-label" data-i18n="input.currencyLabel">통화</label>
                 <span class="select-sheet-wrap">
                   <select id="homeCurrencySelect" class="amount-currency-select select-sheet-native" onchange="setSharedInputCurrency(this.value, true)" data-i18n-aria-label="input.currencyLabel" aria-label="통화">
-                    <option value="KRW" selected>🇰🇷 KRW</option>
-                    <option value="USD">🇺🇸 USD</option>
+                    <option value="KRW">🇰🇷 KRW</option>
+                    <option value="USD" selected>🇺🇸 USD</option>
                     <option value="CNY">🇨🇳 CNY</option>
                     <option value="JPY">🇯🇵 JPY</option>
                     <option value="INR">🇮🇳 INR</option>
@@ -894,7 +894,7 @@
                     <option value="TRY">🇹🇷 TRY</option>
                     <option value="BRL">🇧🇷 BRL</option>
                   </select>
-                  <button type="button" class="amount-currency-select select-sheet-trigger" id="homeCurrencySelectTrigger" tabindex="-1" aria-hidden="true" onclick="openSelectSheet('homeCurrencySelect')"><span class="select-sheet-trigger-label">🇰🇷 KRW</span></button>
+                  <button type="button" class="amount-currency-select select-sheet-trigger" id="homeCurrencySelectTrigger" tabindex="-1" aria-hidden="true" onclick="openSelectSheet('homeCurrencySelect')"><span class="select-sheet-trigger-label">🇺🇸 USD</span></button>
                 </span>
               </div>
             </div>
@@ -973,7 +973,7 @@
               <summary class="calc-detail-summary" data-i18n="input.advancedSettingsToggle">세금 계산 기준 자세히 설정</summary>
             <p class="field-label-single" style="margin-top:20px; padding-top:14px; border-top:1px dashed var(--border);" data-i18n="input.basisLabel">세금 계산 기준</p>
             <div class="country-toggle" id="homeCountryToggle">
-              <button type="button" class="country-toggle-btn active" data-country="kr" onclick="setHomeCountry('kr')"><span class="flag-badge">KR</span> <span data-i18n="input.optKorea">한국 기준</span></button>
+              <button type="button" class="country-toggle-btn" data-country="kr" onclick="setHomeCountry('kr')"><span class="flag-badge">KR</span> <span data-i18n="input.optKorea">한국 기준</span></button>
               <button type="button" class="country-toggle-btn" data-country="us" onclick="setHomeCountry('us')"><span class="flag-badge">US</span> <span data-i18n="input.optUS">미국 기준</span></button>
               <button type="button" class="country-toggle-btn" data-country="cn" onclick="setHomeCountry('cn')"><span class="flag-badge">CN</span> <span data-i18n="input.optChina">중국 기준</span></button>
               <button type="button" class="country-toggle-btn" data-country="jp" onclick="setHomeCountry('jp')"><span class="flag-badge">JP</span> <span data-i18n="input.optJapan">일본 기준</span></button>
@@ -1019,7 +1019,7 @@
                   <button type="button" class="country-toggle-btn" data-country="pl" onclick="setHomeCountry('pl')"><span class="flag-badge">PL</span> <span data-i18n="input.optPoland">폴란드 기준</span></button>
                   <button type="button" class="country-toggle-btn" data-country="tr" onclick="setHomeCountry('tr')"><span class="flag-badge">TR</span> <span data-i18n="input.optTurkey">터키 기준</span></button>
                   <button type="button" class="country-toggle-btn" data-country="br" onclick="setHomeCountry('br')"><span class="flag-badge">BR</span> <span data-i18n="input.optBrazil">브라질 기준</span></button>
-                  <button type="button" class="country-toggle-btn" data-country="other" onclick="setHomeCountry('other')"><span class="flag-badge">🌐</span> <span data-i18n="input.optOther">기타 국가 (미국 30% 기준)</span></button>
+                  <button type="button" class="country-toggle-btn active" data-country="other" onclick="setHomeCountry('other')"><span class="flag-badge">🌐</span> <span data-i18n="input.optOther">기타 국가 (미국 30% 기준)</span></button>
                 </div>
                 <!-- ⚠️ 아이콘이 태국·러시아·파키스탄·캄보디아·몽골·라오스 버튼에 붙어있는데, 그
                      의미(세율 추정치 또는 조약 정지)는 그 나라를 실제로 선택해야만 basisSuffix로
@@ -1032,7 +1032,7 @@
             <!-- 세금 기준 오버레이(openTaxBasisOverlay())가 이 국가 토글 DOM 노드를 통째로
                  오버레이 안으로 옮겼다가 닫을 때 이 자리로 되돌려놓는 기준점 -->
             <span id="homeCountryTogglePlaceholder" style="display:none"></span>
-            <p class="krw-hint" style="margin:-6px 0 14px;" data-i18n="input.basisHint">💡 실제 납세 국가 기준으로 골라주세요 (한국 거주자는 그대로 두면 돼요)</p>
+            <p class="krw-hint" style="margin:-6px 0 14px;" data-i18n="input.basisHint">💡 실제 납세 국가 기준으로 골라주세요</p>
 
             <p class="filing-label" id="home-state-label" style="display:none;"><span class="flag-badge">US</span> <span data-i18n-html="compare.stateLabel">미국 거주자 계산 시 적용할 <span style="white-space:nowrap">주(State)</span> <span>(주세율이 0%~10.9% 로 크게 달라요 · 연방세는 별도로 합산돼요)</span></span></p>
             <div class="input-row" style="margin-bottom:4px;" id="home-state-row">
