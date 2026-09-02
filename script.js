@@ -8543,6 +8543,9 @@ function buildHomeResultCheckCanvas(){
 
 function saveHomeResultAsImage(){
   trackEvent('save_result_image');
+  // 버튼을 누르는 순간 결과 카드 위로 색종이 폭죽 연출(기존 fireConfettiBurst() 재사용,
+  // dream-result 전용 호출부는 그대로 안 건드림)
+  fireConfettiBurst('🎉', document.querySelector('.result-hero'));
   const { canvas, hotspots } = buildHomeResultCheckCanvas();
   openAnnotateOverlay(canvas, 'chamtax-result.png', { dateEditable: true, textHotspots: hotspots });
 }
@@ -12376,6 +12379,8 @@ function buildResultShareText(utmSource){
 
 async function shareResult(){
   trackEvent('share_result');
+  // 위 saveHomeResultAsImage()와 같은 패턴
+  fireConfettiBurst('🎉', document.querySelector('.result-hero'));
   const { shareText, shareUrl, shareTitle, finalAmt, country } = buildResultShareText('share');
 
   // 라벨 어순을 홈 화면 결과 카드(result.label, "일시불 예상 실수령액")와 맞춤 — 예전엔

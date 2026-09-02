@@ -680,14 +680,16 @@
   .jackpot-quickfill-label{ font-size:var(--fs-small); font-weight:800; letter-spacing:0.02em; }
   .jackpot-quickfill-btn-pb .jackpot-quickfill-label{ color:var(--status-red); }
   .jackpot-quickfill-btn-mm .jackpot-quickfill-label{ color:var(--status-amber); }
-  /* 2026-09: OS마다 다르게 그려지던 🔴/🟡 이모지 대신 CSS로 그린 단색 점(카테고리 색상 표시
-     용도) — 2026-08-13엔 "추첨공을 뽑는 느낌"을 의도한 광택(radial-gradient 하이라이트) 있는
-     공 모양이었는데, "복권 당첨 느낌 제거" 요청으로 그 하이라이트만 빼고 평범한 색점으로 */
+  /* OS마다 다르게 그려지던 🔴/🟡 이모지를 CSS로 직접 그린 광택 있는 공 모양으로 교체
+     (index.html의 .quickfill-ball, 순수 장식용 span, aria-hidden) */
   .quickfill-ball{
     display:inline-block; width:15px; height:15px; border-radius:50%; vertical-align:-2px;
-    flex-shrink:0; background:var(--status-red);
+    flex-shrink:0;
+    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 45%), var(--status-red);
   }
-  .jackpot-quickfill-btn-mm .quickfill-ball{ background:var(--status-amber); }
+  .jackpot-quickfill-btn-mm .quickfill-ball{
+    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 45%), var(--status-amber);
+  }
   /* 2026-08-13: 고정폭 서체를 여기 적용했다가 좁은 화면(460px 이하, 특히 영어 "$433.1
      million"처럼 긴 문자열)에서 이 grid의 auto 폭 열(금액)이 지금보다 훨씬 넓어져서 옆
      minmax(0,1fr) 열(라벨)이 0까지 눌리며 글자가 한 글자씩 세로로 쪼개지는 실제 렌더링
