@@ -1538,6 +1538,12 @@
     color:var(--teal); background:rgba(var(--teal-rgb),0.08); position:relative;
   }
   .result-hero .usd-actual-note span{ color:var(--text-muted); }
+  /* 2026-09-02: 기본 표시 통화가 USD로 바뀌면서(무국가 중립) 이 노트가 첫 화면부터 기본
+     노출되기 시작했는데, 다크모드에서 --teal 텍스트(#4BC1A0) + 이 rgba(teal,0.08) 배경
+     조합이 대비 4.20:1로 WCAG AA 4.5:1에 살짝 미달(tests/a11y_audit.js가 검출) — 텍스트색은
+     그대로 두고(브랜드 톤 유지) 배경 틴트만 옅혀서(0.08→0.03) --card에 더 가깝게 만들면
+     4.74:1로 통과(위 --card 대비 --teal 자체 대비와 동일한 값, 이미 검증된 조합). */
+  :root[data-theme="dark"] .result-hero .usd-actual-note{ background:rgba(var(--teal-rgb),0.03); }
   .krw-hint{ font-size:var(--fs-small); color:var(--text-muted); font-weight:400; margin:0 0 10px 2px; }
   /* 2026-08-02: 국가=한국이 아니고 표시 통화도 원화가 아닐 때(예: 국가=일본·통화=INR)는 이
      원화 환율 줄이 계산에도 안 쓰이고(정률세 국가는 환율이 결과에 영향 없음) 화면 표시 통화도

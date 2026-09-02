@@ -118,7 +118,12 @@ function appendJackpotArchiveEntry(src, varName, entry) {
     throw new Error(`${varName}: 새 회차(${entry[0]})가 마지막 기록(${lastDate})보다 뒤가 아님 — 중복이거나 날짜 역행, 수동 확인 필요`);
   }
   arr.push(entry);
-  const newJson = JSON.stringify(arr);
+  // start는 "=" 바로 다음 위치(원본의 " [" 앞 공백 포함)라, 앞에 공백 없이 이어붙이면
+  // "= [...]"의 공백이 사라져 "=[...]"가 됨 — tests/draw_archive_integrity_check.js의
+  // extractArray()가 "const NAME = [" (공백 필수) 정규식으로 찾기 때문에 이 공백이 없으면
+  // 다음 실행부터 해당 배열을 못 찾아 조용히 검사 커버리지가 빠짐(2026-09-02, 실제로
+  // MEGAMILLIONS_JACKPOT_ARCHIVE에서 발생해 발견).
+  const newJson = ' ' + JSON.stringify(arr);
   return src.slice(0, start) + newJson + src.slice(end);
 }
 
