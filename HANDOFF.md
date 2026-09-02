@@ -982,10 +982,10 @@ home.html`/`korea-resident-us-lottery-tax.html`/`korean_abroad_us_lottery_tax_ko
 internationalization-qagoe8 origin/main`으로 지정 브랜치를 최신 main 기준으로 재시작
 (작업 트리의 미커밋 변경분은 그대로 보존됨, 브랜치 포인터만 이동).
 
-**커밋**: `c0de2eb`(og-image 시각 자산 수정 + 배치1 8개 언어)·`514534a`(배치3 9개 언어)·
-`047a4d7`(배치2 8개 언어) — 전부 `claude/site-internationalization-qagoe8`에 푸시 완료.
-이 세션 시점까지는 별도 PR 생성·머지는 하지 않음(다음 세션 또는 사용자 요청 시 PR
-생성해서 머지할 것).
+**커밋·병합**: `c0de2eb`(og-image 시각 자산 수정 + 배치1 8개 언어)·`514534a`(배치3 9개
+언어)·`047a4d7`(배치2 8개 언어)·`857a2cd`(이 HANDOFF 갱신) — `claude/site-
+internationalization-qagoe8`에 푸시 후 PR #361 생성, 즉시 머지 완료(`main`에 병합됨,
+`9283c71`).
 
 **다음 세션 참고**: `og-image-hook-basics-{lang}.png`(25개 비영어 언어의 OG 이미지)는
 이번 작업 범위 밖으로 명시적으로 제외됨(영어판만 새로 만들었고, 나머지는 텍스트 콘텐츠는
