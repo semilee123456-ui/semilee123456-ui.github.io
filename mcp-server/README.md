@@ -2,7 +2,7 @@
 
 An [MCP](https://modelcontextprotocol.io) server that exposes [ChamTax](https://chamtax.com)'s
 US lottery (Powerball / Mega Millions) after-tax take-home calculation as a tool an AI agent
-can call directly, for 42 countries plus all 50 US states + DC.
+can call directly, for 51 countries plus all 50 US states + DC.
 
 This is a **read-only, offline calculator** — no network calls, no API keys, no data collection.
 It runs entirely on your machine.
