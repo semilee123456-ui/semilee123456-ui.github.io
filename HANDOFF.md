@@ -1111,10 +1111,30 @@ Playwright로 홈 화면 `#draw-balls-powerball`/`#jp-powerball` DOM을 직접 �
 - **검증**: `tests/a11y_audit.js`(13개 대표 템플릿 × 라이트/다크, 최종 위반 0개),
   `tests/broken_link_audit.js`(189개 파일, 0건), 데스크톱/모바일/RTL(히브리어)/표
   많은 페이지/배지 많은 페이지 스크린샷 직접 확인.
-- 메인 계산기 화면(`index.html`)은 원래 카드형 앱 UI라 이번엔 안 건드렸는데, 이 세션
-  종료 시점에 사용자가 "이것도 손봐달라"고 추가 요청함 — **다음 세션(또는 이 세션 이어서)이
-  처리할 것**, 아직 착수 전.
+- 메인 계산기 화면(`index.html`)은 원래 카드형 앱 UI라 처음엔 안 건드렸는데, 사용자가
+  "이것도 손봐달라"고 추가 요청해서 이어서 확인함 — 홈/비교/확률체감/FAQ 화면은 실제로 이미
+  괜찮았고, **개인정보처리방침·면책조항 패널(`.legal-section`)만 진짜 "책스러웠음**"(굵은
+  번호 제목 + 회색 문단만 반복, 색·박스 전혀 없음 — 사이트 전체에서 가장 문서스러운 화면).
+  `.legal-h`에 랜딩페이지 h2와 같은 색상 액센트 바만 추가(법률 문서라 색 배경 박스 같은 장식은
+  과해 보여서 안 씀). 겸사겸사 좁은 화면(340px)에서 제목이 2줄로 꺾일 때 액센트 바가 두 줄
+  사이 이음매에 걸쳐 보이던 문제를 발견해서 `align-items:center`→`flex-start`로 이 바와
+  랜딩페이지 h2 바 둘 다 같이 고침.
+- **이 과정에서 발견한 진짜 버그**: `jackpot-update.yml`이 커밋한 `script.js`가 바뀌었는데도
+  `script.min.js`가 재생성 안 되고 있었음 — GitHub Actions는 **기본 `GITHUB_TOKEN`으로 한
+  워크플로가 push하면 그걸로 다른 워크플로(`minify-assets.yml`)가 또 트리거되는 걸 기본적으로
+  막음**(무한 루프 방지, 잘 알려진 제약인데 이번에 실제로 처음 걸림 — 첫 실행 커밋 `f71c70f`
+  이후 `script.min.js`가 그대로 남아있던 걸 확인). `jackpot-update.yml`이 `minify-assets.yml`에
+  기대지 말고 **자체적으로 `build:min`을 돌리도록 수정**함. `lottery-backfill.yml`은
+  `odds-data.js`만 건드리고 그 파일은 minify 대상이 아니라서 이 문제 없음.
+- `styles.css`/`script.js`가 바뀐 김에 `sw.js`의 `CACHE_NAME`(v97→v98)과 `index.html`의
+  `styles.min.css?v=` 캐시버스팅 버전도 같이 올림.
+- **검증**: 위 4개 회귀 테스트 스위트 재실행 전부 0건, 라이트/다크·340px 좁은 화면 스크린샷
+  확인. `main` 머지 후 `jackpot-update.yml`을 다시 한번 `workflow_dispatch`로 수동 실행해서
+  고친 버전이 실제로도 정상 동작하는지 확인함(이번엔 잭팟 데이터 변경 없음 케이스라
+  `build:min` 단계 자체가 스킵돼야 정상).
 
-**커밋**: `14ee538`(잭팟 자동화) + `bfcc4ce`(랜딩페이지 리디자인), 둘 다
-`claude/site-layout-design-refresh-3himm8` 브랜치에서 작업 후 `main`으로 fast-forward
-머지·푸시. 자동화가 만든 첫 실데이터 커밋은 `f71c70f`.
+**커밋**: `14ee538`(잭팟 자동화) → `bfcc4ce`(랜딩페이지 리디자인) → `30f40f1`(이 인수인계
+기록) → `3d1175e`(계산기 법률 패널 + minify 체인 버그 수정), 전부 `claude/
+site-layout-design-refresh-3himm8` 브랜치에서 작업 후 `main`으로 fast-forward 머지·푸시.
+자동화가 만든 첫 실데이터 커밋은 `f71c70f`(`3d1175e` 이전이라 그 커밋의 `script.min.js`
+갱신 누락분도 `3d1175e`가 같이 흡수해서 고침).
