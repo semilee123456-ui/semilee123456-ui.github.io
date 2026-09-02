@@ -5595,14 +5595,14 @@ function buildDrawScheduleMore(days){
 }
 
 // ============================================================================
-// 🎟️ 오늘 잭팟 수동 업데이트 존 — 추첨(파워볼 월/수/토, 메가밀리언즈 화/금) 다음날
-// amountUsd만 공식 사이트 보고 고치면 30초로 끝납니다.
+// 🎟️ 잭팟 자동 갱신 존 — scripts/update-jackpot-data.js가 GitHub Actions
+// ("jackpot-update.yml", 매일 실행)로 이 블록과 아래 LATEST_DRAW를 공식 사이트
+// (powerball.com/megamillions.com) 기준으로 직접 갱신함. 사람이 손으로 고칠 필요 없음 —
+// 그 스크립트가 실패하면(사이트 구조 변경 등) Actions 탭에 실패로만 뜨고 옛 값이 그대로
+// 유지되니, 값이 며칠째 안 바뀐다 싶으면 거기부터 확인할 것.
 // ============================================================================
-// cashUsd: 공식 사이트가 발표한 실제 일시불 현금가치(확인 가능하면 채움) — 없으면 화면 표시 시
-// CASH_VALUE_RATIO(58%) 추정치로 대체됨(getJackpotCashUsd() 참고).
-// ⚠️ 공식 사이트에 다음 추첨 잭팟이 "Pending"(집계 전)으로 떠 있으면 추측으로 덮어쓰지 말고
-// 옛 값 그대로 둘 것 — 실제 금액이 발표된 뒤에만 갱신. (지난 갱신 이력은 git log로 충분히
-// 추적 가능해서 날짜별 코멘트는 더 이상 여기 쌓지 않음 — 최신 반영 회차는 아래 LATEST_DRAW 참고.)
+// cashUsd: 공식 사이트가 발표한 실제 일시불 현금가치 — 없으면 화면 표시 시 CASH_VALUE_RATIO
+// (58%) 추정치로 대체됨(getJackpotCashUsd() 참고).
 const JACKPOT_DATA = {
   powerball:    { amountUsd: 146000000, cashUsd: 63300000 },
   megamillions: { amountUsd: 160000000, cashUsd: 68900000 },
@@ -5616,32 +5616,13 @@ const GAME_NAME_MORE = {
 };
 
 
-// 🎱 최신 추첨 당첨번호 — 잭팟 확인할 때 공식 사이트(powerball.com/megamillions.com) 보고 같이 갱신.
+// 🎱 최신 추첨 당첨번호 — 위 JACKPOT_DATA와 같이 scripts/update-jackpot-data.js가 자동 갱신.
 // 재미 요소 + 공유 유도용(사용자 피드백: "사이트가 너무 교과서 같다") — 세금 계산기 본질은 그대로 두고
-// 잭팟 카드 안에 양념처럼 추가한 것이라, 갱신을 깜빡해도 계산기 기능엔 영향 없음.
-// 회차 갱신 시 odds-data.js의 POWERBALL_DRAW_ARCHIVE/POWERBALL_JACKPOT_ARCHIVE,
-// MEGAMILLIONS_DRAW_ARCHIVE/MEGAMILLIONS_JACKPOT_ARCHIVE에도 같은 회차를 같이 추가할 것
-// (draw_archive_integrity_check.js로 검증 후 odds-data.js?v 캐시버스팅도 같이 올릴 것).
-// 신뢰도: 공식 사이트(powerball.com/megamillions.com) WebFetch > 사용자 스크린샷(usamega.com) >
-// WebSearch 뉴스 요약(여러 값을 한 문장에 섞어 잘못 취합하는 경우가 있어 개별 소스로 재검증
-// 권장). Power Play 배율·더블플레이 번호는 이 사이트가 추적 안 하는 필드라 스코프 밖.
-// 2026-08-20 정기 점검: 8/19(수) 추첨 10,21,58,61,64 / 파워볼 17, 당첨자 없음
-// (WebSearch로 공식 결과 교차 확인). 다음 추첨(8/22 토) 잭팟은 사용자가 공유한
-// 실시간 스크린샷 기준 $68M(현금가치 $29.5M)로 갱신 — 당첨자 없어 $48M(8/19
-// 자체 잭팟)에서 롤오버로 증가한 값.
-// 2026-08-22 이어서: 8/21(금) 메가밀리언즈 추첨 1,25,34,48,57 / 메가볼 24, 당첨자
-// 없음(사용자 공유 스크린샷 usamega.com 기준). 다음 추첨(8/25 화) 잭팟 $130M
-// (현금가치 $55.5M)로 갱신 — $113M(8/21 자체 잭팟)에서 롤오버로 증가한 값.
-// 2026-08-23 이어서: 8/22(토) 파워볼 추첨 13,31,54,57,65 / 파워볼 23, Power
-// Play 3x, 당첨자 없음(사용자 공유 스크린샷 usamega.com 기준). 다음 추첨(8/24 월)
-// 잭팟 $81M(현금가치 $34.8M)로 갱신 — $68M(8/22 자체 잭팟)에서 롤오버로 증가한
-// 값. 더블플레이(4,18,29,47,53/16)는 이 사이트가 추적 안 하는 필드라 반영 안 함.
-// 2026-09-01 이어서: 8/29(토) 파워볼 추첨 18,56,62,65,67 / 파워볼 18, Power
-// Play 2x, 당첨자 없음(사용자 공유 스크린샷 usamega.com 기준). 다음 추첨(8/31 월)
-// 잭팟은 공식 사이트(powerball.com) 기준 $131M(현금가치 $56.8M)로 갱신 — $119.3M
-// (8/29 자체 잭팟)에서 롤오버로 증가한 값. 더블플레이(16,27,57,58,59/7)는 이
-// 사이트가 추적 안 하는 필드라 반영 안 함. 메가밀리언즈는 스크린샷의 8/28 결과·
-// 다음 추첨(9/1) 잭팟 $160M이 이미 반영돼 있어 변경 없음.
+// 잭팟 카드 안에 양념처럼 추가한 것. 새 회차가 감지되면 odds-data.js의 POWERBALL_JACKPOT_ARCHIVE/
+// MEGAMILLIONS_JACKPOT_ARCHIVE에도 같은 스크립트가 같이 추가함(당첨번호 원장 자체인
+// *_DRAW_ARCHIVE는 별도의 lottery-backfill.yml이 매일 data.ny.gov에서 채움). Power Play
+// 배율·더블플레이 번호는 이 사이트가 추적 안 하는 필드라 스코프 밖. 지난 갱신 이력은 git log로
+// 추적 가능해서 날짜별 코멘트는 여기 쌓지 않음.
 const LATEST_DRAW = {
   powerball:    { date: '2026-08-31', numbers: [11, 17, 25, 37, 49], special: 10 },
   megamillions: { date: '2026-08-28', numbers: [8, 17, 29, 42, 55], special: 2 },

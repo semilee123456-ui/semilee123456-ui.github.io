@@ -1,0 +1,47 @@
+name: Jackpot data update
+
+# 파워볼(월/수/토)·메가밀리언즈(화/금) 추첨 다음날 아침(KST) 자동 실행 — lottery-backfill.yml
+# (당첨번호 원장 백필, 07:00 KST)보다 1시간 늦게 돌려서 두 워크플로가 겹치지 않게 함.
+# 공식 사이트(powerball.com/megamillions.com)에서 "다음 추첨 예상 잭팟"과 "최신 추첨 결과"를
+# 가져와 script.js(JACKPOT_DATA/LATEST_DRAW)·odds-data.js(POWERBALL_JACKPOT_ARCHIVE/
+# MEGAMILLIONS_JACKPOT_ARCHIVE)·index.html(캐시버스팅 버전)을 갱신함 — scripts/
+# update-jackpot-data.js 상단 주석 참고. script.min.js는 여기서 안 만듦 — script.js가 바뀌면
+# minify-assets.yml이 이 워크플로의 push를 보고 알아서 재생성함.
+on:
+  schedule:
+    - cron: '0 23 * * *'  # 매일 23:00 UTC = 08:00 KST(다음날)
+  workflow_dispatch: {}   # 저장소 Actions 탭에서 수동 실행 가능 — 최초 1회는 반드시 이걸로 직접 확인할 것
+
+permissions:
+  contents: write
+
+concurrency:
+  group: jackpot-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch official jackpot data and update files
+        run: node scripts/update-jackpot-data.js
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet -- script.js odds-data.js index.html; then
+            echo "No changes — nothing to commit."
+            exit 0
+          fi
+          git config user.name "chamtax-bot"
+          git config user.email "actions@github.com"
+          git add script.js odds-data.js index.html
+          git commit -m "chore: auto-update jackpot data"
+          git push
