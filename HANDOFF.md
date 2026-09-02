@@ -1040,3 +1040,41 @@ origin/main`으로 병합 — 충돌은 `index.html`/`script.min.js`/`sw.js` 3�
 
 **머지**: `claude/handover-compression-mvp5xz` 브랜치에서 PR #358 생성 후 즉시 머지
 완료(`main`에 병합됨, `baad6fc`). 이 세션에서 별도로 만든 후속 작업은 없음.
+
+### 2026-09-02 이어서 8 — 기본 og:image(소셜 공유 카드)가 통째로 한국어였던 걸 뒤늦게 발견·교체
+
+사용자가 "우리가 말한 것 중 안 한 거 있어?"라고 재확인 요청 → FAQPage 스코프 축소
+건을 먼저 답했고, 이어서 "네가 해야된다고 생각하는 거 전부 해줘"라고 위임받아 사이트를
+다시 훑다가 발견. `index.html`의 기본 `og:image`(카카오톡/트위터/슬랙 등에 링크
+공유했을 때 뜨는 미리보기 카드, `og-image-hook.png`)가 **텍스트 메타(Task 2에서 이미
+영어로 전환)와 달리 이미지 자체는 그대로 한국어**였음 — "한국 거주자 실수령액 예시",
+"발표 금액 1,503억원" 등 전부 한글+원화 단위. 심지어 영어판 이미지(`og-image-hook-
+en.png`)도 "U.S. LOTTERY TAX FOR KOREA RESIDENTS"라고 영어로 된 채 여전히 한국을
+못박고 있었음(다만 이건 실제로 그 이미지를 쓰는 `english_in_korea_lottery_tax.html`
+— 재한 외국인 대상 페이지 — 에는 맞는 프레이밍이라 그대로 둠). 텍스트만 고치고 가장
+눈에 띄는 시각 자산(공유 카드)을 놓쳤던 셈 — 소셜 공유가 실제로 가장 많이 노출되는
+지점이라 파급력이 큰 발견.
+
+**처리**: 이미지 생성 스크립트/템플릿이 저장소에 없어서(과거 세션이 손으로 제작한
+것으로 추정) HTML 목업(로고 SVG는 `index.html`의 것 그대로 재사용, 색상 토큰은
+`styles.css`의 `--teal`/`--navy`/`--status-red`/`--status-amber` 그대로 사용)을
+새로 만들어 Playwright로 1200×630 스크린샷 → 새 `og-image-hook.png`로 교체. 내용은
+"$100M 당첨 → 실제로 얼마?"를 국가 특정 없이 미국 30% 원천징수 기준선만 보여주고
+"51 countries supported"로 마무리(이번 세션 전체의 무국가 중립 방향과 일치). 기존
+한국어 이미지는 버리지 않고 `og-image-hook-ko.png`로 보존해서, **실제 본문이
+한국어인 페이지들**(`<html lang="ko">`인 `us-lottery-basics.html`/`powerball-
+tax.html`/`megamillions-tax.html`/`us-lottery-tax-rate.html`/`us-lottery-take-
+home.html`/`korea-resident-us-lottery-tax.html`/`korean_abroad_us_lottery_tax_ko.html`/
+`lottery-jackpot-amount.html`/`biggest-jackpot-payouts.html`/`sitemap.html`, 10개
+파일)는 그쪽을 계속 쓰도록 og:image/twitter:image만 갱신 — 페이지 콘텐츠 언어와
+공유 카드 언어가 다시 일치하게 됨. `index.html`과 이번 세션에서 만든 영어판 4개
+(`powerball-tax-en.html`/`megamillions-tax-en.html`/`us-lottery-tax-rate-en.html`/
+`us-lottery-take-home-en.html`)만 새 중립 이미지를 씀.
+
+**검증**: `broken_link_audit`(194개 파일)·`fact_consistency_audit`(199개 파일)·
+`console_error_audit`(224 설정) 전부 `ISSUES: 0`. 새 이미지·기존 두 이미지(en/ko)
+전부 1200×630 확인.
+
+**다음 세션 참고**: 이번에 놓쳤던 패턴 — "메타 텍스트만 고치고 시각 자산(이미지·
+스크린샷·배너)은 안 고치는" 실수를 또 반복하지 말 것. 앞으로 비슷하게 텍스트 톤을
+바꾸는 작업을 할 땐 그 페이지가 실제로 보여주는 이미지 자산까지 같이 확인할 것.
