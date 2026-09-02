@@ -157,12 +157,12 @@
      요청과 한 URL로 합쳐서 추가 요청 없이 확장 -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap" onload="this.onload=null; this.rel='stylesheet';">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&family=Noto+Nastaliq+Urdu&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@600;700&display=swap"></noscript>
-<link rel="stylesheet" href="styles.min.css?v=20260902-3">
+<link rel="stylesheet" href="styles.min.css?v=20260902-5">
 <!-- defer + head 배치: 브라우저가 이 태그를 만나는 즉시(=HTML 파싱 초반) script.js 다운로드를
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260902-5" defer></script>
+<script src="script.min.js?v=20260902-6" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -420,6 +420,19 @@
         <div class="hero" style="padding-bottom:8px;">
           <p class="hero-category-tag" data-i18n="hero.tag">미국 복권 세금 계산기</p>
           <h1 class="hero-amount" data-i18n-html="hero.title">내 통장에는<br>실제로 얼마 들어올까?</h1>
+          <!-- 2026-09-02: 잭팟 금액은 매 추첨(주 2~3회)마다 바뀌는데, 이 신호가 화면 아래
+               "🎟️ 최근 잭팟 확인하기" 접힌 토글 안에 묻혀 있어서 재방문 동기로 거의 안 쓰이고
+               있었음 — 계산 한 번 하고 나면 다시 올 이유가 없는 일회성 도구라는 게 이 사이트의
+               근본적인 한계인데, "잭팟이 바뀐다"는 이미 있는 유일한 자연스러운 재방문 신호를
+               첫 화면 맨 위로 끌어올려 눈에 띄게 함(새 인프라·알림 기능 없이). 클릭하면
+               scrollToJackpotPanel()이 아래 기존 패널을 펼치고 스크롤 — 숫자 자체는
+               applyJackpotData()가 기존 JACKPOT_DATA를 그대로 재사용해서 채움(새 데이터
+               소스 아님, 로직 중복 없음). -->
+          <button type="button" class="hero-jackpot-teaser" onclick="scrollToJackpotPanel()" data-i18n-aria-label="home.jackpotToggle" aria-label="🎟️ 최근 잭팟 확인하기">
+            <span class="hero-jackpot-teaser-amt hero-jackpot-teaser-amt-pb">🎱 <span id="hero-jp-pb">$0</span></span>
+            <span class="hero-jackpot-teaser-amt hero-jackpot-teaser-amt-mm">🎰 <span id="hero-jp-mm">$0</span></span>
+            <span class="hero-jackpot-teaser-label" data-i18n="home.jackpotToggle">🎟️ 최근 잭팟 확인하기</span>
+          </button>
         </div>
 
         <!--
@@ -1160,7 +1173,7 @@
              없어서 script.js에서 같이 지움. -->
 
 
-        <details class="more-details-toggle">
+        <details class="more-details-toggle" id="home-jackpot-details">
         <summary class="section-divider-toggle"><span class="jp-summary-title" data-i18n="home.jackpotToggle">🎟️ 최근 잭팟 확인하기</span></summary>
         <div class="jp-panel-content" id="home-jackpot-panel">
           <div class="cards-row" style="grid-template-columns:1fr 1fr; margin-bottom:0; gap:8px;">

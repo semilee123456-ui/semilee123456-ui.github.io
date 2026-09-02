@@ -9340,6 +9340,22 @@ function buildBestMatchLabelMore(count){
 function applyJackpotData(){
   document.getElementById('jp-powerball').setAttribute('data-target', JACKPOT_DATA.powerball.amountUsd);
   document.getElementById('jp-mega').setAttribute('data-target', JACKPOT_DATA.megamillions.amountUsd);
+  // 2026-09-02: 홈 화면 최상단 잭팟 티저(hero-jackpot-teaser)의 두 숫자 — 기존 jp-powerball/
+  // jp-mega countup 카드와 같은 JACKPOT_DATA를 그대로 재사용, 새 데이터 소스 아님. 백만 단위
+  // "$XXXM"으로 반올림(quickfillSubLabel과 같은 축약 표기, 언어 무관 통용되는 표기라 번역 불필요).
+  const heroPbEl = document.getElementById('hero-jp-pb');
+  const heroMgEl = document.getElementById('hero-jp-mm');
+  if (heroPbEl) heroPbEl.textContent = '$' + Math.round(JACKPOT_DATA.powerball.amountUsd / 1000000) + 'M';
+  if (heroMgEl) heroMgEl.textContent = '$' + Math.round(JACKPOT_DATA.megamillions.amountUsd / 1000000) + 'M';
+}
+
+// 위 hero-jackpot-teaser 클릭 시 기존 "🎟️ 최근 잭팟 확인하기" 패널(home-jackpot-details)을
+// 펼치고 그 위치로 스크롤 — 패널 자체의 마크업/데이터 바인딩은 전혀 안 건드리고 재사용
+function scrollToJackpotPanel(){
+  const details = document.getElementById('home-jackpot-details');
+  if (!details) return;
+  details.open = true;
+  details.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 const CASH_VALUE_RATIO = 0.58; // 일시불(lump sum)은 발표된 연금 기준 잭팟의 약 45~60% (현재가치 할인) — 중간값 사용, 화면 표시 문구와 일치
