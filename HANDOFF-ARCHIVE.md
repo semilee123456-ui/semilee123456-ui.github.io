@@ -19280,3 +19280,138 @@ GitHub Action 등) 병합 — `HANDOFF.md`/`HANDOFF-ARCHIVE.md`/`index.html`/`sc
 앞서 나간 걸 발견해(파워볼 8/29·8/31 갱신, 잭팟 자동화 GitHub Action 신설, 랜딩페이지
 리디자인 2건 등 — 전부 위 다른 2026-09-02 항목들에 각자 기록됨) 로컬 브랜치를
 `origin/main`으로 재기준한 뒤 이 항목을 추가함. 이 세션에서 별도로 만든 후속 작업은 없음.
+
+### 2026-09-02 이어서 5 — 사이트 전역 "43개국"→51개국 표기 정정 + changelog/피드/llms-full 동기화(PR #355, 머지 완료)
+
+사용자가 "사이트 노출/검색 더 잘되게 알아서 해달라"고 요청 — HANDOFF의 "홍보·마케팅
+작업 전체 이력" 섹션부터 먼저 확인해 채널 브레인스토밍 재조사는 하지 않기로 하고(이미
+여러 차례 공식 종료됨, "기술적 조치는 다 해놨고 병목은 도메인 신뢰도·백링크"가 기존
+결론), 대신 **2026-09-01 8개국 추가(43→51) 세션 이후 아무도 안 건드린 사이트 전역
+정합성**을 점검 대상으로 잡음.
+
+**발견**: 8개국 추가 후 실제 계산기(`COUNTRY_TAX_PROFILES`)는 51개국인데, 사이트
+88개 파일의 메타 설명·og/twitter·JSON-LD·`sitemap.html` 다국어 배지(35개 언어)·
+`press-kit.html`·`lottery-tax-by-country.html` 35개 언어 변형·`mcp-server/README.md`·
+`llms.txt`가 전부 "43개국"(또는 그보다 더 낡은 "42개국")으로 방치돼 있었음 — 홈페이지
+메타 설명(구글 SERP 노출 문구)까지 포함. `llms-full.txt`/`feed.xml`/`feed.json`은
+아예 2026-08-20~08-22 시점에서 정체돼 신규 8개국 페이지 전문과 브라질 신규 추가
+changelog 항목조차 빠져있었음(생성 스크립트가 "changelog.html에 새 항목 추가할
+때마다 수동 재실행 필요"인데 아무도 재실행 안 함).
+
+**수정**: 기존 확립된 관례("서술형 배지=라이브 전체 개수, CSV 행수 표기=`us` 제외
+정확한 데이터셋 행수")를 그대로 적용 — 이번엔 51(전체)과 50(CSV, `data/country-
+lottery-tax-rates.csv` 실제 50행 확인)으로 갈림. `sitemap.html`의 크메르·네팔·
+미얀마·벵골어 4개 언어는 그 언어 네이티브 숫자 표기(៤៣→៥១ 등)까지 변환. `changelog.html`에
+8개국 추가 이력을 브라질 신규 추가와 동일한 형식(국기+국가명+`badge-new`)으로 2개
+항목 백필(스페인·스위스·UAE·사우디 / 이집트·이스라엘·우크라이나·나이지리아) +
+리드 문구 갱신. `scripts/generate-feed.js`/`generate-llms-full.js`의 하드코딩
+설명 문자열도 51로 고친 뒤 재실행 — `llms-full.txt`(51개국 대상 111페이지 전부
+재생성, 신규 8개국 페이지 전문 새로 포함)·`feed.xml`/`feed.json`(12건, 브라질+
+8개국 항목 포함) 전부 최신화.
+
+**실수 하나 발견·즉시 복구**: 이집트·이스라엘·사우디·스페인·스위스·우크라이나·UAE
+7개 랜딩페이지에 self-referencing hreflang이 없다고 판단해 추가했다가, `git diff`로
+검토하는 과정에서 **이미 있었다는 걸 발견**(처음 확인할 때 `hreflang="en"`만 검색해서
+`hreflang="ar"`/`"he"`/`"es"` 등 각 페이지 자체 언어 코드를 놓친 확인 실수) — 중복
+태그를 커밋 전에 되돌려 이 7개 파일은 최종적으로 변경 없음. **다음 세션 참고**: 페이지별
+hreflang 존재 여부를 확인할 땐 `hreflang="en"` 같은 특정 언어만 검색하지 말고
+`rel="alternate"` 자체의 개수로 확인할 것 — 국가 랜딩페이지는 `<html lang>`이 페이지마다
+다 달라서(아랍어 페이지는 `hreflang="ar"` 등) 언어 고정 검색은 오탐 발생.
+
+**검증**: `node --check script.js`, `broken_link_audit`(189파일)·`fact_consistency_audit`
+(194파일) 전부 `ISSUES: 0`, Playwright `console_error_audit`(224 설정)·`home_audit`
+전부 `ISSUES: 0`, `feed.json`/`feed.xml` 파싱 검증(JSON.parse/xml.etree) 통과,
+`COUNTRY_TAX_PROFILES`의 8개국 전부 `detailPage`가 정상 연결돼 있어 비교 탭에서
+고아 페이지가 아님을 확인.
+
+**머지**: `claude/handover-compression-mvp5xz` 브랜치에서 PR #355 생성 후 즉시 머지
+완료(`main`에 병합됨, `a00b918`). 이 세션에서 별도로 만든 후속 작업은 없음.
+
+### 2026-09-02 이어서 6 — "무국가 중립" 전환 2단계: 바로 위 세션이 범위 밖으로 둔 4개 항목 전부 처리
+
+바로 위 세션("이어서 3")이 "의도적으로 범위 밖으로 둔 것"으로 등재했던 4개 항목을
+사용자가 "제가 해야겠다고 생각하는 거 전부 해줘, 그리고 전부 머지하고 인수인계
+남겨줘"라고 위임해서 전부 처리. 이어서 "인수인계 처음부터 전부 훑어보고 안 한 거
+있으면 해줘"라는 요청도 받아 "알려진 미해결 항목" 전체를 다시 훑어 `us-lottery-tax-data`
+외부 저장소 동기화 누락도 같이 발견·처리.
+
+**1. "43개국"/"42개국" 잔존 39개 파일 정정** — 시작하자마자 다른 세션(`claude/handover-
+compression-mvp5xz`, PR #355)이 정확히 같은 작업을 이미 끝내고 병합해놓은 걸 발견,
+병합 시 조율(아래 5번 참고).
+
+**2. bare 파일명(접미사 없음)=한국어인 3개 그룹의 hreflang x-default를 영어로 전환**
+— `us-lottery-basics*`(27개 파일)·`lottery-jackpot-amount*`(3개)·`biggest-jackpot-
+payouts`/`biggest-lottery-jackpots-after-tax` 계열(3개)에서 언어 미상 방문자가 검색
+결과에서 기본으로 한국어 페이지를 받던 문제 — **실제 페이지 콘텐츠·파일명·URL은 전혀
+안 건드리고**(기존 검색순위·백링크 보존) x-default 힌트만 이미 있는 영어 버전으로 돌림.
+`korea-resident-us-lottery-tax.html`/`korean_abroad_us_lottery_tax_ko.html`은 콘텐츠
+자체가 한국 관련이라 그대로 둠. `lottery-tax-by-country.html`은 원래부터 bare=영어라
+참고용으로만 확인.
+
+**3. 영어판이 아예 없던 5개 페이지에 영어 버전 신규 제작** — `powerball-tax.html`/
+`megamillions-tax.html`/`us-lottery-tax-rate.html`/`us-lottery-take-home.html`/
+`lottery-prize-tiers.html`은 영어권 검색어로 들어와도 100% 한국어만 보이던 페이지들.
+서브에이전트가 `us-lottery-basics.html`/`-en.html` 패턴을 따라 각각 `-en.html` 신규
+생성(기존 한국어 파일은 hreflang 블록 추가 외 안 건드림, 완전히 additive) + hreflang·
+sitemap.xml/html 반영까지 처리. **번역 결과 검토 중 발견한 문제**: 원본 한국어
+`powerball-tax.html`/`megamillions-tax.html` 자체가 title부터 "한국인 기준"이라고
+못박고 있어서(원래 한국 전용 타겟이던 시절 잔재), 서브에이전트가 지침대로 충실히
+번역한 영어판도 그대로 "Take-Home Calculator for Korean Residents"가 되는 문제 발견
+— 이번 세션 전체 취지와 정면 배치라 title/description/OG/JSON-LD/리드 문단/H2를
+"US 30% 원천징수 + 거주국별 추가세"라는 일반 구조로 재작성하고 한국을 "판례
+(Park v. Commissioner)·국세청 입장까지 갖춘 상세 예시 하나"로 재배치(세율·판례
+등 사실관계는 안 건드림, 프레이밍만). 나머지 3개 페이지는 이미 중립적으로 번역돼
+있어 손 안 댐.
+같은 과정에서 `wrap_audit.js`가 `usd-actual-note`("실제로는 미국에서 달러로 받아요"
+안내, `country!=='kr'`일 때만 노출)의 "달러(" 사이 공백 없어 좁은 화면에서 "("가 홀로
+줄바꿈되는 문제를 새로 잡아냄 — country='other'가 기본값이 되기 전(이어서 3 세션)엔
+사용자가 직접 다른 나라를 골라야만 보이는 문구라 회귀 테스트 기본 시나리오에 안
+걸렸었는데, 기본 노출 문구가 되며 처음 드러남. 위 "비파괴적 NBSP 수정 패턴"으로 해결.
+
+**4. FAQPage JSON-LD 33문항 → 12개 국가무관 영어 문항으로 재구성** — "35개 언어로
+전부 번역" 대신, 33문항 중 상당수(국민연금·건강보험료·한국 증여세 등)가 번역 문제가
+아니라 애초에 한국 거주자/재한 외국인이라는 특정 청중을 전제로 쓰인 콘텐츠임을 확인 →
+번역해도 "한국 중심" 문제 자체는 안 풀림. 대신 실제로 국가 무관한 12개(세금 개요·세금
+용어·사기 주의보·청구 기한·일시불 vs 연금·티켓 구매처·게임 설명·잭팟 금액 변동·당첨번호
+확인·비시민권자 수령·신고 상태·청구 절차)만 골라 영어로 재작성, 나머지는 크롤러용
+JSON-LD에서만 제외(화면에 보이는 실제 FAQ 아코디언은 언어·국가별 필터링 포함 전혀
+안 건드림, 그대로 다 있음).
+
+**5. (사용자가 "인수인계 훑어보고 안 한 거 있으면 해줘"라고 추가 요청해서 발견)
+`us-lottery-tax-data` 외부 GitHub 저장소(CC0 공개 데이터셋) 동기화 누락** — "알려진
+미해결 항목"에 "2026-09-01 8개국분 반영 여부 확인 못 함"으로 등재돼있던 항목을 저장소
+클론해서 직접 확인 → 8개국(스페인·스위스·UAE·사우디·이집트·이스라엘·우크라이나·
+나이지리아)뿐 아니라 2026-08-22에 추가된 브라질까지, 총 9개국이 빠져있어 42/51개국
+상태로 방치돼 있었음. `mcp-server/tax-data.js`의 `calculateTakeHome()`을 이 데이터셋의
+기준 시나리오(~$100M, 1,490원/달러)로 직접 호출해 9개국 수치 산출, 사이트 자체
+`data/country-lottery-tax-rates.json`(2026-09-01 기준 이미 정확함)과 교차검증까지 마친
+뒤 `data.json`/`data.csv`/`README.md`/`CITATION.cff`(버전 1.0.1→1.1.0) 갱신, 저장소
+`main`에 직접 커밋·푸시(`632909e`). UAE·사우디는 "FTC 상쇄"가 아니라 "애초에 개인소득세
+없음"이라 다른 국가들과 다른 문구 사용, 우크라이나는 소득세만 공제되고 군사세는 공제
+안 되는 부분공제 케이스라고 별도 명시.
+
+**병합**: 작업 중 `origin/main`이 다른 세션(PR #355, 위 4번 참고)만큼 다시 앞서있어
+병합 — 충돌 9개 파일(`index.html`/`changelog.html`/`feed.xml`/`feed.json`/`llms.txt`/
+`llms-full.txt`/`lottery-jackpot-amount(-en).html`/`press-kit.html`) 전부 실제 내용
+비교해서 해결. 흥미로운 발견: "N개국 세율 데이터 보기" 류 링크는 실제 데이터 파일
+(`data/country-lottery-tax-rates.json`)이 50행(미국 자체는 이 비교표에서 제외되는
+설계)임을 재확인하고 "50개국"으로, 사이트 전체 지원 국가 수를 말하는 문구는 "51개국"
+으로 구분해서 남김 — 둘 다 각자 맥락에서 정확한 숫자라 어느 한쪽으로 통일하면 안 됨.
+`HANDOFF.md`도 자동 병합 중 남은 문장 조각("fast-forward 머지·푸시 완료.")을 정리하고
+"이어서 N" 라벨 중복을 순서대로 재배열.
+
+**검증**: 매 배치마다 `node --check script.js`·`broken_link_audit`(194개 파일)·
+`fact_consistency_audit`(199개 파일)·`console_error_audit`(224 설정)·`home_audit`·
+`faq_audit`·`audit_odds_compare`·`i18n_coverage_audit`(773개 키) 재실행, 전부
+`ISSUES: 0`. `wrap_audit`은 NBSP 수정 전 168개 중 7개 실패 확인 → 수정 후 재실행해서
+`ISSUES: 0` 재확인. FAQPage JSON-LD는 `python3 json.loads()`로 파싱 검증.
+
+**커밋**: `d42712d`(43→51 정정)·`d75922f`(hreflang x-default)·`a1b2a07`(영어 페이지
+5개 신규 + NBSP 회귀 수정)·`a88d3ec`(main 병합)·`280e319`(FAQPage JSON-LD 재구성) —
+전부 `claude/site-internationalization-qagoe8`에 푸시 완료.
+
+**다음 세션 참고**: "의도적으로 범위 밖으로 둔 것" 4개 중 유일하게 남은 건 없음(전부
+처리) — 다만 3번 항목에서 "원본 한국어 페이지 자체가 특정 국가 중심으로 쓰여 있을 수
+있다"는 패턴이 이번에 처음 발견됐으니, 앞으로 비슷하게 "한국어 원문을 그대로 영어로
+옮기는" 작업을 할 땐 원문 자체가 이미 편향돼 있을 가능성을 먼저 확인할 것.
+
