@@ -19132,3 +19132,57 @@ site-layout-design-refresh-3himm8` 브랜치에서 작업 후 `main`으로 fast-
 자동화가 만든 첫 실데이터 커밋은 `f71c70f`(`3d1175e` 이전이라 그 커밋의 `script.min.js`
 갱신 누락분도 `3d1175e`가 같이 흡수해서 고침).
 
+
+### 2026-09-02 이어서 2 — "복권 당첨 느낌" 제거 (2026-08-13 "정산 티켓" 콘셉트 전면 철회)
+
+바로 위 세션에서 "책 느낌"을 뺐더니, 사용자가 "이번엔 복권 당첨 느낌을 빼달라"고 요청함 —
+2026-08-13에 채택했던 "정산 티켓"(영수증/복권 티켓 콘셉트, 이 문서 위쪽 여러 곳에서 계속
+언급되던 그 리디자인) 자체를 전면 철회. 사용자에게 범위를 먼저 확인(AskUserQuestion)했고
+"콘셉트 자체를 전부 제거"를 선택함.
+
+**계산기(`index.html`/`styles.css`/`script.js`)에서 제거한 것**:
+- 결과 카드 왼쪽 위 대각선 "JACKPOT" 금색 리본 배지(`.ticket-jackpot-ribbon*`) — CSS·HTML
+  모두 삭제
+- 결과 카드 아래 가짜 바코드 그래픽 + "시리얼 번호"처럼 보이던 캡션(`.ticket-barcode*`,
+  `#home-barcode-caption`) — CSS·HTML·이걸 채우던 script.js 코드까지 삭제
+- 슬롯머신 스타일 숫자 타일(`.home-final-amt-tiles`, 실수령액을 낱개 박스에 한 자리씩
+  표시하던 것) — CSS로 숨기고, 원래 접근성용으로만 있던 `#home-final-amt`(sr-only 해제)를
+  다시 화면에 직접 보이게 함. id·script.js의 기존 10여 곳 바인딩은 안 건드림(같은 요소를
+  그대로 재사용)
+- 셸 맨 아래 "찢어진 영수증 종이" 스캘럽 가장자리(`.ticket-torn-bottom`)와 섹션 사이
+  절취선(점선+원형 노치, `.ticket-perf-row`/`-line`) — 평범한 실선 구분선(`.shell-section-
+  divider`)으로 교체
+- "이미지로 저장"/"공유하기" 버튼을 누르면 결과 카드 위로 터지던 색종이 폭죽(confetti) —
+  두 호출부만 제거(`fireConfettiBurst()` 함수 자체는 무관한 "만약 당첨되면?" 기능이 계속
+  써서 남겨둠)
+- 파워볼/메가밀리언즈 퀵필 버튼의 광택 있는 "추첨공" 느낌 점(`.quickfill-ball`의
+  radial-gradient 하이라이트) → 평범한 단색 점
+- 금액 입력칸·결과 헤드라인·세전/세후 대비 숫자에 쓰던 "영수증 프린터/티켓 단말기" 느낌
+  고정폭 서체(`--font-mono-ticket`) → 기본 서체로 되돌림
+- `.ticket-shell`(페르소나 픽커+입력+결과를 감싸는 큰 카드): 위만 둥글고 아래는 평평한
+  "찢어진 티켓" 모양 + 굵은 남색 테두리 + 하드 오프셋 그림자 → 네 모서리 다 둥근 카드 +
+  얇은 테두리 + 부드러운 그림자로. 3개 섹션을 하나로 묶어서 보여주는 레이아웃 자체는 유지
+  (그건 티켓 콘셉트와 무관하게 유효한 정리였음)
+- "참" 인장 배지는 남김(복권이 아니라 "검증된 계산"이라는 뜻이라 성격이 다르다고 판단) —
+  다만 흔들리는 wiggle 애니메이션은 뺌
+
+**핵심 지렛대**: `--ticket-shadow-hard`/`-sm`/`-xs`/`-press` 토큰 4개(styles.css)를
+하드 오프셋 그림자(`4px 4px 0 var(--navy)` 류)에서 부드러운 블러 그림자로 재정의한 것
+하나로, 이 토큰을 참조하던 20여 곳(셸·퀵필 버튼·지도·사이드카드·게임카드·환급 카드 등)이
+전부 한 번에 바뀜 — 각 자리를 따로 안 고쳐도 됨. 그 외 토큰을 안 쓰고 하드코딩돼 있던
+하드 그림자 5~6곳(`box-shadow:Npx Npx 0 ...` 패턴)만 grep으로 찾아 개별적으로 소프트
+그림자로 바꿈. 랜딩페이지 147개가 공유하는 `scripts/landing-ticket-template.css`도 같은
+패턴(`--shadow-hard*` 토큰 재정의 + 헤더의 "티켓 스텁" 점선 구분선을 실선으로) — 재전파
+스크립트로 전체 반영.
+
+**참고**: `translate(Npx,Npx)` + `box-shadow:0 0 0 ...`로 "눌리면 그림자가 사라지며
+파묻히는" 눌림 효과를 내던 곳들(cta-box/share-btn 등)은 하드 그림자가 있을 때만 의미가
+있는 착시라, 소프트 그림자로 바꾸면서 평범한 `transform:scale(0.97)` 눌림으로 같이 바꿈.
+
+**검증**: `tests/a11y_audit.js`·`home_audit.js`·`console_error_audit.js`·`wrap_audit.js`·
+`map_scroll_audit.js`·`faq_audit.js`·`audit_odds_compare.js`·`nav_slider_audit.js`·
+`broken_link_audit.js` 전부 재실행, 전부 0건. 라이트/다크 모드 결과 카드 스크린샷과
+랜딩페이지 1곳 직접 확인.
+
+**커밋**: `81e8b6c`, `claude/site-layout-design-refresh-3himm8`에서 `main`으로
+

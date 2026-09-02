@@ -85,6 +85,15 @@ function loadI18nLanguage(lang){
 function setLanguage(lang, isManual){
   if (currentLang === lang) {
     if (isManual) { try { localStorage.setItem('chamtax_lang', lang); } catch (e) {} }
+    // 2026-09-02: sharedInputCurrency 기본값이 KRW에서 USD로 바뀌면서(무국가 중립 시작),
+    // "감지된 언어가 초기값(currentLang)과 우연히 같아 이 분기로 빠지는 경우"(예: 한국어
+    // 브라우저 방문자, 초기 currentLang='ko'와 detectBrowserLanguage() 결과가 둘 다 'ko')에도
+    // 아래 not-equal 분기와 동일하게 LANG_TO_CURRENCY 매칭을 적용해야, 한국어 방문자가
+    // 여전히 KRW를 기본으로 보게 됨 — 이 매칭이 없으면 raw 기본값(USD)이 그대로 남아 한국어
+    // 방문자에게도 어색한 통화가 뜨는 회귀가 생김.
+    if (!isCurrencyManuallyEdited && LANG_TO_CURRENCY[lang]) {
+      setSharedInputCurrency(LANG_TO_CURRENCY[lang]);
+    }
     return;
   }
   currentLang = lang;
@@ -1010,15 +1019,24 @@ function updateExchangeRateBadges(failed){
 // 홈/국가비교 페이지가 각자 독립된 입력 상태를 갖고 있으면 페이지 이동 시 데이터가 끊기는 문제가 있어
 // 실제 "원본 데이터"는 여기 하나만 두고, 두 페이지는 화면에 들어올 때마다 여기서 값을 읽어와 표시한다.
 let sharedAmountUsd = 100000000; // 기본 $100M
-let sharedCountry = 'kr';
+// 2026-09-02: 기본값을 'kr'(한국 기준)에서 'other'(🌐 기타 국가·미국 30% 기준)로 변경 —
+// 어느 한 나라도 기본으로 밀지 않는 무국가 중립 시작이 목표(사용자 명시적 요청, HANDOFF.md
+// 2026-09-02 항목 참고). 'other'는 이미 SUPPORTED_TAX_COUNTRIES/COUNTRY_TAX_AUTHORITY에
+// 있는 실재 옵션이라 null 대신 이걸 씀 — 계산 로직 전역이 sharedCountry를 항상 유효한
+// 국가 코드로 전제하고 있어서(TAX_MODEL[sharedCountry] 참조 등), 빈 값을 넣으면 수백 곳의
+// null 체크를 새로 추가해야 하는 큰 리스크가 생김. 사용자가 직접 나라를 고르면(setHomeCountry
+// isManual=true) localStorage(chamtax_country)에 저장되어 재방문 시 그대로 유지됨.
+let sharedCountry = 'other';
 let sharedState = 'AVG';
 // 홈 화면 금액 입력 탭(일시불/연금액/희망액) 3개가 공유하는 "표시 통화" — 한 곳(공용 선택기,
 // #homeCurrencySelect)에서 바꾸면 세 탭 모두 같이 바뀜. 슬라이더/실제 계산 도메인은 항상
 // Million USD로 그대로 두고, 이 값은 입력칸에 타이핑/표시되는 "단위"만 바꾸는 표시 레이어임
-// (2026-07-28). 기본값 KRW: 이 사이트의 주 타겟(한국 거주 40~60대)에게 "Million USD"보다
-// "억원"이 훨씬 익숙하고, formatWon()이 이미 전역적으로 억/조 단위를 쓰며, 희망액 탭은
-// 애초부터 항상 KRW/억원 전용이었던 것과도 일관됨(판단 근거는 HANDOFF.md 참고).
-let sharedInputCurrency = 'KRW';
+// (2026-07-28). 2026-09-02: 기본값을 KRW에서 USD로 변경(위 sharedCountry와 같은 이유 —
+// 무국가 중립 시작). 한국어 방문자는 currentLang이 'ko'로 시작하는 한 setLanguage()의
+// LANG_TO_CURRENCY 매칭이 그대로 KRW로 맞춰주므로(아래 setLanguage() 참고, early-return
+// 분기에도 통화 매칭이 걸리도록 같이 손봄) 실질적으로 체감 변화 없음 — 이 raw 기본값은
+// LANG_TO_CURRENCY에 없는 언어(예: 프랑스어·아랍어)나 아직 언어 판정 전 순간의 폴백일 뿐.
+let sharedInputCurrency = 'USD';
 // 통화 선택기(#homeCurrencySelect/#compareCurrencySelect)를 사용자가 직접 건드린 적 있으면
 // true(2026-07-29 언어→통화 자동 연동 추가와 함께 신규) — isAmountManuallyEdited와 같은 원칙:
 // 한 번이라도 직접 골랐으면 그 뒤로 언어를 바꿔도 자동 전환이 그 선택을 덮어쓰지 않게 함
@@ -10790,8 +10808,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // "OO 거주자가 미국 복권 당첨" 류 랜딩페이지(china-resident-us-lottery-tax.html 등)에서
   // "index.html?country=cn"처럼 세금 기준을 지정해서 들어왔으면 그 기준으로 계산기를 미리
-  // 맞춰줌 — 지정 안 하면 기본값(한국 기준)이 그대로 유지됨(한국에 사는 외국인 페르소나
-  // 페이지들은 애초에 한국 세법이 맞는 기준이라 이 파라미터가 필요 없음).
+  // 맞춰줌 — 지정 안 하면 아래 chamtax_country 저장값이 있으면 그걸, 그것도 없으면 무국가
+  // 중립 기본값('other', 2026-09-02부터)이 그대로 유지됨.
   // COUNTRY_TAX_PROFILES에 실제로 있는 코드로만 제한해서, 오타·구버전 링크가 미검증
   // 국가로 계산기를 조용히 맞춰버리는 걸 막음(33개국 토글 버튼과 동일한 목록).
   const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','no','da','fi','it','pl','tr','br','other'];
@@ -10822,6 +10840,15 @@ document.addEventListener('DOMContentLoaded', () => {
         void personaRow.offsetWidth;
         personaRow.classList.add('field-autofill-flash');
       }
+    }
+  } else {
+    // 2026-09-02: URL이 나라를 지정하지 않았으면, 이전 방문에서 직접 고른 나라가 저장돼
+    // 있는지 확인(chamtax_lang과 같은 패턴) — 있으면 그걸 그대로 적용해 재방문자가 매번
+    // 다시 고르지 않아도 되게 함. 없으면 무국가 중립 기본값('other')이 그대로 유지됨.
+    let savedCountry = null;
+    try { savedCountry = localStorage.getItem('chamtax_country'); } catch (e) {}
+    if (SUPPORTED_TAX_COUNTRIES.includes(savedCountry) && savedCountry !== sharedCountry) {
+      setHomeCountry(savedCountry);
     }
   }
 
@@ -12868,6 +12895,11 @@ function setHomeCountry(country, isManual = true){
   if (isManual) {
     isCountryManuallyEdited = true;
     countryWasAutoGuessed = false;
+    // 2026-09-02: 언어(chamtax_lang)와 같은 방식으로 직접 고른 나라를 저장 — 무국가 중립
+    // 시작(기본값 'other')과 짝을 이루는 장치. 재방문 시 이 값이 있으면 DOMContentLoaded에서
+    // 바로 적용됨(아래 "?country=" URL 파라미터 처리부 근처 참고). URL 파라미터·페르소나
+    // 카드 클릭 등 기존 모든 "확실한 신호" 호출부가 isManual 기본값 true라 그대로 저장 대상이 됨.
+    try { localStorage.setItem('chamtax_country', country); } catch (e) {}
   } else {
     countryWasAutoGuessed = true;
   }
@@ -14332,7 +14364,7 @@ ${resultLabel} tutarınız yaklaşık ${summaryFinal} olacaktır.`,
     // "원화(KRW)"라고 콕 집어 말하는 게 더 이상 화면에 실제로 보이는 숫자와 안 맞을 수 있음 —
     // "화면에 보이는 금액은 참고용 환산값"이라는, 어떤 통화를 고르든 항상 맞는 표현으로 일반화함
     usdNote.textContent = pickLang(
-      `💵 실제로는 미국에서 달러($${finalUsd.toLocaleString('en-US')})로 그대로 받아요 — 화면에 보이는 금액은 참고용으로 환산한 값이에요`,
+      `💵 실제로는 미국에서 달러 ($${finalUsd.toLocaleString('en-US')})로 그대로 받아요 — 화면에 보이는 금액은 참고용으로 환산한 값이에요`,
       `💵 You actually receive USD ($${finalUsd.toLocaleString('en-US')}) directly from the US — the amount shown here is a reference conversion`,
       `💵 实际上会直接以美元（$${finalUsd.toLocaleString('en-US')}）从美国收到 —— 这里显示的金额只是参考换算值`,
       `💵 Thực tế bạn nhận trực tiếp bằng đô la ($${finalUsd.toLocaleString('en-US')}) từ Mỹ — số tiền hiển thị ở đây chỉ là giá trị quy đổi tham khảo`,

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
-  <ShortName>참택스</ShortName>
-  <Description>참택스(ChamTax) 사이트맵 검색 — 국가·언어·주(state)별 페이지 찾기</Description>
+  <ShortName>ChamTax</ShortName>
+  <Description>ChamTax sitemap search — find pages by country, language, or US state</Description>
   <InputEncoding>UTF-8</InputEncoding>
   <Image width="192" height="192" type="image/png">https://chamtax.com/icon-192.png</Image>
   <Url type="text/html" method="get" template="https://chamtax.com/sitemap.html?q={searchTerms}"/>
