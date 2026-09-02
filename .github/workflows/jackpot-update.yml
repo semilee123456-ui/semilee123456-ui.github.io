@@ -5,8 +5,13 @@ name: Jackpot data update
 # 공식 사이트(powerball.com/megamillions.com)에서 "다음 추첨 예상 잭팟"과 "최신 추첨 결과"를
 # 가져와 script.js(JACKPOT_DATA/LATEST_DRAW)·odds-data.js(POWERBALL_JACKPOT_ARCHIVE/
 # MEGAMILLIONS_JACKPOT_ARCHIVE)·index.html(캐시버스팅 버전)을 갱신함 — scripts/
-# update-jackpot-data.js 상단 주석 참고. script.min.js는 여기서 안 만듦 — script.js가 바뀌면
-# minify-assets.yml이 이 워크플로의 push를 보고 알아서 재생성함.
+# update-jackpot-data.js 상단 주석 참고.
+#
+# ⚠️ script.min.js는 여기서 직접 재생성함(minify-assets.yml에 맡기지 않음) — GitHub Actions는
+# 기본 GITHUB_TOKEN으로 한 워크플로가 push하면 그걸 트리거로 다른 워크플로가 또 실행되는 걸
+# 기본적으로 막음(무한 루프 방지). minify-assets.yml도 push(paths: script.js) 트리거라 이
+# 워크플로의 커밋으로는 절대 안 돎 — 2026-09-02 최초 실행에서 실제로 겪음(script.js는 바뀌었는데
+# script.min.js가 그대로 남아있었음). 그래서 build:min을 여기서 직접 돌림.
 on:
   schedule:
     - cron: '0 23 * * *'  # 매일 23:00 UTC = 08:00 KST(다음날)
@@ -32,16 +37,33 @@ jobs:
           node-version: '20'
 
       - name: Fetch official jackpot data and update files
-        run: node scripts/update-jackpot-data.js
+        id: update
+        run: |
+          set -o pipefail
+          node scripts/update-jackpot-data.js | tee /tmp/update-jackpot.log
+          if grep -q '^CHANGED$' /tmp/update-jackpot.log; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dependencies
+        if: steps.update.outputs.changed == 'true'
+        run: npm install
+
+      - name: Rebuild minified script.min.js/styles.min.css
+        if: steps.update.outputs.changed == 'true'
+        run: node scripts/build-min.js
+
+      - name: Syntax check
+        if: steps.update.outputs.changed == 'true'
+        run: node --check script.min.js
 
       - name: Commit and push if changed
+        if: steps.update.outputs.changed == 'true'
         run: |
-          if git diff --quiet -- script.js odds-data.js index.html; then
-            echo "No changes — nothing to commit."
-            exit 0
-          fi
           git config user.name "chamtax-bot"
           git config user.email "actions@github.com"
-          git add script.js odds-data.js index.html
+          git add script.js odds-data.js index.html script.min.js styles.min.css
           git commit -m "chore: auto-update jackpot data"
           git push

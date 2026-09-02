@@ -2345,8 +2345,23 @@
     border-color:var(--border); display:inline-flex; align-items:center; justify-content:center; padding:0 3px;
   }
   .ps-steps{ margin-top:6px; }
+  /* 2026-09 "책 느낌 탈피" 패스: 개인정보처리방침/면책조항이 굵은 번호 제목 + 회색 문단만
+     반복되는 순수 법률 문서 조판이라 사이트에서 가장 "책스러운" 화면이었음(랜딩페이지 h2에
+     쓴 것과 같은 원인) — 같은 처방으로, 제목 앞에 짧은 색상 액센트 바만 붙임. 법률 문서라
+     색 배경 박스 같은 장식은 과해 보여서 안 씀 — 절제된 액센트 하나로만 "챕터"가 아니라
+     "앱 화면의 섹션"이라는 신호를 줌. */
   .legal-section{ margin-bottom:16px; }
-  .legal-h{ font-size:var(--fs-h3); font-weight:800; color:var(--text-dark); margin:0 0 6px; }
+  .legal-h{
+    display:flex; align-items:flex-start; gap:10px;
+    font-size:var(--fs-h3); font-weight:800; color:var(--text-dark); margin:0 0 8px;
+  }
+  .legal-h::before{
+    /* 좁은 화면에서 제목이 2줄로 꺾여도 첫 줄 높이에만 맞춰 위쪽 정렬(줄바꿈 안 되는
+       한 줄짜리 제목에서도 육안 차이 없음, 2026-09 340px 스크린샷 검수로 flex-start로 조정) */
+    content:''; flex:0 0 auto; width:6px; height:1.15em; border-radius:3px; background:var(--teal);
+    margin-top:0.12em;
+  }
+  html[dir="rtl"] .legal-h{ flex-direction:row-reverse; }
   .legal-body{ font-size:var(--fs-body); color:var(--text-muted); line-height:1.7; margin:0; overflow-wrap:break-word; }
   .legal-body b{ color:var(--text-dark); }
 
