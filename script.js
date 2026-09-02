@@ -14364,7 +14364,7 @@ ${resultLabel} tutarınız yaklaşık ${summaryFinal} olacaktır.`,
     // "원화(KRW)"라고 콕 집어 말하는 게 더 이상 화면에 실제로 보이는 숫자와 안 맞을 수 있음 —
     // "화면에 보이는 금액은 참고용 환산값"이라는, 어떤 통화를 고르든 항상 맞는 표현으로 일반화함
     usdNote.textContent = pickLang(
-      `💵 실제로는 미국에서 달러($${finalUsd.toLocaleString('en-US')})로 그대로 받아요 — 화면에 보이는 금액은 참고용으로 환산한 값이에요`,
+      `💵 실제로는 미국에서 달러 ($${finalUsd.toLocaleString('en-US')})로 그대로 받아요 — 화면에 보이는 금액은 참고용으로 환산한 값이에요`,
       `💵 You actually receive USD ($${finalUsd.toLocaleString('en-US')}) directly from the US — the amount shown here is a reference conversion`,
       `💵 实际上会直接以美元（$${finalUsd.toLocaleString('en-US')}）从美国收到 —— 这里显示的金额只是参考换算值`,
       `💵 Thực tế bạn nhận trực tiếp bằng đô la ($${finalUsd.toLocaleString('en-US')}) từ Mỹ — số tiền hiển thị ở đây chỉ là giá trị quy đổi tham khảo`,
