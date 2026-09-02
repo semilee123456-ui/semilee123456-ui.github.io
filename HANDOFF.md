@@ -615,6 +615,15 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   중간 상태를 스캔해 생긴 **오탐**이었음이 실측으로 밝혀짐(사이트 자체엔 문제 없었음) —
   이 발견 때문에 다음 세션이 이 4건을 실제 코드 버그로 다시 조사할 필요 없음(테스트
   타이밍만 고쳤을 뿐 사이트 쪽 색상은 이미 정상이었던 2건 포함).
+- **"무국가 중립" 전환 후속 작업 4개(2026-09-02 세션이 의도적으로 범위 밖으로 둠, 아래
+  "작업 이력" 2026-09-02 이어서 3 항목 참고)**: (1) `us-lottery-basics.html` 등 다수의
+  "bare 파일명=한국어, `-en.html` 등 접미사=다른 언어" 관행 — 이번 요청 취지에 가장 크게
+  걸리지만 URL 구조 변경(백링크·검색순위 영향)이라 사용자 확인 먼저 필요. (2)
+  `powerball-tax.html`/`megamillions-tax.html`/`us-lottery-tax-rate.html`/
+  `us-lottery-take-home.html`/`lottery-prize-tiers.html` 5개는 영어판 자체가 아예 없음
+  (콘텐츠 신규 제작 필요). (3) "43개국"/"42개국" 잔존 39개 파일(2026-09-01 세션이 이미
+  "다음 배치"로 미뤄둔 항목). (4) FAQPage JSON-LD 33문항이 언어 전환과 무관하게 항상
+  한국어로 크롤러에 노출됨(전체 번역 필요).
 ---
 
 ## 홍보·마케팅 작업 전체 이력 (2026-08-06 정리, 재조사 금지 참고용)
@@ -1051,4 +1060,69 @@ site-layout-design-refresh-3himm8` 브랜치에서 작업 후 `main`으로 fast-
 랜딩페이지 1곳 직접 확인.
 
 **커밋**: `81e8b6c`, `claude/site-layout-design-refresh-3himm8`에서 `main`으로
+
+### 2026-09-02 이어서 3 — "무국가 중립" 전환 1단계 (기본 거주국·메타/SEO·UI 문구)
+
+사용자가 "해외 사람이 들어와도 전혀 무관한 사이트가 되면 좋겠어, 한국 중심이 전혀
+아니고"라고 요청. AskUserQuestion으로 방향(무국가 중립 vs 언어기반 자동추정 vs 브랜드명
+재검토) 확인 후 **무국가 중립**으로 확정 — 이유: 목표와 방법이 정확히 일치(어느 나라도
+기본으로 안 미는 게 진짜 중립), 예전에 오작동해서 걷어냈던 "언어로 국가 자동추정" 방식을
+다시 안 씀. 이어서 "한 번 나라를 고르면 계속 유지되게 할 수 있어?"라는 요청도 받아 저장
+로직까지 범위에 포함.
+
+**1. 기본 거주국(`sharedCountry`) 'kr' 하드코딩 → 'other'(🌐 기타 국가·미국 30% 기준)로
+전환 + 수동 선택 시 localStorage(`chamtax_country`) 저장** — `sharedInputCurrency` 기본값도
+KRW→USD. `setLanguage()`의 "언어가 이미 초기값과 같아 조기 반환하는 분기"에도 통화 매칭을
+추가해 한국어 방문자는 여전히 KRW를 보도록 회귀 방지(무국가 중립 전환의 부작용이었음 —
+자세한 배경은 `script.js` 해당 함수 주석 참고). "'other'는 null이 아니라 이미 있는 실재
+옵션"이라는 선택이 핵심 — `sharedCountry`를 계산 로직 전역이 항상 유효한 코드로 전제하고
+있어서, null을 넣으면 수백 곳에 방어 코드를 새로 추가해야 하는 리스크가 있었음.
+
+**2. 메타/SEO 레이어 영어 기본 전환** — `index.html`의 `html lang`/`<title>`/meta
+description/OG/twitter 태그를 영어로, hreflang 기본 페어링도 en↔ko를 실제 콘텐츠 방향에
+맞게 맞바꿈(bare URL=en, `?lang=ko`=한국어 — 지금까지 hreflang이 실제 기본과 반대로 표시
+중이었음). JSON-LD는 `name`(브랜드 표기 "참택스"/"참택스(ChamTax)")은 그대로 두고
+`description`만 번역 — 브랜드 순서 자체는 이번 세션이 명시적으로 선택 안 한 범위. AI
+크롤러용 `llms.txt`도 "한국 거주자·재한 외국인을 위한 계산기"에서 "어디 살든 쓰는 계산기,
+한국은 51개국 중 하나"로 포지셔닝 재작성.
+
+**3. UI 문구 중립화** — `home.taxTermProgressiveDesc`("누진세율이란?" 툴팁)가 어느 나라를
+고르든 항상 "미국 37%·한국 45%"를 예시로 못박던 것을 국가명 없는 일반 서술로 정리(35개
+언어 전부 + index.html 한국어 원문 6곳). 작업 중 발견한 "한국 포함 43개국"(2026-09-01에
+43→51개국으로 늘었는데 갱신 안 된 문구) 복사본을 index.html 포함 10개 파일에서 정정.
+
+**병합**: 작업 중간에 `origin/main`이 10커밋 앞서있어(정산 티켓 콘셉트 철회, 잭팟 자동화
+GitHub Action 등) 병합 — `HANDOFF.md`/`HANDOFF-ARCHIVE.md`/`index.html`/`script.min.js`/
+`sw.js` 충돌 전부 실제 내용 읽고 해결(통째 덮어쓰기 없음). 병합 후 회귀 테스트 중
+`MEGAMILLIONS_JACKPOT_ARCHIVE`를 못 찾는 문제 발견 — `scripts/update-jackpot-data.js`의
+`appendJackpotArchiveEntry()`가 새 회차를 이어붙일 때 "= " 뒤 공백을 안 남겨(`JSON.stringify`
+결과 앞에 공백 없음) `draw_archive_integrity_check.js`의 정규식이 다음 실행부터 이 배열을
+계속 못 찾게 되는 회귀였음(2026-09-01 자동 갱신 커밋에서 최초 발생, 이번에 처음 걸림) —
+현재 값 공백 복원 + 생성 로직에 공백 추가해 재발 방지.
+
+**의도적으로 범위 밖으로 둔 것(다음 세션 참고, 아래 "알려진 미해결 항목"에도 등재)**:
+- **`us-lottery-basics.html` 등 "bare 파일명 = 한국어" 관행**: 국가/나라 무관 일반 도구
+  페이지(초보 가이드·세율표 등) 상당수가 접미사 없는 파일명이 한국어 버전이고 `-en.html`
+  등 접미사가 붙어야 다른 언어인 구조(원래 한국이 주 타겟이던 시절 관행) — "해외 방문자가
+  기본으로 마주치는 URL이 한국어"라는 점에서 이번 요청과 정확히 같은 문제이지만, 파일명을
+  바꾸는 건 백링크/북마크/검색순위에 영향을 주는 URL 구조 변경이라 이번 세션 승인 범위
+  밖으로 판단해 손 안 댐 — 재구성하려면 사용자에게 먼저 확인 필요.
+- **`powerball-tax.html`/`megamillions-tax.html`/`us-lottery-tax-rate.html`/
+  `us-lottery-take-home.html`/`lottery-prize-tiers.html` 5개는 영어(또는 다른 언어) 버전이
+  아예 없음** — "파워볼 세금" 같은 영어권 검색어로 들어온 방문자가 100% 한국어 페이지만
+  보게 됨. 새 언어 버전 제작은 콘텐츠 생성 작업이라 "문구 중립화" 범위를 넘어서 손 안 댐.
+- **"43개국"/"42개국" 잔존 39개 파일**: 2026-09-01 세션이 이미 "다음 배치 작업" 스코프로
+  명시적으로 미뤄둔 항목 — 이번에 우연히 겹친 10개 파일만 정정하고 나머지는 그대로 둠.
+- **FAQPage JSON-LD 33문항**: `index.html`에 전부 한국어로 박혀있고 언어 전환과 무관하게
+  항상 한국어로 크롤러에 노출됨 — 전체 번역은 큰 작업이라 범위 밖.
+
+**검증**: `node --check script.js` OK, `console_error_audit`(224 설정)·`broken_link_audit`
+(189개 파일)·`home_audit`·`audit_odds_compare`·`i18n_coverage_audit`(773개 키)·
+`i18n_attr_lint`·`fact_consistency_audit`(194개 파일)·`draw_archive_integrity_check`
+전부 `ISSUES: 0`. Playwright로 첫 방문(스토리지 없음) 시 국가=other/통화=USD 기본값,
+국가 직접 선택 후 새로고침해도 유지되는 것 직접 확인.
+
+**다음 세션 참고**: 위 "의도적으로 범위 밖으로 둔 것" 4개 항목 중 어느 것부터 진행할지는
+사용자 우선순위 확인 필요 — 특히 첫 번째(bare 파일명=한국어 관행)가 이번 요청의 취지에
+가장 크게 걸리지만 위험도도 가장 높음.
 fast-forward 머지·푸시 완료.
