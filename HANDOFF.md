@@ -864,101 +864,8 @@ resident" 등 실제 검색 결과에 `chamtax.com`은 전혀 안 나옴(TheLott
 
 *(이보다 오래된 세션 기록은 `HANDOFF-ARCHIVE.md` 참고 — 2026-08-27 이어서/2026-09-01/
 2026-09-02(파워볼 8/29 반영)/2026-09-02 이어서(잭팟 자동화+랜딩페이지 리디자인)/
-2026-09-02 이어서 2("복권 당첨 느낌" 제거) 다섯 항목을 그대로 옮겼음)*
-
-### 2026-09-02 이어서 3 — "무국가 중립" 전환 1단계 (기본 거주국·메타/SEO·UI 문구)
-
-사용자가 "해외 사람이 들어와도 전혀 무관한 사이트가 되면 좋겠어, 한국 중심이 전혀
-아니고"라고 요청. AskUserQuestion으로 방향(무국가 중립 vs 언어기반 자동추정 vs 브랜드명
-재검토) 확인 후 **무국가 중립**으로 확정 — 이유: 목표와 방법이 정확히 일치(어느 나라도
-기본으로 안 미는 게 진짜 중립), 예전에 오작동해서 걷어냈던 "언어로 국가 자동추정" 방식을
-다시 안 씀. 이어서 "한 번 나라를 고르면 계속 유지되게 할 수 있어?"라는 요청도 받아 저장
-로직까지 범위에 포함.
-
-**1. 기본 거주국(`sharedCountry`) 'kr' 하드코딩 → 'other'(🌐 기타 국가·미국 30% 기준)로
-전환 + 수동 선택 시 localStorage(`chamtax_country`) 저장** — `sharedInputCurrency` 기본값도
-KRW→USD. `setLanguage()`의 "언어가 이미 초기값과 같아 조기 반환하는 분기"에도 통화 매칭을
-추가해 한국어 방문자는 여전히 KRW를 보도록 회귀 방지(무국가 중립 전환의 부작용이었음 —
-자세한 배경은 `script.js` 해당 함수 주석 참고). "'other'는 null이 아니라 이미 있는 실재
-옵션"이라는 선택이 핵심 — `sharedCountry`를 계산 로직 전역이 항상 유효한 코드로 전제하고
-있어서, null을 넣으면 수백 곳에 방어 코드를 새로 추가해야 하는 리스크가 있었음.
-
-**2. 메타/SEO 레이어 영어 기본 전환** — `index.html`의 `html lang`/`<title>`/meta
-description/OG/twitter 태그를 영어로, hreflang 기본 페어링도 en↔ko를 실제 콘텐츠 방향에
-맞게 맞바꿈(bare URL=en, `?lang=ko`=한국어 — 지금까지 hreflang이 실제 기본과 반대로 표시
-중이었음). JSON-LD는 `name`(브랜드 표기 "참택스"/"참택스(ChamTax)")은 그대로 두고
-`description`만 번역 — 브랜드 순서 자체는 이번 세션이 명시적으로 선택 안 한 범위. AI
-크롤러용 `llms.txt`도 "한국 거주자·재한 외국인을 위한 계산기"에서 "어디 살든 쓰는 계산기,
-한국은 51개국 중 하나"로 포지셔닝 재작성.
-
-**3. UI 문구 중립화** — `home.taxTermProgressiveDesc`("누진세율이란?" 툴팁)가 어느 나라를
-고르든 항상 "미국 37%·한국 45%"를 예시로 못박던 것을 국가명 없는 일반 서술로 정리(35개
-언어 전부 + index.html 한국어 원문 6곳). 작업 중 발견한 "한국 포함 43개국"(2026-09-01에
-43→51개국으로 늘었는데 갱신 안 된 문구) 복사본을 index.html 포함 10개 파일에서 정정.
-
-**병합**: 작업 중간에 `origin/main`이 10커밋 앞서있어(정산 티켓 콘셉트 철회, 잭팟 자동화
-GitHub Action 등) 병합 — `HANDOFF.md`/`HANDOFF-ARCHIVE.md`/`index.html`/`script.min.js`/
-`sw.js` 충돌 전부 실제 내용 읽고 해결(통째 덮어쓰기 없음). 병합 후 회귀 테스트 중
-`MEGAMILLIONS_JACKPOT_ARCHIVE`를 못 찾는 문제 발견 — `scripts/update-jackpot-data.js`의
-`appendJackpotArchiveEntry()`가 새 회차를 이어붙일 때 "= " 뒤 공백을 안 남겨(`JSON.stringify`
-결과 앞에 공백 없음) `draw_archive_integrity_check.js`의 정규식이 다음 실행부터 이 배열을
-계속 못 찾게 되는 회귀였음(2026-09-01 자동 갱신 커밋에서 최초 발생, 이번에 처음 걸림) —
-현재 값 공백 복원 + 생성 로직에 공백 추가해 재발 방지.
-
-**의도적으로 범위 밖으로 둔 것(다음 세션 참고, 아래 "알려진 미해결 항목"에도 등재)**:
-- **`us-lottery-basics.html` 등 "bare 파일명 = 한국어" 관행**: 국가/나라 무관 일반 도구
-  페이지(초보 가이드·세율표 등) 상당수가 접미사 없는 파일명이 한국어 버전이고 `-en.html`
-  등 접미사가 붙어야 다른 언어인 구조(원래 한국이 주 타겟이던 시절 관행) — "해외 방문자가
-  기본으로 마주치는 URL이 한국어"라는 점에서 이번 요청과 정확히 같은 문제이지만, 파일명을
-  바꾸는 건 백링크/북마크/검색순위에 영향을 주는 URL 구조 변경이라 이번 세션 승인 범위
-  밖으로 판단해 손 안 댐 — 재구성하려면 사용자에게 먼저 확인 필요.
-- **`powerball-tax.html`/`megamillions-tax.html`/`us-lottery-tax-rate.html`/
-  `us-lottery-take-home.html`/`lottery-prize-tiers.html` 5개는 영어(또는 다른 언어) 버전이
-  아예 없음** — "파워볼 세금" 같은 영어권 검색어로 들어온 방문자가 100% 한국어 페이지만
-  보게 됨. 새 언어 버전 제작은 콘텐츠 생성 작업이라 "문구 중립화" 범위를 넘어서 손 안 댐.
-- **"43개국"/"42개국" 잔존 39개 파일**: 2026-09-01 세션이 이미 "다음 배치 작업" 스코프로
-  명시적으로 미뤄둔 항목 — 이번에 우연히 겹친 10개 파일만 정정하고 나머지는 그대로 둠.
-- **FAQPage JSON-LD 33문항**: `index.html`에 전부 한국어로 박혀있고 언어 전환과 무관하게
-  항상 한국어로 크롤러에 노출됨 — 전체 번역은 큰 작업이라 범위 밖.
-
-**검증**: `node --check script.js` OK, `console_error_audit`(224 설정)·`broken_link_audit`
-(189개 파일)·`home_audit`·`audit_odds_compare`·`i18n_coverage_audit`(773개 키)·
-`i18n_attr_lint`·`fact_consistency_audit`(194개 파일)·`draw_archive_integrity_check`
-전부 `ISSUES: 0`. Playwright로 첫 방문(스토리지 없음) 시 국가=other/통화=USD 기본값,
-국가 직접 선택 후 새로고침해도 유지되는 것 직접 확인.
-
-**다음 세션 참고**: 위 "의도적으로 범위 밖으로 둔 것" 4개 항목 중 어느 것부터 진행할지는
-사용자 우선순위 확인 필요 — 특히 첫 번째(bare 파일명=한국어 관행)가 이번 요청의 취지에
-가장 크게 걸리지만 위험도도 가장 높음.
-
-### 2026-09-02 이어서 4 — HANDOFF.md 재압축(2026-08-23 파워볼 결과 세션 아카이브 이동) + 메가밀리언즈 8/28(금) 결과 반영(PR #350, 머지 완료)
-
-**HANDOFF.md 재압축**: 세션 시작 시점에 "작업 이력" 섹션 날짜별 항목이 4개(2026-08-23·
-08-24·08-27·08-27 이어서)로 쌓여있어, 파일 자체 규칙("3~4개 넘으면 가장 오래된 것부터
-이동")대로 가장 오래된 항목(2026-08-23 파워볼 8/22 추첨 결과 반영)을 `HANDOFF-ARCHIVE.md`로
-원문 그대로 이동, 포인터 문구 갱신(961→938줄).
-
-**메가밀리언즈 8/28 결과 반영**: 사용자 공유 usamega.com 스크린샷 기준 정기 갱신.
-`LATEST_DRAW.megamillions`를 8/25→8/28(8,17,29,42,55/2)로 갱신, `JACKPOT_DATA.megamillions`를
-다음 추첨(9/1) 기준 $160M/현금가치 $68.9M로 갱신(갱신 전 값 $145M은 8/28 추첨 자체 잭팟이었
-으므로 `MEGAMILLIONS_JACKPOT_ARCHIVE`에 그대로 보존 — 위 2026-09-02 파워볼 8/29 항목과 같은
-패턴). `odds-data.js`의 `MEGAMILLIONS_DRAW_ARCHIVE`/`MEGAMILLIONS_JACKPOT_ARCHIVE`에 8/28
-회차 추가, `script.js`의 지연로딩 캐시버스팅 문자열(`odds-data.js?v=20260827-2`→
-`20260829-1`) 및 `index.html`의 `script.min.js?v` 동반 갱신, `sw.js` `CACHE_NAME` v95→v96
-갱신, `node scripts/build-min.js`로 `script.min.js` 재생성(`styles.css`는 안 건드려서
-`styles.min.css` 재생성 불필요, 바이트까지 동일 확인). 파워볼은 스크린샷의 8/26 결과·8/29
-다음 잭팟 $119M이 이미 반영돼 있어 변경 없음.
-
-**검증**: `draw_archive_integrity_check`(4개 아카이브 전부 정렬/중복 없음)·
-`fact_consistency_audit`·`broken_link_audit` 전부 `ISSUES: 0`, Playwright
-`home_audit`·`console_error_audit` 전부 `ISSUES: 0`. 홈 화면 `#draw-balls-megamillions`/
-`#jp-mega` DOM을 직접 읽어 "8,17,29,42,55+2" / "$160,000,000" 반영 확인.
-
-**머지**: `claude/handover-compression-mvp5xz` 브랜치에서 PR #350 생성 후 즉시 머지 완료
-(`main`에 병합됨, `54a5906`). 세션 도중 `origin/main`이 다른 병행 세션들 커밋 20여 개만큼
-앞서 나간 걸 발견해(파워볼 8/29·8/31 갱신, 잭팟 자동화 GitHub Action 신설, 랜딩페이지
-리디자인 2건 등 — 전부 위 다른 2026-09-02 항목들에 각자 기록됨) 로컬 브랜치를
-`origin/main`으로 재기준한 뒤 이 항목을 추가함. 이 세션에서 별도로 만든 후속 작업은 없음.
+2026-09-02 이어서 2("복권 당첨 느낌" 제거)/2026-09-02 이어서 3("무국가 중립" 전환 1단계)/
+2026-09-02 이어서 4(HANDOFF 재압축+메가밀리언즈 8/28 반영) 일곱 항목을 그대로 옮겼음)*
 
 ### 2026-09-02 이어서 5 — 사이트 전역 "43개국"→51개국 표기 정정 + changelog/피드/llms-full 동기화(PR #355, 머지 완료)
 
@@ -1093,3 +1000,43 @@ JSON-LD에서만 제외(화면에 보이는 실제 FAQ 아코디언은 언어·�
 처리) — 다만 3번 항목에서 "원본 한국어 페이지 자체가 특정 국가 중심으로 쓰여 있을 수
 있다"는 패턴이 이번에 처음 발견됐으니, 앞으로 비슷하게 "한국어 원문을 그대로 영어로
 옮기는" 작업을 할 땐 원문 자체가 이미 편향돼 있을 가능성을 먼저 확인할 것.
+
+### 2026-09-02 이어서 7 — 홈 화면 잭팟 티저 추가(재방문 훅) + "무국가 중립" 전환(PR #357) 병합 + 다크모드 대비 수정(PR #358, 머지 완료)
+
+사용자가 "사람들이 왜 계속 사이트에 들어와야 하는지 이유를 찾아야 할 것 같다"고 요청 —
+이 사이트는 "당첨금 실수령액 계산"이라는 일회성 니즈를 채우는 도구라 자연스러운 재방문
+동기가 거의 없다는 점을 짚고, 유일하게 이미 있는 자연스러운 신호(잭팟 금액이 매 추첨마다
+바뀜)를 화면 아래 접힌 토글에서 최상단으로 끌어올리는 방향을 제안 → 사용자가 "네가 제일
+괜찮다고 생각하는 걸로" 위임.
+
+**구현**: `index.html` 히어로 타이틀 바로 아래에 `.hero-jackpot-teaser` 알약 버튼 추가
+(파워볼/메가밀리언즈 금액을 "$XXXM"로 압축 표시) — 클릭하면 `scrollToJackpotPanel()`이
+기존 "🎟️ 최근 잭팟 확인하기" `<details>` 패널(`home-jackpot-details` id 신규 부여)을
+펼치고 스크롤. 숫자는 새 데이터 소스 없이 기존 `applyJackpotData()`가 `JACKPOT_DATA`를
+그대로 재사용해서 채움. CSS는 `jackpot-quickfill-btn`이 겪었던 "좁은 화면에서 글자가
+한 글자씩 쪼개지는" 전례(`minmax(0,1fr)` 그리드 문제)를 피하려 flex+nowrap+wrap만 사용.
+
+**병행 세션과 충돌 발견·병합**: 작업 중 `origin/main`이 PR #357("사이트를 '무국가
+중립'으로 전환")로 크게 앞서 나간 걸 발견 — `sharedCountry` 기본값 `kr`→`other`,
+`sharedInputCurrency` 기본값 `KRW`→`USD`로 바꿔 어느 나라도 기본으로 밀지 않게 한
+근본적인 변경으로, 이 세션이 사용자에게 제안했던 "국가 선택을 더 눈에 띄게" 방향보다
+훨씬 더 직접적으로 같은 문제(다른 나라 사람도 거리낌 없이)를 해결함. `git merge
+origin/main`으로 병합 — 충돌은 `index.html`/`script.min.js`/`sw.js` 3곳뿐(전부
+캐시버스팅 버전 번호 충돌), 더 높은 번호로 통합하고 `script.min.js`는
+`node scripts/build-min.js` 재실행으로 정상 재생성.
+
+**병합 후 재검증 중 발견·수정한 버그**: 기본 통화가 USD로 바뀌면서 `#home-usd-note`
+("💵 실제로는 달러로 받아요" 안내)가 첫 화면부터 기본 노출되기 시작했는데(이전엔 KRW
+기본값이라 이 조건이 잘 안 걸렸던 것으로 추정), 다크모드에서 `--teal` 텍스트 +
+`rgba(teal,0.08)` 배경 조합이 대비 4.20:1로 WCAG AA 4.5:1 미달(`a11y_audit` 검출) —
+배경 틴트만 0.03으로 옅혀 4.74:1로 해소(`:root[data-theme="dark"] .result-hero
+.usd-actual-note` 오버라이드 추가, 텍스트색은 브랜드 톤 유지 위해 안 건드림).
+
+**검증**: `node --check script.js`, `broken_link_audit`(194)·`fact_consistency_audit`
+(199)·`draw_archive_integrity_check`(4) 전부 `ISSUES: 0`, Playwright
+`console_error_audit`(224)·`home_audit`(18)·`a11y_audit`(13페이지×2모드, 위반 0건)·
+`wrap_audit`(168) 전부 `ISSUES: 0`. 라이트/다크 모드 + 320px 좁은 화면(독일어)
+스크린샷으로 레이아웃 확인, 사용자에게도 스크린샷 전달.
+
+**머지**: `claude/handover-compression-mvp5xz` 브랜치에서 PR #358 생성 후 즉시 머지
+완료(`main`에 병합됨, `baad6fc`). 이 세션에서 별도로 만든 후속 작업은 없음.
