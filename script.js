@@ -8543,9 +8543,6 @@ function buildHomeResultCheckCanvas(){
 
 function saveHomeResultAsImage(){
   trackEvent('save_result_image');
-  // 2026-08-13: "정산 티켓" 컨셉 — 버튼을 누르는 순간 결과 카드 위로 색종이 폭죽 연출
-  // (기존 fireConfettiBurst() 재사용, dream-result 전용 호출부는 그대로 안 건드림)
-  fireConfettiBurst('🎉', document.querySelector('.result-hero'));
   const { canvas, hotspots } = buildHomeResultCheckCanvas();
   openAnnotateOverlay(canvas, 'chamtax-result.png', { dateEditable: true, textHotspots: hotspots });
 }
@@ -12379,8 +12376,6 @@ function buildResultShareText(utmSource){
 
 async function shareResult(){
   trackEvent('share_result');
-  // 2026-08-13: "정산 티켓" 컨셉 — 위 saveHomeResultAsImage()와 같은 패턴
-  fireConfettiBurst('🎉', document.querySelector('.result-hero'));
   const { shareText, shareUrl, shareTitle, finalAmt, country } = buildResultShareText('share');
 
   // 라벨 어순을 홈 화면 결과 카드(result.label, "일시불 예상 실수령액")와 맞춤 — 예전엔
@@ -14169,18 +14164,6 @@ function updateHomeCalc(usdOverride){
     homeResultFirstRender = false;
   } else {
     animateValueChange(finalEl, prevVal, final, '억원', 1, 250, () => fitAmountFontSize(finalEl));
-  }
-  // 2026-08-13: "정산 티켓" 컨셉 갭 2 — 바코드 캡션(순수 장식, aria-hidden). 새 상태 없이
-  // 이 함수가 이미 계산해둔 usd(원본 당첨금, 달러)·final(실수령액, 억원)·EXCHANGE_RATE를
-  // 그대로 재사용함. 핸드오프 문서(index.dc.html 432줄)의 amount/takeHome이 "M USD" 단위라,
-  // 억원인 final을 위 12390번째 줄 "억 = usd*EXCHANGE_RATE/1e8" 계산의 역산으로 다시
-  // USD 백만 단위로 환산. barcodeNum은 실제 바코드 번호가 아니라 순수 플레이버 텍스트.
-  const barcodeCaptionEl = document.getElementById('home-barcode-caption');
-  if (barcodeCaptionEl) {
-    const amountUsdM = usd / 1000000;
-    const takeHomeUsdM = final * 100 / EXCHANGE_RATE;
-    const barcodeNum = `${Math.round(amountUsdM * 10)} 0000 ${Math.round(takeHomeUsdM * 10)}`;
-    barcodeCaptionEl.textContent = `US ${EXCHANGE_RATE.toFixed(1)} · ${barcodeNum}`;
   }
   const miniEl = document.getElementById('live-result-mini-amt');
   if (miniEl) miniEl.textContent = formatEokKrwInDisplayCurrency(final, sharedInputCurrency); // 희망액 탭도 공용 통화 선택기를 따름

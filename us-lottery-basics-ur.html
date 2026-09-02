@@ -206,11 +206,16 @@
     --fs-body:18px; --fs-note:17px; --fs-small:16px;
     --font-display:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
     --font-mono:'IBM Plex Mono','SFMono-Regular','Menlo','Consolas','Liberation Mono',monospace;
-    --shadow-hard:4px 4px 0 var(--text-dark);
-    --shadow-hard-sm:3px 3px 0 var(--text-dark);
-    --shadow-hard-xs:2px 2px 0 var(--text-dark);
+    /* 2026-09: "복권 당첨 느낌 제거" 요청으로 하드 오프셋 그림자를 여기 토큰 3개만 고쳐서
+       일괄 소프트 그림자로 되돌림(이름은 계산기 styles.css와 같은 이유로 그대로 둠) */
+    --shadow-hard:0 8px 22px rgba(0,0,0,0.10);
+    --shadow-hard-sm:0 5px 16px rgba(0,0,0,0.09);
+    --shadow-hard-xs:0 2px 8px rgba(0,0,0,0.08);
   }
   :root[data-theme="dark"]{
+    --shadow-hard:0 8px 22px rgba(0,0,0,0.35);
+    --shadow-hard-sm:0 5px 16px rgba(0,0,0,0.32);
+    --shadow-hard-xs:0 2px 8px rgba(0,0,0,0.3);
     --teal:#4BC1A0; --teal-rgb:75,193,160;
     --indigo:#7C9BD1; --gold:#D6AC55;
     --bg:#1E1A16; --card:#453E34; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#6E6558;
@@ -240,11 +245,11 @@
      덜 빡빡해 보이게 함. */
   .wrap{ max-width:680px; margin:0 auto; padding:0 18px 56px; }
 
-  /* ---- 헤더: 절취선 대신(내비게이션이 극좁은 화면에서 원 노치 때문에 잘리는 걸
-     피하려고 원형 펀치 대신) 두꺼운 점선 구분선으로 "티켓 스텁"을 표현 ---- */
+  /* 2026-09: "복권 당첨 느낌 제거" 요청으로 "티켓 스텁"을 표현하던 두꺼운 점선 헤더
+     구분선을 평범한 실선으로 되돌림 */
   .nav{
     display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
-    padding:18px 0 14px; margin:0 0 6px; border-bottom:2px dashed var(--border);
+    padding:18px 0 14px; margin:0 0 6px; border-bottom:1px solid var(--border);
   }
   .logo{
     font-size:21px; font-weight:800; color:var(--text-dark); text-decoration:none;
@@ -483,20 +488,18 @@
   }
   .rank-calc-link:hover{ border-bottom-color:var(--teal); }
 
-  /* ---- 계산기로 유도하는 CTA — 페이지에서 유일하게 강조할 요소라 하드 섀도우를
-     남겨두되(계산기의 .ticket-shell처럼 "페이지당 하나만 강조"하는 위계 유지),
-     가장 큰 --shadow-hard(4px) 대신 sm(3px)로 낮춤 ---- */
+  /* ---- 계산기로 유도하는 CTA — 페이지에서 유일하게 강조할 요소 ---- */
   .cta-box{
-    background:var(--teal); border:2px solid var(--text-dark); border-radius:16px;
+    background:var(--teal); border-radius:16px;
     box-shadow:var(--shadow-hard-sm); padding:26px 22px; text-align:center; margin:34px 0;
   }
   .cta-box p{ color:var(--card); font-family:var(--font-display); font-size:var(--fs-h3); font-weight:700; margin:0 0 16px; }
   .cta-box a{
     display:inline-block; background:var(--card); color:var(--teal); font-weight:800; font-size:var(--fs-body);
-    padding:13px 28px; border-radius:10px; text-decoration:none; border:2px solid var(--text-dark);
+    padding:13px 28px; border-radius:10px; text-decoration:none;
     box-shadow:var(--shadow-hard-xs); transition:transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .cta-box a:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--text-dark); }
+  .cta-box a:active{ transform:scale(0.97); }
   .cta-box .cta-note{ color:var(--card); opacity:0.85; font-size:var(--fs-small); font-weight:400; margin:12px 0 0; }
   /* 2026-08-22: opacity:0.85가 --card 위에서 대비를 3.69:1까지 깎아 WCAG AA(4.5:1) 미달로
      만듦(다크모드 --teal 밝기 조정 후에도 남음) — 다크모드만 불투명하게 해서 해결
@@ -509,7 +512,7 @@
     margin:0 0 24px; font-family:inherit; box-shadow:var(--shadow-hard-xs);
     transition:transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .share-btn:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--text-dark); }
+  .share-btn:active{ transform:scale(0.98); }
   .share-btn.copied{ background:var(--teal); color:var(--card); }
 
   /* ---- FAQ 아코디언 ---- */
