@@ -201,7 +201,7 @@
     --teal:#155445; --teal-rgb:21,84,69;
     --indigo:#35507A; --gold:#9A6D1C;
     --bg:#F4F5F7; --card:#FFFFFF; --text-dark:#262420; --text-muted:#544E42; --border:#828C97;
-    --status-red:#C0392B; --status-amber:#946716;
+    --status-red:#C0392B; --status-red-rgb:192,57,43; --status-amber:#946716; --status-green:#1F7A4D;
     /* 2026-08-14 UI 통일 패스: 이전 버전은 이 주석 바로 아래 원래 있던 "index.html의 styles.css
        :root 값을 그대로 가져옴"이라는 설명과 달리 실제 폰트 크기 값이 계산기보다 1px씩 작게
        들어가 있었음(--fs-body 18→17, --fs-note 17→16, --fs-h3 20→19, --fs-h1 28→클램프 상한 27)
@@ -212,15 +212,20 @@
     --fs-body:18px; --fs-note:17px; --fs-small:16px;
     --font-display:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
     --font-mono:'IBM Plex Mono','SFMono-Regular','Menlo','Consolas','Liberation Mono',monospace;
-    --shadow-hard:4px 4px 0 var(--text-dark);
-    --shadow-hard-sm:3px 3px 0 var(--text-dark);
-    --shadow-hard-xs:2px 2px 0 var(--text-dark);
+    /* 2026-09: "복권 당첨 느낌 제거" 요청으로 하드 오프셋 그림자를 여기 토큰 3개만 고쳐서
+       일괄 소프트 그림자로 되돌림(이름은 계산기 styles.css와 같은 이유로 그대로 둠) */
+    --shadow-hard:0 8px 22px rgba(0,0,0,0.10);
+    --shadow-hard-sm:0 5px 16px rgba(0,0,0,0.09);
+    --shadow-hard-xs:0 2px 8px rgba(0,0,0,0.08);
   }
   :root[data-theme="dark"]{
+    --shadow-hard:0 8px 22px rgba(0,0,0,0.35);
+    --shadow-hard-sm:0 5px 16px rgba(0,0,0,0.32);
+    --shadow-hard-xs:0 2px 8px rgba(0,0,0,0.3);
     --teal:#4BC1A0; --teal-rgb:75,193,160;
     --indigo:#7C9BD1; --gold:#D6AC55;
     --bg:#1E1A16; --card:#453E34; --text-dark:#EDE8DA; --text-muted:#B3AB9A; --border:#6E6558;
-    --status-red:#FC9186; --status-amber:#D6AC55;
+    --status-red:#FC9186; --status-red-rgb:252,145,134; --status-amber:#D6AC55; --status-green:#5FC993;
   }
   /* 2026-08-14 UI 통일 패스: 원래 여기 이 아이콘 원형 버튼도 다른 카드류와 같은 "하드 4px류"
      테두리+오프셋 그림자를 썼는데, 실제 계산기 헤더에서 유일하게 항상 보이는 원형 아이콘
@@ -241,13 +246,16 @@
   body{ margin:0; font-family:'Pretendard','Noto Naskh Arabic','Noto Nastaliq Urdu',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg); color:var(--text-dark); line-height:1.7; overflow-x:hidden; }
   html[dir="rtl"] body{ line-height:1.9; }
 
-  .wrap{ max-width:640px; margin:0 auto; padding:0 18px 56px; }
+  /* 2026-09 "책 느낌 탈피" 패스: 좁은 640px 고정폭 + 챕터 구분선 반복이 인쇄물 페이지처럼
+     읽힌다는 지적(사용자 피드백) — 본문 가독성(1줄 65~75자)은 유지한 채 살짝 넓혀서 데스크톱에서
+     덜 빡빡해 보이게 함. */
+  .wrap{ max-width:680px; margin:0 auto; padding:0 18px 56px; }
 
-  /* ---- 헤더: 절취선 대신(내비게이션이 극좁은 화면에서 원 노치 때문에 잘리는 걸
-     피하려고 원형 펀치 대신) 두꺼운 점선 구분선으로 "티켓 스텁"을 표현 ---- */
+  /* 2026-09: "복권 당첨 느낌 제거" 요청으로 "티켓 스텁"을 표현하던 두꺼운 점선 헤더
+     구분선을 평범한 실선으로 되돌림 */
   .nav{
     display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
-    padding:18px 0 14px; margin:0 0 6px; border-bottom:2px dashed var(--border);
+    padding:18px 0 14px; margin:0 0 6px; border-bottom:1px solid var(--border);
   }
   .logo{
     font-size:21px; font-weight:800; color:var(--text-dark); text-decoration:none;
@@ -270,10 +278,24 @@
     padding:4px 12px; margin:0 0 20px;
   }
 
+  /* 2026-09 "책 느낌 탈피" 패스: 기존엔 h2마다 전체 폭 점선 밑줄을 그어서 인쇄된 책의 챕터
+     구분선처럼 보인다는 지적(사용자: "책 같은 느낌에서 벗어나고 싶다") — 그 밑줄을 없애고,
+     대신 짧은 색상 액센트 바를 붙여 "챕터 경계"가 아니라 "앱 섹션 표식"처럼 읽히게 함.
+     ⚠️ 번호 배지(1,2,3…)는 일부러 안 씀 — us-lottery-basics-*.html(27개 언어) 등 일부 파일은
+     이미 h2 텍스트 자체에 "1. The US lottery..." 식으로 번호가 박혀 있어서, CSS가 또 번호를
+     붙이면 이중 넘버링이 됨(실제 스크린샷 검수로 발견). 순수 장식 요소라 텍스트 내용과
+     절대 안 겹침. */
   h2{
-    font-family:var(--font-display); font-size:var(--fs-h2); font-weight:700; line-height:1.35;
-    margin:38px 0 14px; padding-bottom:10px; border-bottom:2px dashed var(--border);
-    overflow-wrap:anywhere;
+    display:flex; align-items:flex-start; gap:12px;
+    font-family:var(--font-display); font-size:var(--fs-h2); font-weight:700; line-height:1.3;
+    margin:46px 0 16px; overflow-wrap:anywhere;
+  }
+  html[dir="rtl"] h2{ flex-direction:row-reverse; }
+  h2::before{
+    /* 좁은 화면에서 제목이 2줄로 꺾여도 첫 줄에만 맞춰 위쪽 정렬(340px 스크린샷 검수로
+       align-items:center에서 조정 — 안 꺾이는 한 줄짜리 제목은 육안 차이 없음) */
+    content:''; flex:0 0 auto; width:7px; height:1.15em; border-radius:4px; background:var(--teal);
+    margin-top:0.1em;
   }
   h3{ font-family:var(--font-display); font-size:var(--fs-h3); font-weight:700; margin:20px 0 8px; overflow-wrap:anywhere; }
   /* 2026-08-14 나머지 11개 페이지 확산: h2 바로 아래 붙는 보조 설명 한 줄
@@ -292,7 +314,8 @@
      훨씬 무거워 보였음. 아래는 그 비교 결과를 반영해 계산기의 실제 비중 위계를
      맞춘 값(가장 중요한 quick-answer만 xs 그림자, 나머지 콜아웃류는 그림자 없음) */
   .quick-answer{
-    background:var(--card); border:1.5px solid var(--border); border-radius:14px;
+    background:linear-gradient(150deg, rgba(var(--teal-rgb),0.07) 0%, var(--card) 60%);
+    border:1.5px solid var(--border); border-radius:18px;
     box-shadow:var(--shadow-hard-xs); padding:20px; margin:0 0 26px;
   }
   .quick-answer p.label{
@@ -321,9 +344,13 @@
     padding:12px 10px; border-radius:10px; text-decoration:none; overflow-wrap:anywhere;
   }
 
+  /* 2026-09 "책 느낌 탈피" 패스: 이 콜아웃 박스들이 전부 흰 배경+테두리색만 다른 문법이라
+     한 화면에 여러 개 나오면 "각주/인용문"처럼 단조로워 보인다는 지적 — 테두리 색과 짝을 이루는
+     아주 옅은 배경 틴트를 얹어서 색으로 바로 구분되는 "앱 콜아웃 카드"처럼 보이게 함(대비 규정
+     대상인 글자색 자체는 안 건드려서 접근성 영향 없음). */
   .example-box{
-    background:var(--card); border:1.5px solid var(--border); border-left:5px solid var(--teal);
-    border-radius:14px; padding:20px; margin:0 0 24px;
+    background:rgba(var(--teal-rgb),0.05); border:1.5px solid var(--border); border-left:5px solid var(--teal);
+    border-radius:18px; padding:20px; margin:0 0 24px;
   }
   html[dir="rtl"] .example-box{ border-left:1.5px solid var(--border); border-right:5px solid var(--teal); }
   .example-box p.label{
@@ -334,20 +361,24 @@
   .example-box p:last-child{ margin-bottom:0; }
   .example-box b{ color:var(--teal); }
 
+  /* ⚠️ 배경 틴트 안 씀(의도적) — .label 글자색(--status-amber)이 흰 배경 기준으로도 명암비
+     여유가 거의 없어서(4.99:1, WCAG AA 4.5:1 턱걸이), 아주 옅은 틴트만 얹어도 4.5 밑으로
+     떨어짐(a11y_audit.js로 실제 검출, 2026-09 — 배경을 var(--card)로 되돌리고 테두리만
+     대시→실선으로 바꿔서 색 대비 없이도 다른 콜아웃과 구분되게 함). */
   .gray-zone-box{
-    background:var(--card); border:2px dashed var(--status-amber); border-radius:14px;
+    background:var(--card); border:1.5px solid var(--status-amber); border-radius:18px;
     padding:18px 20px; margin:22px 0;
   }
   .gray-zone-box p.label{ font-family:var(--font-display); font-size:var(--fs-small); font-weight:800; color:var(--status-amber); margin:0 0 8px; }
 
   .note-box{
-    background:var(--card); border:1.5px solid var(--border); border-left:4px solid var(--teal);
-    border-radius:10px; padding:14px 16px; margin:18px 0; font-size:var(--fs-note);
+    background:rgba(var(--teal-rgb),0.05); border:1.5px solid var(--border); border-left:4px solid var(--teal);
+    border-radius:12px; padding:14px 16px; margin:18px 0; font-size:var(--fs-note);
   }
   html[dir="rtl"] .note-box{ border-left:1.5px solid var(--border); border-right:4px solid var(--teal); }
   .warn-box{
-    background:var(--card); border:1.5px solid var(--border); border-left:4px solid var(--status-red);
-    border-radius:10px; padding:14px 16px; margin:18px 0; font-size:var(--fs-note);
+    background:rgba(var(--status-red-rgb),0.06); border:1.5px solid var(--border); border-left:4px solid var(--status-red);
+    border-radius:12px; padding:14px 16px; margin:18px 0; font-size:var(--fs-note);
   }
   html[dir="rtl"] .warn-box{ border-left:1.5px solid var(--border); border-right:4px solid var(--status-red); }
 
@@ -355,8 +386,13 @@
   table{
     display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
     width:100%; border-collapse:collapse; margin:18px 0; font-size:var(--fs-note);
-    font-family:var(--font-mono); border:1.5px solid var(--border); border-radius:10px;
+    font-family:var(--font-mono); border:1.5px solid var(--border); border-radius:12px;
   }
+  /* 2026-09 "책 느낌 탈피" 패스: 표에 짝수행 틴트를 얹어보려 했으나 되돌림 — 이 표들이 종종
+     .badge-approx/.badge-estimate(색 텍스트, --status-amber 등) 셀을 포함하는데, 그 색이
+     흰 배경 기준으로도 명암비 여유가 거의 없어서(위 gray-zone-box와 같은 원인) 아주 옅은
+     틴트만 얹어도 특정 행에서 WCAG AA 미달이 남(a11y_audit.js로 실제 검출, 2026-09 —
+     lottery-tax-data-hub.html). 표마다 셀 내용이 달라 안전하게 스코프하기 어려워서 포기. */
   /* th/td는 overflow-wrap:anywhere를 일부러 안 씀 — CJK/한글은 브라우저가
      글자 단위로 알아서 줄바꿈해주는데, anywhere를 주면 "Powerball"·"Mega
      Millions"처럼 줄바꿈 지점이 없는 영단어까지 표가 좁을 때 중간에서 잘려
@@ -393,7 +429,7 @@
     position:relative; display:grid; grid-template-columns:34px 1fr auto;
     grid-template-areas:"badge title amt" "badge odds krw";
     align-items:center; column-gap:12px; row-gap:3px;
-    background:var(--card); border:1.5px solid var(--border); border-radius:14px;
+    background:var(--card); border:1.5px solid var(--border); border-radius:16px;
     padding:12px 16px; counter-increment:tier;
   }
   .table-wrap tr::before{
@@ -436,7 +472,7 @@
      페이지 확산. 반복되는 목록 카드라 .quick-answer(단일 강조)와 달리 그림자 없음, 나머지
      콜아웃류(.example-box/.note-box)와 같은 위계 */
   .rank-card{
-    background:var(--card); border:1.5px solid var(--border); border-radius:14px;
+    background:var(--card); border:1.5px solid var(--border); border-radius:16px;
     padding:18px 20px; margin:0 0 14px;
   }
   .rank-top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; }
@@ -458,21 +494,22 @@
   }
   .rank-calc-link:hover{ border-bottom-color:var(--teal); }
 
-  /* ---- 계산기로 유도하는 CTA — 페이지에서 유일하게 강조할 요소라 하드 섀도우를
-     남겨두되(계산기의 .ticket-shell처럼 "페이지당 하나만 강조"하는 위계 유지),
-     가장 큰 --shadow-hard(4px) 대신 sm(3px)로 낮춤 ---- */
+  /* ---- 계산기로 유도하는 CTA — 페이지에서 유일하게 강조할 요소 ---- */
   .cta-box{
-    background:var(--teal); border:2px solid var(--text-dark); border-radius:16px;
+    background:var(--teal); border-radius:16px;
     box-shadow:var(--shadow-hard-sm); padding:26px 22px; text-align:center; margin:34px 0;
   }
   .cta-box p{ color:var(--card); font-family:var(--font-display); font-size:var(--fs-h3); font-weight:700; margin:0 0 16px; }
   .cta-box a{
     display:inline-block; background:var(--card); color:var(--teal); font-weight:800; font-size:var(--fs-body);
-    padding:13px 28px; border-radius:10px; text-decoration:none; border:2px solid var(--text-dark);
+    padding:13px 28px; border-radius:10px; text-decoration:none;
     box-shadow:var(--shadow-hard-xs); transition:transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .cta-box a:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--text-dark); }
+  .cta-box a:active{ transform:scale(0.97); }
   .cta-box .cta-note{ color:var(--card); opacity:0.85; font-size:var(--fs-small); font-weight:400; margin:12px 0 0; }
+  /* 2026-08-22: opacity:0.85가 --card 위에서 대비를 3.69:1까지 깎아 WCAG AA(4.5:1) 미달로
+     만듦(다크모드 --teal 밝기 조정 후에도 남음) — 다크모드만 불투명하게 해서 해결
+     (라이트모드는 opacity:0.85로도 이미 통과라 그대로 둠). */
   :root[data-theme="dark"] .cta-box .cta-note{ opacity:1; }
 
   .share-btn{
@@ -481,7 +518,7 @@
     margin:0 0 24px; font-family:inherit; box-shadow:var(--shadow-hard-xs);
     transition:transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .share-btn:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--text-dark); }
+  .share-btn:active{ transform:scale(0.98); }
   .share-btn.copied{ background:var(--teal); color:var(--card); }
 
   /* ---- FAQ 아코디언 ---- */
@@ -497,6 +534,12 @@
   .faq-item[open] summary::before{ content:'▾'; }
   html[dir="rtl"] .faq-item[open] summary::before{ content:'▾'; }
   .faq-item p{ margin-top:10px; color:var(--text-muted); }
+
+  /* 404.html/sitemap.html처럼 클래스 없는 순수 <ul><li><a>로 링크 목록을 나열하는 페이지용
+     기본값 — 이게 없으면 브라우저 기본 링크색(파랑)으로 떨어지는데, 다크모드에서 그 파랑이
+     배경과 대비 기준(WCAG AA 4.5:1)을 통과 못 함(a11y_audit.js로 실제 검출, 2026-09). */
+  .wrap ul li a{ color:var(--teal); text-decoration:none; }
+  .wrap ul li a:hover{ text-decoration:underline; }
 
   /* ---- 하단 링크 목록 / 다국어 셀렉터 ---- */
   .related-links{ display:flex; flex-direction:column; gap:10px; margin:18px 0 32px; }
@@ -521,6 +564,52 @@
     border-top:2px dashed var(--border);
   }
 
+  /* ---- 2026-08-14 마지막 3개 페이지(404.html/press-kit.html/sitemap.html) 전용 —
+     보조 콘텐츠 카드류(.fact-card/.asset-card)는 기존 note-box/callout류와 같은 위계로
+     얇은 테두리+그림자 없음, 배지(.badge)는 side-card-best-badge류와 같은 1px 색상
+     테두리+그림자 없음 문법 재사용 ---- */
+  .kicker{
+    font-family:var(--font-display); font-size:var(--fs-small); font-weight:700; color:var(--teal);
+    text-transform:uppercase; letter-spacing:0.04em; margin:20px 0 4px;
+  }
+  .fact-grid, .asset-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:0 0 28px; }
+  .fact-card{ background:var(--card); border:1.5px solid var(--border); border-radius:16px; padding:14px 16px; }
+  .fact-card .num{ font-family:var(--font-mono); font-size:22px; font-weight:800; color:var(--teal); }
+  .fact-card .label, .legend{ font-size:var(--fs-small); color:var(--text-muted); }
+  .legend{ margin:10px 0 28px; }
+  .asset-card{
+    background:var(--card); border:1.5px solid var(--border); border-radius:16px; padding:16px;
+    text-align:center;
+  }
+  .asset-card img{ max-width:100%; height:auto; border-radius:8px; margin-bottom:10px; }
+  .asset-card a{ display:inline-block; font-size:var(--fs-small); font-weight:700; color:var(--teal); text-decoration:none; }
+  .citation-box{
+    background:var(--card); border:1.5px dashed var(--border); border-radius:16px;
+    padding:16px 18px; font-size:var(--fs-note); margin:0 0 28px;
+  }
+  .citation-box code{
+    background:rgba(var(--teal-rgb),0.08); padding:2px 6px; border-radius:5px; font-size:0.95em;
+    font-family:var(--font-mono);
+  }
+  td.pct, td.num{ font-family:var(--font-mono); font-weight:800; }
+  .badge{
+    display:inline-block; font-size:var(--fs-small); font-weight:700; padding:2px 9px;
+    border-radius:999px; white-space:nowrap; border:1px solid currentColor;
+  }
+  .badge-verified{ color:var(--status-green); }
+  .badge-approx{ color:var(--status-amber); }
+  .badge-estimate{ color:var(--status-red); }
+
+  /* 404.html 마스코트 아이콘 래퍼 */
+  .mascot{ text-align:center; margin:40px 0 8px; }
+  .mascot svg{ width:96px; height:96px; }
+
+  /* sitemap.html 언어 목록 — 기존 .lang-links 배지 문법 재사용, 가로 배열만 추가 */
+  .lang-tag{ color:var(--text-muted); font-weight:400; font-size:0.85em; }
+  ul.lang-grid{ flex-direction:row; flex-wrap:wrap; }
+  ul.lang-grid li{ flex:0 0 auto; list-style:none; }
+  ul.lang-grid li a{ padding:7px 14px; font-size:var(--fs-small); }
+
   /* ---- 아주 좁은 화면(240~380px) 보호 — 계산기 리디자인 때 겪은 카드/버튼 잘림 재발 방지 ---- */
   @media (max-width:380px){
     .wrap{ padding:0 12px 44px; }
@@ -536,6 +625,7 @@
     .rank-amounts{ gap:16px; }
     .official-links{ flex-direction:column; }
     .official-links a{ flex:1 1 auto; }
+    .fact-grid, .asset-grid{ grid-template-columns:1fr; }
   }
   @media (max-width:300px){
     .wrap{ padding:0 8px 36px; }
