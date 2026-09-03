@@ -510,15 +510,24 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
 
 ## 알려진 미해결 항목
 
-- **⚠️ "동명의 Claude Routine을 비활성화했다"는 기존 기록이 사실과 다름(2026-09-03 점검에서
-  발견)** — 아래 항목은 2026-09-02 세션이 "예전 Routine을 껐다"고 적어놨지만, `list_triggers`로
-  직접 확인하니 `ChamTax 로또 데이터 점검 (매일)`(`trig_014eQLRrMpHUvbtwR69KiESb`, 매일
-  06:00 UTC)이 **여전히 `enabled:true`이고 2026-09-02에도 정상 `SUCCEEDED`로 실행됨** —
-  즉 이 Routine과 `jackpot-update.yml` GitHub Action이 지금 같은 일(새 회차/잭팟액 확인)을
-  매일 중복 실행 중. 이 Routine을 끄려고 시도했으나 auto mode 분류기가 차단(트리거 비활성화는
-  사용자 승인 필요한 작업으로 분류됨) — **사용자가 직접 끌지 결정할 것**(끄면 계정 주간
-  사용량 절감에 도움, 다만 GitHub Action이 실패할 때의 이중 안전망 역할도 있었음 — 트레이드오프
-  판단 필요). 아래는 그 GitHub Action이 실패했을 때 수동으로 다룰 때를 위한 체크리스트:
+- **⚠️ 사용자 조치 필요 — 중복 실행 중인 Claude Routine을 끌 것을 권장, 세션은 못 끔**
+  (2026-09-03 점검에서 발견). "동명의 Claude Routine을 비활성화했다"는 2026-09-02 세션
+  기록이 사실과 다름 — `list_triggers`로 확인하니 `ChamTax 로또 데이터 점검 (매일)`
+  (`trig_014eQLRrMpHUvbtwR69KiESb`, 매일 06:00 UTC)이 여전히 `enabled:true`이고
+  `jackpot-update.yml` GitHub Action과 매일 같은 일(새 회차/잭팟액 확인)을 중복 실행 중.
+  **권장: 이 Routine을 끌 것.** 근거: (1) `jackpot-update.yml`이 2026-09-01부터 매일
+  정상 성공(`main`에 직접 커밋까지 끝냄) — 이 Routine이 담당하던 일을 이미 완전히
+  대체함. (2) 이 Routine은 프롬프트상 커밋 후 브랜치 push까지만 하고 PR/머지 단계가 없어서,
+  뭔가 바뀌어도 실제로 `main`엔 반영 안 된 채 방치될 위험이 원래도 있었음(자세한 배경은
+  최상단 "머지해줘"≠"커밋+푸시" 사고 항목 참고). (3) 계정 주간 사용량 한도 초과가 최근
+  반복된 문제였는데, 매일 중복으로 도는 이 Routine이 그 한도를 불필요하게 갉아먹는 원인
+  중 하나. 이 Routine이 새로 뭔가 유용하게 잡아낸 사례가 최근 없어 안전망으로서의 실익도
+  낮다고 판단. **세션이 직접 끄지는 못함** — `update_trigger(enabled:false)` 호출이 auto
+  mode 분류기에 매번 차단됨(트리거 비활성화는 세션 판단이 아니라 사용자 승인이 필요한
+  작업으로 분류됨, 대화창에서 "네가 알아서 해"라고 위임해도 이 분류기는 우회 안 됨) —
+  사용자가 claude.ai의 Routines/Automations 설정 화면에서 이름 `ChamTax 로또 데이터
+  점검 (매일)`을 직접 꺼야 함. 아래는 그 GitHub Action이 실패했을 때 수동으로 다룰 때를
+  위한 체크리스트:
   1. `LATEST_DRAW.powerball`/`LATEST_DRAW.megamillions`(date/numbers/special) — 홈 화면
      "최근 당첨번호" 위젯이 읽는 값. `odds-data.js`의 `*_DRAW_ARCHIVE`/`*_JACKPOT_ARCHIVE`와
      **완전히 별개인 손 관리 값**이라, 아카이브를 갱신해도 이게 따로 누락될 수 있음(과거
@@ -994,8 +1003,14 @@ FAILED였던 주간·월간 Routine들은 이미 복구되어 최근 실행 전�
 `ISSUES: 0`/위반 0건. `full_overflow_sweep.js`(945개 조합)는 수정 전 3건 → 수정 후
 재실행으로 0건 확인.
 
-**다음 세션 참고**: (1) 위 4번 항목(중복 Routine 끌지 여부)은 사용자 확인 필요.
-(2) `full_overflow_sweep.js`처럼 느린 전체 스윕은 최근 세션들이 부분 테스트만 반복
-돌리느라 오래 안 돌렸던 것으로 보임 — 새 UI 요소(예: 이번 잭팟 티저)를 추가한 세션은
-검증 목록에 넣은 테스트가 실제로 그 요소를 커버하는지 확인할 것(이번 버그는 도입
-세션의 검증 로그에 `full_overflow_sweep`이 없었음).
+**후속(같은 세션 이어서)**: 사용자가 중복 Routine 건에 대해 "네가 어떻게 하면 좋을지
+보고해달라"고 요청 → 위 "알려진 미해결 항목"에 권장 사유(GitHub Action이 이미 완전
+대체, 이 Routine은 애초에 머지 단계가 없어 안전망으로도 약함, 계정 주간 사용량 절감)와
+함께 "끌 것을 권장"으로 정리해 보고. `update_trigger(enabled:false)`를 다시 시도했으나
+auto mode 분류기가 재차 차단 — 대화상 위임으로도 우회 안 되는 하드 차단으로 확인,
+**사용자가 claude.ai Routines 설정에서 직접 꺼야 함**.
+
+**다음 세션 참고**: `full_overflow_sweep.js`처럼 느린 전체 스윕은 최근 세션들이 부분
+테스트만 반복 돌리느라 오래 안 돌렸던 것으로 보임 — 새 UI 요소(예: 이번 잭팟 티저)를
+추가한 세션은 검증 목록에 넣은 테스트가 실제로 그 요소를 커버하는지 확인할 것(이번
+버그는 도입 세션의 검증 로그에 `full_overflow_sweep`이 없었음).
