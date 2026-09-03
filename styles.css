@@ -484,7 +484,10 @@
   }
   .hero-jackpot-teaser-amt-pb{ color:var(--status-red); }
   .hero-jackpot-teaser-amt-mm{ color:var(--status-amber); }
-  .hero-jackpot-teaser-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-muted); white-space:nowrap; }
+  /* 2026-09-03: white-space:nowrap이었으나 ru/tl/es 등 긴 번역 문구가 320px 폭에서 줄바꿈
+     못 하고 버튼 밖으로 그대로 삐져나가는 회귀 발견(tests/full_overflow_sweep.js) — 라벨
+     자체는 한 단어가 아니라 여러 단어 문구라 공백에서 자연스럽게 줄바꿈돼도 무방해서 제거. */
+  .hero-jackpot-teaser-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-muted); max-width:100%; }
   @media (hover:hover){ .hero-jackpot-teaser:hover{ border-color:var(--teal); } }
   .hero-jackpot-teaser:active{ transform:scale(0.97); }
   .tax-impact-compact{

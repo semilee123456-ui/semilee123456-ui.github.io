@@ -950,3 +950,52 @@ ne/pt)에서 `powerball` 필드를 못 찾는 걸 보고 원인을 추적하다�
 **머지**: `claude/handover-compression-mvp5xz` 브랜치에서 PR #363 생성 후 즉시
 머지 완료(`main`에 병합됨, `821f341`). 이 세션에서 별도로 만든 후속 작업은 없음
 — "이어서 9"가 남긴 미완료 항목이 이걸로 완전히 해소됨.
+
+### 2026-09-03 — HANDOFF 압축 + 밀린 점검 일괄 수행(잭팟 티저 320px 오버플로 버그 발견·수정)
+
+사용자가 "인수인계 압축해주고 지금까지 못한 점검 전부 해줘"라고 요청. 순서대로 처리:
+
+**1. HANDOFF 압축**: "이어서 8"을 `HANDOFF-ARCHIVE.md`로 이관(최근 3개 세션 유지 원칙),
+"알려진 미해결 항목"의 완결된 다크모드 대비 항목을 23줄→5줄로 축약, Routine FAILED
+항목을 최신 상태로 갱신.
+
+**2. "이어서 10"이 남긴 미완료 점검(스마트따옴표 `class="` 류 회귀, us-lottery-basics
+계열만 확인했었음)을 194개 HTML 전체로 확대 재실행** — 추가 발견 없음(`grep -P '=[”“]'`).
+
+**3. 회귀 테스트 18개 전체 실행**(그동안 부분 실행만 반복돼서 전체 실행 이력이 오래됨) —
+`full_overflow_sweep.js`(945개 조합)에서 **실제 버그 발견**: 2026-09-02에 추가된 홈 화면
+잭팟 티저 버튼(`.hero-jackpot-teaser`)이 320px 폭에서 러시아어/타갈로그어/스페인어 3개
+언어 뷰포트 밖으로 삐져나감. 원인은 `.hero-jackpot-teaser-label{ white-space:nowrap }` —
+"🎟️ Consultar el acumulado reciente"류 긴 번역 문구가 한 줄로 강제되면서 버튼째로
+과도하게 넓어짐. `white-space:nowrap` 제거(여러 단어로 이뤄진 문구라 공백에서 자연
+줄바꿈돼도 무방)로 수정, Playwright로 es/320px 재확인(버튼 폭 320px 안으로 정상 복귀,
+라벨이 2줄로 자연스럽게 감쌈) + `full_overflow_sweep.js` 재실행으로 3건 전부 해소 확인.
+`styles.min.css` 재생성, `index.html` 캐시버스팅 20260902-5→20260903-1 갱신.
+
+**4. `list_triggers`로 Claude Routine 실제 상태 재확인** — 지난주(2026-08-27~09-01)
+FAILED였던 주간·월간 Routine들은 이미 복구되어 최근 실행 전부 `SUCCEEDED`. 다만 **"ChamTax
+로또 데이터 점검(매일)" Routine을 예전에 껐다는 기존 기록이 사실이 아님을 발견** —
+`enabled:true`로 여전히 매일 돌고 있고, `jackpot-update.yml` GitHub Action과 매일 같은
+일을 중복 실행 중. 끄려고 시도했으나 auto mode 정책상 차단(트리거 비활성화는 사용자
+승인 필요)되어 "알려진 미해결 항목"에 기록, 사용자 판단 대기.
+
+**5. "알려진 미해결 항목" #4(89개+ 랜딩페이지 `.example-box`/`.lead` 잭팟 예시 금액)
+스팟체크** — grep으로 전체 landing 페이지의 하드코딩 금액을 훑어본 결과 대부분
+`$1,000,000`/`$100M`/`$500M` 같은 평상시 예시용 반올림 값이거나 역대 기록(예:
+`$997.6M` cashUsd) 등 시간이 지나도 안 낡는 값들이었고, 실제 잭팟과 심하게 어긋나
+보이는 사례는 없었음 — 별도 수정 불필요.
+
+**검증**: `node --check script.js`, `broken_link_audit`(194)·`fact_consistency_audit`
+(199)·`draw_archive_integrity_check`(4)·`mcp_sync_check`(15개국)·`drift_consistency_test`
+(29개국) 전부 `ISSUES: 0`, Playwright `home_audit`(18)·`faq_audit`(18)·
+`audit_odds_compare`(40)·`wrap_audit`(168)·`lang_leak_audit`(140)·`console_error_audit`
+(224)·`map_scroll_audit`(10)·`nav_slider_audit`·`link_navigation_audit`(8)·
+`i18n_coverage_audit`(774키)·`i18n_attr_lint`·`a11y_audit`(13페이지×2모드) 전부
+`ISSUES: 0`/위반 0건. `full_overflow_sweep.js`(945개 조합)는 수정 전 3건 → 수정 후
+재실행으로 0건 확인.
+
+**다음 세션 참고**: (1) 위 4번 항목(중복 Routine 끌지 여부)은 사용자 확인 필요.
+(2) `full_overflow_sweep.js`처럼 느린 전체 스윕은 최근 세션들이 부분 테스트만 반복
+돌리느라 오래 안 돌렸던 것으로 보임 — 새 UI 요소(예: 이번 잭팟 티저)를 추가한 세션은
+검증 목록에 넣은 테스트가 실제로 그 요소를 커버하는지 확인할 것(이번 버그는 도입
+세션의 검증 로그에 `full_overflow_sweep`이 없었음).
