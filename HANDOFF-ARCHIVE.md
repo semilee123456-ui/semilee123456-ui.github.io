@@ -19415,3 +19415,44 @@ JSON-LD에서만 제외(화면에 보이는 실제 FAQ 아코디언은 언어·�
 있다"는 패턴이 이번에 처음 발견됐으니, 앞으로 비슷하게 "한국어 원문을 그대로 영어로
 옮기는" 작업을 할 땐 원문 자체가 이미 편향돼 있을 가능성을 먼저 확인할 것.
 
+
+### 2026-09-02 이어서 7 — 홈 화면 잭팟 티저 추가(재방문 훅) + "무국가 중립" 전환(PR #357) 병합 + 다크모드 대비 수정(PR #358, 머지 완료)
+
+사용자가 "사람들이 왜 계속 사이트에 들어와야 하는지 이유를 찾아야 할 것 같다"고 요청 —
+이 사이트는 "당첨금 실수령액 계산"이라는 일회성 니즈를 채우는 도구라 자연스러운 재방문
+동기가 거의 없다는 점을 짚고, 유일하게 이미 있는 자연스러운 신호(잭팟 금액이 매 추첨마다
+바뀜)를 화면 아래 접힌 토글에서 최상단으로 끌어올리는 방향을 제안 → 사용자가 "네가 제일
+괜찮다고 생각하는 걸로" 위임.
+
+**구현**: `index.html` 히어로 타이틀 바로 아래에 `.hero-jackpot-teaser` 알약 버튼 추가
+(파워볼/메가밀리언즈 금액을 "$XXXM"로 압축 표시) — 클릭하면 `scrollToJackpotPanel()`이
+기존 "🎟️ 최근 잭팟 확인하기" `<details>` 패널(`home-jackpot-details` id 신규 부여)을
+펼치고 스크롤. 숫자는 새 데이터 소스 없이 기존 `applyJackpotData()`가 `JACKPOT_DATA`를
+그대로 재사용해서 채움. CSS는 `jackpot-quickfill-btn`이 겪었던 "좁은 화면에서 글자가
+한 글자씩 쪼개지는" 전례(`minmax(0,1fr)` 그리드 문제)를 피하려 flex+nowrap+wrap만 사용.
+
+**병행 세션과 충돌 발견·병합**: 작업 중 `origin/main`이 PR #357("사이트를 '무국가
+중립'으로 전환")로 크게 앞서 나간 걸 발견 — `sharedCountry` 기본값 `kr`→`other`,
+`sharedInputCurrency` 기본값 `KRW`→`USD`로 바꿔 어느 나라도 기본으로 밀지 않게 한
+근본적인 변경으로, 이 세션이 사용자에게 제안했던 "국가 선택을 더 눈에 띄게" 방향보다
+훨씬 더 직접적으로 같은 문제(다른 나라 사람도 거리낌 없이)를 해결함. `git merge
+origin/main`으로 병합 — 충돌은 `index.html`/`script.min.js`/`sw.js` 3곳뿐(전부
+캐시버스팅 버전 번호 충돌), 더 높은 번호로 통합하고 `script.min.js`는
+`node scripts/build-min.js` 재실행으로 정상 재생성.
+
+**병합 후 재검증 중 발견·수정한 버그**: 기본 통화가 USD로 바뀌면서 `#home-usd-note`
+("💵 실제로는 달러로 받아요" 안내)가 첫 화면부터 기본 노출되기 시작했는데(이전엔 KRW
+기본값이라 이 조건이 잘 안 걸렸던 것으로 추정), 다크모드에서 `--teal` 텍스트 +
+`rgba(teal,0.08)` 배경 조합이 대비 4.20:1로 WCAG AA 4.5:1 미달(`a11y_audit` 검출) —
+배경 틴트만 0.03으로 옅혀 4.74:1로 해소(`:root[data-theme="dark"] .result-hero
+.usd-actual-note` 오버라이드 추가, 텍스트색은 브랜드 톤 유지 위해 안 건드림).
+
+**검증**: `node --check script.js`, `broken_link_audit`(194)·`fact_consistency_audit`
+(199)·`draw_archive_integrity_check`(4) 전부 `ISSUES: 0`, Playwright
+`console_error_audit`(224)·`home_audit`(18)·`a11y_audit`(13페이지×2모드, 위반 0건)·
+`wrap_audit`(168) 전부 `ISSUES: 0`. 라이트/다크 모드 + 320px 좁은 화면(독일어)
+스크린샷으로 레이아웃 확인, 사용자에게도 스크린샷 전달.
+
+**머지**: `claude/handover-compression-mvp5xz` 브랜치에서 PR #358 생성 후 즉시 머지
+완료(`main`에 병합됨, `baad6fc`). 이 세션에서 별도로 만든 후속 작업은 없음.
+
