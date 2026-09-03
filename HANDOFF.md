@@ -458,7 +458,7 @@ tests/               회귀 테스트 스크립트(2026-08-20 기준 16개, 아�
 
 ---
 
-## 회귀 테스트 (tests/, 2026-08-20 기준 16개 — 계속 늘어나는 중, `ls tests/*.js | wc -l`로 확인할 것)
+## 회귀 테스트 (tests/, 2026-09-03 기준 18개 — 계속 늘어나는 중, `ls tests/*.js | wc -l`로 확인할 것)
 
 ```bash
 python3 -m http.server 9000 &   # 저장소 루트에서
@@ -478,6 +478,8 @@ node tests/broken_link_audit.js           # 브라우저 불필요
 node tests/draw_archive_integrity_check.js   # 브라우저 불필요, 로또 아카이브 날짜순·중복·형식 검증
 node tests/fact_consistency_audit.js         # 브라우저 불필요
 node tests/drift_consistency_test.js         # 브라우저 불필요, 아래 참고
+node tests/mcp_sync_check.js                 # 브라우저 불필요, 아래 참고
+NODE_PATH=/opt/node22/lib/node_modules node tests/a11y_audit.js   # axe-core, 대표 페이지 WCAG 위반 검사
 ```
 Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`
 (이미 설치되어 있음, `playwright install` 하면 안 됨). 전부 마지막 줄에 `ISSUES: 0`(또는
@@ -501,15 +503,22 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
 | `drift_consistency_test.js` | `script.js`의 `TAX_MODEL`(국가별 세율)과 각 랜딩페이지 본문 서술이 어긋나는지(script.js가 정정된 뒤 랜딩페이지 반영이 몇 주 늦었던 사례를 계기로 추가) — 계산기가 쓰는 핵심 세율 숫자가 페이지에 최소 한 번은 언급되는지만 보는 저비용 스모크 테스트 |
 | `full_overflow_sweep.js` | 지원하는 전체 언어 × 대표 화면 폭 5개 × 주요 화면 전수 조합에서 실제 렌더링된 박스가 부모/화면 경계를 벗어나는 오버플로우가 있는지(`home_audit`/`wrap_audit`/`audit_odds_compare`는 ko/en 위주만 다뤄서 생긴 사각지대) |
 | `link_navigation_audit.js` | `index.html?amount=...`류 쿼리스트링 딥링크가 기대한 화면/상태로 실제로 떨어지는지(href가 유효해도 런타임에 엉뚱한 탭으로 튕기는 버그 클래스는 `broken_link_audit.js`가 못 잡음) |
+| `mcp_sync_check.js` | `script.js`(`TAX_MODEL`)와 `mcp-server/tax-data.js`(`FLAT_COUNTRY_MODEL`) 사이 세율 손동기화 드리프트 — `rate` 필드명이 특정 패턴일 때만 잡는 정적 스모크 테스트라 커버리지 제한적(위 "알려진 미해결 항목" 참고) |
+| `a11y_audit.js` | axe-core로 대표 페이지의 WCAG 색상 대비 등 접근성 위반 검사(라이트/다크 모드) |
 
 ---
 
 ## 알려진 미해결 항목
 
-- **새 당첨 회차가 나올 때마다 반드시 확인할 3곳(2026-09-02부터 `.github/workflows/
-  jackpot-update.yml`이 매일 자동 처리 — 예전에 있던 동명의 Claude Routine은 계정 주간
-  사용량 한도로 계속 실패하고 있어서 비활성화하고 이 GitHub Action으로 대체함, 위 2026-09-02
-  세션 항목 참고. 아래는 그 Action이 실패했을 때 수동으로 다룰 때를 위한 체크리스트)**:
+- **⚠️ "동명의 Claude Routine을 비활성화했다"는 기존 기록이 사실과 다름(2026-09-03 점검에서
+  발견)** — 아래 항목은 2026-09-02 세션이 "예전 Routine을 껐다"고 적어놨지만, `list_triggers`로
+  직접 확인하니 `ChamTax 로또 데이터 점검 (매일)`(`trig_014eQLRrMpHUvbtwR69KiESb`, 매일
+  06:00 UTC)이 **여전히 `enabled:true`이고 2026-09-02에도 정상 `SUCCEEDED`로 실행됨** —
+  즉 이 Routine과 `jackpot-update.yml` GitHub Action이 지금 같은 일(새 회차/잭팟액 확인)을
+  매일 중복 실행 중. 이 Routine을 끄려고 시도했으나 auto mode 분류기가 차단(트리거 비활성화는
+  사용자 승인 필요한 작업으로 분류됨) — **사용자가 직접 끌지 결정할 것**(끄면 계정 주간
+  사용량 절감에 도움, 다만 GitHub Action이 실패할 때의 이중 안전망 역할도 있었음 — 트레이드오프
+  판단 필요). 아래는 그 GitHub Action이 실패했을 때 수동으로 다룰 때를 위한 체크리스트:
   1. `LATEST_DRAW.powerball`/`LATEST_DRAW.megamillions`(date/numbers/special) — 홈 화면
      "최근 당첨번호" 위젯이 읽는 값. `odds-data.js`의 `*_DRAW_ARCHIVE`/`*_JACKPOT_ARCHIVE`와
      **완전히 별개인 손 관리 값**이라, 아카이브를 갱신해도 이게 따로 누락될 수 있음(과거
@@ -530,11 +539,10 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
      무시) 그 페이지만 손으로 교체할 것. 예전엔 비활성화된 "ChamTax 로또 데이터 점검" Routine의
      4번 항목이 이걸 담당했는데, 그 Routine을 껐으므로(위 2026-09-02 항목) 지금은 담당하는
      자동화가 없음.
-- **여러 주간·월간 Claude Routine이 최근(2026-08-27~09-01) 연속으로 `FAILED`** — 세율표/
-  캐시버스팅/환율 폴백/저장소 위생 등. 원인은 개별 로직 버그가 아니라 **계정 주간 사용량
-  한도 초과**(2026-09-04 21:00 UTC에 리셋)로 확인됨(`get_session`으로 실패 세션 직접 확인,
-  위 2026-09-02 항목 참고) — 한도가 리셋되면 자연 복구될 가능성이 높으니 개별로 디버깅할
-  필요는 없음. 다만 리셋 이후에도 계속 실패한다면 그때는 진짜 문제이니 확인할 것.
+- **✅ Routine 연속 `FAILED`(2026-08-27~09-01) 해소 확인(2026-09-03 점검)** — 원인은
+  계정 주간 사용량 한도 초과였음(위 2026-09-02 항목 참고). `list_triggers`로 재확인한 결과
+  "ChamTax 주간 사이트 헬스체크"·"ChamTax 로또 데이터 점검" 둘 다 2026-09-02 실행분이
+  `SUCCEEDED`로 정상 복구됨 — 더 이상 추적 불필요.
 - **`TAX_MODEL`/`COUNTRY_TAX_PROFILES`(script.js)에 국가를 추가·수정하면 `mcp-server/
   tax-data.js`(`FLAT_COUNTRY_MODEL`+`STATE_TAX_RATES`)와 `scripts/build-lottery-tax-
   data-hub.js`(`COUNTRY_META`)도 반드시 손으로 같이 고칠 것 — 2026-08-21(id/uz/kg/mm)에
@@ -588,29 +596,11 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   완료 상태였음이 확인됨**: 신규 회차 자동 반영은 위 "새 당첨 회차" 체크리스트의 아카이브가
   이미 담당(별도 GitHub Actions 불필요), 결과 캡처 공유카드는 `saveJackpotIndexShareCard()`로
   이미 배포돼있었음, CPI_BASE_YEAR는 위 항목에서 다룸.
-- **✅ 다크모드 `--teal`/`--card` 대비 해결(2026-08-22)** — 위 항목(발견 당일)에서 사용자에게
-  방향을 물은 결과 "네가 괜찮다고 생각하는 걸로"로 위임받아 처리. `.settings-toggle` 등
-  teal을 아이콘 배경으로 쓰는 소수 사례(흰 아이콘, axe color-contrast 규칙 대상 아님)만
-  빼고 나머지는 전부 teal이 **텍스트**로 쓰이는 게 압도적 다수(`styles.css`에만
-  `color:var(--teal)` 90여 곳)임을 확인 → **테두리/배경/아이콘용 `--teal`은 그대로 두고
-  다크모드 `--teal`/`--seafoam` 값 자체를 `#3AA98A`→`#4BC1A0`로 밝힘**(`--card` 대비
-  3.62:1→4.74:1, `--teal-rgb`/`--shadow-btn`의 하드코딩 rgb도 동기화). teal이 배경이고
-  글자가 `--card`/`--on-accent`(다크모드 `#1B1917`, 어두운 색)인 조합은 오히려 대비가
-  더 좋아져서 안전. **적용 범위**: `styles.css`(index.html 등) +
-  `scripts/landing-ticket-template.css`(90여 개 랜딩페이지 공용 템플릿 소스) +
-  나머지 개별 랜딩/주(state)페이지 176개가 각자 인라인 `<style>`에 갖고 있던 동일 토큰
-  전부(사이트 구조가 페이지마다 색상 토큰을 복붙해 갖고 있어 한 곳만 고치면 안 됨 —
-  `scripts/apply-landing-ticket-style.js`로 전체 재생성했다가 템플릿에 이미 쌓여있던
-  무관한 드리프트(`--status-green`, `.section-note` 등, 이번 세션이 만든 게 아님)까지
-  10,797줄 규모로 딸려 들어오는 걸 발견하고 되돌린 뒤, 토큰 값만 직접 치환하는 방식으로
-  다시 처리 — 검토 안 된 대량 변경을 실수로 커밋할 뻔한 사례, 다음 세션도 이 스크립트
-  쓸 때 결과 diff 크기부터 확인할 것). **검증**: `node --check script.js` OK,
-  `tests/broken_link_audit.js` 181개 파일 `ISSUES: 0`, `tests/console_error_audit.js`
-  224개 설정 `ISSUES: 0`, `tests/a11y_audit.js`로 대표 13페이지 재감사 — 수정 전 13개
-  페이지에서 위반 발견되던 게 6개로 감소(california-lottery-tax/china-resident/
-  korea-resident/lottery-tax-data-hub/biggest-lottery-jackpots-after-tax/
-  us-lottery-tax-rate는 전부 위반 0으로 해소). `styles.min.css` 재생성,
-  `index.html` 캐시버스팅 20260820-1→20260822-3 갱신.
+- **✅ 다크모드 `--teal`/`--card` 대비 해결(2026-08-22)** — 다크모드 `--teal`/`--seafoam`을
+  `#3AA98A`→`#4BC1A0`로 밝혀 `--card` 대비 3.62:1→4.74:1로 개선(`styles.css` +
+  `scripts/landing-ticket-template.css` + 개별 페이지 176개 인라인 토큰 전부 동기화).
+  `tests/a11y_audit.js` 대표 13페이지 위반 13→6건으로 감소, 나머지는 아래 8/23 항목에서 해소.
+  다시 "teal 대비 낮다"류로 재조사 불필요.
 - **✅ 잔여 색상 대비 이슈 4건 전부 해결(2026-08-23)** — 아래 "작업 이력" 최신 항목 참고.
   실제로는 4건 중 2건(`--status-red`/`.cta-note`)만 진짜 색상 버그였고, 나머지 2건
   ("explore" 섹션·`contact.html`)은 `tests/a11y_audit.js` 자체가 진입 애니메이션/뷰 전환
@@ -867,45 +857,8 @@ resident" 등 실제 검색 결과에 `chamtax.com`은 전혀 안 나옴(TheLott
 2026-09-02 이어서 2("복권 당첨 느낌" 제거)/2026-09-02 이어서 3("무국가 중립" 전환 1단계)/
 2026-09-02 이어서 4(HANDOFF 재압축+메가밀리언즈 8/28 반영)/2026-09-02 이어서 5
 ("43개국"→51개국 표기 정정)/2026-09-02 이어서 7(잭팟 티저+무국가 중립 병합+다크모드
-대비 수정) 아홉 항목을 그대로 옮겼음)*
-
-### 2026-09-02 이어서 8 — 기본 og:image(소셜 공유 카드)가 통째로 한국어였던 걸 뒤늦게 발견·교체
-
-사용자가 "우리가 말한 것 중 안 한 거 있어?"라고 재확인 요청 → FAQPage 스코프 축소
-건을 먼저 답했고, 이어서 "네가 해야된다고 생각하는 거 전부 해줘"라고 위임받아 사이트를
-다시 훑다가 발견. `index.html`의 기본 `og:image`(카카오톡/트위터/슬랙 등에 링크
-공유했을 때 뜨는 미리보기 카드, `og-image-hook.png`)가 **텍스트 메타(Task 2에서 이미
-영어로 전환)와 달리 이미지 자체는 그대로 한국어**였음 — "한국 거주자 실수령액 예시",
-"발표 금액 1,503억원" 등 전부 한글+원화 단위. 심지어 영어판 이미지(`og-image-hook-
-en.png`)도 "U.S. LOTTERY TAX FOR KOREA RESIDENTS"라고 영어로 된 채 여전히 한국을
-못박고 있었음(다만 이건 실제로 그 이미지를 쓰는 `english_in_korea_lottery_tax.html`
-— 재한 외국인 대상 페이지 — 에는 맞는 프레이밍이라 그대로 둠). 텍스트만 고치고 가장
-눈에 띄는 시각 자산(공유 카드)을 놓쳤던 셈 — 소셜 공유가 실제로 가장 많이 노출되는
-지점이라 파급력이 큰 발견.
-
-**처리**: 이미지 생성 스크립트/템플릿이 저장소에 없어서(과거 세션이 손으로 제작한
-것으로 추정) HTML 목업(로고 SVG는 `index.html`의 것 그대로 재사용, 색상 토큰은
-`styles.css`의 `--teal`/`--navy`/`--status-red`/`--status-amber` 그대로 사용)을
-새로 만들어 Playwright로 1200×630 스크린샷 → 새 `og-image-hook.png`로 교체. 내용은
-"$100M 당첨 → 실제로 얼마?"를 국가 특정 없이 미국 30% 원천징수 기준선만 보여주고
-"51 countries supported"로 마무리(이번 세션 전체의 무국가 중립 방향과 일치). 기존
-한국어 이미지는 버리지 않고 `og-image-hook-ko.png`로 보존해서, **실제 본문이
-한국어인 페이지들**(`<html lang="ko">`인 `us-lottery-basics.html`/`powerball-
-tax.html`/`megamillions-tax.html`/`us-lottery-tax-rate.html`/`us-lottery-take-
-home.html`/`korea-resident-us-lottery-tax.html`/`korean_abroad_us_lottery_tax_ko.html`/
-`lottery-jackpot-amount.html`/`biggest-jackpot-payouts.html`/`sitemap.html`, 10개
-파일)는 그쪽을 계속 쓰도록 og:image/twitter:image만 갱신 — 페이지 콘텐츠 언어와
-공유 카드 언어가 다시 일치하게 됨. `index.html`과 이번 세션에서 만든 영어판 4개
-(`powerball-tax-en.html`/`megamillions-tax-en.html`/`us-lottery-tax-rate-en.html`/
-`us-lottery-take-home-en.html`)만 새 중립 이미지를 씀.
-
-**검증**: `broken_link_audit`(194개 파일)·`fact_consistency_audit`(199개 파일)·
-`console_error_audit`(224 설정) 전부 `ISSUES: 0`. 새 이미지·기존 두 이미지(en/ko)
-전부 1200×630 확인.
-
-**다음 세션 참고**: 이번에 놓쳤던 패턴 — "메타 텍스트만 고치고 시각 자산(이미지·
-스크린샷·배너)은 안 고치는" 실수를 또 반복하지 말 것. 앞으로 비슷하게 텍스트 톤을
-바꾸는 작업을 할 땐 그 페이지가 실제로 보여주는 이미지 자산까지 같이 확인할 것.
+대비 수정)/2026-09-02 이어서 8(기본 og:image가 한국어였던 것 발견·교체) 열 항목을
+그대로 옮겼음)*
 
 ### 2026-09-02 이어서 9 — us-lottery-basics 26개 언어 전부에서 "한국 로또 6/45 비교" 편향 제거
 
