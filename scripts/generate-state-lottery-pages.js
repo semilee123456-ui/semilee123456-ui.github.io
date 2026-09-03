@@ -23,6 +23,17 @@
  * 참고 — 이 파일 자체엔 출처 URL을 남기지 않음, 공개 저장소 코멘트에 외부 링크 나열
  * 대신 사용자에게 채팅으로 요약).
  *
+ * 2026-09-02 세션에서 세 번째 묶음 추가: 나머지 28개 주 + DC(계산기 STATE_TAX_RATES엔
+ * 이미 있지만 전용 랜딩페이지가 없던 곳) 전부. 세율은 전부 script.js STATE_TAX_RATES에서
+ * 그대로 가져옴(그쪽에 이미 출처 주석이 있음 — 여기서 다시 안 적음). 원천징수율(withholding)
+ * 개별 리서치는 이번엔 안 함 — WebSearch 없이 진행하려고 h2Body를 "top state rate" 수준
+ * 문구로 통일하고 세부 원천징수 %는 언급하지 않음(1~2번째 묶음의 NJ/VA류 문단과 달리
+ * 구체적 원천징수 숫자 주장 없음 — 확인 안 된 숫자를 세금 계산 사이트에 올리지 않기 위함).
+ * 앨라배마·알래스카·하와이·네바다·유타 5개 주는 자체 복권이 없는 주라서 noteBox로
+ * "거주지 기준 과세" 설명을 별도로 붙임. DC는 주가 아니라 연방구라 isDC 문구를 따로 둠.
+ * related-links 3개는 기존 22개 주 페이지 목록에서 균등 순환 배정(수작업 아님, 아래
+ * STATE_LINK_POOL + 코드로 계산).
+ *
  * 사용법: node scripts/generate-state-lottery-pages.js
  * (ROOT/california-lottery-tax.html을 읽어서 ROOT/{state.file}에 씀 — 실행마다 덮어씀)
  */
@@ -32,9 +43,15 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const BASE_FILE = path.join(ROOT, 'california-lottery-tax.html');
 const UPDATED_DATE = '2026-08-18';
+const NEW_UPDATED_DATE = '2026-09-02';
 
 function usd(n) {
   return '$' + Math.round(n).toLocaleString('en-US');
+}
+
+// "A Alabama" 같은 관사 오류 방지용 (Alabama/Alaska만 해당 — 나머지 신규 주는 전부 자음 시작)
+function article(name) {
+  return /^[AEIOU]/.test(name) ? 'An' : 'A';
 }
 
 // rate: script.js STATE_TAX_RATES의 top marginal 소수값. rateDisplay: 페이지에 보여줄 문자열.
@@ -209,6 +226,87 @@ const STATES = [
   },
 ];
 
+// 기존 22개 주 페이지 순환 배정용 풀(3개씩 뽑아 related-links로 씀)
+const STATE_LINK_POOL = [
+  { file: 'california-lottery-tax.html', label: 'California lottery tax calculator' },
+  { file: 'texas-lottery-tax.html', label: 'Texas lottery tax calculator' },
+  { file: 'florida-lottery-tax.html', label: 'Florida lottery tax calculator' },
+  { file: 'new-york-lottery-tax.html', label: 'New York lottery tax calculator' },
+  { file: 'pennsylvania-lottery-tax.html', label: 'Pennsylvania lottery tax calculator' },
+  { file: 'illinois-lottery-tax.html', label: 'Illinois lottery tax calculator' },
+  { file: 'ohio-lottery-tax.html', label: 'Ohio lottery tax calculator' },
+  { file: 'georgia-lottery-tax.html', label: 'Georgia lottery tax calculator' },
+  { file: 'north-carolina-lottery-tax.html', label: 'North Carolina lottery tax calculator' },
+  { file: 'michigan-lottery-tax.html', label: 'Michigan lottery tax calculator' },
+  { file: 'new-jersey-lottery-tax.html', label: 'New Jersey lottery tax calculator' },
+  { file: 'virginia-lottery-tax.html', label: 'Virginia lottery tax calculator' },
+  { file: 'washington-lottery-tax.html', label: 'Washington lottery tax calculator' },
+  { file: 'arizona-lottery-tax.html', label: 'Arizona lottery tax calculator' },
+  { file: 'massachusetts-lottery-tax.html', label: 'Massachusetts lottery tax calculator' },
+  { file: 'tennessee-lottery-tax.html', label: 'Tennessee lottery tax calculator' },
+  { file: 'indiana-lottery-tax.html', label: 'Indiana lottery tax calculator' },
+  { file: 'missouri-lottery-tax.html', label: 'Missouri lottery tax calculator' },
+  { file: 'maryland-lottery-tax.html', label: 'Maryland lottery tax calculator' },
+  { file: 'wisconsin-lottery-tax.html', label: 'Wisconsin lottery tax calculator' },
+  { file: 'colorado-lottery-tax.html', label: 'Colorado lottery tax calculator' },
+  { file: 'minnesota-lottery-tax.html', label: 'Minnesota lottery tax calculator' },
+];
+
+const NEW_STATES_RAW = [
+  { name: 'Alabama', abbr: 'AL', file: 'alabama-lottery-tax.html', rate: 0.05, rateDisplay: '5%', zeroTax: false, noLottery: true },
+  { name: 'Alaska', abbr: 'AK', file: 'alaska-lottery-tax.html', rate: 0.0, rateDisplay: '0%', zeroTax: true, noLottery: true },
+  { name: 'Arkansas', abbr: 'AR', file: 'arkansas-lottery-tax.html', rate: 0.037, rateDisplay: '3.7%', zeroTax: false },
+  { name: 'Connecticut', abbr: 'CT', file: 'connecticut-lottery-tax.html', rate: 0.0699, rateDisplay: '6.99%', zeroTax: false },
+  { name: 'Delaware', abbr: 'DE', file: 'delaware-lottery-tax.html', rate: 0.066, rateDisplay: '6.6%', zeroTax: false },
+  { name: 'Hawaii', abbr: 'HI', file: 'hawaii-lottery-tax.html', rate: 0.11, rateDisplay: '11%', zeroTax: false, noLottery: true },
+  { name: 'Idaho', abbr: 'ID', file: 'idaho-lottery-tax.html', rate: 0.053, rateDisplay: '5.3%', zeroTax: false },
+  { name: 'Iowa', abbr: 'IA', file: 'iowa-lottery-tax.html', rate: 0.038, rateDisplay: '3.8%', zeroTax: false },
+  { name: 'Kansas', abbr: 'KS', file: 'kansas-lottery-tax.html', rate: 0.0558, rateDisplay: '5.58%', zeroTax: false },
+  { name: 'Kentucky', abbr: 'KY', file: 'kentucky-lottery-tax.html', rate: 0.035, rateDisplay: '3.5%', zeroTax: false },
+  { name: 'Louisiana', abbr: 'LA', file: 'louisiana-lottery-tax.html', rate: 0.03, rateDisplay: '3%', zeroTax: false },
+  { name: 'Maine', abbr: 'ME', file: 'maine-lottery-tax.html', rate: 0.0915, rateDisplay: '9.15%', zeroTax: false },
+  { name: 'Mississippi', abbr: 'MS', file: 'mississippi-lottery-tax.html', rate: 0.04, rateDisplay: '4%', zeroTax: false },
+  { name: 'Montana', abbr: 'MT', file: 'montana-lottery-tax.html', rate: 0.0565, rateDisplay: '5.65%', zeroTax: false },
+  { name: 'Nebraska', abbr: 'NE', file: 'nebraska-lottery-tax.html', rate: 0.0455, rateDisplay: '4.55%', zeroTax: false },
+  { name: 'Nevada', abbr: 'NV', file: 'nevada-lottery-tax.html', rate: 0.0, rateDisplay: '0%', zeroTax: true, noLottery: true },
+  { name: 'New Hampshire', abbr: 'NH', file: 'new-hampshire-lottery-tax.html', rate: 0.0, rateDisplay: '0%', zeroTax: true },
+  { name: 'New Mexico', abbr: 'NM', file: 'new-mexico-lottery-tax.html', rate: 0.059, rateDisplay: '5.9%', zeroTax: false },
+  { name: 'North Dakota', abbr: 'ND', file: 'north-dakota-lottery-tax.html', rate: 0.0195, rateDisplay: '1.95%', zeroTax: false },
+  { name: 'Oklahoma', abbr: 'OK', file: 'oklahoma-lottery-tax.html', rate: 0.045, rateDisplay: '4.5%', zeroTax: false },
+  { name: 'Oregon', abbr: 'OR', file: 'oregon-lottery-tax.html', rate: 0.099, rateDisplay: '9.9%', zeroTax: false },
+  { name: 'Rhode Island', abbr: 'RI', file: 'rhode-island-lottery-tax.html', rate: 0.0599, rateDisplay: '5.99%', zeroTax: false },
+  { name: 'South Carolina', abbr: 'SC', file: 'south-carolina-lottery-tax.html', rate: 0.0521, rateDisplay: '5.21%', zeroTax: false },
+  { name: 'South Dakota', abbr: 'SD', file: 'south-dakota-lottery-tax.html', rate: 0.0, rateDisplay: '0%', zeroTax: true },
+  { name: 'Utah', abbr: 'UT', file: 'utah-lottery-tax.html', rate: 0.0455, rateDisplay: '4.55%', zeroTax: false, noLottery: true },
+  { name: 'Vermont', abbr: 'VT', file: 'vermont-lottery-tax.html', rate: 0.0875, rateDisplay: '8.75%', zeroTax: false },
+  { name: 'West Virginia', abbr: 'WV', file: 'west-virginia-lottery-tax.html', rate: 0.0482, rateDisplay: '4.82%', zeroTax: false },
+  { name: 'Wyoming', abbr: 'WY', file: 'wyoming-lottery-tax.html', rate: 0.0, rateDisplay: '0%', zeroTax: true },
+  { name: 'Washington D.C.', abbr: 'DC', file: 'washington-dc-lottery-tax.html', rate: 0.1075, rateDisplay: '10.75%', zeroTax: false, isDC: true },
+];
+
+const NEW_STATES = NEW_STATES_RAW.map((s, i) => {
+  const h2Title = s.zeroTax
+    ? `Does ${s.name} tax lottery winnings?`
+    : `How much does ${s.name} take from a lottery jackpot?`;
+  const h2Body = s.zeroTax
+    ? [`${s.name} has no state income tax at all — on lottery winnings or anything else. ${article(s.name)} ${s.name} resident who wins Powerball or Mega Millions keeps 100% of the state-level share; only the federal government taxes the win.`]
+    : [`${s.name} taxes lottery winnings at a ${s.rateDisplay} top state rate in this calculator's model, applied on top of the federal tax bite.${s.noLottery ? ' This applies based on residency, not on where the ticket was purchased — see the note below.' : ''}`];
+  let noteBox;
+  if (s.noLottery) {
+    noteBox = s.zeroTax
+      ? `${s.name} is one of five states with no lottery of its own, so there's no local Powerball or Mega Millions ticket to buy — but it doesn't change anything here, since ${s.name} has no state income tax either way. ${article(s.name)} ${s.name} resident who wins by buying a ticket in a neighboring state still pays $0 in state tax.`
+      : `${s.name} is one of five states with no lottery of its own — Alabama, Alaska, Hawaii, Nevada, and Utah don't sell Powerball or Mega Millions tickets. ${article(s.name)} ${s.name} resident who wins by buying a ticket while in a neighboring state is generally still subject to ${s.name}'s state income tax on that win, because state income tax follows residency, not where the ticket was bought.`;
+  } else if (s.isDC) {
+    noteBox = `Washington, D.C. is a federal district, not a state — but the DC Lottery does sell both Powerball and Mega Millions, and D.C.'s own individual income tax (up to ${s.rateDisplay} on income over $1,000,000) applies to a resident's jackpot the same way a state income tax would.`;
+  }
+  const links = [
+    STATE_LINK_POOL[(i * 3) % STATE_LINK_POOL.length],
+    STATE_LINK_POOL[(i * 3 + 1) % STATE_LINK_POOL.length],
+    STATE_LINK_POOL[(i * 3 + 2) % STATE_LINK_POOL.length],
+  ];
+  return { name: s.name, abbr: s.abbr, file: s.file, rate: s.rate, rateDisplay: s.rateDisplay, zeroTax: s.zeroTax, h2Title, h2Body, noteBox, links, updatedDate: NEW_UPDATED_DATE };
+});
+
 function must(content, oldStr, label) {
   if (content.indexOf(oldStr) === -1) {
     throw new Error(`Anchor not found (${label}): ${oldStr.slice(0, 80)}...`);
@@ -222,7 +320,7 @@ function replaceOnce(content, oldStr, newStr, label) {
 
 const base = fs.readFileSync(BASE_FILE, 'utf8');
 
-for (const st of STATES) {
+for (const st of STATES.concat(NEW_STATES)) {
   let out = base;
 
   // 1) 전역 치환: "California" -> 주 이름 (제목/메타/JSON-LD/본문 대부분이 한 번에 해결됨)
@@ -231,8 +329,9 @@ for (const st of STATES) {
   out = out.split('california-lottery-tax.html').join(st.file);
   // 3) 계산기 프리셋 쿼리 파라미터
   out = out.split('state=CA').join(`state=${st.abbr}`);
-  // 4) 업데이트 날짜
-  out = replaceOnce(out, 'Last updated: 2026-08-16', `Last updated: ${UPDATED_DATE}`, 'updated-date');
+  // 4) 업데이트 날짜 (기존 12개 주는 원래 생성 시점 날짜를 그대로 유지 — 재실행해도 내용이
+  // 안 바뀌면 날짜도 안 바뀌어야 git diff가 깨끗함. 새로 추가되는 주만 이번 세션 날짜 사용)
+  out = replaceOnce(out, 'Last updated: 2026-08-16', `Last updated: ${st.updatedDate || UPDATED_DATE}`, 'updated-date');
 
   const stateTaxAmount = Math.round(1000000 * st.rate);
   const takeHome = 1000000 - 370000 - stateTaxAmount;
@@ -317,13 +416,14 @@ for (const st of STATES) {
     `    <a href="new-york-lottery-tax.html">→ New York lottery tax calculator</a>\n` +
     `    <a href="lump-sum-vs-annuity-lottery-tax.html">→ Lump sum vs. annuity: which saves more on taxes?</a>\n` +
     `    <a href="nonresident-lottery-tax-refund.html">→ How nonresidents claim a prize (and any tax refund)</a>\n` +
-    `    <a href="index.html?lang=en#faq">→ More US lottery tax FAQs (calculator, in English)</a>\n` +
+    `    <a href="washington-lottery-tax.html">→ Washington lottery tax calculator</a>\n` +
+    `    <a href="/?lang=en#faq">→ More US lottery tax FAQs (calculator, in English)</a>\n` +
     `    <a href="sitemap.html">→ Full sitemap</a>\n` +
     `  </div>`;
   const newLinksBlock =
     `  <div class="related-links">\n` +
     st.links.map((l) => `    <a href="${l.file}">→ ${l.label}</a>`).join('\n') +
-    `\n    <a href="index.html?lang=en#faq">→ More US lottery tax FAQs (calculator, in English)</a>\n` +
+    `\n    <a href="/?lang=en#faq">→ More US lottery tax FAQs (calculator, in English)</a>\n` +
     `    <a href="sitemap.html">→ Full sitemap</a>\n` +
     `  </div>`;
   out = replaceOnce(out, oldLinksBlock, newLinksBlock, 'related-links');
