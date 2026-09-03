@@ -510,24 +510,13 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
 
 ## 알려진 미해결 항목
 
-- **⚠️ 사용자 조치 필요 — 중복 실행 중인 Claude Routine을 끌 것을 권장, 세션은 못 끔**
-  (2026-09-03 점검에서 발견). "동명의 Claude Routine을 비활성화했다"는 2026-09-02 세션
-  기록이 사실과 다름 — `list_triggers`로 확인하니 `ChamTax 로또 데이터 점검 (매일)`
-  (`trig_014eQLRrMpHUvbtwR69KiESb`, 매일 06:00 UTC)이 여전히 `enabled:true`이고
-  `jackpot-update.yml` GitHub Action과 매일 같은 일(새 회차/잭팟액 확인)을 중복 실행 중.
-  **권장: 이 Routine을 끌 것.** 근거: (1) `jackpot-update.yml`이 2026-09-01부터 매일
-  정상 성공(`main`에 직접 커밋까지 끝냄) — 이 Routine이 담당하던 일을 이미 완전히
-  대체함. (2) 이 Routine은 프롬프트상 커밋 후 브랜치 push까지만 하고 PR/머지 단계가 없어서,
-  뭔가 바뀌어도 실제로 `main`엔 반영 안 된 채 방치될 위험이 원래도 있었음(자세한 배경은
-  최상단 "머지해줘"≠"커밋+푸시" 사고 항목 참고). (3) 계정 주간 사용량 한도 초과가 최근
-  반복된 문제였는데, 매일 중복으로 도는 이 Routine이 그 한도를 불필요하게 갉아먹는 원인
-  중 하나. 이 Routine이 새로 뭔가 유용하게 잡아낸 사례가 최근 없어 안전망으로서의 실익도
-  낮다고 판단. **세션이 직접 끄지는 못함** — `update_trigger(enabled:false)` 호출이 auto
-  mode 분류기에 매번 차단됨(트리거 비활성화는 세션 판단이 아니라 사용자 승인이 필요한
-  작업으로 분류됨, 대화창에서 "네가 알아서 해"라고 위임해도 이 분류기는 우회 안 됨) —
-  사용자가 claude.ai의 Routines/Automations 설정 화면에서 이름 `ChamTax 로또 데이터
-  점검 (매일)`을 직접 꺼야 함. 아래는 그 GitHub Action이 실패했을 때 수동으로 다룰 때를
-  위한 체크리스트:
+- **✅ 중복 실행되던 Claude Routine 해소 확인(2026-09-03 재점검)** — `ChamTax 로또 데이터
+  점검 (매일)`(`trig_014eQLRrMpHUvbtwR69KiESb`)을 끄려고 `update_trigger`를 다시 호출하니
+  "resource not found", `list_triggers`(recurring 전체+완료분 포함) 재조회에도 그 이름의
+  Routine이 전혀 안 잡힘 — 세션이 끈 게 아니라, 조회 시점에 이미 사라져있었음(사용자가 직접
+  껐거나 삭제한 것으로 추정). `jackpot-update.yml` GitHub Action이 같은 역할을 이미 완전히
+  대체하고 있으니 더 이상 추적 불필요. 아래는 그 GitHub Action이 실패했을 때 수동으로 다룰 때를
+  위한 체크리스트(Routine 존재 여부와 무관하게 계속 유효):
   1. `LATEST_DRAW.powerball`/`LATEST_DRAW.megamillions`(date/numbers/special) — 홈 화면
      "최근 당첨번호" 위젯이 읽는 값. `odds-data.js`의 `*_DRAW_ARCHIVE`/`*_JACKPOT_ARCHIVE`와
      **완전히 별개인 손 관리 값**이라, 아카이브를 갱신해도 이게 따로 누락될 수 있음(과거
@@ -545,10 +534,8 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
      설계(평범한 회차는 이 랭킹 대상이 아님).
   4. **(자동화 스코프 밖, 사람/세션이 가끔 훑어봐야 함)** 89개 이상 랜딩페이지의 `.example-box`/
      `.lead` 등에 박힌 잭팟 예시 금액 — 실제 잭팟과 심하게 어긋나 보일 때만(사소한 차이는
-     무시) 그 페이지만 손으로 교체할 것. "ChamTax 로또 데이터 점검" Routine의 4번 항목이
-     이걸 담당하고 있었으나(바로 위 항목 참고 — 실제로는 아직 안 꺼짐, 사용자가 끄면 이
-     항목도 담당 자동화가 없어짐) 애초에 심각한 괴리만 사람이 판단해야 해서 완전 자동화
-     대상은 아니었음. **2026-09-03 스팟체크 결과**: 랜딩페이지 하드코딩 금액 대부분이
+     무시) 그 페이지만 손으로 교체할 것. 애초에 심각한 괴리만 사람이 판단해야 해서 완전
+     자동화 대상은 아니었음. **2026-09-03 스팟체크 결과**: 랜딩페이지 하드코딩 금액 대부분이
      `$1,000,000`/`$100M`/`$500M` 같은 반올림 예시값이거나 역대 기록값이라 심각한 괴리
      없음 확인 — 매번 전수 조사할 필요는 없고, 어쩌다 한 번씩 훑어보는 정도로 충분.
 - **`TAX_MODEL`/`COUNTRY_TAX_PROFILES`(script.js)에 국가를 추가·수정하면 `mcp-server/
