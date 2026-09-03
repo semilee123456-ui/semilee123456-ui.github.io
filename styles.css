@@ -467,6 +467,29 @@
   .back-btn ~ .hero-category-tag{
     display:block; width:fit-content; margin-top:2px;
   }
+  /* 2026-09-02: 잭팟 금액이 매 추첨(주 2~3회)마다 바뀐다는, 이 사이트에 이미 있는 유일한
+     자연스러운 재방문 신호를 첫 화면 최상단으로 끌어올린 티저 — 클릭하면 scrollToJackpotPanel()이
+     아래 기존 "🎟️ 최근 잭팟 확인하기" 패널을 펼치고 스크롤. jackpot-quickfill-btn과 같은
+     game-pb/mm 색 토큰을 재사용(새 색 안 만듦). minmax(0,1fr) 그리드로 좁은 화면에서 글자가
+     한 글자씩 쪼개지던 전례(jackpot-quickfill-btn 위 주석 참고)를 피하려고 flex+nowrap+wrap만
+     씀 — 폭이 부족하면 통째로 다음 줄로 넘어갈 뿐 개별 단어가 안 눌림. */
+  .hero-jackpot-teaser{
+    display:flex; align-items:center; justify-content:center; gap:8px 10px; flex-wrap:wrap;
+    margin:10px auto 0; padding:8px 14px; max-width:fit-content;
+    background:var(--card); border:1.5px solid var(--border); border-radius:20px;
+    font-family:inherit; cursor:pointer; transition:transform 0.12s ease, border-color 0.12s ease;
+  }
+  .hero-jackpot-teaser-amt{
+    display:inline-flex; align-items:center; gap:4px; font-size:var(--fs-small); font-weight:800; white-space:nowrap;
+  }
+  .hero-jackpot-teaser-amt-pb{ color:var(--status-red); }
+  .hero-jackpot-teaser-amt-mm{ color:var(--status-amber); }
+  /* 2026-09-03: white-space:nowrap이었으나 ru/tl/es 등 긴 번역 문구가 320px 폭에서 줄바꿈
+     못 하고 버튼 밖으로 그대로 삐져나가는 회귀 발견(tests/full_overflow_sweep.js) — 라벨
+     자체는 한 단어가 아니라 여러 단어 문구라 공백에서 자연스럽게 줄바꿈돼도 무방해서 제거. */
+  .hero-jackpot-teaser-label{ font-size:var(--fs-small); font-weight:700; color:var(--text-muted); max-width:100%; }
+  @media (hover:hover){ .hero-jackpot-teaser:hover{ border-color:var(--teal); } }
+  .hero-jackpot-teaser:active{ transform:scale(0.97); }
   .tax-impact-compact{
     display:flex; flex-direction:row; flex-wrap:wrap; align-items:baseline; justify-content:center; gap:6px;
     margin-top:12px; padding-bottom:10px; font-size:16px; color:var(--text-muted);
@@ -1518,6 +1541,12 @@
     color:var(--teal); background:rgba(var(--teal-rgb),0.08); position:relative;
   }
   .result-hero .usd-actual-note span{ color:var(--text-muted); }
+  /* 2026-09-02: 기본 표시 통화가 USD로 바뀌면서(무국가 중립) 이 노트가 첫 화면부터 기본
+     노출되기 시작했는데, 다크모드에서 --teal 텍스트(#4BC1A0) + 이 rgba(teal,0.08) 배경
+     조합이 대비 4.20:1로 WCAG AA 4.5:1에 살짝 미달(tests/a11y_audit.js가 검출) — 텍스트색은
+     그대로 두고(브랜드 톤 유지) 배경 틴트만 옅혀서(0.08→0.03) --card에 더 가깝게 만들면
+     4.74:1로 통과(위 --card 대비 --teal 자체 대비와 동일한 값, 이미 검증된 조합). */
+  :root[data-theme="dark"] .result-hero .usd-actual-note{ background:rgba(var(--teal-rgb),0.03); }
   .krw-hint{ font-size:var(--fs-small); color:var(--text-muted); font-weight:400; margin:0 0 10px 2px; }
   /* 2026-08-02: 국가=한국이 아니고 표시 통화도 원화가 아닐 때(예: 국가=일본·통화=INR)는 이
      원화 환율 줄이 계산에도 안 쓰이고(정률세 국가는 환율이 결과에 영향 없음) 화면 표시 통화도

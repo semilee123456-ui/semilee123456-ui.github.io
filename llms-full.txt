@@ -8,7 +8,7 @@
 > ChamTax는 35개 언어를 지원하지만, 같은 페이지의 언어별 번역본(예:
 > us-lottery-basics-ko.html / -en.html / -zh.html 등)은 내용이 동일하므로 이 파일에는
 > 중복 포함하지 않았습니다. 대신 실제로 내용이 서로 다른 페이지 — 미국 50개 주 중
-> 전용 페이지가 있는 주, 42개국 중 거주자 전용 페이지가 있는 국가, 한국 거주 외국인
+> 전용 페이지가 있는 주, 51개국 중 거주자 전용 페이지가 있는 국가, 한국 거주 외국인
 > 국적별 페이지, 미국 외 거주자 대상 페이지, 그리고 핵심 계산기/방법론 페이지 —
 > 만을 각 1개 버전(영문 우선)으로 모았습니다.
 >
@@ -18,10 +18,10 @@
 
 ---
 
-## 미국 복권 세금 계산기 | 참택스 - 미국 파워볼·메가밀리언즈 실수령액
+## US Lottery Tax Calculator | 참택스(ChamTax) - Powerball & Mega Millions Take-Home Pay
 URL: https://chamtax.com/
 
-미국 복권(파워볼·메가밀리언즈) 당첨 시 세금과 실수령액을 확인해보세요. 역대 8위 규모, 10.4억 달러 파워볼 당첨 사례도 이 계산기로 확인! 한국 포함 42개국 세금 기준, 미국 비거주자 원천징수까지 한 번에 계산돼요.
+Calculate your take-home pay after tax on a US Powerball or Mega Millions jackpot — including the $1.04 billion Powerball win, the 8th-largest ever. Covers tax rules for 51 countries of residence plus US nonresident withholding, all in one calculator.
 
 # 내 통장에는실제로 얼마 들어올까?
 
@@ -55,7 +55,7 @@ KR 한국에 살아요
 
 ⚠️ 표시는 세율 정보가 확정적이지 않거나 최근 바뀐 나라예요 — 정확한 세액은 각국 세무 당국에 확인하세요
 
-💡 실제 납세 국가 기준으로 골라주세요 (한국 거주자는 그대로 두면 돼요)
+💡 실제 납세 국가 기준으로 골라주세요
 
 US 미국 거주자 계산 시 적용할 주(State) (주세율이 0%~10.9% 로 크게 달라요 · 연방세는 별도로 합산돼요)
 
@@ -96,15 +96,13 @@ US 미국 거주자 계산 시 적용할 주(State) (주세율이 0%~10.9% 로 
 
 원천징수란? 돈을 주는 쪽(미국)이 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 "일단 떼어가는 선불금"이라고 보시면 돼요.
 
-누진세율이란? 소득이 클수록 세율 구간이 올라가는 방식이에요 — 미국 연방세는 최고 37%, 한국 종합소득세도 최고 45%까지 올라가요.
+누진세율이란? 소득이 클수록 세율 구간이 올라가는 방식이에요.
 
 외국납부세액공제(FTC)란? 미국에서 이미 낸 세금을, 거주국에서 세금을 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요.
 
 💡 종합소득세 누진세율과 외국납부세액공제(FTC)를 반영한 참고용 계산이에요 — 실제 세액은 개인 상황에 따라 달라질 수 있어 세무 전문가 상담을 권해요
 
 📎 인용·보도 시 출처를 'ChamTax(chamtax.com)'으로 표기해 주세요.
-
-🧭 이것도 궁금하지 않으세요?
 
 파워볼 (연금 기준)-
 
@@ -202,15 +200,11 @@ USA
 
 원천징수란? 돈을 주는 쪽(미국)이 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 "일단 떼어가는 선불금"이라고 보시면 돼요.
 
-누진세율이란? 소득이 클수록 세율 구간이 올라가는 방식이에요 — 미국 연방세는 최고 37%, 한국 종합소득세도 최고 45%까지 올라가요.
+누진세율이란? 소득이 클수록 세율 구간이 올라가는 방식이에요.
 
 외국납부세액공제(FTC)란? 미국에서 이미 낸 세금을, 거주국에서 세금을 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요.
 
 누르면 계산기가 아니라, 그 나라의 세금 안내 글로 이동해요.
-
-궁금하면 확률체감 메뉴도 눌러보세요 → 이것도 꽤 재밌어요
-
-IRS·국세청 가이드를 참고해서 만들었어요 (실제 당첨되는 일이 있으시길!)
 
 확률
 
@@ -238,7 +232,7 @@ IRS·국세청 가이드를 참고해서 만들었어요 (실제 당첨되는 �
 
 원천징수란? 돈을 주는 쪽(미국)이 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 "일단 떼어가는 선불금"이라고 보시면 돼요.
 
-누진세율이란? 소득이 클수록 세율 구간이 올라가는 방식이에요 — 미국 연방세는 최고 37%, 한국 종합소득세도 최고 45%까지 올라가요.
+누진세율이란? 소득이 클수록 세율 구간이 올라가는 방식이에요.
 
 외국납부세액공제(FTC)란? 미국에서 이미 낸 세금을, 거주국에서 세금을 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요.
 
@@ -308,7 +302,7 @@ IRS·국세청 가이드를 참고해서 만들었어요 (실제 당첨되는 �
 
 원천징수란? 돈을 주는 쪽(미국)이 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 "일단 떼어가는 선불금"이라고 보시면 돼요.
 
-누진세율이란? 소득이 클수록 세율 구간이 올라가는 방식이에요 — 미국 연방세는 최고 37%, 한국 종합소득세도 최고 45%까지 올라가요.
+누진세율이란? 소득이 클수록 세율 구간이 올라가는 방식이에요.
 
 외국납부세액공제(FTC)란? 미국에서 이미 낸 세금을, 거주국에서 세금을 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요.
 
@@ -317,14 +311,6 @@ IRS·국세청 가이드를 참고해서 만들었어요 (실제 당첨되는 �
 ※ 위 금액은 30년 단순 평균이라 실제 첫 회 수령액은 이보다 적어요.
 
 잭팟 카드 기준 게임
-
-오늘 당신이 번개에 맞을 그 기운으로, 재미 삼아 번호 6개를 뽑아드려요
-
-이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉
-
-🎣 낚싯대를 던져서 번호를 하나씩 낚아보세요
-
-이 번호로 당첨될 확률은 여전히 1/2억 9,200만이지만, 재미로만 봐주세요 😉
 
 확률 수치는 공식 발표 자료 기준이에요. 원화 환산은 참고용 환율 적용이라 실제와 다를 수 있어요.
 
@@ -346,7 +332,7 @@ Q: 세금 대체 얼마나 떼가는 거예요? 😮
 A: 👉 미국 거주자는 당첨 시 24%가 먼저 원천징수되고, 나중에 소득 신고할 때 최대 37%까지 정산돼요.  👉 한국 거주자를 포함한 미국 비거주자는 미국에서 30%가 먼저 원천징수되고, 이후 거주국 세금까지 더해지면 당첨금이 클수록 보통 전체의 40%가 넘게 세금으로 빠져나가요 — 정확한 금액은 위 계산기로 확인해보세요.
 
 Q: 원천징수·누진세율·FTC 등, 이 세금 용어들이 다 뭐예요? 📖
-A: 👉 원천징수: 돈을 주는 쪽(미국)이 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 일단 떼어가는 선불금이에요.  👉 누진세율: 소득이 클수록 세율 구간이 올라가는 방식이에요 — 미국 연방세는 최고 37%, 한국 종합소득세도 최고 45%까지 올라가요.  👉 외국납부세액공제(FTC): 미국에서 이미 낸 세금을 거주국에서 세금 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요.  👉 조세조약: 두 나라가 같은 소득에 세금을 두 번 매기지 않기로 서로 약속한 협정이에요 — 있으면 세금 계산 방식이 조약 내용에 따라 달라질 수 있어요.  👉 세액공제: 이미 계산된 세금 자체에서 일정 금액을 그대로 빼주는 거예요 — 소득에서 빼주는 "소득공제"와 달리, 낸 세금을 되돌려주는 것에 더 가까워요.  👉 상계: 서로 주고받을 돈을 맞비교해서 차액만 남기는 거예요 — 미국에서 낸 세금만큼 한국에서 낼 세금을 깎아주는 것도 상계의 한 예예요.  👉 서차지: 세금 위에 추가로 붙는 할증 같은 거예요 — 소득이 아주 클 때만 붙고, 인도·파키스탄처럼 일부 나라에만 있는 제도예요.  👉 이중과세: 같은 소득에 두 나라가 각각 세금을 매겨서 세금을 두 번 내게 되는 상황이에요 — FTC 같은 제도가 이걸 막거나 줄여줘요.  👉 우발이득(우발소득): 일하거나 벌려고 한 게 아니라 복권·증여·상금처럼 뜻밖에 생긴 돈을 가리키는 말이에요 — 나라에 따라 근로소득과는 다른 세율이 붙어요.  👉 실효세율: 여러 공제·할증을 다 반영한 뒤 "실제로 낸 세금 ÷ 전체 소득"으로 계산한 진짜 세율이에요 — 법에 적힌 세율보다 체감에 더 가까운 숫자예요.  👉 과세표준: 세율을 곱하기 직전, 세금을 매기는 기준이 되는 금액이에요 — 전체 소득에서 공제를 뺀 금액일 때가 많아서, 실제 받은 돈보다 작을 수 있어요.  👉 분리과세: 다른 소득과 합치지 않고 그 소득 하나만 따로 정해진 세율로 딱 떼고 끝내는 방식이에요 — 한국 로또는 분리과세지만, 미국 복권 당첨금은 종합소득세로 합산 신고해야 해요.  👉 비과세: 아예 세금을 매기지 않는 거예요 — 배우자에게 주는 증여 6억원까지처럼, 법으로 정한 한도 안에서는 세금이 붙지 않아요.
+A: 👉 원천징수: 돈을 주는 쪽(미국)이 세금을 먼저 떼고 나머지만 주는 거예요 — 최종 세액이 아니라 일단 떼어가는 선불금이에요.  👉 누진세율: 소득이 클수록 세율 구간이 올라가는 방식이에요.  👉 외국납부세액공제(FTC): 미국에서 이미 낸 세금을 거주국에서 세금 계산할 때 다시 빼주는 제도예요 — 같은 소득에 세금을 두 번 내지 않게 해줘요.  👉 조세조약: 두 나라가 같은 소득에 세금을 두 번 매기지 않기로 서로 약속한 협정이에요 — 있으면 세금 계산 방식이 조약 내용에 따라 달라질 수 있어요.  👉 세액공제: 이미 계산된 세금 자체에서 일정 금액을 그대로 빼주는 거예요 — 소득에서 빼주는 "소득공제"와 달리, 낸 세금을 되돌려주는 것에 더 가까워요.  👉 상계: 서로 주고받을 돈을 맞비교해서 차액만 남기는 거예요 — 미국에서 낸 세금만큼 한국에서 낼 세금을 깎아주는 것도 상계의 한 예예요.  👉 서차지: 세금 위에 추가로 붙는 할증 같은 거예요 — 소득이 아주 클 때만 붙고, 인도·파키스탄처럼 일부 나라에만 있는 제도예요.  👉 이중과세: 같은 소득에 두 나라가 각각 세금을 매겨서 세금을 두 번 내게 되는 상황이에요 — FTC 같은 제도가 이걸 막거나 줄여줘요.  👉 우발이득(우발소득): 일하거나 벌려고 한 게 아니라 복권·증여·상금처럼 뜻밖에 생긴 돈을 가리키는 말이에요 — 나라에 따라 근로소득과는 다른 세율이 붙어요.  👉 실효세율: 여러 공제·할증을 다 반영한 뒤 "실제로 낸 세금 ÷ 전체 소득"으로 계산한 진짜 세율이에요 — 법에 적힌 세율보다 체감에 더 가까운 숫자예요.  👉 과세표준: 세율을 곱하기 직전, 세금을 매기는 기준이 되는 금액이에요 — 전체 소득에서 공제를 뺀 금액일 때가 많아서, 실제 받은 돈보다 작을 수 있어요.  👉 분리과세: 다른 소득과 합치지 않고 그 소득 하나만 따로 정해진 세율로 딱 떼고 끝내는 방식이에요 — 한국 로또는 분리과세지만, 미국 복권 당첨금은 종합소득세로 합산 신고해야 해요.  👉 비과세: 아예 세금을 매기지 않는 거예요 — 배우자에게 주는 증여 6억원까지처럼, 법으로 정한 한도 안에서는 세금이 붙지 않아요.
 
 Q: 헐, 한국에서 세금 또 내요?
 A: 맞아요. 미국 복권은 국내 복권이 아니라서 종합소득세(최고 45%)에 합산 신고해야 해요. 미국에서 낸 세금은 외국납부세액공제(FTC)로 상계할 수 있어요.
@@ -898,8 +884,6 @@ Powerball®, Mega Millions® 등은 각 기관(MUSL 등)의 등록상표이며, 
 
 전송에 실패했어요, 잠시 후 다시 시도해주세요.
 
-더 알아보기
-
 본 사이트는 정보 제공 목적의 시뮬레이터이며, 복권 구매를 대행·중개하지 않습니다.
 
 검색 결과가 없어요
@@ -1137,12 +1121,12 @@ Powerball and Mega Millions' 5 biggest jackpots ever, ranked by cash payout. See
 
 ChamTax is a free calculator that shows the actual after-tax take-home amount for US Powerball and Mega Millions jackpots. Here are the 5 biggest jackpots in history, ranked by the actual lump-sum cash payout — with what the winner really kept after tax as a US resident, and as a foreign (nonresident alien) winner from Korea, China, or India.
 
-Last updated: 2026-08-03
+Last updated: 2026-09-01
 
 #1 of all time
 - Nov 7, 2022, Powerball: $2.04B advertised (California)
 - Actual lump-sum cash: $997.6M
-- US resident take-home: about $581.4M
+- US resident take-home: about $628.5M
 - Korea resident take-home: about $533.8M
 - China resident take-home: about $698.3M
 - India resident take-home: about $608.5M
@@ -1210,13 +1194,13 @@ This page is an informational simulator only and does not broker or facilitate l
 ## US Lottery Tax Rate Data by State & Country (2026) | Free CSV/JSON
 URL: https://chamtax.com/lottery-tax-data-hub.html
 
-Open dataset: US Powerball/Mega Millions lottery tax rates for all 50 states + DC and 42 countries of residence, with reference take-home scenarios. Free CSV/JSON download, citable, updated 2026-08-21.
+Open dataset: US Powerball/Mega Millions lottery tax rates for all 50 states + DC and 51 countries of residence, with reference take-home scenarios. Free CSV/JSON download, citable, updated 2026-09-01.
 
-# US Lottery Jackpot Tax Rates — Full Dataset for 50 States & 42 Countries
+# US Lottery Jackpot Tax Rates — Full Dataset for 50 States & 50 Countries
 
-ChamTax's calculator computes the after-tax take-home amount of a US Powerball or Mega Millions jackpot for all 50 states + DC and 42 countries of residence. This page publishes that same underlying rate table as an open, downloadable dataset — for journalists, researchers, and anyone who wants to cite a real number instead of the pre-tax announced jackpot. This dataset may be cited or reused with attribution to ChamTax (chamtax.com).
+ChamTax's calculator computes the after-tax take-home amount of a US Powerball or Mega Millions jackpot for all 50 states + DC and 51 countries of residence. This page publishes that same underlying rate table as an open, downloadable dataset — for journalists, researchers, and anyone who wants to cite a real number instead of the pre-tax announced jackpot. This dataset may be cited or reused with attribution to ChamTax (chamtax.com).
 
-Data as of 2026-08-21 · generated directly from ChamTax's live calculation engine · maintained alongside chamtax.com
+Data as of 2026-09-01 · generated directly from ChamTax's live calculation engine · maintained alongside chamtax.com
 
 ## Download the data
 
@@ -1231,7 +1215,7 @@ The 8 highest-rate states vs. 8 states that charge no tax on lottery winnings. F
 State | Code | Rate | Note
 Alaska | AK | 0% | No state income tax
 Alabama | AL | 5% | 
-Arkansas | AR | 3.9% | 
+Arkansas | AR | 3.7% | 
 Arizona | AZ | 2.5% | 
 California | CA | 0% | Lottery winnings exempt
 Colorado | CO | 4.4% | 
@@ -1239,7 +1223,7 @@ Connecticut | CT | 6.99% |
 Washington D.C. | DC | 10.75% | 
 Delaware | DE | 6.6% | 
 Florida | FL | 0% | No state income tax
-Georgia | GA | 5.39% | 
+Georgia | GA | 5.19% | 
 Hawaii | HI | 11% | 
 Iowa | IA | 3.8% | 
 Idaho | ID | 5.3% | 
@@ -1269,7 +1253,7 @@ Oklahoma | OK | 4.5% |
 Oregon | OR | 9.9% | 
 Pennsylvania | PA | 3.07% | 
 Rhode Island | RI | 5.99% | 
-South Carolina | SC | 6.2% | 
+South Carolina | SC | 5.21% | 
 South Dakota | SD | 0% | No state income tax
 Tennessee | TN | 0% | No state income tax
 Texas | TX | 0% | No state income tax
@@ -1285,7 +1269,7 @@ Wyoming | WY | 0% | No state income tax
 
 All figures for a US non-resident alien: a flat 30% federal withholding (IRC §871(a)) applies first, then each country's own tax treatment of the winnings — after any Foreign Tax Credit (FTC) the country's law or a tax treaty allows. "Effective total tax" and "take-home %" below are computed at a $500,000,000 lump-sum payout (see Reference scenarios for $100M/$500M/$1B side by side).
 
-8 representative countries at a $500M lump-sum jackpot. Full 42-row table below.
+8 representative countries at a $500M lump-sum jackpot. Full 50-row table below.
 
 Country | Tax authority | Total tax | Take-home | Confidence
 South Korea | National Tax Service (NTS)/IRS | 46.49% | 53.51% | verified
@@ -1329,6 +1313,15 @@ Finland | Verohallinto/IRS | 46.17% | 53.83% | verified
 Italy | Agenzia delle Entrate/IRS | 47.23% | 52.77% | verified
 Poland | Krajowa Administracja Skarbowa/IRS | 36% | 64% | verified
 Turkey | Gelir İdaresi Başkanlığı/IRS | 50% | 50% | verified
+Brazil | Receita Federal do Brasil/IRS | 30% | 70% | verified
+Spain | Agencia Tributaria/IRS | 47% | 53% | verified
+Switzerland | Cantonal tax authorities (Zürich reference)/IRS | 69.1% | 30.9% | verified
+United Arab Emirates | PwC Worldwide Tax Summaries/IRS | 30% | 70% | verified
+Saudi Arabia | ZATCA/PwC Worldwide Tax Summaries/IRS | 30% | 70% | verified
+Egypt | Egyptian Tax Authority/IRS | 30% | 70% | verified
+Israel | Israel Tax Authority/IRS | 35% | 65% | verified
+Ukraine | State Tax Service of Ukraine/PwC/IRS | 35% | 65% | verified
+Nigeria | Estimate based on Nigeria Tax Act 2025/IRS | 30% | 70% | unverified estimate
 
 ## Reference scenarios: $100M / $500M / $1B lump sum
 
@@ -1352,7 +1345,7 @@ Sources — every number on this page comes from ChamTax's live calculation engi
 
 Confidence tiers — verified means a primary source (statute text, tax treaty article, or official tax-authority guidance) was found and directly cited; approximate means the treatment is confirmed but the exact rate is simplified (e.g. top-bracket approximation instead of full progressive-bracket math); unverified estimate means no authoritative primary source was found and the figure is a best-effort estimate from secondary sources — treat these as more likely to be wrong.
 
-Last updated: 2026-08-21. State and country tax law changes over time (see e.g. Maine's 2026 "millionaire surcharge" or Denmark's 2026 "top-top tax" in the underlying data) — check the "Data as of" date above before citing an old cached copy of this page.
+Last updated: 2026-09-01. State and country tax law changes over time (see e.g. Maine's 2026 "millionaire surcharge" or Denmark's 2026 "top-top tax" in the underlying data) — check the "Data as of" date above before citing an old cached copy of this page.
 
 ## Reuse & technical assets
 
@@ -1360,7 +1353,9 @@ Related technical assets from the same project:
 
 - github.com/semilee123456-ui/us-lottery-tax-data — the standalone open-data repository this dataset is also mirrored to.
 
-- mcp-server/ — a local MCP server exposing the same take-home calculation as a tool an AI agent can call directly, for all 50 states + DC and 42 countries.
+- Kaggle dataset — the same data, versioned, for users who prefer Kaggle's notebook/API tooling.
+
+- mcp-server/ — a local MCP server exposing the same take-home calculation as a tool an AI agent can call directly, for all 50 states + DC and 51 countries.
 
 - Press kit — brand assets and a quick-reference summary table for journalists.
 
@@ -2761,6 +2756,75 @@ A: যুক্তরাষ্ট্র প্রথমে 30% কর্তন �
 
 ---
 
+## Imposto no Brasil sobre prêmio da loteria americana 2026 | Powerball e Mega Millions
+URL: https://chamtax.com/brazil-resident-us-lottery-tax.html
+
+Você é residente fiscal no Brasil e ganhou no Powerball ou Mega Millions? Entenda a retenção federal de 30% nos EUA, por que o prêmio é tributado no Brasil via carnê-leão (até 27,5%, e não pelos 30% da loteria da Caixa) e por que o crédito por imposto pago no exterior zera o imposto adicional brasileiro. Calculadora gratuita.
+
+# Quanto de imposto você paga no Brasil sobre um prêmio do Powerball ou Mega Millions?
+
+ChamTax é uma calculadora gratuita que mostra o valor líquido real depois dos impostos de um prêmio do Powerball ou Mega Millions. É assim que um prêmio de loteria americana é tributado se você é residente fiscal no Brasil — 30% de retenção federal nos EUA, que na prática é sempre aplicada, mas sem imposto adicional a pagar no Brasil, porque a alíquota máxima brasileira (27,5%) é menor que a americana e o crédito pelo imposto pago no exterior absorve o valor todo.
+
+Última atualização: 2026-08-22
+
+Exemplo com prêmio de US$ 1.000.000, residente no Brasil
+- Retenção federal americana (30%, não residente): -$300.000
+- Imposto adicional no Brasil (crédito por imposto pago no exterior aplicado): $0 (compensado)
+- Valor líquido estimado: ≈ $700.000
+
+A um câmbio de referência de USD→BRL de aproximadamente 5,17, esse valor líquido (US$ 700.000) equivale a cerca de R$ 3.619.000 — a calculadora acima converte o seu próprio valor pela cotação atual.
+
+## O Brasil tributa prêmio de loteria estrangeira?
+
+Sim — mas não pela regra da loteria nacional. O prêmio da Mega-Sena e das demais loterias da Caixa é tributado exclusivamente na fonte a uma alíquota fixa de 30% (Lei nº 4.506/64, art. 14), retido diretamente pela Caixa no momento do pagamento. Essa regra, porém, vale apenas para loterias organizadas no Brasil (Agência Brasil, "Veja como declarar prêmios de loteria e de bets no IR 2025", maio de 2025, confirmado 2026-08-22) — o Powerball e o Mega Millions são sorteados nos Estados Unidos por operadoras estaduais americanas, fora desse regime.
+
+Prêmio de loteria estrangeira entra, em vez disso, na ficha "Rendimentos Tributáveis Recebidos de Pessoa Física/Exterior" e precisa ser recolhido mensalmente via carnê-leão, sujeito à tabela progressiva do Imposto de Renda (IRPF). A alíquota máxima da tabela em vigor é de 27,5% para a parcela do rendimento acima de R$ 4.664,68/mês — um patamar totalmente irrelevante diante do tamanho de um prêmio de jackpot, então esta calculadora usa 27,5% sobre o valor total, o mesmo tipo de simplificação que já usamos para outros países desta calculadora quando o prêmio ultrapassa de longe qualquer faixa de isenção.
+
+## Por que não sobra imposto adicional a pagar no Brasil, como na Dinamarca ou na Itália?
+
+Porque a alíquota máxima do IRPF brasileiro (27,5%) já é mais baixa que a retenção federal americana (30%) — o oposto do que ocorre na Dinamarca (57,07%) ou na Itália (~47,23%), onde a alíquota local supera bastante a americana e sobra uma parcela real a pagar. A Instrução Normativa SRF nº 208/2002, art. 16, permite compensar (deduzir) o imposto já pago no exterior do imposto devido no Brasil, mas apenas até o limite do imposto brasileiro correspondente àquele mesmo rendimento — é um crédito limitado (ordinário), não uma dedução ilimitada. Como o imposto americano já retido (30% do valor bruto) é maior que o imposto brasileiro calculado sobre o mesmo valor (27,5%), a compensação cobre 100% do imposto brasileiro e o saldo devedor fica em zero.
+
+Em termos de estrutura de cálculo, o Brasil se parece mais com a Noruega (no) e a China (cn) nesta calculadora — "alíquota local menor que a retenção americana, logo o crédito absorve tudo e o saldo fica em zero" — do que com o México (mx), a Índia (in), a Dinamarca (da), a Finlândia (fi) ou a Itália (it), onde a alíquota local é maior e sobra imposto a pagar mesmo após o crédito. A diferença em relação à Suécia (sv), cujo saldo também é zero, é que lá a coincidência é a alíquota (30%) ser numericamente idêntica à americana — no Brasil o resultado é zero porque a alíquota (27,5%) é simplesmente menor, não porque as duas coincidem.
+
+## Detalhe surpreendente: existe tratado tributário entre Brasil e Estados Unidos?
+
+Não. Apesar de décadas de tentativas de negociação, Brasil e Estados Unidos nunca ratificaram um tratado abrangente de bitributação de renda — diferente da relação dos EUA com a Dinamarca, a Finlândia, a Itália, a Polônia e a Turquia, todos já cobertos por esta calculadora. Isso, à primeira vista, poderia bloquear a compensação do imposto americano, já que a IN SRF 208/2002, art. 16, exige tratado ou reciprocidade de tratamento comprovada para permitir o crédito.
+
+A saída: reciprocidade reconhecida por ato da Receita Federal
+
+A então Secretaria da Receita Federal (SRF, hoje Receita Federal do Brasil) já resolveu essa lacuna há mais de duas décadas: o Ato Declaratório SRF nº 28, de 26 de abril de 2000 declara formalmente que a legislação federal americana permite deduzir o imposto já pago no Brasil sobre rendimentos tributados no Brasil — configurando reciprocidade de tratamento — e autoriza a compensação do imposto pago nos Estados Unidos com o imposto devido no Brasil, respeitados os limites da norma em vigor (originalmente a IN SRF nº 73/1998, hoje sucedida pela IN SRF nº 208/2002). O próprio ato ressalva que a reciprocidade vale só para o imposto federal americano — não alcança impostos estaduais ou municipais dos EUA.
+
+Esse mecanismo não é só teoria: em reportagens de 2024 sobre a premiação em dólares do fisiculturista brasileiro Ramon Dino no Mr. Olympia (realizado nos EUA), advogado tributarista consultado pela imprensa confirmou que a lei brasileira permite compensar o imposto de renda pago no exterior quando há tratado ou reciprocidade, e que os EUA se enquadram nessa reciprocidade — ou seja, o mecanismo já é aplicado na prática a prêmios em dólares de origem americana, um caso bem próximo ao de um prêmio de loteria.
+
+⚠️ Três pontos que não foram 100% confirmados
+
+Primeiro, o Ato Declaratório SRF nº 28/2000 é um ato administrativo da Receita Federal, não uma lei ou tratado — em tese, poderia ser revisto se a reciprocidade deixasse de existir (por exemplo, com mudanças nas próprias regras americanas de crédito fiscal); a análise jurídica consultada trata o ato como plenamente vigente hoje, mas esse é um risco estrutural inerente a instrumentos administrativos, não a uma lei. Segundo, não foi possível acessar diretamente o texto oficial completo da IN SRF nº 208/2002 no site normas.receita.fazenda.gov.br (instabilidade de acesso no momento da pesquisa) — o número do artigo (16) foi confirmado por múltiplas fontes secundárias independentes, mas não pelo texto oficial em si. Terceiro, na prática, usar a compensação exige guardar a documentação da retenção americana (formulário 1042-S) e comprovar que o valor não foi restituído nos EUA — sem isso, a Receita Federal pode questionar ou atrasar o crédito. Confirme sempre sua situação com um contador antes de declarar um prêmio real.
+
+## O que acontece quando você transfere o prêmio para uma conta no Brasil?
+
+Transferir um prêmio grande dos EUA para uma conta bancária no Brasil não gera, por si só, nenhum imposto além do já explicado acima. Transferências internacionais de valor elevado passam, porém, por controle cambial do Banco Central e por triagem padrão de prevenção à lavagem de dinheiro (regras do COAF, Conselho de Controle de Atividades Financeiras) — o banco pode pedir documentação da origem dos recursos, como o formulário americano 1042-S referente à retenção na fonte. O próprio recolhimento mensal do carnê-leão e a declaração anual do Imposto de Renda (ficha de rendimentos recebidos de pessoa física ou do exterior) já são a via correta para declarar esse rendimento à Receita Federal. Se optar por manter parte do valor investido nos EUA em vez de trazê-lo integralmente ao Brasil, pode haver também obrigação de declarar bens no exterior (Declaração de Capitais Brasileiros no Exterior, DCBE, ao Banco Central, para quem mantém acima de determinado limite fora do país). Se o valor for muito grande, confirme exigências adicionais diretamente com seu banco antes de fazer a transferência.
+
+## Perguntas frequentes
+
+Q: Residente no Brasil precisa pagar imposto sobre prêmio de loteria americana?
+A: Sim. Os Estados Unidos retêm primeiro um imposto federal fixo de 30% sobre prêmios de loteria pagos a não residentes estrangeiros (IRC §871(a)) — antes mesmo do dinheiro chegar até você. No Brasil, esse rendimento não segue a regra dos 30% da loteria nacional (que vale só para loterias da Caixa) — é declarado via carnê-leão e tributado pela tabela progressiva do IRPF, com alíquota máxima de 27,5%. Como essa alíquota é menor que a retenção americana, o crédito pelo imposto pago no exterior (baseado na reciprocidade Brasil-EUA) absorve todo o imposto brasileiro e não sobra nada a pagar a mais.
+
+Q: Por que não sobra imposto adicional a pagar no Brasil, como na Dinamarca ou na Itália?
+A: Porque a alíquota máxima brasileira (27,5%) já é menor que a retenção americana (30%) — o oposto da Dinamarca (57,07%) ou da Itália (~47,23%), onde sobra bastante imposto mesmo após o crédito. O crédito por imposto pago no exterior (IN SRF 208/2002, art. 16) cobre até o limite do imposto brasileiro sobre aquele rendimento — como esse limite (27,5%) é menor que o valor já retido nos EUA (30%), a compensação cobre 100% e o saldo fica em zero.
+
+Q: Existe tratado tributário entre Brasil e Estados Unidos?
+A: Não — Brasil e EUA nunca ratificaram um tratado abrangente de bitributação de renda. Mas a IN SRF 208/2002 permite o crédito também com base em reciprocidade comprovada, e a Receita Federal já reconheceu formalmente essa reciprocidade com os EUA pelo Ato Declaratório SRF nº 28/2000 — que confirma que a legislação americana também permite deduzir imposto pago no Brasil. Esse mecanismo já foi usado na prática, inclusive em casos de premiação em dólares de brasileiros nos EUA.
+
+Q: Isso é 100% garantido, ou existe alguma incerteza?
+A: A regra central está bem documentada, mas três pontos têm confiança um pouco menor: o Ato Declaratório SRF 28/2000 é um ato administrativo (não lei/tratado), então é teoricamente revisável; não foi possível conferir o texto oficial completo da IN SRF 208/2002 diretamente na fonte primária (problema de acesso ao site da Receita no momento da pesquisa), só fontes secundárias cruzadas; e usar o crédito na prática exige guardar comprovantes da retenção americana (1042-S). Confirme sempre com um contador antes de declarar um prêmio real.
+
+Q: O banco ou a Receita Federal vai saber que recebi o prêmio no Brasil?
+A: Muito provavelmente sim, mas é rotina de compliance cambial e de prevenção à lavagem de dinheiro (COAF), não uma questão fiscal à parte. O banco pode pedir comprovante da origem dos recursos (como o formulário 1042-S) em transferências internacionais grandes. Isso não gera imposto adicional além do já explicado — o recolhimento do carnê-leão e a declaração anual do IR já são a forma correta de declarar o rendimento.
+
+Esta página é apenas um simulador informativo e não intermedeia nem facilita a compra de bilhetes de loteria. O imposto real devido depende da sua situação individual (incluindo sua renda anual total) e da legislação tributária/taxa de câmbio vigente no momento da declaração — consulte um contador ou advogado tributarista qualificado, familiarizado com os sistemas fiscais dos dois países.
+
+---
+
 ## អ្នករស់នៅកម្ពុជាឈ្នះឆ្នោតអាមេរិក ត្រូវបង់ពន្ធប៉ុន្មាន?
 URL: https://chamtax.com/cambodia-resident-us-lottery-tax.html
 
@@ -2953,6 +3017,65 @@ Q: Får banken eller Skattestyrelsen besked, hvis jeg overfører gevinsten til e
 A: Muligvis — men det er en almindelig hvidvaskprocedure, ikke en skattesag. Overførslen udløser ikke i sig selv yderligere dansk skat, som allerede er beregnet ovenfor, men store internationale bankoverførsler kan udløse rutinemæssig kontrol hos banken under EU's hvidvaskdirektiver (AMLD), der gælder i hele EU/EØS, herunder Danmark. Banken kan bede om dokumentation for pengenes oprindelse, så gem gerne fx den amerikanske udbetalers Form 1042-S om tilbageholdt kildeskat. Er beløbet usædvanligt stort, bør du tjekke de konkrete krav direkte med din egen bank på forhånd.
 
 Denne side er kun en informationssimulator og formidler eller faciliterer ikke køb af lodder. Den faktiske skat, du skylder, afhænger af din individuelle situation samt gældende skattelovgivning/valutakurs på tidspunktet for din selvangivelse — kontakt en kvalificeret skatterådgiver, der kender begge landes skattesystemer.
+
+---
+
+## هل يدفع المقيمون في مصر ضريبة على أرباح يانصيب باوربول أو ميغا ميليونز الأمريكي؟ 2026
+URL: https://chamtax.com/egypt-resident-us-lottery-tax.html
+
+هل أنت مقيم ضريبي في مصر وفزت بباوربول أو ميغا ميليونز؟ اقتطاع أمريكي اتحادي 30%، وضريبة الدخل المصرية التصاعدية حتى 27.5% تُعوَّض بالكامل عبر معاهدة الازدواج الضريبي بين مصر وأمريكا. حاسبة مجانية.
+
+# هل يدفع المقيمون في مصر ضريبة على أرباح يانصيب باوربول أو ميغا ميليونز؟
+
+ChamTax حاسبة مجانية تُظهر المبلغ الفعلي المتبقي بعد الضرائب من جائزة يانصيب باوربول أو ميغا ميليونز. هكذا تُفرض الضريبة على جائزة اليانصيب الأمريكي إذا كنت مقيمًا ضريبيًا في مصر — اقتطاع فيدرالي أمريكي 30%، بالإضافة إلى ضريبة دخل مصرية تصاعدية حقيقية على الدخل العالمي، لكنها تُعوَّض بالكامل عبر ائتمان ضريبي أجنبي، لتصل الضريبة المصرية الإضافية الصافية إلى صفر.
+
+آخر تحديث: 2026-09-01
+
+مثال بجائزة قدرها 1,000,000 دولار، مقيم في مصر
+- الاقتطاع الفيدرالي الأمريكي (30%، غير مقيم): -$300,000
+- ضريبة مصرية إضافية (تُعوَّض بالكامل عبر ائتمان ضريبي): $0
+- المبلغ الصافي التقديري: ≈ $700,000
+
+الحاسبة أعلاه تحوّل مبلغك الخاص بسعر صرف مباشر إلى الجنيه المصري (EGP) إن رغبت.
+
+## هل تفرض مصر ضريبة على جوائز اليانصيب الأمريكية؟
+
+نعم من حيث المبدأ. يخضع المقيم الضريبي المصري للضريبة على دخله العالمي — مصلحة الضرائب المصرية (ETA) وملخصات PwC العالمية للضرائب (آخر مراجعة فبراير 2026) تؤكدان هذا المبدأ — بشرائح تصاعدية تصل حاليًا إلى حد أقصى 27.5% على الدخل الذي يتجاوز 1.2 مليون جنيه مصري سنويًا. جائزة بحجم جاكبوت أمريكي تتجاوز هذا الحد دائمًا، فتستخدم هذه الحاسبة نسبة 27.5% كتقدير. ⚠️ لم نعثر على نص صريح في قانون الضريبة على الدخل رقم 91 لسنة 2005 يذكر «جوائز اليانصيب» بالاسم كبند مستقل — القانون المصري مبني على أوعية ضريبية محددة (مرتبات، أرباح تجارية وصناعية، أرباح مهنية، ثروة عقارية) ولا يُدرج مكسبًا عرضيًا كهذا صراحة تحت بند بعينه — لكن مبدأ خضوع الدخل العالمي للضريبة نفسه مؤكد من مصادر متعددة ومستقلة.
+
+## الاقتطاع الأمريكي 30% ولماذا لا يمكن استرداده عبر المعاهدة
+
+تفرض الولايات المتحدة على غير المقيمين الأجانب اقتطاعًا فيدراليًا ثابتًا بنسبة 30% على أرباح اليانصيب (بند 871(a) من قانون الإيرادات الداخلية) — أعلى من النسبة المطبقة على المقيمين الأمريكيين — وتُخصم فور صرف الجائزة.
+
+معاهدة الازدواج الضريبي بين مصر وأمريكا (وُقّعت 1980، سرت 1981) من الجيل الأقدم من المعاهدات ولا تحتوي على بند «دخل آخر» (Other Income) الذي تحتوي عليه معاهدات أحدث. بدلاً من ذلك تنص المادة 4 (الفقرة 9) على أن مصدر أي دخل لا تغطيه بنود أخرى محددة يُحدَّد وفق القانون الداخلي لكل دولة، وتسمح المادة 6 (الفقرة 1) للولايات المتحدة بفرض ضريبتها على دخلها المصدر دون قيد تعاهدي. بما أن القانون الأمريكي يعتبر جائزة اليانصيب دخلاً أمريكي المصدر، يبقى الاقتطاع الفيدرالي بنسبة 30% نافذًا بالكامل — لا توجد فرصة تعاهدية لاستعادته مباشرةً.
+
+## كيف تنخفض الضريبة المصرية الإضافية إلى صفر؟ (آلية الائتمان الضريبي)
+
+الحل هنا ائتمان لا إعفاء. تنص المادة 25 (الفقرة 2) من المعاهدة صراحة على أن مصر «تسمح للمقيم المصري بائتمان ضريبي مقابل ضريبة الدخل المدفوعة أو المستحقة للولايات المتحدة»، على ألا يتجاوز هذا الائتمان الجزء من الضريبة المصرية الذي يقابل نسبة الدخل ذي المصدر الأمريكي من إجمالي دخل الشخص (ائتمان ضريبي أجنبي عادي بحد أقصى). بما أن الاقتطاع الأمريكي الفعلي (30%) أعلى بالفعل من كامل الضريبة المصرية المحتسبة (27.5%)، يُستوعَب هذا المبلغ بالكامل ضمن السقف، فتنخفض الضريبة المصرية الإضافية الصافية إلى صفر — لكن يبقى على الفائز مبدئيًا الإقرار بالمبلغ ضمن دخله السنوي وتوثيق الاقتطاع الأمريكي (نموذج 1042-S الصادر عن جهة اليانصيب) لإثبات هذا الائتمان أمام مصلحة الضرائب المصرية.
+
+## ماذا لو حوّلت الأموال إلى مصر؟
+
+تحويل مبلغ كبير من الخارج إلى حساب مصري لا يُنشئ بحد ذاته أي ضريبة إضافية غير ما تقدّم. لكن البنك المركزي المصري (CBE) يطبّق ضوابط ومتطلبات توثيق على التحويلات الوافدة الكبيرة وغير المعتادة كجزء من قواعد مكافحة غسل الأموال، وقد يُطلب منك إثبات مصدر الأموال عند إجراء تحويل كبير — وهذا إجراء رقابي مصرفي روتيني وليس ضريبة إضافية.
+
+الاحتفاظ بإيصال الفوز الرسمي الصادر عن جهة إدارة اليانصيب الأمريكية ونموذج 1042-S يسهّل الإجابة على أي استفسار بنكي حول مصدر الأموال إن ورد، ويُستخدم أيضًا لإثبات الائتمان الضريبي أمام مصلحة الضرائب المصرية.
+
+## الأسئلة الشائعة
+
+Q: هل يدفع المقيمون في مصر ضريبة على أرباح يانصيب أمريكي؟
+A: نعم من ناحيتين. تقتطع الولايات المتحدة تلقائيًا ضريبة اتحادية ثابتة بنسبة 30% على أرباح غير المقيمين الأجانب من اليانصيب (بند 871(a) من قانون الإيرادات الداخلية الأمريكي) قبل وصول المبلغ إليك أصلاً. وعلى الجانب المصري، يخضع المقيم الضريبي المصري للضريبة على دخله العالمي (مصلحة الضرائب المصرية ETA وملخصات PwC العالمية للضرائب تؤكدان مبدأ الدخل العالمي هذا)، بشرائح تصاعدية تصل حاليًا (2026) إلى حد أقصى 27.5% على الدخل الذي يتجاوز 1.2 مليون جنيه مصري سنويًا — وجائزة بحجم جاكبوت تتجاوز هذا الحد دائمًا، فيُطبَّق عليها هذا السقف كتقدير. لكن بفضل معاهدة الازدواج الضريبي بين مصر والولايات المتحدة (وُقّعت 1980، سرت 1981)، يحصل المقيم المصري على ائتمان ضريبي أجنبي (FTC) بموجب المادة 25 (الفقرة 2) منها يقابل الضريبة الأمريكية المقتطعة مسبقًا — وبما أن الاقتطاع الأمريكي (30%) أعلى من السقف المصري (27.5%)، يستوعب هذا الائتمان العبء المصري بالكامل ولا تُستحق أي ضريبة مصرية إضافية على المبلغ.
+
+Q: لماذا لا تُستحق أي ضريبة مصرية إضافية إذا كانت الجائزة خاضعة للضريبة أصلاً؟
+A: لأن الازدواج الضريبي يُعالَج هنا عبر ائتمان لا عبر إعفاء. الفارق مهم: الجائزة تبقى خاضعة نظريًا للضريبة المصرية على الدخل العالمي، لكن المادة 25 (الفقرة 2) من معاهدة 1980 تنص صراحة على أن مصر «تسمح للمقيم المصري بائتمان ضريبي مقابل ضريبة الدخل المدفوعة أو المستحقة للولايات المتحدة»، على ألا يتجاوز هذا الائتمان الجزء من الضريبة المصرية الذي يقابل نسبة الدخل ذي المصدر الأمريكي من إجمالي دخل الشخص. بما أن الاقتطاع الأمريكي الفعلي (30%) أعلى بالفعل من كامل الضريبة المصرية المحتسبة (27.5%)، يُستوعَب هذا المبلغ بالكامل ضمن السقف، فتنخفض الضريبة المصرية الإضافية الصافية إلى صفر — لكن يبقى على الفائز مبدئيًا الإقرار بالمبلغ ضمن دخله السنوي وتوثيق الاقتطاع الأمريكي (نموذج 1042-S) لإثبات الائتمان.
+
+Q: هل يوجد بند خاص بجوائز اليانصيب في القانون الضريبي المصري؟
+A: لم نعثر على نص صريح في قانون الضريبة على الدخل رقم 91 لسنة 2005 (المعدَّل بالقانون 30 لسنة 2023) يذكر «جوائز اليانصيب» أو «المكاسب العرضية» بالاسم — فالقانون المصري مبني على أوعية ضريبية محددة (المرتبات، الأرباح التجارية والصناعية، الأرباح المهنية، الثروة العقارية). المؤكد من مصادر متعددة (PwC ومكاتب استشارية مصرية، آخر مراجعة فبراير 2026) هو أن مصر تفرض الضريبة على الدخل العالمي لمقيميها الضريبيين وأن السقف الحالي هو 27.5% — وهذا ما تعتمده هذه الحاسبة كتقدير تحفظي (⚠️). يُنصح بمراجعة مستشار ضريبي مصري لتأكيد البند التحديدي الذي يندرج تحته هذا النوع من الدخل قبل تقديم الإقرار.
+
+Q: هل يمكنني استرداد الاقتطاع الأمريكي بنسبة 30% بدلًا من ذلك؟
+A: معاهدة مصر وأمريكا (1980) من الجيل الأقدم من المعاهدات، ولا تحتوي على بند «دخل آخر» (Other Income) الذي يظهر في معاهدات أحدث مثل معاهدتي إسبانيا وأوكرانيا. بدلاً من ذلك، تنص المادة 4 (الفقرة 9) على أن مصدر أي دخل لا تغطيه بنود أخرى يُحدَّد وفق قانون كل دولة على حدة، والمادة 6 (الفقرة 1) تسمح للولايات المتحدة بفرض ضريبتها على دخلها المصدر دون أي قيد تعاهدي. وبما أن القانون الأمريكي الداخلي يعتبر جائزة اليانصيب دخلاً أمريكي المصدر، يبقى الاقتطاع الفيدرالي بنسبة 30% نافذًا بالكامل ولا توجد فرصة تعاهدية لاستعادته — الحل الوحيد المتاح هو الائتمان الضريبي داخل مصر الموضح أعلاه، وليس استرداد المبلغ من الجانب الأمريكي.
+
+Q: ماذا لو حوّلت الأموال إلى مصر؟
+A: تحويل مبلغ كبير من الخارج إلى حساب مصري لا يُنشئ بحد ذاته ضريبة إضافية غير ما تقدّم. لكن البنك المركزي المصري (CBE) يطبّق ضوابط ومتطلبات توثيق على التحويلات الوافدة الكبيرة وغير المعتادة كجزء من قواعد مكافحة غسل الأموال، وقد يُطلب منك إثبات مصدر الأموال (إيصال الفوز الرسمي من جهة اليانصيب الأمريكية ونموذج 1042-S) — وهذا إجراء رقابي مصرفي روتيني وليس ضريبة إضافية.
+
+هذه الصفحة هي محاكي معلوماتي فقط ولا تعمل كوكيل أو وسيط في شراء التذاكر. تعتمد الضريبة المستحقة فعليًا على وضعك الشخصي وعلى الأنظمة الضريبية وسعر الصرف الساريين وقت تقديم إقرارك — يُنصح باستشارة مستشار ضريبي مطّلع على النظامين الضريبيين في كلا البلدين.
 
 ---
 
@@ -3247,6 +3370,12 @@ A: अमेरिका पहले 30% काटता है, फिर भ�
 Q: विदेश से पैसा मंगाने पर बैंक या सरकार को पता चलेगा?
 A: संभावना है — लेकिन यह एक नियमित अनुपालन रिपोर्ट है, कोई कर समस्या नहीं। ₹5 लाख या उससे अधिक के अंतरराष्ट्रीय वायर ट्रांसफर के लिए बैंक को PMLA नियमों के तहत FIU-IND को Cross Border Wire Transfer Report दाखिल करना होता है, इसलिए अमेरिकी लॉटरी से आई बड़ी रकम की रिपोर्ट स्वतः हो जाती है। विदेश से आय प्राप्त करने पर FEMA के तहत कोई विशेष रोक नहीं है (यह प्रतिबंध केवल विदेश पैसा भेजने पर लागू होता है) — बैंक सिर्फ सामान्य KYC जांच के तहत रकम का स्रोत पूछ सकता है।
 
+Q: अमेरिकी लॉटरी की जीती हुई रकम भारतीय बैंक खाते में कैसे लाएं?
+A: भारत में बड़ी विदेशी रकम भेजने और मंगवाने के नियम अलग-अलग हैं। RBI की Liberalised Remittance Scheme (LRS, हर वित्तीय वर्ष $250,000 की सीमा) FEMA के तहत सिर्फ भारत से बाहर पैसा भेजने पर लागू होती है, विदेश से भारत में पैसा मंगवाने पर नहीं — यह एक आम गलतफहमी है। असल में लागू होने वाला नियम आपके बैंक की KYC जांच है: RBI के KYC Master Direction और Prevention of Money Laundering Act (PMLA) के तहत बैंक को रकम जमा करने से पहले उसके स्रोत की पुष्टि करनी होती है, और बड़े या असामान्य लेन-देन की जानकारी FIU-IND को दी जा सकती है। यह सामान्य प्रक्रिया है, बाधा नहीं — बैंक पुरस्कार के दावे से जुड़े कागज़ात और IRS का Form 1042-S मांग सकता है। भारत में विदेश से मिलने वाली रकम के लिए कोई एक निश्चित रुपये की सीमा तय नहीं है जिस पर रिपोर्टिंग अनिवार्य हो जाए — यह बैंक के जोखिम-आधारित आकलन पर निर्भर करता है।
+
+Q: क्या भारत-अमेरिका DTAA में लॉटरी की जीत के लिए कोई खास प्रावधान है?
+A: हाँ। संधि के अनुच्छेद 23 ("Other Income") में अमेरिकी ट्रेजरी की आधिकारिक Technical Explanation स्पष्ट रूप से "lottery winnings" को इस अनुच्छेद के दायरे के उदाहरण के तौर पर नाम लेकर बताती है। लेकिन इसका मतलब यह नहीं कि भारत को अनन्य टैक्सिंग अधिकार मिल जाता है — पैराग्राफ 3 के तहत, चूंकि पुरस्कार अमेरिका में "उत्पन्न" होता है, अमेरिका भी इस पर टैक्स लगा सकता है, इसीलिए 30% की रोक बरकरार रहती है। दोहरे कराधान से बचाव अनुच्छेद 25 (Relief from Double Taxation) के जरिए होता है, जिसे भारत में धारा 90 और नियम 128 के तहत Form 67/44 से क्रेडिट के रूप में लागू किया जाता है — धारा 115BB की आय को नियम 128 में खास तौर पर FTC से बाहर नहीं रखा गया, हालांकि व्यवहार में इसकी पुष्टि के लिए विशेषज्ञ से सलाह लेना बेहतर है।
+
 यह पेज केवल जानकारी के लिए है, टिकट खरीद में मध्यस्थता नहीं करता। वास्तव में फाइल करने से पहले दोनों देशों के कर मामलों में दक्ष विशेषज्ञ से सलाह लें।
 
 ---
@@ -3285,6 +3414,12 @@ AS memotong 30% dulu. Di Indonesia, penghasilan ini diklasifikasikan sebagai paj
 
 Mentransfer jumlah besar dari AS ke rekening bank Indonesia pada dasarnya tidak menimbulkan pajak tambahan — kewajiban pajak final di atas berlaku terlepas dari kapan atau apakah Anda mentransfer uangnya. Namun transaksi dalam jumlah besar dan tidak biasa bisa memicu pemeriksaan bank di bawah aturan umum anti-pencucian uang (UU No. 8 Tahun 2010 tentang Pencegahan dan Pemberantasan Tindak Pidana Pencucian Uang) — bank wajib melaporkan transaksi tertentu ke PPATK sebagai bagian dari kepatuhan rutin, bukan investigasi. Simpan bukti kemenangan (surat pemberitahuan/payout confirmation) untuk berjaga-jaga jika bank meminta bukti asal dana, dan sebaiknya konsultasikan rencana transfer serta pelaporan pajak Anda dengan kantor pajak (DJP) dan bank Anda sebelum mentransfer jumlah besar.
 
+## Membawa uang hadiah masuk ke Indonesia: pelaporan bank ke PPATK
+
+Berbeda dari yang mungkin dibayangkan banyak orang, tidak ada ambang batas nominal untuk pelaporan transfer dana dari luar negeri di Indonesia. Setiap bank di Indonesia wajib melaporkan seluruh transaksi transfer dana masuk maupun keluar dari luar negeri (Laporan Transaksi Keuangan Transfer Dana dari dan ke Luar Negeri, disingkat LTKL) kepada PPATK (Pusat Pelaporan dan Analisis Transaksi Keuangan), berapa pun nominalnya, paling lambat 14 hari kerja sejak tanggal transaksi. Jadi transfer hadiah lotre AS Anda otomatis akan tercatat dalam laporan rutin ini — ini bukan tanda bahwa ada yang salah dengan dana Anda, melainkan prosedur standar untuk semua transfer internasional.
+
+Yang perlu Anda siapkan adalah dokumentasi sumber dana yang jelas untuk keperluan uji tuntas nasabah (customer due diligence) di bank Anda — bukti klaim hadiah dari penyelenggara lotre dan formulir pemotongan pajak AS (Form 1042-S) dari IRS adalah dokumen yang tepat untuk menjelaskan asal dana ini. Ambang batas Rp500 juta yang sering disebut-sebut (Laporan Transaksi Keuangan Tunai, LTKT) berlaku untuk transaksi tunai fisik, bukan untuk transfer bank internasional seperti ini — jangan tertukar antara keduanya.
+
 ## Pertanyaan yang sering diajukan
 
 Q: Saya warga negara Indonesia yang tinggal di negara lain — apakah harus pakai dasar Indonesia?
@@ -3299,7 +3434,69 @@ A: Kemungkinan besar tidak. Kredit pajak luar negeri umum Indonesia (Pasal 24 UU
 Q: Kapan dan bagaimana cara lapor?
 A: AS memotong 30% terlebih dahulu, lalu di Indonesia penghasilan ini kena pajak final Pasal 4(2) sebesar 25% — karena kredit pajak luar negeri kemungkinan tidak berlaku untuk pajak final ini, total pemotongan bisa mencapai 55% dari nilai kemenangan. Karena tidak ada pemotong pajak lokal untuk undian AS, Anda wajib melaporkan sendiri dalam 3 bulan setelah tahun pajak berakhir (biasanya sebelum 31 Maret) di SPT Tahunan Form 1770 bagian Pajak Final, melalui sistem Coretax DJP sejak 2025.
 
+Q: Apakah transfer hadiah lotre dari luar negeri akan dilaporkan ke otoritas Indonesia?
+A: Ya, tapi ini bukan tanda ada yang salah — setiap bank di Indonesia wajib melaporkan seluruh transfer dana dari dan ke luar negeri (LTKL) kepada PPATK, berapa pun nominalnya, paling lambat 14 hari kerja setelah transaksi. Siapkan dokumentasi sumber dana (bukti klaim hadiah dan Form 1042-S dari IRS) untuk uji tuntas nasabah di bank Anda. Ambang batas Rp500 juta yang sering disebut (LTKT) berlaku untuk transaksi tunai fisik, bukan transfer bank internasional.
+
 Halaman ini hanya untuk tujuan informasi dan tidak memperantarai pembelian tiket. Silakan konsultasikan dengan profesional pajak yang memahami kedua negara sebelum benar-benar melapor.
+
+---
+
+## האם תושבי ישראל משלמים מס על זכייה בפאוארבול או מגה מיליונס האמריקאיות? 2026
+URL: https://chamtax.com/israel-resident-us-lottery-tax.html
+
+זכית בפאוארבול או מגה מיליונס וגר בישראל? ניכוי מס פדרלי אמריקאי של 30%, ומעליו מס רווחי הגרלות ישראלי (סעיף 2א, 35%) שרק חלקו מתקזז מול המס האמריקאי. מחשבון חינמי.
+
+# האם תושבי ישראל משלמים מס על זכייה בפאוארבול או מגה מיליונס?
+
+ChamTax הוא מחשבון חינמי שמציג את הסכום נטו בפועל אחרי מס מזכייה בהגרלת פאוארבול או מגה מיליונס. כך ממוסה זכייה בהגרלה אמריקאית עבור תושב ישראל — ניכוי מס פדרלי אמריקאי קבוע של 30%, ומעליו מס רווחי הגרלות ישראלי אמיתי (35%) שרק חלקו מתקזז מול המס האמריקאי, ונשארת חבות מס ישראלית נוספת של כ-5%.
+
+עדכון אחרון: 2026-09-01
+
+דוגמה לזכייה של 1,000,000 דולר, תושב ישראל
+- ניכוי מס פדרלי אמריקאי (30%, תושב חוץ): -$300,000
+- מס ישראלי נוסף (סעיף 2א, לאחר זיכוי חלקי): -$50,000
+- הסכום המשוער נטו: ≈ $650,000
+
+המחשבון למעלה ממיר את הסכום שלכם בשער חליפין חי לשקל חדש (ILS), אם תרצו.
+
+## האם ישראל ממסה זכייה בהגרלה אמריקאית?
+
+כן, באופן מפורש. סעיף 2א לפקודת מס הכנסה (הוסף בתיקון 134 משנת 2003) קובע כי רווחים של תושב ישראל ממשחקי הגרלה, הימורים או פעילות נושאת פרסים — בין שהופקו בישראל ובין בחו"ל — נחשבים הכנסה חייבת במס. מעל סף פטור נמוך (כ-33,840–67,680 ש"ח נכון ל-2024, סף שאין לו כל משמעות בזכיית ג'קפוט), חל שיעור מס קבוע של 35% על מלוא הסכום. ⚠️ ייתכן שגם "מס יסף" נוסף (כ-3% על הכנסה שנתית מעל כ-721,560 ש"ח) חל על הכנסה זו — לא הצלחנו לאמת נקודה זו במקור רשמי, ולכן היא אינה כלולה בחישוב המחשבון (בדומה לאי-הכללת מס עושר שווייצרי בדף השווייצרי).
+
+## הניכוי האמריקאי של 30% — ולמה האמנה לא מפחיתה אותו
+
+ארה"ב מנכה מתושבי חוץ מס פדרלי קבוע של 30% מזכיות הגרלה (סעיף 871(a) לפקודת המס הפדרלית) — גבוה מהשיעור שחל על תושבי ארה"ב עצמם — והניכוי מתבצע מיד עם תשלום הפרס.
+
+אמנת המס בין ישראל לארה"ב (נחתמה 1975, תוקנה בפרוטוקול 1993) שייכת לדור ישן של אמנות ואינה כוללת סעיף "הכנסות אחרות" (Other Income) כפי שקיים באמנות מאוחרות יותר. במקומו, סעיף 4 (פסקה 9) קובע שמקור הכנסה שאינו מכוסה בסעיף ספציפי אחר ייקבע לפי הדין הפנימי של כל מדינה, וסעיף 6 (פסקה 1) מתיר לארה"ב למסות הכנסה ממקור אמריקאי ללא הגבלה מכוח האמנה. הניכוי הפדרלי של 30% נותר אפוא בתוקף מלא — אין דרך אמנתית לקבל אותו בחזרה במישרין.
+
+## למה נותרים 5% מס ישראלי נוסף, ולא הכל מתקזז?
+
+הפתרון היחיד לכפל המס הוא זיכוי, לא פטור — וגם הזיכוי חלקי בלבד. סעיף 26(3) לאמנה קובע כי "ישראל תיתן לתושב ישראל זיכוי כנגד המס הישראלי בגובה מס ההכנסה ששולם או נצבר בארה"ב", אך הזיכוי מוגבל לחלק היחסי ממס ההכנסה הישראלי המתייחס להכנסה ממקור אמריקאי (זיכוי מס זר רגיל עם תקרה). מכיוון ששיעור המס הישראלי על רווחי הגרלה (35%, לפי סעיף 2א) גבוה מהניכוי האמריקאי (30%), הזיכוי מכסה את מלוא ה-30% אך משאיר פער נטו של כ-5 נקודות אחוז שהזוכה חייב בו כלפי רשות המסים בישראל.
+
+## מה אם אעביר את הכסף לישראל?
+
+העברת סכום גדול מארה"ב לחשבון בנק בישראל אינה יוצרת כשלעצמה חבות מס נוספת מעבר למתואר לעיל. עם זאת, בנקים בישראל כפופים לחוק איסור הלבנת הון ועשויים לדרוש הוכחת מקור כספים בהעברה חד-פעמית גדולה וחריגה — זהו הליך ציות בנקאי שגרתי ולא חבות מס נוספת.
+
+שמירת מסמכי הזכייה הרשמיים מגורם ההגרלה האמריקאי וטופס 1042-S מקלה על מענה לכל בירור בנקאי בנוגע למקור הכספים, ומשמשת גם להוכחת הזיכוי מול רשות המסים בישראל.
+
+## שאלות נפוצות
+
+Q: האם תושבי ישראל משלמים מס על זכייה בהגרלה אמריקאית?
+A: כן, בשני שלבים. ארה"ב מנכה במקור מס פדרלי קבוע של 30% מזכיות הגרלה של תושבי חוץ (סעיף 871(a) לפקודת המס הפדרלית האמריקאית) עוד לפני שהכסף מגיע אליכם. בישראל, סעיף 2א לפקודת מס הכנסה (תוקן בתיקון 134 משנת 2003) קובע במפורש כי רווחים ממשחקי הגרלה, הימורים או פעילות נושאת פרסים של תושב ישראל — בין שהופקו בישראל ובין שהופקו בחו"ל — נחשבים הכנסה החייבת במס בשיעור של 35% (מעל סכום הפטור, שאין לו כל משמעות בזכיית ג'קפוט). בזכות אמנת המס בין ישראל לארה"ב (1975, תוקנה 1993), מקבל התושב הישראלי זיכוי מס זר (סעיף 26(3) לאמנה) כנגד המס האמריקאי שכבר נוכה — אך מכיוון שהניכוי האמריקאי (30%) נמוך משיעור המס הישראלי (35%), הזיכוי מכסה רק חלק מהחבות, ונותרת חבות מס ישראלית נוספת של כ-5 נקודות אחוז.
+
+Q: למה לא כל המס הישראלי מתקזז מול הניכוי האמריקאי?
+A: כי הזיכוי בסעיף 26(3) לאמנה הוא זיכוי רגיל עם תקרה (ordinary credit) ולא פטור מלא — הוא מוגבל לחלק היחסי ממס ההכנסה הישראלי שמתייחס להכנסה ממקור אמריקאי, ולא יכול לעלות על סכום המס האמריקאי ששולם בפועל. מכיוון ששיעור המס הישראלי על רווחי הגרלה (35%) גבוה מהניכוי האמריקאי (30%), הזיכוי מכסה את מלוא ה-30% אך משאיר פער של כ-5 נקודות אחוז שהזוכה חייב בו כלפי רשות המסים בישראל.
+
+Q: האם אמנת המס בין ישראל לארה"ב מפחיתה את הניכוי האמריקאי על הגרלות?
+A: לא. אמנת המס בין ישראל לארה"ב (נחתמה 1975) שייכת לדור ישן יחסית של אמנות ואינה כוללת סעיף "הכנסות אחרות" (Other Income) כפי שקיים באמנות מאוחרות יותר. במקומו, סעיף 4 (פסקה 9) קובע שמקור הכנסה שאינו מכוסה בסעיפים ספציפיים אחרים ייקבע לפי הדין הפנימי של כל מדינה, וסעיף 6 (פסקה 1) מאפשר לארה"ב למסות הכנסה ממקור אמריקאי ללא כל הגבלה מכוח האמנה. מכיוון שהדין האמריקאי הפנימי מסווג זכיית הגרלה כהכנסה ממקור אמריקאי, נותר ניכוי המקור הפדרלי של 30% בתוקף מלא — אין כאן דרך לקבל אותו בחזרה מכוח האמנה.
+
+Q: מהו סעיף 2א לפקודת מס הכנסה בדיוק?
+A: סעיף 2א הוסף לפקודת מס הכנסה בתיקון 134 משנת 2003, וקובע כי רווחים או הכנסות של תושב ישראל, שהופקו או נצמחו בישראל או בחו"ל, ממקור של הימורים, הגרלות או פעילות נושאת פרסים — ייחשבו הכנסה החייבת במס. שיעור המס הקבוע הוא 35% על הסכום שמעל סף הפטור (נכון ל-2024, כ-33,840–67,680 ש"ח, סף שאין לו כל משמעות בזכיית ג'קפוט בגודל של הגרלות פאוארבול או מגה מיליונס). ⚠️ שימו לב: מעל סף הכנסה שנתית גבוה נוסף ("מס יסף", כ-3% נוספים על הכנסה שנתית מעל כ-721,560 ש"ח נכון ל-2024) ייתכן שיחול היטל נוסף — מחשבון זה אינו כולל היטל זה, בדומה לאי-הכללת מס עושר שווייצרי או זכאת סעודית בדפים אחרים באתר.
+
+Q: מה אם אעביר את הכסף לישראל?
+A: העברת סכום גדול מארה"ב לחשבון בנק בישראל אינה יוצרת כשלעצמה חבות מס נוספת מעבר למתואר לעיל. עם זאת, בנקים בישראל כפופים לחוק איסור הלבנת הון ועשויים לדרוש הוכחת מקור כספים (כגון מסמכי הזכייה הרשמיים וטופס 1042-S האמריקאי) בהעברה חד-פעמית גדולה וחריגה — זהו הליך ציות בנקאי שגרתי ולא חבות מס נוספת.
+
+דף זה הוא סימולטור מידע בלבד ואינו משמש כמתווך או סוכן לרכישת כרטיסי הגרלה. המס שיחול בפועל תלוי בנסיבות האישיות שלכם ובדין/שער החליפין שבתוקף בעת הגשת הדוח — מומלץ להיוועץ ביועץ מס המכיר את שתי מערכות המס.
 
 ---
 
@@ -3312,7 +3509,7 @@ Sei residente fiscale in Italia e hai vinto al Powerball o al Mega Millions? La 
 
 ChamTax è un calcolatore gratuito che mostra l'importo reale che ti resta dopo le tasse su un jackpot del Powerball o del Mega Millions. Ecco come viene tassata una vincita alla lotteria americana se sei residente fiscale in Italia — la ritenuta USA del 30%, che viene praticamente sempre applicata, più sopra un'imposta residua italiana di circa 17 punti percentuali, perché l'aliquota italiana (circa 47%) è più alta di quella USA.
 
-Ultimo aggiornamento: 2026-08-20
+Ultimo aggiornamento: 2026-08-24
 
 Esempio con una vincita da 1.000.000 di dollari, residente in Italia
 - Ritenuta federale USA (30%, non residente): -$300.000
@@ -3347,11 +3544,11 @@ Questo calcolatore mostra quindi, come per tutti gli altri paesi, il percorso ch
 
 ⚠️ Tre punti che non abbiamo potuto confermare del tutto
 
-Primo, il testo letterale dell'esenzione del comma 1-bis parla di "case da gioco" più che di "lotterie" — non cambia la conclusione per il Powerball (vedi sopra), ma segnala che l'ambito esatto della norma è meno netto di quanto suggeriscano molti riassunti divulgativi. Secondo, le addizionali regionale e comunale variano da zona a zona (regionale 0,9%-3,33%, comunale 0%-0,8%): questa pagina usa come riferimento le aliquote 2026 di Lazio e Roma, un valore vicino al limite superiore — nella tua regione l'aliquota reale potrebbe essere più bassa. Terzo, non abbiamo trovato un interpello o una risposta ufficiale dell'Agenzia delle Entrate che applichi in modo specifico il credito d'imposta estero (art. 165 TUIR) a questo particolare tipo di reddito estero, anche se il principio generale dovrebbe applicarsi allo stesso modo di altri redditi esteri. Verifica sempre la tua situazione specifica con un commercialista prima di dichiarare una vincita reale.
+Primo, il testo letterale dell'esenzione del comma 1-bis parla di "case da gioco" più che di "lotterie" — non cambia la conclusione per il Powerball (vedi sopra), ma segnala che l'ambito esatto della norma è meno netto di quanto suggeriscano molti riassunti divulgativi. Sul fronte opposto, quello della base imponibile (non dell'esenzione), l'Agenzia delle Entrate ha già chiarito con la Risoluzione n. 141 del 30 dicembre 2010 che le vincite ottenute tramite operatori esteri non autorizzati dai Monopoli di Stato vanno dichiarate per intero come redditi diversi ex art. 67(1)(d) TUIR — un principio pensato per il gioco online, ma basato sulla stessa norma e sullo stesso ragionamento (operatore non autorizzato in Italia) che questa pagina applica al Powerball fisico. Secondo, le addizionali regionale e comunale variano non solo da zona a zona ma anche per scaglione di reddito: l'aliquota regionale di base fissata dalla legge nazionale è 1,23%, con un tetto massimo del 3,33% che le Regioni in piano di rientro sanitario (tra cui il Lazio) possono applicare — nel caso del Lazio, specificamente allo scaglione di reddito oltre 30.000 euro (legge regionale n. 20/2025), quello in cui ricade per intero una vincita di questa entità. L'addizionale comunale ha invece un tetto generale dello 0,8% (D.Lgs. 360/1998), ma Roma Capitale applica dal 2011 un'aliquota speciale dello 0,9%, superiore al tetto ordinario degli altri comuni — motivo per cui questa pagina, usando Lazio e Roma come riferimento, si colloca vicino al limite superiore della forbice reale piuttosto che a un valore medio. Nella tua regione e nel tuo comune l'aliquota effettiva potrebbe quindi essere sensibilmente più bassa. Terzo, non abbiamo trovato un interpello o una risposta ufficiale dell'Agenzia delle Entrate che applichi in modo specifico il credito d'imposta estero (art. 165 TUIR) a questo particolare tipo di reddito estero, anche se il principio generale dovrebbe applicarsi allo stesso modo di altri redditi esteri. Verifica sempre la tua situazione specifica con un commercialista prima di dichiarare una vincita reale.
 
 ## Cosa succede se trasferisci la vincita su un conto bancario italiano?
 
-Trasferire una grande vincita alla lotteria americana su un conto bancario italiano non genera di per sé ulteriori imposte — la tassazione è già interamente coperta nelle sezioni precedenti. I bonifici internazionali di importo elevato possono però attirare un controllo di routine da parte della banca, nell'ambito delle regole generali antiriciclaggio previste dalle direttive UE (AMLD, Anti-Money Laundering Directive), applicabili in tutta l'UE/SEE, Italia inclusa. Si tratta di una procedura amministrativa sulla provenienza dei fondi, non di un accertamento fiscale. È consigliabile tenere a portata di mano la documentazione della vincita — ad esempio il modulo Form 1042-S rilasciato dall'ente pagatore statunitense, che attesta la ritenuta subita — nel caso la banca chieda chiarimenti sull'origine del denaro. Se l'importo è insolitamente elevato, conviene inoltre verificare in anticipo i requisiti specifici direttamente con la propria banca.
+Trasferire una grande vincita alla lotteria americana su un conto bancario italiano non genera di per sé ulteriori imposte — la tassazione è già interamente coperta nelle sezioni precedenti. Ciò che si applica sono gli obblighi antiriciclaggio della tua banca ai sensi del D.Lgs. 231/2007, sotto la vigilanza della Banca d'Italia; se la banca ritiene la giustificazione sull'origine dei fondi insufficiente o evasiva, è tenuta a trasmettere una Segnalazione di Operazione Sospetta (SOS) alla UIF (Unità di Informazione Finanziaria, istituita presso la Banca d'Italia). Si tratta di una procedura amministrativa sulla provenienza dei fondi, non di un accertamento fiscale. È consigliabile tenere a portata di mano la documentazione della vincita — ad esempio il modulo Form 1042-S rilasciato dall'ente pagatore statunitense, che attesta la ritenuta subita — nel caso la banca chieda chiarimenti sull'origine del denaro. Se l'importo è insolitamente elevato, conviene inoltre verificare in anticipo i requisiti specifici direttamente con la propria banca.
 
 ## Domande frequenti
 
@@ -3365,7 +3562,10 @@ Q: Gli Stati Uniti hanno davvero il diritto di tassare, se sei residente fiscale
 A: Sorprendentemente, probabilmente no in teoria. La convenzione USA-Italia contiene un articolo 22 autonomo ("Altri redditi") che attribuisce allo Stato di residenza il diritto esclusivo di tassare i redditi non trattati altrove, e la spiegazione tecnica ufficiale del Tesoro USA cita esplicitamente il reddito da gioco d'azzardo come esempio. Questo significa che, secondo la convenzione, gli USA non dovrebbero avere alcun diritto di tassare, e la ritenuta sarebbe in teoria recuperabile con una dichiarazione USA per non residenti. In pratica, però, le lotterie statali americane non gestiscono la documentazione sui trattati fiscali al momento del pagamento, quindi quasi tutti i vincitori subiscono comunque la ritenuta diretta del 30%. Questo calcolatore mostra quindi l'importo che la maggior parte dei vincitori vive realmente.
 
 Q: È tutto assolutamente certo, o ci sono margini di incertezza?
-A: Il principio di base — vincite di lotterie estere non autorizzate in Italia/UE/SEE tassabili come reddito diverso — è confermato direttamente dal testo degli articoli 67 e 69 TUIR. Restano tre punti non del tutto verificati con fonti specifiche: il testo dell'esenzione parla di "case da gioco" più che di "lotterie" (non cambia la conclusione); le addizionali regionale e comunale variano da zona a zona e questa pagina usa un riferimento vicino al limite superiore (Lazio/Roma); e non abbiamo trovato un interpello specifico sull'applicazione dell'articolo 165 TUIR a questo tipo di reddito. Verifica sempre la tua situazione con un commercialista prima di dichiarare una vincita reale.
+A: Il principio di base — vincite di lotterie estere non autorizzate in Italia/UE/SEE tassabili come reddito diverso — è confermato direttamente dal testo degli articoli 67 e 69 TUIR, ed è coerente con la Risoluzione n. 141/2010 dell'Agenzia delle Entrate sulla piena tassabilità delle vincite da operatori esteri non autorizzati. Restano tre punti non del tutto verificati con fonti specifiche: il testo dell'esenzione parla di "case da gioco" più che di "lotterie" (non cambia la conclusione); le addizionali variano da zona a zona e per scaglione di reddito — la regionale ha una base nazionale dell'1,23% con tetto al 3,33% (applicato dal Lazio allo scaglione oltre 30.000 euro, legge regionale n. 20/2025), la comunale ha un tetto generale dello 0,8% ma Roma Capitale applica dal 2011 un'aliquota speciale dello 0,9% — quindi questa pagina, usando Lazio/Roma, si colloca vicino al limite superiore della forbice reale; e non abbiamo trovato un interpello specifico sull'applicazione dell'articolo 165 TUIR a questo tipo di reddito. Verifica sempre la tua situazione con un commercialista prima di dichiarare una vincita reale.
+
+Q: La banca o l'Agenzia delle Entrate sapranno se trasferisco la vincita su un conto italiano?
+A: Può darsi — ma si tratta di una normale procedura antiriciclaggio, non di un accertamento fiscale. Il trasferimento non genera di per sé ulteriori imposte italiane, già calcolate nelle sezioni precedenti. Ciò che si applica sono gli obblighi antiriciclaggio della banca ai sensi del D.Lgs. 231/2007, sotto la vigilanza della Banca d'Italia, con un'eventuale Segnalazione di Operazione Sospetta (SOS) alla UIF se la banca ritiene insufficiente o evasiva la giustificazione sull'origine dei fondi. La banca può chiedere documentazione sulla provenienza dei fondi, quindi conviene conservare ad esempio il modulo Form 1042-S rilasciato dall'ente pagatore statunitense. Se l'importo è insolitamente elevato, verifica in anticipo i requisiti specifici direttamente con la tua banca.
 
 Q: La banca o l'Agenzia delle Entrate sapranno se trasferisco la vincita su un conto italiano?
 A: Può darsi — ma si tratta di una normale procedura antiriciclaggio, non di un accertamento fiscale. Il trasferimento non genera di per sé ulteriori imposte italiane, già calcolate nelle sezioni precedenti. I bonifici internazionali di importo elevato possono però attirare un controllo di routine da parte della banca, nell'ambito delle direttive UE antiriciclaggio (AMLD), applicabili in tutta l'UE/SEE, Italia inclusa. La banca può chiedere documentazione sulla provenienza dei fondi, quindi conviene conservare ad esempio il modulo Form 1042-S rilasciato dall'ente pagatore statunitense. Se l'importo è insolitamente elevato, verifica in anticipo i requisiti specifici direttamente con la tua banca.
@@ -3519,6 +3719,12 @@ $1,000,000 утуш үчүн мисал, Кыргызстандын резиде
 
 Утушту тастыктаган документтерди (төлөм тастыктамасы сыяктуу) алдын ала сактап коюңуз — банк сурашы мүмкүн.
 
+## АКШдан келген утушту Кыргызстанга кантип которуу керек
+
+Чоң сумманы бир жолку эл аралык которуу Кыргыз Республикасынын Улуттук банкынын жалпы алганда акча жуутууга каршы (AML/CFT) көзөмөлүнүн алкагында жүрөт. Так так статья же чек суммасы боюнча ишенимдүү маалымат таба алган жокпуз (бул тема боюнча кыргыз тилинде расмий маалымат азыраак), бирок эл аралык калыптанган тажрыйбага караганда банкыңыз которулган каражаттын мыйзамдуу булагын ырастаган документтерди — утушту ырастоочу кагаздарды жана АКШнын салык кармоо тастыктамасын (Form 1042-S) — сурашы ыктымал.
+
+Бул адаттагы текшерүү, тоскоолдук эмес — бирок так тартипти которуу алдында өз банкыңыздан же Улуттук банктан тактап алганыңыз жакшы.
+
 ## Көп берилүүчү суроолор
 
 Q: Мен Кыргызстандын жаранымын, башка өлкөдө жашайм — Кыргызстан негизи боюнча эсептешим керекпи?
@@ -3535,6 +3741,9 @@ A: Табылган маалыматтарга караганда, так жоо
 
 Q: Утушту Кыргызстанга которсом, банк же салык кызматы билип каларбы?
 A: Чоң жана адаттан тыш эл аралык которуулар акча жуучулукка каршы күрөшүү (AML) жалпы принциптеринин негизинде банк жана көзөмөл органдары тарабынан текшерилиши мүмкүн — бул өзү кошумча салык дегенди билдирбейт, бирок банк акчанын келип чыгышын сурашы мүмкүн. Так чектер банкка жараша айырмаланат, ошондуктан акчаны которуудан мурун өз банкыңыз жана Кыргызстандын салык органдары менен тактап алыңыз жана утушту тастыктаган документтерди сактап коюңуз.
+
+Q: АКШдан утуш акчасын Кыргызстандагы банк эсебиме кантип которуп алам?
+A: Чоң сумманы бир жолку эл аралык которуу Кыргыз Республикасынын Улуттук банкынын жалпы алганда акча жуутууга каршы (AML/CFT) көзөмөлүнүн алкагында жүрөт. Так так статья же чек суммасы боюнча ишенимдүү маалымат таба алган жокпуз, бирок эл аралык калыптанган тажрыйбага караганда банкыңыз которулган каражаттын мыйзамдуу булагын ырастаган документтерди — утушту ырастоочу кагаздарды жана АКШнын салык кармоо тастыктамасын (Form 1042-S) — сурашы ыктымал. Бул адаттагы текшерүү, тоскоолдук эмес — бирок так тартипти которуу алдында өз банкыңыздан же Улуттук банктан тактап алганыңыз жакшы.
 
 Бул бет маалымат берүү максатында гана түзүлгөн, билет сатып алууга ортомчулук кылбайт. Чын эле декларация тапшыруудан мурун эки өлкөнүн салык мыйзамдарын билген адистен кеңеш алыңыз.
 
@@ -3756,6 +3965,10 @@ $1,000,000 ဆုကြေးအတွက် ဥပမာ၊ မြန်မာ�
 
 ဆုကြေးရရှိကြောင်း သက်သေအထောက်အထားများ (ငွေပေးချေမှုအတည်ပြုချက်ကဲ့သို့) ကို ကြိုတင်ပြင်ဆင်သိမ်းဆည်းထားပါ — ဘဏ်က တောင်းဆိုနိုင်ပါသည်။
 
+⚠️ မရှင်းလင်းသေးသောအချက်
+
+၂၀၂၃ ခုနှစ် ပြည်ထောင်စုအခွန်အကောက်ဥပဒေ ပြင်ဆင်ချက် (Law 55/2023၊ ၂၀၂၃ အောက်တိုဘာ ၁ ရက်မှစတင်အာဏာတည်) အရ နိုင်ငံခြားတွင်နေထိုင်သော မြန်မာနိုင်ငံသား (non-resident) များ ယခင်ကရရှိခဲ့သော "နိုင်ငံခြားဝင်ငွေ အခွန်ကင်းလွတ်ခွင့်" ပယ်ဖျက်ခံခဲ့ရပြီး၊ လစာမဟုတ်သော နိုင်ငံခြားဝင်ငွေ (ခြွင်းချက်စာရင်းတွင် "အခြားအရင်းအမြစ်များမှ ဝင်ငွေ" ဟူသည့် အကျယ်ပြန့်ဆုံးအမျိုးအစားလည်း ပါဝင်သည်) အပေါ် ၁၀% ပြားချပ်ခွန်နှုန်း ကောက်ခံစတင်ခဲ့သည်။ ဒီထီပေါက်ငွေလို တစ်ကြိမ်တည်း ထီကံထူးမှုဝင်ငွေတစ်ခု ဒီ "အခြားအရင်းအမြစ်" အမျိုးအစားထဲ ကျရောက်မကျရောက် တရားဝင်အတည်ပြုနိုင်သော ရင်းမြစ်ကို ရှာမတွေ့ရသေးပါ — ထို့ကြောင့် နိုင်ငံခြားတွင်နေထိုင်သော မြန်မာနိုင်ငံသားတစ်ဦးအတွက် ဒီထီပေါက်ငွေသည် (က) လုံးဝအခွန်ကင်းလွတ်မလား၊ (ခ) ၂၀၂၃ ပြင်ဆင်ချက်အရ ၁၀% ကျခံရမလား ဆိုတာ ဒီစာမျက်နှာက အတည်ပြုမပေးနိုင်သေးပါ။ တင်သွင်းခင် မြန်မာအခွန်ပညာရှင်နှင့် အမှန်တကယ်တိုင်ပင်ပါ။
+
 ## မေးလေ့ရှိသောမေးခွန်းများ
 
 Q: ကျွန်တော်/ကျွန်မ မြန်မာနိုင်ငံသားဖြစ်ပြီး တခြားနိုင်ငံမှာနေထိုင်ပါတယ် — မြန်မာစံနှုန်းအတိုင်း တွက်ရမလား?
@@ -3809,6 +4022,10 @@ $1,000,000 जितेमा, नेपाली कर बासिन्द�
 
 जितेको रकमको आधिकारिक पुष्टि (पुरस्कार स्वीकृति पत्र/भुक्तानी विवरण) सुरक्षित राख्नुहोस् — बैंकले स्रोत सोध्दा यही सबैभन्दा छिटो जवाफ हो।
 
+## पैसा नेपाल भित्र्याउँदा: NRB/FIU र रिपोर्टिङ सीमा
+
+नेपालमा NPR 1,000,000 वा बढीको विदेशी विप्रेषण भित्रिंदा नेपाल राष्ट्र बैंक (NRB) र नेपालको वित्तीय जानकारी एकाइ (FIU-Nepal) को "सीमा कारोबार प्रतिवेदन" (Threshold Transactions Reporting) व्यवस्था लागू हुन्छ — यो कुनै लटरी-विशेष नियम होइन, सबै ठूला विदेशी विप्रेषणमा लागू हुने सामान्य AML/CFT (मनी लाउन्ड्रिङ रोकथाम) प्रावधान हो। $700,000-स्तरको जित यो सीमाभन्दा धेरै माथि पर्ने भएकाले, यो नियमित र स्वचालित प्रक्रिया हो र पैसा भित्र्याउनमा बाधा बन्दैन — तर एकमुष्ट ठूलो रकम जम्मा गर्नुअघि प्राप्त गर्ने बैंकले रकमको स्रोत देखाउने कागजात माग्ने अपेक्षा गर्नुहोस्। पुरस्कार दाबी गर्दा प्राप्त हुने कागजात र अमेरिकाको ३०% कट्टी देखाउने IRS को Form 1042-S यसका लागि उपयुक्त प्रमाण हुन्।
+
 ## बारम्बार सोधिने प्रश्नहरू
 
 Q: म नेपाली नागरिक हुँ, अर्को देशमा बस्छु — नेपाली आधारमा गणना गर्नुपर्छ?
@@ -3823,6 +4040,9 @@ A: अमेरिकाले पहिले 30% कट्टी गरेप�
 Q: विदेशबाट पैसा ल्याउँदा बैंक वा सरकारलाई थाहा हुन्छ?
 A: प्रायः हुन्छ — तर यो नियमित प्रतिवेदन मात्र हो, कर समस्या होइन। मनी लाउन्डरिङ निवारण ऐन अन्तर्गत बैंकहरूले NPR १०,००,००० (१० लाख) वा सोभन्दा माथिको कारोबार नेपाल राष्ट्र बैंकको वित्तीय जानकारी एकाइ (FIU-Nepal) मा उच्च मूल्य कारोबार प्रतिवेदन (Threshold Transaction Report) को रूपमा पठाउनुपर्छ, त्यसैले अमेरिकी लटरीबाट आएको ठूलो रकम स्वतः प्रतिवेदन हुन्छ। यसले नेपालमा थप कर सिर्जना गर्दैन — तर बैंकले रकमको स्रोत देखाउन कागजात माग्न सक्छ।
 
+Q: अमेरिकी लटरी जितेको रकम नेपाली बैंक खातामा कसरी ल्याउने?
+A: NPR 1,000,000 वा बढीको विदेशी विप्रेषण भित्रिंदा नेपाल राष्ट्र बैंक (NRB) र FIU-Nepal को सीमा कारोबार प्रतिवेदन (Threshold Transactions Reporting) व्यवस्था स्वतः लागू हुन्छ — यो सामान्य AML/CFT नियम हो, रकम रोक्ने कुरा होइन। बैंकले पुरस्कार दाबी कागजात र IRS को Form 1042-S जस्ता स्रोत-प्रमाण कागजात माग्न सक्छ, त्यसैले ती तयार राख्नुहोस्।
+
 यो पृष्ठ सूचनाको उद्देश्यका लागि मात्र हो, टिकट खरिदमा मध्यस्थता गर्दैन। वास्तवमा कर बुझाउनु अघि दुवै देशको कर मामिलामा दक्ष विशेषज्ञसँग परामर्श लिनुहोस्।
 
 ---
@@ -3836,7 +4056,7 @@ Fiscaal inwoner van Nederland en je wint bij Powerball of Mega Millions? De Amer
 
 ChamTax is een gratis rekentool die het werkelijke bedrag toont dat je na belasting overhoudt aan een Powerball- of Mega Millions-jackpot. Zo wordt een winst in de Amerikaanse loterij belast als je fiscaal inwoner bent van Nederland — een doorgaans definitieve Amerikaanse federale bronbelasting van 30%, plus daarbovenop de Nederlandse kansspelbelasting van 37,8%, zonder verrekening.
 
-Laatst bijgewerkt: 2026-08-20
+Laatst bijgewerkt: 2026-08-24
 
 Voorbeeld bij een winst van $1.000.000, inwoner van Nederland
 - Amerikaanse federale bronbelasting (30%, niet-ingezetene): -$300.000
@@ -3855,7 +4075,7 @@ Artikel 4 van de wet kent wel een vrijstelling tot €449 per prijs, maar bij ee
 
 De Verenigde Staten belasten buitenlandse niet-ingezetenen over loterijwinsten met een vaste federale bronbelasting van 30% (IRC §871(a)) — hoger dan de regeling voor Amerikaanse ingezetenen (24% bronbelasting, oplopend tot 37% bij aangifte) — en houden dit bedrag direct bij uitbetaling van de winst in. Vervolgens is Nederland aan de beurt met de kansspelbelasting van 37,8% over hetzelfde, volledige prijsbedrag.
 
-⚠️ Geen verrekening (FTC) gevonden. De volledige tekst van de Wet op de kansspelbelasting bevat geen bepaling die toestaat om in het buitenland al betaalde belasting te verrekenen met de Nederlandse kansspelbelasting (in tegenstelling tot bijvoorbeeld de Mexicaanse, Indiase of Chinese situatie, waar zo'n verrekening wél wettelijk is vastgelegd). Kansspelbelasting is bovendien geen inkomstenbelasting (inkomstenbelasting) maar een geheel aparte belastingsoort binnen het Nederlandse belastingstelsel, waardoor ze vermoedelijk ook buiten het bereik valt van de 'onder de overeenkomst vallende belastingen' van het belastingverdrag tussen Nederland en de Verenigde Staten (1992 gesloten, protocol van 2004) — dat verdrag noemt doorgaans alleen inkomstenbelasting, loonbelasting, vennootschapsbelasting en dividendbelasting als Nederlandse belastingen. Het exacte verdragsartikel met het bijbehorende artikelnummer is niet één-op-één nagelopen, vandaar het voorbehoud ⚠️. Sommige secundaire bronnen noemen een mogelijke ontheffing als je kunt aantonen dat in het buitenland al een vergelijkbare belasting is betaald, maar onduidelijk is of dit beperkt is tot EU/EER-wederkerigheid of ook voor de VS geldt — deze rekentool telt daarom voorzichtigheidshalve beide heffingen gewoon bij elkaar op, zonder verrekening. Raadpleeg bij een daadwerkelijke winst een belastingadviseur.
+⚠️ Geen verrekening (FTC) gevonden — en het is niet het belastingverdrag dat dit uitsluit. Kansspelbelasting is geen inkomstenbelasting maar een geheel aparte belastingsoort binnen het Nederlandse belastingstelsel, waardoor ze vrijwel zeker buiten het bereik valt van de 'onder de overeenkomst vallende belastingen' van het belastingverdrag tussen Nederland en de Verenigde Staten (1992 gesloten, protocol van 2004) — dat verdrag noemt doorgaans alleen inkomstenbelasting, loonbelasting, vennootschapsbelasting en dividendbelasting als Nederlandse belastingen. De daadwerkelijk relevante bepaling staat elders: artikel 52, eerste lid van het Besluit voorkoming dubbele belasting 2001 (Bvdb 2001) stelt een Nederlandse inwoner vrij van kansspelbelasting over een buitenlandse prijs, maar uitsluitend als die prijs in het buitenland al is onderworpen aan een 'gelijksoortige belasting'. Hoe streng de rechter dat toetst, bleek uit een zaak over een Duitse lotto-winnaar: het Gerechtshof Arnhem-Leeuwarden oordeelde op 7 februari 2017 (ECLI:NL:GHARL:2017:900) dat de Duitse Lotteriesteuer niet 'gelijksoortig' was aan de Nederlandse kansspelbelasting, omdat die Duitse belasting drukt op de nominale waarde van de (niet-verkochte) loten — dus op de inzet — in plaats van op de uitgekeerde prijs zelf, en de gerelateerde Konzessionsbeitrag bij de aanbieder wordt geheven, niet bij de winnaar. Of de Amerikaanse federale bronbelasting van 30% (IRC §871(a)) — die specifiek wordt ingehouden op het brutobedrag van de aan de winnaar uitgekeerde loterijprijs, en dus structureel dichter bij de kansspelbelasting zelf zou kunnen staan dan de Duitse Lotteriesteuer — die 'gelijksoortigheid'-toets van artikel 52 zou doorstaan, is voor zover uit openbare bronnen valt na te gaan nooit specifiek in een Nederlandse procedure getoetst. Bij gebrek aan een precedent dat rechtstreeks over Amerikaanse loterijwinsten gaat, rekent deze tool voorzichtigheidshalve zonder verrekening. Raadpleeg bij een daadwerkelijke winst een belastingadviseur.
 
 ## De winst beleggen of wegschenken: box 3 en schenkbelasting
 
@@ -3880,7 +4100,7 @@ Q: Geldt de kansspelbelasting ook voor een buitenlandse loterij als Powerball, o
 A: Ja, juist wel — en dat werkt averechts aan wat je misschien zou verwachten. Artikel 1 van de Wet op de kansspelbelasting maakt maar twee uitzonderingen voor buitenlandse kansspelen: casinospelen, kansspelautomaten, sportweddenschappen en totalisatoren die door een aanbieder binnen de EU/EER worden georganiseerd, en kansspelen die op afstand (online) worden aangeboden. Powerball en Mega Millions zijn een fysieke lotto die je als los papieren lot in een Amerikaanse winkel koopt — niet EU/EER-gebonden en niet online — en vallen dus in geen van beide uitzonderingen. Het gevolg is dat deze winst juist wél onder de hoofdregel van kansspelbelasting valt.
 
 Q: Kan de Amerikaanse bronbelasting van 30% verrekend worden met de Nederlandse kansspelbelasting?
-A: Voor zover uit de wettekst van de Wet op de kansspelbelasting blijkt, is er geen bepaling die toestaat om in het buitenland al betaalde belasting te verrekenen met de Nederlandse kansspelbelasting. Kansspelbelasting is bovendien geen inkomstenbelasting maar een aparte belastingsoort binnen het Nederlandse belastingstelsel, waardoor ze vermoedelijk ook niet onder de 'onder de overeenkomst vallende belastingen' van het belastingverdrag tussen Nederland en de Verenigde Staten valt (dat verdrag noemt doorgaans alleen inkomstenbelasting, loonbelasting, vennootschapsbelasting en dividendbelasting als Nederlandse belastingen — het exacte verdragsartikel is niet één-op-één nagelopen, vandaar dit voorbehoud). Deze rekentool gaat er daarom van uit dat de 30% Amerikaanse bronbelasting en de 37,8% Nederlandse kansspelbelasting los van elkaar volledig worden geheven, zonder enige verrekening.
+A: Waarschijnlijk niet — maar niet omdat het belastingverdrag dit uitsluit, zoals vaak wordt gedacht. Kansspelbelasting is geen inkomstenbelasting en staat daarom vrijwel zeker buiten de 'onder de overeenkomst vallende belastingen' van het verdrag tussen Nederland en de VS. De daadwerkelijk relevante bepaling is artikel 52, eerste lid van het Besluit voorkoming dubbele belasting 2001 (Bvdb 2001): die stelt een Nederlandse inwoner vrij van kansspelbelasting over een buitenlandse prijs, maar alleen als die prijs in het buitenland al is onderworpen aan een 'gelijksoortige belasting'. Hoe streng dat wordt getoetst, bleek in een zaak over een Duitse lotto-winnaar: het Gerechtshof Arnhem-Leeuwarden oordeelde op 7 februari 2017 (ECLI:NL:GHARL:2017:900) dat de Duitse Lotteriesteuer niet 'gelijksoortig' was, omdat die belasting op de (niet-verkochte) loten drukt — dus op de inzet — in plaats van op de uitgekeerde prijs zelf. Of de Amerikaanse bronbelasting, die wél specifiek op het uitgekeerde prijsbedrag wordt ingehouden, die toets zou doorstaan, is voor zover bekend nooit in een Nederlandse procedure getoetst. Deze rekentool gaat daarom voorzichtigheidshalve uit van geen verrekening.
 
 Q: Wat gebeurt er als ik de winst beleg of wegschenk?
 A: Dat zijn twee aparte vervolgstappen, los van de kansspelbelasting die al over de winst zelf is geheven. Zet je een deel van het geld op een spaarrekening of in beleggingen, dan telt de waarde daarvan vanaf 1 januari van het jaar erna gewoon mee in box 3 (vermogen), waarover je jaarlijks belasting betaalt over het (forfaitair bepaalde) rendement — een algemene regel voor alle vermogen, ongeacht de herkomst. Schenk je later een deel van de winst aan familie, dan geldt de normale schenkbelasting: voor een schenking aan een kind is in 2026 circa €6.800 per jaar vrijgesteld, voor overige verkrijgers een veel lager bedrag, met progressieve tarieven van 10% tot 40% daarboven afhankelijk van de verwantschap en het bedrag. Beide zaken hebben dus niets te maken met de kansspelbelasting op de winst zelf, maar zijn losstaande fiscale gevolgen van wat je er later mee doet.
@@ -4059,6 +4279,9 @@ A: Ang US ay nagbabawas ng 30% muna, at dahil hindi kwalipikado ang panalong ito
 Q: Malalaman ba ng bangko o gobyerno kung ipapadala ko ang panalo sa Pilipinas?
 A: Malamang, oo — pero bilang regular na ulat, hindi problema sa buwis. Kinakailangan ng mga bangko na mag-file ng Covered Transaction Report sa Anti-Money Laundering Council (AMLC) para sa mga transaksyon (kasama ang wire transfer) na ₱500,000 o higit pa sa loob ng isang banking day, kaya awtomatikong maiuulat ang malaking halaga mula sa panalo sa US lottery. Hindi ito nagdudulot ng karagdagang buwis sa Pilipinas — ngunit maaaring hilingin sa iyo ng bangko na patunayan ang pinagmulan ng pera bago palabasin ang malaking transfer, kaya panatilihing handa ang dokumento ng iyong panalo.
 
+Q: Paano ko madadala ang panalo sa lottery ng US papunta sa bank account sa Pilipinas?
+A: Sa ilalim ng Anti-Money Laundering Act (RA 9160, kasama ang mga susog) at mga regulasyon ng BSP, obligado ang mga bangko na mag-file ng Covered Transaction Report sa Anti-Money Laundering Council (AMLC) para sa anumang transaksyon — kabilang ang malaking padala mula sa ibang bansa — na lumalampas sa ₱500,000 sa isang banking day. Dahil malaki ang halaga ng panalo sa Powerball o Mega Millions, malamang na i-report ito ng iyong bangko bilang regular na proseso, hindi bilang senyales ng suspek at hindi ito humaharang sa iyong pera. Maghanda ng papeles ng premyo claim at ng US withholding certificate ng IRS (Form 1042-S) bilang patunay ng pinagmulan ng pondo bago ito ma-credit sa account mo.
+
 Ang pahinang ito ay para sa impormasyon lamang at hindi nagpapadala o namamagitan sa pagbili ng tiket. Kumonsulta sa isang tax professional na bihasa sa parehong bansa bago talagang mag-file.
 
 ---
@@ -4072,7 +4295,7 @@ Jesteś rezydentem podatkowym Polski i wygrałeś w Powerball lub Mega Millions?
 
 ChamTax to darmowy kalkulator, który pokazuje rzeczywistą kwotę, jaka zostaje na rękę po opodatkowaniu wygranej w Powerball lub Mega Millions. Tak opodatkowana jest amerykańska wygrana loteryjna, jeśli jesteś rezydentem podatkowym Polski — 30% amerykański podatek u źródła, który w praktyce jest potrącany zawsze, a do tego polski podatek dopłacany w wysokości około 6 punktów procentowych, ponieważ polska stawka (do 36% ze skalą podatkową i daniną solidarnościową) jest wyższa niż amerykańska.
 
-Ostatnia aktualizacja: 2026-08-20
+Ostatnia aktualizacja: 2026-08-24
 
 Przykład wygranej 1 000 000 $, rezydent Polski
 - Amerykański federalny podatek u źródła (30%, nierezydent): -$300 000
@@ -4117,6 +4340,9 @@ Przelanie dużej wygranej z USA na konto bankowe w Polsce samo w sobie nie powod
 
 Q: Czy rezydent Polski musi płacić podatek od wygranej w amerykańskiej loterii?
 A: Tak. Stany Zjednoczone najpierw potrącają stały 30% federalny podatek u źródła od wygranych loteryjnych wypłacanych zagranicznym nierezydentom (IRC §871(a)) — zanim pieniądze w ogóle trafią na twoje konto. Po stronie polskiej uprzywilejowana stawka 10% (art. 30 ust. 1 pkt 2 ustawy o PIT) dotyczy tylko gier zorganizowanych w Polsce lub UE/EOG. Powerball i Mega Millions nie spełniają tego warunku, więc wygrana jest opodatkowana jako inne źródła przychodów według skali podatkowej (do 32%) plus danina solidarnościowa (4% powyżej 1 mln PLN) — łącznie do około 36%. Podatek USA można odliczyć metodą proporcjonalną, ale ponieważ polska stawka jest wyższa, zostaje realny podatek do dopłaty.
+
+Q: Czy amerykański podatek od wygranej nie wynosi nawet do 37%?
+A: Nie — to częste błędne przekonanie. Najwyższa krańcowa stawka 37% dotyczy progresywnej skali podatku federalnego dla amerykańskich rezydentów i obywateli, rozliczających dochód na zasadach ogólnych. Zagraniczny nierezydent (nonresident alien) wygrywający w Powerball lub Mega Millions nie podlega tej skali — na mocy art. 871(a) Kodeksu Podatkowego USA (IRC §871(a)) jego wygrana loteryjna podlega zamiast tego stałemu, płaskiemu potrąceniu 30% u źródła, niezależnie od wysokości wygranej. Nie ma tu progresji: 30% to ostateczna, jednolita amerykańska stawka dla tej kategorii dochodu nierezydenta, niższa niż najwyższy próg dla rezydentów USA.
 
 Q: Dlaczego polski podatek dopłacany nie wynosi zera, jak w Norwegii?
 A: Ponieważ realna polska stawka (około 36%) jest wyraźnie wyższa niż amerykański podatek u źródła (30%) — odwrotnie niż w Norwegii, gdzie norweska stawka (22%) jest już niższa. Metoda odliczenia proporcjonalnego pozwala odliczyć podatek USA, ale tylko do wysokości polskiego podatku. Ponieważ polski podatek jest wyższy niż już zapłacony podatek amerykański, ulga pokrywa tylko część polskiego rachunku — pozostałe około 6 punktów procentowych kwoty brutto trzeba dopłacić jako polski podatek.
@@ -4188,6 +4414,135 @@ A: Более практический вопрос — сможет ли пер
 
 ---
 
+## هل يدفع المقيمون في السعودية ضريبة على أرباح يانصيب باوربول أو ميغا ميليونز الأمريكي؟ 2026
+URL: https://chamtax.com/saudi-arabia-resident-us-lottery-tax.html
+
+هل أنت مقيم ضريبي في المملكة العربية السعودية وفزت بباوربول أو ميغا ميليونز؟ اقتطاع أمريكي فيدرالي بنسبة 30%، ولماذا لا تفرض هيئة الزكاة والضريبة والجمارك (ZATCA) أي ضريبة دخل على الأفراد. حاسبة مجانية.
+
+# هل يدفع المقيمون في المملكة العربية السعودية ضريبة على أرباح يانصيب باوربول أو ميغا ميليونز؟
+
+ChamTax حاسبة مجانية تُظهر المبلغ الفعلي الذي يتبقى لك بعد الضرائب من جائزة يانصيب باوربول أو ميغا ميليونز. هكذا تُفرض الضريبة على جائزة اليانصيب الأمريكي إذا كنت مقيمًا ضريبيًا في المملكة العربية السعودية — اقتطاع فيدرالي أمريكي ثابت بنسبة 30% وحده، من دون أي ضريبة دخل سعودية إضافية على الإطلاق.
+
+آخر تحديث: 2026-09-01
+
+مثال بجائزة قدرها 1,000,000 دولار، مقيم في السعودية
+- الاقتطاع الفيدرالي الأمريكي (30%، غير مقيم): -$300,000
+- ضريبة سعودية إضافية (لا توجد ضريبة دخل شخصية أصلاً): $0
+- المبلغ الصافي التقديري: ≈ $700,000
+
+الحاسبة أعلاه تحوّل مبلغك الخاص بسعر صرف مباشر إلى الريال السعودي (SAR) إن رغبت.
+
+## هل تفرض هيئة الزكاة والضريبة والجمارك (ZATCA) ضريبة دخل على الأفراد؟
+
+لا. هيئة الزكاة والضريبة والجمارك (ZATCA) هي الهيئة الحكومية الموحدة المسؤولة عن الضرائب في المملكة، وقد نشأت عام 2021 من دمج مصلحة الزكاة والدخل مع الهيئة العامة للجمارك. تدير ZATCA ضريبة القيمة المضافة (15%) وضريبة الشركات على الكيانات ذات الملكية الأجنبية (20%) والزكاة على المواطنين السعوديين ورعايا دول مجلس التعاون الخليجي (2.5% سنويًا على الأصول الزكوية) — لكنها لا تدير، ولم تُدر يومًا، أي نظام لضريبة الدخل الشخصي يشمل الأفراد. تؤكد ملخصات PwC العالمية للضرائب (Worldwide Tax Summaries) بشكل صريح أن السعودية لا تفرض ضريبة دخل شخصية على الإطلاق، وهذا الغياب ينطبق على جميع المقيمين — المواطنين والأجانب على حد سواء — وعلى جميع أنواع الدخل، بما في ذلك مكاسب عرضية مثل جوائز اليانصيب أو المسابقات.
+
+هذا يعني أن جائزة يانصيب أمريكية يفوز بها مقيم سعودي لا تخضع لأي إقرار ضريبي محلي ولا لأي اقتطاع إضافي داخل المملكة، بصرف النظر عن حجم المبلغ.
+
+## الاقتطاع الأمريكي بنسبة 30%
+
+تفرض الولايات المتحدة على غير المقيمين الأجانب اقتطاعًا فيدراليًا ثابتًا بنسبة 30% على أرباح اليانصيب (بموجب المادة 871(a) من قانون الإيرادات الداخلية) — وهي نسبة أعلى من النسبة المطبقة على المقيمين الأمريكيين (اقتطاع 24%، مع معدل هامشي يصل إلى 37% عند تقديم الإقرار) — وتُخصم هذه النسبة فور صرف الجائزة، بصرف النظر عن جنسية الفائز أو بلد إقامته.
+
+لا توجد بين السعودية والولايات المتحدة اتفاقية ضريبة دخل شاملة سارية. لكن هذه النقطة، التي تُعتبر حاسمة في هذه الحاسبة بالنسبة لدول أخرى (لأن الاتفاقيات الضريبية غالبًا ما تتيح تخفيف الازدواج الضريبي عبر ائتمان ضريبي)، تصبح غير ذات موضوع هنا: بما أن السعودية لا تفرض أصلاً أي ضريبة دخل شخصية على هذا المبلغ (كما هو موضح أعلاه)، فلا يوجد ضريبة سعودية لتخفيفها أو تعويضها في المقام الأول. الاقتطاع الأمريكي بنسبة 30% يبقى إذًا هو كامل العبء الضريبي على هذه الجائزة.
+
+## الزكاة: نظام مختلف تمامًا، ولا يشمله حساب هذه الصفحة
+
+⚠️ ملاحظة مهمة — لا تُحتسب هنا، ولسبب واضح
+
+الزكاة (2.5% سنويًا) تُفرض على المواطنين السعوديين ورعايا دول مجلس التعاون الخليجي على الأصول الزكوية المملوكة (نقد، استثمارات، وما شابه) في تاريخ استحقاق سنوي محدد — وهي بذلك ضريبة ثروة سنوية متكررة على ما تملكه في تلك اللحظة، وليست ضريبة لمرة واحدة على الجائزة نفسها وقت الفوز بها. إذا احتفظ الفائز بجزء من الجائزة نقدًا أو استثمرها، فقد يدخل ذلك المبلغ لاحقًا في وعاء الزكاة السنوي مثل أي أموال أخرى يملكها — تمامًا كما أن هذه الحاسبة لا تحتسب أيضًا ضرائب الثروة السنوية المتكررة التي تفرضها دول أخرى (كضريبة الثروة السويسرية على سبيل المثال)، فهي تقتصر على الضريبة المفروضة على الجائزة نفسها في لحظة الفوز، وهذه الضريبة معدومة في الحالة السعودية.
+
+## ماذا لو حوّلت الأموال إلى السعودية أو استثمرتها؟
+
+تحويل مبلغ كبير من الولايات المتحدة إلى حساب مصرفي في السعودية لا يُنشئ بحد ذاته أي التزام ضريبة دخل جديد. تخضع البنوك العاملة في المملكة لأنظمة مكافحة غسل الأموال التي تشرف عليها مؤسسة النقد العربي السعودي (ساما)، وقد تطلب إثبات مصدر الأموال (مثل إيصال الفوز الرسمي) عند إجراء تحويل كبير وغير معتاد — وهذا إجراء رقابي روتيني، وليس مسألة ضريبية.
+
+الاحتفاظ بإيصال الفوز الرسمي الصادر عن جهة إدارة اليانصيب الأمريكية يسهّل الإجابة على أي استفسار بنكي حول مصدر الأموال إن وردت.
+
+## الأسئلة الشائعة
+
+Q: هل يدفع المقيمون في السعودية ضريبة على أرباح يانصيب أمريكي؟
+A: الجزء الأمريكي من الضريبة نعم، أما الجزء السعودي فلا. تقتطع الولايات المتحدة تلقائيًا ضريبة اقتطاع فيدرالية ثابتة بنسبة 30% على أرباح اليانصيب المدفوعة لغير المقيمين الأجانب (بموجب المادة 871(a) من قانون الإيرادات الداخلية الأمريكي)، قبل وصول المبلغ إلى حسابك أصلاً. أما داخل المملكة، فلا يوجد نظام ضريبة دخل شخصي يخضع له الأفراد أصلاً — هيئة الزكاة والضريبة والجمارك (ZATCA)، الهيئة الموحدة الناتجة عن دمج مصلحة الزكاة والدخل مع الجمارك عام 2021، لا تدير أي نظام لتحصيل ضريبة الدخل من الأفراد سواء كانوا مواطنين سعوديين أو مقيمين أجانب. لا توجد إذًا أي ضريبة سعودية إضافية على هذا المبلغ.
+
+Q: ما دور هيئة الزكاة والضريبة والجمارك (ZATCA) هنا؟
+A: دورها الأساسي في السياق الفردي محدود جدًا: تُدير ZATCA ضريبة القيمة المضافة (15%) وضريبة الشركات (20% على الشركات ذات الملكية الأجنبية) والزكاة (2.5% على الأصول الزكوية للمواطنين السعوديين وموظفي دول مجلس التعاون الخليجي)، لكنها لا تدير أي نظام ضريبة دخل شخصي يشمل الأفراد. تؤكد ملخصات PwC العالمية للضرائب (Worldwide Tax Summaries) ومصادر أخرى متعددة (مثل businesslink.sa وcountrytaxcalc.com) أن السعودية «لا تفرض ضريبة دخل شخصية» على الإطلاق — لا على الرواتب، ولا على المكاسب العرضية مثل جوائز اليانصيب.
+
+Q: ماذا عن الزكاة؟ ألا تُعتبر نوعًا من الضريبة على هذا المبلغ؟
+A: الزكاة نظام مختلف تمامًا عن ضريبة الدخل، ولا تُحتسب في هذه الحاسبة لهذا السبب تحديدًا. الزكاة (بنسبة 2.5% سنويًا) تُفرض على المواطنين السعوديين ورعايا دول مجلس التعاون الخليجي، وتُحتسب على الأصول الزكوية المملوكة (مثل النقد والاستثمارات) في تاريخ استحقاق سنوي محدد — وهي بذلك ضريبة ثروة متكررة سنويًا على ما تملكه، وليست ضريبة لمرة واحدة على الدخل أو الجائزة نفسها وقت استلامها. بعبارة أخرى: إذا احتفظت بجزء من الجائزة نقدًا أو استثمرتها، فقد يدخل ذلك المبلغ في وعاء الزكاة السنوي لاحقًا مثل أي أموال أخرى تملكها — تمامًا كما لا تحتسب هذه الحاسبة ضرائب الثروة السنوية المتكررة في أي دولة أخرى تفرضها (مثل ضريبة الثروة السويسرية)، فإنها تقتصر هنا أيضًا على الضريبة التي تُفرض على الجائزة نفسها وقت الفوز بها، وهذه الضريبة معدومة.
+
+Q: ماذا لو حوّلت الأموال إلى السعودية أو استثمرتها؟
+A: تحويل مبلغ كبير من الولايات المتحدة إلى حساب مصرفي في السعودية لا يُنشئ بحد ذاته أي التزام ضريبة دخل، لأن هذا النوع من الضريبة غير موجود أصلاً كما هو موضح أعلاه. تخضع البنوك السعودية لأنظمة مكافحة غسل الأموال التي تشرف عليها مؤسسة النقد العربي السعودي (ساما)، وقد تطلب إثبات مصدر الأموال عند إجراء تحويل كبير وغير معتاد — وهذا إجراء رقابي روتيني، وليس مسألة ضريبية. الاحتفاظ بإيصال الفوز الرسمي الصادر عن جهة اليانصيب الأمريكية يسهّل الإجابة على مثل هذا الطلب إن ورد.
+
+هذه الصفحة هي محاكي معلوماتي فقط ولا تعمل كوكيل أو وسيط في شراء التذاكر. تعتمد الضريبة المستحقة فعليًا على وضعك الشخصي وعلى الأنظمة الضريبية/سعر الصرف السارية وقت تقديم إقرارك — يُنصح باستشارة مستشار ضريبي أو زكوي مطّلع على النظامين الضريبيين في كلا البلدين.
+
+---
+
+## ¿Pagan impuestos los residentes en España por ganar la lotería de EE. UU.? Powerball y Mega Millions 2026
+URL: https://chamtax.com/spain-resident-us-lottery-tax.html
+
+¿Eres residente fiscal en España y ganas Powerball o Mega Millions? La retención federal de EE. UU. del 30%, por qué el premio tributa hasta el 47% en el IRPF español, y cómo funciona el crédito fiscal (FTC) del convenio. Calculadora gratuita.
+
+# ¿Los residentes en España pagan impuestos por ganar Powerball o Mega Millions?
+
+ChamTax es una calculadora gratuita que muestra el importe real que te queda tras impuestos de un bote de Powerball o Mega Millions. Así tributa un premio de la lotería estadounidense si eres residente fiscal en España: una retención federal de EE. UU. del 30% (normalmente definitiva para un no residente), más un impuesto adicional en España que, sumado al anterior, puede acreditarse solo parcialmente.
+
+Última actualización: 2026-09-01
+
+Ejemplo con un premio de $1.000.000, residente en España
+- Retención federal de EE. UU. (30%, no residente): -$300.000
+- IRPF español adicional (47% con crédito por el 30% de EE. UU., efectivo ≈17%): -$170.000
+- Importe neto estimado: ≈ $530.000
+
+A un tipo de cambio de referencia USD→EUR de aproximadamente 0,865, estos $530.000 netos equivalen a unos 458.500 € — la calculadora de arriba convierte tu propio importe con un tipo de cambio actualizado.
+
+## ¿Grava España un premio de la lotería estadounidense?
+
+Sí, y de una forma que sorprende a quien da por hecho que "en Europa los premios de lotería no tributan". La Ley 13/2011, de regulación del juego, solo exime hasta 40.000 € (con un tipo del 20% sobre el exceso) a los premios de sorteos organizados por la Sociedad Estatal Loterías y Apuestas del Estado (SELAE), la ONCE, la Cruz Roja Española y entidades equivalentes de la UE/EEE reconocidas por esa ley — una lista cerrada. Powerball y Mega Millions se organizan íntegramente en Estados Unidos, fuera de esa lista, así que el premio no entra en ese régimen especial en absoluto.
+
+En su lugar, el manual práctico de la Agencia Tributaria sobre "Ganancias y pérdidas patrimoniales que integran la base imponible general" identifica expresamente los premios obtenidos en juegos, concursos, rifas o combinaciones aleatorias como ganancias patrimoniales no derivadas de una transmisión (art. 33 y 46 de la Ley 35/2006, IRPF) — una categoría que, a diferencia de las ganancias por venta de activos (que van a la base del ahorro, 19–28%), se integra en la base imponible general y tributa a los tipos marginales de esa base, hasta el 47% en la escala estatal común de referencia para 2026 (con variación real de aproximadamente 45% en Madrid a cerca de 54% en la Comunidad Valenciana, según la escala autonómica complementaria vigente en cada territorio). Un bote de Powerball o Mega Millions supera con creces el umbral de ese tramo máximo, así que esta calculadora aplica directamente ese tipo marginal máximo al importe íntegro del premio.
+
+## La retención del 30% de EE. UU. y el crédito fiscal español (FTC)
+
+Estados Unidos aplica a los no residentes extranjeros una retención federal fija del 30% sobre los premios de lotería (IRC §871(a)) — más alta que la retención aplicada a los residentes en EE. UU. (24%, con tipo marginal de hasta el 37% en su declaración) — y la descuenta de inmediato al pagar el premio.
+
+El crédito por doble imposición sí existe, pero con límite. El artículo 24.1(a) del convenio entre España y EE. UU. (firmado en 1990, modificado por el protocolo de 2013 en vigor desde el 27 de noviembre de 2019, texto oficial verificado directamente en irs.gov/pub/irs-trty/spain.pdf) obliga a España a permitir una deducción por el impuesto sobre la renta efectivamente pagado en EE. UU., pero esa deducción "no podrá, sin embargo, exceder de la parte del impuesto sobre la renta, calculado antes de la deducción, correspondiente a la renta obtenida en Estados Unidos" — un crédito ordinario con límite, igual que el que aplica esta calculadora para México, Dinamarca, Finlandia, Italia o Polonia. Como el tipo marginal español (hasta 47%) supera la retención estadounidense (30%), el crédito absorbe el 30% retenido pero queda una cuota adicional española de aproximadamente 17 puntos porcentuales, que debes autoliquidar tú mismo en tu declaración de la renta.
+
+⚠️ Una particularidad teórica del convenio (no cambia la cifra de la retención)
+
+El artículo 23.1 ("Otras rentas") del mismo convenio establece que la renta de un residente de un Estado, no tratada en los demás artículos del convenio, "solo puede someterse a imposición" en el Estado de residencia — la misma fórmula que usan los convenios de Alemania, Italia, Dinamarca y Finlandia, examinados también en esta calculadora. En teoría, esto podría cuestionar que EE. UU. tuviera siquiera derecho a retener ese 30% en origen. En la práctica, ninguna comisión de lotería de un estado de EE. UU. aplica esa exención del convenio en el momento del pago (a diferencia de lo que algunos casinos hacen con jugadores extranjeros habituales), así que el 30% se retiene igual, y solo después, mediante el crédito del artículo 24.1(a) ya explicado arriba, se ajusta la cuota española. El resultado que muestra esta calculadora refleja lo que de verdad ocurre en el momento del cobro.
+
+## ¿Qué pasa si inviertes o donas parte del premio?
+
+Son dos pasos totalmente independientes de la tributación del premio en sí. Si colocas parte del dinero en depósitos, fondos o acciones, los rendimientos posteriores (intereses, dividendos, ganancias por venta) sí tributan en la base del ahorro del IRPF, a los tipos habituales de esa base (19% a 28% en los tramos vigentes en 2026) — la regla general para cualquier renta del ahorro, sin relación con el origen del capital invertido.
+
+⚠️ Impuesto sobre Sucesiones y Donaciones — un tributo aparte, y muy distinto según la comunidad autónoma
+
+Si más adelante donas una parte del premio a un familiar, esa donación tributa por el Impuesto sobre Sucesiones y Donaciones, un tributo cedido a las comunidades autónomas — la reducción aplicable, el tipo y las bonificaciones finales varían de forma muy significativa según dónde resida quien recibe la donación (algunas comunidades bonifican hasta el 99% entre padres e hijos; otras aplican la escala estatal casi sin corrección). Esto no afecta en absoluto al impuesto ya liquidado sobre el premio, solo al paso posterior de repartirlo.
+
+## ¿Se enterará Hacienda si transfiero el dinero a España?
+
+Es razonable asumir que sí, con independencia del importe exacto de la transferencia. Como residente fiscal, tienes la obligación de declarar el premio como ganancia patrimonial en tu IRPF del ejercicio en que lo cobres, sin que esto dependa de si transfieres o no el dinero a España. Además, si mantienes cuentas, valores o el propio efectivo del premio en el extranjero por un valor superior a 50.000 € a 31 de diciembre, existe la obligación informativa del Modelo 720 sobre bienes y derechos situados en el extranjero — su incumplimiento puede acarrear sanciones significativas. Los bancos españoles, sujetos a la Ley 10/2010 de prevención del blanqueo de capitales, pueden pedir justificación documental del origen de una transferencia grande e inusual.
+
+Conservar la confirmación oficial de pago del premio de la comisión de lotería estadounidense facilita justificar el origen de los fondos ante el banco o la Agencia Tributaria si te lo solicitan.
+
+## Preguntas frecuentes
+
+Q: ¿Deben los residentes en España pagar impuestos por ganar la lotería de EE. UU.?
+A: Sí, y en dos fases. Primero, Estados Unidos retiene de forma automática una retención federal fija del 30% sobre los premios de lotería pagados a no residentes extranjeros (IRC §871(a)), antes de que el dinero llegue a tu cuenta. Después, España grava el premio: al no tratarse de un sorteo español ni de la UE/EEE amparado por la Ley 13/2011 (SELAE, ONCE, Cruz Roja), el premio no disfruta de la exención de 40.000 € ni del tipo reducido del 20% — en su lugar, como "ganancia patrimonial no derivada de una transmisión" (art. 33 y 46 de la Ley 35/2006, IRPF), se integra en la base imponible general y tributa al tipo marginal, que en la práctica alcanza el tramo máximo (47% en la escala estatal común, entre aproximadamente 45% y 54% según la comunidad autónoma) dado el tamaño de un bote de Powerball o Mega Millions. El convenio entre España y EE. UU. permite acreditar la retención estadounidense contra la cuota española, pero solo hasta el límite de la cuota que corresponda a esa renta — como el tipo español es más alto que el 30% retenido en EE. UU., queda una cuota residual en España de aproximadamente 17 puntos porcentuales adicionales.
+
+Q: ¿Por qué no se aplica a Powerball el trato favorable de la lotería española?
+A: Porque la Ley 13/2011, de regulación del juego, reserva la exención de 40.000 € y el tipo reducido del 20% exclusivamente a los sorteos organizados por la Sociedad Estatal Loterías y Apuestas del Estado (SELAE), la ONCE, la Cruz Roja Española y entidades análogas de la UE/EEE — una lista cerrada de organizadores autorizados. Powerball y Mega Millions se organizan en Estados Unidos, fuera de esa lista, por lo que el premio no entra en ese régimen especial en absoluto y pasa a tributar por la vía general del IRPF como cualquier otra ganancia patrimonial sin contraprestación.
+
+Q: ¿Se puede acreditar la retención del 30% de EE. UU. contra el IRPF español?
+A: En principio sí, mediante la deducción por doble imposición internacional del artículo 24.1(a) del convenio entre España y EE. UU. (firmado en 1990, modificado por el protocolo de 2013, en vigor desde el 27 de noviembre de 2019, texto verificado directamente en irs.gov/pub/irs-trty/spain.pdf): España debe permitir deducir el impuesto efectivamente pagado en EE. UU., pero el crédito no puede superar la parte de la cuota española que corresponda a esa renta — un crédito ordinario con límite, no una deducción íntegra. Como el tipo marginal español (hasta 47%) es más alto que la retención estadounidense (30%), el crédito absorbe solo una parte y queda una cuota adicional en España de aproximadamente 17 puntos porcentuales. Existe además una particularidad teórica: el artículo 23.1 ("Otras rentas") del mismo convenio dice que la renta no cubierta por otros artículos "solo puede someterse a imposición" en el Estado de residencia (España) — idéntica fórmula a la de los convenios de Alemania, Italia, Dinamarca y Finlandia — lo que en teoría podría cuestionar la propia retención estadounidense inicial. En la práctica esto no cambia la cifra que aparece en tu extracto: ninguna comisión de lotería estadounidense aplica esta exención del convenio en el momento del pago, así que el 30% se retiene igualmente y el crédito del artículo 24 opera después, sobre el impuesto ya retenido.
+
+Q: ¿Qué ocurre si invierto o dono parte del premio?
+A: Son dos pasos totalmente independientes del impuesto sobre el premio en sí. Si inviertes parte del dinero, los rendimientos posteriores (intereses, dividendos, ganancias de venta de activos) sí tributan en la base del ahorro del IRPF, a los tipos habituales de esa base (19% a 28% según tramos vigentes en 2026) — la regla general de cualquier renta del ahorro, con independencia del origen del capital. Si más adelante donas parte del premio a un familiar, se aplica el Impuesto sobre Sucesiones y Donaciones, un tributo cedido a las comunidades autónomas: la base, las reducciones y los coeficientes multiplicadores varían mucho según dónde resida el donatario (algunas comunidades, como Madrid o Andalucía, aplican bonificaciones muy altas entre padres e hijos; otras no). Ninguna de las dos cosas afecta al impuesto ya liquidado sobre el premio en sí.
+
+Q: ¿Se enterará Hacienda si transfiero el dinero a España?
+A: Es razonable asumir que sí, aunque no por el importe de la transferencia en sí. Como residente fiscal en España tienes la obligación de declarar el premio como ganancia patrimonial en tu IRPF, con independencia de cuándo o si transfieres el dinero. Además, si el saldo en cuentas o inversiones en el extranjero supera los 50.000 € a 31 de diciembre, existe la obligación informativa del Modelo 720 sobre bienes y derechos en el extranjero. Los bancos españoles, bajo la Ley 10/2010 de prevención del blanqueo de capitales, pueden solicitar justificación del origen de fondos ante una transferencia grande e inusual — conservar la confirmación oficial del premio facilita ese trámite.
+
+Esta página es únicamente un simulador informativo y no actúa como agente ni intermediario en la compra de boletos. El impuesto realmente adeudado depende de tu situación personal y de la normativa fiscal/tipo de cambio vigentes en el momento de tu declaración — consulta con un asesor fiscal familiarizado con ambos sistemas tributarios.
+
+---
+
 ## ශ්‍රී ලාංකික බදු පදිංචිකරුවකු ඇමරිකානු ලොතරැයියෙන් ජයග්‍රහණය කළහොත් බදු කීයක්ද?
 URL: https://chamtax.com/srilanka-resident-us-lottery-tax.html
 
@@ -4249,7 +4604,7 @@ Skattemässigt bosatt i Sverige och du vinner i Powerball eller Mega Millions? D
 
 ChamTax är en gratis kalkylator som visar det faktiska belopp du får ut efter skatt från en Powerball- eller Mega Millions-jackpott. Så här beskattas en amerikansk lotterivinst om du är skattemässigt bosatt i Sverige — en amerikansk källskatt på 30% som i praktiken alltid dras, och en svensk kapitalinkomstskatt på 30% som i praktiken alltid blir 0 kronor efter skattekredit.
 
-Senast uppdaterad: 2026-08-20
+Senast uppdaterad: 2026-08-24
 
 Exempel vid en vinst på 1 000 000 dollar, bosatt i Sverige
 - Amerikansk federal källskatt (30%, ej bosatt): -$300 000
@@ -4270,9 +4625,9 @@ Det beror på att två separata skattesatser råkar sammanfalla exakt. Sveriges 
 
 Det här är alltså inte samma sak som i Tyskland, där lotterivinster helt enkelt inte räknas som skattepliktig inkomst över huvud taget (§ 2 stycke 3 EStG) — där finns ingen skattebas att tillämpa någon sats på. I Sverige finns en verklig skattebas och en verklig skattesats på 30%, men en verklig och lika stor skattekredit råkar ta ut den helt. Beräkningsmässigt liknar detta därför mer länder som Kina (cn) eller Indien (in) i den här kalkylatorn — beräknad skatt minus skattekredit, med tak — men där de flesta andra länders skattesats skiljer sig från den amerikanska källskatten (vilket lämnar antingen ett restbelopp eller redan från början en lägre sats), råkar Sveriges 30% vara identisk med USA:s 30% på samma bruttobelopp.
 
-⚠️ Två saker vi inte kunnat bekräfta fullt ut
+⚠️ Vad vi kunnat bekräfta — och vad som återstår
 
-Dels har vi inte kunnat bekräfta, paragraf för paragraf mot primärkällan, att amerikansk källskatt på spelvinster tekniskt räknas som en "avräkningsbar utländsk skatt" enligt avräkningslagen i just det här specifika fallet — den allmänna principen (att avräkningslagen gäller brett för utländsk skatt på inkomst som även beskattas i Sverige, utan att räkna upp inkomsttyper) talar för att den gör det, men vi har inte hittat en artikel- eller paragrafhänvisning som bekräftar det helt uttryckligen för just spelvinster. Dels nämner vissa sekundärkällor (svenska skatterådgivningssajter) att avräkning för redan betald utländsk skatt kan ske, men "inte alltid till 100%" — vilket antyder att den fullständiga kvittningen som den här kalkylatorn visar kanske inte alltid gäller undantagslöst i praktiken. Bekräfta därför alltid din egen situation med Skatteverket eller en skatterådgivare innan du deklarerar en verklig vinst.
+Avräkningslagens 1 kap. 3 § definierar avräkningsbar "utländsk skatt" som "allmän slutlig skatt på inkomst" (och, i vissa delar, motsvarande preliminär skatt) — en bred, generellt hållen definition som inte räknar upp enskilda inkomstslag (till skillnad från regelverk som bara tillåter avräkning för uttryckligen uppräknade kategorier, som utdelning eller ränta). Den amerikanska källskatten på 30% enligt IRC §871(a) fungerar i praktiken som en slutlig skatt för en utländsk mottagare på just den här typen av inkomst — spelvinster utan koppling till amerikansk rörelse ger normalt ingen efterföljande amerikansk deklaration som ändrar beloppet — vilket talar för att den faller inom "allmän slutlig skatt på inkomst". Vi har dock fortfarande inte hittat ett Skatteverksställningstagande eller en domstolsdom som uttryckligen namnger just amerikansk källskatt på lotterivinster, så bekräftelsen förblir principiell snarare än fall-specifik. Som sidoanmärkning: det svensk-amerikanska skatteavtalet (1994, protokoll 2005) tycks även innehålla en generell artikel om "övrig inkomst" som i teorin skulle kunna ge Sverige ensam beskattningsrätt över den här typen av vinst, vilket skulle innebära att den amerikanska källskatten egentligen inte borde dras alls om avtalsförmånen åberopas i tid hos utbetalaren — men i praktiken tillämpar amerikanska delstatslotterier ändå schablonmässigt 30% källskatt på utländska vinnare oavsett avtal, vilket är det denna kalkylator utgår från. Bekräfta därför alltid din egen situation med Skatteverket eller en skatterådgivare innan du deklarerar en verklig vinst.
 
 ## Att investera eller ge bort vinsten: kapitalinkomstskatt och gåvoskatt
 
@@ -4298,12 +4653,80 @@ Q: Vad händer om jag investerar eller ger bort vinsten?
 A: Själva vinsten hanteras som ovan, men det du gör med pengarna efteråt följer de vanliga reglerna. Sätter du en del på ett sparkonto, i aktier eller fonder, beskattas därefter uppkommen ränta, utdelning eller kapitalvinst som vanlig kapitalinkomst med 30% (samma sats som lotterivinsten själv, men en helt separat beräkning år för år). Ger du bort en del av vinsten till familjemedlemmar är det däremot skattefritt — Sverige avskaffade både arvsskatten och gåvoskatten från och med den 1 januari 2005, så gåvor mellan privatpersoner, oavsett belopp eller släktskap, medför i dagsläget ingen svensk skatt alls.
 
 Q: Är detta helt säkerställt, eller finns det osäkerheter?
-A: Skattesatsen och skattebasen (30% kapitalinkomst enligt Inkomstskattelagen 42 kap. 25 §, med undantag för lotterier anordnade inom EU/EES) är väl dokumenterade via Skatteverkets egen vägledning. Kreditmekanismen bygger på den allmänna avräkningslagen (1986:468), som inte räknar upp inkomsttyper utan gäller brett för utländsk skatt på inkomst som även beskattas i Sverige — men vi har inte kunnat bekräfta med en primärkälla, paragraf för paragraf, att just amerikansk källskatt på spelvinster tekniskt räknas som en avräkningsbar utländsk skatt i detta specifika fall, även om den allmänna principen talar för det. Vissa sekundärkällor nämner också att avräkning inte alltid sker till fullo 100%. Bekräfta därför alltid din egen situation med Skatteverket eller en skatterådgivare innan du deklarerar en verklig vinst.
+A: Skattesatsen och skattebasen (30% kapitalinkomst enligt Inkomstskattelagen 42 kap. 25 §, med undantag för lotterier anordnade inom EU/EES) är väl dokumenterade via Skatteverkets egen vägledning. Kreditmekanismen bygger på den allmänna avräkningslagen (1986:468); dess 1 kap. 3 § definierar avräkningsbar "utländsk skatt" brett, som "allmän slutlig skatt på inkomst", utan att räkna upp enskilda inkomstslag. Den amerikanska källskatten på 30% enligt IRC §871(a) fungerar som en slutlig skatt för en utländsk mottagare på den här typen av inkomst, vilket talar för att den omfattas — men vi har fortfarande inte hittat ett Skatteverksställningstagande eller en dom som namnger just amerikansk källskatt på spelvinster specifikt, så bekräftelsen är principiell snarare än fall-specifik. Bekräfta därför alltid din egen situation med Skatteverket eller en skatterådgivare innan du deklarerar en verklig vinst.
+
+Q: Kommer banken eller Skatteverket att veta att jag överför vinsten till ett svenskt konto?
+A: Troligen ja, men det handlar om en rutinmässig kontroll mot penningtvätt, inte en skattefråga. Sverige tillämpar EU:s regelverk mot penningtvätt direkt, och banken kan be om dokumentation som styrker pengarnas ursprung vid stora internationella överföringar — till exempel den amerikanska utbetalarens formulär 1042-S. Detta utlöser inte automatiskt någon extra skatt; kontrollera eventuella specifika krav med din bank i förväg om beloppet är ovanligt stort.
 
 Q: Kommer banken eller Skatteverket att veta att jag överför vinsten till ett svenskt konto?
 A: Troligen ja, men det handlar om en rutinmässig kontroll mot penningtvätt, inte en skattefråga. Sverige tillämpar EU:s regelverk mot penningtvätt direkt, och banken kan be om dokumentation som styrker pengarnas ursprung vid stora internationella överföringar — till exempel den amerikanska utbetalarens formulär 1042-S. Detta utlöser inte automatiskt någon extra skatt; kontrollera eventuella specifika krav med din bank i förväg om beloppet är ovanligt stort.
 
 Den här sidan är enbart en informationssimulator och förmedlar eller underlättar inte köp av lotter. Den faktiska skatt du är skyldig beror på din individuella situation samt gällande skattelagstiftning/växelkurs vid tidpunkten för din deklaration — rådgör med en kvalificerad skatterådgivare som är insatt i båda ländernas skattesystem.
+
+---
+
+## Müssen Steuerpflichtige in der Schweiz einen US-Lotteriegewinn versteuern? Powerball und Mega Millions 2026
+URL: https://chamtax.com/switzerland-resident-us-lottery-tax.html
+
+Steuerlich in der Schweiz ansässig und du gewinnst bei Powerball oder Mega Millions? Die 30%ige US-Quellensteuer, warum die Schweiz zusätzlich bis zu 39,1% erhebt, und warum es dafür keine Anrechnung (FTC) gibt. Kostenloser Rechner.
+
+# Wie viel Steuern zahlst du in der Schweiz auf einen Powerball- oder Mega-Millions-Gewinn?
+
+ChamTax ist ein kostenloser Rechner, der den tatsächlichen Betrag zeigt, den du nach Steuern von einem Powerball- oder Mega-Millions-Jackpot erhältst. So wird ein Gewinn in der US-Lotterie besteuert, wenn du steuerlich in der Schweiz ansässig bist — eine feste US-Bundesquellensteuer von 30%, plus eine zusätzliche Schweizer Einkommenssteuer von rund 39%, ohne gegenseitige Anrechnung.
+
+Zuletzt aktualisiert: 2026-09-01
+
+Beispiel bei einem Gewinn von 1.000.000 $, ansässig in der Schweiz (Referenz Zürich)
+- US-Bundesquellensteuer (30%, Nicht-Ansässige): -$300.000
+- Schweizer Einkommenssteuer (39,1%, keine Anrechnung ⚠️): -$391.000
+- Geschätzter Auszahlungsbetrag: ca. $309.000
+
+Bei einem Referenzkurs USD→CHF von etwa 0,88 entsprechen diese $309.000 netto ungefähr 272.000 CHF — die Steuerlast variiert je nach Wohnkanton spürbar (2026: von rund 21,9% Spitzensatz in Zug bis 43,24% in Genf, KPMG Schweiz 2026); der Rechner oben rechnet deinen eigenen Betrag mit einem Live-Wechselkurs um.
+
+## Besteuert die Schweiz einen Gewinn aus der US-Lotterie?
+
+Ja — anders, als man angesichts der bekannten Steuerbefreiung für Schweizer Lottogewinne annehmen könnte. Art. 24 Bst. i bis des Bundesgesetzes über die direkte Bundessteuer (DBG) befreit Gewinne aus inländischen Grossspielen im Sinne des Geldspielgesetzes (BGS) — etwa Swiss Lotto oder EuroMillions — bis zu 1 Million Franken von der Einkommenssteuer (darüber hinaus ist der übersteigende Betrag abzüglich eines Einsatzabzugs von bis zu 5'000 Franken steuerbar). Mehrere Schweizer Steuerfachportale (u. a. moneyland.ch, bucher-tax.ch) bestätigen übereinstimmend, dass diese 1-Million-Schwelle ausschliesslich für inländische Grossspiele gilt — Gewinne aus ausländischen Spielen jeder Art sind unabhängig von ihrer Höhe stets vollständig steuerbar, ohne jede Freigrenze.
+
+Powerball und Mega Millions werden vollständig in den USA organisiert und fallen damit klar in die zweite Kategorie: Der gesamte Gewinnbetrag zählt zum steuerbaren Einkommen. Die Schweiz erhebt die Einkommenssteuer dreistufig — Bundessteuer, kantonale Steuer und Gemeindesteuer — mit stark unterschiedlichen Spitzensätzen je nach Wohnkanton (2026 laut KPMG Schweiz: von 21,9% in Zug bis 43,24% in Genf). Diese Rechner-Seite verwendet als Referenzwert den Spitzensatz der Stadt Zürich (39,10% — Bundessteuer 11,5% + kantonale und städtische Steuer, KPMG-Berechnung 2026, mit taxolution.ch gegengeprüft), da Zürich der grösste deutschsprachige Kanton ist; dein tatsächlicher Wohnkanton kann spürbar darüber oder darunter liegen.
+
+## Die US-Quellensteuer von 30% — und warum es keine Anrechnung (FTC) gibt
+
+Die USA besteuern ausländische Nicht-Ansässige auf Lotteriegewinne mit einer festen Bundesquellensteuer von 30% (IRC §871(a)) — höher als die Regelung für US-Ansässige (24% Quellensteuer, Grenzsteuersatz bis 37%) — und behalten diesen Betrag sofort bei Auszahlung des Gewinns ein.
+
+⚠️ Keine Anrechnung gefunden — und das Abkommen begründet das ausdrücklich, statt es nur offenzulassen. Art. 21 Abs. 3 des Doppelbesteuerungsabkommens zwischen der Schweiz und den USA (Originaltext direkt bei irs.gov/pub/irs-trty/swiss.pdf geprüft) lautet wörtlich: „The provisions of this Article shall not apply to income subject to tax by either Contracting State on wagering, gambling or lottery winnings“ — Wett-, Glücksspiel- und Lotteriegewinne sind damit ausdrücklich vom Artikel über „Andere Einkünfte“ (Art. 21) ausgenommen. Anders als bei Spanien, Italien, Deutschland, Dänemark oder Finnland (siehe die entsprechenden Länderseiten dieses Rechners), wo diese Frage nur über die allgemeine, mehrdeutige Formulierung des „Andere Einkünfte“-Artikels beantwortet werden muss, regelt das Schweizer Abkommen den Fall explizit. Die Entlastungsbestimmung des Art. 23 Abs. 1(a) — grundsätzlich eine Befreiung der in den USA besteuerbaren Einkünfte von der Schweizer Steuer — greift ausdrücklich nur für Einkünfte, die „nach diesem Abkommen in den Vereinigten Staaten besteuert werden dürfen“; da das Abkommen der US-Besteuerung von Lotteriegewinnen aber gerade keine Zuteilungsnorm widmet, ist diese Voraussetzung nicht erfüllt. Auch die innerstaatliche pauschale Steueranrechnung (Formular DA-1) hilft nicht: Mehrere Schweizer Steuerberatungsportale (u. a. moneyland.ch, taxolution.ch) bestätigen übereinstimmend, dass dieses Verfahren ausdrücklich auf Dividenden, Zinsen und Lizenzgebühren beschränkt ist und Lotteriegewinne nicht abdeckt. Beide Wege sind damit verschlossen, und die US-Quellensteuer (30%) sowie die Schweizer Einkommenssteuer (~39%) addieren sich ohne Ausgleich.
+
+## Den Gewinn anlegen oder verschenken: Vermögenssteuer und Schenkungssteuer
+
+Die Einkommenssteuer auf den Gewinn wird im Jahr der Auszahlung veranlagt — was du anschliessend damit machst, unterliegt den normalen Regeln, wie bei jedem anderen Vermögen. Legst du einen Teil des Gewinns an, unterliegt das investierte Kapital ab dem nächsten Stichtag der jährlichen kantonalen und kommunalen Vermögenssteuer, unabhängig von seiner Herkunft, und laufende Erträge (Zinsen, Dividenden) zählen weiterhin als steuerbares Einkommen — bei Dividenden inländischer Gesellschaften zusätzlich mit 35% Verrechnungssteuer an der Quelle belegt, die bei ordnungsgemässer Deklaration zurückerstattet wird.
+
+⚠️ Schenkungssteuer — kantonal sehr unterschiedlich geregelt
+
+Schenkst du später einen Teil des Gewinns an Familienmitglieder, richtet sich das ausschliesslich nach kantonalem Recht — es gibt keine bundesweit einheitliche Schenkungssteuer. In den meisten der 26 Kantone sind Schenkungen an Ehepartner und direkte Nachkommen (Kinder, Enkel) ganz oder weitgehend von der Steuer befreit, während Schenkungen an entferntere Verwandte oder Nichtverwandte progressiv und deutlich höher besteuert werden können. Das betrifft ausdrücklich nicht den Gewinn selbst, sondern nur den späteren Schritt, ihn weiterzugeben.
+
+## Was passiert, wenn du das Geld in die Schweiz überweist?
+
+Eine grosse Summe aus den USA auf ein Schweizer Bankkonto zu überweisen, löst an sich keine zusätzliche Steuer aus. Schweizer Banken unterliegen den Sorgfaltspflichten des Geldwäschereigesetzes (GwG) und müssen der Meldestelle für Geldwäscherei (MROS) eine Verdachtsmeldung erstatten, sobald ein begründeter Verdacht auf deliktische Herkunft der Mittel besteht — ohne festen Betragsgrenzwert, das liegt im Ermessen der Bank. Ein dokumentierter, legitimer Lotteriegewinn ist für sich genommen nicht verdächtig. Unabhängig davon bist du verpflichtet, den Gewinn in deiner nächsten Steuererklärung als Einkommen zu deklarieren, ganz gleich ob und wann du das Geld tatsächlich in die Schweiz überweist.
+
+Bei einer grossen, ungewöhnlichen Überweisung kann die Bank im Rahmen ihrer Sorgfaltspflichten nach dem Herkunftsnachweis fragen — die offizielle Gewinnbestätigung der US-Lotteriebehörde griffbereit zu halten, beschleunigt diesen Schritt.
+
+## Häufig gestellte Fragen
+
+Q: Müssen in der Schweiz Ansässige Steuern auf einen Gewinn in der US-Lotterie zahlen?
+A: Ja, und zwar zweifach, ohne gegenseitige Anrechnung. Die USA behalten zuerst eine feste Bundesquellensteuer von 30% auf Lotteriegewinne ein, die an ausländische Nicht-Ansässige ausgezahlt werden (IRC §871(a)) — noch bevor das Geld dein Konto erreicht. Danach ist die Schweiz an der Reihe: Gewinne aus ausländischen Spielen sind unabhängig von der Höhe stets vollständig steuerbares Einkommen (Art. 24 Bst. i bis DBG, Bundesgesetz über die direkte Bundessteuer) — die Steuerbefreiung bis 1 Million Franken gilt ausdrücklich nur für inländische Grossspiele wie Swiss Lotto oder EuroMillions, nicht für Powerball oder Mega Millions. Der Gewinn wird zum ordentlichen Einkommenssteuersatz veranlagt, der sich aus Bundes-, Kantons- und Gemeindesteuer zusammensetzt (Spitzensatz z. B. 39,10% in der Stadt Zürich 2026, kantonal stark unterschiedlich). Eine Anrechnung der US-Quellensteuer existiert nicht, sodass sich beide Steuern schlicht addieren.
+
+Q: Gilt die Steuerbefreiung für Schweizer Grossspiele (Swiss Lotto, EuroMillions) auch für Powerball?
+A: Nein, und das ist keine Frage der Schwelle, sondern des Ursprungslands. Art. 24 Bst. i bis DBG befreit Gewinne aus inländischen Grossspielen im Sinne des Geldspielgesetzes (BGS) bis 1 Million Franken (darüber hinaus zzgl. Einsatzabzug bis 5'000 Franken). Mehrere Schweizer Steuerportale (u. a. moneyland.ch, bucher-tax.ch) bestätigen übereinstimmend: Gewinne aus ausländischen Spielen jeder Art sind unabhängig von der Höhe stets vollständig steuerbar — die 1-Million-Schwelle existiert für sie schlicht nicht. Powerball und Mega Millions werden in den USA organisiert und fallen daher unter diese zweite Kategorie: Der volle Gewinnbetrag zählt zum steuerbaren Einkommen, nicht nur der Teil über einer Freigrenze.
+
+Q: Kann die US-Quellensteuer von 30% mit der Schweizer Einkommenssteuer verrechnet werden?
+A: Nein, nach gründlicher Prüfung sowohl des Doppelbesteuerungsabkommens als auch des innerstaatlichen Rechts. Art. 21 Abs. 3 des Abkommens zwischen der Schweiz und den USA (Originaltext direkt bei irs.gov/pub/irs-trty/swiss.pdf geprüft) bestimmt ausdrücklich: „Die Bestimmungen dieses Artikels gelten nicht für Einkünfte, die von einem der Vertragsstaaten auf Wett-, Glücksspiel- oder Lotteriegewinne besteuert werden.“ Lotteriegewinne sind damit wörtlich aus dem Anwendungsbereich des Artikels über „Andere Einkünfte“ ausgeklammert — anders als bei den meisten anderen von diesem Rechner untersuchten Abkommen, wo diese Frage nur indirekt über die allgemeine Formulierung beantwortet werden kann. Die Entlastungsbestimmung des Art. 23 Abs. 1(a) greift nur für Einkünfte, die „nach diesem Abkommen in den Vereinigten Staaten besteuert werden dürfen“ — da das Abkommen für Lotteriegewinne aber gar keine Zuteilung der Besteuerungsrechte vornimmt, ist diese Voraussetzung nicht erfüllt. Auch das innerstaatliche Recht hilft nicht weiter: Die pauschale Steueranrechnung (Formular DA-1) für ausländische Quellensteuern ist gemäss übereinstimmenden Angaben mehrerer Schweizer Steuerberatungsportale (u. a. moneyland.ch, taxolution.ch) ausdrücklich auf Dividenden, Zinsen und Lizenzgebühren beschränkt und deckt Lotteriegewinne nicht ab. Die beiden Steuern addieren sich daher ohne Ausgleich.
+
+Q: Was passiert, wenn ich den Gewinn anlege oder verschenke?
+A: Beides sind eigenständige Vorgänge, losgelöst von der Einkommenssteuer auf den Gewinn selbst. Legst du einen Teil des Geldes an, unterliegt das angelegte Kapital ab dem folgenden Stichtag der jährlichen kantonalen Vermögenssteuer (unabhängig von der Herkunft des Vermögens), und laufende Erträge (Zinsen, Dividenden) zählen als gewöhnliches Einkommen — bei Dividenden inländischer Gesellschaften wird zusätzlich die Verrechnungssteuer von 35% an der Quelle erhoben und bei korrekter Deklaration wieder zurückerstattet. Schenkst du später einen Teil des Gewinns an Familienmitglieder, richtet sich das nach dem kantonalen Schenkungssteuerrecht — die Sätze und Freibeträge unterscheiden sich stark zwischen den 26 Kantonen, wobei direkte Nachkommen und Ehepartner in den meisten Kantonen ganz oder weitgehend befreit sind. Keines von beidem betrifft die bereits veranlagte Einkommenssteuer auf den Gewinn selbst.
+
+Q: Erfahren meine Bank oder die Steuerbehörde, wenn ich den Gewinn in die Schweiz überweise?
+A: Möglich, aber als Routinekontrolle im Rahmen der Sorgfaltspflichten, kein separates Steuerproblem. Schweizer Banken unterliegen dem Geldwäschereigesetz (GwG) und müssen der Meldestelle für Geldwäscherei (MROS) einen Verdachtsfall melden, wenn ein begründeter Verdacht auf deliktische Herkunft der Mittel besteht — ohne festen Betragsgrenzwert, das liegt im Ermessen der Bank. Ein dokumentierter, legitimer Lotteriegewinn ist für sich genommen nicht verdächtig. Unabhängig davon musst du den Gewinn ohnehin selbst in deiner nächsten Steuererklärung als Einkommen deklarieren, ganz gleich ob und wann du das Geld in die Schweiz überweist. Bei einer grossen, ungewöhnlichen Überweisung kann die Bank nach dem Herkunftsnachweis fragen — die offizielle Gewinnbestätigung der US-Lotteriebehörde griffbereit zu halten, beschleunigt das.
+
+Diese Seite ist ausschliesslich ein Informationssimulator und vermittelt oder erleichtert nicht den Kauf von Lottoscheinen. Die tatsächlich geschuldete Steuer hängt von deiner individuellen Situation, deinem Wohnkanton sowie dem zum Zeitpunkt deiner Erklärung geltenden Steuerrecht/Wechselkurs ab — konsultiere eine qualifizierte Steuerberatung, die mit den Steuersystemen beider Länder vertraut ist. Hinweis: Neben der deutschsprachigen Mehrheit hat die Schweiz auch französisch- und italienischsprachige Kantone, für die dieselben Bundesregeln (DBG, Doppelbesteuerungsabkommen) gelten, auch wenn diese Seite nur auf Deutsch verfügbar ist.
 
 ---
 
@@ -4399,6 +4822,12 @@ ChamTax คือเครื่องคำนวณฟรีที่แสด
 
 เงินรางวัลนี้อาจถูกตีความต่างกันไปตามช่วงเวลาที่นำเข้าประเทศไทยและวิธีที่กรมสรรพากรตีความรายได้ประเภทฟลุค แนะนำให้ปรึกษาที่ปรึกษาภาษีไทยก่อนวางแผนโอนเงินหรือยื่นภาษีจริง
 
+## โอนเงินรางวัลเข้าบัญชีไทย: กฎแสดงที่มาของเงินกับ ธปท. และการรายงานต่อ ปปง.
+
+แยกจากประเด็นภาษีข้างต้น การโอนเงินก้อนใหญ่จากต่างประเทศเข้าบัญชีธนาคารในไทยยังมีกฎธนาคารแห่งประเทศไทย (ธปท.) ที่เพิ่งเริ่มบังคับใช้เมื่อ 29 ธันวาคม 2568 ต้องพิจารณาแยกต่างหาก: สำหรับเงินตราต่างประเทศที่โอนเข้ามาตั้งแต่ 200,000 ดอลลาร์สหรัฐ หรือเทียบเท่าขึ้นไป ธนาคารต้องขอเอกสารยืนยันที่มาของเงินภายในวันที่ทำธุรกรรมหรือช้าสุดภายในวันชำระราคา เงินรางวัลลอตเตอรีสหรัฐฯ ระดับหลักแสนดอลลาร์ (แม้หักภาษีสหรัฐฯ 30% ไปแล้ว) มักเกินเกณฑ์นี้ จึงควรเตรียมเอกสารการรับรางวัลและหนังสือแจ้งการหักภาษี ณ ที่จ่ายของสหรัฐฯ (Form 1042-S) ไว้ล่วงหน้าเพื่อยืนยันกับธนาคาร
+
+นอกจากนี้ ตามกฎหมายป้องกันและปราบปรามการฟอกเงิน สถาบันการเงินในไทยมีหน้าที่ตามกฎหมายต้องรายงานธุรกรรมมูลค่าสูงและธุรกรรมที่มีเหตุอันควรสงสัยต่อสำนักงานป้องกันและปราบปรามการฟอกเงิน (ปปง.) — เงินโอนก้อนใหญ่ระดับนี้ แม้จะได้มาโดยชอบธรรมทั้งหมด ก็อาจเข้าข่ายธุรกรรมที่ธนาคารต้องรายงานตามกระบวนการปกติ ธนาคารอาจขอให้ยืนยันตัวตนและวัตถุประสงค์ของเงินเพิ่มเติมตามขั้นตอนมาตรฐาน ซึ่งเป็นเรื่องปกติสำหรับธุรกรรมมูลค่าสูง ไม่ได้หมายความว่าเงินของคุณมีปัญหา
+
 ## คำถามที่พบบ่อย
 
 Q: ฉันเป็นคนไทยที่อาศัยอยู่ประเทศอื่น — ต้องคำนวณตามเกณฑ์ไทยไหม?
@@ -4409,6 +4838,9 @@ A: หากอยู่ 180 วันขึ้นไปในปีปฏิท
 
 Q: ต้องยื่นภาษีเมื่อไหร่และอย่างไร?
 A: สหรัฐฯ หักภาษี 30% ก่อน ส่วนไทยยังไม่มีแนวทางชัดเจนสำหรับเงินรางวัลลอตเตอรีต่างประเทศ แต่ตามคำสั่งกรมสรรพากร ป.161/2566 หลักการคือเงินที่นำเข้าไทยต้องรวมเป็นเงินได้พึงประเมินและยื่นแบบ ภ.ง.ด.90 ภายในวันที่ 31 มีนาคมของปีถัดไป (ต้นเมษายนสำหรับ e-filing) เนื่องจากไม่มีอัตราที่ชัดเจนสำหรับเงินได้ประเภทนี้ เครื่องคำนวณนี้จึงประมาณการด้วยอัตราภาษีเงินได้บุคคลธรรมดาขั้นสูงสุด (35%) อย่างระมัดระวัง ควรตรวจสอบขั้นตอนและสิทธิ์เครดิตภาษีต่างประเทศกับที่ปรึกษาภาษีไทย
+
+Q: โอนเงินรางวัลก้อนใหญ่เข้าบัญชีไทยได้เลยไหม หรือมีขั้นตอนพิเศษ?
+A: มีกฎ ธปท. ที่เริ่มบังคับใช้ 29 ธันวาคม 2568 กำหนดว่าเงินตราต่างประเทศที่โอนเข้ามาตั้งแต่ 200,000 ดอลลาร์สหรัฐขึ้นไป ธนาคารต้องขอเอกสารยืนยันที่มาของเงิน (เอกสารรับรางวัลและ Form 1042-S ใช้ได้) ภายในวันที่ทำธุรกรรมหรือช้าสุดวันชำระราคา นอกจากนี้สถาบันการเงินยังมีหน้าที่ตามกฎหมายฟอกเงินต้องรายงานธุรกรรมมูลค่าสูงต่อสำนักงาน ปปง. ตามกระบวนการปกติ — ไม่ได้หมายความว่าเงินของคุณมีปัญหา แค่เป็นขั้นตอนมาตรฐานสำหรับเงินโอนก้อนใหญ่จากต่างประเทศ
 
 หน้านี้จัดทำขึ้นเพื่อให้ข้อมูลเท่านั้น ไม่ได้เป็นตัวกลางหรือช่วยเหลือในการซื้อสลาก โปรดปรึกษาผู้เชี่ยวชาญด้านภาษีที่เชี่ยวชาญทั้งสองประเทศก่อนยื่นภาษีจริง
 
@@ -4467,6 +4899,119 @@ Q: Türkiye'nin kendi piyangosu (Milli Piyango) da aynı şekilde mi vergilendir
 A: Kavramsal olarak evet (VİVK madde 16'nın aynı %20'lik oranı), ama pratikte iki önemli fark var. Birincisi, Türkiye'deki oyunlarda vergi kesintisi (stopaj) ikramiye ödenmeden önce oyunu düzenleyen kurum tarafından doğrudan yapılır — ABD merkezli bir piyangoda bu şekilde stopaj yapacak bir Türkiye temsilcisi olmadığından, kazananın kendisinin beyanname vererek ödemesi gerekir. İkincisi, 5602 ve 7258 sayılı kanunlar kapsamında oyunu düzenleyen kurumun cirosu üzerinden ayrıca alınan "Şans Oyunları Vergisi" (oyun türüne göre %5-%10) tamamen farklı bir vergidir — bu, bireysel kazanana değil işletmeciye uygulanan bir vergidir ve bu hesaplayıcının hesapladığı %20'lik VİVK'dan bağımsızdır.
 
 Bu sayfa yalnızca bilgilendirme amaçlı bir simülasyon aracıdır ve piyango bileti satın alımları için acente veya aracı olarak hareket etmez. Gerçekte ödenecek vergi kişisel durumunuza ve beyan anında yürürlükte olan vergi mevzuatına/döviz kuruna bağlıdır — her iki ülkenin de vergi mevzuatına hakim bir vergi danışmanına danışın.
+
+---
+
+## Чи платять резиденти України податок із виграшу в Powerball або Mega Millions? 2026
+URL: https://chamtax.com/ukraine-resident-us-lottery-tax.html
+
+Виграли в Powerball або Mega Millions і живете в Україні? Федеральне утримання США 30%, а понад нього — ПДФО 18% (повністю зараховується) плюс військовий збір 5% (не підлягає заліку). Безкоштовний калькулятор.
+
+# Чи платять резиденти України податок із виграшу в Powerball або Mega Millions?
+
+ChamTax — безкоштовний калькулятор, що показує реальну суму на руки після сплати податків із джекпоту Powerball або Mega Millions. Ось як оподатковується виграш в американську лотерею для резидента України — фіксоване федеральне утримання США 30%, плюс український податок на доходи (18% ПДФО, повністю зараховується) та військовий збір (5%, без заліку), що в підсумку додає близько 5% чистого додаткового податку.
+
+Востаннє оновлено: 2026-09-01
+
+Приклад виграшу $1,000,000, резидент України
+- Федеральне утримання США (30%, нерезидент): -$300,000
+- Військовий збір України (5%, без заліку): -$50,000
+- Орієнтовна сума на руки: ≈ $650,000
+
+Калькулятор вище конвертує вашу суму за поточним курсом у гривню (UAH), якщо потрібно.
+
+## Чи оподатковує Україна виграш в американську лотерею?
+
+Так. Виграші резидентів України від участі в іноземних лотереях оподатковуються податком на доходи фізичних осіб (ПДФО) за ставкою 18% та військовим збором за ставкою 5% (підвищено з 1,5% до 5% Законом №4015 від 1 грудня 2024 року) — це підтверджено роз'ясненнями Державної податкової служби України (tax.gov.ua). Оскільки в оператора американської лотереї немає жодного українського податкового агента, резидент декларує такий дохід самостійно у річній податковій декларації про майновий стан і доходи.
+
+## Утримання США 30% і угода про уникнення подвійного оподаткування
+
+США утримують з нерезидентів фіксований федеральний податок 30% із виграшу в лотерею (розділ 871(a) Податкового кодексу США) — одразу під час виплати призу.
+
+Угода про уникнення подвійного оподаткування між Україною та США (підписана 4 березня 1994 року, чинна з 1 січня 2001 року) справді існує — це варто перевіряти окремо для кожної країни, а не припускати за замовчуванням. Стаття 21 («Інші доходи») передбачає, що дохід, не охоплений іншими статтями угоди (включно з виграшем у лотерею), оподатковується виключно в країні резидентства — тобто теоретично США взагалі не повинні утримувати податок. На практиці, однак, оператор лотереї не перевіряє податкові угоди під час виплати, тож утримання 30% відбувається так само, а Україна потім надає податковий кредит за статтею 24.
+
+## Чому додатковий податок в Україні — близько 5%, а не 0% і не 23%?
+
+Тому що ПДФО та військовий збір обробляються по-різному. Стаття 24 угоди передбачає взаємний податковий кредит щодо «податку на доходи», і за офіційним підтвердженням PwC Worldwide Tax Summaries щодо України (останній перегляд 30.06.2026) цей кредит обмежений сумою українського ПДФО (18%) і не поширюється на військовий збір («credit against military tax is not allowed» — військовий збір сплачується в Україні в будь-якому разі). Оскільки американське утримання (30%) перевищує ставку ПДФО (18%), увесь ПДФО повністю покривається кредитом і додатково не сплачується — але військовий збір 5% сплачується в Україні окремо, без жодного заліку. Підсумково: $300,000 (США) + $50,000 (військовий збір) = $350,000 податків із виграшу $1,000,000.
+
+## Що буде, якщо перевести гроші в Україну?
+
+Переказ великої суми з-за кордону на банківський рахунок в Україні сам по собі не створює додаткового податкового обов'язку понад описане вище. Проте українські банки застосовують процедури фінансового моніторингу (протидія відмиванню коштів) і можуть вимагати підтвердження джерела походження коштів при великому нетиповому надходженні — це стандартна банківська процедура, а не додатковий податок.
+
+Збереження офіційного документа про виграш від американського оператора лотереї та форми 1042-S полегшує відповідь на будь-який банківський запит щодо джерела коштів, а також слугує підтвердженням для податкового кредиту в декларації.
+
+## Часті запитання
+
+Q: Чи платять резиденти України податок із виграшу в американську лотерею?
+A: Так, у двох рівнях. США автоматично утримують фіксований федеральний податок 30% із виграшу нерезидента (розділ 871(a) Податкового кодексу США) ще до того, як гроші потрапляють до вас. В Україні виграші від участі в іноземних лотереях та азартних іграх — це «інший дохід», який оподатковується податком на доходи фізичних осіб (ПДФО) за ставкою 18% та військовим збором за ставкою 5% (підвищено з 1,5% до 5% з 1 грудня 2024 року, Закон №4015) — підтверджено роз'ясненнями Державної податкової служби України (tax.gov.ua). За угодою про уникнення подвійного оподаткування між Україною та США (підписана 1994, чинна з 2001 року) резидент має право на податковий кредит, але, за офіційним підтвердженням PwC Worldwide Tax Summaries (останній перегляд 30.06.2026), цей кредит покриває лише ПДФО (18%) і не поширюється на військовий збір («credit against military tax is not allowed»). Оскільки американське утримання (30%) перевищує ставку ПДФО (18%), частина ПДФО повністю зараховується, але військовий збір 5% сплачується в Україні додатково без жодного заліку.
+
+Q: Чому військовий збір не можна зарахувати, а ПДФО — можна?
+A: Тому що це формально окремий податок, запроваджений уже після підписання угоди про уникнення подвійного оподаткування 1994 року, а не частина ПДФО. Стаття 24 угоди передбачає взаємний податковий кредит лише щодо «податку на доходи» (income tax). PwC Worldwide Tax Summaries з розділу «Foreign tax relief and tax treaties» щодо України прямо зазначає, що іноземний податковий кредит обмежується сумою українського податку, яка виникла б із того самого доходу в Україні (тобто 18% ПДФО), і що «кредит проти військового збору не допускається» — військовий збір підлягає сплаті в Україні в будь-якому разі, незалежно від суми податку, вже сплаченого за кордоном.
+
+Q: Чи є в США податкова угода з Україною, яка звільняє виграш від оподаткування?
+A: Угода існує (підписана 4 березня 1994 року, чинна з 1 січня 2001 року), але вона не звільняє виграш від американського утримання. Стаття 21 («Інші доходи») угоди передбачає, що дохід резидента, не охоплений іншими статтями угоди, — включно з виграшем у лотерею, який не підпадає під жодну спеціальну статтю, — оподатковується виключно в країні резидентства (тобто в Україні). Це та сама теоретична конструкція, що й в угодах з Іспанією, Данією, Фінляндією та Італією: формально США не повинні утримувати податок узагалі. На практиці, однак, оператор американської лотереї не перевіряє податкові угоди в момент виплати, тож утримання 30% відбувається однаково, а Україна потім зараховує його як податковий кредит (у межах ПДФО) за статтею 24.
+
+Q: Скільки податку в Україні насправді буде додатково?
+A: У прикладі виграшу $1,000,000: американське утримання забирає $300,000 (30%). Український ПДФО (18% = $180,000) повністю покривається цим американським утриманням у межах кредиту, тож додаткового ПДФО не залишається. Але військовий збір (5% = $50,000) сплачується в Україні окремо, без жодного заліку — тобто загальна ефективна ставка додаткового українського податку становить приблизно 5% від суми виграшу.
+
+Q: Що буде, якщо перевести гроші в Україну?
+A: Переказ великої суми з-за кордону на банківський рахунок в Україні сам по собі не створює додаткового податкового обов'язку понад описане вище. Проте українські банки застосовують процедури фінансового моніторингу (протидія відмиванню коштів) і можуть вимагати підтвердження джерела походження коштів (офіційний документ про виграш та форму 1042-S від американського оператора лотереї) при великому нетиповому надходженні — це стандартна банківська процедура, а не додатковий податок.
+
+Ця сторінка є лише інформаційним симулятором і не діє як брокер чи посередник для придбання лотерейних квитків. Фактична сума податку залежить від ваших особистих обставин та законодавства/курсу валют, чинних на момент подання декларації — рекомендується звернутися до кваліфікованого податкового консультанта, обізнаного з обома податковими системами.
+
+---
+
+## هل يدفع المقيمون في الإمارات ضريبة على أرباح يانصيب باوربول أو ميغا ميليونز الأمريكي؟ 2026
+URL: https://chamtax.com/united-arab-emirates-resident-us-lottery-tax.html
+
+هل أنت مقيم ضريبي في الإمارات العربية المتحدة وفزت بباوربول أو ميغا ميليونز؟ اقتطاع أمريكي فيدرالي بنسبة 30%، ولماذا لا تفرض الإمارات أي ضريبة دخل شخصية إضافية على الإطلاق. حاسبة مجانية.
+
+# هل يدفع المقيمون في الإمارات العربية المتحدة ضريبة على أرباح يانصيب باوربول أو ميغا ميليونز؟
+
+ChamTax حاسبة مجانية تُظهر المبلغ الفعلي الذي يتبقى لك بعد الضرائب من جائزة يانصيب باوربول أو ميغا ميليونز. هكذا تُفرض الضريبة على جائزة اليانصيب الأمريكي إذا كنت مقيمًا ضريبيًا في الإمارات العربية المتحدة — اقتطاع فيدرالي أمريكي ثابت بنسبة 30% وحده، من دون أي ضريبة دخل إماراتية إضافية على الإطلاق.
+
+آخر تحديث: 2026-09-01
+
+مثال بجائزة قدرها 1,000,000 دولار، مقيم في الإمارات
+- الاقتطاع الفيدرالي الأمريكي (30%، غير مقيم): -$300,000
+- ضريبة إماراتية إضافية (لا توجد ضريبة دخل شخصية أصلاً): $0
+- المبلغ الصافي التقديري: ≈ $700,000
+
+الحاسبة أعلاه تحوّل مبلغك الخاص بسعر صرف مباشر إلى الدرهم الإماراتي (AED) إن رغبت.
+
+## هل تفرض الإمارات أي ضريبة على جائزة يانصيب أمريكية؟
+
+لا — والسبب أعمق من مجرد إعفاء خاص باليانصيب: دولة الإمارات العربية المتحدة لا تفرض أي ضريبة دخل شخصية على الإطلاق، على أي نوع من الدخل. تؤكد ملخصات PwC العالمية للضرائب (Worldwide Tax Summaries)، وهي مرجع دولي معتمد لمقارنة الأنظمة الضريبية بين الدول (آخر مراجعة لصفحة الإمارات بتاريخ 2026-03-12)، بشكل صريح: "لا تفرض الإمارات حاليًا ضريبة دخل شخصية" — وهذا ينطبق على الرواتب، والدخل من الأعمال الحرة، والعوائد الاستثمارية، وكذلك على المكاسب العرضية مثل جوائز اليانصيب أو المسابقات، دون تمييز بين أي منها.
+
+هذا ليس استثناءً حديثًا أو حكمًا قضائيًا معينًا يخص اليانصيب تحديدًا، بل هو غياب كامل لهيكل الضريبة على الدخل الشخصي في النظام الضريبي الاتحادي وفي كل الإمارات السبع. الضريبة على الشركات الاتحادية بنسبة 9% (سارية منذ 2023) وضريبة القيمة المضافة بنسبة 5% كلتاهما تستهدفان الأنشطة التجارية واستهلاك السلع والخدمات، وليس الدخل الشخصي للأفراد — لذا لا تنطبق أي منهما على جائزة يانصيب شخصية يفوز بها فرد.
+
+## الاقتطاع الأمريكي بنسبة 30% — ولماذا لا يهم غياب الاتفاقية الضريبية هنا
+
+تفرض الولايات المتحدة على غير المقيمين الأجانب اقتطاعًا فيدراليًا ثابتًا بنسبة 30% على أرباح اليانصيب (بموجب المادة 871(a) من قانون الإيرادات الداخلية) — وهي نسبة أعلى من النسبة المطبقة على المقيمين الأمريكيين (اقتطاع 24%، مع معدل هامشي يصل إلى 37% عند تقديم الإقرار) — وتُخصم هذه النسبة فور صرف الجائزة.
+
+لا توجد بين الإمارات والولايات المتحدة اتفاقية ضريبة دخل شاملة سارية. عادةً ما تكون هذه نقطة مهمة جدًا في هذه الحاسبة بالنسبة لدول أخرى، لأن الاتفاقيات الضريبية غالبًا ما تتيح تخفيض الازدواج الضريبي عبر آلية ائتمان ضريبي (FTC) عندما تفرض الدولتان ضريبة على نفس الدخل. لكن في حالة الإمارات، هذه النقطة غير ذات موضوع عمليًا: بما أن الإمارات لا تفرض أصلاً أي ضريبة دخل شخصية على هذا المبلغ (كما هو موضح أعلاه، بحسب PwC Worldwide Tax Summaries)، فلا يوجد ضريبة إماراتية لتخفيفها أو تعويضها في المقام الأول. الاقتطاع الأمريكي بنسبة 30% يبقى إذًا هو كامل العبء الضريبي على هذه الجائزة.
+
+## ماذا لو حوّلت الأموال إلى الإمارات أو استثمرتها؟
+
+تحويل مبلغ كبير من الولايات المتحدة إلى حساب مصرفي في الإمارات لا يُنشئ بحد ذاته أي التزام ضريبي جديد. تخضع البنوك العاملة في الإمارات لقانون مكافحة غسل الأموال الاتحادي ولوائح مصرف الإمارات المركزي، وقد تطلب إثبات مصدر الأموال (Source of Funds) عند إجراء تحويل كبير وغير معتاد — وهذا إجراء رقابي روتيني، وليس مسألة ضريبية. الإمارات أيضًا لا تفرض ضريبة أرباح رأسمالية على الأفراد، لذا فإن استثمار جزء من الجائزة لاحقًا (في العقارات أو الأسواق المالية مثلاً) لا يُنشئ بحد ذاته ضريبة إماراتية جديدة على العوائد الشخصية.
+
+الاحتفاظ بإيصال الفوز الرسمي الصادر عن جهة إدارة اليانصيب الأمريكية يسهّل الإجابة على أي استفسار بنكي حول مصدر الأموال إن وردت.
+
+## الأسئلة الشائعة
+
+Q: هل يدفع المقيمون في الإمارات ضريبة على أرباح يانصيب أمريكي؟
+A: الجزء الأمريكي من الضريبة نعم، أما الجزء الإماراتي فلا. تقتطع الولايات المتحدة تلقائيًا ضريبة اقتطاع فيدرالية ثابتة بنسبة 30% على أرباح اليانصيب المدفوعة لغير المقيمين الأجانب (بموجب المادة 871(a) من قانون الإيرادات الداخلية الأمريكي)، وذلك قبل أن يصل المبلغ إلى حسابك أصلاً. أما على الجانب الإماراتي، فتؤكد ملخصات PwC العالمية للضرائب (Worldwide Tax Summaries، آخر مراجعة بتاريخ 2026-03-12) أن دولة الإمارات العربية المتحدة لا تفرض حاليًا أي ضريبة دخل شخصية على الإطلاق — لا على الرواتب، ولا على الأرباح الاستثمارية، ولا على المكاسب العرضية مثل جوائز اليانصيب. لذلك لا توجد أي ضريبة إماراتية إضافية تُخصم من المبلغ المتبقي بعد الاقتطاع الأمريكي.
+
+Q: هل يوجد اتفاقية ضريبية بين الإمارات والولايات المتحدة تُغيّر من هذه النتيجة؟
+A: لا توجد بين الإمارات والولايات المتحدة اتفاقية ضريبة دخل شاملة سارية حتى تاريخ هذا التحديث، لكن هذه النقطة لا تغيّر شيئًا عمليًا في هذه الحالة تحديدًا: الاتفاقيات الضريبية عادة ما تُستخدم لتخفيف الازدواج الضريبي بين دولتين تفرض كلتاهما ضريبة على نفس الدخل. بما أن الإمارات لا تفرض أصلاً أي ضريبة دخل شخصية على هذا المبلغ، فإن مسألة "هل يمكن تعويض الضريبة الأمريكية عبر اتفاقية" تصبح غير ذات موضوع — لا يوجد ضريبة إماراتية لتعويضها أو تخفيفها في المقام الأول.
+
+Q: ماذا عن الضريبة على الشركات أو ضريبة القيمة المضافة في الإمارات؟
+A: لا ينطبق أي منهما على جائزة يانصيب شخصية. ضريبة الشركات الاتحادية بنسبة 9% (المطبقة منذ 2023) تستهدف أرباح الشركات والأعمال التجارية التي تتجاوز 375,000 درهم إماراتي، وليس الدخل الشخصي للأفراد. أما ضريبة القيمة المضافة بنسبة 5% فتُفرض على استهلاك السلع والخدمات، لا على استلام مبلغ مالي كجائزة. لا ينطبق أي من هذين النظامين الضريبيين على جائزة يانصيب يفوز بها فرد مقيم في الإمارات.
+
+Q: ماذا لو حولت الأموال إلى الإمارات أو استثمرتها هناك؟
+A: تحويل مبلغ كبير من الولايات المتحدة إلى حساب مصرفي في الإمارات لا يُنشئ بحد ذاته أي التزام ضريبي إضافي، لأن الإمارات لا تفرض ضريبة دخل شخصية أصلاً كما هو موضح أعلاه، كما لا تفرض ضريبة أرباح رأسمالية على الأفراد. تخضع البنوك الإماراتية لقانون مكافحة غسل الأموال ولوائح المصرف المركزي الإماراتي، وقد تطلب إثبات مصدر الأموال في حال كان التحويل كبيرًا وغير معتاد — الاحتفاظ بإيصال الفوز الرسمي الصادر عن جهة اليانصيب الأمريكية يسهّل الإجابة على مثل هذا الطلب إن ورد.
+
+هذه الصفحة هي محاكي معلوماتي فقط ولا تعمل كوكيل أو وسيط في شراء التذاكر. تعتمد الضريبة المستحقة فعليًا على وضعك الشخصي وعلى الأنظمة الضريبية/سعر الصرف السارية وقت تقديم إقرارك — يُنصح باستشارة مستشار ضريبي مطّلع على النظامين الضريبيين في كلا البلدين.
 
 ---
 
@@ -4559,6 +5104,12 @@ Chuyển một khoản tiền lớn từ Mỹ về tài khoản ngân hàng Vi�
 
 Theo quy định ngoại hối (Nghị định 70/2014/NĐ-CP), khoản tiền này thuộc diện chuyển tiền một chiều từ nước ngoài vào Việt Nam / thu nhập vãng lai hợp pháp — không có một "mã mục đích trúng thưởng" riêng do Ngân hàng Nhà nước công bố cố định, và "kiều hối" chỉ là tên gọi thông dụng cho nhóm này chứ không phải một mã hành chính duy nhất. Trên thực tế, điều ngân hàng quan tâm hơn mã số là hồ sơ chứng minh nguồn tiền hợp pháp: giấy xác nhận trúng thưởng từ cơ quan xổ số bang của Mỹ, chứng từ khấu trừ thuế của Sở Thuế vụ Mỹ (mẫu 1042-S), và hộ chiếu/giấy tờ tùy thân. Hãy liên hệ trước với bộ phận thanh toán quốc tế của ngân hàng thụ hưởng để được hướng dẫn chính xác hồ sơ và quy trình trước khi chuyển một khoản tiền lớn về Việt Nam.
 
+## Chuyển tiền thắng giải về Việt Nam: quy định báo cáo của SBV
+
+Một khoản chuyển tiền quốc tế lớn, một lần, vào Việt Nam thuộc diện báo cáo tự động của ngân hàng theo Thông tư 27/2025/TT-NHNN của Ngân hàng Nhà nước Việt Nam (SBV, có hiệu lực từ 1/11/2025, hướng dẫn thi hành Luật Phòng, chống rửa tiền 2022): các giao dịch chuyển tiền điện tử quốc tế từ 1.000 USD trở lên phải được ngân hàng nhận tiền báo cáo cho SBV. Đây là quy định chung áp dụng cho mọi khoản chuyển tiền quốc tế lớn, không riêng gì tiền thắng xổ số — việc báo cáo do ngân hàng tự thực hiện, bạn không cần tự nộp, và nó không làm chậm hay chặn khoản tiền của bạn.
+
+Trong thực tế, ngân hàng sẽ áp dụng quy trình nhận biết khách hàng (KYC) thông thường và có thể yêu cầu giấy tờ chứng minh nguồn gốc khoản tiền trước khi ghi có vào tài khoản — giấy tờ nhận giải thưởng và chứng từ khấu trừ thuế của IRS (Form 1042-S) là những tài liệu phù hợp để chuẩn bị sẵn.
+
 ## Câu hỏi thường gặp
 
 Q: Tôi là công dân Việt Nam sống ở nước khác — có phải tính theo tiêu chuẩn Việt Nam không?
@@ -4572,6 +5123,9 @@ A: Mỹ khấu trừ 30% trước, Việt Nam đánh thuế 10% trên phần vư
 
 Q: Chuyển tiền trúng thưởng về Việt Nam có bị ngân hàng hoặc nhà nước biết không?
 A: Có khả năng — nhưng đây là báo cáo phòng chống rửa tiền định kỳ, không phải vấn đề thuế. Tiền phải chuyển qua một ngân hàng được phép hoạt động ngoại hối (không thể nhận trực tiếp ngoài kênh ngân hàng), và theo Thông tư 27/2025/TT-NHNN (hiệu lực từ 1/11/2025), các khoản chuyển tiền quốc tế qua kênh điện tử từ khoảng 1.000 USD trở lên thuộc diện ngân hàng phải báo cáo cho Cục Phòng, chống rửa tiền. Việc này không tự động phát sinh thêm thuế. Tuy nhiên, quy định hiện hành chưa nêu rõ tiền thưởng xổ số nước ngoài được xếp vào mã mục đích chuyển tiền nào cụ thể — đây là điểm chưa rõ ràng, hãy hỏi trực tiếp ngân hàng của bạn về hồ sơ cần chuẩn bị trước khi chuyển.
+
+Q: Làm sao để chuyển tiền thắng số Mỹ về tài khoản ngân hàng Việt Nam?
+A: Một khoản chuyển tiền quốc tế lớn, một lần, vào Việt Nam thuộc diện báo cáo tự động của ngân hàng theo Thông tư 27/2025/TT-NHNN của Ngân hàng Nhà nước Việt Nam (SBV, có hiệu lực từ 1/11/2025): các giao dịch chuyển tiền điện tử quốc tế từ 1.000 USD trở lên phải được ngân hàng báo cáo cho SBV — đây là quy định chung cho mọi khoản chuyển tiền quốc tế lớn, ngân hàng tự thực hiện việc báo cáo, không phải rào cản ngăn tiền của bạn. Ngân hàng cũng sẽ áp dụng quy trình nhận biết khách hàng (KYC) thông thường và có thể yêu cầu giấy tờ nhận giải thưởng cùng chứng từ khấu trừ thuế của IRS (Form 1042-S) để xác minh nguồn gốc khoản tiền trước khi ghi có.
 
 Trang này chỉ mang tính tham khảo, không môi giới hay hỗ trợ mua vé số. Vui lòng tham khảo ý kiến chuyên gia thuế am hiểu cả hai nước trước khi khai thuế thực tế.
 
@@ -6453,7 +7007,7 @@ The one narrow exception: if someone's gambling activity itself rises to the lev
 
 The US taxes nonresident aliens on lottery winnings at a flat 30% federal withholding rate (IRC §871(a)) — higher than the 24%-withheld/37%-top-rate treatment that applies to US residents, and withheld immediately when the prize is paid out.
 
-The US-Australia tax treaty's "other income" article doesn't carve out a lower withholding rate for lottery or gambling winnings the way it sometimes does for other categories of income, so an Australian resident's US lottery win is withheld at the same standard 30% nonresident-alien rate as winners from most other countries this calculator covers. For a lottery win specifically, that 30% withholding is generally the final bill, not a deposit you can reclaim.
+Unlike South Africa's page on this site, this isn't just an absence of treaty support — the treaty text itself works against a refund. Article 21 ("Income Not Expressly Mentioned") of the 1982 US-Australia tax treaty is the catch-all provision for income not dealt with elsewhere in the treaty, and the US Treasury's own official Technical Explanation of the treaty names "prizes" specifically as one of the items it covers. But where South Africa's equivalent Article 21 gives the country of residence exclusive taxing rights over that income, Australia's Article 21 does the opposite: it states that income sourced in the other country "may also be taxed" by that country, explicitly preserving the source country's taxing right alongside the country of residence. In plain terms, the treaty confirms the US keeps the right to tax a US-sourced prize rather than ceding it to Australia. So an Australian resident's US lottery win is withheld at the same standard 30% nonresident-alien rate as winners from most other countries this calculator covers, and that 30% is generally the final bill, not a deposit you can reclaim.
 
 ## What happens if you invest your winnings?
 
@@ -6485,7 +7039,10 @@ Q: What if I invest my winnings?
 A: The prize itself is tax-free, but money it generates afterwards is taxed under the normal rules — this is a general ATO principle, not specific to lottery winnings. Interest from a savings account or term deposit, and dividends from shares, are assessable income taxed at your marginal rate in the year you receive them. If you later sell an asset you bought with your winnings (shares, property, etc.) for more than you paid, capital gains tax applies to that gain in the normal way, including the 50% CGT discount if you held the asset for over 12 months.
 
 Q: Can I get the US 30% withholding back?
-A: Generally, no. The US-Australia tax treaty's "other income" article doesn't carve out a lower withholding rate for lottery or gambling winnings, so nonresident aliens are withheld at the standard flat 30% the same as winners from most other countries this calculator covers. For a lottery win specifically, the 30% withholding is generally the final bill, not a deposit you can reclaim.
+A: Generally, no — and here the treaty text itself confirms it, not just a lack of relief. Article 21 ("Income Not Expressly Mentioned") of the 1982 US-Australia tax treaty is the catch-all provision for income not dealt with elsewhere, and the US Treasury's own official Technical Explanation of the treaty names "prizes" specifically as one of the items it covers. But where South Africa's equivalent Article 21 gives the country of residence exclusive taxing rights over that income, Australia's Article 21 explicitly preserves the source country's right to tax it too — so the US keeps the right to tax a US-sourced prize rather than ceding it to Australia. Nonresident aliens are withheld at the standard flat 30%, the same as winners from most other countries this calculator covers, and for a lottery win specifically, that 30% withholding is generally the final bill, not a deposit you can reclaim.
+
+Q: How do I actually get a US lottery prize into an Australian bank account?
+A: Every electronic transfer into or out of Australia, of any amount, gets reported to AUSTRAC as an International Funds Transfer Instruction (IFTI) — filed automatically by your bank within 10 business days under the Anti-Money Laundering and Counter-Terrorism Financing Act 2006. This isn't something you do yourself and isn't a red flag; it's routine processing for any international wire, with no minimum dollar threshold. Your bank will likely also run its own customer due diligence and ask you to document the source of the funds before crediting a transfer this large — your prize claim paperwork and the IRS's Form 1042-S withholding statement are exactly what you'd use for that.
 
 Q: Will my bank or the government know if I wire the winnings into Australia?
 A: Yes — every international transfer gets reported, not just large ones. Banks must file an International Funds Transfer Instruction report with AUSTRAC for any transfer into or out of Australia, with no minimum dollar threshold (that's different from the AUD $10,000 rule, which only covers physical cash). This doesn't create any Australian tax on the prize itself — but your bank may separately ask about the source of funds before releasing a very large transfer, so keep your payout documentation handy.
@@ -6541,6 +7098,12 @@ A: No. The same CRA windfall-gain exemption that applies to a US lottery win als
 
 Q: Does it matter which US state I bought the ticket in?
 A: It can. Some US states also withhold their own state-level tax from nonresident winners on top of the federal 30%, while others don't tax lottery winnings at all. This calculator models the federal nonresident withholding only and doesn't add state-level withholding, so your actual take-home could be somewhat lower than the figure shown here depending on which state you played in.
+
+Q: Is money my winnings earn afterwards taxed in Canada?
+A: Yes — the prize itself is a tax-free windfall, but income it earns afterwards follows Canada's normal investment-income rules. Interest from a savings account, GIC, or term deposit is fully taxable at your marginal rate. Canadian dividends get the dividend tax credit, which lowers their effective tax rate below interest income. Capital gains on investments bought with your winnings are taxed at Canada's standard 50% inclusion rate — a proposed increase to 66.67% on gains above $250,000 was announced in the 2024 federal budget but was formally cancelled by the federal government in March 2025 and never took effect.
+
+Q: How do I actually get a US lottery prize into a Canadian bank account?
+A: Receiving a large one-off transfer from abroad triggers an Electronic Funds Transfer Report (EFTR) that your bank must file with FINTRAC (Canada's Financial Transactions and Reports Analysis Centre) under the Proceeds of Crime (Money Laundering) and Terrorist Financing Act — this applies to any wire transfer of CA$10,000 or more, filed automatically by the bank rather than something you do. Separately, your bank will likely run its own customer due diligence and ask you to document the source of the funds before crediting a transfer this large — your prize claim paperwork and the IRS's Form 1042-S withholding statement are exactly what you'd use for that.
 
 This page is an informational simulator only and does not broker or facilitate lottery ticket purchases. Actual tax owed depends on individual circumstances and the exchange rate/tax law in effect at filing time — consult a qualified tax professional familiar with both countries.
 
@@ -6667,6 +7230,65 @@ Q: Will my bank or the government know if I wire the winnings into Malaysia?
 A: Possibly, but there's no fixed dollar threshold triggering a report for a wire specifically. Banks file a Suspicious Transaction Report with Bank Negara Malaysia only when they have reasonable grounds for suspicion — a documented, legitimate lottery win generally isn't one. Malaysia's RM25,000 Cash Threshold Report applies only to physical cash deposits and withdrawals, not wire transfers. Your bank may still ask about the source of funds under normal KYC checks, so keep your prize confirmation on hand.
 
 This page is an informational simulator only and does not broker or facilitate lottery ticket purchases. Actual tax owed depends on individual circumstances (including how you use your winnings afterwards) and the exchange rate/tax law in effect at filing time — consult a qualified tax professional familiar with both countries.
+
+---
+
+## US Lottery Tax for Nigerian Residents 2026 | Powerball & Mega Millions
+URL: https://chamtax.com/us-lottery-tax-for-nigerians.html
+
+Do Nigerians pay tax on a Powerball or Mega Millions win? The US withholds 30% at source, and there's no US-Nigeria tax treaty — but the Nigeria Tax Act 2025's unilateral relief still credits the US tax paid, before Nigeria's new top 25% rate applies. Free calculator (⚠️ estimate).
+
+# Do Nigerians Pay Tax on Powerball or Mega Millions Winnings?
+
+ChamTax is a free calculator that shows the actual after-tax take-home amount for US Powerball and Mega Millions jackpots. Here's how a US lottery win is taxed for a Nigerian resident — a flat 30% US withholding, plus a real Nigerian tax liability under the Nigeria Tax Act 2025 that ends up fully credited away, for an estimated $0 net additional tax (⚠️ see the caveats below).
+
+Last updated: 2026-09-01
+
+$1,000,000 win, Nigerian resident estimate ⚠️
+- US federal withholding (30%, nonresident): -$300,000
+- Nigeria additional tax (25% top rate, credited via US tax paid): $0
+- Estimated take-home: about $700,000
+
+The calculator above converts your own amount to Naira (NGN) using a live exchange rate.
+
+## Does Nigeria tax US lottery winnings?
+
+In principle, yes — Nigerian residents are taxed on worldwide income, and the Nigeria Tax Act (NTA) 2025 (effective 1 January 2026, replacing the old Personal Income Tax Act) raised the top marginal personal income tax rate to 25% on income above ₦50 million, a threshold any jackpot-sized win clears easily (confirmed across KPMG, EY, and other 2025-2026 sources on the reform). ⚠️ Nigeria does have a specific 5% withholding tax on lottery/gaming winnings under the 2024 Withholding Tax Regulations — but that applies to Nigerian-licensed operators paying out to resident bettors, not to a foreign lottery like Powerball with no Nigerian withholding agent in the chain. This calculator hasn't found an explicit ruling confirming the general worldwide-income treatment for a foreign lottery specifically, so it uses Nigeria's top marginal rate as a reasonable, conservative estimate rather than a confirmed statutory citation.
+
+## The 30% US withholding, and why there's no treaty to reduce it
+
+The US taxes nonresident aliens on lottery winnings at a flat 30% federal withholding rate (IRC §871(a)) — withheld immediately when the prize is paid out.
+
+There is no comprehensive US-Nigeria income tax treaty — confirmed across multiple sources (PwC Worldwide Tax Summaries, Freeman Law) rather than assumed, since many other countries this calculator covers do have one. Without a treaty, the 30% US withholding isn't reduced or exempted at source, and there's no treaty article to invoke for a refund.
+
+## Why the Nigerian tax still nets to $0 despite no treaty
+
+This is the opposite pattern from countries like the Netherlands or Switzerland, where a treaty exists but doesn't cover lottery winnings, so the US withholding and local tax simply stack with no credit. Nigeria has no treaty at all, but NTA 2025 Section 119 grants unilateral relief from double taxation as a matter of domestic law — letting a Nigerian resident credit foreign tax already paid against their Nigerian liability, treaty or no treaty. The credit is ordinary (capped): limited to the lower of the actual foreign tax paid or the Nigerian tax otherwise due on that income. On a $1,000,000 win, the US withholds $300,000 (30%) while Nigeria's top-rate liability is $250,000 (25%) — since the US tax already paid exceeds the Nigerian bill, the credit fully wipes it out, leaving $0 net additional Nigerian tax.
+
+## What if I transfer the money into Nigeria?
+
+Bringing a large one-off inbound transfer into a Nigerian bank account doesn't by itself create a new tax obligation beyond what's described above. Nigerian banks apply standard anti-money-laundering (AML/KYC) checks under CBN regulations and may ask you to document the legitimate source of a large, unusual transfer — your official prize claim paperwork and the IRS's Form 1042-S withholding statement are exactly what you'd use for that.
+
+Keeping the official win confirmation from the US lottery operator and Form 1042-S makes it easy to answer any bank inquiry about the source of funds, and also documents the foreign tax credit if you claim it on a Nigerian tax return.
+
+## Frequently asked questions
+
+Q: Do Nigerians pay tax on US lottery winnings?
+A: In practice, no net additional tax — but there's a real Nigerian tax liability that gets credited away, not a straightforward exemption. The US withholds a flat 30% federal tax from a nonresident's lottery winnings (IRC §871(a)) before you ever see the money. There is no comprehensive US-Nigeria income tax treaty (confirmed across PwC Worldwide Tax Summaries, Freeman Law, and other sources — this calculator checked rather than assumed one exists), so that withholding isn't reduced or exempted by treaty. On the Nigerian side, a resident is taxed on worldwide income, and the Nigeria Tax Act (NTA) 2025 (effective 1 January 2026, replacing the old Personal Income Tax Act) raised the top marginal personal income tax rate to 25% on income above ₦50 million — a threshold any jackpot-sized win clears easily. Crucially, NTA 2025 Section 119 grants unilateral double-tax relief even without a treaty, letting a Nigerian resident credit the US tax already paid against their Nigerian liability. Since the US withholding (30%) already exceeds Nigeria's top rate (25%), that credit fully absorbs the Nigerian tax, leaving $0 net additional Nigerian tax on top of the US withholding — though the win should still be reported as income.
+
+Q: Does Nigeria have a specific law taxing lottery or gambling winnings?
+A: Yes, but it doesn't apply here in the way you might expect. Nigeria's Deduction of Tax at Source (Withholding) Regulations 2024 (effective 1 October 2024) set a specific 5% withholding tax on lottery/gaming/reality-show winnings paid to resident individuals (15% for non-residents) — confirmed by multiple Nigerian tax advisory sources. But that withholding obligation falls on the Nigerian-licensed lottery or gaming operator making the payout. A US Powerball or Mega Millions prize is paid directly by a US lottery entity with no Nigerian withholding agent in the chain, so this specific 5% mechanism has no one to apply it. The same logic was confirmed for Nigerian reality-show winners (e.g. Big Brother Naija): winnings paid without a domestic withholding step are simply reported and taxed under ordinary personal income tax rules instead. ⚠️ This calculator hasn't found an explicit Nigerian tax authority ruling confirming this treatment specifically for a foreign lottery win, so it uses the general worldwide-income/top-marginal-rate approach as a reasonable, conservative estimate.
+
+Q: Is there really no US-Nigeria tax treaty?
+A: Correct — confirmed rather than assumed, since many other countries this calculator covers do have one. The United States and Nigeria have never concluded a comprehensive income tax treaty. That would normally push this into the same bucket as other treaty-less countries this calculator covers (like the Netherlands or Switzerland, where the US withholding simply stacks with full local tax and no credit). Nigeria is the exception: NTA 2025 Section 119 provides unilateral relief from double taxation as a matter of domestic law, independent of any treaty — so a Nigerian resident still gets a foreign tax credit for the US tax paid, just via domestic statute rather than a bilateral agreement.
+
+Q: How much US tax can actually be credited?
+A: NTA 2025 Section 119's unilateral relief is an ordinary (capped) credit: it's limited to the lower of the actual foreign tax paid or the Nigerian tax that would otherwise be due on that same income. On a $1,000,000 win, the US withholds $300,000 (30%) and Nigeria's top-rate liability would be $250,000 (25%) — since the US tax paid ($300,000) exceeds the Nigerian liability ($250,000), the credit is capped at $250,000, fully wiping out the Nigerian bill. The estimated take-home is about $700,000, the same as the US withholding alone.
+
+Q: What if I transfer the money into Nigeria?
+A: Bringing a large one-off inbound transfer into a Nigerian bank account doesn't by itself create a new tax obligation beyond what's described above. Nigerian banks apply standard anti-money-laundering (AML/KYC) checks under CBN regulations and may ask you to document the legitimate source of a large, unusual transfer — your official prize claim paperwork and the IRS's Form 1042-S withholding statement are exactly what you'd use for that. This is a routine banking compliance step, not an additional tax.
+
+This page is an informational simulator only and does not broker or facilitate lottery ticket purchases. Actual tax owed depends on individual circumstances and the exchange rate/tax law in effect at filing time — consult a qualified tax professional familiar with both countries, especially given the estimate flagged above.
 
 ---
 
@@ -6878,7 +7500,7 @@ Do UK residents pay tax on a Powerball or Mega Millions win? See the 30% US with
 
 ChamTax is a free calculator that shows the actual after-tax take-home amount for US Powerball and Mega Millions jackpots. Here's how a US lottery win is taxed for a UK resident — a flat 30% US withholding that's generally final, and £0 additional tax from HMRC.
 
-Last updated: 2026-08-16
+Last updated: 2026-08-19
 
 $1,000,000 win, UK resident estimate
 - US federal withholding (30%, nonresident): -$300,000
@@ -6930,6 +7552,9 @@ A: The winnings themselves are tax-free, but large gifts you make afterwards can
 
 Q: Can I get the US 30% withholding back?
 A: Possibly, via a US tax filing after the fact — it isn't automatic. The US-UK tax treaty's Article 22 ("Other Income") assigns taxing rights over income like gambling winnings exclusively to your country of residence, and the US Treasury's own official Technical Explanation of the treaty specifically lists "income from gambling" as an example of what the article covers. That gives UK residents a plausible basis to file a US Form 1040-NR and reclaim some or all of the 30% withheld at payout. It's not guaranteed, and it isn't as well-documented in practice as the refund process casinos sometimes offer repeat foreign gamblers, so it's worth getting a cross-border tax professional's advice before relying on it. Either way, the 30% is still what's withheld from your prize at the time you're paid — that's what this calculator's numbers show.
+
+Q: How do I actually get a US lottery prize into a UK bank account?
+A: There's no lottery-specific rule, but a transfer this large puts you through your bank's ordinary anti-money-laundering process. Under the Money Laundering, Terrorist Financing and Transfer of Funds (Information on the Payer) Regulations 2017 — enforced by the FCA — UK banks carry out customer due diligence on transfers like this, which in practice means asking you to document where the money came from before crediting it. There's no single published threshold for when this kicks in (each bank makes a risk-based call), so expect questions for a sum this size; your prize claim paperwork and the IRS's Form 1042-S withholding statement are exactly the kind of documentation that satisfies it. If the bank's systems flag the transfer as unusual, it could lead to a Suspicious Activity Report to the National Crime Agency — a routine compliance step, not an accusation, and one a well-documented legitimate prize claim should clear without issue.
 
 This page is an informational simulator only and does not broker or facilitate lottery ticket purchases. Actual tax owed depends on individual circumstances (including UK domicile status and Inheritance Tax planning) and the exchange rate/tax law in effect at filing time — consult a qualified tax professional familiar with both countries.
 

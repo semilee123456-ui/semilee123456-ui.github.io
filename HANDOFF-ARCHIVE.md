@@ -18989,3 +18989,508 @@ hreflang(자기 자신만 가리킴, x-default 없음)만 39개 파일에 추가
 data-hub.js` 전부 통과, `tests/draw_archive_integrity_check.js` `ISSUES: 0`, 8개국
 `calculateTakeHome()` 결과가 script.js `calcTakeHome()`과 정확히 일치함을 직접 실행해
 대조, 51개국 코드 중복 없음 확인, 모든 신규 HTML 페이지 JSON-LD 검증 통과.
+
+### 2026-09-02 — 파워볼 8/29(토) 추첨 결과 반영(PR #352, 머지 완료)
+
+사용자가 공유한 usamega.com "Past Results" 스크린샷 2장(메가밀리언즈 8/28까지, 파워볼
+8/29까지) 기준 로또 데이터 정기 갱신. 메가밀리언즈는 8/28 결과·다음 추첨(9/1) 잭팟
+$160M이 직전 세션(커밋 `a9a6850`)에서 이미 반영돼 있어 변경 없음 — 스크린샷과 대조만
+하고 코드는 안 건드림. 파워볼만 갱신 필요:
+
+- `LATEST_DRAW.powerball`을 8/26→8/29(18,56,62,65,67 / 파워볼 18, Power Play 2x, 당첨자
+  없음)로 갱신.
+- `JACKPOT_DATA.powerball`을 공식 사이트(powerball.com, WebFetch로 직접 확인) 기준 다음
+  추첨(8/31 월) $131M/현금가치 $56.8M로 갱신 — 갱신 전 값 $119M은 8/29 추첨 자체
+  잭팟이었으므로 `POWERBALL_JACKPOT_ARCHIVE`에 그대로 보존(신뢰도 순서: 공식 사이트
+  WebFetch > 사용자 스크린샷 > WebSearch 뉴스 요약 원칙 그대로 따름). 더블플레이
+  (16,27,57,58,59/7)는 이 사이트가 추적 안 하는 필드라 스코프 밖.
+- `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`/`POWERBALL_JACKPOT_ARCHIVE`에 8/29 회차 추가,
+  `script.js`의 지연로딩 캐시버스팅 문자열(`odds-data.js?v=20260829-1`→`20260901-1`) 및
+  `index.html`의 `script.min.js?v` 동반 갱신, `sw.js` `CACHE_NAME` v96→v97 갱신.
+  `npm install`(devDependencies가 로컬에 없어 처음 한 번 설치) 후 `node
+  scripts/build-min.js`로 `script.min.js` 재생성(`styles.css`는 안 건드려서
+  `styles.min.css` 재생성 불필요, 바이트까지 동일 확인, 재커밋 안 함).
+
+**검증**: `draw_archive_integrity_check`(파워볼 아카이브 last date 2026-08-29 확인, 4개
+아카이브 전부 정렬/중복 없음)·`fact_consistency_audit`·`broken_link_audit`(181개 파일)
+전부 `ISSUES: 0`, `console_error_audit`(224 설정)·`home_audit` 전부 `ISSUES: 0`.
+Playwright로 홈 화면 `#draw-balls-powerball`/`#jp-powerball` DOM을 직접 읽어
+"18,56,62,65,67+18" / "$131M" 반영 확인.
+
+**머지**: `claude/lotto-data-update-kp21gj` 브랜치에서 PR #352 생성 후 즉시 머지
+완료(main에 병합됨, `9efe51b`). 이 세션에서 별도로 만든 후속 작업은 없음 — 다음 세션이
+이어받을 미완료 항목 없음(다음 회차가 나오면 위 "새 당첨 회차가 나올 때마다 반드시 확인할
+3곳" 체크리스트를 그대로 반복하면 됨).
+
+**참고**: 이 세션이 머지된 직후 다른 병행 세션이 파워볼 8/31(월) 결과까지 이어서 반영함
+(위 2026-09-01 항목 4번 참고, 커밋 시각상 이 세션보다 나중) — 이 항목의 파워볼 8/29
+데이터는 그 세션에서 자연스럽게 다음 회차로 갱신됨, 별도 조치 불필요.
+
+
+### 2026-09-02 이어서 — 잭팟 데이터 실제 자동화(GitHub Action) + 랜딩페이지 "책 느낌" 탈피 리디자인
+
+사용자가 "잭팟 금액이 왜 실시간으로 안 바뀌냐"고 물어서 조사해보니, 이 데이터를 갱신하는
+수단이 **이미 있었지만 알고 보니 고장나 있었음**(아래 참고) — 그래서 코드로 직접 돌아가는
+결정론적 자동화를 새로 만듦. 별개로 사용자가 "사이트 전체 레이아웃을 깔끔하게, 책 같은
+느낌에서 벗어나고 싶다"고 요청해서 랜딩페이지 공용 템플릿도 다시 손봄. 둘 다 `main`에
+머지·푸시 완료(`bfcc4ce`), 잭팟 자동화는 머지 직후 실제 GitHub Actions에서 수동 실행
+(`workflow_dispatch`)으로 1회 검증까지 끝냄.
+
+**1) 잭팟 자동 갱신(신규 GitHub Action)**
+- `scripts/lottery-sources.js`: 공식 API가 따로 없어서, 파워볼은 `powerball.com` 홈페이지의
+  서버렌더링 HTML에 이미 박혀있는 값(`Estimated Jackpot`/`Cash Value`/최근 당첨번호)을
+  정규식으로 파싱, 메가밀리언즈는 그 사이트가 자기 홈페이지에서 클라이언트 쪽에 부르는 내부
+  ASMX 엔드포인트(`/cmspages/utilservice.asmx/GetLatestDrawData`)를 그대로 POST 호출해서
+  구조화 JSON(현재/다음 잭팟, 당첨번호 전부 포함)을 받음. robots.txt 둘 다 일반 크롤링
+  전면 허용 확인함. 모든 필드에 방어적 검증(범위·중복·날짜역행 등)을 둬서 사이트 구조가
+  바뀌면 추측 없이 그냥 실패함.
+- `scripts/update-jackpot-data.js`: 위 소스로 새 회차를 감지하면 `script.js`의
+  `JACKPOT_DATA`/`LATEST_DRAW`, `odds-data.js`의 `POWERBALL_JACKPOT_ARCHIVE`/
+  `MEGAMILLIONS_JACKPOT_ARCHIVE`(파워볼은 "덮어쓰기 직전 값"을 그 회차의 실제 잭팟으로 롤오버,
+  메가밀리언즈는 API의 `CurrentPrizePool`을 직접 씀)를 갱신하고, `script.js`/`index.html`의
+  캐시버스팅 버전(`?v=`)도 같이 올림. 당첨번호 원장(`*_DRAW_ARCHIVE`)은 기존
+  `lottery-backfill.yml`이 이미 매일 담당하고 있어서 안 건드림(역할 분리).
+- `.github/workflows/jackpot-update.yml`: 매일 23:00 UTC(08:00 KST, 기존 백필 잡보다 1시간
+  뒤) 자동 실행 + `workflow_dispatch` 수동 실행 가능. `script.min.js` 재생성은 안 함 —
+  `script.js`가 바뀌면 기존 `minify-assets.yml`이 그 push를 보고 알아서 재생성하므로 역할을
+  또 겹치지 않게 함.
+- **실제 검증**: 로컬에서 라이브 사이트 대상 "변경 없음" 케이스와 가짜 데이터로 "새 회차
+  감지+롤오버" 케이스 둘 다 테스트 통과 확인 후, `main` 머지 직후 GitHub Actions에서
+  `workflow_dispatch`로 실제 1회 실행 — **성공**, 마침 메가밀리언즈 9/1(화) 회차가 방금 열려
+  있어서 실제로 `LATEST_DRAW.megamillions`/`JACKPOT_DATA.megamillions`/
+  `MEGAMILLIONS_JACKPOT_ARCHIVE`를 정확히 갱신하고 커밋까지 자동으로 끝냄(`f71c70f`,
+  `chore: auto-update jackpot data`) — 뒤이어 `minify-assets.yml`도 정상 트리거됨. 실사용
+  데이터로 첫 실행부터 제대로 작동 확인.
+- **⚠️ 알아낸 것 — 기존 "ChamTax 로또 데이터 점검 (매일)" Routine(`trig_01JtYWzvDEx9FRrzFsswuSzH`,
+  매일 06:00 UTC)이 정확히 같은 일을 하고 있었는데, 확인해보니 최근 여러 번 연속으로
+  **`FAILED`**였음 — 원인은 코드/로직 문제가 아니라 **계정 주간 사용량 한도 초과**
+  ("You've hit your weekly limit · resets Sep 4, 9pm UTC", `get_session`으로 실패 세션
+  직접 확인). 같은 이유로 세율표·법령 최신성/캐시버스팅 동기화/환율 폴백/저장소 위생 등
+  **다른 주간·월간 Routine 여러 개도 최근 연속 FAILED** — 개별 버그가 아니라 계정 한도
+  문제이므로 각각 따로 디버깅할 필요는 없음(한도는 매주 리셋됨). 다만 Routine이 이렇게
+  많이 동시에 도는 게(현재 `list_triggers`로 15개 내외 확인) 주간 한도를 스스로 깎아먹는
+  구조라는 뜻이라, 사용자가 원하면 개수를 줄이는 것도 고려해볼 만함(이번 세션에서 판단해서
+  건드리진 않음).
+  이번 신규 GitHub Action은 LLM 세션이 아니라 그냥 Node 스크립트라 **이 계정 사용량과
+  완전히 무관하게** 돈다는 게 핵심 장점 — 그래서 잭팟 데이터 갱신용으로는 이 Routine을
+  **비활성화함**(삭제는 안 함, `enabled:false`만 — 재활성화하고 싶으면 `update_trigger`로
+  다시 켜면 됨). **단, 이 Routine의 4번째 항목("89개 랜딩페이지의 잭팟 예시 문구가 실제
+  잭팟과 심하게 어긋나면 그 문구만 교체")은 새 GitHub Action의 스코프 밖**(그건 본문 텍스트
+  편집이라 LLM 판단이 필요한 일이라 일부러 자동화 범위에서 뺐음) — 지금은 이 항목을 담당하는
+  자동화가 없으므로, 랜딩페이지 예시 금액이 눈에 띄게 낡아 보이면 사람/세션이 가끔 훑어봐야 함.
+
+**2) 랜딩페이지 "책 느낌" 탈피 리디자인 (147개 파일, `scripts/landing-ticket-template.css`
+  공용 템플릿 하나만 고치고 `scripts/apply-landing-ticket-style.js`로 재전파)**
+- h2마다 있던 전체 폭 점선 밑줄(책 챕터 구분선처럼 보임) → 짧은 색상 액센트 바로 교체.
+  **번호 배지는 시도했다가 뺌** — `us-lottery-basics-*.html`류는 이미 본문에 "1. The US
+  lottery..." 식으로 직접 번호를 매겨놔서 CSS 번호까지 붙이면 이중 넘버링이 됨(스크린샷으로
+  실제 발견).
+- `example-box`/`note-box`/`warn-box`에 옅은 색 배경 틴트 추가, 카드 모서리 라운드 소폭 확대,
+  `.wrap` 640→680px.
+- **시도했다가 되돌린 것 두 가지**(둘 다 `tests/a11y_audit.js`로 실제 WCAG 위반 검출):
+  표 짝수행 배경 틴트(일부 표의 `.badge-approx` 등 amber 텍스트가 흰 배경 기준으로도 명암비
+  여유가 거의 없어서 살짝만 틴트해도 4.5:1 밑으로 떨어짐), `gray-zone-box` 배경 틴트(같은
+  이유 — 라벨 텍스트가 `--status-amber`). 둘 다 배경은 원래대로 되돌리고 테두리 스타일만
+  바꿔서 구분함.
+- **작업 중 발견한 진짜 버그**: 일괄 적용 대상을 폰트 마커(`family=Space+Grotesk`) grep으로
+  골랐는데, `lottery-tax-by-country-*.html`(36개 언어 비교 페이지, 카드형 그리드 레이아웃의
+  완전히 다른 자체 스타일)이 잘못 걸려서 한 번은 스타일 없는 맨 텍스트로 깨진 채 저장됨 —
+  스크린샷으로 발견해서 `git show HEAD:파일 > 파일`로 원상복구하고 이번 전파 대상에서 제외.
+  또한 `sitemap.html`/`404.html`의 클래스 없는 `<ul><li><a>` 링크 목록이 공용 템플릿엔 없고
+  그 페이지들만의 개별 스타일에만 있던 규칙(`color:var(--teal)`)에 의존하고 있어서, 전파
+  과정에서 그 규칙이 사라지고 브라우저 기본 파란 링크색으로 떨어져 다크모드 명암비 위반이
+  났음(이것도 a11y_audit로 검출) — `.wrap ul li a{color:var(--teal)}`를 공용 템플릿에
+  정식으로 추가해서 앞으로의 재전파에도 안 사라지게 함.
+- **검증**: `tests/a11y_audit.js`(13개 대표 템플릿 × 라이트/다크, 최종 위반 0개),
+  `tests/broken_link_audit.js`(189개 파일, 0건), 데스크톱/모바일/RTL(히브리어)/표
+  많은 페이지/배지 많은 페이지 스크린샷 직접 확인.
+- 메인 계산기 화면(`index.html`)은 원래 카드형 앱 UI라 처음엔 안 건드렸는데, 사용자가
+  "이것도 손봐달라"고 추가 요청해서 이어서 확인함 — 홈/비교/확률체감/FAQ 화면은 실제로 이미
+  괜찮았고, **개인정보처리방침·면책조항 패널(`.legal-section`)만 진짜 "책스러웠음**"(굵은
+  번호 제목 + 회색 문단만 반복, 색·박스 전혀 없음 — 사이트 전체에서 가장 문서스러운 화면).
+  `.legal-h`에 랜딩페이지 h2와 같은 색상 액센트 바만 추가(법률 문서라 색 배경 박스 같은 장식은
+  과해 보여서 안 씀). 겸사겸사 좁은 화면(340px)에서 제목이 2줄로 꺾일 때 액센트 바가 두 줄
+  사이 이음매에 걸쳐 보이던 문제를 발견해서 `align-items:center`→`flex-start`로 이 바와
+  랜딩페이지 h2 바 둘 다 같이 고침.
+- **이 과정에서 발견한 진짜 버그**: `jackpot-update.yml`이 커밋한 `script.js`가 바뀌었는데도
+  `script.min.js`가 재생성 안 되고 있었음 — GitHub Actions는 **기본 `GITHUB_TOKEN`으로 한
+  워크플로가 push하면 그걸로 다른 워크플로(`minify-assets.yml`)가 또 트리거되는 걸 기본적으로
+  막음**(무한 루프 방지, 잘 알려진 제약인데 이번에 실제로 처음 걸림 — 첫 실행 커밋 `f71c70f`
+  이후 `script.min.js`가 그대로 남아있던 걸 확인). `jackpot-update.yml`이 `minify-assets.yml`에
+  기대지 말고 **자체적으로 `build:min`을 돌리도록 수정**함. `lottery-backfill.yml`은
+  `odds-data.js`만 건드리고 그 파일은 minify 대상이 아니라서 이 문제 없음.
+- `styles.css`/`script.js`가 바뀐 김에 `sw.js`의 `CACHE_NAME`(v97→v98)과 `index.html`의
+  `styles.min.css?v=` 캐시버스팅 버전도 같이 올림.
+- **검증**: 위 4개 회귀 테스트 스위트 재실행 전부 0건, 라이트/다크·340px 좁은 화면 스크린샷
+  확인. `main` 머지 후 `jackpot-update.yml`을 다시 한번 `workflow_dispatch`로 수동 실행해서
+  고친 버전이 실제로도 정상 동작하는지 확인함(이번엔 잭팟 데이터 변경 없음 케이스라
+  `build:min` 단계 자체가 스킵돼야 정상).
+
+**커밋**: `14ee538`(잭팟 자동화) → `bfcc4ce`(랜딩페이지 리디자인) → `30f40f1`(이 인수인계
+기록) → `3d1175e`(계산기 법률 패널 + minify 체인 버그 수정), 전부 `claude/
+site-layout-design-refresh-3himm8` 브랜치에서 작업 후 `main`으로 fast-forward 머지·푸시.
+자동화가 만든 첫 실데이터 커밋은 `f71c70f`(`3d1175e` 이전이라 그 커밋의 `script.min.js`
+갱신 누락분도 `3d1175e`가 같이 흡수해서 고침).
+
+
+### 2026-09-02 이어서 2 — "복권 당첨 느낌" 제거 (2026-08-13 "정산 티켓" 콘셉트 전면 철회)
+
+바로 위 세션에서 "책 느낌"을 뺐더니, 사용자가 "이번엔 복권 당첨 느낌을 빼달라"고 요청함 —
+2026-08-13에 채택했던 "정산 티켓"(영수증/복권 티켓 콘셉트, 이 문서 위쪽 여러 곳에서 계속
+언급되던 그 리디자인) 자체를 전면 철회. 사용자에게 범위를 먼저 확인(AskUserQuestion)했고
+"콘셉트 자체를 전부 제거"를 선택함.
+
+**계산기(`index.html`/`styles.css`/`script.js`)에서 제거한 것**:
+- 결과 카드 왼쪽 위 대각선 "JACKPOT" 금색 리본 배지(`.ticket-jackpot-ribbon*`) — CSS·HTML
+  모두 삭제
+- 결과 카드 아래 가짜 바코드 그래픽 + "시리얼 번호"처럼 보이던 캡션(`.ticket-barcode*`,
+  `#home-barcode-caption`) — CSS·HTML·이걸 채우던 script.js 코드까지 삭제
+- 슬롯머신 스타일 숫자 타일(`.home-final-amt-tiles`, 실수령액을 낱개 박스에 한 자리씩
+  표시하던 것) — CSS로 숨기고, 원래 접근성용으로만 있던 `#home-final-amt`(sr-only 해제)를
+  다시 화면에 직접 보이게 함. id·script.js의 기존 10여 곳 바인딩은 안 건드림(같은 요소를
+  그대로 재사용)
+- 셸 맨 아래 "찢어진 영수증 종이" 스캘럽 가장자리(`.ticket-torn-bottom`)와 섹션 사이
+  절취선(점선+원형 노치, `.ticket-perf-row`/`-line`) — 평범한 실선 구분선(`.shell-section-
+  divider`)으로 교체
+- "이미지로 저장"/"공유하기" 버튼을 누르면 결과 카드 위로 터지던 색종이 폭죽(confetti) —
+  두 호출부만 제거(`fireConfettiBurst()` 함수 자체는 무관한 "만약 당첨되면?" 기능이 계속
+  써서 남겨둠)
+- 파워볼/메가밀리언즈 퀵필 버튼의 광택 있는 "추첨공" 느낌 점(`.quickfill-ball`의
+  radial-gradient 하이라이트) → 평범한 단색 점
+- 금액 입력칸·결과 헤드라인·세전/세후 대비 숫자에 쓰던 "영수증 프린터/티켓 단말기" 느낌
+  고정폭 서체(`--font-mono-ticket`) → 기본 서체로 되돌림
+- `.ticket-shell`(페르소나 픽커+입력+결과를 감싸는 큰 카드): 위만 둥글고 아래는 평평한
+  "찢어진 티켓" 모양 + 굵은 남색 테두리 + 하드 오프셋 그림자 → 네 모서리 다 둥근 카드 +
+  얇은 테두리 + 부드러운 그림자로. 3개 섹션을 하나로 묶어서 보여주는 레이아웃 자체는 유지
+  (그건 티켓 콘셉트와 무관하게 유효한 정리였음)
+- "참" 인장 배지는 남김(복권이 아니라 "검증된 계산"이라는 뜻이라 성격이 다르다고 판단) —
+  다만 흔들리는 wiggle 애니메이션은 뺌
+
+**핵심 지렛대**: `--ticket-shadow-hard`/`-sm`/`-xs`/`-press` 토큰 4개(styles.css)를
+하드 오프셋 그림자(`4px 4px 0 var(--navy)` 류)에서 부드러운 블러 그림자로 재정의한 것
+하나로, 이 토큰을 참조하던 20여 곳(셸·퀵필 버튼·지도·사이드카드·게임카드·환급 카드 등)이
+전부 한 번에 바뀜 — 각 자리를 따로 안 고쳐도 됨. 그 외 토큰을 안 쓰고 하드코딩돼 있던
+하드 그림자 5~6곳(`box-shadow:Npx Npx 0 ...` 패턴)만 grep으로 찾아 개별적으로 소프트
+그림자로 바꿈. 랜딩페이지 147개가 공유하는 `scripts/landing-ticket-template.css`도 같은
+패턴(`--shadow-hard*` 토큰 재정의 + 헤더의 "티켓 스텁" 점선 구분선을 실선으로) — 재전파
+스크립트로 전체 반영.
+
+**참고**: `translate(Npx,Npx)` + `box-shadow:0 0 0 ...`로 "눌리면 그림자가 사라지며
+파묻히는" 눌림 효과를 내던 곳들(cta-box/share-btn 등)은 하드 그림자가 있을 때만 의미가
+있는 착시라, 소프트 그림자로 바꾸면서 평범한 `transform:scale(0.97)` 눌림으로 같이 바꿈.
+
+**검증**: `tests/a11y_audit.js`·`home_audit.js`·`console_error_audit.js`·`wrap_audit.js`·
+`map_scroll_audit.js`·`faq_audit.js`·`audit_odds_compare.js`·`nav_slider_audit.js`·
+`broken_link_audit.js` 전부 재실행, 전부 0건. 라이트/다크 모드 결과 카드 스크린샷과
+랜딩페이지 1곳 직접 확인.
+
+**커밋**: `81e8b6c`, `claude/site-layout-design-refresh-3himm8`에서 `main`으로
+
+
+### 2026-09-02 이어서 3 — "무국가 중립" 전환 1단계 (기본 거주국·메타/SEO·UI 문구)
+
+사용자가 "해외 사람이 들어와도 전혀 무관한 사이트가 되면 좋겠어, 한국 중심이 전혀
+아니고"라고 요청. AskUserQuestion으로 방향(무국가 중립 vs 언어기반 자동추정 vs 브랜드명
+재검토) 확인 후 **무국가 중립**으로 확정 — 이유: 목표와 방법이 정확히 일치(어느 나라도
+기본으로 안 미는 게 진짜 중립), 예전에 오작동해서 걷어냈던 "언어로 국가 자동추정" 방식을
+다시 안 씀. 이어서 "한 번 나라를 고르면 계속 유지되게 할 수 있어?"라는 요청도 받아 저장
+로직까지 범위에 포함.
+
+**1. 기본 거주국(`sharedCountry`) 'kr' 하드코딩 → 'other'(🌐 기타 국가·미국 30% 기준)로
+전환 + 수동 선택 시 localStorage(`chamtax_country`) 저장** — `sharedInputCurrency` 기본값도
+KRW→USD. `setLanguage()`의 "언어가 이미 초기값과 같아 조기 반환하는 분기"에도 통화 매칭을
+추가해 한국어 방문자는 여전히 KRW를 보도록 회귀 방지(무국가 중립 전환의 부작용이었음 —
+자세한 배경은 `script.js` 해당 함수 주석 참고). "'other'는 null이 아니라 이미 있는 실재
+옵션"이라는 선택이 핵심 — `sharedCountry`를 계산 로직 전역이 항상 유효한 코드로 전제하고
+있어서, null을 넣으면 수백 곳에 방어 코드를 새로 추가해야 하는 리스크가 있었음.
+
+**2. 메타/SEO 레이어 영어 기본 전환** — `index.html`의 `html lang`/`<title>`/meta
+description/OG/twitter 태그를 영어로, hreflang 기본 페어링도 en↔ko를 실제 콘텐츠 방향에
+맞게 맞바꿈(bare URL=en, `?lang=ko`=한국어 — 지금까지 hreflang이 실제 기본과 반대로 표시
+중이었음). JSON-LD는 `name`(브랜드 표기 "참택스"/"참택스(ChamTax)")은 그대로 두고
+`description`만 번역 — 브랜드 순서 자체는 이번 세션이 명시적으로 선택 안 한 범위. AI
+크롤러용 `llms.txt`도 "한국 거주자·재한 외국인을 위한 계산기"에서 "어디 살든 쓰는 계산기,
+한국은 51개국 중 하나"로 포지셔닝 재작성.
+
+**3. UI 문구 중립화** — `home.taxTermProgressiveDesc`("누진세율이란?" 툴팁)가 어느 나라를
+고르든 항상 "미국 37%·한국 45%"를 예시로 못박던 것을 국가명 없는 일반 서술로 정리(35개
+언어 전부 + index.html 한국어 원문 6곳). 작업 중 발견한 "한국 포함 43개국"(2026-09-01에
+43→51개국으로 늘었는데 갱신 안 된 문구) 복사본을 index.html 포함 10개 파일에서 정정.
+
+**병합**: 작업 중간에 `origin/main`이 10커밋 앞서있어(정산 티켓 콘셉트 철회, 잭팟 자동화
+GitHub Action 등) 병합 — `HANDOFF.md`/`HANDOFF-ARCHIVE.md`/`index.html`/`script.min.js`/
+`sw.js` 충돌 전부 실제 내용 읽고 해결(통째 덮어쓰기 없음). 병합 후 회귀 테스트 중
+`MEGAMILLIONS_JACKPOT_ARCHIVE`를 못 찾는 문제 발견 — `scripts/update-jackpot-data.js`의
+`appendJackpotArchiveEntry()`가 새 회차를 이어붙일 때 "= " 뒤 공백을 안 남겨(`JSON.stringify`
+결과 앞에 공백 없음) `draw_archive_integrity_check.js`의 정규식이 다음 실행부터 이 배열을
+계속 못 찾게 되는 회귀였음(2026-09-01 자동 갱신 커밋에서 최초 발생, 이번에 처음 걸림) —
+현재 값 공백 복원 + 생성 로직에 공백 추가해 재발 방지.
+
+**의도적으로 범위 밖으로 둔 것(다음 세션 참고, 아래 "알려진 미해결 항목"에도 등재)**:
+- **`us-lottery-basics.html` 등 "bare 파일명 = 한국어" 관행**: 국가/나라 무관 일반 도구
+  페이지(초보 가이드·세율표 등) 상당수가 접미사 없는 파일명이 한국어 버전이고 `-en.html`
+  등 접미사가 붙어야 다른 언어인 구조(원래 한국이 주 타겟이던 시절 관행) — "해외 방문자가
+  기본으로 마주치는 URL이 한국어"라는 점에서 이번 요청과 정확히 같은 문제이지만, 파일명을
+  바꾸는 건 백링크/북마크/검색순위에 영향을 주는 URL 구조 변경이라 이번 세션 승인 범위
+  밖으로 판단해 손 안 댐 — 재구성하려면 사용자에게 먼저 확인 필요.
+- **`powerball-tax.html`/`megamillions-tax.html`/`us-lottery-tax-rate.html`/
+  `us-lottery-take-home.html`/`lottery-prize-tiers.html` 5개는 영어(또는 다른 언어) 버전이
+  아예 없음** — "파워볼 세금" 같은 영어권 검색어로 들어온 방문자가 100% 한국어 페이지만
+  보게 됨. 새 언어 버전 제작은 콘텐츠 생성 작업이라 "문구 중립화" 범위를 넘어서 손 안 댐.
+- **"43개국"/"42개국" 잔존 39개 파일**: 2026-09-01 세션이 이미 "다음 배치 작업" 스코프로
+  명시적으로 미뤄둔 항목 — 이번에 우연히 겹친 10개 파일만 정정하고 나머지는 그대로 둠.
+- **FAQPage JSON-LD 33문항**: `index.html`에 전부 한국어로 박혀있고 언어 전환과 무관하게
+  항상 한국어로 크롤러에 노출됨 — 전체 번역은 큰 작업이라 범위 밖.
+
+**검증**: `node --check script.js` OK, `console_error_audit`(224 설정)·`broken_link_audit`
+(189개 파일)·`home_audit`·`audit_odds_compare`·`i18n_coverage_audit`(773개 키)·
+`i18n_attr_lint`·`fact_consistency_audit`(194개 파일)·`draw_archive_integrity_check`
+전부 `ISSUES: 0`. Playwright로 첫 방문(스토리지 없음) 시 국가=other/통화=USD 기본값,
+국가 직접 선택 후 새로고침해도 유지되는 것 직접 확인.
+
+**다음 세션 참고**: 위 "의도적으로 범위 밖으로 둔 것" 4개 항목 중 어느 것부터 진행할지는
+사용자 우선순위 확인 필요 — 특히 첫 번째(bare 파일명=한국어 관행)가 이번 요청의 취지에
+가장 크게 걸리지만 위험도도 가장 높음.
+
+### 2026-09-02 이어서 4 — HANDOFF.md 재압축(2026-08-23 파워볼 결과 세션 아카이브 이동) + 메가밀리언즈 8/28(금) 결과 반영(PR #350, 머지 완료)
+
+**HANDOFF.md 재압축**: 세션 시작 시점에 "작업 이력" 섹션 날짜별 항목이 4개(2026-08-23·
+08-24·08-27·08-27 이어서)로 쌓여있어, 파일 자체 규칙("3~4개 넘으면 가장 오래된 것부터
+이동")대로 가장 오래된 항목(2026-08-23 파워볼 8/22 추첨 결과 반영)을 `HANDOFF-ARCHIVE.md`로
+원문 그대로 이동, 포인터 문구 갱신(961→938줄).
+
+**메가밀리언즈 8/28 결과 반영**: 사용자 공유 usamega.com 스크린샷 기준 정기 갱신.
+`LATEST_DRAW.megamillions`를 8/25→8/28(8,17,29,42,55/2)로 갱신, `JACKPOT_DATA.megamillions`를
+다음 추첨(9/1) 기준 $160M/현금가치 $68.9M로 갱신(갱신 전 값 $145M은 8/28 추첨 자체 잭팟이었
+으므로 `MEGAMILLIONS_JACKPOT_ARCHIVE`에 그대로 보존 — 위 2026-09-02 파워볼 8/29 항목과 같은
+패턴). `odds-data.js`의 `MEGAMILLIONS_DRAW_ARCHIVE`/`MEGAMILLIONS_JACKPOT_ARCHIVE`에 8/28
+회차 추가, `script.js`의 지연로딩 캐시버스팅 문자열(`odds-data.js?v=20260827-2`→
+`20260829-1`) 및 `index.html`의 `script.min.js?v` 동반 갱신, `sw.js` `CACHE_NAME` v95→v96
+갱신, `node scripts/build-min.js`로 `script.min.js` 재생성(`styles.css`는 안 건드려서
+`styles.min.css` 재생성 불필요, 바이트까지 동일 확인). 파워볼은 스크린샷의 8/26 결과·8/29
+다음 잭팟 $119M이 이미 반영돼 있어 변경 없음.
+
+**검증**: `draw_archive_integrity_check`(4개 아카이브 전부 정렬/중복 없음)·
+`fact_consistency_audit`·`broken_link_audit` 전부 `ISSUES: 0`, Playwright
+`home_audit`·`console_error_audit` 전부 `ISSUES: 0`. 홈 화면 `#draw-balls-megamillions`/
+`#jp-mega` DOM을 직접 읽어 "8,17,29,42,55+2" / "$160,000,000" 반영 확인.
+
+**머지**: `claude/handover-compression-mvp5xz` 브랜치에서 PR #350 생성 후 즉시 머지 완료
+(`main`에 병합됨, `54a5906`). 세션 도중 `origin/main`이 다른 병행 세션들 커밋 20여 개만큼
+앞서 나간 걸 발견해(파워볼 8/29·8/31 갱신, 잭팟 자동화 GitHub Action 신설, 랜딩페이지
+리디자인 2건 등 — 전부 위 다른 2026-09-02 항목들에 각자 기록됨) 로컬 브랜치를
+`origin/main`으로 재기준한 뒤 이 항목을 추가함. 이 세션에서 별도로 만든 후속 작업은 없음.
+
+### 2026-09-02 이어서 5 — 사이트 전역 "43개국"→51개국 표기 정정 + changelog/피드/llms-full 동기화(PR #355, 머지 완료)
+
+사용자가 "사이트 노출/검색 더 잘되게 알아서 해달라"고 요청 — HANDOFF의 "홍보·마케팅
+작업 전체 이력" 섹션부터 먼저 확인해 채널 브레인스토밍 재조사는 하지 않기로 하고(이미
+여러 차례 공식 종료됨, "기술적 조치는 다 해놨고 병목은 도메인 신뢰도·백링크"가 기존
+결론), 대신 **2026-09-01 8개국 추가(43→51) 세션 이후 아무도 안 건드린 사이트 전역
+정합성**을 점검 대상으로 잡음.
+
+**발견**: 8개국 추가 후 실제 계산기(`COUNTRY_TAX_PROFILES`)는 51개국인데, 사이트
+88개 파일의 메타 설명·og/twitter·JSON-LD·`sitemap.html` 다국어 배지(35개 언어)·
+`press-kit.html`·`lottery-tax-by-country.html` 35개 언어 변형·`mcp-server/README.md`·
+`llms.txt`가 전부 "43개국"(또는 그보다 더 낡은 "42개국")으로 방치돼 있었음 — 홈페이지
+메타 설명(구글 SERP 노출 문구)까지 포함. `llms-full.txt`/`feed.xml`/`feed.json`은
+아예 2026-08-20~08-22 시점에서 정체돼 신규 8개국 페이지 전문과 브라질 신규 추가
+changelog 항목조차 빠져있었음(생성 스크립트가 "changelog.html에 새 항목 추가할
+때마다 수동 재실행 필요"인데 아무도 재실행 안 함).
+
+**수정**: 기존 확립된 관례("서술형 배지=라이브 전체 개수, CSV 행수 표기=`us` 제외
+정확한 데이터셋 행수")를 그대로 적용 — 이번엔 51(전체)과 50(CSV, `data/country-
+lottery-tax-rates.csv` 실제 50행 확인)으로 갈림. `sitemap.html`의 크메르·네팔·
+미얀마·벵골어 4개 언어는 그 언어 네이티브 숫자 표기(៤៣→៥១ 등)까지 변환. `changelog.html`에
+8개국 추가 이력을 브라질 신규 추가와 동일한 형식(국기+국가명+`badge-new`)으로 2개
+항목 백필(스페인·스위스·UAE·사우디 / 이집트·이스라엘·우크라이나·나이지리아) +
+리드 문구 갱신. `scripts/generate-feed.js`/`generate-llms-full.js`의 하드코딩
+설명 문자열도 51로 고친 뒤 재실행 — `llms-full.txt`(51개국 대상 111페이지 전부
+재생성, 신규 8개국 페이지 전문 새로 포함)·`feed.xml`/`feed.json`(12건, 브라질+
+8개국 항목 포함) 전부 최신화.
+
+**실수 하나 발견·즉시 복구**: 이집트·이스라엘·사우디·스페인·스위스·우크라이나·UAE
+7개 랜딩페이지에 self-referencing hreflang이 없다고 판단해 추가했다가, `git diff`로
+검토하는 과정에서 **이미 있었다는 걸 발견**(처음 확인할 때 `hreflang="en"`만 검색해서
+`hreflang="ar"`/`"he"`/`"es"` 등 각 페이지 자체 언어 코드를 놓친 확인 실수) — 중복
+태그를 커밋 전에 되돌려 이 7개 파일은 최종적으로 변경 없음. **다음 세션 참고**: 페이지별
+hreflang 존재 여부를 확인할 땐 `hreflang="en"` 같은 특정 언어만 검색하지 말고
+`rel="alternate"` 자체의 개수로 확인할 것 — 국가 랜딩페이지는 `<html lang>`이 페이지마다
+다 달라서(아랍어 페이지는 `hreflang="ar"` 등) 언어 고정 검색은 오탐 발생.
+
+**검증**: `node --check script.js`, `broken_link_audit`(189파일)·`fact_consistency_audit`
+(194파일) 전부 `ISSUES: 0`, Playwright `console_error_audit`(224 설정)·`home_audit`
+전부 `ISSUES: 0`, `feed.json`/`feed.xml` 파싱 검증(JSON.parse/xml.etree) 통과,
+`COUNTRY_TAX_PROFILES`의 8개국 전부 `detailPage`가 정상 연결돼 있어 비교 탭에서
+고아 페이지가 아님을 확인.
+
+**머지**: `claude/handover-compression-mvp5xz` 브랜치에서 PR #355 생성 후 즉시 머지
+완료(`main`에 병합됨, `a00b918`). 이 세션에서 별도로 만든 후속 작업은 없음.
+
+### 2026-09-02 이어서 6 — "무국가 중립" 전환 2단계: 바로 위 세션이 범위 밖으로 둔 4개 항목 전부 처리
+
+바로 위 세션("이어서 3")이 "의도적으로 범위 밖으로 둔 것"으로 등재했던 4개 항목을
+사용자가 "제가 해야겠다고 생각하는 거 전부 해줘, 그리고 전부 머지하고 인수인계
+남겨줘"라고 위임해서 전부 처리. 이어서 "인수인계 처음부터 전부 훑어보고 안 한 거
+있으면 해줘"라는 요청도 받아 "알려진 미해결 항목" 전체를 다시 훑어 `us-lottery-tax-data`
+외부 저장소 동기화 누락도 같이 발견·처리.
+
+**1. "43개국"/"42개국" 잔존 39개 파일 정정** — 시작하자마자 다른 세션(`claude/handover-
+compression-mvp5xz`, PR #355)이 정확히 같은 작업을 이미 끝내고 병합해놓은 걸 발견,
+병합 시 조율(아래 5번 참고).
+
+**2. bare 파일명(접미사 없음)=한국어인 3개 그룹의 hreflang x-default를 영어로 전환**
+— `us-lottery-basics*`(27개 파일)·`lottery-jackpot-amount*`(3개)·`biggest-jackpot-
+payouts`/`biggest-lottery-jackpots-after-tax` 계열(3개)에서 언어 미상 방문자가 검색
+결과에서 기본으로 한국어 페이지를 받던 문제 — **실제 페이지 콘텐츠·파일명·URL은 전혀
+안 건드리고**(기존 검색순위·백링크 보존) x-default 힌트만 이미 있는 영어 버전으로 돌림.
+`korea-resident-us-lottery-tax.html`/`korean_abroad_us_lottery_tax_ko.html`은 콘텐츠
+자체가 한국 관련이라 그대로 둠. `lottery-tax-by-country.html`은 원래부터 bare=영어라
+참고용으로만 확인.
+
+**3. 영어판이 아예 없던 5개 페이지에 영어 버전 신규 제작** — `powerball-tax.html`/
+`megamillions-tax.html`/`us-lottery-tax-rate.html`/`us-lottery-take-home.html`/
+`lottery-prize-tiers.html`은 영어권 검색어로 들어와도 100% 한국어만 보이던 페이지들.
+서브에이전트가 `us-lottery-basics.html`/`-en.html` 패턴을 따라 각각 `-en.html` 신규
+생성(기존 한국어 파일은 hreflang 블록 추가 외 안 건드림, 완전히 additive) + hreflang·
+sitemap.xml/html 반영까지 처리. **번역 결과 검토 중 발견한 문제**: 원본 한국어
+`powerball-tax.html`/`megamillions-tax.html` 자체가 title부터 "한국인 기준"이라고
+못박고 있어서(원래 한국 전용 타겟이던 시절 잔재), 서브에이전트가 지침대로 충실히
+번역한 영어판도 그대로 "Take-Home Calculator for Korean Residents"가 되는 문제 발견
+— 이번 세션 전체 취지와 정면 배치라 title/description/OG/JSON-LD/리드 문단/H2를
+"US 30% 원천징수 + 거주국별 추가세"라는 일반 구조로 재작성하고 한국을 "판례
+(Park v. Commissioner)·국세청 입장까지 갖춘 상세 예시 하나"로 재배치(세율·판례
+등 사실관계는 안 건드림, 프레이밍만). 나머지 3개 페이지는 이미 중립적으로 번역돼
+있어 손 안 댐.
+같은 과정에서 `wrap_audit.js`가 `usd-actual-note`("실제로는 미국에서 달러로 받아요"
+안내, `country!=='kr'`일 때만 노출)의 "달러(" 사이 공백 없어 좁은 화면에서 "("가 홀로
+줄바꿈되는 문제를 새로 잡아냄 — country='other'가 기본값이 되기 전(이어서 3 세션)엔
+사용자가 직접 다른 나라를 골라야만 보이는 문구라 회귀 테스트 기본 시나리오에 안
+걸렸었는데, 기본 노출 문구가 되며 처음 드러남. 위 "비파괴적 NBSP 수정 패턴"으로 해결.
+
+**4. FAQPage JSON-LD 33문항 → 12개 국가무관 영어 문항으로 재구성** — "35개 언어로
+전부 번역" 대신, 33문항 중 상당수(국민연금·건강보험료·한국 증여세 등)가 번역 문제가
+아니라 애초에 한국 거주자/재한 외국인이라는 특정 청중을 전제로 쓰인 콘텐츠임을 확인 →
+번역해도 "한국 중심" 문제 자체는 안 풀림. 대신 실제로 국가 무관한 12개(세금 개요·세금
+용어·사기 주의보·청구 기한·일시불 vs 연금·티켓 구매처·게임 설명·잭팟 금액 변동·당첨번호
+확인·비시민권자 수령·신고 상태·청구 절차)만 골라 영어로 재작성, 나머지는 크롤러용
+JSON-LD에서만 제외(화면에 보이는 실제 FAQ 아코디언은 언어·국가별 필터링 포함 전혀
+안 건드림, 그대로 다 있음).
+
+**5. (사용자가 "인수인계 훑어보고 안 한 거 있으면 해줘"라고 추가 요청해서 발견)
+`us-lottery-tax-data` 외부 GitHub 저장소(CC0 공개 데이터셋) 동기화 누락** — "알려진
+미해결 항목"에 "2026-09-01 8개국분 반영 여부 확인 못 함"으로 등재돼있던 항목을 저장소
+클론해서 직접 확인 → 8개국(스페인·스위스·UAE·사우디·이집트·이스라엘·우크라이나·
+나이지리아)뿐 아니라 2026-08-22에 추가된 브라질까지, 총 9개국이 빠져있어 42/51개국
+상태로 방치돼 있었음. `mcp-server/tax-data.js`의 `calculateTakeHome()`을 이 데이터셋의
+기준 시나리오(~$100M, 1,490원/달러)로 직접 호출해 9개국 수치 산출, 사이트 자체
+`data/country-lottery-tax-rates.json`(2026-09-01 기준 이미 정확함)과 교차검증까지 마친
+뒤 `data.json`/`data.csv`/`README.md`/`CITATION.cff`(버전 1.0.1→1.1.0) 갱신, 저장소
+`main`에 직접 커밋·푸시(`632909e`). UAE·사우디는 "FTC 상쇄"가 아니라 "애초에 개인소득세
+없음"이라 다른 국가들과 다른 문구 사용, 우크라이나는 소득세만 공제되고 군사세는 공제
+안 되는 부분공제 케이스라고 별도 명시.
+
+**병합**: 작업 중 `origin/main`이 다른 세션(PR #355, 위 4번 참고)만큼 다시 앞서있어
+병합 — 충돌 9개 파일(`index.html`/`changelog.html`/`feed.xml`/`feed.json`/`llms.txt`/
+`llms-full.txt`/`lottery-jackpot-amount(-en).html`/`press-kit.html`) 전부 실제 내용
+비교해서 해결. 흥미로운 발견: "N개국 세율 데이터 보기" 류 링크는 실제 데이터 파일
+(`data/country-lottery-tax-rates.json`)이 50행(미국 자체는 이 비교표에서 제외되는
+설계)임을 재확인하고 "50개국"으로, 사이트 전체 지원 국가 수를 말하는 문구는 "51개국"
+으로 구분해서 남김 — 둘 다 각자 맥락에서 정확한 숫자라 어느 한쪽으로 통일하면 안 됨.
+`HANDOFF.md`도 자동 병합 중 남은 문장 조각("fast-forward 머지·푸시 완료.")을 정리하고
+"이어서 N" 라벨 중복을 순서대로 재배열.
+
+**검증**: 매 배치마다 `node --check script.js`·`broken_link_audit`(194개 파일)·
+`fact_consistency_audit`(199개 파일)·`console_error_audit`(224 설정)·`home_audit`·
+`faq_audit`·`audit_odds_compare`·`i18n_coverage_audit`(773개 키) 재실행, 전부
+`ISSUES: 0`. `wrap_audit`은 NBSP 수정 전 168개 중 7개 실패 확인 → 수정 후 재실행해서
+`ISSUES: 0` 재확인. FAQPage JSON-LD는 `python3 json.loads()`로 파싱 검증.
+
+**커밋**: `d42712d`(43→51 정정)·`d75922f`(hreflang x-default)·`a1b2a07`(영어 페이지
+5개 신규 + NBSP 회귀 수정)·`a88d3ec`(main 병합)·`280e319`(FAQPage JSON-LD 재구성) —
+전부 `claude/site-internationalization-qagoe8`에 푸시 완료.
+
+**다음 세션 참고**: "의도적으로 범위 밖으로 둔 것" 4개 중 유일하게 남은 건 없음(전부
+처리) — 다만 3번 항목에서 "원본 한국어 페이지 자체가 특정 국가 중심으로 쓰여 있을 수
+있다"는 패턴이 이번에 처음 발견됐으니, 앞으로 비슷하게 "한국어 원문을 그대로 영어로
+옮기는" 작업을 할 땐 원문 자체가 이미 편향돼 있을 가능성을 먼저 확인할 것.
+
+
+### 2026-09-02 이어서 7 — 홈 화면 잭팟 티저 추가(재방문 훅) + "무국가 중립" 전환(PR #357) 병합 + 다크모드 대비 수정(PR #358, 머지 완료)
+
+사용자가 "사람들이 왜 계속 사이트에 들어와야 하는지 이유를 찾아야 할 것 같다"고 요청 —
+이 사이트는 "당첨금 실수령액 계산"이라는 일회성 니즈를 채우는 도구라 자연스러운 재방문
+동기가 거의 없다는 점을 짚고, 유일하게 이미 있는 자연스러운 신호(잭팟 금액이 매 추첨마다
+바뀜)를 화면 아래 접힌 토글에서 최상단으로 끌어올리는 방향을 제안 → 사용자가 "네가 제일
+괜찮다고 생각하는 걸로" 위임.
+
+**구현**: `index.html` 히어로 타이틀 바로 아래에 `.hero-jackpot-teaser` 알약 버튼 추가
+(파워볼/메가밀리언즈 금액을 "$XXXM"로 압축 표시) — 클릭하면 `scrollToJackpotPanel()`이
+기존 "🎟️ 최근 잭팟 확인하기" `<details>` 패널(`home-jackpot-details` id 신규 부여)을
+펼치고 스크롤. 숫자는 새 데이터 소스 없이 기존 `applyJackpotData()`가 `JACKPOT_DATA`를
+그대로 재사용해서 채움. CSS는 `jackpot-quickfill-btn`이 겪었던 "좁은 화면에서 글자가
+한 글자씩 쪼개지는" 전례(`minmax(0,1fr)` 그리드 문제)를 피하려 flex+nowrap+wrap만 사용.
+
+**병행 세션과 충돌 발견·병합**: 작업 중 `origin/main`이 PR #357("사이트를 '무국가
+중립'으로 전환")로 크게 앞서 나간 걸 발견 — `sharedCountry` 기본값 `kr`→`other`,
+`sharedInputCurrency` 기본값 `KRW`→`USD`로 바꿔 어느 나라도 기본으로 밀지 않게 한
+근본적인 변경으로, 이 세션이 사용자에게 제안했던 "국가 선택을 더 눈에 띄게" 방향보다
+훨씬 더 직접적으로 같은 문제(다른 나라 사람도 거리낌 없이)를 해결함. `git merge
+origin/main`으로 병합 — 충돌은 `index.html`/`script.min.js`/`sw.js` 3곳뿐(전부
+캐시버스팅 버전 번호 충돌), 더 높은 번호로 통합하고 `script.min.js`는
+`node scripts/build-min.js` 재실행으로 정상 재생성.
+
+**병합 후 재검증 중 발견·수정한 버그**: 기본 통화가 USD로 바뀌면서 `#home-usd-note`
+("💵 실제로는 달러로 받아요" 안내)가 첫 화면부터 기본 노출되기 시작했는데(이전엔 KRW
+기본값이라 이 조건이 잘 안 걸렸던 것으로 추정), 다크모드에서 `--teal` 텍스트 +
+`rgba(teal,0.08)` 배경 조합이 대비 4.20:1로 WCAG AA 4.5:1 미달(`a11y_audit` 검출) —
+배경 틴트만 0.03으로 옅혀 4.74:1로 해소(`:root[data-theme="dark"] .result-hero
+.usd-actual-note` 오버라이드 추가, 텍스트색은 브랜드 톤 유지 위해 안 건드림).
+
+**검증**: `node --check script.js`, `broken_link_audit`(194)·`fact_consistency_audit`
+(199)·`draw_archive_integrity_check`(4) 전부 `ISSUES: 0`, Playwright
+`console_error_audit`(224)·`home_audit`(18)·`a11y_audit`(13페이지×2모드, 위반 0건)·
+`wrap_audit`(168) 전부 `ISSUES: 0`. 라이트/다크 모드 + 320px 좁은 화면(독일어)
+스크린샷으로 레이아웃 확인, 사용자에게도 스크린샷 전달.
+
+**머지**: `claude/handover-compression-mvp5xz` 브랜치에서 PR #358 생성 후 즉시 머지
+완료(`main`에 병합됨, `baad6fc`). 이 세션에서 별도로 만든 후속 작업은 없음.
+
+
+### 2026-09-02 이어서 8 — 기본 og:image(소셜 공유 카드)가 통째로 한국어였던 걸 뒤늦게 발견·교체
+
+사용자가 "우리가 말한 것 중 안 한 거 있어?"라고 재확인 요청 → FAQPage 스코프 축소
+건을 먼저 답했고, 이어서 "네가 해야된다고 생각하는 거 전부 해줘"라고 위임받아 사이트를
+다시 훑다가 발견. `index.html`의 기본 `og:image`(카카오톡/트위터/슬랙 등에 링크
+공유했을 때 뜨는 미리보기 카드, `og-image-hook.png`)가 **텍스트 메타(Task 2에서 이미
+영어로 전환)와 달리 이미지 자체는 그대로 한국어**였음 — "한국 거주자 실수령액 예시",
+"발표 금액 1,503억원" 등 전부 한글+원화 단위. 심지어 영어판 이미지(`og-image-hook-
+en.png`)도 "U.S. LOTTERY TAX FOR KOREA RESIDENTS"라고 영어로 된 채 여전히 한국을
+못박고 있었음(다만 이건 실제로 그 이미지를 쓰는 `english_in_korea_lottery_tax.html`
+— 재한 외국인 대상 페이지 — 에는 맞는 프레이밍이라 그대로 둠). 텍스트만 고치고 가장
+눈에 띄는 시각 자산(공유 카드)을 놓쳤던 셈 — 소셜 공유가 실제로 가장 많이 노출되는
+지점이라 파급력이 큰 발견.
+
+**처리**: 이미지 생성 스크립트/템플릿이 저장소에 없어서(과거 세션이 손으로 제작한
+것으로 추정) HTML 목업(로고 SVG는 `index.html`의 것 그대로 재사용, 색상 토큰은
+`styles.css`의 `--teal`/`--navy`/`--status-red`/`--status-amber` 그대로 사용)을
+새로 만들어 Playwright로 1200×630 스크린샷 → 새 `og-image-hook.png`로 교체. 내용은
+"$100M 당첨 → 실제로 얼마?"를 국가 특정 없이 미국 30% 원천징수 기준선만 보여주고
+"51 countries supported"로 마무리(이번 세션 전체의 무국가 중립 방향과 일치). 기존
+한국어 이미지는 버리지 않고 `og-image-hook-ko.png`로 보존해서, **실제 본문이
+한국어인 페이지들**(`<html lang="ko">`인 `us-lottery-basics.html`/`powerball-
+tax.html`/`megamillions-tax.html`/`us-lottery-tax-rate.html`/`us-lottery-take-
+home.html`/`korea-resident-us-lottery-tax.html`/`korean_abroad_us_lottery_tax_ko.html`/
+`lottery-jackpot-amount.html`/`biggest-jackpot-payouts.html`/`sitemap.html`, 10개
+파일)는 그쪽을 계속 쓰도록 og:image/twitter:image만 갱신 — 페이지 콘텐츠 언어와
+공유 카드 언어가 다시 일치하게 됨. `index.html`과 이번 세션에서 만든 영어판 4개
+(`powerball-tax-en.html`/`megamillions-tax-en.html`/`us-lottery-tax-rate-en.html`/
+`us-lottery-take-home-en.html`)만 새 중립 이미지를 씀.
+
+**검증**: `broken_link_audit`(194개 파일)·`fact_consistency_audit`(199개 파일)·
+`console_error_audit`(224 설정) 전부 `ISSUES: 0`. 새 이미지·기존 두 이미지(en/ko)
+전부 1200×630 확인.
+
+**다음 세션 참고**: 이번에 놓쳤던 패턴 — "메타 텍스트만 고치고 시각 자산(이미지·
+스크린샷·배너)은 안 고치는" 실수를 또 반복하지 말 것. 앞으로 비슷하게 텍스트 톤을
+바꾸는 작업을 할 땐 그 페이지가 실제로 보여주는 이미지 자산까지 같이 확인할 것.

@@ -458,7 +458,7 @@ tests/               회귀 테스트 스크립트(2026-08-20 기준 16개, 아�
 
 ---
 
-## 회귀 테스트 (tests/, 2026-08-20 기준 16개 — 계속 늘어나는 중, `ls tests/*.js | wc -l`로 확인할 것)
+## 회귀 테스트 (tests/, 2026-09-03 기준 18개 — 계속 늘어나는 중, `ls tests/*.js | wc -l`로 확인할 것)
 
 ```bash
 python3 -m http.server 9000 &   # 저장소 루트에서
@@ -478,6 +478,8 @@ node tests/broken_link_audit.js           # 브라우저 불필요
 node tests/draw_archive_integrity_check.js   # 브라우저 불필요, 로또 아카이브 날짜순·중복·형식 검증
 node tests/fact_consistency_audit.js         # 브라우저 불필요
 node tests/drift_consistency_test.js         # 브라우저 불필요, 아래 참고
+node tests/mcp_sync_check.js                 # 브라우저 불필요, 아래 참고
+NODE_PATH=/opt/node22/lib/node_modules node tests/a11y_audit.js   # axe-core, 대표 페이지 WCAG 위반 검사
 ```
 Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`
 (이미 설치되어 있음, `playwright install` 하면 안 됨). 전부 마지막 줄에 `ISSUES: 0`(또는
@@ -501,15 +503,20 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
 | `drift_consistency_test.js` | `script.js`의 `TAX_MODEL`(국가별 세율)과 각 랜딩페이지 본문 서술이 어긋나는지(script.js가 정정된 뒤 랜딩페이지 반영이 몇 주 늦었던 사례를 계기로 추가) — 계산기가 쓰는 핵심 세율 숫자가 페이지에 최소 한 번은 언급되는지만 보는 저비용 스모크 테스트 |
 | `full_overflow_sweep.js` | 지원하는 전체 언어 × 대표 화면 폭 5개 × 주요 화면 전수 조합에서 실제 렌더링된 박스가 부모/화면 경계를 벗어나는 오버플로우가 있는지(`home_audit`/`wrap_audit`/`audit_odds_compare`는 ko/en 위주만 다뤄서 생긴 사각지대) |
 | `link_navigation_audit.js` | `index.html?amount=...`류 쿼리스트링 딥링크가 기대한 화면/상태로 실제로 떨어지는지(href가 유효해도 런타임에 엉뚱한 탭으로 튕기는 버그 클래스는 `broken_link_audit.js`가 못 잡음) |
+| `mcp_sync_check.js` | `script.js`(`TAX_MODEL`)와 `mcp-server/tax-data.js`(`FLAT_COUNTRY_MODEL`) 사이 세율 손동기화 드리프트 — `rate` 필드명이 특정 패턴일 때만 잡는 정적 스모크 테스트라 커버리지 제한적(위 "알려진 미해결 항목" 참고) |
+| `a11y_audit.js` | axe-core로 대표 페이지의 WCAG 색상 대비 등 접근성 위반 검사(라이트/다크 모드) |
 
 ---
 
 ## 알려진 미해결 항목
 
-- **새 당첨 회차가 나올 때마다 반드시 확인할 3곳(2026-09-02부터 `.github/workflows/
-  jackpot-update.yml`이 매일 자동 처리 — 예전에 있던 동명의 Claude Routine은 계정 주간
-  사용량 한도로 계속 실패하고 있어서 비활성화하고 이 GitHub Action으로 대체함, 위 2026-09-02
-  세션 항목 참고. 아래는 그 Action이 실패했을 때 수동으로 다룰 때를 위한 체크리스트)**:
+- **✅ 중복 실행되던 Claude Routine 해소 확인(2026-09-03 재점검)** — `ChamTax 로또 데이터
+  점검 (매일)`(`trig_014eQLRrMpHUvbtwR69KiESb`)을 끄려고 `update_trigger`를 다시 호출하니
+  "resource not found", `list_triggers`(recurring 전체+완료분 포함) 재조회에도 그 이름의
+  Routine이 전혀 안 잡힘 — 세션이 끈 게 아니라, 조회 시점에 이미 사라져있었음(사용자가 직접
+  껐거나 삭제한 것으로 추정). `jackpot-update.yml` GitHub Action이 같은 역할을 이미 완전히
+  대체하고 있으니 더 이상 추적 불필요. 아래는 그 GitHub Action이 실패했을 때 수동으로 다룰 때를
+  위한 체크리스트(Routine 존재 여부와 무관하게 계속 유효):
   1. `LATEST_DRAW.powerball`/`LATEST_DRAW.megamillions`(date/numbers/special) — 홈 화면
      "최근 당첨번호" 위젯이 읽는 값. `odds-data.js`의 `*_DRAW_ARCHIVE`/`*_JACKPOT_ARCHIVE`와
      **완전히 별개인 손 관리 값**이라, 아카이브를 갱신해도 이게 따로 누락될 수 있음(과거
@@ -527,14 +534,10 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
      설계(평범한 회차는 이 랭킹 대상이 아님).
   4. **(자동화 스코프 밖, 사람/세션이 가끔 훑어봐야 함)** 89개 이상 랜딩페이지의 `.example-box`/
      `.lead` 등에 박힌 잭팟 예시 금액 — 실제 잭팟과 심하게 어긋나 보일 때만(사소한 차이는
-     무시) 그 페이지만 손으로 교체할 것. 예전엔 비활성화된 "ChamTax 로또 데이터 점검" Routine의
-     4번 항목이 이걸 담당했는데, 그 Routine을 껐으므로(위 2026-09-02 항목) 지금은 담당하는
-     자동화가 없음.
-- **여러 주간·월간 Claude Routine이 최근(2026-08-27~09-01) 연속으로 `FAILED`** — 세율표/
-  캐시버스팅/환율 폴백/저장소 위생 등. 원인은 개별 로직 버그가 아니라 **계정 주간 사용량
-  한도 초과**(2026-09-04 21:00 UTC에 리셋)로 확인됨(`get_session`으로 실패 세션 직접 확인,
-  위 2026-09-02 항목 참고) — 한도가 리셋되면 자연 복구될 가능성이 높으니 개별로 디버깅할
-  필요는 없음. 다만 리셋 이후에도 계속 실패한다면 그때는 진짜 문제이니 확인할 것.
+     무시) 그 페이지만 손으로 교체할 것. 애초에 심각한 괴리만 사람이 판단해야 해서 완전
+     자동화 대상은 아니었음. **2026-09-03 스팟체크 결과**: 랜딩페이지 하드코딩 금액 대부분이
+     `$1,000,000`/`$100M`/`$500M` 같은 반올림 예시값이거나 역대 기록값이라 심각한 괴리
+     없음 확인 — 매번 전수 조사할 필요는 없고, 어쩌다 한 번씩 훑어보는 정도로 충분.
 - **`TAX_MODEL`/`COUNTRY_TAX_PROFILES`(script.js)에 국가를 추가·수정하면 `mcp-server/
   tax-data.js`(`FLAT_COUNTRY_MODEL`+`STATE_TAX_RATES`)와 `scripts/build-lottery-tax-
   data-hub.js`(`COUNTRY_META`)도 반드시 손으로 같이 고칠 것 — 2026-08-21(id/uz/kg/mm)에
@@ -550,9 +553,11 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   쪽만 고치고 이 두 파일을 아예 안 건드리면 (기존 국가라 에러도 안 나서) 조용히 낡은 채로
   방치될 수 있음.
   또한 `us-lottery-tax-data`(별도 외부 GitHub 저장소, 이 계산기와 다른 리포)에도 과거
-  이 데이터의 사본이 있었던 전례(2026-08-21 사고 때 거기도 같이 고침) — 2026-09-01 8개국
-  추가분이 그 저장소에도 반영이 필요한지는 이번 세션에서 확인 못 함(세션 GitHub 접근 범위
-  밖), 다음에 그 저장소에 접근 가능하면 확인할 것.
+  이 데이터의 사본이 있었던 전례(2026-08-21 사고 때 거기도 같이 고침) — **✅ 2026-09-01
+  8개국 + 2026-08-22 브라질, 총 9개국 누락이 2026-09-02 이어서 6 세션에서 발견·해결됨**
+  (`data.json`/`data.csv`/`README.md`/`CITATION.cff` 전부 갱신, 저장소 `main`에 직접
+  커밋). 앞으로도 `TAX_MODEL`에 국가를 추가할 때마다 이 저장소도 같이 잊지 말 것 — 이
+  리포는 별도 GitHub 저장소라 `add_repo`로 세션에 추가해야 접근 가능함.
 - **`CPI_BASE_YEAR`(현재 2025, `script.js`)** — 2025년 10월 지수가 정부 셧다운으로 결측이라
   11개월 평균으로 확정한 값. **2026년 연평균이 확정되면 `CPI_BASE_YEAR=2026`으로 갱신할 것**
   (그 전까지는 되돌리지 말 것 — 2025년 10월 결측은 2025년 한정 이슈).
@@ -582,39 +587,14 @@ Playwright 크로미움 경로: `/opt/pw-browsers/chromium-1194/chrome-linux/chr
   meta description과 따로 놀던 80개 페이지 동기화. 전부 회귀 테스트(`broken_link_audit`/
   `fact_consistency_audit`) `ISSUES: 0` 확인 후 종결 — 다시 "og:image가 하나뿐이다"류로
   재조사하지 말 것.
-- **잭팟 인덱스(이월 스트릭/물가보정 랭킹) — 우려됐던 미착수 항목 3개 전부 이미 해결/구현
-  완료 상태였음이 확인됨**: 신규 회차 자동 반영은 위 "새 당첨 회차" 체크리스트의 아카이브가
-  이미 담당(별도 GitHub Actions 불필요), 결과 캡처 공유카드는 `saveJackpotIndexShareCard()`로
-  이미 배포돼있었음, CPI_BASE_YEAR는 위 항목에서 다룸.
-- **✅ 다크모드 `--teal`/`--card` 대비 해결(2026-08-22)** — 위 항목(발견 당일)에서 사용자에게
-  방향을 물은 결과 "네가 괜찮다고 생각하는 걸로"로 위임받아 처리. `.settings-toggle` 등
-  teal을 아이콘 배경으로 쓰는 소수 사례(흰 아이콘, axe color-contrast 규칙 대상 아님)만
-  빼고 나머지는 전부 teal이 **텍스트**로 쓰이는 게 압도적 다수(`styles.css`에만
-  `color:var(--teal)` 90여 곳)임을 확인 → **테두리/배경/아이콘용 `--teal`은 그대로 두고
-  다크모드 `--teal`/`--seafoam` 값 자체를 `#3AA98A`→`#4BC1A0`로 밝힘**(`--card` 대비
-  3.62:1→4.74:1, `--teal-rgb`/`--shadow-btn`의 하드코딩 rgb도 동기화). teal이 배경이고
-  글자가 `--card`/`--on-accent`(다크모드 `#1B1917`, 어두운 색)인 조합은 오히려 대비가
-  더 좋아져서 안전. **적용 범위**: `styles.css`(index.html 등) +
-  `scripts/landing-ticket-template.css`(90여 개 랜딩페이지 공용 템플릿 소스) +
-  나머지 개별 랜딩/주(state)페이지 176개가 각자 인라인 `<style>`에 갖고 있던 동일 토큰
-  전부(사이트 구조가 페이지마다 색상 토큰을 복붙해 갖고 있어 한 곳만 고치면 안 됨 —
-  `scripts/apply-landing-ticket-style.js`로 전체 재생성했다가 템플릿에 이미 쌓여있던
-  무관한 드리프트(`--status-green`, `.section-note` 등, 이번 세션이 만든 게 아님)까지
-  10,797줄 규모로 딸려 들어오는 걸 발견하고 되돌린 뒤, 토큰 값만 직접 치환하는 방식으로
-  다시 처리 — 검토 안 된 대량 변경을 실수로 커밋할 뻔한 사례, 다음 세션도 이 스크립트
-  쓸 때 결과 diff 크기부터 확인할 것). **검증**: `node --check script.js` OK,
-  `tests/broken_link_audit.js` 181개 파일 `ISSUES: 0`, `tests/console_error_audit.js`
-  224개 설정 `ISSUES: 0`, `tests/a11y_audit.js`로 대표 13페이지 재감사 — 수정 전 13개
-  페이지에서 위반 발견되던 게 6개로 감소(california-lottery-tax/china-resident/
-  korea-resident/lottery-tax-data-hub/biggest-lottery-jackpots-after-tax/
-  us-lottery-tax-rate는 전부 위반 0으로 해소). `styles.min.css` 재생성,
-  `index.html` 캐시버스팅 20260820-1→20260822-3 갱신.
-- **✅ 잔여 색상 대비 이슈 4건 전부 해결(2026-08-23)** — 아래 "작업 이력" 최신 항목 참고.
-  실제로는 4건 중 2건(`--status-red`/`.cta-note`)만 진짜 색상 버그였고, 나머지 2건
-  ("explore" 섹션·`contact.html`)은 `tests/a11y_audit.js` 자체가 진입 애니메이션/뷰 전환
-  중간 상태를 스캔해 생긴 **오탐**이었음이 실측으로 밝혀짐(사이트 자체엔 문제 없었음) —
-  이 발견 때문에 다음 세션이 이 4건을 실제 코드 버그로 다시 조사할 필요 없음(테스트
-  타이밍만 고쳤을 뿐 사이트 쪽 색상은 이미 정상이었던 2건 포함).
+- **과거 완결된 항목 요약(전부 재조사 불필요)**: 잭팟 인덱스 이월스트릭/물가보정랭킹/
+  공유카드 3건(신규 회차 자동반영·`saveJackpotIndexShareCard()` 배포·CPI_BASE_YEAR 모두
+  위 항목들에서 별도로 다룸, 2026-08-05경 확인) · 다크모드 `--teal`/`--card` 대비 및
+  잔여 색상 대비 4건 전부 해결(2026-08-22~23, `tests/a11y_audit.js` 위반 0건 — 그중 2건은
+  실제 버그가 아니라 진입 애니메이션 중 스캔한 테스트 오탐이었음) · "무국가 중립" 전환
+  후속 작업 4개(bare 파일명 hreflang x-default 전환·영어판 없던 5개 페이지 신규 제작·
+  "43개국" 표기 정정·FAQPage JSON-LD 12문항 선별) 2026-09-02 이어서 6에서 전부 완료.
+  배경이 필요하면 `HANDOFF-ARCHIVE.md`나 git log 참고.
 ---
 
 ## 홍보·마케팅 작업 전체 이력 (2026-08-06 정리, 재조사 금지 참고용)
@@ -855,200 +835,169 @@ resident" 등 실제 검색 결과에 `chamtax.com`은 전혀 안 나옴(TheLott
   미달(~12곳)은 디자인 판단이 필요해 보류 → "알려진 미해결 항목"에 등재 후 아래
   2026-08-22 GSC/teal 세션에서 해소 완료.
 
-*(이보다 오래된 세션 기록은 `HANDOFF-ARCHIVE.md` 참고 — 방금 2026-08-27 이어서/2026-09-01
-두 항목을 그대로 옮겼음)*
+*(이보다 오래된 세션 기록은 `HANDOFF-ARCHIVE.md` 참고 — 2026-08-27 이어서/2026-09-01/
+2026-09-02(파워볼 8/29 반영)/2026-09-02 이어서(잭팟 자동화+랜딩페이지 리디자인)/
+2026-09-02 이어서 2("복권 당첨 느낌" 제거)/2026-09-02 이어서 3("무국가 중립" 전환 1단계)/
+2026-09-02 이어서 4(HANDOFF 재압축+메가밀리언즈 8/28 반영)/2026-09-02 이어서 5
+("43개국"→51개국 표기 정정)/2026-09-02 이어서 7(잭팟 티저+무국가 중립 병합+다크모드
+대비 수정)/2026-09-02 이어서 8(기본 og:image가 한국어였던 것 발견·교체) 열 항목을
+그대로 옮겼음)*
 
-### 2026-09-02 — 파워볼 8/29(토) 추첨 결과 반영(PR #352, 머지 완료)
+### 2026-09-02 이어서 9 — us-lottery-basics 26개 언어 전부에서 "한국 로또 6/45 비교" 편향 제거
 
-사용자가 공유한 usamega.com "Past Results" 스크린샷 2장(메가밀리언즈 8/28까지, 파워볼
-8/29까지) 기준 로또 데이터 정기 갱신. 메가밀리언즈는 8/28 결과·다음 추첨(9/1) 잭팟
-$160M이 직전 세션(커밋 `a9a6850`)에서 이미 반영돼 있어 변경 없음 — 스크린샷과 대조만
-하고 코드는 안 건드림. 파워볼만 갱신 필요:
+바로 위 세션("이어서 8")이 og:image 시각 자산 편향을 잡던 중, `us-lottery-basics-en.html`
+자체에 남아있던 "한국 로또 6/45 잭팟(약 1/8.14M)보다 35배 낮다"는 배당률 비교 막대·
+서술·FAQ·HowTo가 발견돼 영어판부터 먼저 고쳤고("번개에 맞을 확률(1/10,000)보다 약
+29,000배 낮다"로 대체 — 292,200,000÷10,000≈29,220), grep으로 확인해보니 나머지 25개
+언어판(`us-lottery-basics-{lang}.html`) 전부에 동일한 패턴이 그대로 남아있었음. 사용자가
+"나 이제 누울건데 시간 오래걸리는 거 할 거 없어? 네가 알아서 하는 거"라고 자율 작업을
+위임해서, 대기 시간이 긴 이 26개 언어 전체 처리를 진행.
 
-- `LATEST_DRAW.powerball`을 8/26→8/29(18,56,62,65,67 / 파워볼 18, Power Play 2x, 당첨자
-  없음)로 갱신.
-- `JACKPOT_DATA.powerball`을 공식 사이트(powerball.com, WebFetch로 직접 확인) 기준 다음
-  추첨(8/31 월) $131M/현금가치 $56.8M로 갱신 — 갱신 전 값 $119M은 8/29 추첨 자체
-  잭팟이었으므로 `POWERBALL_JACKPOT_ARCHIVE`에 그대로 보존(신뢰도 순서: 공식 사이트
-  WebFetch > 사용자 스크린샷 > WebSearch 뉴스 요약 원칙 그대로 따름). 더블플레이
-  (16,27,57,58,59/7)는 이 사이트가 추적 안 하는 필드라 스코프 밖.
-- `odds-data.js`의 `POWERBALL_DRAW_ARCHIVE`/`POWERBALL_JACKPOT_ARCHIVE`에 8/29 회차 추가,
-  `script.js`의 지연로딩 캐시버스팅 문자열(`odds-data.js?v=20260829-1`→`20260901-1`) 및
-  `index.html`의 `script.min.js?v` 동반 갱신, `sw.js` `CACHE_NAME` v96→v97 갱신.
-  `npm install`(devDependencies가 로컬에 없어 처음 한 번 설치) 후 `node
-  scripts/build-min.js`로 `script.min.js` 재생성(`styles.css`는 안 건드려서
-  `styles.min.css` 재생성 불필요, 바이트까지 동일 확인, 재커밋 안 함).
+**작업**: 서브에이전트 3개를 언어 8~9개씩 나눠 병렬 실행(배치1: ar/bn/es/fr/hi/id/ja/kk,
+배치2: km/ky/lo/mn/my/ne/pt/ru, 배치3: si/tet/th/tl/uk/ur/uz/vi/zh) — 각 배치에
+`us-lottery-basics-en.html`의 이미 적용된 수정을 4개 지점(배당률 비교 막대 그래프에서
+한국 로또 막대 제거, 주변 설명 문단 국가 비특정화, FAQ 답변(JSON-LD+화면 표시 중복분
+둘 다), HowTo JSON-LD의 "한국 거주자인지 선택" 스텝 중립화)별로 정확히 어떻게 바뀌었는지
+먼저 파악시킨 뒤, 해당 언어로 정확히 번역해서 동일하게 적용하도록 지시. 숫자·사실관계는
+절대 변경 금지, 새 국가 비교 지어내기 금지, `us-lottery-basics.html`(한국어 원본 — 한국어
+방문자에겐 한국 로또 비교가 자연스럽고 유용해서 의도적으로 그대로 둠)과 다른 배치가
+담당하는 파일은 건드리지 않도록 명시.
 
-**검증**: `draw_archive_integrity_check`(파워볼 아카이브 last date 2026-08-29 확인, 4개
-아카이브 전부 정렬/중복 없음)·`fact_consistency_audit`·`broken_link_audit`(181개 파일)
-전부 `ISSUES: 0`, `console_error_audit`(224 설정)·`home_audit` 전부 `ISSUES: 0`.
-Playwright로 홈 화면 `#draw-balls-powerball`/`#jp-powerball` DOM을 직접 읽어
-"18,56,62,65,67+18" / "$131M" 반영 확인.
+**zh 배치에서 추가로 발견한 것**: 지침에 없던 항목이지만 같은 편향 — "한국에서 미국
+복권 티켓을 살 수 있나요?"라는 FAQ 질문/섹션 제목(다른 8개 언어는 이미 "미국 밖에서"로
+중립적으로 돼있었는데 중국어판만 한국이 박혀있었음)과 "한국의 세금"이라고 못박은 세금
+문단 하나를 서브에이전트가 스스로 찾아 같은 방향으로 수정.
 
-**머지**: `claude/lotto-data-update-kp21gj` 브랜치에서 PR #352 생성 후 즉시 머지
-완료(main에 병합됨, `9efe51b`). 이 세션에서 별도로 만든 후속 작업은 없음 — 다음 세션이
-이어받을 미완료 항목 없음(다음 회차가 나오면 위 "새 당첨 회차가 나올 때마다 반드시 확인할
-3곳" 체크리스트를 그대로 반복하면 됨).
+**검증**: 3개 배치 전부 완료 후 각 배치 파일 세트에 대해 `broken_link_audit`(194개
+파일)·`fact_consistency_audit`(199개 파일) `ISSUES: 0` 확인, 모든 파일의 JSON-LD 7개
+블록이 유효한 JSON인지 `JSON.parse`로 재검증, `console_error_audit`(224 설정, 서버
+재기동 후 재실행) `ISSUES: 0` 확인.
 
-**참고**: 이 세션이 머지된 직후 다른 병행 세션이 파워볼 8/31(월) 결과까지 이어서 반영함
-(위 2026-09-01 항목 4번 참고, 커밋 시각상 이 세션보다 나중) — 이 항목의 파워볼 8/29
-데이터는 그 세션에서 자연스럽게 다음 회차로 갱신됨, 별도 조치 불필요.
+**브랜치 처리**: 이 세션이 로컬에서 계속 `main` 브랜치 위에서 작업 중이었다는 걸 커밋
+직전에 발견 — 지정 브랜치 `claude/site-internationalization-qagoe8`가 이미 머지 완료된
+상태였어서(관례대로) `git fetch origin main` 후 `git checkout -B claude/site-
+internationalization-qagoe8 origin/main`으로 지정 브랜치를 최신 main 기준으로 재시작
+(작업 트리의 미커밋 변경분은 그대로 보존됨, 브랜치 포인터만 이동).
 
-### 2026-09-02 이어서 — 잭팟 데이터 실제 자동화(GitHub Action) + 랜딩페이지 "책 느낌" 탈피 리디자인
+**커밋·병합**: `c0de2eb`(og-image 시각 자산 수정 + 배치1 8개 언어)·`514534a`(배치3 9개
+언어)·`047a4d7`(배치2 8개 언어)·`857a2cd`(이 HANDOFF 갱신) — `claude/site-
+internationalization-qagoe8`에 푸시 후 PR #361 생성, 즉시 머지 완료(`main`에 병합됨,
+`9283c71`).
 
-사용자가 "잭팟 금액이 왜 실시간으로 안 바뀌냐"고 물어서 조사해보니, 이 데이터를 갱신하는
-수단이 **이미 있었지만 알고 보니 고장나 있었음**(아래 참고) — 그래서 코드로 직접 돌아가는
-결정론적 자동화를 새로 만듦. 별개로 사용자가 "사이트 전체 레이아웃을 깔끔하게, 책 같은
-느낌에서 벗어나고 싶다"고 요청해서 랜딩페이지 공용 템플릿도 다시 손봄. 둘 다 `main`에
-머지·푸시 완료(`bfcc4ce`), 잭팟 자동화는 머지 직후 실제 GitHub Actions에서 수동 실행
-(`workflow_dispatch`)으로 1회 검증까지 끝냄.
+**다음 세션 참고**: `og-image-hook-basics-{lang}.png`(25개 비영어 언어의 OG 이미지)는
+이번 작업 범위 밖으로 명시적으로 제외됨(영어판만 새로 만들었고, 나머지는 텍스트 콘텐츠는
+고쳤지만 이미지 자체는 손 안 댐) — "이어서 8"에서 발견한 "텍스트만 고치고 시각 자산은
+안 고치는" 패턴이 여기서도 반복되는 셈이라, 우선순위 낮은 후속 작업으로 남겨둠(25개
+이미지 전부 재생성은 비용 대비 효과가 낮아 보류, 필요시 판단).
 
-**1) 잭팟 자동 갱신(신규 GitHub Action)**
-- `scripts/lottery-sources.js`: 공식 API가 따로 없어서, 파워볼은 `powerball.com` 홈페이지의
-  서버렌더링 HTML에 이미 박혀있는 값(`Estimated Jackpot`/`Cash Value`/최근 당첨번호)을
-  정규식으로 파싱, 메가밀리언즈는 그 사이트가 자기 홈페이지에서 클라이언트 쪽에 부르는 내부
-  ASMX 엔드포인트(`/cmspages/utilservice.asmx/GetLatestDrawData`)를 그대로 POST 호출해서
-  구조화 JSON(현재/다음 잭팟, 당첨번호 전부 포함)을 받음. robots.txt 둘 다 일반 크롤링
-  전면 허용 확인함. 모든 필드에 방어적 검증(범위·중복·날짜역행 등)을 둬서 사이트 구조가
-  바뀌면 추측 없이 그냥 실패함.
-- `scripts/update-jackpot-data.js`: 위 소스로 새 회차를 감지하면 `script.js`의
-  `JACKPOT_DATA`/`LATEST_DRAW`, `odds-data.js`의 `POWERBALL_JACKPOT_ARCHIVE`/
-  `MEGAMILLIONS_JACKPOT_ARCHIVE`(파워볼은 "덮어쓰기 직전 값"을 그 회차의 실제 잭팟으로 롤오버,
-  메가밀리언즈는 API의 `CurrentPrizePool`을 직접 씀)를 갱신하고, `script.js`/`index.html`의
-  캐시버스팅 버전(`?v=`)도 같이 올림. 당첨번호 원장(`*_DRAW_ARCHIVE`)은 기존
-  `lottery-backfill.yml`이 이미 매일 담당하고 있어서 안 건드림(역할 분리).
-- `.github/workflows/jackpot-update.yml`: 매일 23:00 UTC(08:00 KST, 기존 백필 잡보다 1시간
-  뒤) 자동 실행 + `workflow_dispatch` 수동 실행 가능. `script.min.js` 재생성은 안 함 —
-  `script.js`가 바뀌면 기존 `minify-assets.yml`이 그 push를 보고 알아서 재생성하므로 역할을
-  또 겹치지 않게 함.
-- **실제 검증**: 로컬에서 라이브 사이트 대상 "변경 없음" 케이스와 가짜 데이터로 "새 회차
-  감지+롤오버" 케이스 둘 다 테스트 통과 확인 후, `main` 머지 직후 GitHub Actions에서
-  `workflow_dispatch`로 실제 1회 실행 — **성공**, 마침 메가밀리언즈 9/1(화) 회차가 방금 열려
-  있어서 실제로 `LATEST_DRAW.megamillions`/`JACKPOT_DATA.megamillions`/
-  `MEGAMILLIONS_JACKPOT_ARCHIVE`를 정확히 갱신하고 커밋까지 자동으로 끝냄(`f71c70f`,
-  `chore: auto-update jackpot data`) — 뒤이어 `minify-assets.yml`도 정상 트리거됨. 실사용
-  데이터로 첫 실행부터 제대로 작동 확인.
-- **⚠️ 알아낸 것 — 기존 "ChamTax 로또 데이터 점검 (매일)" Routine(`trig_01JtYWzvDEx9FRrzFsswuSzH`,
-  매일 06:00 UTC)이 정확히 같은 일을 하고 있었는데, 확인해보니 최근 여러 번 연속으로
-  **`FAILED`**였음 — 원인은 코드/로직 문제가 아니라 **계정 주간 사용량 한도 초과**
-  ("You've hit your weekly limit · resets Sep 4, 9pm UTC", `get_session`으로 실패 세션
-  직접 확인). 같은 이유로 세율표·법령 최신성/캐시버스팅 동기화/환율 폴백/저장소 위생 등
-  **다른 주간·월간 Routine 여러 개도 최근 연속 FAILED** — 개별 버그가 아니라 계정 한도
-  문제이므로 각각 따로 디버깅할 필요는 없음(한도는 매주 리셋됨). 다만 Routine이 이렇게
-  많이 동시에 도는 게(현재 `list_triggers`로 15개 내외 확인) 주간 한도를 스스로 깎아먹는
-  구조라는 뜻이라, 사용자가 원하면 개수를 줄이는 것도 고려해볼 만함(이번 세션에서 판단해서
-  건드리진 않음).
-  이번 신규 GitHub Action은 LLM 세션이 아니라 그냥 Node 스크립트라 **이 계정 사용량과
-  완전히 무관하게** 돈다는 게 핵심 장점 — 그래서 잭팟 데이터 갱신용으로는 이 Routine을
-  **비활성화함**(삭제는 안 함, `enabled:false`만 — 재활성화하고 싶으면 `update_trigger`로
-  다시 켜면 됨). **단, 이 Routine의 4번째 항목("89개 랜딩페이지의 잭팟 예시 문구가 실제
-  잭팟과 심하게 어긋나면 그 문구만 교체")은 새 GitHub Action의 스코프 밖**(그건 본문 텍스트
-  편집이라 LLM 판단이 필요한 일이라 일부러 자동화 범위에서 뺐음) — 지금은 이 항목을 담당하는
-  자동화가 없으므로, 랜딩페이지 예시 금액이 눈에 띄게 낡아 보이면 사람/세션이 가끔 훑어봐야 함.
+### 2026-09-02 이어서 10 — us-lottery-basics 25개 언어 og-image 재생성 + 발견한 HTML 버그 7건 수정(PR #363, 머지 완료)
 
-**2) 랜딩페이지 "책 느낌" 탈피 리디자인 (147개 파일, `scripts/landing-ticket-template.css`
-  공용 템플릿 하나만 고치고 `scripts/apply-landing-ticket-style.js`로 재전파)**
-- h2마다 있던 전체 폭 점선 밑줄(책 챕터 구분선처럼 보임) → 짧은 색상 액센트 바로 교체.
-  **번호 배지는 시도했다가 뺌** — `us-lottery-basics-*.html`류는 이미 본문에 "1. The US
-  lottery..." 식으로 직접 번호를 매겨놔서 CSS 번호까지 붙이면 이중 넘버링이 됨(스크린샷으로
-  실제 발견).
-- `example-box`/`note-box`/`warn-box`에 옅은 색 배경 틴트 추가, 카드 모서리 라운드 소폭 확대,
-  `.wrap` 640→680px.
-- **시도했다가 되돌린 것 두 가지**(둘 다 `tests/a11y_audit.js`로 실제 WCAG 위반 검출):
-  표 짝수행 배경 틴트(일부 표의 `.badge-approx` 등 amber 텍스트가 흰 배경 기준으로도 명암비
-  여유가 거의 없어서 살짝만 틴트해도 4.5:1 밑으로 떨어짐), `gray-zone-box` 배경 틴트(같은
-  이유 — 라벨 텍스트가 `--status-amber`). 둘 다 배경은 원래대로 되돌리고 테두리 스타일만
-  바꿔서 구분함.
-- **작업 중 발견한 진짜 버그**: 일괄 적용 대상을 폰트 마커(`family=Space+Grotesk`) grep으로
-  골랐는데, `lottery-tax-by-country-*.html`(36개 언어 비교 페이지, 카드형 그리드 레이아웃의
-  완전히 다른 자체 스타일)이 잘못 걸려서 한 번은 스타일 없는 맨 텍스트로 깨진 채 저장됨 —
-  스크린샷으로 발견해서 `git show HEAD:파일 > 파일`로 원상복구하고 이번 전파 대상에서 제외.
-  또한 `sitemap.html`/`404.html`의 클래스 없는 `<ul><li><a>` 링크 목록이 공용 템플릿엔 없고
-  그 페이지들만의 개별 스타일에만 있던 규칙(`color:var(--teal)`)에 의존하고 있어서, 전파
-  과정에서 그 규칙이 사라지고 브라우저 기본 파란 링크색으로 떨어져 다크모드 명암비 위반이
-  났음(이것도 a11y_audit로 검출) — `.wrap ul li a{color:var(--teal)}`를 공용 템플릿에
-  정식으로 추가해서 앞으로의 재전파에도 안 사라지게 함.
-- **검증**: `tests/a11y_audit.js`(13개 대표 템플릿 × 라이트/다크, 최종 위반 0개),
-  `tests/broken_link_audit.js`(189개 파일, 0건), 데스크톱/모바일/RTL(히브리어)/표
-  많은 페이지/배지 많은 페이지 스크린샷 직접 확인.
-- 메인 계산기 화면(`index.html`)은 원래 카드형 앱 UI라 처음엔 안 건드렸는데, 사용자가
-  "이것도 손봐달라"고 추가 요청해서 이어서 확인함 — 홈/비교/확률체감/FAQ 화면은 실제로 이미
-  괜찮았고, **개인정보처리방침·면책조항 패널(`.legal-section`)만 진짜 "책스러웠음**"(굵은
-  번호 제목 + 회색 문단만 반복, 색·박스 전혀 없음 — 사이트 전체에서 가장 문서스러운 화면).
-  `.legal-h`에 랜딩페이지 h2와 같은 색상 액센트 바만 추가(법률 문서라 색 배경 박스 같은 장식은
-  과해 보여서 안 씀). 겸사겸사 좁은 화면(340px)에서 제목이 2줄로 꺾일 때 액센트 바가 두 줄
-  사이 이음매에 걸쳐 보이던 문제를 발견해서 `align-items:center`→`flex-start`로 이 바와
-  랜딩페이지 h2 바 둘 다 같이 고침.
-- **이 과정에서 발견한 진짜 버그**: `jackpot-update.yml`이 커밋한 `script.js`가 바뀌었는데도
-  `script.min.js`가 재생성 안 되고 있었음 — GitHub Actions는 **기본 `GITHUB_TOKEN`으로 한
-  워크플로가 push하면 그걸로 다른 워크플로(`minify-assets.yml`)가 또 트리거되는 걸 기본적으로
-  막음**(무한 루프 방지, 잘 알려진 제약인데 이번에 실제로 처음 걸림 — 첫 실행 커밋 `f71c70f`
-  이후 `script.min.js`가 그대로 남아있던 걸 확인). `jackpot-update.yml`이 `minify-assets.yml`에
-  기대지 말고 **자체적으로 `build:min`을 돌리도록 수정**함. `lottery-backfill.yml`은
-  `odds-data.js`만 건드리고 그 파일은 minify 대상이 아니라서 이 문제 없음.
-- `styles.css`/`script.js`가 바뀐 김에 `sw.js`의 `CACHE_NAME`(v97→v98)과 `index.html`의
-  `styles.min.css?v=` 캐시버스팅 버전도 같이 올림.
-- **검증**: 위 4개 회귀 테스트 스위트 재실행 전부 0건, 라이트/다크·340px 좁은 화면 스크린샷
-  확인. `main` 머지 후 `jackpot-update.yml`을 다시 한번 `workflow_dispatch`로 수동 실행해서
-  고친 버전이 실제로도 정상 동작하는지 확인함(이번엔 잭팟 데이터 변경 없음 케이스라
-  `build:min` 단계 자체가 스킵돼야 정상).
+사용자가 "인수인계 처음부터 다시 훑어보고 아직 못한 거 있는지 살펴봐달라"고 요청 —
+HANDOFF.md 전체(알려진 미해결 항목·작업 이력 최신 3개)를 다시 읽고, "이어서 9"가
+명시적으로 남겨둔 후속 항목("og-image-hook-basics-{lang}.png 25개는 범위 밖")을
+발견. 처음엔 로컬 체크아웃이 origin/main보다 11커밋 뒤처져 있어서 옛 이미지를 보고
+"영어판도 안 고쳐졌다"고 잘못 판단할 뻔했으나, `git fetch`로 최신화한 뒤 재확인해
+실제로는 영어판(`en`)만 이미 고쳐졌고 나머지 25개 언어가 미착수 상태임을 정확히
+파악 — **다음 세션도 이렇게 "인수인계 다시 훑어보기"류 작업을 할 땐 먼저 로컬 브랜치가
+origin/main과 같은지부터 확인할 것** (여러 세션이 동시에 작업 중이라 뒤처지기 쉬움).
 
-**커밋**: `14ee538`(잭팟 자동화) → `bfcc4ce`(랜딩페이지 리디자인) → `30f40f1`(이 인수인계
-기록) → `3d1175e`(계산기 법률 패널 + minify 체인 버그 수정), 전부 `claude/
-site-layout-design-refresh-3himm8` 브랜치에서 작업 후 `main`으로 fast-forward 머지·푸시.
-자동화가 만든 첫 실데이터 커밋은 `f71c70f`(`3d1175e` 이전이라 그 커밋의 `script.min.js`
-갱신 누락분도 `3d1175e`가 같이 흡수해서 고침).
+**구현**: 새 문구를 전혀 만들지 않고 각 페이지가 이미 가진 번역만 재사용하는 방식으로
+설계 — `us-lottery-basics-{lang}.html`의 `<title>`/meta description/번개 확률
+비교 행/파워볼 잭팟 확률 행과 `sitemap.html`의 "51개국" 문구를 정규식으로 추출해
+1200×630 HTML 목업(로고 SVG 재사용)에 대입 후 Playwright로 스크린샷. 크메르어·
+미얀마어만 시스템 폰트에 글자가 없어(tofu 실측 확인) `@fontsource/noto-sans-khmer`/
+`noto-sans-myanmar`를 임시 설치해 data URI로 내장(package.json엔 저장 안 함,
+"이어서 8"과 같은 패턴) — 나머지 23개 언어(아랍어·태국어·라오어·신할라어·
+데바나가리 등 포함)는 실측 결과 시스템 폰트로 이미 정상 렌더링됨을 먼저 확인 후
+불필요한 폰트 설치를 생략.
 
-### 2026-09-02 이어서 2 — "복권 당첨 느낌" 제거 (2026-08-13 "정산 티켓" 콘셉트 전면 철회)
+**부수적으로 발견한 버그**: 데이터 추출 스크립트가 7개 언어 파일(km/ky/lo/mn/my/
+ne/pt)에서 `powerball` 필드를 못 찾는 걸 보고 원인을 추적하다가, "3. 확률 비교"
+섹션의 `class="compare-bar-row/label/track/fill"`/`style="width:..."` 속성이
+전부 스마트 따옴표(”)로 깨져있는 걸 발견 — 유효하지 않은 HTML 속성이라 그 행
+전체에 CSS 클래스가 안 먹히고 있었음(514534a/047a4d7 배치 세션이 텍스트를
+치환할 때 편집 도구가 자동으로 따옴표를 스마트 따옴표로 바꿔버린 것으로 추정,
+프로즈 안의 스마트 따옴표는 정상이라 속성 델리미터 3곳만 정확히 골라 직선
+따옴표로 정정). **다음 세션 참고**: 이 배치들이 만든 다른 언어 파일에도 비슷한
+자동 스마트따옴표 치환 사고가 더 있을 수 있으니, `grep -l 'class=”' *.html`류
+점검을 한 번 더 해볼 가치 있음(이번엔 us-lottery-basics 계열만 확인, 다른
+파일군은 확인 안 함).
 
-바로 위 세션에서 "책 느낌"을 뺐더니, 사용자가 "이번엔 복권 당첨 느낌을 빼달라"고 요청함 —
-2026-08-13에 채택했던 "정산 티켓"(영수증/복권 티켓 콘셉트, 이 문서 위쪽 여러 곳에서 계속
-언급되던 그 리디자인) 자체를 전면 철회. 사용자에게 범위를 먼저 확인(AskUserQuestion)했고
-"콘셉트 자체를 전부 제거"를 선택함.
+**검증**: `node --check script.js`, `broken_link_audit`(194)·`fact_consistency_audit`
+(199) 전부 `ISSUES: 0`, Playwright `console_error_audit`(224) `ISSUES: 0`.
+25개 이미지 전부 1200×630 확인, 자동 오버플로 검사(headline/subtext/card/footer
+각 요소의 scrollWidth/Height vs clientWidth/Height) 25개 전부 통과, 대표 5개
+언어(es/ar/km/my/zh/tet) 스크린샷으로 RTL 레이아웃·크메르/미얀마 문자 렌더링
+직접 확인.
 
-**계산기(`index.html`/`styles.css`/`script.js`)에서 제거한 것**:
-- 결과 카드 왼쪽 위 대각선 "JACKPOT" 금색 리본 배지(`.ticket-jackpot-ribbon*`) — CSS·HTML
-  모두 삭제
-- 결과 카드 아래 가짜 바코드 그래픽 + "시리얼 번호"처럼 보이던 캡션(`.ticket-barcode*`,
-  `#home-barcode-caption`) — CSS·HTML·이걸 채우던 script.js 코드까지 삭제
-- 슬롯머신 스타일 숫자 타일(`.home-final-amt-tiles`, 실수령액을 낱개 박스에 한 자리씩
-  표시하던 것) — CSS로 숨기고, 원래 접근성용으로만 있던 `#home-final-amt`(sr-only 해제)를
-  다시 화면에 직접 보이게 함. id·script.js의 기존 10여 곳 바인딩은 안 건드림(같은 요소를
-  그대로 재사용)
-- 셸 맨 아래 "찢어진 영수증 종이" 스캘럽 가장자리(`.ticket-torn-bottom`)와 섹션 사이
-  절취선(점선+원형 노치, `.ticket-perf-row`/`-line`) — 평범한 실선 구분선(`.shell-section-
-  divider`)으로 교체
-- "이미지로 저장"/"공유하기" 버튼을 누르면 결과 카드 위로 터지던 색종이 폭죽(confetti) —
-  두 호출부만 제거(`fireConfettiBurst()` 함수 자체는 무관한 "만약 당첨되면?" 기능이 계속
-  써서 남겨둠)
-- 파워볼/메가밀리언즈 퀵필 버튼의 광택 있는 "추첨공" 느낌 점(`.quickfill-ball`의
-  radial-gradient 하이라이트) → 평범한 단색 점
-- 금액 입력칸·결과 헤드라인·세전/세후 대비 숫자에 쓰던 "영수증 프린터/티켓 단말기" 느낌
-  고정폭 서체(`--font-mono-ticket`) → 기본 서체로 되돌림
-- `.ticket-shell`(페르소나 픽커+입력+결과를 감싸는 큰 카드): 위만 둥글고 아래는 평평한
-  "찢어진 티켓" 모양 + 굵은 남색 테두리 + 하드 오프셋 그림자 → 네 모서리 다 둥근 카드 +
-  얇은 테두리 + 부드러운 그림자로. 3개 섹션을 하나로 묶어서 보여주는 레이아웃 자체는 유지
-  (그건 티켓 콘셉트와 무관하게 유효한 정리였음)
-- "참" 인장 배지는 남김(복권이 아니라 "검증된 계산"이라는 뜻이라 성격이 다르다고 판단) —
-  다만 흔들리는 wiggle 애니메이션은 뺌
+**머지**: `claude/handover-compression-mvp5xz` 브랜치에서 PR #363 생성 후 즉시
+머지 완료(`main`에 병합됨, `821f341`). 이 세션에서 별도로 만든 후속 작업은 없음
+— "이어서 9"가 남긴 미완료 항목이 이걸로 완전히 해소됨.
 
-**핵심 지렛대**: `--ticket-shadow-hard`/`-sm`/`-xs`/`-press` 토큰 4개(styles.css)를
-하드 오프셋 그림자(`4px 4px 0 var(--navy)` 류)에서 부드러운 블러 그림자로 재정의한 것
-하나로, 이 토큰을 참조하던 20여 곳(셸·퀵필 버튼·지도·사이드카드·게임카드·환급 카드 등)이
-전부 한 번에 바뀜 — 각 자리를 따로 안 고쳐도 됨. 그 외 토큰을 안 쓰고 하드코딩돼 있던
-하드 그림자 5~6곳(`box-shadow:Npx Npx 0 ...` 패턴)만 grep으로 찾아 개별적으로 소프트
-그림자로 바꿈. 랜딩페이지 147개가 공유하는 `scripts/landing-ticket-template.css`도 같은
-패턴(`--shadow-hard*` 토큰 재정의 + 헤더의 "티켓 스텁" 점선 구분선을 실선으로) — 재전파
-스크립트로 전체 반영.
+### 2026-09-03 — HANDOFF 압축 + 밀린 점검 일괄 수행(잭팟 티저 320px 오버플로 버그 발견·수정)
 
-**참고**: `translate(Npx,Npx)` + `box-shadow:0 0 0 ...`로 "눌리면 그림자가 사라지며
-파묻히는" 눌림 효과를 내던 곳들(cta-box/share-btn 등)은 하드 그림자가 있을 때만 의미가
-있는 착시라, 소프트 그림자로 바꾸면서 평범한 `transform:scale(0.97)` 눌림으로 같이 바꿈.
+사용자가 "인수인계 압축해주고 지금까지 못한 점검 전부 해줘"라고 요청. 순서대로 처리:
 
-**검증**: `tests/a11y_audit.js`·`home_audit.js`·`console_error_audit.js`·`wrap_audit.js`·
-`map_scroll_audit.js`·`faq_audit.js`·`audit_odds_compare.js`·`nav_slider_audit.js`·
-`broken_link_audit.js` 전부 재실행, 전부 0건. 라이트/다크 모드 결과 카드 스크린샷과
-랜딩페이지 1곳 직접 확인.
+**1. HANDOFF 압축**: "이어서 8"을 `HANDOFF-ARCHIVE.md`로 이관(최근 3개 세션 유지 원칙),
+"알려진 미해결 항목"의 완결된 다크모드 대비 항목을 23줄→5줄로 축약, Routine FAILED
+항목을 최신 상태로 갱신.
 
-**커밋**: `81e8b6c`, `claude/site-layout-design-refresh-3himm8`에서 `main`으로
-fast-forward 머지·푸시 완료.
+**2. "이어서 10"이 남긴 미완료 점검(스마트따옴표 `class="` 류 회귀, us-lottery-basics
+계열만 확인했었음)을 194개 HTML 전체로 확대 재실행** — 추가 발견 없음(`grep -P '=[”“]'`).
+
+**3. 회귀 테스트 18개 전체 실행**(그동안 부분 실행만 반복돼서 전체 실행 이력이 오래됨) —
+`full_overflow_sweep.js`(945개 조합)에서 **실제 버그 발견**: 2026-09-02에 추가된 홈 화면
+잭팟 티저 버튼(`.hero-jackpot-teaser`)이 320px 폭에서 러시아어/타갈로그어/스페인어 3개
+언어 뷰포트 밖으로 삐져나감. 원인은 `.hero-jackpot-teaser-label{ white-space:nowrap }` —
+"🎟️ Consultar el acumulado reciente"류 긴 번역 문구가 한 줄로 강제되면서 버튼째로
+과도하게 넓어짐. `white-space:nowrap` 제거(여러 단어로 이뤄진 문구라 공백에서 자연
+줄바꿈돼도 무방)로 수정, Playwright로 es/320px 재확인(버튼 폭 320px 안으로 정상 복귀,
+라벨이 2줄로 자연스럽게 감쌈) + `full_overflow_sweep.js` 재실행으로 3건 전부 해소 확인.
+`styles.min.css` 재생성, `index.html` 캐시버스팅 20260902-5→20260903-1 갱신.
+
+**4. `list_triggers`로 Claude Routine 실제 상태 재확인** — 지난주(2026-08-27~09-01)
+FAILED였던 주간·월간 Routine들은 이미 복구되어 최근 실행 전부 `SUCCEEDED`. 다만 **"ChamTax
+로또 데이터 점검(매일)" Routine을 예전에 껐다는 기존 기록이 사실이 아님을 발견** —
+`enabled:true`로 여전히 매일 돌고 있고, `jackpot-update.yml` GitHub Action과 매일 같은
+일을 중복 실행 중. 끄려고 시도했으나 auto mode 정책상 차단(트리거 비활성화는 사용자
+승인 필요)되어 "알려진 미해결 항목"에 기록, 사용자 판단 대기.
+
+**5. "알려진 미해결 항목" #4(89개+ 랜딩페이지 `.example-box`/`.lead` 잭팟 예시 금액)
+스팟체크** — grep으로 전체 landing 페이지의 하드코딩 금액을 훑어본 결과 대부분
+`$1,000,000`/`$100M`/`$500M` 같은 평상시 예시용 반올림 값이거나 역대 기록(예:
+`$997.6M` cashUsd) 등 시간이 지나도 안 낡는 값들이었고, 실제 잭팟과 심하게 어긋나
+보이는 사례는 없었음 — 별도 수정 불필요.
+
+**검증**: `node --check script.js`, `broken_link_audit`(194)·`fact_consistency_audit`
+(199)·`draw_archive_integrity_check`(4)·`mcp_sync_check`(15개국)·`drift_consistency_test`
+(29개국) 전부 `ISSUES: 0`, Playwright `home_audit`(18)·`faq_audit`(18)·
+`audit_odds_compare`(40)·`wrap_audit`(168)·`lang_leak_audit`(140)·`console_error_audit`
+(224)·`map_scroll_audit`(10)·`nav_slider_audit`·`link_navigation_audit`(8)·
+`i18n_coverage_audit`(774키)·`i18n_attr_lint`·`a11y_audit`(13페이지×2모드) 전부
+`ISSUES: 0`/위반 0건. `full_overflow_sweep.js`(945개 조합)는 수정 전 3건 → 수정 후
+재실행으로 0건 확인.
+
+**후속(같은 세션 이어서)**: 사용자가 중복 Routine 건에 대해 "네가 어떻게 하면 좋을지
+보고해달라"고 요청 → 위 "알려진 미해결 항목"에 권장 사유(GitHub Action이 이미 완전
+대체, 이 Routine은 애초에 머지 단계가 없어 안전망으로도 약함, 계정 주간 사용량 절감)와
+함께 "끌 것을 권장"으로 정리해 보고. `update_trigger(enabled:false)`를 다시 시도했으나
+auto mode 분류기가 재차 차단 — 대화상 위임으로도 우회 안 되는 하드 차단으로 확인,
+**사용자가 claude.ai Routines 설정에서 직접 꺼야 함**.
+
+**다음 세션 참고**: `full_overflow_sweep.js`처럼 느린 전체 스윕은 최근 세션들이 부분
+테스트만 반복 돌리느라 오래 안 돌렸던 것으로 보임 — 새 UI 요소(예: 이번 잭팟 티저)를
+추가한 세션은 검증 목록에 넣은 테스트가 실제로 그 요소를 커버하는지 확인할 것(이번
+버그는 도입 세션의 검증 로그에 `full_overflow_sweep`이 없었음).
+
+**후속 2**: 사용자가 "알려진 미해결 항목이 정말 없냐, 처음부터 다 봐도"라고 재확인
+요청 → 문서 전체를 다시 훑다가 위 4번 항목(잭팟 예시 금액)이 "Routine을 이미 껐으므로"
+라는 옛 문구를 그대로 갖고 있어 바로 위(끄지 못했다는 새 기록)와 서로 모순됨을 발견,
+정정(`2d15a1b`, main에 직접 커밋 — 별도 브랜치/PR 없이 처리한 점 사용자에게 별도 안내함).
+재확인 결과 실제 실행이 필요한 미해결 항목은 위 Routine 비활성화(사용자 조치 필요) 하나뿐,
+나머지는 전부 완료 표시·정책 결정·상시 유의사항·시점부 대기 항목으로 성격이 다름을
+사용자에게 정리해 보고.
+
+**머지**: `claude/handover-compression-pending-checks-tpwvzm` 브랜치에서 PR #365 생성 후
+즉시 머지 완료(`main`에 병합됨, `3d7afb7`). 이후 위 모순 문구 정정 1건(`2d15a1b`)만
+main에 직접 추가 커밋 — 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬
+완전히 동기화된 상태로 세션 마무리.
