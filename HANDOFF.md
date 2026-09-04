@@ -804,10 +804,13 @@ resident" 등 실제 검색 결과에 `chamtax.com`은 전혀 안 나옴(TheLott
       위 항목 참고)로 신규 가입 진행 — 사용자가 직접 Username/Password/Email
       입력해 계정 생성 중(비밀번호 등 자격증명은 이 문서에 기록 안 함, 사용자가
       직접 관리).
-    - **En.wikipedia.org Talk:Powerball**에 위 초안으로 "Add topic" 게시 진행(사용자
-      가 직접 로그인 상태로 게시 — 로그인 안 하면 임시 계정으로 남아 COI 신뢰도가
-      떨어져서 로그인 먼저 권장함). **Talk:Mega_Millions**도 같은 형식으로 게시할지
-      사용자에게 물어본 상태(다음 세션 확인 시 진행 여부 파악할 것).
+    - **✅ En.wikipedia.org Talk:Powerball 게시 완료**(2026-09-04, `Autumnbuilds`
+      계정, 서명 타임스탬프 "12:03, 4 September 2026 (UTC)") — "Request: expand
+      "Taxes" section — nonresident withholding rate & tax treaty note" 섹션으로
+      정상 게시, 구독(watch)도 자동 설정됨. **Talk:Mega_Millions**은 같은 문구에서
+      "Powerball jackpot"만 "Mega Millions jackpot"으로 바꿔 게시하기로 안내함 —
+      다음 세션 확인 시 게시 여부·편집자 응답 여부 둘 다 `Talk:Powerball`/
+      `Talk:Mega_Millions` 직접 방문해서 파악할 것(자동 알림 추적 안 함).
     - **다음 세션 참고**: 두 토크페이지 모두 제3자 편집자 응답까지 시간이 걸릴 수
       있음(COI 편집 요청 큐 특성) — 반영/거절 여부는 다음에 해당 토크페이지를 직접
       확인해서 파악할 것(이 세션은 게시까지만 지원, 이후 진행 추적은 안 함).
