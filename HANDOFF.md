@@ -691,6 +691,22 @@ r/SideProject·r/IndieHackers·Show HN 3곳 승인). 채널 브레인스토밍�
 완료 확인됨(코드 감사로 검증), Cloudflare 크롤러 로그 기반 검증은 로그 접근 권한이 없어
 사용자가 export/스크린샷을 줘야 진행 가능 — 아직 미착수.)
 
+**✅ 2026-09-04 — Cloudflare 봇 트래픽 스크린샷으로 위 미착수 항목 해소 + 조치 완료**:
+사용자가 Security → Analytics → Traffic "Top statistics" 스크린샷 제공 — 최근 24시간
+1.73k건 중 이상 신호 다수 발견: **POST 648건(37.5%, 이 사이트는 origin이 POST를 전혀
+안 받는 정적 사이트라 원래 0건이어야 함)**, IP 3개(`45.148.10.201`/`45.148.10.9`/
+`195.178.110.22`)가 전체의 약 48%, 국가 1위가 미국(540)보다 많은 네덜란드(839,
+타겟 오디언스와 안 맞는 분포), HTTP/1.1이 77%(스크립트/스캐너 신호), 브라우저
+"Unknown/Others" 435건 — 종합하면 취약점 스캐너/크롤봇으로 추정, 다만 Suspicious
+activity는 0·Managed rules 차단도 15건뿐이라 공격성 트래픽은 미미함. **조치**: Security
+rules에 커스텀 규칙 `Block POST (static site, no origin POST endpoint)`
+(`http.request.method eq "POST"` → Block, Active) 생성·배포 완료 — 배포 직전
+"Total requests matched"가 실제로 648건(37.5%)과 일치함을 확인 후 Deploy. IP/국가
+단위 차단은 굳이 안 함(IP 로테이션·오탐 리스크 대비 효과가 낮다고 판단, POST 차단
+하나로 가장 확실한 신호를 안전하게 제거하는 쪽을 택함). **다음 세션 참고**: 하루 이틀
+뒤 Security Analytics에서 POST 건수가 실제로 0에 가깝게 줄었는지 재확인하면 좋음(이
+세션은 배포까지만 확인, 효과 검증은 못 함).
+
 **"영문 AI/웹 생태계 1회성 인프라" 4개 검토(2026-08-06), 2개 실행·2개 보류**:
 - **MCP 서버 구현·검증 완료**(`mcp-server/`, 의존성 0개): `calculate_lottery_takehome` 툴
   하나를 노출하는 stdio JSON-RPC 서버. `script.js`의 세금 계산 로직을 DOM 의존성 없는
