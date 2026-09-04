@@ -807,10 +807,15 @@ resident" 등 실제 검색 결과에 `chamtax.com`은 전혀 안 나옴(TheLott
     - **✅ En.wikipedia.org Talk:Powerball 게시 완료**(2026-09-04, `Autumnbuilds`
       계정, 서명 타임스탬프 "12:03, 4 September 2026 (UTC)") — "Request: expand
       "Taxes" section — nonresident withholding rate & tax treaty note" 섹션으로
-      정상 게시, 구독(watch)도 자동 설정됨. **Talk:Mega_Millions**은 같은 문구에서
-      "Powerball jackpot"만 "Mega Millions jackpot"으로 바꿔 게시하기로 안내함 —
-      다음 세션 확인 시 게시 여부·편집자 응답 여부 둘 다 `Talk:Powerball`/
-      `Talk:Mega_Millions` 직접 방문해서 파악할 것(자동 알림 추적 안 함).
+      정상 게시, 구독(watch)도 자동 설정됨.
+    - **✅ En.wikipedia.org Talk:Mega_Millions 게시 완료**(2026-09-04, 같은 계정,
+      서명 타임스탬프 "12:07, 4 September 2026 (UTC)") — 동일 문구에서 "Powerball
+      jackpot"만 "Mega Millions jackpot"으로 바꿔 게시. **두 문서 모두 게시까지
+      끝났으므로 이 작업(2026-08-18 신규 항목)은 실행 단계는 종결** — 남은 건
+      제3자 편집자의 검토/반영 여부뿐, 다음 세션이 확인할 때는 재작성하지 말고
+      `Talk:Powerball`/`Talk:Mega_Millions`를 직접 방문해 응답이 달렸는지만
+      확인할 것(COI 편집 요청 큐 특성상 응답까지 몇 주 걸릴 수 있음, 응답 없다고
+      재게시하지 말 것 — 중복 스팸으로 보일 수 있음).
     - **다음 세션 참고**: 두 토크페이지 모두 제3자 편집자 응답까지 시간이 걸릴 수
       있음(COI 편집 요청 큐 특성) — 반영/거절 여부는 다음에 해당 토크페이지를 직접
       확인해서 파악할 것(이 세션은 게시까지만 지원, 이후 진행 추적은 안 함).
