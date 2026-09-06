@@ -159,6 +159,15 @@ async function main() {
         throw new Error(`${game}: 사이트의 최신 회차(${f.latestDraw.date})가 저장된 값(${oldDraw.date})보다 과거 — 파싱 오류 의심, 중단`);
       }
       // 새 회차 감지 — 그 회차에 걸려 있던 실제 잭팟을 아카이브에 넣음.
+      // ⚠️ 파워볼은 megamillions.com의 Jackpot.CurrentPrizePool 같은 "방금 끝난 추첨 확정 잭팟"
+      // 필드를 powerball.com에서 못 구해서(홈페이지엔 "다음 추첨 예상액"만 있고, draw-result
+      // 페이지도 클라이언트 렌더링이라 정적 fetch로는 안 나옴 — 2026-09-05 조사 확인) 그냥 직전
+      // 실행 시점의 oldJackpotData(그 추첨 전에 저장해둔 예상액)를 대신 씀. 이게 실제 최종
+      // 확정액과 달라서 반복적으로 아카이브 오기재를 냄(2026-09-02 08-31/09-02 회차,
+      // 2026-09-05 09-05 회차 전부 이 패턴 — 스크린샷 대조로 발견·정정). 근본 해결은 파워볼
+      // 쪽에서 "그 회차의 확정 잭팟"을 실제로 내려주는 소스를 찾아야 함 — 다음 세션이 여유가
+      // 있으면 조사해볼 것, 그 전까지는 사용자가 usamega.com류 스크린샷을 줄 때마다
+      // POWERBALL_JACKPOT_ARCHIVE 최근 항목을 금액까지 대조해서 틀리면 손으로 고칠 것.
       const ownAmountUsd = game === 'megamillions' ? f.ownJackpot.amountUsd : oldJackpotData[game].amountUsd;
       const varName = game === 'powerball' ? 'POWERBALL_JACKPOT_ARCHIVE' : 'MEGAMILLIONS_JACKPOT_ARCHIVE';
       archiveAppends.push({
