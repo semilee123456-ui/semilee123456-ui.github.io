@@ -5623,7 +5623,7 @@ function buildDrawScheduleMore(days){
 // (58%) 추정치로 대체됨(getJackpotCashUsd() 참고).
 const JACKPOT_DATA = {
   powerball:    { amountUsd: 173000000, cashUsd: 74600000 },
-  megamillions: { amountUsd: 193000000, cashUsd: 82000000 },
+  megamillions: { amountUsd: 193000000, cashUsd: 82800000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
