@@ -163,11 +163,17 @@ async function main() {
       // 필드를 powerball.com에서 못 구해서(홈페이지엔 "다음 추첨 예상액"만 있고, draw-result
       // 페이지도 클라이언트 렌더링이라 정적 fetch로는 안 나옴 — 2026-09-05 조사 확인) 그냥 직전
       // 실행 시점의 oldJackpotData(그 추첨 전에 저장해둔 예상액)를 대신 씀. 이게 실제 최종
-      // 확정액과 달라서 반복적으로 아카이브 오기재를 냄(2026-09-02 08-31/09-02 회차,
-      // 2026-09-05 09-05 회차 전부 이 패턴 — 스크린샷 대조로 발견·정정). 근본 해결은 파워볼
-      // 쪽에서 "그 회차의 확정 잭팟"을 실제로 내려주는 소스를 찾아야 함 — 다음 세션이 여유가
-      // 있으면 조사해볼 것, 그 전까지는 사용자가 usamega.com류 스크린샷을 줄 때마다
-      // POWERBALL_JACKPOT_ARCHIVE 최근 항목을 금액까지 대조해서 틀리면 손으로 고칠 것.
+      // 확정액과 달라서 반복적으로 아카이브 오기재를 냄(2026-09-02 08-31/09-02/08-10/08-12
+      // 회차, 2026-09-05 09-05 회차 전부 이 패턴 — 스크린샷 대조로 발견·정정).
+      // ⚠️ 2026-09-08 조사 결과 — 대체 소스 없음, 재조사 불필요: data.ny.gov 파워볼 데이터셋
+      // (resourceId 'd6yy-54nr', scripts/backfill-lottery.js가 씀)은 draw_date/winning_numbers/
+      // multiplier/double_play_winning_numbers 4개 필드뿐, 잭팟 금액 필드 자체가 없음(직접
+      // 스키마 조회로 확인). powerball.com에 공식 API도 없음 — 있는 건 Apify/Parse.bot 같은
+      // 비공식 유료 서드파티 스크레이퍼뿐이라, 마크업 변경 시 조용히 틀린 값을 넣을 위험과
+      // 새 외부 의존성 도입이라는 두 문제 다 안고 있어 채택 안 함(사용자 승인 없이 이런
+      // 의존성을 추가하지 않기로 함). **결론: 이 문제는 구조적으로 해결 불가 — 그 전까지는
+      // 사용자가 usamega.com류 스크린샷을 줄 때마다 POWERBALL_JACKPOT_ARCHIVE 최근 항목을
+      // 금액까지 대조해서 틀리면 손으로 고치는 방식을 계속 유지할 것.**
       const ownAmountUsd = game === 'megamillions' ? f.ownJackpot.amountUsd : oldJackpotData[game].amountUsd;
       const varName = game === 'powerball' ? 'POWERBALL_JACKPOT_ARCHIVE' : 'MEGAMILLIONS_JACKPOT_ARCHIVE';
       archiveAppends.push({
