@@ -19898,3 +19898,40 @@ push 실패"라고 보고. 이 세션이 `git branch -r --merged origin/main`으
 
 **커밋**: `8845388`(FAQ 오버플로)·`be35acd`(다국어 스크립트 혼입 3건) — 전부 `main`에
 직접 커밋·푸시 완료. 세션 종료 시점 기준 미커밋 변경 없음.
+
+### 2026-09-08 이어서 — HANDOFF 재압축(이어서 9 아카이브 이관) + 파워볼 확정잭팟 대체소스 조사(결론: 없음)
+
+사용자가 "최근 인수인계 압축해주고 해야될 일 전부 끊김없이 해줘"라고 요청.
+
+**1. HANDOFF 압축**: 라이브 세션 항목이 4개(09-05/09-06/09-06 이어서/09-08)로 한도에 걸려
+있어서, 가장 오래된 "2026-09-05"(PR #366~370)를 `HANDOFF-ARCHIVE.md`로 그대로 이관하고
+포인터 문구 갱신.
+
+**2. 파워볼 "확정 잭팟" 대체 소스 조사(09-06 세션이 남긴 미해결 조사 항목)**: `scripts/
+update-jackpot-data.js`의 근본원인 주석이 요청한 조사를 수행 — `scripts/backfill-lottery.js`가
+쓰는 data.ny.gov 파워볼 데이터셋(`d6yy-54nr`)의 실제 필드를 WebFetch로 직접 조회한 결과
+`draw_date`/`winning_numbers`/`multiplier`/`double_play_winning_numbers` 4개뿐, 잭팟
+금액 필드 자체가 없음을 확인. `powerball.com` 공식 API도 없고(WebSearch), 있는 건 Apify/
+Parse.bot류 비공식 유료 서드파티 스크레이퍼뿐 — 마크업 변경 시 조용히 오값을 넣을 위험과
+사용자 승인 없는 새 외부 의존성 도입이라는 두 문제가 있어 채택하지 않기로 결론.
+**이 문제는 구조적으로 해결 불가 — 다음 세션도 재조사하지 말 것.** `scripts/
+update-jackpot-data.js`의 해당 주석에 이 조사 결과와 결론을 기록해둠(코드 변경 없음,
+사용자가 스크린샷을 줄 때마다 손으로 대조하는 기존 방식 유지).
+
+**3. 전체 상태 재확인**: 여러 세션이 동시에 작업 중이라 `git fetch`해보니 09-05 이후
+파워볼 9/5 회차 반영·아카이브 오기재 4건 추가 발견·정정(08-10/08-12/09-05/07-28)·다국어
+스크립트 혼입 오타 3건·FAQ 360px 오버플로 버그 수정이 이미 전부 다른 세션들에 의해
+머지돼 있었음 — fast-forward로 동기화만 하고 중복 작업 안 함. 이후 데이터 무결성
+회귀 테스트를 전체적으로 재실행(`draw_archive_integrity_check` 4개 아카이브, `broken_link_
+audit` 223, `fact_consistency_audit` 228, `console_error_audit` 224, `home_audit` 18,
+`i18n_coverage_audit` 774키, `mcp_sync_check` 15개국 — 전부 `ISSUES: 0`)해 그 사이 쌓인
+변경들이 서로 충돌 없이 안정적임을 확인.
+
+**의도적으로 안 한 것**: "09-08" 세션이 보고한 "main에 이미 병합된 원격 브랜치 29개+"
+정리는 이번에도 하지 않음 — git push 권한만 있으면 되는 안전한 작업이지만, 사용자가
+구체적으로 요청한 적 없는 원격 공유 상태 변경이라 스코프 밖으로 판단 유지. 필요하면
+`git push origin --delete <branch>`로 언제든 정리 가능.
+
+**커밋**: HANDOFF 압축·조사 결과 기록만 포함, 코드 변경 없음 — `claude/site-
+internationalization-qagoe8`에서 PR 생성 후 머지 예정.
+
