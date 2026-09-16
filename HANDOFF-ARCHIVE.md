@@ -19935,3 +19935,53 @@ audit` 223, `fact_consistency_audit` 228, `console_error_audit` 224, `home_audit
 **커밋**: HANDOFF 압축·조사 결과 기록만 포함, 코드 변경 없음 — `claude/site-
 internationalization-qagoe8`에서 PR 생성 후 머지 예정.
 
+
+### 2026-09-09 — 자동 SEO/콘텐츠 최신성 점검 루틴(보고 전용, 코드 변경 없음)
+
+**범위**: 이 세션은 명시적으로 "보고·제안만" 스코프(새 페이지·SNS/광고 집행·대규모
+리라이팅 금지)로 실행된 자동 Routine. sitemap/robots/hreflang/JSON-LD/canonical/og:url
+스팟체크, 신규 HTML 페이지의 sitemap 반영 여부, 세율·잭팟 등 인용 사실의 최신성,
+핵심 키워드 검색 노출을 점검.
+
+**1. 기술 감사(서브에이전트, 파일 수정 없이 조사만) — 명백한 결함 없음**:
+- `sitemap.xml` 216개 URL 전부 `https://chamtax.com/...`, 도메인/프로토콜 오류 0건.
+  저장소 HTML 222개(404.html 제외) 대비 sitemap 밖 8개는 전부 정당한 제외
+  (`noindex` 페이지 4개, 검색엔진 소유권 확인 파일 2개, `404.html`, `index.html`→`/`로
+  등재) — **누락된 실제 콘텐츠 페이지 없음**. 최근 커밋(`0fd8195`, 주(state) 페이지
+  29개 신규 추가)도 sitemap에 정상 반영 확인.
+- `robots.txt`: `Sitemap: https://chamtax.com/sitemap.xml` 정확, `/tests/`·`/scripts/`·
+  `/i18n-source/`만 차단이고 콘텐츠 크롤링 차단 없음, AI 크롤러(GPTBot 등)도 허용.
+- canonical/og:url: 점검한 5개 페이지(index + 국가 3개 + 주(state) 1개) 전부 절대경로가
+  실제 파일 경로와 일치. hreflang: index.html은 36개 언어+x-default 정상. 국가별
+  거주자 페이지는 self-referencing hreflang만 있고 x-default 없음, 주(state) 페이지는
+  hreflang 자체가 없음 — 둘 다 **회귀가 아니라 해당 페이지 계열의 기존 템플릿 설계**임을
+  같은 계열 기존 페이지와 비교해 확인(단일 언어 페이지라 대체 URL이 없음).
+- JSON-LD: 5개 페이지 전부 파싱 오류 0건. FAQPage `mainEntity`는 랜딩페이지 4개는
+  실제 `.faq-item` 개수와 정확히 일치. **다만 `index.html`은 mainEntity 12개인데 실제
+  화면 FAQ 항목이 108개**(단일 `data-i18n` 오버레이 구조라 다국어 중복이 아니라 진짜
+  108개 문항) — 리치 스니펫 스팸 방지용 "대표 12문항만 노출"하는 의도적 설계일 가능성이
+  높아 보이지만 확정은 못 함. **다음 세션이 판단할 것: 의도된 설계라면 그대로 두고, 아니라면
+  주요 FAQ를 더 포함하는 쪽이 FAQ 리치 리절트 노출 기회를 늘릴 수 있음** (단, 12개도 검색엔진
+  가이드라인상 이미 넉넉한 편이라 강한 우선순위는 아님).
+- `fact_consistency_audit.js`: `FILES CHECKED: 228 ISSUES: 0`. `broken_link_audit.js`:
+  `FILES CHECKED: 223 ISSUES: 0`. 세율·최소 잭팟 등 인용 사실 낡음 없음.
+- **결론**: "명백하고 안전하게 직접 고칠 결함"이 없어 코드 변경·커밋 없음.
+
+**2. 핵심 키워드 검색 노출 점검(WebSearch)**: "파워볼 세후 실수령액", "메가밀리언즈
+세금 계산기", "파워볼 당첨금 실수령액 계산기", "미국 로또 세금 한국인 계산",
+`site:chamtax.com` 5개 쿼리 전부 **chamtax.com이 결과에 노출되지 않음** — 대신
+calctools.co.kr/k-calc.com/nerdopower.com/pyony.com/terralotto.com 등 경쟁 계산기가
+반복 노출됨. **다만 이건 새로운 문제가 아니라 이미 기록된 병목과 정확히 일치하는
+재확인일 뿐**: 위 "알려진 미해결 항목"의 2026-08-22 GSC 실측(4주간 사이트 전체
+클릭 3·노출 131)이 이미 "도메인 신뢰도·백링크 축적이 병목, 시간이 필요"라고 결론
+내렸고 그 결론은 아직 유효(1~2개월 뒤 GSC export 재확인 시점 전). 이번 WebSearch
+결과는 그 결론에 반하는 새 정보가 아니므로 **제안 없음 — 재조사·재작업 트리거로
+쓰지 말 것**. (참고: 이 세션이 쓴 WebSearch 도구는 Google 실제 순위와 100% 동일하지
+않을 수 있어 참고용 신호일 뿐, GSC 실측이 여전히 1차 근거.)
+
+**3. 시의성 점검**: `LATEST_DRAW`(파워볼 2026-09-07 회차)는 직전 세션이 이미 최신화
+(`385a99c`), `CPI_BASE_YEAR`는 위 "알려진 미해결 항목"대로 2026년 연평균 확정 전까지
+유지가 맞음 — 추가 조치 불필요.
+
+**커밋**: 이 HANDOFF.md 항목 + 위 "작업 이력" 4개 한도 유지를 위한 2026-09-06(첫 항목)
+`HANDOFF-ARCHIVE.md` 이관, 순수 문서 변경만 포함(코드 변경 없음).
