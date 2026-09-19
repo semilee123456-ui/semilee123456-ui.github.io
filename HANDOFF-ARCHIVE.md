@@ -20021,3 +20021,31 @@ FAQ는 108개(다국어 중복 아님, 진짜 108개) — 이건 판단 보류 �
 **머지**: `claude/site-internationalization-qagoe8`에서 PR #373·#374·이 HANDOFF 정리
 PR 순서대로 생성 후 즉시 머지 완료(`main`에 전부 병합됨). 세션 종료 시점 기준 미커밋
 변경 없음, `origin/main`과 로컬 완전히 동기화된 상태.
+
+### 2026-09-11 — 파워볼 9/9 회차 누락분 백필 + 예상액/확정액 오차 정정 (PR #376)
+
+사용자가 usamega.com 스크린샷 제공, "지금까지 한 거 전부 머지하고 인수인계 남겨줘" 요청.
+`git fetch`해보니 `jackpot-update.yml` 자동 실행(`aecd7c1`)이 이미 파워볼 9/9 회차를
+`LATEST_DRAW`/`JACKPOT_DATA`/`POWERBALL_JACKPOT_ARCHIVE`에 반영해둔 상태 — 다만 늘 그렇듯
+(2026-09-06/09-06 이어서에서 규명한 근본원인: 파워볼은 확정 잭팟 소스가 없음) 스크린샷과
+대조하니 두 가지가 어긋나 있었음:
+- `POWERBALL_DRAW_ARCHIVE`(당첨번호 원장, `JACKPOT_ARCHIVE`와 별개로 관리)에 9/9 회차
+  누락 — 추가.
+- `POWERBALL_JACKPOT_ARCHIVE`의 9/9 잭팟액이 $207M(추첨 전 예상액)으로 기록돼 있었는데
+  스크린샷의 확정액은 $207.4M — 정정.
+
+메가밀리언즈는 9/8 회차·다음 잭팟($209M/$89.7M)까지 스크린샷과 이미 정확히 일치해
+변경 없음.
+
+**검증**: `node --check`(script.js/odds-data.js), `draw_archive_integrity_check`(4개
+아카이브) `ISSUES: 0`, `broken_link_audit`(223)·`fact_consistency_audit`(228)·
+`home_audit`(18) 전부 `ISSUES: 0`. `odds-data.js` 캐시버스팅→`script.min.js` 재빌드→
+`index.html` 쿼리→`sw.js` `CACHE_NAME`(v115→v116) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 지난 세션(09-09 이어서)이 남긴 "코드 변경 PR은 세션이 끝나기 전에
+반드시 작업 이력에 남길 것" 규칙을 이번엔 놓치지 않고 바로 기록. 라이브 항목 4개 한도
+유지를 위해 가장 오래된 "2026-09-08"을 `HANDOFF-ARCHIVE.md`로 이관.
+
+**머지**: `claude/site-internationalization-qagoe8`에서 PR #376 생성 후 즉시 머지 완료
+(`main`에 병합됨, `890be54`). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과
+로컬 완전히 동기화된 상태.
