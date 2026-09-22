@@ -4312,6 +4312,14 @@ const REAL_ABROAD_CURRENCY = {
   // EXCHANGE_RATE_BRL을 새로 정의함(2026-08-22, Frankfurter/open.er-api가 이미 BRL을 지원해서
   // 새 API 없이 지원 가능).
   br: 'BRL',
+  // 스페인(EUR)도 fr/de/nl/ie/fi/it처럼 유로존 정회원국이라 EUR 유로존 공용 통화 재사용
+  // 여섯 번째 사례 — 신규 통화 정의 불필요.
+  es: 'EUR',
+  // 스위스(CHF)·아랍에미리트(AED)·사우디아라비아(SAR)·이집트(EGP)·이스라엘(ILS)·우크라이나
+  // (UAH)·나이지리아(NGN)는 ca/tw/hk와 같은 상황 — CURRENCY_DISPLAY_META/EXCHANGE_RATE_*
+  // 어디에도 없는 진짜 신규 통화라(2026-09-22 확인), 지원 통화 추가는 이번 스코프 밖(별도
+  // 작업)으로 보고 ca/tw/hk와 동일하게 USD로 우회.
+  ch: 'USD', ae: 'USD', sa: 'USD', eg: 'USD', il: 'USD', ua: 'USD', ng: 'USD',
 };
 
 // "실제로 다른 나라에 살아요" 카드의 US/CN 버튼 — 한국이랑 아무 상관없는 진짜 외국인(예: 순수
@@ -10827,8 +10835,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // 맞춰줌 — 지정 안 하면 아래 chamtax_country 저장값이 있으면 그걸, 그것도 없으면 무국가
   // 중립 기본값('other', 2026-09-02부터)이 그대로 유지됨.
   // COUNTRY_TAX_PROFILES에 실제로 있는 코드로만 제한해서, 오타·구버전 링크가 미검증
-  // 국가로 계산기를 조용히 맞춰버리는 걸 막음(33개국 토글 버튼과 동일한 목록).
-  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','no','da','fi','it','pl','tr','br','other'];
+  // 국가로 계산기를 조용히 맞춰버리는 걸 막음(COUNTRY_TAX_PROFILES 51개국 전체와 동일한 목록).
+  // 2026-09-22: 9/1에 COUNTRY_TAX_PROFILES에 추가된 8개국(es/ch/ae/sa/eg/il/ua/ng)이 이
+  // 화이트리스트·#homeCountrySelect·#homeCountryToggle 세 곳 전부에서 빠져 있던 버그 발견·수정
+  // — spain-resident-us-lottery-tax.html 등 신규 랜딩페이지의 "?country=es" 딥링크가 조용히
+  // 무시되고 있었음(다른 세션이 보고, 이 세션이 검증 후 반영).
+  const SUPPORTED_TAX_COUNTRIES = ['kr','us','cn','jp','in','vn','id','ph','th','ru','np','lk','uz','kz','kg','mm','bd','pk','kh','mn','la','ca','tw','hk','uk','au','mx','fr','nz','ie','sg','za','my','de','nl','sv','no','da','fi','it','pl','tr','br','es','ch','ae','sa','eg','il','ua','ng','other'];
   const urlCountry = params.get('country');
   if (SUPPORTED_TAX_COUNTRIES.includes(urlCountry)) {
     setHomeCountry(urlCountry);

@@ -162,7 +162,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20260922-1" defer></script>
+<script src="script.min.js?v=20260922-2" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -521,6 +521,19 @@
                   <option value="pl|pl">PL · Polski</option>
                   <option value="tr|tr">TR · Türkçe</option>
                   <option value="br|pt">BR · Português</option>
+                  <option value="es|es">ES · Español</option>
+                  <option value="ch|de">CH · Deutsch</option>
+                  <option value="ae|ar">AE · العربية</option>
+                  <option value="sa|ar">SA · العربية</option>
+                  <option value="eg|ar">EG · العربية</option>
+                  <!-- 이스라엘 랜딩페이지(israel-resident-us-lottery-tax.html)는 lang="he"지만
+                       계산기 자체는 히브리어 i18n을 지원하지 않음(i18n/he.json 없음, 2026-09-22
+                       확인 — 지원 추가는 이번 스코프 밖) — ca/uk/au/nz/ie/sg/za/my와 같은 "계산기
+                       미지원 언어는 en으로 우회" 관례를 따름(국가 기준은 il로 정확히 맞춰짐, 화면
+                       언어만 영어) -->
+                  <option value="il|en">IL · English</option>
+                  <option value="ua|uk">UA · Українська</option>
+                  <option value="ng|en">NG · English</option>
                 </select>
                 <button type="button" class="intro-lang-go-btn" onclick="goRealAbroadFromSelect('realAbroadSelect')" data-i18n="intro.goBtn">이동</button>
               </div>
@@ -693,6 +706,14 @@
                     <option value="pl">PL</option>
                     <option value="tr">TR</option>
                     <option value="br">BR</option>
+                    <option value="es">ES</option>
+                    <option value="ch">CH</option>
+                    <option value="ae">AE</option>
+                    <option value="sa">SA</option>
+                    <option value="eg">EG</option>
+                    <option value="il">IL</option>
+                    <option value="ua">UA</option>
+                    <option value="ng">NG</option>
                     <option value="other" selected>OTHER</option>
                   </select>
                   <button type="button" class="amount-currency-select select-sheet-trigger" id="homeCountrySelectTrigger" tabindex="-1" aria-hidden="true" onclick="openSelectSheet('homeCountrySelect')"><span class="select-sheet-trigger-label">OTHER</span></button>
@@ -863,9 +884,17 @@
                   <button type="button" class="country-toggle-btn" data-country="pl" onclick="setHomeCountry('pl')"><span class="flag-badge">PL</span> <span data-i18n="input.optPoland">폴란드 기준</span></button>
                   <button type="button" class="country-toggle-btn" data-country="tr" onclick="setHomeCountry('tr')"><span class="flag-badge">TR</span> <span data-i18n="input.optTurkey">터키 기준</span></button>
                   <button type="button" class="country-toggle-btn" data-country="br" onclick="setHomeCountry('br')"><span class="flag-badge">BR</span> <span data-i18n="input.optBrazil">브라질 기준</span></button>
+                  <button type="button" class="country-toggle-btn" data-country="es" onclick="setHomeCountry('es')"><span class="flag-badge">ES</span> <span data-i18n="input.optSpain">스페인 기준</span></button>
+                  <button type="button" class="country-toggle-btn" data-country="ch" onclick="setHomeCountry('ch')"><span class="flag-badge">CH</span> <span data-i18n="input.optSwitzerland">스위스 기준 ⚠️</span></button>
+                  <button type="button" class="country-toggle-btn" data-country="ae" onclick="setHomeCountry('ae')"><span class="flag-badge">AE</span> <span data-i18n="input.optUAE">아랍에미리트 기준</span></button>
+                  <button type="button" class="country-toggle-btn" data-country="sa" onclick="setHomeCountry('sa')"><span class="flag-badge">SA</span> <span data-i18n="input.optSaudiArabia">사우디아라비아 기준</span></button>
+                  <button type="button" class="country-toggle-btn" data-country="eg" onclick="setHomeCountry('eg')"><span class="flag-badge">EG</span> <span data-i18n="input.optEgypt">이집트 기준</span></button>
+                  <button type="button" class="country-toggle-btn" data-country="il" onclick="setHomeCountry('il')"><span class="flag-badge">IL</span> <span data-i18n="input.optIsrael">이스라엘 기준</span></button>
+                  <button type="button" class="country-toggle-btn" data-country="ua" onclick="setHomeCountry('ua')"><span class="flag-badge">UA</span> <span data-i18n="input.optUkraine">우크라이나 기준</span></button>
+                  <button type="button" class="country-toggle-btn" data-country="ng" onclick="setHomeCountry('ng')"><span class="flag-badge">NG</span> <span data-i18n="input.optNigeria">나이지리아 기준 ⚠️</span></button>
                   <button type="button" class="country-toggle-btn active" data-country="other" onclick="setHomeCountry('other')"><span class="flag-badge">🌐</span> <span data-i18n="input.optOther">기타 국가 (미국 30% 기준)</span></button>
                 </div>
-                <!-- ⚠️ 아이콘이 태국·러시아·파키스탄·캄보디아·몽골·라오스 버튼에 붙어있는데, 그
+                <!-- ⚠️ 아이콘이 태국·러시아·파키스탄·캄보디아·몽골·라오스·스위스·나이지리아 버튼에 붙어있는데, 그
                      의미(세율 추정치 또는 조약 정지)는 그 나라를 실제로 선택해야만 basisSuffix로
                      드러남 — 선택하기 전에는 아이콘만 있고 뜻을 알 방법이 없었음(2026-07-28
                      첫방문자 사용성 점검 세션에서 발견, "아이콘만 있고 텍스트 설명이 없는" 사례).
