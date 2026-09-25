@@ -20108,3 +20108,28 @@ Past Results 확정액 $252.7M로 직접 정정. 메가밀리언즈 9/15 아카�
 
 **커밋**: 테스트 신설 `18d022a`, 데이터 갱신 `a31695b` — 둘 다 `main`에 직접 커밋·푸시
 완료. 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된 상태.
+
+### 2026-09-17 — 파워볼 9/16 회차 반영 + 확정잭팟 아카이브 오기재 정정
+
+사용자가 usamega.com 스크린샷 3장 제공(파워볼 9/16 Past Results, 메가밀리언즈 Past
+Results, 홈페이지). `git fetch` 결과 동시 작업 세션 없음 확인 후 `scripts/update-
+jackpot-data.js` 실행 — 파워볼 9/14→9/16 신규 회차 감지([2,21,24,25,64]+7), 다음
+잭팟 $298M(현금 $126.6M, 9/19 추첨)로 갱신, 스크린샷과 정확히 일치.
+
+이번에도 반복되는 패턴(파워볼 확정 잭팟 소스 부재, 2026-09-06/09-08 이어서에서 규명)
+대로 `POWERBALL_JACKPOT_ARCHIVE`의 9/16 항목에 직전 회차 예상액($271M)이 그대로
+들어가 있어 스크린샷 Past Results 확정액 $271.2M로 직접 정정. `POWERBALL_DRAW_
+ARCHIVE`에도 9/16 회차를 확정 데이터로 직접 추가해 동기화. 메가밀리언즈는 스크린샷의
+9/15 회차·다음 잭팟($244M/$103.5M)까지 이미 정확히 일치해 변경 없음.
+
+**검증**: `node --check`(script.js/odds-data.js), `draw_archive_integrity_check`·
+`draw_schedule_gap_check`(지난 세션에 신설한 요일 기반 누락 탐지, 4개 배열 각각)
+`ISSUES: 0`, `console_error_audit`(224) `ISSUES: 0`. `script.min.js` 재빌드→
+`index.html`/`odds-data.js` 캐시버스팅(`?v=20260917-1`)→`sw.js` `CACHE_NAME`
+(v119→v120) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-09-09
+이어서"를 `HANDOFF-ARCHIVE.md`로 이관.
+
+**커밋**: `d6843a5`로 `main`에 직접 커밋·푸시 완료. 세션 종료 시점 기준 미커밋 변경
+없음, `origin/main`과 로컬 완전히 동기화된 상태.
