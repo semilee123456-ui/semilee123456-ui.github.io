@@ -70,7 +70,7 @@ let I18N_LOAD_PROMISE = null;
 
 function loadI18nLanguage(lang){
   if (lang === "ko" || I18N_CACHE[lang]) return Promise.resolve();
-  return fetch(`i18n/${lang}.json?v=20260922-1`)
+  return fetch(`i18n/${lang}.json?v=20260929-1`)
     .then(res => { if (!res.ok) throw new Error("i18n fetch failed: " + res.status); return res.json(); })
     .then(data => { I18N_CACHE[lang] = data; })
     .catch(err => { console.error("[i18n] failed to load", lang, err); });
@@ -2639,7 +2639,7 @@ const STATE_TAX_RATES = {
   CT:  { label: '코네티컷', labelEn: 'Connecticut', labelZh: '康涅狄格', rate: 0.0699 },
   DE:  { label: '델라웨어', labelEn: 'Delaware', labelZh: '特拉华', rate: 0.066 },
   FL:  { label: '플로리다', labelEn: 'Florida', labelZh: '佛罗里达', rate: 0.0 },
-  GA:  { label: '조지아', labelEn: 'Georgia', labelZh: '佐治亚', rate: 0.0519 }, // HB 111, 2025-01 소급 인하(5.39%→5.19%), 2026년 5.09%로 추가 인하 예정, 2026-09-01 확인
+  GA:  { label: '조지아', labelEn: 'Georgia', labelZh: '佐治亚', rate: 0.0499 }, // HB 463(2026-05-11 서명, Kemp 주지사), 2026-01-01 소급 시행 — 기존 예정이던 5.09%를 건너뛰고 곧바로 4.99%로 인하(2030년까지 매년 0.125%p씩 3.99%까지 추가 인하 예정). HB 111의 5.19% 단계를 대체. gov.georgia.gov 공식 발표 2026-09-29 확인
   HI:  { label: '하와이', labelEn: 'Hawaii', labelZh: '夏威夷', rate: 0.11 },
   ID:  { label: '아이다호', labelEn: 'Idaho', labelZh: '爱达荷', rate: 0.053 },
   IL:  { label: '일리노이', labelEn: 'Illinois', labelZh: '伊利诺伊', rate: 0.0495 },
@@ -2678,7 +2678,7 @@ const STATE_TAX_RATES = {
   VA:  { label: '버지니아', labelEn: 'Virginia', labelZh: '弗吉尼亚', rate: 0.0575 },
   WA:  { label: '워싱턴', labelEn: 'Washington', labelZh: '华盛顿', rate: 0.0 },
   DC:  { label: '워싱턴 D.C.', labelEn: 'Washington D.C.', labelZh: '华盛顿特区', rate: 0.1075 },
-  WV:  { label: '웨스트버지니아', labelEn: 'West Virginia', labelZh: '西弗吉尼亚', rate: 0.0482 },
+  WV:  { label: '웨스트버지니아', labelEn: 'West Virginia', labelZh: '西弗吉尼亚', rate: 0.0458 }, // SB 392(2026-03-31 서명), 2026-01-01 소급 시행 — 전체 세율 구간 5% 일괄 인하로 최고세율 4.82%→4.58%. tax.wv.gov 공식 발표 2026-09-29 확인
   WI:  { label: '위스콘신', labelEn: 'Wisconsin', labelZh: '威斯康星', rate: 0.0765 },
   WY:  { label: '와이오밍', labelEn: 'Wyoming', labelZh: '怀俄明', rate: 0.0 },
 };

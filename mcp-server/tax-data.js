@@ -41,7 +41,7 @@ const STATE_TAX_RATES = {
   CT: { labelEn: 'Connecticut', rate: 0.0699 },
   DE: { labelEn: 'Delaware', rate: 0.066 },
   FL: { labelEn: 'Florida', rate: 0.0 },
-  GA: { labelEn: 'Georgia', rate: 0.0519 },
+  GA: { labelEn: 'Georgia', rate: 0.0499 },
   HI: { labelEn: 'Hawaii', rate: 0.11 },
   ID: { labelEn: 'Idaho', rate: 0.053 },
   IL: { labelEn: 'Illinois', rate: 0.0495 },
@@ -80,7 +80,7 @@ const STATE_TAX_RATES = {
   VA: { labelEn: 'Virginia', rate: 0.0575 },
   WA: { labelEn: 'Washington', rate: 0.0 },
   DC: { labelEn: 'Washington D.C.', rate: 0.1075 },
-  WV: { labelEn: 'West Virginia', rate: 0.0482 },
+  WV: { labelEn: 'West Virginia', rate: 0.0458 },
   WI: { labelEn: 'Wisconsin', rate: 0.0765 },
   WY: { labelEn: 'Wyoming', rate: 0.0 },
 };

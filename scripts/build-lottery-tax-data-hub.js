@@ -28,7 +28,7 @@ const ROOT = path.join(__dirname, '..');
 const DATA_DIR = path.join(ROOT, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-const TODAY = '2026-09-01';
+const TODAY = '2026-09-29';
 
 // ---------------------------------------------------------------------------
 // 1. State table (51 = 50 states + DC, from STATE_TAX_RATES; AVG excluded from

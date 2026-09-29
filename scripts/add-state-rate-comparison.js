@@ -32,7 +32,7 @@ const MARKER_END = '<!-- rate-comparison:end -->';
 const ANCHOR = '  <h2>Federal tax: 24% withheld now, 37% owed at filing time</h2>';
 // 이 스크립트를 실제로 돌리는 날짜로 맞출 것 — 콘텐츠가 실제로 바뀌었는데 날짜를 안 올리면
 // "업데이트됐다고 써있는데 실제로는 몇 주 전 그대로"인 신뢰도 문제가 생김
-const RUN_DATE = '2026-09-20';
+const RUN_DATE = '2026-09-29';
 
 function usd(n) {
   return '$' + Math.round(n).toLocaleString('en-US');

@@ -279,7 +279,7 @@ const NEW_STATES_RAW = [
   { name: 'South Dakota', abbr: 'SD', file: 'south-dakota-lottery-tax.html', rate: 0.0, rateDisplay: '0%', zeroTax: true },
   { name: 'Utah', abbr: 'UT', file: 'utah-lottery-tax.html', rate: 0.0455, rateDisplay: '4.55%', zeroTax: false, noLottery: true },
   { name: 'Vermont', abbr: 'VT', file: 'vermont-lottery-tax.html', rate: 0.0875, rateDisplay: '8.75%', zeroTax: false },
-  { name: 'West Virginia', abbr: 'WV', file: 'west-virginia-lottery-tax.html', rate: 0.0482, rateDisplay: '4.82%', zeroTax: false },
+  { name: 'West Virginia', abbr: 'WV', file: 'west-virginia-lottery-tax.html', rate: 0.0458, rateDisplay: '4.58%', zeroTax: false }, // 2026-09-29: SB 392로 4.82%→4.58% 갱신(이 스크립트 자체는 재실행 안 함, 참고용으로만 최신화)
   { name: 'Wyoming', abbr: 'WY', file: 'wyoming-lottery-tax.html', rate: 0.0, rateDisplay: '0%', zeroTax: true },
   { name: 'Washington D.C.', abbr: 'DC', file: 'washington-dc-lottery-tax.html', rate: 0.1075, rateDisplay: '10.75%', zeroTax: false, isDC: true },
 ];

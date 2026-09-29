@@ -9,7 +9,7 @@ CT,Connecticut,6.99,false,false
 DC,Washington D.C.,10.75,false,false
 DE,Delaware,6.6,false,false
 FL,Florida,0,true,false
-GA,Georgia,5.19,false,false
+GA,Georgia,4.99,false,false
 HI,Hawaii,11,false,false
 IA,Iowa,3.8,false,false
 ID,Idaho,5.3,false,false
@@ -48,5 +48,5 @@ VA,Virginia,5.75,false,false
 VT,Vermont,8.75,false,false
 WA,Washington,0,true,false
 WI,Wisconsin,7.65,false,false
-WV,West Virginia,4.82,false,false
+WV,West Virginia,4.58,false,false
 WY,Wyoming,0,true,false
