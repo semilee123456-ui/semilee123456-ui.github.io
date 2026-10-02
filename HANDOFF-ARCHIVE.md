@@ -20195,3 +20195,28 @@ comparison.js` 신설(재실행 가능·idempotent 검증 완료, STATE_TAX_RATE
 
 **커밋**: 잭팟 `4178d6d`, 콘텐츠 `b8e396e` — 둘 다 `main`에 직접 커밋·푸시 완료. 세션
 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된 상태.
+
+## 2026-09-22 — 파워볼 9/21 회차 반영 + 확정잭팟 아카이브 오기재 정정
+
+사용자가 usamega.com 스크린샷 3장 제공(파워볼 9/21 Past Results, 메가밀리언즈 Past
+Results, 홈페이지). `scripts/update-jackpot-data.js` 실행 도중 `powerball: 최신 추첨
+날짜 파싱 실패` 일시 오류 발생 — 재시도해보니 정상 응답, `get()` 헬퍼를 직접 호출해
+확인한 결과도 정상이라 사이트 구조 변경이 아니라 일회성 네트워크/프록시 문제였음을
+확인(코드 변경 불필요). 재시도 후 파워볼 9/19→9/21 신규 회차 감지(`[2,7,9,17,58]+20`),
+다음 잭팟 $332M(현금 $141.7M, 9/23 추첨)로 갱신, 스크린샷과 정확히 일치.
+
+늘 그렇듯(파워볼 확정 잭팟 소스 부재) `POWERBALL_JACKPOT_ARCHIVE`의 9/21 항목에 직전
+회차 예상액($313M)이 그대로 들어가 있어 스크린샷 Past Results 확정액 $313.5M로 직접
+정정. `POWERBALL_DRAW_ARCHIVE`에도 9/21 회차를 확정 데이터로 직접 추가해 동기화.
+메가밀리언즈는 이미 최신(9/18 회차) — 변경 없음.
+
+**검증**: `node --check`(script.js/odds-data.js), `draw_archive_integrity_check`·
+`draw_schedule_gap_check`(4개 배열 각각) `ISSUES: 0`, `console_error_audit`(224)
+`ISSUES: 0`. `script.min.js` 재빌드→캐시버스팅(`?v=20260922-1`)→`sw.js` `CACHE_NAME`
+(v122→v123) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-09-16"을
+`HANDOFF-ARCHIVE.md`로 이관.
+
+**커밋**: `8d99a36`로 `main`에 직접 커밋·푸시 완료. 세션 종료 시점 기준 미커밋 변경
+없음, `origin/main`과 로컬 완전히 동기화된 상태.
