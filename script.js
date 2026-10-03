@@ -5630,7 +5630,7 @@ function buildDrawScheduleMore(days){
 // cashUsd: 공식 사이트가 발표한 실제 일시불 현금가치 — 없으면 화면 표시 시 CASH_VALUE_RATIO
 // (58%) 추정치로 대체됨(getJackpotCashUsd() 참고).
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 440000000, cashUsd: 183100000 },
+  powerball:    { amountUsd: 440000000, cashUsd: 181300000 },
   megamillions: { amountUsd: 321000000, cashUsd: 131100000 },
 };
 
