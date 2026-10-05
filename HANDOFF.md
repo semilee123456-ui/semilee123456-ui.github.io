@@ -894,58 +894,8 @@ PR #366~370)/2026-09-06(파워볼 9/5 회차 수동 갱신+잭팟 아카이브 �
 파워볼 9/14·메가밀리언즈 9/15 회차 반영)/2026-09-17(파워볼 9/16 회차 반영+확정잭팟
 아카이브 오기재 정정)/2026-09-19(메가밀리언즈 9/18 회차 반영)/2026-09-20(파워볼 9/19
 회차 반영+애드센스 "가치가 별로 없는 콘텐츠" 플래그 조치)/2026-09-22(파워볼 9/21 회차
-반영+확정잭팟 아카이브 오기재 정정) 스물세 항목을 그대로 옮겼음)*
-
-### 2026-09-25 — 다른 세션이 못 push한 "홈 화면 국가 선택 누락" 버그 검증·반영 + 파워볼 9/21·9/23 반영
-
-**1. 다른 세션이 보고한 버그를 이 세션이 대신 반영**: 사용자가 "다른 AI가 찾은건데
-해결해줘"라며 다른 Claude 세션의 보고를 릴레이 — 9/1에 `COUNTRY_TAX_PROFILES`에
-추가된 8개국(스페인/스위스/UAE/사우디/이집트/이스라엘/우크라이나/나이지리아)이
-홈 화면 국가 선택 UI(`#homeCountrySelect`/`#homeCountryToggle`)에서 빠져 있다는
-내용, 로컬 커밋(`8f1109f`)까지 했으나 그 세션에 `add_repo` 도구가 없어 push 권한을
-못 받고 막혀 있었음(그 세션의 로컬 커밋은 이 세션에서 접근 불가 — 직접 재구현).
-
-검증 결과 실제 버그였고, 조사해보니 보고된 2곳 외에 **이 세션이 직접 찾은 2곳이
-더** 있었음:
-- `SUPPORTED_TAX_COUNTRIES`(`?country=` URL 화이트리스트) — 신규 랜딩페이지
-  (`spain-resident-us-lottery-tax.html` 등)의 "계산기 열기" 딥링크가 조용히
-  무시되고 있었음
-- `#realAbroadSelect`("나는 어떤 경우일까요" 패널의 국가 이동 드롭다운) — 이스라엘은
-  계산기가 히브리어 i18n을 지원하지 않아(`i18n/he.json` 없음) 국가는 `il`로
-  정확히 맞추되 화면 언어는 영어로 우회(ca/uk/au 등 기존 관례를 따름).
-  `REAL_ABROAD_CURRENCY`에도 8개국 추가(스페인은 EUR 재사용, 나머지 7개국은
-  계산기 미지원 통화라 ca/tw/hk와 동일하게 USD 우회 — 실제 통화 지원 추가는
-  스코프 밖).
-
-35개 언어 버튼 라벨(`input.optSpain` 등 8개 신규 i18n 키)은 정확도 우선으로
-서브에이전트에 위임 — `COUNTRY_TAX_PROFILES`의 이미 검증된 en/zh/vi/th/ru를
-1차 근거로, 나머지는 Wikidata API 프로그래밍 조회 + 불확실한 항목(몽골어 우크라이나/
-UAE 등)은 실제 정부·뉴스 사이트로 교차검증. 반영 전 이 세션이 독립 재검증:
-35개 언어 정확한 개수·키 일치, 키릴 문자(ru/uk/kk/ky/mn) 전부 문자 단위 스캔해
-라틴 유사문자 혼입 없음 확인(이 저장소가 과거 여러 번 겪은 버그 패턴).
-
-**검증**: 구조 수정 단계에서 빌드 안 된 `script.min.js`로 첫 Playwright 테스트가
-거짓 실패했던 걸 발견→재빌드 후 8개국 전부 `?country=` 딥링크·버튼 활성화·
-`realAbroadSelect` 이동을 직접 재현해 정상 확인. `i18n_coverage_audit`(782키)·
-`i18n_attr_lint`·`broken_link_audit`(223)·`fact_consistency_audit`(228)·
-`console_error_audit`(224)·`full_overflow_sweep`(945개 조합, 320~400px 좁은 화면
-포함)·`a11y_audit`(13페이지×2모드) 전부 `ISSUES: 0`.
-
-**2. 파워볼 9/21·9/23 + 메가밀리언즈 9/22 반영**: 위 작업 커밋·푸시 도중 `git fetch`
-결과 자동 워크플로가 이미 두 회차(9/21→9/23, 9/18→9/22)를 반영해둔 상태 — 병합 시
-`index.html`/`script.min.js` 캐시버스팅 줄만 충돌, 병합된 내용 기준으로 새 버전
-정리. 병합 후 스크린샷과 대조하니 늘 그렇듯(파워볼 확정 잭팟 소스 부재)
-`POWERBALL_JACKPOT_ARCHIVE`의 9/23 항목이 예상액($332M)으로 들어가 있어 확정액
-$333.1M로 직접 정정, 두 게임 `DRAW_ARCHIVE`에도 밀린 회차(파워볼 9/23·메가밀리언즈
-9/22) 직접 추가. `draw_archive_integrity_check`·`draw_schedule_gap_check`(4개
-배열 각각) `ISSUES: 0`.
-
-**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-09-17"을
-`HANDOFF-ARCHIVE.md`로 이관.
-
-**커밋**: 구조 수정 `c28915d`, 번역 `9945eb5`, 병합+잭팟 정정 `f768168` — 전부
-`main`에 직접 커밋·푸시 완료. 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과
-로컬 완전히 동기화된 상태.
+반영+확정잭팟 아카이브 오기재 정정)/2026-09-25(다른 세션이 못 push한 "홈 화면 국가
+선택 누락" 버그 검증·반영+파워볼 9/21·9/23 반영) 스물네 항목을 그대로 옮겼음)*
 
 ### 2026-09-29 — 파워볼 9/26·9/28 + 메가밀리언즈 9/25 반영 + `<title>` 순서 수정 + 조지아·웨스트버지니아 세율 정정 + 다른 세션 보고 2건 검증
 
@@ -1068,3 +1018,46 @@ audit`(228) `ISSUES: 0`. `script.min.js` 재빌드→`index.html` 캐시버스�
 
 **커밋**: `19a31a0`로 `main`에 직접 커밋·푸시 완료. 세션 종료 시점 기준 미커밋 변경
 없음, `origin/main`과 로컬 완전히 동기화된 상태.
+
+### 2026-10-05 — 파워볼 10/3 + 메가밀리언즈 10/2 회차 반영 + `git push origin main` 로컬 브랜치 혼선 발견·해소
+
+사용자가 usamega.com 스크린샷 3장 제공. `git fetch` 결과 자동 워크플로가 파워볼
+9/30→10/3(`[4,42,44,55,59]+14`)·메가밀리언즈 9/29→10/2(`[6,37,40,41,55]+10`) 둘 다
+이미 반영해둔 상태(세 번의 auto-update 커밋, fast-forward 동기화) — `JACKPOT_DATA`/
+`LATEST_DRAW`는 스크린샷과 정확히 일치(파워볼 다음 잭팟 $467M/현금 $192.4M, 메가
+밀리언즈 $345M/현금 $139.6M). `MEGAMILLIONS_JACKPOT_ARCHIVE`의 10/2 확정액($321M)도
+이미 일치 — 변경 불필요. 늘 그렇듯(파워볼 확정 잭팟 소스 부재) `POWERBALL_JACKPOT_
+ARCHIVE`의 10/3 항목에 직전 다음-회차 예상액($440M)이 그대로 들어가 있어 스크린샷
+Past Results 확정액 $444M로 직접 정정. 두 게임 `DRAW_ARCHIVE`에도 밀린 회차(파워볼
+10/3·메가밀리언즈 10/2) 직접 추가.
+
+이번 세션에서 처음 겪은 문제: `npm install` 없이는 `scripts/build-min.js`가
+`terser`/`clean-css` MODULE_NOT_FOUND로 실패(글로벌 설치(`/opt/node22/lib/
+node_modules`)에 이 두 패키지가 없음, 로컬 `node_modules`도 없는 상태) — `npm
+install`로 `package.json`의 devDependencies(gitignore된 로컬 `node_modules`)를
+설치해 해결. 또한 `git push -u origin main`이 "non-fast-forward"로 반복 거부되는
+문제 발생 — `git ls-remote origin main`으로 실제 원격 상태를 직접 확인해보니
+로컬에서 계산한 fast-forward 조건과 일치해 당황스러웠으나, 원인은 로컬 저장소에
+**별도로 존재하는 `main` 브랜치 자체가 몇 주 전부터 갱신 안 된 채(`behind 13`)
+방치돼 있었던 것** — 이 세션은 항상 `claude/site-layout-design-refresh-3himm8`
+브랜치에서 작업하고 `origin main`으로 직접 push해왔는데, `git push origin main`이
+현재 체크아웃된 브랜치(HEAD)가 아니라 로컬에 동명으로 존재하는 `main` 브랜치 자체를
+참조해버려 그 오래된 스냅샷을 push하려 한 것. `git push origin HEAD:refs/heads/main`
+으로 명시해 해결, 이후 로컬 `main`도 `git branch -f main origin/main`으로 동기화
+해둠. **다음 세션 참고: 앞으로는 `git push -u origin main` 대신 `git push origin
+HEAD:refs/heads/main`을 쓰거나, push 전에 `git branch -f main origin/main`으로
+로컬 `main`을 먼저 동기화할 것** — 이 저장소는 로컬 `main`이 실제 작업 브랜치가
+아니라서 이 혼선이 다시 생길 수 있음.
+
+**검증**: `node --check`(script.js/odds-data.js), `draw_archive_integrity_check`·
+`draw_schedule_gap_check`(4개 배열 각각) `ISSUES: 0`, `console_error_audit`(224)·
+`fact_consistency_audit`(228) `ISSUES: 0`. `script.min.js` 재빌드→`odds-data.js`
+캐시버스팅(자동 워크플로가 올려둔 `?v=20261005-1`에서 이 세션의 추가 정정분까지
+반영해 `-2`로 한 번 더 이어서)→`sw.js` `CACHE_NAME`(v129→v130) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-09-25"를
+`HANDOFF-ARCHIVE.md`로 이관.
+
+**커밋**: `1995223`로 `main`에 직접 커밋·푸시 완료(자동 워크플로 커밋 3건 fast-
+forward 병합 후). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬
+완전히 동기화된 상태.
