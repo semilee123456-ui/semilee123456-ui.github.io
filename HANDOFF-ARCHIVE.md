@@ -20393,3 +20393,46 @@ audit`(228) `ISSUES: 0`. `script.min.js` 재빌드→`index.html` 캐시버스�
 
 **커밋**: `19a31a0`로 `main`에 직접 커밋·푸시 완료. 세션 종료 시점 기준 미커밋 변경
 없음, `origin/main`과 로컬 완전히 동기화된 상태.
+
+## 2026-10-05 — 파워볼 10/3 + 메가밀리언즈 10/2 회차 반영 + `git push origin main` 로컬 브랜치 혼선 발견·해소
+
+사용자가 usamega.com 스크린샷 3장 제공. `git fetch` 결과 자동 워크플로가 파워볼
+9/30→10/3(`[4,42,44,55,59]+14`)·메가밀리언즈 9/29→10/2(`[6,37,40,41,55]+10`) 둘 다
+이미 반영해둔 상태(세 번의 auto-update 커밋, fast-forward 동기화) — `JACKPOT_DATA`/
+`LATEST_DRAW`는 스크린샷과 정확히 일치(파워볼 다음 잭팟 $467M/현금 $192.4M, 메가
+밀리언즈 $345M/현금 $139.6M). `MEGAMILLIONS_JACKPOT_ARCHIVE`의 10/2 확정액($321M)도
+이미 일치 — 변경 불필요. 늘 그렇듯(파워볼 확정 잭팟 소스 부재) `POWERBALL_JACKPOT_
+ARCHIVE`의 10/3 항목에 직전 다음-회차 예상액($440M)이 그대로 들어가 있어 스크린샷
+Past Results 확정액 $444M로 직접 정정. 두 게임 `DRAW_ARCHIVE`에도 밀린 회차(파워볼
+10/3·메가밀리언즈 10/2) 직접 추가.
+
+이번 세션에서 처음 겪은 문제: `npm install` 없이는 `scripts/build-min.js`가
+`terser`/`clean-css` MODULE_NOT_FOUND로 실패(글로벌 설치(`/opt/node22/lib/
+node_modules`)에 이 두 패키지가 없음, 로컬 `node_modules`도 없는 상태) — `npm
+install`로 `package.json`의 devDependencies(gitignore된 로컬 `node_modules`)를
+설치해 해결. 또한 `git push -u origin main`이 "non-fast-forward"로 반복 거부되는
+문제 발생 — `git ls-remote origin main`으로 실제 원격 상태를 직접 확인해보니
+로컬에서 계산한 fast-forward 조건과 일치해 당황스러웠으나, 원인은 로컬 저장소에
+**별도로 존재하는 `main` 브랜치 자체가 몇 주 전부터 갱신 안 된 채(`behind 13`)
+방치돼 있었던 것** — 이 세션은 항상 `claude/site-layout-design-refresh-3himm8`
+브랜치에서 작업하고 `origin main`으로 직접 push해왔는데, `git push origin main`이
+현재 체크아웃된 브랜치(HEAD)가 아니라 로컬에 동명으로 존재하는 `main` 브랜치 자체를
+참조해버려 그 오래된 스냅샷을 push하려 한 것. `git push origin HEAD:refs/heads/main`
+으로 명시해 해결, 이후 로컬 `main`도 `git branch -f main origin/main`으로 동기화
+해둠. **다음 세션 참고: 앞으로는 `git push -u origin main` 대신 `git push origin
+HEAD:refs/heads/main`을 쓰거나, push 전에 `git branch -f main origin/main`으로
+로컬 `main`을 먼저 동기화할 것** — 이 저장소는 로컬 `main`이 실제 작업 브랜치가
+아니라서 이 혼선이 다시 생길 수 있음.
+
+**검증**: `node --check`(script.js/odds-data.js), `draw_archive_integrity_check`·
+`draw_schedule_gap_check`(4개 배열 각각) `ISSUES: 0`, `console_error_audit`(224)·
+`fact_consistency_audit`(228) `ISSUES: 0`. `script.min.js` 재빌드→`odds-data.js`
+캐시버스팅(자동 워크플로가 올려둔 `?v=20261005-1`에서 이 세션의 추가 정정분까지
+반영해 `-2`로 한 번 더 이어서)→`sw.js` `CACHE_NAME`(v129→v130) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-09-25"를
+`HANDOFF-ARCHIVE.md`로 이관.
+
+**커밋**: `1995223`로 `main`에 직접 커밋·푸시 완료(자동 워크플로 커밋 3건 fast-
+forward 병합 후). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬
+완전히 동기화된 상태.
