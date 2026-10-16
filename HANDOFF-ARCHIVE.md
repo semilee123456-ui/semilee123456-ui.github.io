@@ -20436,3 +20436,33 @@ HEAD:refs/heads/main`을 쓰거나, push 전에 `git branch -f main origin/main`
 **커밋**: `1995223`로 `main`에 직접 커밋·푸시 완료(자동 워크플로 커밋 3건 fast-
 forward 병합 후). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬
 완전히 동기화된 상태.
+
+## 2026-10-09 — 파워볼 10/5·10/7 + 메가밀리언즈 10/6 회차 반영 + 로컬 `main` 브랜치 혼선 재확인
+
+사용자가 usamega.com 스크린샷 3장 제공. `git fetch` 결과 자동 워크플로가 파워볼
+10/3→10/5→10/7(각각 `[16,23,32,36,54]+9`, `[11,13,14,21,65]+19`)·메가밀리언즈
+10/2→10/6(`[26,32,42,51,54]+22`) 전부 이미 반영해둔 상태(세 번의 auto-update
+커밋, fast-forward 동기화) — `JACKPOT_DATA`/`LATEST_DRAW`는 스크린샷과 정확히
+일치(파워볼 다음 잭팟 $516M/현금 $212.6M, 메가밀리언즈 $364M/현금 $147.3M).
+`MEGAMILLIONS_JACKPOT_ARCHIVE`의 10/6 확정액($345M)도 이미 일치 — 변경 불필요.
+늘 그렇듯(파워볼 확정 잭팟 소스 부재) `POWERBALL_JACKPOT_ARCHIVE`의 10/5·10/7
+두 항목 모두 당시의 다음-회차 예상액($467M·$485M)이 그대로 들어가 있어 스크린샷
+Past Results 확정액 $463.3M·$484.8M로 각각 직접 정정. 세 게임
+`DRAW_ARCHIVE`에도 밀린 회차(파워볼 10/5·10/7, 메가밀리언즈 10/6) 직접 추가.
+
+지난 세션(2026-10-05)에 기록해둔 `git push origin HEAD:refs/heads/main` 패턴을
+이번엔 처음부터 적용해 문제없이 1회에 push 성공 — 로컬 `main` 브랜치가 다시
+뒤처지지 않도록 이번에도 작업 끝에 `git branch -f main origin/main`으로 동기화.
+
+**검증**: `node --check`(script.js/odds-data.js), `draw_archive_integrity_check`·
+`draw_schedule_gap_check`(4개 배열 각각) `ISSUES: 0`, `console_error_audit`(224)·
+`fact_consistency_audit`(228) `ISSUES: 0`. `script.min.js` 재빌드→`odds-data.js`
+캐시버스팅(자동 워크플로가 올려둔 `?v=20261009-1`에서 이 세션의 추가 정정분까지
+반영해 `-2`로 한 번 더 이어서)→`sw.js` `CACHE_NAME`(v130→v131) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-09-29"를
+`HANDOFF-ARCHIVE.md`로 이관.
+
+**커밋**: `bd4db018`로 `main`에 직접 커밋·푸시 완료(자동 워크플로 커밋 3건 fast-
+forward 병합 후). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬
+완전히 동기화된 상태.
