@@ -4172,7 +4172,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20261017-2';
+    script.src = 'odds-data.js?v=20261019-1';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -5630,7 +5630,7 @@ function buildDrawScheduleMore(days){
 // cashUsd: 공식 사이트가 발표한 실제 일시불 현금가치 — 없으면 화면 표시 시 CASH_VALUE_RATIO
 // (58%) 추정치로 대체됨(getJackpotCashUsd() 참고).
 const JACKPOT_DATA = {
-  powerball:    { amountUsd: 600000000, cashUsd: 252700000 },
+  powerball:    { amountUsd: 607000000, cashUsd: 255700000 },
   megamillions: { amountUsd: 413000000, cashUsd: 170300000 },
 };
 
@@ -5650,7 +5650,7 @@ const GAME_NAME_MORE = {
 // 배율·더블플레이 번호는 이 사이트가 추적 안 하는 필드라 스코프 밖. 지난 갱신 이력은 git log로
 // 추적 가능해서 날짜별 코멘트는 여기 쌓지 않음.
 const LATEST_DRAW = {
-  powerball:    { date: '2026-10-14', numbers: [3, 34, 37, 42, 46], special: 20 },
+  powerball:    { date: '2026-10-17', numbers: [12, 13, 24, 32, 35], special: 11 },
   megamillions: { date: '2026-10-16', numbers: [2, 15, 31, 41, 68], special: 11 },
 };
 
