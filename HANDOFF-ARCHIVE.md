@@ -20558,3 +20558,46 @@ JACKPOT_ARCHIVE`의 10/12 항목에 직전 다음-회차 예상액($538M)이 그
 **커밋**: `6fef4297`로 `main`에 직접 커밋·푸시 완료(2번 항목은 코드 변경 없는
 설명 대응). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬 완전히
 동기화된 상태.
+
+## 2026-10-16 — 파워볼 10/14 + 메가밀리언즈 10/13 회차 반영 + 전체 회귀 테스트 19개 점검(코드 변경 없음)
+
+**1. 전체 회귀 테스트 19개 전수 점검**: 사용자가 "빠짐없이 전부 꼼꼼하게"라고
+요청, 평소 잭팟 작업 때만 돌리던 4개(`draw_archive_integrity_check`·
+`draw_schedule_gap_check`·`console_error_audit`·`fact_consistency_audit`) 외
+나머지 15개(`broken_link_audit`·`i18n_coverage_audit`·`i18n_attr_lint`·
+`mcp_sync_check`·`drift_consistency_test`·`full_overflow_sweep`·`a11y_audit`·
+`home_audit`·`faq_audit`·`link_navigation_audit`·`map_scroll_audit`·
+`nav_slider_audit`·`wrap_audit`·`lang_leak_audit`·`audit_odds_compare`)까지
+전부 돌림. 16개는 `ISSUES: 0`, 3개에서 발견이 나왔으나 전부 파고든 결과 실제
+버그 아님으로 결론: (1) `link_navigation_audit`의 ERR_CERT_AUTHORITY_INVALID
+3건 — 샌드박스가 외부망을 막아서 생기는 환경 제약(`console_error_audit.js`는
+이미 이 패턴을 거르는 필터가 있는데 `link_navigation_audit.js`만 그 필터가
+없는 기존 테스트 허점, 2번 테스트 재실행해도 재현 안 됨), (2) `faq_audit` 600px·
+한국어 4px 오버플로 1건 — 재현 시도 실패, 재실행 시 0건, 일회성 타이밍 플레이크,
+(3) `lang_leak_audit` 태국어 FAQ 탭 한국어 노출 1건 — 원인 추적 결과
+`faq-panel-data.js`(255KB, FAQ 탭 열 때만 지연 로드)가 로드되기 전 정적
+HTML의 한국어 플레이스홀더가 잠깐 보이는 기존 설계상 트레이드오프(주석에 이미
+명시돼 있음), 재실행 시 0건. 셋 다 이번 세션 커밋과 무관, 코드 수정 안 함.
+
+**2. 파워볼 10/14 + 메가밀리언즈 10/13 반영**: 사용자가 usamega.com 스크린샷
+3장 제공. 자동 워크플로가 이미 두 회차 다 반영해둔 상태(두 번의 auto-update
+커밋, fast-forward 동기화) — `JACKPOT_DATA`/`LATEST_DRAW`는 스크린샷과 정확히
+일치(파워볼 다음 잭팟 $600M/현금 $246M, 메가밀리언즈 $403M/현금 $162.1M).
+`MEGAMILLIONS_JACKPOT_ARCHIVE`의 10/13 확정액($385M)도 이미 일치 — 변경 불필요.
+늘 그렇듯(파워볼 확정 잭팟 소스 부재) `POWERBALL_JACKPOT_ARCHIVE`의 10/14
+항목에 직전 다음-회차 예상액($562M)이 그대로 들어가 있어 스크린샷 Past Results
+확정액 $565.5M로 직접 정정. 두 게임 `DRAW_ARCHIVE`에도 밀린 회차(파워볼 10/14·
+메가밀리언즈 10/13) 직접 추가.
+
+**검증**: `node --check`(script.js/odds-data.js), `draw_archive_integrity_check`·
+`draw_schedule_gap_check`(4개 배열 각각) `ISSUES: 0`, `console_error_audit`(224)·
+`fact_consistency_audit`(228) `ISSUES: 0`. `script.min.js` 재빌드→`odds-data.js`
+캐시버스팅(자동 워크플로가 올려둔 `?v=20261016-1`에서 이 세션의 추가 정정분까지
+반영해 `-2`로 한 번 더 이어서)→`sw.js` `CACHE_NAME`(v134→v135) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-10-09"를
+`HANDOFF-ARCHIVE.md`로 이관.
+
+**커밋**: `90bda5d8`로 `main`에 직접 커밋·푸시 완료(자동 워크플로 커밋 2건 fast-
+forward 병합 후). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬
+완전히 동기화된 상태.
