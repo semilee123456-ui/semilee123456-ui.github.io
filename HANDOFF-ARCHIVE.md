@@ -20601,3 +20601,29 @@ HTML의 한국어 플레이스홀더가 잠깐 보이는 기존 설계상 트레
 **커밋**: `90bda5d8`로 `main`에 직접 커밋·푸시 완료(자동 워크플로 커밋 2건 fast-
 forward 병합 후). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬
 완전히 동기화된 상태.
+
+## 2026-10-17 — 메가밀리언즈 10/16 회차 반영
+
+사용자가 usamega.com 스크린샷 3장 제공. `git fetch` 결과 자동 워크플로가 파워볼
+다음 추첨(10/17) 현금가치만 갱신해둔 상태($246M→$252.7M, 잭팟 총액 $600M는
+그대로)였고 메가밀리언즈는 아직 반영 전이라 `scripts/update-jackpot-data.js`
+직접 실행 — 메가밀리언즈 10/13→10/16 신규 회차 감지(`[2,15,31,41,68]+11`),
+다음 잭팟 $413M(현금 $170.3M, 10/20 추첨)로 갱신, 스크린샷과 정확히 일치.
+`MEGAMILLIONS_JACKPOT_ARCHIVE`의 10/16 확정액($403M)도 이미 일치 — 이번 회차는
+정정 불필요. `MEGAMILLIONS_DRAW_ARCHIVE`에만 10/16 회차가 빠져 있어 직접 추가.
+파워볼은 10/14 이후 신규 회차 없음(스크린샷도 10/14가 최신 확정 결과로 동일,
+10/17 추첨은 아직 진행 전).
+
+**검증**: `node --check`(script.js/odds-data.js), `draw_archive_integrity_check`·
+`draw_schedule_gap_check`(4개 배열 각각) `ISSUES: 0`, `console_error_audit`(224)·
+`fact_consistency_audit`(228) `ISSUES: 0`. `script.min.js` 재빌드→`index.html`/
+`odds-data.js` 캐시버스팅(`update-jackpot-data.js`가 올려둔 값에서 이 세션의
+추가 정정분까지 반영해 `odds-data.js?v=20261017-2`로 한 번 더 이어서)→`sw.js`
+`CACHE_NAME`(v135→v136) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-10-11"을
+`HANDOFF-ARCHIVE.md`로 이관.
+
+**커밋**: `6bf66853`로 `main`에 직접 커밋·푸시 완료(자동 워크플로 커밋 1건 fast-
+forward 병합 후). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬
+완전히 동기화된 상태.
