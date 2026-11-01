@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
 const widths = [320, 375, 390, 412, 430];
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const issues = [];
 
   for (const lang of ['ko', 'en']) {

@@ -17,7 +17,7 @@ const WIDTHS = [320, 375, 390, 412, 430];
 const VIEWS = ['home', 'compare', 'odds', 'faq', 'privacy', 'disclaimer', 'contact'];
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const allIssues = [];
   let totalChecks = 0;
 

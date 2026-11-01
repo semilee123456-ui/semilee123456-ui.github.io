@@ -64,7 +64,7 @@ function checkBoundaryWraps(root) {
 }
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const issues = [];
   let totalChecks = 0;
 

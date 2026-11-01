@@ -3,7 +3,7 @@ const WIDTHS = [320, 360, 375, 390, 412, 430, 480, 600, 768];
 const LANGS = ['ko', 'en'];
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const issues = [];
   for (const width of WIDTHS) {
     for (const lang of LANGS) {

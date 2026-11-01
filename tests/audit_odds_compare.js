@@ -3,7 +3,7 @@ const widths = [240, 280, 320, 344, 375, 390, 393, 412, 430, 907];
 const views = ['compare', 'odds'];
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const allIssues = [];
 
   for (const lang of ['ko', 'en']) {

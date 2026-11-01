@@ -7,7 +7,7 @@ const { chromium } = require('playwright');
 const navWidths = [300, 320, 344, 360, 375, 390, 412, 428];
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const issues = [];
 
   // --- 1) nav 원형 설정 버튼이 pill들과 같은 줄에 있는지 (한국어 기준) ---

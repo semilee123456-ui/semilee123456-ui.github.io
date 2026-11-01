@@ -7,7 +7,7 @@ const VIEWS = ['home', 'compare', 'odds', 'faq'];
 const HANGUL_RUN = /[가-힣]{3,}/g;
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const issues = [];
 
   for (const lang of LANGS) {
