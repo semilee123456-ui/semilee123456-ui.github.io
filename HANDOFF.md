@@ -907,33 +907,8 @@ PR #366~370)/2026-09-06(파워볼 9/5 회차 수동 갱신+잭팟 아카이브 �
 10/14+메가밀리언즈 10/13 회차 반영+전체 회귀 테스트 19개 점검, 코드 변경 없음)/
 2026-10-17(메가밀리언즈 10/16 회차 반영)/2026-10-19(파워볼 10/17 회차 반영+
 51개국 세금 계산 로직 검증, 코드 변경 없음)/2026-10-20(파워볼 10/19 회차 반영)/
-2026-10-23(파워볼 10/21+메가밀리언즈 10/20 회차 반영) 서른일곱 항목을 그대로
-옮겼음)*
-
-### 2026-10-26 — 파워볼 10/24 + 메가밀리언즈 10/23 회차 반영
-
-사용자가 usamega.com 스크린샷 3장 제공. `git fetch` 결과 자동 워크플로가 파워볼
-10/21→10/24(`[4,5,15,19,55]+19`)·메가밀리언즈 10/20→10/23(`[3,7,46,49,51]+5`)
-둘 다 이미 반영해둔 상태(세 번의 auto-update 커밋, fast-forward 동기화) —
-`JACKPOT_DATA`/`LATEST_DRAW`는 스크린샷과 정확히 일치(파워볼 다음 잭팟 $687M/
-현금 $294.7M, 메가밀리언즈 $443M/현금 $186.5M). `MEGAMILLIONS_JACKPOT_ARCHIVE`의
-10/23 확정액($433M)도 이미 일치 — 변경 불필요. 늘 그렇듯(파워볼 확정 잭팟 소스
-부재) `POWERBALL_JACKPOT_ARCHIVE`의 10/24 항목에 직전 다음-회차 예상액($674M)이
-그대로 들어가 있어 스크린샷 Past Results 확정액 $664.9M로 직접 정정. 두 게임
-`DRAW_ARCHIVE`에도 밀린 회차(파워볼 10/24·메가밀리언즈 10/23) 직접 추가.
-
-**검증**: `node --check`(script.js/odds-data.js), `draw_archive_integrity_check`·
-`draw_schedule_gap_check`(4개 배열 각각) `ISSUES: 0`, `console_error_audit`(224)·
-`fact_consistency_audit`(228) `ISSUES: 0`. `script.min.js` 재빌드→`odds-data.js`
-캐시버스팅(자동 워크플로가 올려둔 `?v=20261026-1`에서 이 세션의 추가 정정분까지
-반영해 `-2`로 한 번 더 이어서)→`sw.js` `CACHE_NAME`(v139→v140) 순서로 갱신.
-
-**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-10-19"를
-`HANDOFF-ARCHIVE.md`로 이관.
-
-**커밋**: `d886e576`로 `main`에 직접 커밋·푸시 완료(자동 워크플로 커밋 3건 fast-
-forward 병합 후). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬
-완전히 동기화된 상태.
+2026-10-23(파워볼 10/21+메가밀리언즈 10/20 회차 반영)/2026-10-26(파워볼 10/24+
+메가밀리언즈 10/23 회차 반영) 서른여덟 항목을 그대로 옮겼음)*
 
 ### 2026-10-28 — 파워볼 10/26 + 메가밀리언즈 10/27 회차 반영
 
@@ -998,3 +973,51 @@ audit.js`만 그 필터가 없음, 이번 세션 커밋과 무관)과 동일 원
 **커밋**: `4c08f27e`로 `main`에 직접 커밋·푸시 완료(자동 워크플로 커밋 1건 fast-
 forward 병합 후). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬
 완전히 동기화된 상태.
+
+### 2026-11-01 — 파워볼 10/31 + 메가밀리언즈 10/30 회차 반영 + Playwright 테스트 10개 경로 고정 + `console_error_audit.js` 필터 보강
+
+**1. 파워볼 10/31 + 메가밀리언즈 10/30 반영**: 사용자가 usamega.com 스크린샷 3장
+제공. `git fetch` 결과 자동 워크플로가 메가밀리언즈 10/27→10/30(`[5,10,38,49,68]+17`)
+만 반영해둔 상태 — `JACKPOT_DATA`/`LATEST_DRAW`는 스크린샷과 정확히 일치. 파워볼은
+아직 반영 전이라 `scripts/update-jackpot-data.js` 직접 실행 — 10/28→10/31 신규
+회차 감지(`[2,4,18,50,56]+20`), 다음 잭팟 $793M(현금 $339.9M, 11/2 추첨)로 갱신,
+스크린샷과 정확히 일치. 늘 그렇듯(파워볼 확정 잭팟 소스 부재) `POWERBALL_
+JACKPOT_ARCHIVE`의 10/31 항목에 직전 다음-회차 예상액($760M)이 그대로 들어가
+있어 스크린샷 Past Results 확정액 $770.2M로 직접 정정. 두 게임 `DRAW_ARCHIVE`에도
+밀린 회차(파워볼 10/31·메가밀리언즈 10/30) 직접 추가.
+
+**2. 새 샌드박스 컨테이너에서 처음 겪은 문제 2건, 둘 다 조사해서 근본 원인 수정**:
+(a) 이번 컨테이너는 Playwright 고정 크로미움 버전이 `chromium-1194`(`chrome-linux`
+폴더)에서 `chromium-1243`(`chrome-linux64` 폴더)으로 바뀌어 있어서, 테스트 10개
+(`a11y_audit`·`audit_odds_compare`·`console_error_audit`·`faq_audit`·
+`full_overflow_sweep`·`home_audit`·`lang_leak_audit`·`map_scroll_audit`·
+`nav_slider_audit`·`wrap_audit`)가 하드코딩된 `chromium-1194/chrome-linux/chrome`
+경로로 전부 실행 자체가 안 됐음 — `link_navigation_audit.js`가 이미 쓰고 있던
+안정적인 심볼릭 링크 경로(`/opt/pw-browsers/chromium`)로 10개 파일 전부 통일해
+앞으로 샌드박스 브라우저 버전이 또 바뀌어도 안 깨지게 고침. (b) 경로를 고쳐서
+`console_error_audit.js`가 다시 돌아가게 되자, 기존에 몰랐던 가짜 양성(false
+positive) 2종을 새로 발견: 구글 애드센스 자체 스크립트(GPT)가 광고 요청이
+샌드박스에서 막힐 때 내부적으로 `TagError`를 던지는 경우(pageerror로 잡힘,
+직접 재현해 `name==='TagError'`임을 확인), 그리고 환율 API를 `fetch()`로 호출할
+때 같은 네트워크 제약이 "Failed to load resource" 대신 "Access to fetch ...
+blocked by CORS policy" 형태로 다르게 찍히는 경우 — 둘 다 기존 필터(샌드박스가
+외부망을 막아서 생기는 환경 제약, 실제 코드 버그 아님)와 같은 원인이라 같은
+원칙으로 필터에 추가. 수정 후 재실행해 `ISSUES: 0` 확인. 둘 다 이 세션의 데이터
+작업과 무관한 기존 테스트 인프라 결함 — 레포 코드(script.js 등) 수정 없음.
+
+**검증**: `node --check`(script.js/odds-data.js), `draw_archive_integrity_check`·
+`draw_schedule_gap_check`(4개 배열 각각) `ISSUES: 0`, `console_error_audit`(224,
+필터 수정 후 재실행) `ISSUES: 0`, `fact_consistency_audit`(228)·`a11y_audit`(26
+조합)·`mcp_sync_check`(15개국)·`drift_consistency_test`(29개국) 전부 `ISSUES: 0`.
+`script.min.js` 재빌드(이번 컨테이너에 `npm install` 처음 실행 필요했음 — terser/
+clean-css 글로벌 미설치)→`index.html`/`odds-data.js` 캐시버스팅(자동 워크플로가
+올려둔 값에서 `update-jackpot-data.js`+이 세션의 추가 정정분까지 반영해
+`odds-data.js?v=20261101-3`로 두 번 더 이어서)→`sw.js` `CACHE_NAME`(v142→v143)
+순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-10-26"을
+`HANDOFF-ARCHIVE.md`로 이관.
+
+**커밋**: 데이터 `82b1a36`, 테스트 인프라 `9b74643` — 둘 다 `main`에 직접 커밋·
+푸시 완료(자동 워크플로 커밋 2건 fast-forward 병합 후). 세션 종료 시점 기준
+미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된 상태.
