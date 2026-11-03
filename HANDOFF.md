@@ -1021,3 +1021,27 @@ clean-css 글로벌 미설치)→`index.html`/`odds-data.js` 캐시버스팅(자
 **커밋**: 데이터 `82b1a36`, 테스트 인프라 `9b74643` — 둘 다 `main`에 직접 커밋·
 푸시 완료(자동 워크플로 커밋 2건 fast-forward 병합 후). 세션 종료 시점 기준
 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된 상태.
+
+### 2026-11-03 — 파워볼 11/2 회차 반영
+
+사용자가 usamega.com 스크린샷 3장 제공. `git fetch` 결과 자동 워크플로 커밋 없음.
+파워볼 10/31→11/2 신규 회차(`[7,23,29,64,66]+23`) 반영: `POWERBALL_DRAW_ARCHIVE`·
+`POWERBALL_JACKPOT_ARCHIVE`에 추가, 확정 잭팟은 스크린샷 Past Results 기준
+$803.9M로 직접 기입(자동 워크플로가 없었으므로 이번엔 직전 예상액 carry-over
+버그 자체가 발생하지 않음 — 수동 반영이라 처음부터 확정액으로 기입). 다음 잭팟은
+$835M(현금 $357.9M, 11/4 추첨)로 `JACKPOT_DATA.powerball`/`LATEST_DRAW.powerball`
+갱신. 메가밀리언즈는 스크린샷 기준 10/30 그대로(변경 없음) — 기존 데이터와 정확히
+일치 확인, 조치 불필요.
+
+**검증**: `draw_archive_integrity_check`·`draw_schedule_gap_check`(4개 배열 각각)
+`ISSUES: 0`, `console_error_audit`(224 조합)·`fact_consistency_audit`(228) 전부
+`ISSUES: 0`. `script.min.js` 재빌드(`odds-data.js?v=` 캐시버스팅 반영 포함해 두
+번 빌드)→`index.html` `script.min.js?v=20261101-2→20261103-1`→`odds-data.js?v=
+20261101-3→20261103-1`→`sw.js` `CACHE_NAME`(v143→v144) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목이 이 항목 포함 4개로 한도 내, 이번 라운드는
+추가 이관 불필요.
+
+**커밋**: `751f890` — `main`과 `claude/site-layout-design-refresh-3himm8` 둘 다에
+직접 푸시 완료. 세션 기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된
+상태.
