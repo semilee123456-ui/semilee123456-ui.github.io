@@ -20769,3 +20769,39 @@ JACKPOT_ARCHIVE`의 10/26 항목에 직전 다음-회차 예상액($687M)이 그
 **커밋**: `da6519aa`로 `main`에 직접 커밋·푸시 완료(자동 워크플로 커밋 1건 fast-
 forward 병합 후). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬
 완전히 동기화된 상태.
+
+### 2026-10-30 — 파워볼 10/28 회차 반영 + 전체 회귀 테스트 19개 재점검(코드 변경 없음)
+
+**1. 파워볼 10/28 회차 반영**: 사용자가 usamega.com 스크린샷 3장 제공. 자동
+워크플로가 이미 반영해둔 상태(한 번의 auto-update 커밋, fast-forward 동기화) —
+`JACKPOT_DATA`/`LATEST_DRAW`는 스크린샷과 정확히 일치(다음 잭팟 $760M/현금
+$326M). 늘 그렇듯(파워볼 확정 잭팟 소스 부재) `POWERBALL_JACKPOT_ARCHIVE`의
+10/28 항목에 직전 다음-회차 예상액($716M)이 그대로 들어가 있어 스크린샷 Past
+Results 확정액 $723M로 직접 정정. `POWERBALL_DRAW_ARCHIVE`에도 10/28 회차
+직접 추가. 메가밀리언즈는 10/27 이후 신규 회차 없음(스크린샷도 10/27이 최신
+확정 결과로 동일, 다음 잭팟 $463M/현금 $194.9M·10/30 추첨도 변경 없음).
+
+**2. 전체 회귀 테스트 19개 재점검**: 사용자가 "사이트 전체에 빼놓지 않고
+넣어줘"라고 요청 — 평소 잭팟 작업 때만 돌리던 4개 외 나머지 15개
+(`broken_link_audit`·`i18n_coverage_audit`·`i18n_attr_lint`·`mcp_sync_check`·
+`drift_consistency_test`·`full_overflow_sweep`·`a11y_audit`·`home_audit`·
+`faq_audit`·`link_navigation_audit`·`map_scroll_audit`·`nav_slider_audit`·
+`wrap_audit`·`lang_leak_audit`·`audit_odds_compare`)까지 전부 돌림. 18개는
+`ISSUES: 0`. `link_navigation_audit`만 8건 — 전부 ERR_CERT_AUTHORITY_INVALID로,
+2026-10-16 세션에서 이미 파악한 기존 테스트 허점(샌드박스가 외부망을 막아서
+생기는 환경 제약을 `console_error_audit.js`는 걸러내는데 `link_navigation_
+audit.js`만 그 필터가 없음, 이번 세션 커밋과 무관)과 동일 원인 — 재조사 없이
+그대로 결론 유지. 코드 수정 없음.
+
+**검증**: `node --check`(script.js/odds-data.js), `draw_archive_integrity_check`·
+`draw_schedule_gap_check`(4개 배열 각각) `ISSUES: 0`, `console_error_audit`(224)·
+`fact_consistency_audit`(228) `ISSUES: 0`. `script.min.js` 재빌드→`odds-data.js`
+캐시버스팅(자동 워크플로가 올려둔 `?v=20261030-1`에서 이 세션의 추가 정정분까지
+반영해 `-2`로 이어서)→`sw.js` `CACHE_NAME`(v141→v142) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-10-23"을
+`HANDOFF-ARCHIVE.md`로 이관.
+
+**커밋**: `4c08f27e`로 `main`에 직접 커밋·푸시 완료(자동 워크플로 커밋 1건 fast-
+forward 병합 후). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬
+완전히 동기화된 상태.
