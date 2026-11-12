@@ -4172,7 +4172,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20261111-1';
+    script.src = 'odds-data.js?v=20261112-1';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -5631,7 +5631,7 @@ function buildDrawScheduleMore(days){
 // (58%) 추정치로 대체됨(getJackpotCashUsd() 참고).
 const JACKPOT_DATA = {
   powerball:    { amountUsd: 45000000, cashUsd: 19400000 },
-  megamillions: { amountUsd: 529000000, cashUsd: 224200000 },
+  megamillions: { amountUsd: 555000000, cashUsd: 235200000 },
 };
 
 // 게임명("파워볼"/"메가밀리언즈")의 17개 언어 버전 — home.powerballName/home.megaName
@@ -5651,7 +5651,7 @@ const GAME_NAME_MORE = {
 // 추적 가능해서 날짜별 코멘트는 여기 쌓지 않음.
 const LATEST_DRAW = {
   powerball:    { date: '2026-11-09', numbers: [13, 34, 41, 45, 48], special: 25 },
-  megamillions: { date: '2026-11-06', numbers: [27, 34, 44, 53, 64], special: 1 },
+  megamillions: { date: '2026-11-10', numbers: [2, 18, 25, 30, 65], special: 22 },
 };
 
 
