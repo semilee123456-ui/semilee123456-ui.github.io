@@ -20904,3 +20904,31 @@ $20M(현금 $8.6M, 11/7 추첨)로 초기화된 것으로 보아 11/4 회차에�
 **커밋**: `0061ffc` — `main`과 `claude/site-layout-design-refresh-3himm8` 둘 다에
 직접 푸시 완료. 세션 기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된
 상태.
+
+### 2026-11-08 — 파워볼 11/7 회차 반영
+
+사용자가 usamega.com 스크린샷 3장 제공. `git fetch` 결과 자동 워크플로 커밋 없음.
+파워볼 11/4→11/7 신규 회차(`[3,36,37,56,61]+21`) 반영 — 확정 잭팟은 이미 저장돼
+있던 "다음 잭팟" 값과 정확히 일치($20M)라 `POWERBALL_JACKPOT_ARCHIVE`에 그대로
+기입(carry-over 오기재 아님, 실제로 일치). 다음 잭팟 $30M(현금 $12.9M, 11/9
+추첨)로 `JACKPOT_DATA.powerball`/`LATEST_DRAW.powerball` 갱신. 메가밀리언즈는
+스크린샷 기준 11/6 그대로(변경 없음) — 기존 데이터와 정확히 일치 확인, 조치
+불필요.
+
+**검증**: `draw_archive_integrity_check`·`draw_schedule_gap_check`(4개 배열 각각)
+`ISSUES: 0`, `fact_consistency_audit`(228) `ISSUES: 0`. `console_error_audit`
+(224 조합) 1차 실행에서 pl/contact 1건(`frame-ancestors 'self'` CSP report-only
+위반, 구글 광고/위젯 간헐 로드 추정) 발생 — 재실행 시 `ISSUES: 0`으로 재현 안 돼
+기존 "샌드박스 광고망 제약" 노이즈 범주의 일회성 플레이크로 판단, 기존
+`TagError`/CORS 필터처럼 전용 필터 추가는 하지 않음(2026-11-01 세션에서 이미
+한 번 같은 판단 적용한 "sequence" 플레이크와 동일 원칙). `script.min.js`
+재빌드(`odds-data.js?v=` 캐시버스팅 반영 포함해 두 번 빌드)→`index.html`
+`script.min.js?v=20261107-1→20261108-1`→`odds-data.js?v=20261107-1→20261108-1`
+→`sw.js` `CACHE_NAME`(v145→v146) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-10-30"을
+`HANDOFF-ARCHIVE.md`로 이관(본 항목 작성 전 처리).
+
+**커밋**: `a5f61be` — `main`과 `claude/site-layout-design-refresh-3himm8` 둘 다에
+직접 푸시 완료. 세션 기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된
+상태.
