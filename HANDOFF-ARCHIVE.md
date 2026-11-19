@@ -20932,3 +20932,32 @@ $20M(현금 $8.6M, 11/7 추첨)로 초기화된 것으로 보아 11/4 회차에�
 **커밋**: `a5f61be` — `main`과 `claude/site-layout-design-refresh-3himm8` 둘 다에
 직접 푸시 완료. 세션 기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된
 상태.
+
+### 2026-11-13 — 파워볼 11/9·11/11 + 메가밀리언즈 11/10 회차 반영
+
+사용자가 usamega.com 스크린샷 3장 제공. `git fetch` 결과 자동 워크플로 커밋 3건
+발견 — `--ff-only` 병합 후 확인하니 `JACKPOT_DATA`/`LATEST_DRAW`는 두 게임 모두
+스크린샷과 완전히 일치(파워볼 11/11 `[8,42,45,51,57]+17`·다음 잭팟 $63M/현금
+$27.1M, 메가밀리언즈 11/10 `[2,18,25,30,65]+22`·다음 잭팟 $555M/현금 $235.2M).
+다만 자동 워크플로가 늘 그렇듯 두 가지를 놓침: (1) `POWERBALL_JACKPOT_ARCHIVE`의
+11/9 항목에 직전 다음-회차 예상액($30M)이 그대로 들어가 있어 스크린샷 Past
+Results 확정액 $31.5M로 직접 정정(11/11 항목은 $45M로 이미 정확). (2)
+`DRAW_ARCHIVE`가 `JACKPOT_ARCHIVE`보다 밀려 있어 `POWERBALL_DRAW_ARCHIVE`에
+11/9·11/11 두 회차, `MEGAMILLIONS_DRAW_ARCHIVE`에 11/10 회차 직접 백필.
+
+**검증**: `draw_archive_integrity_check`·`draw_schedule_gap_check`(4개 배열 각각)
+`ISSUES: 0`, `fact_consistency_audit`(228) `ISSUES: 0`. `console_error_audit`
+(224 조합) 1차 실행에서 no/odds 1건("Cannot read properties of null (reading
+'sequence')") — 2026-11-01 세션에서 이미 같은 메시지로 발견해 구글 애드 매니저
+내부 상태 문제로 결론 내린 적 있는 플레이크, 재실행 시 `ISSUES: 0`으로 재현 안
+돼 기존 판단 유지(전용 필터 추가 안 함). `script.min.js` 재빌드(`odds-data.js?v=`
+캐시버스팅 반영 포함해 두 번 빌드, 자동 워크플로가 올려둔 `?v=20261113-1`에서
+이 세션 추가 정정분까지 반영해 `-2`로 이어서)→`sw.js` `CACHE_NAME`(v146→v147)
+순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-11-01"을
+`HANDOFF-ARCHIVE.md`로 이관(본 항목 작성 전 처리).
+
+**커밋**: `34cbc55` — `main`과 `claude/site-layout-design-refresh-3himm8` 둘 다에
+직접 푸시 완료(자동 워크플로 커밋 3건 fast-forward 병합 후). 세션 종료 시점
+기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된 상태.
