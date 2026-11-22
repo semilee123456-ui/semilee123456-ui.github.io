@@ -20987,3 +20987,33 @@ ARCHIVE`가 `JACKPOT_ARCHIVE`보다 밀려 있어 `MEGAMILLIONS_DRAW_ARCHIVE`에
 **커밋**: `ef65f3d` — `main`과 `claude/site-layout-design-refresh-3himm8` 둘 다에
 직접 푸시 완료(자동 워크플로 커밋 2건 fast-forward 병합 후). 세션 종료 시점
 기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된 상태.
+
+### 2026-11-17 — 파워볼 11/14 + 11/16 회차 반영
+
+사용자가 usamega.com 스크린샷 3장 제공. `git fetch` 결과 자동 워크플로 커밋 2건
+발견(그중 하나는 새로 본 "auto-backfill lottery draw archive" 타입) — `--ff-only`
+병합 후 확인하니 11/14 회차(`[9,44,49,51,68]+4`)까지만 반영돼 있고 11/16은 아직.
+늘 그렇듯(파워볼 확정 잭팟 소스 부재) `POWERBALL_JACKPOT_ARCHIVE`의 11/14 항목에
+직전 다음-회차 예상액($63M)이 그대로 들어가 있어 스크린샷 Past Results 확정액
+$65.9M로 직접 정정. 이어서 11/14→11/16 신규 회차(`[17,35,48,60,69]+17`) 확정
+잭팟 $78.5M로 `DRAW_ARCHIVE`·`JACKPOT_ARCHIVE`에 직접 추가, 다음 잭팟 $92M(현금
+$38.5M, 11/18 추첨)로 `JACKPOT_DATA.powerball`/`LATEST_DRAW.powerball` 갱신.
+메가밀리언즈는 스크린샷 기준 11/13 그대로(변경 없음) — 기존 데이터와 정확히
+일치 확인, 조치 불필요.
+
+**검증**: `draw_archive_integrity_check`·`draw_schedule_gap_check`(4개 배열 각각)
+`ISSUES: 0`, `fact_consistency_audit`(228) `ISSUES: 0`. `console_error_audit`
+(224 조합) 1차 실행에서 da/faq 1건(`frame-ancestors 'self'` CSP report-only
+위반) — 2026-11-08 세션에서 이미 같은 유형(다른 언어/화면 조합)으로 발견해
+구글 광고/위젯 간헐 로드로 결론 내린 적 있는 플레이크, 재실행 시 `ISSUES: 0`으로
+재현 안 돼 기존 판단 유지(전용 필터 추가 안 함). `script.min.js` 재빌드
+(`odds-data.js?v=` 캐시버스팅 반영 포함해 두 번 빌드, 자동 워크플로가 올려둔
+`?v=20261116-1`에서 이 세션 추가 정정분까지 반영해 `20261117-1`로 이어서)
+→`sw.js` `CACHE_NAME`(v148→v149) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-11-07"을
+`HANDOFF-ARCHIVE.md`로 이관(본 항목 작성 전 처리).
+
+**커밋**: `5cfb0cb` — `main`과 `claude/site-layout-design-refresh-3himm8` 둘 다에
+직접 푸시 완료(자동 워크플로 커밋 2건 fast-forward 병합 후). 세션 종료 시점
+기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된 상태.
