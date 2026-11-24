@@ -915,32 +915,8 @@ PR #366~370)/2026-09-06(파워볼 9/5 회차 수동 갱신+잭팟 아카이브 �
 반영)/2026-11-07(파워볼 11/4·당첨→리셋+메가밀리언즈 11/3·11/6 회차 반영)/
 2026-11-08(파워볼 11/7 회차 반영)/2026-11-13(파워볼 11/9·11/11+메가밀리언즈
 11/10 회차 반영)/2026-11-15(메가밀리언즈 11/13 회차 반영+파워볼 다음 잭팟
-현금 추정액 갱신)/2026-11-17(파워볼 11/14+11/16 회차 반영) 마흔일곱 항목을
-그대로 옮겼음)*
-
-### 2026-11-18 — 메가밀리언즈 11/17 회차 반영
-
-사용자가 usamega.com 스크린샷 3장 제공. `git fetch` 결과 자동 워크플로 커밋 없음.
-메가밀리언즈 11/13→11/17 신규 회차(`[3,10,19,28,33]+21`) 반영: `MEGAMILLIONS_
-DRAW_ARCHIVE`·`MEGAMILLIONS_JACKPOT_ARCHIVE`에 추가, 확정 잭팟은 스크린샷 Past
-Results 기준 $600M로 직접 기입(메가밀리언즈는 공식 확정잭팟 필드가 있어 carry-
-over 오기재가 거의 없음, 이번에도 스크린샷과 정확히 일치). 다음 잭팟은 $629M
-(현금 $258.8M, 11/20 추첨)로 `JACKPOT_DATA.megamillions`/`LATEST_DRAW.
-megamillions` 갱신. 파워볼은 스크린샷 기준 11/16 그대로(변경 없음) — 기존
-데이터와 정확히 일치 확인, 조치 불필요.
-
-**검증**: `draw_archive_integrity_check`·`draw_schedule_gap_check`(4개 배열 각각)
-`ISSUES: 0`, `console_error_audit`(224 조합)·`fact_consistency_audit`(228) 전부
-`ISSUES: 0`. `script.min.js` 재빌드(`odds-data.js?v=` 캐시버스팅 반영 포함해 두
-번 빌드)→`index.html` `script.min.js?v=20261117-1→20261118-1`→`odds-data.js?v=
-20261117-1→20261118-1`→`sw.js` `CACHE_NAME`(v149→v150) 순서로 갱신.
-
-**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-11-08"을
-`HANDOFF-ARCHIVE.md`로 이관(본 항목 작성 전 처리).
-
-**커밋**: `9aa9212` — `main`과 `claude/site-layout-design-refresh-3himm8` 둘 다에
-직접 푸시 완료. 세션 기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된
-상태.
+현금 추정액 갱신)/2026-11-17(파워볼 11/14+11/16 회차 반영)/2026-11-18(메가밀리언즈 11/17 회차 반영) 마흔여덟
+항목을 그대로 옮겼음)*
 
 ### 2026-11-19 — 파워볼 11/18 회차 반영
 
@@ -1016,3 +992,28 @@ ARCHIVE`·`POWERBALL_JACKPOT_ARCHIVE`에 추가, 확정 잭팟은 스크린샷 P
 **커밋**: `c04236d` — `main`과 `claude/site-layout-design-refresh-3himm8` 둘 다에
 직접 푸시 완료. 세션 기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된
 상태.
+
+### 2026-11-24 — 파워볼 11/23 회차 반영
+
+사용자가 usamega.com 스크린샷을 두 차례(2026-11-23, 2026-11-24) 제공 — 11/23
+라운드는 기존 저장 데이터와 완전히 일치해 코드 변경·커밋 없이 확인만 하고 종료,
+이번이 그 다음 라운드. `git fetch` 결과 자동 워크플로 커밋 1건 발견 — `--ff-only`
+병합 후 확인하니 파워볼 11/21→11/23 신규 회차(`[7,9,27,40,58]+19`)까지 정확히
+반영돼 있고(직전 11/21 회차에서 잭팟 당첨으로 리셋된 뒤라 확정액 $20M도
+carry-over 오기재 없이 정확), 다음 잭팟 $31M(현금 $13M, 11/25 추첨)도 스크린샷과
+일치. 다만 `DRAW_ARCHIVE`가 `JACKPOT_ARCHIVE`보다 밀려 있어 `POWERBALL_DRAW_
+ARCHIVE`에 11/23 회차 직접 백필. 메가밀리언즈는 스크린샷 기준 11/20 그대로
+(변경 없음) — 기존 데이터와 정확히 일치 확인, 조치 불필요.
+
+**검증**: `draw_archive_integrity_check`·`draw_schedule_gap_check`(4개 배열 각각)
+`ISSUES: 0`, `console_error_audit`(224 조합)·`fact_consistency_audit`(228) 전부
+`ISSUES: 0`. `script.min.js` 재빌드(`odds-data.js?v=` 캐시버스팅 반영 포함해 두
+번 빌드, 자동 워크플로가 올려둔 `?v=20261124-1`에서 이 세션 추가 정정분까지
+반영해 `-2`로 이어서)→`sw.js` `CACHE_NAME`(v153→v154) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-11-18"을
+`HANDOFF-ARCHIVE.md`로 이관(본 항목 작성 전 처리).
+
+**커밋**: `0fcdadf` — `main`과 `claude/site-layout-design-refresh-3himm8` 둘 다에
+직접 푸시 완료(자동 워크플로 커밋 1건 fast-forward 병합 후). 세션 종료 시점
+기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된 상태.
