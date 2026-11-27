@@ -915,31 +915,8 @@ PR #366~370)/2026-09-06(파워볼 9/5 회차 수동 갱신+잭팟 아카이브 �
 반영)/2026-11-07(파워볼 11/4·당첨→리셋+메가밀리언즈 11/3·11/6 회차 반영)/
 2026-11-08(파워볼 11/7 회차 반영)/2026-11-13(파워볼 11/9·11/11+메가밀리언즈
 11/10 회차 반영)/2026-11-15(메가밀리언즈 11/13 회차 반영+파워볼 다음 잭팟
-현금 추정액 갱신)/2026-11-17(파워볼 11/14+11/16 회차 반영)/2026-11-18(메가밀리언즈 11/17 회차 반영) 마흔여덟
-항목을 그대로 옮겼음)*
-
-### 2026-11-19 — 파워볼 11/18 회차 반영
-
-사용자가 usamega.com 스크린샷 3장 제공. `git fetch` 결과 자동 워크플로 커밋 없음.
-파워볼 11/16→11/18 신규 회차(`[18,31,43,51,62]+12`) 반영: `POWERBALL_DRAW_
-ARCHIVE`·`POWERBALL_JACKPOT_ARCHIVE`에 추가, 확정 잭팟은 스크린샷 Past Results
-기준 $93.2M로 직접 기입(자동 워크플로가 없었으므로 이번엔 carry-over 오기재
-자체가 발생하지 않음). 다음 잭팟은 $114M(현금 $47.7M, 11/21 추첨)로 `JACKPOT_
-DATA.powerball`/`LATEST_DRAW.powerball` 갱신. 메가밀리언즈는 스크린샷 기준
-11/17 그대로(변경 없음) — 기존 데이터와 정확히 일치 확인, 조치 불필요.
-
-**검증**: `draw_archive_integrity_check`·`draw_schedule_gap_check`(4개 배열 각각)
-`ISSUES: 0`, `console_error_audit`(224 조합)·`fact_consistency_audit`(228) 전부
-`ISSUES: 0`. `script.min.js` 재빌드(`odds-data.js?v=` 캐시버스팅 반영 포함해 두
-번 빌드)→`index.html` `script.min.js?v=20261118-1→20261119-1`→`odds-data.js?v=
-20261118-1→20261119-1`→`sw.js` `CACHE_NAME`(v150→v151) 순서로 갱신.
-
-**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-11-13"을
-`HANDOFF-ARCHIVE.md`로 이관(본 항목 작성 전 처리).
-
-**커밋**: `4ce13f2` — `main`과 `claude/site-layout-design-refresh-3himm8` 둘 다에
-직접 푸시 완료. 세션 기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된
-상태.
+현금 추정액 갱신)/2026-11-17(파워볼 11/14+11/16 회차 반영)/2026-11-18(메가밀리언즈 11/17 회차 반영)/2026-11-19(파워볼 11/18 회차 반영)
+마흔아홉 항목을 그대로 옮겼음)*
 
 ### 2026-11-21 — 메가밀리언즈 11/20 회차 반영
 
@@ -1017,3 +994,71 @@ ARCHIVE`에 11/23 회차 직접 백필. 메가밀리언즈는 스크린샷 기�
 **커밋**: `0fcdadf` — `main`과 `claude/site-layout-design-refresh-3himm8` 둘 다에
 직접 푸시 완료(자동 워크플로 커밋 1건 fast-forward 병합 후). 세션 종료 시점
 기준 미커밋 변경 없음, `origin/main`과 로컬 완전히 동기화된 상태.
+
+### 2026-11-27 — 파워볼 11/25 + 메가밀리언즈 11/24 회차 반영 + 전체 회귀 테스트 19개 재점검(실버그 3건 발견·수정)
+
+**1. 잭팟 데이터**: 사용자가 usamega.com 스크린샷 3장 제공. `git fetch` 결과 자동
+워크플로 커밋 3건 발견 — `--ff-only` 병합 후 확인하니 `JACKPOT_DATA`/`LATEST_
+DRAW`는 두 게임 모두 스크린샷과 완전히 일치(파워볼 11/25 `[23,43,57,58,68]+12`·
+다음 잭팟 $48M/현금 $20.2M, 메가밀리언즈 11/24 `[38,42,44,45,62]+16`·다음 잭팟
+$673M/현금 $282.6M). 늘 그렇듯(파워볼 확정 잭팟 소스 부재) `POWERBALL_JACKPOT_
+ARCHIVE`의 11/25 항목에 직전 다음-회차 예상액($31M)이 그대로 들어가 있어 스크린샷
+Past Results 확정액 $34.3M로 직접 정정. `POWERBALL_DRAW_ARCHIVE`에도 11/25 회차
+직접 추가(메가밀리언즈 양쪽 배열은 이미 정확).
+
+**2. 사용자가 "빠짐없이 사이트 전부 수정하고 있지?" 질문 후 "사이트도 전체 돌려줘"라고
+요청 — 평소 4개 외 나머지 15개까지 전체 19개 테스트 수행, 이번엔 단순 재확인이
+아니라 실제 버그 3건을 발견해 전부 조사 후 수정**:
+
+(a) **`link_navigation_audit`가 수년간 놓치고 있던 진짜 리그레션**: `?country=us&
+state=CA` 같은 URL(현재 실제 랜딩페이지 링크는 없음, 테스트 자체가 "향후 회귀
+방지용"이라고 명시한 케이스)로 들어오면 홈 탭에 'CA'가 정상 반영됐다가 약
+400~700ms 뒤 조용히 'AVG'로 되돌아가는 버그를 재현·근본원인까지 추적함 —
+`homeStateSelect`/`compareStateSelect`가 완전히 독립된 두 `<select>`인데 둘 다
+같은 전역 `sharedState`에 무조건 자기 select의 현재 값을 써넣는 구조라서,
+`?lang=`이 트리거하는 비동기 번역 재적용(`applyTranslations()`가 `updateHomeCalc()`
+다음에 `updateCalc()`도 마저 호출)이 아직 한 번도 건드린 적 없는 compareStateSelect의
+기본값(AVG)으로 홈 탭이 방금 반영한 CA를 덮어씀. URL state 파라미터 처리부에서
+`compareStateSelect.value`도 같이 맞춰주는 식으로 수정(script.js). 평범한 사용자
+흐름(홈 탭에서 직접 주 선택 후 언어 전환)은 재현 안 됨을 직접 확인해 범위 한정 —
+URL 파라미터 초기 로드 경로에서만 발생.
+
+(b) **`wrap_audit` 3건(w=375/412/414, home)**: "일시불(세전)" 문구가 "(" 자리에서
+줄바꿈됨 — 해당 `<b>`에 `white-space:nowrap` 추가(index.html)로 수정, 재검증
+`ISSUES: 0`.
+
+(c) **`full_overflow_sweep` 438/945건 — 전부 테스트 방법론 자체의 아티팩트로
+확인, 사이트 실버그 아님**: 945개 조합 전부 같은 패턴(`ins.adsbygoogle` 광고
+슬롯과 구글이 그 안에 주입하는 자식 div/iframe)이라 직접 재현 — 구글 애드센스
+"auto" 포맷 광고는 삽입 시점의 폭 기준으로 딱 한 번만 크기를 정하고 리사이즈에
+반응 안 하는데, 이 테스트는 속도를 위해 한 페이지를 reload 없이 `setViewportSize()`
+로만 5개 폭을 연속으로 훑어서(945번 reload하면 너무 느림) 광고가 "처음 로드됐던
+폭" 그대로 남은 채 더 좁은 폭으로 줄이면 광고만 화면 밖으로 삐져나온 것처럼
+잡힘(390px 로드 후 320px로 리사이즈 → 정확히 보고된 것과 같은 50px 오버플로우
+재현, 반대로 320px로 새로 로드하면 오버플로우 0). `ins.adsbygoogle`과 그 자식을
+거르는 필터 추가(tests/full_overflow_sweep.js, `console_error_audit.js`의 기존
+TagError/CORS 필터와 같은 원칙) — 재검증 `945개 전부 ISSUES: 0`.
+
+**남은 미해결(이번 세션 커밋과 무관한 기존 상태, 조치 안 함)**: `audit_odds_compare`
+— 240px 폭(사실상 요즘 거의 안 쓰이는 폭)에서만 `.prize-pct`(odds 탭) 3.8px
+오버플로우, 해당 `white-space:nowrap`은 의도된 디자인이라 CSS 변경의 득보다
+리스크가 크다고 판단해 보류. `link_navigation_audit` 나머지 8건은 전부 기존에
+이미 문서화된 샌드박스 환율 API CORS 차단 노이즈(실버그 아님).
+
+**검증**: `draw_archive_integrity_check`·`draw_schedule_gap_check`(4개 배열 각각)
+`ISSUES: 0`. 19개 테스트 전부 재확인: `a11y_audit`(26)·`broken_link_audit`(223)·
+`console_error_audit`(224)·`drift_consistency_test`(29)·`fact_consistency_audit`
+(228)·`faq_audit`(18)·`full_overflow_sweep`(945, 수정 후)·`home_audit`(18)·
+`i18n_attr_lint`·`i18n_coverage_audit`(782)·`lang_leak_audit`(140)·`map_scroll_
+audit`(10)·`mcp_sync_check`(15)·`nav_slider_audit`·`wrap_audit`(168, 수정 후)
+전부 `ISSUES: 0`. `script.min.js` 재빌드(두 번 — 데이터 커밋 1회, 버그 수정
+커밋 1회)→`odds-data.js?v=20261127-1→2`(데이터)→`index.html`/`odds-data.js?v=
+20261127-2→3`(버그 수정)→`sw.js` `CACHE_NAME`(v154→v155→v156) 순서로 갱신.
+
+**HANDOFF 절차 준수**: 라이브 항목 4개 한도 유지를 위해 가장 오래된 "2026-11-19"를
+`HANDOFF-ARCHIVE.md`로 이관(본 항목 작성 전 처리).
+
+**커밋**: 데이터 `6181586`, 버그 수정 `9daf329` — 둘 다 `main`과 `claude/site-
+layout-design-refresh-3himm8`에 직접 푸시 완료(자동 워크플로 커밋 3건 fast-
+forward 병합 후). 세션 종료 시점 기준 미커밋 변경 없음, `origin/main`과 로컬
+완전히 동기화된 상태.
