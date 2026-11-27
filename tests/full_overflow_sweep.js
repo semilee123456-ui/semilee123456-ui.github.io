@@ -48,6 +48,21 @@ const VIEWS = ['home', 'compare', 'odds', 'faq', 'privacy', 'disclaimer', 'conta
             // 2) 실제로 렌더링된 요소(가상요소 제외, getBoundingClientRect만 사용)가
             //    화면 좌우 경계를 벗어나는지 — audit_odds_compare.js와 같은 방식
             document.querySelectorAll('body *').forEach(el => {
+              // 구글 애드센스 "auto" 포맷 광고(ins.adsbygoogle)는 삽입될 때 "그 시점의"
+              // 뷰포트/컨테이너 폭 기준으로 딱 한 번만 크기를 정하고, 이후 브라우저가 리사이즈돼도
+              // 다시 레이아웃하지 않음(실제 서비스에서도 동일한 동작 — 방문자가 로드 후 창 크기를
+              // 바꾸는 경우가 드물어 눈에 띄지 않을 뿐). 그런데 이 테스트는 한 페이지를 로드한 채로
+              // setViewportSize()만 5번 연속 호출해서 폭 5개를 전부 훑는 방식이라(매번 새로
+              // 로드하면 945번 reload해야 해서 시간이 너무 오래 걸림), 광고가 "처음 로드됐던 폭"
+              // 그대로 남아있는 상태에서 더 좁은 폭으로 줄이면 광고만 화면 밖으로 튀어나온 것처럼
+              // 잡힘. 2026-11-27 직접 재현해 확인: 320px로 새로 로드하면 광고가 정확히 320px에
+              // 맞게 렌더링되는데(오버플로우 없음), 390px로 로드한 뒤 reload 없이 320px로
+              // 리사이즈만 하면 광고가 390px 그대로 남아 좌우로 삐져나옴(이번 스윕에서 걸린
+              // 438건 전부 이 패턴, 광고 외 다른 요소는 0건 — 실제 사이트 버그 아님, 테스트
+              // 방법론 자체의 한계). 광고 슬롯(ins.adsbygoogle)과 구글이 그 안에 주입하는
+              // 자식(호스트 div·iframe)만 걸러서 다른 실제 오버플로우는 그대로 잡히게 함.
+              if (el.tagName === 'INS' && el.className && el.className.includes && el.className.includes('adsbygoogle')) return;
+              if (el.closest('ins.adsbygoogle')) return;
               const cs = getComputedStyle(el);
               if (cs.display === 'none' || cs.visibility === 'hidden') return;
               if (el.closest('[aria-hidden="true"]')) return;

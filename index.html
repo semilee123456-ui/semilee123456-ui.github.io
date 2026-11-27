@@ -162,7 +162,7 @@
      병렬로 시작하면서도 실행은 defer 특성상 문서 파싱이 끝난 뒤로 미뤄짐 — 예전처럼 </body> 바로
      위에 두면 body 전체(140KB)를 다 파싱한 뒤에야 다운로드가 시작돼서 그만큼 늦어짐. 실행 시점은
      두 방식이 동일해서(DOM 파싱 완료 후) 동작 변화 없이 순수하게 로딩만 빨라짐 -->
-<script src="script.min.js?v=20261127-2" defer></script>
+<script src="script.min.js?v=20261127-3" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1118,7 +1118,7 @@
                 <div class="jc-row"><span data-i18n="odds.jcAnnuityMonth">🗓️ 한 달로 치면</span><span class="jc-val" id="home-annuity-month-net">-</span></div>
                 <p class="jc-note" data-i18n-html="odds.jcAnnuityNote">일시불과 달리 연금은 <b>발표된 잭팟 총액을 그대로</b> 29년에 걸쳐 30번 나눠 받아요 (첫 회 이후 매년 5%씩 증액). 한 해에 몰리지 않아 세금 부담도 분산돼요.</p>
                 <p class="jc-note" data-i18n-html="odds.jcAnnuityNote2" style="margin-top:6px;">※ 위 금액은 30년 단순 평균이라 실제 첫 회 수령액은 이보다 적어요.</p>
-                <p class="jc-note" data-i18n-html="home.flowExplainNote" style="margin-top:6px;">ℹ️ 이 계산기는 대부분이 선택하는 <b>일시불(세전)</b> 기준으로 계산돼요.</p>
+                <p class="jc-note" data-i18n-html="home.flowExplainNote" style="margin-top:6px;">ℹ️ 이 계산기는 대부분이 선택하는 <b style="white-space:nowrap;">일시불(세전)</b> 기준으로 계산돼요.</p>
                 <details class="jh-more" style="margin-top:10px;">
                   <summary class="jh-more-summary" data-i18n="odds.annuityScheduleToggle">📊 30년 전체 지급표 보기 (회차별 실제 금액)</summary>
                   <div class="annuity-schedule-wrap">

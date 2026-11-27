@@ -4172,7 +4172,7 @@ function ensureOddsDataLoaded(){
   _oddsDataLoadPromise = new Promise((resolve, reject) => {
     if (typeof JACKPOT_HISTORY !== 'undefined') { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'odds-data.js?v=20261127-2';
+    script.src = 'odds-data.js?v=20261127-3';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('odds-data.js failed to load'));
     document.head.appendChild(script);
@@ -10928,6 +10928,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const effectiveCountryForState = SUPPORTED_TAX_COUNTRIES.includes(urlCountry) ? urlCountry : sharedCountry;
   if (effectiveCountryForState === 'us' && urlState && Object.keys(STATE_TAX_RATES).includes(urlState)) {
     document.getElementById('homeStateSelect').value = urlState;
+    // compareStateSelect도 같이 맞춰둠 — updateHomeCalc()/updateCalc() 둘 다 공용 sharedState를
+    // "자기 select의 현재 값"으로 무조건 덮어쓰는 구조라(2026-07-29 sharedAmountUsd 드리프트
+    // 버그와 같은 원인), ?lang=이 트리거한 번역 비동기 재적용(setLanguage → 이후 언어팩 로드 →
+    // applyTranslations)이 updateHomeCalc() 다음에 updateCalc()도 마저 불러서, 아직 건드린 적
+    // 없는 compareStateSelect의 기본값(AVG)으로 방금 반영한 'CA'를 그대로 되돌려버림(재현·원인
+    // 확인함, 2026-11-27). 두 select를 항상 같이 맞춰두면 어느 쪽이 나중에 읽혀도 값이 어긋나지 않음.
+    document.getElementById('compareStateSelect').value = urlState;
     updateHomeCalc();
     params.delete('state');
     const newSearch4 = params.toString();
